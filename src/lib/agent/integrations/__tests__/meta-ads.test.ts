@@ -23,6 +23,7 @@ jest.mock('@/lib/agent/actions/create', () => ({
   })),
 }))
 
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { requiredDecisionRole } from '@/lib/agent/actions/decision-policy'
@@ -347,6 +348,104 @@ describe('meta-ads (포팅)', () => {
     await expect(
       tool('meta_ads_get_insights').execute(ctx(), { brand: 'brand-a', object_id: '123' })
     ).rejects.toThrow('이 Space의 광고 계정에 속하지 않는 객체입니다')
+  })
+
+  describe('get_insights 확장', () => {
+    const schema = () => z.object(tool('meta_ads_get_insights').inputSchema)
+    const lastUrl = () => new URL(fetchMock.mock.calls[fetchMock.mock.calls.length - 1][0])
+
+    it('기본값은 그대로(last_30d·campaign)', async () => {
+      await tool('meta_ads_get_insights').execute(ctx(), { brand: 'brand-a' })
+      const u = lastUrl()
+      expect(u.pathname).toBe('/v26.0/act_111/insights')
+      expect(u.searchParams.get('date_preset')).toBe('last_30d')
+      expect(u.searchParams.get('level')).toBe('campaign')
+      expect(u.searchParams.has('time_range')).toBe(false)
+    })
+
+    it('time_range를 주면 date_preset 없이 since/until JSON으로 보낸다', async () => {
+      await tool('meta_ads_get_insights').execute(ctx(), {
+        brand: 'brand-a',
+        time_range: { since: '2026-10-13', until: '2026-10-17' },
+      })
+      const u = lastUrl()
+      expect(JSON.parse(u.searchParams.get('time_range')!)).toEqual({
+        since: '2026-10-13',
+        until: '2026-10-17',
+      })
+      expect(u.searchParams.has('date_preset')).toBe(false)
+    })
+
+    it('time_range와 date_preset을 같이 주면 거부한다', async () => {
+      await expect(
+        tool('meta_ads_get_insights').execute(ctx(), {
+          brand: 'brand-a',
+          date_preset: 'last_7d',
+          time_range: { since: '2026-10-13', until: '2026-10-17' },
+        })
+      ).rejects.toBeInstanceOf(ToolUserError)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('since가 until보다 늦으면 거부한다', async () => {
+      await expect(
+        tool('meta_ads_get_insights').execute(ctx(), {
+          brand: 'brand-a',
+          time_range: { since: '2026-10-17', until: '2026-10-13' },
+        })
+      ).rejects.toThrow(/since/)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('다음 페이지 커서는 응답에 남고 토큰 포함 next URL은 가린다', async () => {
+      fetchMock.mockResolvedValueOnce(
+        ok({
+          data: [],
+          paging: {
+            cursors: { after: 'QVFIUnext' },
+            next: 'https://graph.facebook.com/v26.0/act_111/insights?access_token=t&after=QVFIUnext',
+          },
+        })
+      )
+      const r = (await tool('meta_ads_get_insights').execute(ctx(), { brand: 'brand-a' })) as {
+        paging: { cursors: { after: string }; next: string }
+      }
+      expect(r.paging.cursors.after).toBe('QVFIUnext')
+      expect(r.paging.next).toBe('[redacted]')
+    })
+
+    it('breakdowns·time_increment·after를 전달한다', async () => {
+      await tool('meta_ads_get_insights').execute(ctx(), {
+        brand: 'brand-a',
+        level: 'ad',
+        breakdowns: ['age', 'publisher_platform'],
+        time_increment: 1,
+        after: 'QVFIUcursor',
+      })
+      const u = lastUrl()
+      expect(u.searchParams.get('breakdowns')).toBe('age,publisher_platform')
+      expect(u.searchParams.get('time_increment')).toBe('1')
+      expect(u.searchParams.get('after')).toBe('QVFIUcursor')
+    })
+
+    it('스키마: 허용 밖 breakdown·날짜 형식·4개 이상 breakdown은 거부', () => {
+      expect(schema().safeParse({ breakdowns: ['region'] }).success).toBe(false)
+      expect(
+        schema().safeParse({
+          breakdowns: ['age', 'gender', 'publisher_platform', 'platform_position'],
+        }).success
+      ).toBe(false)
+      expect(
+        schema().safeParse({ time_range: { since: '2026/10/13', until: '2026-10-17' } }).success
+      ).toBe(false)
+      expect(schema().safeParse({ time_increment: 'weekly' }).success).toBe(false)
+      expect(
+        schema().safeParse({
+          time_increment: 'monthly',
+          breakdowns: ['age', 'gender'],
+        }).success
+      ).toBe(true)
+    })
   })
 
   it('propose → 승인 큐(PENDING), Meta API는 호출하지 않는다', async () => {
