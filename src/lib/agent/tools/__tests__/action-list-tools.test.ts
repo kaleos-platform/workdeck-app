@@ -70,10 +70,13 @@ it('status·actionId·workId 필터를 더하되 Space·덱 조건은 덮어쓰�
 })
 
 it('결과·제안 내용의 비밀값을 가리고 생성 id는 남긴다', async () => {
-  findMany.mockResolvedValue([{ ...row, error: 'failed access_token=EAAsecret' }])
+  findMany.mockResolvedValue([
+    { ...row, summary: 'token=EAAsecret 로 생성', error: 'failed access_token=EAAsecret' },
+  ])
   const out = (await tool.execute(ctx, {})) as { actions: Array<Record<string, unknown>> }
   const a = out.actions[0]
   expect(a.result).toEqual({ id: '120000000001', access_token: '[redacted]' })
   expect(JSON.stringify(a.payload)).not.toContain('EAAsecret')
   expect(a.error).toBe('failed access_token=[redacted]')
+  expect(a.summary).toBe('token=[redacted] 로 생성')
 })

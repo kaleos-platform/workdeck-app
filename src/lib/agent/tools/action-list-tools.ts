@@ -58,6 +58,7 @@ export function makeListActionsTool(opts: {
       return {
         actions: rows.map((r) => ({
           ...r,
+          summary: maskSecrets(r.summary),
           payload: maskParams(r.payload),
           result: r.result === null ? null : maskParams(r.result),
           error: r.error === null ? null : maskSecrets(r.error),
