@@ -10,6 +10,8 @@ import { prisma } from '@/lib/prisma'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { expirePendingActions } from '@/lib/agent/actions/execute'
 import { describeActors } from '@/lib/agent/actions/actor-label'
+import { requiredDecisionRole, spendKrwOf } from '@/lib/agent/actions/decision-policy'
+import { maskParams } from '@/lib/agent/audit'
 import type { Actor } from '@/lib/agent/identity/principal'
 import type { AgentActionStatus } from '@/generated/prisma/enums'
 
@@ -48,8 +50,20 @@ export async function GET(req: NextRequest) {
 
   // 행위자·요청자는 사람이 읽는 이름으로 — id(cuid)를 UI에 그대로 보이지 않는다.
   const labels = await describeActors(rows)
+  // 승인자가 실제로 실행될 파라미터를 보도록 payload를 내려주되, 비밀로 보이는 값은 서버에서 가린다.
+  const actions = await Promise.all(
+    rows.map(async (r, i) => ({
+      ...r,
+      payload: maskParams(r.payload),
+      beforeState: maskParams(r.beforeState),
+      result: maskParams(r.result),
+      actorLabel: labels[i],
+      spendKrw: spendKrwOf(r) ?? null,
+      requiredRole: r.status === 'PENDING' ? await requiredDecisionRole(r, 'approve') : null,
+    }))
+  )
   return NextResponse.json({
-    actions: rows.map((r, i) => ({ ...r, actorLabel: labels[i] })),
+    actions,
     role: resolved.role, // 선택한 Space에서의 역할 — 승인 목록의 canDecide
   })
 }

@@ -16,9 +16,8 @@ export async function requiredDecisionRole(
   const base: Role = def?.requiredRole ?? 'ADMIN'
   if (decision === 'reject' || !def?.spendKrw) return base
 
-  const parsed = def.paramsSchema.safeParse(action.payload)
-  if (!parsed.success) return 'OWNER' // 금액을 해석할 수 없는 지출 액션은 보수적으로
-  const amount = def.spendKrw(parsed.data)
+  const amount = spendKrwOf(action)
+  if (amount === undefined) return 'OWNER' // 금액을 해석할 수 없는 지출 액션은 보수적으로
   if (amount === null) return base
 
   const space = await prisma.space.findUnique({
@@ -26,6 +25,17 @@ export async function requiredDecisionRole(
     select: { approvalLimitKrw: true },
   })
   return amount > (space?.approvalLimitKrw ?? 0) ? 'OWNER' : base
+}
+
+/** 지출 금액(원) — 지출 액션이 아니거나 금액이 없으면 null, 파라미터를 해석할 수 없으면 undefined. */
+export function spendKrwOf(action: {
+  actionType: string
+  payload: unknown
+}): number | null | undefined {
+  const def = getActionDefinition(action.actionType)
+  if (!def?.spendKrw) return null
+  const parsed = def.paramsSchema.safeParse(action.payload)
+  return parsed.success ? def.spendKrw(parsed.data) : undefined
 }
 
 /**

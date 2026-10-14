@@ -14,6 +14,7 @@ import { decryptBotToken } from './token-crypto'
 import { postMessage } from './client'
 import { describeActors } from '@/lib/agent/actions/actor-label'
 import { escapeMrkdwn } from './mrkdwn'
+import { maskParams, maskSecrets } from '@/lib/agent/audit'
 
 // 승인 UI에서도 쓰는 deck 라벨(한국어).
 const DECK_LABELS: Record<string, string> = {
@@ -40,6 +41,39 @@ function formatKst(date: Date): string {
   })
 }
 
+// Slack section text 한도(3000자) 안에 들도록 파라미터 블록은 2500자까지만.
+const PARAMS_MAX = 2500
+const PARAM_VALUE_MAX = 300
+
+/** 실제 실행될 파라미터를 `키: 값` 줄로 — 마스킹 → 자르기 → 이스케이프 순서. 파라미터가 없으면 null. */
+export function formatParamsForSlack(payload: unknown): string | null {
+  const masked = maskParams(payload)
+  if (masked == null) return null
+  const entries =
+    typeof masked === 'object' && !Array.isArray(masked)
+      ? Object.entries(masked as Record<string, unknown>)
+      : [['값', masked] as [string, unknown]]
+  if (entries.length === 0) return null
+
+  const cut = (s: string, max: number) => (s.length > max ? `${s.slice(0, max)}…` : s)
+  const lines: string[] = []
+  let length = 0
+  let truncated = false
+  for (const [key, value] of entries) {
+    const raw = typeof value === 'string' ? value : JSON.stringify(value)
+    if (raw.length > PARAM_VALUE_MAX) truncated = true
+    const line = `*${escapeMrkdwn(maskSecrets(cut(key, 100)))}*: ${escapeMrkdwn(maskSecrets(cut(raw, PARAM_VALUE_MAX)))}`
+    if (length + line.length + 1 > PARAMS_MAX) {
+      truncated = true
+      break
+    }
+    lines.push(line)
+    length += line.length + 1
+  }
+  if (truncated) lines.push('_…일부 생략 — 웹에서 전체 보기_')
+  return lines.join('\n')
+}
+
 export async function notifyPendingAction(actionId: string): Promise<void> {
   try {
     const action = await prisma.agentPendingAction.findUnique({
@@ -50,6 +84,7 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
         deckKey: true,
         actionType: true,
         summary: true,
+        payload: true,
         actorType: true,
         actorId: true,
         requesterUserId: true,
@@ -78,6 +113,7 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
     const esc = escapeMrkdwn
     const [who] = (await describeActors([action])).map(esc)
     const summary = esc(action.summary)
+    const params = formatParamsForSlack(action.payload)
 
     const blocks = [
       { type: 'header', text: { type: 'plain_text', text: '🔔 에이전트 승인 요청', emoji: true } },
@@ -91,6 +127,9 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
           { type: 'mrkdwn', text: `*만료*\n${formatKst(action.expiresAt)}` },
         ],
       },
+      ...(params
+        ? [{ type: 'section', text: { type: 'mrkdwn', text: `*요청 파라미터*\n${params}` } }]
+        : []),
       {
         type: 'actions',
         block_id: `agent_action_${action.id}`,

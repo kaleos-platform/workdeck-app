@@ -36,6 +36,61 @@ function toEntries(value: unknown): Array<[string, string]> {
   })
 }
 
+// 실제 실행될 파라미터 표시 — 평평한 객체는 키-값 목록, 중첩은 들여쓴 JSON.
+// 값은 React 텍스트 노드로만 렌더링한다(HTML로 해석하지 않음). 서버가 비밀 값을 미리 가린다.
+function isFlatObject(value: unknown): value is Record<string, unknown> {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every((v) => v === null || typeof v !== 'object')
+  )
+}
+
+function ExpandableText({ text, limit }: { text: string; limit: number }) {
+  const [expanded, setExpanded] = useState(false)
+  const isLong = text.length > limit
+  return (
+    <>
+      {isLong && !expanded ? `${text.slice(0, limit)}…` : text}
+      {isLong && (
+        <button
+          type="button"
+          className="ml-1 font-sans text-xs text-primary underline"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? '접기' : '전체 보기'}
+        </button>
+      )}
+    </>
+  )
+}
+
+function ParamsView({ payload }: { payload: unknown }) {
+  if (payload == null || (isFlatObject(payload) && Object.keys(payload).length === 0)) {
+    return <p className="text-sm text-muted-foreground">파라미터가 없습니다</p>
+  }
+  if (isFlatObject(payload)) {
+    return (
+      <dl className="space-y-1 rounded-md border p-3 text-sm">
+        {Object.entries(payload).map(([key, v]) => (
+          <div key={key} className="flex justify-between gap-4">
+            <dt className="shrink-0 text-muted-foreground">{key}</dt>
+            <dd className="text-right break-all text-foreground">
+              <ExpandableText text={v == null ? '-' : String(v)} limit={200} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+  return (
+    <pre className="overflow-x-auto rounded-md border p-3 text-xs break-all whitespace-pre-wrap">
+      <ExpandableText text={JSON.stringify(payload, null, 2)} limit={1500} />
+    </pre>
+  )
+}
+
 export function ApprovalDetailSheet({
   action,
   open,
@@ -51,7 +106,6 @@ export function ApprovalDetailSheet({
 
   if (!action) return null
 
-  const payloadEntries = toEntries(action.payload)
   const beforeEntries = toEntries(action.beforeState)
   const isPending = action.status === 'PENDING'
 
@@ -197,19 +251,25 @@ export function ApprovalDetailSheet({
             <h3 className="mb-2 text-sm font-semibold text-foreground">
               {beforeEntries.length > 0 ? '변경 후 (요청 내용)' : '요청 내용'}
             </h3>
-            {payloadEntries.length > 0 ? (
-              <dl className="space-y-1 rounded-md border p-3 text-sm">
-                {payloadEntries.map(([key, value]) => (
-                  <div key={key} className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">{key}</dt>
-                    <dd className="text-right break-all text-foreground">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : (
-              <p className="text-sm text-muted-foreground">파라미터가 없습니다</p>
-            )}
+            <ParamsView payload={action.payload} />
           </section>
+
+          {(action.spendKrw != null || action.requiredRole) && (
+            <dl className="space-y-1 rounded-md border bg-muted/30 p-3 text-sm">
+              {action.spendKrw != null && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">지출 금액</dt>
+                  <dd className="text-foreground">{action.spendKrw.toLocaleString('ko-KR')}원</dd>
+                </div>
+              )}
+              {action.requiredRole && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">승인 필요 역할</dt>
+                  <dd className="text-foreground">{action.requiredRole}</dd>
+                </div>
+              )}
+            </dl>
+          )}
 
           {action.status === 'EXECUTED' && action.result != null && (
             <section>

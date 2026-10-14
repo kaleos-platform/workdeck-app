@@ -13,6 +13,7 @@ import { errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { approveAndExecute, rejectAction } from '@/lib/agent/actions/execute'
 import { syncSlackDecision } from '@/lib/slack/sync-decision'
+import { maskParams } from '@/lib/agent/audit'
 import type { SpaceMemberRole } from '@/lib/api-helpers'
 
 // 호출자가 액션의 space에서 갖는 역할을 반환(멤버 아니면 null).
@@ -39,7 +40,14 @@ export async function GET(
   const role = await callerRoleInSpace(user.id, action.spaceId)
   if (!role) return errorResponse('권한이 없습니다', 403)
 
-  return NextResponse.json({ action })
+  return NextResponse.json({
+    action: {
+      ...action,
+      payload: maskParams(action.payload),
+      beforeState: maskParams(action.beforeState),
+      result: maskParams(action.result),
+    },
+  })
 }
 
 export async function PATCH(
