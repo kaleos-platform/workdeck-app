@@ -16,7 +16,8 @@ import { SpaceRequiredPicker, type SpaceChoice } from '@/components/common/space
 
 type Member = { id: string; role: string; user: { email: string; name: string | null } }
 type Invitation = { id: string; email: string; role: string; expiresAt: string }
-type Created = { link: string; emailSent: boolean; emailSkipReason?: string }
+type Created = { link: string; emailSent: boolean; emailSkipReason?: string; expiresAt?: string }
+const NET_ERR = '네트워크 오류로 요청하지 못했습니다.'
 
 export function MembersCard() {
   const spaceParam = useSearchParams().get('spaceId')
@@ -34,19 +35,27 @@ export function MembersCard() {
   const [pending, setPending] = useState(false)
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/spaces/members${q}`)
-    const body = await res.json().catch(() => null)
-    if (res.status === 400 && body?.code === 'SPACE_REQUIRED') return setChoices(body.spaces ?? [])
-    if (!res.ok) return setError(body?.message ?? '구성원을 불러오지 못했습니다')
-    setSpaceId(body.spaceId)
-    setMyRole(body.myRole)
-    setMembers(body.members)
-    if (body.myRole === 'OWNER') {
-      const inv = await fetch(`/api/spaces/${body.spaceId}/invitations`)
-      const ib = await inv.json().catch(() => null)
-      // MFA(aal2)가 아니면 403 — API 메시지를 그대로 보여준다.
-      if (inv.ok) setInvites(ib.invitations)
-      else setError(ib?.message ?? '초대 목록을 불러오지 못했습니다')
+    setError(null)
+    try {
+      const res = await fetch(`/api/spaces/members${q}`)
+      const body = await res.json().catch(() => null)
+      if (res.status === 400 && body?.code === 'SPACE_REQUIRED')
+        return setChoices(body.spaces ?? [])
+      if (res.status === 403)
+        return setError(body?.message ?? '구성원 목록은 관리자 이상만 볼 수 있습니다.')
+      if (!res.ok) return setError(body?.message ?? '구성원을 불러오지 못했습니다')
+      setSpaceId(body.spaceId)
+      setMyRole(body.myRole)
+      setMembers(body.members)
+      if (body.myRole === 'OWNER') {
+        const inv = await fetch(`/api/spaces/${body.spaceId}/invitations`)
+        const ib = await inv.json().catch(() => null)
+        // MFA(aal2)가 아니면 403 — API 메시지를 그대로 보여준다.
+        if (inv.ok) setInvites(ib.invitations)
+        else setError(ib?.message ?? '초대 목록을 불러오지 못했습니다')
+      }
+    } catch {
+      setError(NET_ERR)
     }
   }, [q])
 
@@ -68,12 +77,15 @@ export function MembersCard() {
       const body = await res.json().catch(() => null)
       if (!res.ok) return setError(body?.message ?? '초대하지 못했습니다')
       setCreated({
+        expiresAt: body.expiresAt,
         link: body.link,
         emailSent: body.emailSent,
         emailSkipReason: body.emailSkipReason,
       })
       setEmail('')
       await load()
+    } catch {
+      setError(NET_ERR)
     } finally {
       setPending(false)
     }
@@ -81,12 +93,18 @@ export function MembersCard() {
 
   async function revoke(id: string) {
     if (!spaceId || !confirm('이 초대를 취소할까요?')) return
-    const res = await fetch(`/api/spaces/${spaceId}/invitations/${id}`, { method: 'DELETE' })
-    if (!res.ok) {
-      const body = await res.json().catch(() => null)
-      setError(body?.message ?? '초대를 취소하지 못했습니다')
+    setError(null)
+    try {
+      const res = await fetch(`/api/spaces/${spaceId}/invitations/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        await load()
+        return setError(body?.message ?? '초대를 취소하지 못했습니다')
+      }
+      await load()
+    } catch {
+      setError(NET_ERR)
     }
-    await load()
   }
 
   async function copy(link: string) {
@@ -160,7 +178,9 @@ export function MembersCard() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  이 링크는 지금만 표시됩니다. 7일 뒤 만료됩니다.
+                  이 링크는 지금만 표시됩니다.
+                  {created.expiresAt &&
+                    ` ${new Date(created.expiresAt).toLocaleDateString('ko-KR')}에 만료됩니다.`}
                 </p>
               </div>
             )}

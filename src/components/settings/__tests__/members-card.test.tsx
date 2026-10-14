@@ -119,3 +119,39 @@ it('ADMIN은 초대 폼을 보지 않는다', async () => {
   await waitFor(() => expect(fetchMock).toHaveBeenCalled())
   expect(screen.queryByPlaceholderText('초대할 이메일')).not.toBeInTheDocument()
 })
+
+it('대기 초대를 취소하면 DELETE 후 목록을 다시 불러온다', async () => {
+  let pending = [
+    { id: 'inv-9', email: 'p@example.com', role: 'MEMBER', expiresAt: '2026-10-22T00:00:00Z' },
+  ]
+  jest.spyOn(window, 'confirm').mockReturnValue(true)
+  fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+    if (url.startsWith('/api/spaces/members')) return json(owner)
+    if (url === '/api/spaces/sp-1/invitations/inv-9' && init?.method === 'DELETE') {
+      pending = []
+      return json({ ok: true })
+    }
+    if (url === '/api/spaces/sp-1/invitations') return json({ invitations: pending })
+    return json({}, 404)
+  })
+  render(<MembersCard />)
+  fireEvent.click(await screen.findByRole('button', { name: '취소' }))
+  await waitFor(() =>
+    expect(fetchMock).toHaveBeenCalledWith('/api/spaces/sp-1/invitations/inv-9', {
+      method: 'DELETE',
+    })
+  )
+  await waitFor(() => expect(screen.queryByText(/p@example.com/)).not.toBeInTheDocument())
+})
+
+it('구성원 목록 403이면 API 메시지를 보여준다', async () => {
+  fetchMock.mockImplementation(() => json({ message: '관리자 이상만 볼 수 있습니다' }, 403))
+  render(<MembersCard />)
+  expect(await screen.findByText('관리자 이상만 볼 수 있습니다')).toBeInTheDocument()
+})
+
+it('네트워크 오류면 안내를 보여준다', async () => {
+  fetchMock.mockImplementation(() => Promise.reject(new Error('down')))
+  render(<MembersCard />)
+  expect(await screen.findByText('네트워크 오류로 요청하지 못했습니다.')).toBeInTheDocument()
+})
