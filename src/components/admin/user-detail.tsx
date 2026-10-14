@@ -75,6 +75,9 @@ export function UserDetail({ userId }: { userId: string }) {
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('')
   const [deletePending, setDeletePending] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [addSpaceId, setAddSpaceId] = useState('')
+  const [addRole, setAddRole] = useState<'ADMIN' | 'MEMBER'>('ADMIN')
+  const [addPending, setAddPending] = useState(false)
   const [blockingSpaces, setBlockingSpaces] = useState<{ id: string; name: string }[]>([])
 
   const load = useCallback(async () => {
@@ -123,6 +126,31 @@ export function UserDetail({ userId }: { userId: string }) {
     }
   }
 
+  async function addMembership() {
+    const spaceId = addSpaceId.trim()
+    if (!spaceId) return
+    setAddPending(true)
+    try {
+      const res = await fetch(
+        `/api/admin/users/${userId}/memberships/${encodeURIComponent(spaceId)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: addRole }),
+        }
+      )
+      if (res.ok) {
+        setAddSpaceId('')
+        await load()
+      } else {
+        const data = await res.json().catch(() => null)
+        alert(data?.message ?? '구성원 추가에 실패했습니다')
+      }
+    } finally {
+      setAddPending(false)
+    }
+  }
+
   async function removeMembership(spaceId: string) {
     if (!confirm('이 Space 멤버십을 제거하시겠습니까?')) return
     const res = await fetch(`/api/admin/users/${userId}/memberships/${spaceId}`, {
@@ -158,7 +186,8 @@ export function UserDetail({ userId }: { userId: string }) {
   }
 
   if (loading) return <p className="text-sm text-muted-foreground">불러오는 중...</p>
-  if (notFound || !user) return <p className="text-sm text-muted-foreground">사용자를 찾을 수 없습니다</p>
+  if (notFound || !user)
+    return <p className="text-sm text-muted-foreground">사용자를 찾을 수 없습니다</p>
 
   const solelyOwnedSoloSpaces = user.spaceMemberships.filter((m) => m.memberCount === 1)
   const banned = isCurrentlyBanned(authInfo?.bannedUntil ?? null)
@@ -191,11 +220,21 @@ export function UserDetail({ userId }: { userId: string }) {
           </div>
           <div>
             <p className="text-muted-foreground">최근 로그인</p>
-            <p>{authInfo?.lastSignInAt ? new Date(authInfo.lastSignInAt).toLocaleString('ko-KR') : '-'}</p>
+            <p>
+              {authInfo?.lastSignInAt
+                ? new Date(authInfo.lastSignInAt).toLocaleString('ko-KR')
+                : '-'}
+            </p>
           </div>
           <div>
             <p className="text-muted-foreground">계정 상태</p>
-            <p>{banned ? <Badge variant="destructive">정지됨</Badge> : <Badge variant="outline">정상</Badge>}</p>
+            <p>
+              {banned ? (
+                <Badge variant="destructive">정지됨</Badge>
+              ) : (
+                <Badge variant="outline">정상</Badge>
+              )}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -252,11 +291,7 @@ export function UserDetail({ userId }: { userId: string }) {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeMembership(m.spaceId)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => removeMembership(m.spaceId)}>
                       제거
                     </Button>
                   </TableCell>
@@ -264,6 +299,26 @@ export function UserDetail({ userId }: { userId: string }) {
               ))}
             </TableBody>
           </Table>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <Input
+              className="w-80"
+              placeholder="추가할 Space ID"
+              value={addSpaceId}
+              onChange={(e) => setAddSpaceId(e.target.value)}
+            />
+            <Select value={addRole} onValueChange={(v) => setAddRole(v as 'ADMIN' | 'MEMBER')}>
+              <SelectTrigger size="sm" className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ADMIN">ADMIN</SelectItem>
+                <SelectItem value="MEMBER">MEMBER</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button size="sm" onClick={addMembership} disabled={addPending || !addSpaceId.trim()}>
+              Space에 추가
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
