@@ -394,6 +394,24 @@ describe('meta-ads (포팅)', () => {
           time_range: { since: '2026-10-17', until: '2026-10-13' },
         })
       ).rejects.toThrow(/since/)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('다음 페이지 커서는 응답에 남고 토큰 포함 next URL은 가린다', async () => {
+      fetchMock.mockResolvedValueOnce(
+        ok({
+          data: [],
+          paging: {
+            cursors: { after: 'QVFIUnext' },
+            next: 'https://graph.facebook.com/v26.0/act_111/insights?access_token=t&after=QVFIUnext',
+          },
+        })
+      )
+      const r = (await tool('meta_ads_get_insights').execute(ctx(), { brand: 'brand-a' })) as {
+        paging: { cursors: { after: string }; next: string }
+      }
+      expect(r.paging.cursors.after).toBe('QVFIUnext')
+      expect(r.paging.next).toBe('[redacted]')
     })
 
     it('breakdowns·time_increment·after를 전달한다', async () => {
@@ -424,7 +442,7 @@ describe('meta-ads (포팅)', () => {
       expect(
         schema().safeParse({
           time_increment: 'monthly',
-          breakdowns: ['hourly_stats_aggregated_by_advertiser_time_zone'],
+          breakdowns: ['age', 'gender'],
         }).success
       ).toBe(true)
     })
