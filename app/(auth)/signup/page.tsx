@@ -11,9 +11,9 @@ export const metadata = {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectTo?: string }>
+  searchParams: Promise<{ redirectTo?: string; email?: string }>
 }) {
-  const { redirectTo } = await searchParams
+  const { redirectTo, email } = await searchParams
   const safeRedirectTo = sanitizeRedirectPath(redirectTo)
   const loginHref = safeRedirectTo
     ? `/login?redirectTo=${encodeURIComponent(safeRedirectTo)}`
@@ -26,7 +26,7 @@ export default async function SignupPage({
         <CardDescription>가입 후 필요한 업무를 골라 시작하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <SignupForm redirectTo={safeRedirectTo} />
+        <SignupForm redirectTo={safeRedirectTo} email={email ?? ''} />
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">이미 계정이 있으신가요? </span>
