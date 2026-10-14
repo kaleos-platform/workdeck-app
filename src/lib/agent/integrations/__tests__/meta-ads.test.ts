@@ -23,6 +23,7 @@ jest.mock('@/lib/agent/actions/create', () => ({
   })),
 }))
 
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { requiredDecisionRole } from '@/lib/agent/actions/decision-policy'
@@ -113,6 +114,59 @@ describe('meta-ads (포팅)', () => {
     expect(() =>
       validateMetaAction({ action: 'adstudy.create', params: { business_id: '680' } })
     ).not.toThrow()
+  })
+
+  describe('상세 타겟 위치(flexible_spec)', () => {
+    const base = { action: 'adset.update', params: { adset_id: '1' } }
+    it('최상위 상세 타겟을 거부한다', () => {
+      expect(() =>
+        validateMetaAction({
+          ...base,
+          params: { adset_id: '1', targeting: { family_statuses: [{ id: '6023005372383' }] } },
+        })
+      ).toThrow(/flexible_spec/)
+    })
+    it('여러 키를 한 번에 알려 준다', () => {
+      expect(() =>
+        validateMetaAction({
+          ...base,
+          params: {
+            adset_id: '1',
+            targeting: { interests: [{ id: '1' }], behaviors: [{ id: '2' }] },
+          },
+        })
+      ).toThrow(/interests, behaviors/)
+    })
+    it('JSON 문자열 targeting도 같은 규칙으로 거부한다', () => {
+      expect(() =>
+        validateMetaAction({
+          ...base,
+          params: { adset_id: '1', targeting: JSON.stringify({ life_events: [{ id: '1' }] }) },
+        })
+      ).toThrow(/flexible_spec/)
+    })
+    it('flexible_spec 안의 상세 타겟은 통과한다', () => {
+      expect(() =>
+        validateMetaAction({
+          ...base,
+          params: {
+            adset_id: '1',
+            targeting: {
+              geo_locations: { countries: ['KR'] },
+              flexible_spec: [{ family_statuses: [{ id: '6023005372383' }] }],
+            },
+          },
+        })
+      ).not.toThrow()
+    })
+    it('adset.create에도 적용된다', () => {
+      expect(() =>
+        validateMetaAction({
+          action: 'adset.create',
+          params: { name: 'x', campaign_id: '1', targeting: { income: [{ id: '1' }] } },
+        })
+      ).toThrow(/flexible_spec/)
+    })
   })
 
   it('파라미터 허용 목록: 상태 액션의 예산 키·모르는 키·예약 키·DELETED 거부', () => {
@@ -245,12 +299,13 @@ describe('meta-ads (포팅)', () => {
     expect(s).not.toMatch(/tok-x|proof-y|"z"/)
   })
 
-  it('MCP 도구는 조회 3 + 제안 1 — 승인·실행 도구는 노출하지 않는다', () => {
+  it('MCP 도구는 조회 4 + 제안 1 — 승인·실행 도구는 노출하지 않는다', () => {
     expect(metaAdsTools.map((t) => t.name)).toEqual([
       'meta_ads_list_campaigns',
       'meta_ads_list_ads',
       'meta_ads_get_insights',
       'meta_ads_propose_action',
+      'meta_ads_list_actions',
     ])
     expect(toolDefinitions.some((t) => /^meta_ads_(approve|execute)/.test(t.name))).toBe(false)
   })
@@ -293,6 +348,104 @@ describe('meta-ads (포팅)', () => {
     await expect(
       tool('meta_ads_get_insights').execute(ctx(), { brand: 'brand-a', object_id: '123' })
     ).rejects.toThrow('이 Space의 광고 계정에 속하지 않는 객체입니다')
+  })
+
+  describe('get_insights 확장', () => {
+    const schema = () => z.object(tool('meta_ads_get_insights').inputSchema)
+    const lastUrl = () => new URL(fetchMock.mock.calls[fetchMock.mock.calls.length - 1][0])
+
+    it('기본값은 그대로(last_30d·campaign)', async () => {
+      await tool('meta_ads_get_insights').execute(ctx(), { brand: 'brand-a' })
+      const u = lastUrl()
+      expect(u.pathname).toBe('/v26.0/act_111/insights')
+      expect(u.searchParams.get('date_preset')).toBe('last_30d')
+      expect(u.searchParams.get('level')).toBe('campaign')
+      expect(u.searchParams.has('time_range')).toBe(false)
+    })
+
+    it('time_range를 주면 date_preset 없이 since/until JSON으로 보낸다', async () => {
+      await tool('meta_ads_get_insights').execute(ctx(), {
+        brand: 'brand-a',
+        time_range: { since: '2026-10-13', until: '2026-10-17' },
+      })
+      const u = lastUrl()
+      expect(JSON.parse(u.searchParams.get('time_range')!)).toEqual({
+        since: '2026-10-13',
+        until: '2026-10-17',
+      })
+      expect(u.searchParams.has('date_preset')).toBe(false)
+    })
+
+    it('time_range와 date_preset을 같이 주면 거부한다', async () => {
+      await expect(
+        tool('meta_ads_get_insights').execute(ctx(), {
+          brand: 'brand-a',
+          date_preset: 'last_7d',
+          time_range: { since: '2026-10-13', until: '2026-10-17' },
+        })
+      ).rejects.toBeInstanceOf(ToolUserError)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('since가 until보다 늦으면 거부한다', async () => {
+      await expect(
+        tool('meta_ads_get_insights').execute(ctx(), {
+          brand: 'brand-a',
+          time_range: { since: '2026-10-17', until: '2026-10-13' },
+        })
+      ).rejects.toThrow(/since/)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('다음 페이지 커서는 응답에 남고 토큰 포함 next URL은 가린다', async () => {
+      fetchMock.mockResolvedValueOnce(
+        ok({
+          data: [],
+          paging: {
+            cursors: { after: 'QVFIUnext' },
+            next: 'https://graph.facebook.com/v26.0/act_111/insights?access_token=t&after=QVFIUnext',
+          },
+        })
+      )
+      const r = (await tool('meta_ads_get_insights').execute(ctx(), { brand: 'brand-a' })) as {
+        paging: { cursors: { after: string }; next: string }
+      }
+      expect(r.paging.cursors.after).toBe('QVFIUnext')
+      expect(r.paging.next).toBe('[redacted]')
+    })
+
+    it('breakdowns·time_increment·after를 전달한다', async () => {
+      await tool('meta_ads_get_insights').execute(ctx(), {
+        brand: 'brand-a',
+        level: 'ad',
+        breakdowns: ['age', 'publisher_platform'],
+        time_increment: 1,
+        after: 'QVFIUcursor',
+      })
+      const u = lastUrl()
+      expect(u.searchParams.get('breakdowns')).toBe('age,publisher_platform')
+      expect(u.searchParams.get('time_increment')).toBe('1')
+      expect(u.searchParams.get('after')).toBe('QVFIUcursor')
+    })
+
+    it('스키마: 허용 밖 breakdown·날짜 형식·4개 이상 breakdown은 거부', () => {
+      expect(schema().safeParse({ breakdowns: ['region'] }).success).toBe(false)
+      expect(
+        schema().safeParse({
+          breakdowns: ['age', 'gender', 'publisher_platform', 'platform_position'],
+        }).success
+      ).toBe(false)
+      expect(
+        schema().safeParse({ time_range: { since: '2026/10/13', until: '2026-10-17' } }).success
+      ).toBe(false)
+      expect(schema().safeParse({ time_increment: 'weekly' }).success).toBe(false)
+      expect(
+        schema().safeParse({
+          time_increment: 'monthly',
+          breakdowns: ['age', 'gender'],
+        }).success
+      ).toBe(true)
+    })
   })
 
   it('propose → 승인 큐(PENDING), Meta API는 호출하지 않는다', async () => {

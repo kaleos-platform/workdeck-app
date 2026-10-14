@@ -19,6 +19,7 @@ import {
   validateGoogleAction,
   type GoogleConfig,
 } from '@/lib/agent/integrations/google-marketing'
+import { makeListActionsTool } from './action-list-tools'
 import type { ToolDefinition } from './types'
 
 /**
@@ -122,4 +123,15 @@ const propose: ToolDefinition = {
   },
 }
 
-export const googleMarketingTools: ToolDefinition[] = [runReport, adminGet, gtmGet, propose]
+export const googleMarketingTools: ToolDefinition[] = [
+  runReport,
+  adminGet,
+  gtmGet,
+  propose,
+  makeListActionsTool({
+    name: 'google_marketing_list_actions',
+    deckKey: 'google-marketing',
+    scope: 'google:read',
+    label: '구글 마케팅',
+  }),
+]

@@ -238,6 +238,33 @@ const RESERVED_KEYS = new Set([
 // DELETED는 삭제와 같아서 받지 않는다(삭제 액션은 지원하지 않는다).
 const STATUSES = new Set(['ACTIVE', 'PAUSED', 'ARCHIVED'])
 const CELL_KEYS = new Set(['name', 'description', 'treatment_percentage', 'adsets', 'campaigns'])
+// 2026-10-14 운영 확인: targeting 최상위에 둔 상세 타겟은 ACTIVE·검토 통과여도 노출이 0이었다.
+// 상세 타겟은 targeting.flexible_spec 안에만 둔다(옛 meta-ads-server validateActionInput 규칙 이식).
+const DETAILED_TARGETING_KEYS = [
+  'family_statuses',
+  'interests',
+  'behaviors',
+  'life_events',
+  'industries',
+  'income',
+  'work_positions',
+  'work_employers',
+  'education_statuses',
+  'relationship_statuses',
+] as const
+
+function looseDetailedTargeting(targeting: unknown): string[] {
+  let t = targeting
+  if (typeof t === 'string') {
+    try {
+      t = JSON.parse(t)
+    } catch {
+      return [] // 형식 오류는 Meta가 거부한다
+    }
+  }
+  if (!t || typeof t !== 'object' || Array.isArray(t)) return []
+  return DETAILED_TARGETING_KEYS.filter((k) => Object.hasOwn(t as object, k))
+}
 
 /**
  * 액션 이름·params 확인(제안·validateCreate·execute·paramsSchema 공통). 승인한 것만 실행되도록
@@ -264,6 +291,12 @@ export function validateMetaAction(input: { action: unknown; params: unknown }):
     if (!spec.keys.includes(key)) {
       throw new ToolUserError(`${action}에 허용하지 않는 파라미터입니다: ${key}`)
     }
+  }
+  const loose = looseDetailedTargeting(params.targeting)
+  if (loose.length) {
+    throw new ToolUserError(
+      `상세 타겟(${loose.join(', ')})은 targeting.flexible_spec 안에 넣어야 합니다(최상위에 두면 노출되지 않습니다)`
+    )
   }
   if (
     params.status !== undefined &&
