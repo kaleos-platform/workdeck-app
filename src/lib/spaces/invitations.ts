@@ -69,6 +69,8 @@ export async function createInvitation(input: {
   role: 'ADMIN' | 'MEMBER'
   invitedById: string
 }) {
+  // 타입 밖 입력(API 본문 등)이 OWNER를 만들지 못하게 런타임에서도 막는다.
+  if (input.role !== 'ADMIN' && input.role !== 'MEMBER') throw new Error('invalid role')
   const email = normalizeEmail(input.email)
   const now = new Date()
   const space = await prisma.space.findUnique({
@@ -85,7 +87,8 @@ export async function createInvitation(input: {
   if (member) throw new InvitationError(409, 'already_member')
 
   const pending = await prisma.spaceInvitation.count({
-    where: { spaceId: input.spaceId, ...pendingWhere(now) },
+    // 같은 이메일 재초대는 이전 대기 초대를 닫으므로 대기 수가 늘지 않는다 — 상한에서 뺀다.
+    where: { spaceId: input.spaceId, email: { not: email }, ...pendingWhere(now) },
   })
   if (pending >= MAX_PENDING_INVITES) throw new InvitationError(429, 'too_many')
 

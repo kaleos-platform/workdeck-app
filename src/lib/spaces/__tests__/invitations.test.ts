@@ -114,6 +114,40 @@ describe('createInvitation', () => {
       createInvitation({ spaceId: 'sp-1', email: 'a@b.com', role: 'MEMBER', invitedById: 'u' })
     ).rejects.toMatchObject({ status: 409, reason: 'already_member' })
   })
+  it('대기 20개여도 이미 대기 중인 이메일 재초대는 통과, 새 이메일은 429', async () => {
+    // 대기 20개 중 하나가 invitee@example.com — 같은 이메일을 빼고 세면 19.
+    m.spaceInvitation.count.mockImplementation(
+      async ({ where }: { where: { email: { not: string } } }) =>
+        where.email.not === 'invitee@example.com' ? 19 : 20
+    )
+    await expect(
+      createInvitation({
+        spaceId: 'sp-1',
+        email: 'Invitee@Example.com',
+        role: 'MEMBER',
+        invitedById: 'u',
+      })
+    ).resolves.toMatchObject({ invitation: { email: 'invitee@example.com' } })
+    await expect(
+      createInvitation({
+        spaceId: 'sp-1',
+        email: 'new@example.com',
+        role: 'MEMBER',
+        invitedById: 'u',
+      })
+    ).rejects.toMatchObject({ status: 429, reason: 'too_many' })
+  })
+  it('ADMIN·MEMBER 외 역할은 거부', async () => {
+    await expect(
+      createInvitation({
+        spaceId: 'sp-1',
+        email: 'a@b.com',
+        role: 'OWNER' as 'ADMIN',
+        invitedById: 'u',
+      })
+    ).rejects.toThrow('invalid role')
+    expect(m.spaceInvitation.create).not.toHaveBeenCalled()
+  })
   it('대기 초대 20개 이상이면 429', async () => {
     m.spaceInvitation.count.mockResolvedValue(20)
     await expect(
