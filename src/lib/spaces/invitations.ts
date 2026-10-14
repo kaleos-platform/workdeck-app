@@ -147,7 +147,7 @@ export async function findInvitationByToken(token: string) {
     spaceName: inv.space.name,
     email: inv.email,
     role: inv.role as 'ADMIN' | 'MEMBER',
-    invitedByName: inviter?.name ?? inviter?.email ?? null,
+    invitedByName: inviter?.name ?? (inviter?.email ? maskEmail(inviter.email) : null),
     expiresAt: inv.expiresAt,
     acceptedAt: inv.acceptedAt,
     revokedAt: inv.revokedAt,

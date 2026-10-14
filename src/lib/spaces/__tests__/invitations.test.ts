@@ -9,7 +9,7 @@ jest.mock('@/lib/prisma', () => {
       create: jest.fn(),
       findUnique: jest.fn(),
     },
-    user: { upsert: jest.fn() },
+    user: { upsert: jest.fn(), findUnique: jest.fn() },
     $transaction: jest.fn(),
   }
   p.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(p))
@@ -21,6 +21,7 @@ import {
   InvitationError,
   acceptInvitation,
   createInvitation,
+  findInvitationByToken,
   hashInviteToken,
   invitationState,
   maskEmail,
@@ -36,7 +37,7 @@ const m = prisma as unknown as {
     create: jest.Mock
     findUnique: jest.Mock
   }
-  user: { upsert: jest.Mock }
+  user: { upsert: jest.Mock; findUnique: jest.Mock }
 }
 const future = () => new Date(Date.now() + 86_400_000)
 const user = (over: Partial<{ email: string; emailConfirmed: boolean }> = {}) => ({
@@ -238,5 +239,33 @@ describe('acceptInvitation', () => {
   })
   it('InvitationError는 Error다', () => {
     expect(new InvitationError(404, 'not_found')).toBeInstanceOf(Error)
+  })
+})
+
+describe('findInvitationByToken', () => {
+  const inv = {
+    id: 'i1',
+    spaceId: 's1',
+    email: 'a@b.com',
+    role: 'MEMBER',
+    invitedById: 'u1',
+    expiresAt: new Date(),
+    acceptedAt: null,
+    revokedAt: null,
+    space: { name: 'S' },
+  }
+
+  it('초대자 이름이 없으면 마스킹된 이메일로 대체(원문 노출 금지)', async () => {
+    m.spaceInvitation.findUnique.mockResolvedValue(inv)
+    m.user.findUnique.mockResolvedValue({ name: null, email: 'inviter@example.com' })
+    const r = await findInvitationByToken('tok')
+    expect(r?.invitedByName).toBe(maskEmail('inviter@example.com'))
+    expect(r?.invitedByName).not.toContain('inviter@example.com')
+  })
+
+  it('초대자 이름이 있으면 이름 사용', async () => {
+    m.spaceInvitation.findUnique.mockResolvedValue(inv)
+    m.user.findUnique.mockResolvedValue({ name: '소유자', email: 'x@y.com' })
+    expect((await findInvitationByToken('tok'))?.invitedByName).toBe('소유자')
   })
 })
