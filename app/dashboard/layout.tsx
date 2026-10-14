@@ -16,7 +16,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   })
 
   if (!workspace) {
-    redirect('/workspace-setup')
+    const member = await prisma.spaceMember.findFirst({
+      where: { userId: user.id },
+      select: { id: true },
+    })
+    redirect(member ? '/my-deck' : '/workspace-setup')
   }
 
   return (
