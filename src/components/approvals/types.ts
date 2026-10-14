@@ -23,6 +23,8 @@ export type AgentPendingActionDTO = {
   actorId: string
   requesterUserId: string | null
   actorLabel: string // 사람이 읽는 "행위자 · 요청자" (서버 describeActors)
+  spendKrw?: number | null // 지출 액션의 금액(원) — 지출이 아니면 null
+  requiredRole?: 'OWNER' | 'ADMIN' | 'MEMBER' | null // 승인에 필요한 역할(대기중일 때만)
   status: AgentActionStatusValue
   expiresAt: string
   decidedBy: string | null
@@ -38,6 +40,8 @@ export const DECK_LABELS: Record<string, string> = {
   finance: '재무 관리',
   'seller-hub': '브랜드 운영',
   'coupang-ads': '쿠팡 광고 관리',
+  'meta-ads': '메타 광고',
+  'google-marketing': '구글 마케팅',
 }
 
 export const SOURCE_LABELS: Record<AgentActionSourceValue, string> = {
