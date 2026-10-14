@@ -28,12 +28,20 @@ export function maskSecrets(text: string): string {
 
 /** 감사용 인자 요약 — 비밀로 보이는 키는 값 전체를, 문자열 값 안의 비밀은 부분 마스킹하고 길이를 제한한다. */
 export function summarizeArgs(args: Record<string, unknown>): string {
-  const json = JSON.stringify(args, (key, value) => {
-    if (key && SECRET_KEY_RE.test(key)) return '[redacted]'
-    if (typeof value === 'string') return maskSecrets(value)
-    return value
-  })
+  const json = JSON.stringify(args, maskReplacer)
   return (json ?? '{}').slice(0, MAX_SUMMARY)
+}
+
+function maskReplacer(key: string, value: unknown): unknown {
+  if (key && SECRET_KEY_RE.test(key)) return '[redacted]'
+  if (typeof value === 'string') return maskSecrets(value)
+  return value
+}
+
+/** 승인 화면·알림에 보낼 파라미터 사본 — summarizeArgs와 같은 규칙으로 마스킹하되 구조는 유지한다(길이 제한 없음). */
+export function maskParams(value: unknown): unknown {
+  if (value === undefined) return undefined
+  return JSON.parse(JSON.stringify(value, maskReplacer) ?? 'null')
 }
 
 /** 감사 행 error 칸 — 값 마스킹 뒤 1000자 제한. */

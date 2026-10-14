@@ -135,6 +135,42 @@ describe('notifyPendingAction — 실패 흡수', () => {
     expect(body).toContain('&lt;!here&gt;')
   })
 
+  test('요청 파라미터 블록: 이스케이프·마스킹하고 길면 잘라 "웹에서 전체 보기"를 붙인다', async () => {
+    mockPrisma.agentPendingAction.findUnique.mockResolvedValue({
+      ...baseAction,
+      payload: {
+        memo: '<!channel> 확인',
+        accessToken: 'ya29.secret-value',
+        note: 'Bearer abc.def',
+        long: 'x'.repeat(5000),
+        ...Object.fromEntries(Array.from({ length: 30 }, (_, i) => [`k${i}`, 'y'.repeat(250)])),
+      },
+    })
+    mockPrisma.slackInstallation.findUnique.mockResolvedValue({
+      botToken: encryptForTest('xoxb-fake'),
+      botTokenIv: TEST_IV,
+    })
+    mockPrisma.spaceSlackChannel.findFirst.mockResolvedValue({ channelId: 'C123' })
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true, ts: '1.1', channel: 'C123' }),
+    })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await notifyPendingAction('act-1')
+    const blocks = JSON.parse(String(fetchMock.mock.calls[0][1].body)).blocks as Array<{
+      text?: { text: string }
+    }>
+    const params = blocks.find((b) => b.text?.text.startsWith('*요청 파라미터*'))!.text!.text
+    expect(params).toContain('*memo*: &lt;!channel&gt; 확인')
+    expect(params).not.toContain('<!channel>')
+    expect(params).not.toContain('ya29.secret-value')
+    expect(params).not.toContain('abc.def')
+    expect(params).toContain('*accessToken*: [redacted]')
+    expect(params).toContain('웹에서 전체 보기')
+    expect(params.length).toBeLessThanOrEqual(2600)
+  })
+
   test('액션 없음 → 조용히 반환', async () => {
     mockPrisma.agentPendingAction.findUnique.mockResolvedValue(null)
     await expect(notifyPendingAction('missing')).resolves.toBeUndefined()

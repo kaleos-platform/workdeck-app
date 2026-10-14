@@ -69,6 +69,7 @@ export function ApprovalList() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [canDecide, setCanDecide] = useState(false)
+  const [viewerRole, setViewerRole] = useState<string | null>(null)
   const [spaceChoices, setSpaceChoices] = useState<SpaceChoice[] | null>(null)
 
   const fetchActions = useCallback(async () => {
@@ -91,8 +92,9 @@ export function ApprovalList() {
       const data: { actions: AgentPendingActionDTO[]; role?: string } = await res.json()
       setActions(data.actions ?? [])
       // 선택한 Space에서의 역할 — "기본 requiredRole=ADMIN" 가정이며,
-      // 액션별로 더 엄격한(OWNER) 경우는 PATCH 403 응답이 최종 안전망이다.
+      // 액션별로 더 엄격한(OWNER) 경우는 시트가 requiredRole로 승인 버튼을 막고, PATCH 403이 최종 안전망이다.
       setCanDecide(data.role === 'ADMIN' || data.role === 'OWNER')
+      setViewerRole(data.role ?? null)
     } catch {
       setActions([])
     } finally {
@@ -212,6 +214,7 @@ export function ApprovalList() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         canDecide={canDecide}
+        viewerRole={viewerRole}
         onDecided={handleDecided}
       />
     </div>
