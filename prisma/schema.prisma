@@ -412,6 +412,7 @@ model Space {
   type SpaceType @default(PERSONAL)
 
   members       SpaceMember[]
+  invitations   SpaceInvitation[]
   deckInstances DeckInstance[]
 
   // 연결된 레거시 쿠팡 Workspace (Workspace.spaceId 역방향)
@@ -564,6 +565,25 @@ model SpaceMember {
   @@unique([spaceId, userId])
   @@unique([spaceId, slackUserId])
   @@index([userId])
+}
+
+// Space 초대 — OWNER가 이메일로 초대, 링크 수락 시 SpaceMember 생성(워크스페이스 미생성). 토큰은 해시만 저장.
+model SpaceInvitation {
+  id             String          @id @default(cuid())
+  spaceId        String
+  email          String // 소문자 정규화
+  role           SpaceMemberRole // ADMIN | MEMBER
+  tokenHash      String          @unique
+  invitedById    String // User.id (FK 아님 — 초대자 계정 삭제 뒤에도 기록 유지)
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  acceptedUserId String?
+  revokedAt      DateTime?
+  createdAt      DateTime        @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, email])
 }
 
 // 에이전트 승인 큐 — MCP/워크덱 에이전트의 상태 변경(write) 요청을 승인부 실행한다.
