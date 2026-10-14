@@ -124,7 +124,9 @@ export function MembersCard() {
       ? '초대 메일을 보냈습니다. 아래 링크로도 전달할 수 있습니다.'
       : created.emailSkipReason === 'already_registered'
         ? '이미 가입된 이메일이라 메일을 보내지 않았습니다. 아래 링크를 복사해 전달하세요.'
-        : '초대 메일을 보내지 못했습니다. 아래 링크를 복사해 전달하세요.'
+        : created.emailSkipReason === 'stale_resend'
+          ? '이전 초대 메일을 다시 보낼 수 없어 메일을 보내지 않았습니다. 아래 링크를 복사해 전달하세요.'
+          : '초대 메일을 보내지 못했습니다. 아래 링크를 복사해 전달하세요.'
 
   return (
     <Card>

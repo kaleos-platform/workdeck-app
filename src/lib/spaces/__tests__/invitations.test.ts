@@ -89,7 +89,13 @@ describe('createInvitation', () => {
       invitedById: 'u-owner',
     })
     expect(m.spaceInvitation.updateMany).toHaveBeenCalledWith({
-      where: { spaceId: 'sp-1', email: 'invitee@example.com', acceptedAt: null, revokedAt: null },
+      where: {
+        spaceId: 'sp-1',
+        email: 'invitee@example.com',
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: expect.any(Date) },
+      },
       data: { revokedAt: expect.any(Date) },
     })
     const data = m.spaceInvitation.create.mock.calls[0][0].data

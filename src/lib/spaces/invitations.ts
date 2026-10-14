@@ -94,7 +94,7 @@ export async function createInvitation(input: {
 
   // 같은 이메일의 이전 대기 초대는 닫는다 — 대기 초대는 하나만.
   await prisma.spaceInvitation.updateMany({
-    where: { spaceId: input.spaceId, email, acceptedAt: null, revokedAt: null },
+    where: { spaceId: input.spaceId, email, ...pendingWhere(now) },
     data: { revokedAt: now },
   })
 

@@ -95,6 +95,21 @@ it('메일 발송 실패면 실패 안내를 보여준다', async () => {
   expect(await screen.findByText(/초대 메일을 보내지 못했습니다/)).toBeInTheDocument()
 })
 
+it('stale_resend면 이전 메일 재발송 불가 안내를 보여준다', async () => {
+  postResponse = () =>
+    json(
+      {
+        invitationId: 'i',
+        link: 'https://app.example.com/invite/T4',
+        emailSent: false,
+        emailSkipReason: 'stale_resend',
+      },
+      201
+    )
+  await invite()
+  expect(await screen.findByText(/이전 초대 메일을 다시 보낼 수 없어/)).toBeInTheDocument()
+})
+
 it('403이면 API 메시지를 그대로 보여준다', async () => {
   postResponse = () => json({ message: '2단계 인증이 필요합니다' }, 403)
   await invite()
