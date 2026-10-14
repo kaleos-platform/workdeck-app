@@ -5,6 +5,7 @@ import { UploadCloud } from 'lucide-react'
 import { resolveWorkspace } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getUser } from '@/hooks/use-user'
+import { hasSpaceAccess } from '@/lib/workspace-shell'
 import { DashboardClient, type InitialDashboardData } from '@/components/dashboard/dashboard-client'
 import { COUPANG_ADS_UPLOAD_PATH } from '@/lib/deck-routes'
 import { getDaysAgoStrKst } from '@/lib/date-range'
@@ -18,10 +19,7 @@ async function renderHomePage() {
     if (resolved.error.status === 404) {
       // 초대로 합류한 구성원은 Workspace가 없다 — 설정 대신 my-deck으로.
       const user = await getUser()
-      const member =
-        user &&
-        (await prisma.spaceMember.findFirst({ where: { userId: user.id }, select: { id: true } }))
-      redirect(member ? '/my-deck' : '/workspace-setup')
+      redirect(user && (await hasSpaceAccess(user.id)) ? '/my-deck' : '/workspace-setup')
     }
     redirect('/my-deck')
   }

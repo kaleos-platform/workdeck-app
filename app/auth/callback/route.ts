@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { resolveRedirectPath, sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { prisma } from '@/lib/prisma'
+import { hasSpaceAccess } from '@/lib/workspace-shell'
 
 // GET /auth/callback?code=... — 구글 OAuth 코드를 세션으로 교환
 export async function GET(request: NextRequest) {
@@ -57,7 +58,8 @@ export async function GET(request: NextRequest) {
           select: { id: true },
         })
 
-        if (!workspace) {
+        // 초대로 합류한 Space 구성원은 Workspace가 없다 — 설정으로 보내지 않고 목적지로.
+        if (!workspace && !(await hasSpaceAccess(user.id))) {
           // 원래 가려던 목적지를 workspace-setup 너머까지 넘긴다
           // (마케팅 랜딩에서 특정 업무를 보고 온 경우 그 업무로 이어져야 한다)
           const setupUrl = requestedNext
