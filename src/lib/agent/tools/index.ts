@@ -5,6 +5,8 @@ import { sellerHubTools } from './seller-hub-tools'
 import { coupangAdsTools } from './coupang-ads-tools'
 import { writeTools } from './write-tools'
 import { slackTools } from './slack-tools'
+import { metaAdsTools } from './meta-ads-tools'
+import { googleMarketingTools } from './google-marketing-tools'
 
 export type { ToolMode, McpToolContext, ToolDefinition } from './types'
 
@@ -21,4 +23,6 @@ export const toolDefinitions: ToolDefinition[] = [
   ...coupangAdsTools,
   ...writeTools,
   ...slackTools,
+  ...metaAdsTools,
+  ...googleMarketingTools,
 ]
