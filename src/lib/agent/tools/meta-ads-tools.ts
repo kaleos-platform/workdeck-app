@@ -10,6 +10,7 @@ import {
   validateMetaAction,
 } from '@/lib/agent/integrations/meta-ads'
 import { makeListActionsTool } from './action-list-tools'
+import { ToolUserError } from './errors'
 import type { ToolDefinition } from './types'
 
 /**
@@ -66,10 +67,20 @@ const listAds: ToolDefinition = {
   },
 }
 
+const DAY = /^\d{4}-\d{2}-\d{2}$/
+const BREAKDOWNS = [
+  'age',
+  'gender',
+  'publisher_platform',
+  'platform_position',
+  'impression_device',
+  'hourly_stats_aggregated_by_advertiser_time_zone',
+] as const
+
 const getInsights: ToolDefinition = {
   name: 'meta_ads_get_insights',
   description:
-    '계정·캠페인·광고세트·광고의 성과(지출·노출·클릭·전환·ROAS)를 반환합니다. object_id를 주지 않으면 브랜드 광고 계정 기준입니다. 이 Space 광고 계정에 속한 객체만 조회할 수 있습니다.',
+    '계정·캠페인·광고세트·광고의 성과(지출·노출·클릭·전환·ROAS)를 반환합니다. object_id를 주지 않으면 브랜드 광고 계정 기준입니다. 이 Space 광고 계정에 속한 객체만 조회할 수 있습니다. 기간은 date_preset 또는 time_range(since·until), 일별은 time_increment=1, 분해는 breakdowns(age·gender·publisher_platform·platform_position·impression_device·hourly), 다음 페이지는 paging.cursors.after를 after로 넘깁니다.',
   inputSchema: {
     brand,
     object_id: z
@@ -77,6 +88,16 @@ const getInsights: ToolDefinition = {
       .regex(/^(act_)?\d+$/)
       .optional(),
     date_preset: z.string().optional(),
+    time_range: z
+      .object({ since: z.string().regex(DAY), until: z.string().regex(DAY) })
+      .optional()
+      .describe('조회 기간(YYYY-MM-DD, 광고 계정 시간대). 주면 date_preset을 쓰지 않는다'),
+    time_increment: z
+      .union([z.number().int().min(1).max(90), z.enum(['monthly', 'all_days'])])
+      .optional()
+      .describe('기간을 나눌 단위: 1=일별, 7=주별, monthly, all_days'),
+    breakdowns: z.array(z.enum(BREAKDOWNS)).min(1).max(3).optional(),
+    after: z.string().min(1).max(512).optional().describe('이전 응답 paging.cursors.after'),
     level: z.enum(['account', 'campaign', 'adset', 'ad']).optional(),
     fields: z.string().optional(),
     limit: z.number().int().min(1).max(500).optional(),
@@ -84,17 +105,29 @@ const getInsights: ToolDefinition = {
   mode: 'read',
   scope: 'meta:read',
   async execute(ctx, p) {
+    const range = p.time_range as { since: string; until: string } | undefined
+    if (range && p.date_preset) {
+      throw new ToolUserError('time_range와 date_preset은 함께 쓸 수 없습니다')
+    }
+    if (range && range.since > range.until) {
+      throw new ToolUserError('time_range.since가 until보다 늦습니다')
+    }
     const cred = await loadMetaCred(ctx.spaceId, ctx.decryptedCredentialIds)
     const account = resolveAdAccount(cred.config, p.brand as string | undefined)
     const objectId = (p.object_id as string | undefined) ?? account
     await assertObjectInAccount(cred, objectId, account)
     return graphRequest(cred, 'GET', `/${objectId}/insights`, {
-      date_preset: (p.date_preset as string | undefined) ?? 'last_30d',
+      ...(range
+        ? { time_range: range }
+        : { date_preset: (p.date_preset as string | undefined) ?? 'last_30d' }),
       level: (p.level as string | undefined) ?? 'campaign',
       fields:
         (p.fields as string | undefined) ??
         'campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,cpm,actions,conversions,purchase_roas',
       limit: (p.limit as number | undefined) ?? 50,
+      time_increment: p.time_increment as string | number | undefined,
+      breakdowns: (p.breakdowns as string[] | undefined)?.join(','),
+      after: p.after as string | undefined,
     })
   },
 }
