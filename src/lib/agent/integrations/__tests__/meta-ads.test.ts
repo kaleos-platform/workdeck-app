@@ -115,6 +115,59 @@ describe('meta-ads (포팅)', () => {
     ).not.toThrow()
   })
 
+  describe('상세 타겟 위치(flexible_spec)', () => {
+    const base = { action: 'adset.update', params: { adset_id: '1' } }
+    it('최상위 상세 타겟을 거부한다', () => {
+      expect(() =>
+        validateMetaAction({
+          ...base,
+          params: { adset_id: '1', targeting: { family_statuses: [{ id: '6023005372383' }] } },
+        })
+      ).toThrow(/flexible_spec/)
+    })
+    it('여러 키를 한 번에 알려 준다', () => {
+      expect(() =>
+        validateMetaAction({
+          ...base,
+          params: {
+            adset_id: '1',
+            targeting: { interests: [{ id: '1' }], behaviors: [{ id: '2' }] },
+          },
+        })
+      ).toThrow(/interests, behaviors/)
+    })
+    it('JSON 문자열 targeting도 같은 규칙으로 거부한다', () => {
+      expect(() =>
+        validateMetaAction({
+          ...base,
+          params: { adset_id: '1', targeting: JSON.stringify({ life_events: [{ id: '1' }] }) },
+        })
+      ).toThrow(/flexible_spec/)
+    })
+    it('flexible_spec 안의 상세 타겟은 통과한다', () => {
+      expect(() =>
+        validateMetaAction({
+          ...base,
+          params: {
+            adset_id: '1',
+            targeting: {
+              geo_locations: { countries: ['KR'] },
+              flexible_spec: [{ family_statuses: [{ id: '6023005372383' }] }],
+            },
+          },
+        })
+      ).not.toThrow()
+    })
+    it('adset.create에도 적용된다', () => {
+      expect(() =>
+        validateMetaAction({
+          action: 'adset.create',
+          params: { name: 'x', campaign_id: '1', targeting: { income: [{ id: '1' }] } },
+        })
+      ).toThrow(/flexible_spec/)
+    })
+  })
+
   it('파라미터 허용 목록: 상태 액션의 예산 키·모르는 키·예약 키·DELETED 거부', () => {
     const v = (action: string, params: Record<string, unknown>) => () =>
       validateMetaAction({ action, params })
