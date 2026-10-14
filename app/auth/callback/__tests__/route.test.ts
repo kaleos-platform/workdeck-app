@@ -39,3 +39,10 @@ it('Workspace도 구성원도 없으면 기존처럼 /workspace-setup', async ()
   jest.mocked(prisma.spaceMember.findFirst).mockResolvedValue(null)
   expect((await call('')).headers.get('location')).toBe('https://app.test/workspace-setup')
 })
+
+it('Workspace도 구성원도 없어도 초대 수락 경로(next=/invite/…)면 그 경로로', async () => {
+  jest.mocked(prisma.spaceMember.findFirst).mockResolvedValue(null)
+  expect((await call('&next=%2Finvite%2Ftok123')).headers.get('location')).toBe(
+    'https://app.test/invite/tok123'
+  )
+})
