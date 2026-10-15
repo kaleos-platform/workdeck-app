@@ -132,6 +132,7 @@ function routeRequest(
       '/workspace-setup',
       '/my-deck',
       '/space',
+      '/invite',
       '/d',
       '/api',
       '/auth',

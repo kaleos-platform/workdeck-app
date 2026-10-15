@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
-import { prisma } from '@/lib/prisma'
+import { loadShellContext } from '@/lib/workspace-shell'
 import { DeckShell } from '@/components/layout/deck-shell'
 
 export default async function MyDeckLayout({ children }: { children: React.ReactNode }) {
@@ -10,44 +10,16 @@ export default async function MyDeckLayout({ children }: { children: React.React
     redirect('/login')
   }
 
-  const [workspace, membership] = await Promise.all([
-    prisma.workspace.findUnique({
-      where: { ownerId: user.id },
-      select: { id: true, name: true },
-    }),
-    prisma.spaceMember.findFirst({
-      where: { userId: user.id },
-      select: {
-        spaceId: true,
-        role: true,
-        space: {
-          select: {
-            deckInstances: {
-              where: { isActive: true },
-              include: {
-                deckApp: {
-                  select: { id: true, name: true },
-                },
-              },
-              orderBy: { createdAt: 'asc' },
-            },
-          },
-        },
-      },
-    }),
-  ])
-
-  if (!workspace) {
-    redirect('/workspace-setup')
-  }
+  const shell = await loadShellContext(user.id)
+  if (!shell) redirect('/workspace-setup')
 
   return (
     <DeckShell
-      workspaceName={workspace.name}
+      workspaceName={shell.workspaceName}
       variant="workdeck"
       mode="my-deck"
-      isOwner={membership?.role === 'OWNER'}
-      activeDecks={membership?.space.deckInstances.map(({ deckApp }) => deckApp) ?? []}
+      isOwner={shell.isOwner}
+      activeDecks={shell.activeDecks}
     >
       {children}
     </DeckShell>

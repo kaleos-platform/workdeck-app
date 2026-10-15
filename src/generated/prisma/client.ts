@@ -95,6 +95,11 @@ export type Space = Prisma.SpaceModel
  */
 export type SpaceMember = Prisma.SpaceMemberModel
 /**
+ * Model SpaceInvitation
+ * 
+ */
+export type SpaceInvitation = Prisma.SpaceInvitationModel
+/**
  * Model AgentPendingAction
  * 
  */
