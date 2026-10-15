@@ -22,6 +22,10 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
 
   if (error || !data.user) {
+    // 초대 메일 링크(OTP)는 초대(7일)보다 빨리 만료된다 — 초대 화면으로 보내 로그인·가입 후 수락하게 한다.
+    if (requestedNext?.startsWith('/invite/')) {
+      return NextResponse.redirect(`${origin}${requestedNext}`)
+    }
     return NextResponse.redirect(`${origin}/login?error=auth_callback_error`)
   }
 
