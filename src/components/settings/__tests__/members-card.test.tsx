@@ -1,5 +1,9 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { MembersCard } from '../members-card'
+
+jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn() }))
+const mfaRedirect = redirectIfMfaRequired as jest.Mock
 
 jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams('spaceId=sp-1'),
@@ -25,6 +29,7 @@ const owner = {
 }
 
 beforeEach(() => {
+  mfaRedirect.mockReset().mockResolvedValue(false)
   postResponse = () =>
     json(
       {
@@ -169,4 +174,73 @@ it('네트워크 오류면 안내를 보여준다', async () => {
   fetchMock.mockImplementation(() => Promise.reject(new Error('down')))
   render(<MembersCard />)
   expect(await screen.findByText('네트워크 오류로 요청하지 못했습니다.')).toBeInTheDocument()
+})
+
+describe('OWNER 구성원 관리·승인 한도', () => {
+  const team = {
+    ...owner,
+    approvalLimitKrw: 100000,
+    members: [
+      ...owner.members,
+      {
+        id: 'm2',
+        role: 'ADMIN',
+        slackUserId: null,
+        user: { email: 'admin@example.com', name: null },
+      },
+    ],
+  }
+  beforeEach(() => {
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    fetchMock.mockImplementation((url: string) => {
+      if (url.startsWith('/api/spaces/members?')) return json(team)
+      if (url === '/api/spaces/sp-1/invitations') return json({ invitations: [] })
+      return json({ ok: true })
+    })
+  })
+
+  it('OWNER 줄에는 동작이 없고, 다른 구성원은 내보낼 수 있다', async () => {
+    render(<MembersCard />)
+    await screen.findByText(/admin@example.com/)
+    expect(screen.getAllByRole('button', { name: '내보내기' })).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: '내보내기' }))
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith('/api/spaces/members/m2', { method: 'DELETE' })
+    )
+  })
+
+  it('승인 한도를 저장하면 PUT 으로 보낸다', async () => {
+    render(<MembersCard />)
+    const input = await screen.findByLabelText('ADMIN 승인 한도(원)')
+    expect(input).toHaveValue('100000')
+    fireEvent.change(input, { target: { value: '50,000' } })
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+    await waitFor(() => {
+      const put = fetchMock.mock.calls.find(([, i]) => i?.method === 'PUT')
+      expect(put?.[0]).toBe('/api/spaces/sp-1/approval-limit')
+      expect(JSON.parse(put![1].body)).toEqual({ approvalLimitKrw: 50000 })
+    })
+    fireEvent.click(screen.getByRole('button', { name: '한도 없음' }))
+    await waitFor(() => {
+      const puts = fetchMock.mock.calls.filter(([, i]) => i?.method === 'PUT')
+      expect(JSON.parse(puts[1][1].body)).toEqual({ approvalLimitKrw: null })
+    })
+  })
+
+  it('MFA 가 필요하면 단계 인증으로 보내고 오류를 띄우지 않는다', async () => {
+    render(<MembersCard />)
+    await screen.findByText(/admin@example.com/)
+    mfaRedirect.mockResolvedValueOnce(true)
+    fireEvent.click(screen.getByRole('button', { name: '내보내기' }))
+    await waitFor(() => expect(mfaRedirect).toHaveBeenCalled())
+    expect(screen.queryByText(/내보내지 못했습니다/)).not.toBeInTheDocument()
+  })
+
+  it('ADMIN 은 한도를 읽기만 하고 구성원 동작이 없다', async () => {
+    fetchMock.mockImplementation(() => json({ ...team, myRole: 'ADMIN' }))
+    render(<MembersCard />)
+    expect(await screen.findByText('100,000원')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '내보내기' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('ADMIN 승인 한도(원)')).not.toBeInTheDocument()
+  })
 })

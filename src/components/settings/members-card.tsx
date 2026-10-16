@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SpaceRequiredPicker, type SpaceChoice } from '@/components/common/space-required-picker'
+import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Member = { id: string; role: string; user: { email: string; name: string | null } }
 type Invitation = { id: string; email: string; role: string; expiresAt: string }
@@ -33,6 +34,9 @@ export function MembersCard() {
   const [created, setCreated] = useState<Created | null>(null)
   const [copied, setCopied] = useState(false)
   const [pending, setPending] = useState(false)
+  const [limit, setLimit] = useState<number | null>(null)
+  const [limitInput, setLimitInput] = useState('')
+  const [limitSaved, setLimitSaved] = useState(false)
 
   const load = useCallback(async () => {
     setError(null)
@@ -47,10 +51,13 @@ export function MembersCard() {
       setSpaceId(body.spaceId)
       setMyRole(body.myRole)
       setMembers(body.members)
+      setLimit(body.approvalLimitKrw ?? null)
+      setLimitInput(body.approvalLimitKrw == null ? '' : String(body.approvalLimitKrw))
       if (body.myRole === 'OWNER') {
         const inv = await fetch(`/api/spaces/${body.spaceId}/invitations`)
+        // MFA(aal2)가 아니면 단계 인증 화면으로 보낸다(돌아올 경로 포함).
+        if (await redirectIfMfaRequired(inv)) return
         const ib = await inv.json().catch(() => null)
-        // MFA(aal2)가 아니면 403 — API 메시지를 그대로 보여준다.
         if (inv.ok) setInvites(ib.invitations)
         else setError(ib?.message ?? '초대 목록을 불러오지 못했습니다')
       }
@@ -74,6 +81,7 @@ export function MembersCard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), role }),
       })
+      if (await redirectIfMfaRequired(res)) return
       const body = await res.json().catch(() => null)
       if (!res.ok) return setError(body?.message ?? '초대하지 못했습니다')
       setCreated({
@@ -107,6 +115,61 @@ export function MembersCard() {
     }
   }
 
+  // OWNER 전용 변경 요청 공통 — MFA 필요하면 단계 인증으로, 실패하면 메시지, 끝나면 목록을 다시 읽는다.
+  async function mutate(url: string, init: RequestInit, failMessage: string): Promise<boolean> {
+    setError(null)
+    try {
+      const res = await fetch(url, init)
+      if (await redirectIfMfaRequired(res)) return false
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        setError(body?.message ?? failMessage)
+        return false
+      }
+      await load()
+      return true
+    } catch {
+      setError(NET_ERR)
+      return false
+    }
+  }
+
+  function changeRole(m: Member, next: string) {
+    if (next === m.role) return
+    void mutate(
+      `/api/spaces/members/${m.id}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: next }),
+      },
+      '역할을 바꾸지 못했습니다'
+    )
+  }
+
+  function removeMember(m: Member) {
+    if (!confirm(`${m.user.email} 님을 이 Space에서 내보낼까요?`)) return
+    void mutate(`/api/spaces/members/${m.id}`, { method: 'DELETE' }, '구성원을 내보내지 못했습니다')
+  }
+
+  async function saveLimit(noLimit: boolean) {
+    if (!spaceId) return
+    const value = noLimit ? null : Number(limitInput)
+    if (value !== null && (!Number.isInteger(value) || value < 0))
+      return setError('승인 한도는 0 이상의 정수(원)로 입력하세요')
+    setLimitSaved(false)
+    const ok = await mutate(
+      `/api/spaces/${spaceId}/approval-limit`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approvalLimitKrw: value }),
+      },
+      '승인 한도를 저장하지 못했습니다'
+    )
+    setLimitSaved(ok)
+  }
+
   async function copy(link: string) {
     try {
       await navigator.clipboard.writeText(link)
@@ -137,15 +200,69 @@ export function MembersCard() {
         {error && <p className="text-sm text-destructive">{error}</p>}
         <ul className="divide-y text-sm">
           {members.map((m) => (
-            <li key={m.id} className="flex justify-between py-2">
+            <li key={m.id} className="flex items-center justify-between gap-2 py-2">
               <span>
                 {m.user.name ? `${m.user.name} · ` : ''}
                 {m.user.email}
               </span>
-              <span className="text-muted-foreground">{m.role}</span>
+              {myRole === 'OWNER' && m.role !== 'OWNER' ? (
+                <span className="flex items-center gap-1">
+                  <Select value={m.role} onValueChange={(v) => changeRole(m, v)}>
+                    <SelectTrigger className="w-28" aria-label={`${m.user.email} 역할`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ADMIN">ADMIN</SelectItem>
+                      <SelectItem value="MEMBER">MEMBER</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="ghost" size="sm" onClick={() => removeMember(m)}>
+                    내보내기
+                  </Button>
+                </span>
+              ) : (
+                <span className="text-muted-foreground">{m.role}</span>
+              )}
             </li>
           ))}
         </ul>
+
+        <div className="space-y-2 text-sm">
+          <p className="font-medium">지출 승인 한도</p>
+          <p className="text-muted-foreground">
+            이 금액 이하의 지출 제안은 ADMIN도 Slack·승인 화면에서 승인할 수 있습니다. 넘으면
+            OWNER만 승인합니다.
+          </p>
+          {myRole === 'OWNER' ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                className="w-40"
+                inputMode="numeric"
+                placeholder="한도 없음"
+                aria-label="ADMIN 승인 한도(원)"
+                value={limitInput}
+                onChange={(e) => {
+                  setLimitInput(e.target.value.replace(/[^0-9]/g, ''))
+                  setLimitSaved(false)
+                }}
+              />
+              <span>원</span>
+              <Button size="sm" onClick={() => saveLimit(false)} disabled={!limitInput}>
+                저장
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => saveLimit(true)}>
+                한도 없음
+              </Button>
+              {limitSaved && <span className="text-muted-foreground">저장했습니다</span>}
+            </div>
+          ) : (
+            <p>
+              {limit == null
+                ? '한도 없음 — 모든 지출 제안은 OWNER만 승인합니다'
+                : `${limit.toLocaleString('ko-KR')}원`}
+            </p>
+          )}
+        </div>
 
         {myRole === 'OWNER' && (
           <div className="space-y-3">

@@ -1,0 +1,72 @@
+// PATCH·DELETE /api/spaces/members/[memberId] — OWNER가 구성원 역할(ADMIN↔MEMBER)을 바꾸거나 내보낸다.
+// OWNER + MFA(aal2) 전용, MCP 도구는 두지 않는다(권한 정책은 사람만 바꾼다). OWNER 구성원·본인은 대상이 아니다.
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { prisma } from '@/lib/prisma'
+import { errorResponse } from '@/lib/api-helpers'
+import { requireAal2 } from '@/lib/auth/mfa'
+import { writeAuditLog } from '@/lib/admin/auth'
+import { requireSpaceOwner } from '@/lib/agent/identity/space-admin'
+
+type Ctx = { params: Promise<{ memberId: string }> }
+type Target = { id: string; spaceId: string; userId: string; role: string }
+
+const bodySchema = z.object({ role: z.enum(['ADMIN', 'MEMBER']) })
+const NOT_FOUND = '구성원을 찾을 수 없습니다'
+
+async function guard(
+  memberId: string
+): Promise<{ ownerId: string; target: Target } | { error: NextResponse }> {
+  const target = await prisma.spaceMember.findUnique({
+    where: { id: memberId },
+    select: { id: true, spaceId: true, userId: true, role: true },
+  })
+  if (!target) return { error: errorResponse(NOT_FOUND, 404) }
+  const owner = await requireSpaceOwner(target.spaceId)
+  if ('error' in owner) {
+    // 남의 Space 구성원 id 를 넣어 존재 여부를 알아내지 못하게 403 도 404 로 돌린다.
+    return { error: owner.error.status === 403 ? errorResponse(NOT_FOUND, 404) : owner.error }
+  }
+  const mfa = await requireAal2()
+  if (mfa) return { error: mfa }
+  if (target.userId === owner.userId)
+    return { error: errorResponse('본인은 바꿀 수 없습니다', 400) }
+  if (target.role === 'OWNER') return { error: errorResponse('OWNER는 바꿀 수 없습니다', 400) }
+  return { ownerId: owner.userId, target }
+}
+
+export async function PATCH(request: Request, { params }: Ctx) {
+  const g = await guard((await params).memberId)
+  if ('error' in g) return g.error
+  const parsed = bodySchema.safeParse(await request.json().catch(() => null))
+  if (!parsed.success) return errorResponse('역할(ADMIN·MEMBER)을 확인하세요', 422)
+  const { target, ownerId } = g
+  const { role } = parsed.data
+
+  const updated = await prisma.spaceMember.update({
+    where: { id: target.id },
+    data: { role },
+    select: { id: true, role: true },
+  })
+  await writeAuditLog(ownerId, 'space.member.role_change', 'space_member', target.id, {
+    spaceId: target.spaceId,
+    userId: target.userId,
+    fromRole: target.role,
+    toRole: role,
+  })
+  return NextResponse.json({ member: updated })
+}
+
+export async function DELETE(_request: Request, { params }: Ctx) {
+  const g = await guard((await params).memberId)
+  if ('error' in g) return g.error
+  const { target, ownerId } = g
+
+  await prisma.spaceMember.delete({ where: { id: target.id } })
+  await writeAuditLog(ownerId, 'space.member.remove', 'space_member', target.id, {
+    spaceId: target.spaceId,
+    userId: target.userId,
+    role: target.role,
+  })
+  return NextResponse.json({ ok: true })
+}
