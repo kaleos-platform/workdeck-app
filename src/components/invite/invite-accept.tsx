@@ -62,9 +62,29 @@ export function InviteAccept({
     await accept()
   }
 
+  // 비밀번호 없이 Google 계정으로 들어온다 — 같은 이메일이면 기존 계정에 연결되고 초대 화면으로 돌아온다.
+  async function continueWithGoogle() {
+    setPending(true)
+    const { error: e } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${next}` },
+    })
+    if (e) {
+      setPending(false)
+      setError('구글 로그인에 실패했습니다')
+    }
+  }
+  const googleButton = (
+    <Button variant="outline" disabled={pending} onClick={continueWithGoogle}>
+      Google 계정으로 참여하기
+    </Button>
+  )
+
   if (view === 'anonymous') {
     return (
       <div className="space-y-3">
+        {googleButton}
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="flex gap-2">
           <Button asChild>
             <Link href={`/signup?redirectTo=${next}&email=${encodeURIComponent(inviteEmail)}`}>
@@ -76,7 +96,8 @@ export function InviteAccept({
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          초대 메일을 받았다면 메일의 링크로 들어오세요. 링크를 잃었으면{' '}
+          초대받은 이메일이 Google 계정이면 비밀번호 없이 들어올 수 있습니다. 비밀번호로 쓰려면
+          메일의 링크로 들어오거나{' '}
           <Link className="underline" href="/forgot-password">
             비밀번호 찾기
           </Link>
@@ -124,6 +145,7 @@ export function InviteAccept({
       >
         {view === 'needs_password' ? '비밀번호 정하고 참여하기' : '참여하기'}
       </Button>
+      {view === 'needs_password' && !passwordDone && googleButton}
     </div>
   )
 }
