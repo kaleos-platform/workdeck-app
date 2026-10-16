@@ -43,18 +43,19 @@ export async function PATCH(request: Request, { params }: Ctx) {
   const { target, ownerId } = g
   const { role } = parsed.data
 
-  const updated = await prisma.spaceMember.update({
-    where: { id: target.id },
+  // 확인 뒤 다른 경로(운영자 콘솔)에서 OWNER 로 바뀌었거나 지워졌으면 건드리지 않는다.
+  const { count } = await prisma.spaceMember.updateMany({
+    where: { id: target.id, spaceId: target.spaceId, role: { not: 'OWNER' } },
     data: { role },
-    select: { id: true, role: true },
   })
+  if (count === 0) return errorResponse(NOT_FOUND, 404)
   await writeAuditLog(ownerId, 'space.member.role_change', 'space_member', target.id, {
     spaceId: target.spaceId,
     userId: target.userId,
     fromRole: target.role,
     toRole: role,
   })
-  return NextResponse.json({ member: updated })
+  return NextResponse.json({ member: { id: target.id, role } })
 }
 
 export async function DELETE(_request: Request, { params }: Ctx) {
@@ -62,7 +63,10 @@ export async function DELETE(_request: Request, { params }: Ctx) {
   if ('error' in g) return g.error
   const { target, ownerId } = g
 
-  await prisma.spaceMember.delete({ where: { id: target.id } })
+  const { count } = await prisma.spaceMember.deleteMany({
+    where: { id: target.id, spaceId: target.spaceId, role: { not: 'OWNER' } },
+  })
+  if (count === 0) return errorResponse(NOT_FOUND, 404)
   await writeAuditLog(ownerId, 'space.member.remove', 'space_member', target.id, {
     spaceId: target.spaceId,
     userId: target.userId,

@@ -3,7 +3,7 @@ jest.mock('@/lib/agent/identity/space-admin', () => ({ requireSpaceOwner: jest.f
 jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
 jest.mock('@/lib/admin/auth', () => ({ writeAuditLog: jest.fn() }))
 jest.mock('@/lib/prisma', () => ({
-  prisma: { spaceMember: { findUnique: jest.fn(), update: jest.fn(), delete: jest.fn() } },
+  prisma: { spaceMember: { findUnique: jest.fn(), updateMany: jest.fn(), deleteMany: jest.fn() } },
 }))
 
 import { NextResponse } from 'next/server'
@@ -13,7 +13,10 @@ import { writeAuditLog } from '@/lib/admin/auth'
 import { prisma } from '@/lib/prisma'
 import { PATCH, DELETE } from '../route'
 
-const m = prisma.spaceMember as unknown as Record<'findUnique' | 'update' | 'delete', jest.Mock>
+const m = prisma.spaceMember as unknown as Record<
+  'findUnique' | 'updateMany' | 'deleteMany',
+  jest.Mock
+>
 const ctx = (memberId = 'm-2') => ({ params: Promise.resolve({ memberId }) })
 const patch = (body: unknown, id?: string) =>
   PATCH(new Request('http://x', { method: 'PATCH', body: JSON.stringify(body) }), ctx(id))
@@ -22,8 +25,8 @@ const del = (id?: string) => DELETE(new Request('http://x', { method: 'DELETE' }
 beforeEach(() => {
   jest.clearAllMocks()
   m.findUnique.mockResolvedValue({ id: 'm-2', spaceId: 'sp-1', userId: 'u-2', role: 'ADMIN' })
-  m.update.mockResolvedValue({ id: 'm-2', role: 'MEMBER' })
-  m.delete.mockResolvedValue({})
+  m.updateMany.mockResolvedValue({ count: 1 })
+  m.deleteMany.mockResolvedValue({ count: 1 })
   ;(requireSpaceOwner as jest.Mock).mockResolvedValue({ userId: 'u-owner' })
   ;(requireAal2 as jest.Mock).mockResolvedValue(null)
 })
@@ -32,9 +35,10 @@ test('OWNER 가 역할을 바꾸면 갱신하고 감사 로그를 남긴다', as
   const res = await patch({ role: 'MEMBER' })
   expect(res.status).toBe(200)
   expect(requireSpaceOwner).toHaveBeenCalledWith('sp-1')
-  expect(m.update).toHaveBeenCalledWith(
-    expect.objectContaining({ where: { id: 'm-2' }, data: { role: 'MEMBER' } })
-  )
+  expect(m.updateMany).toHaveBeenCalledWith({
+    where: { id: 'm-2', spaceId: 'sp-1', role: { not: 'OWNER' } },
+    data: { role: 'MEMBER' },
+  })
   expect(writeAuditLog).toHaveBeenCalledWith(
     'u-owner',
     'space.member.role_change',
@@ -47,7 +51,9 @@ test('OWNER 가 역할을 바꾸면 갱신하고 감사 로그를 남긴다', as
 test('OWNER 가 내보내면 삭제하고 감사 로그를 남긴다', async () => {
   const res = await del()
   expect(res.status).toBe(200)
-  expect(m.delete).toHaveBeenCalledWith({ where: { id: 'm-2' } })
+  expect(m.deleteMany).toHaveBeenCalledWith({
+    where: { id: 'm-2', spaceId: 'sp-1', role: { not: 'OWNER' } },
+  })
   expect(writeAuditLog).toHaveBeenCalledWith(
     'u-owner',
     'space.member.remove',
@@ -76,8 +82,8 @@ test('그 Space 의 OWNER 가 아니면 404(존재 숨김), 미로그인은 401 
     error: NextResponse.json({ message: '인증이 필요합니다' }, { status: 401 }),
   })
   expect((await del()).status).toBe(401)
-  expect(m.update).not.toHaveBeenCalled()
-  expect(m.delete).not.toHaveBeenCalled()
+  expect(m.updateMany).not.toHaveBeenCalled()
+  expect(m.deleteMany).not.toHaveBeenCalled()
 })
 
 test('MFA(aal2) 아니면 그 응답을 돌려주고 바꾸지 않는다', async () => {
@@ -86,8 +92,8 @@ test('MFA(aal2) 아니면 그 응답을 돌려주고 바꾸지 않는다', async
   )
   expect((await patch({ role: 'MEMBER' })).status).toBe(403)
   expect((await del()).status).toBe(403)
-  expect(m.update).not.toHaveBeenCalled()
-  expect(m.delete).not.toHaveBeenCalled()
+  expect(m.updateMany).not.toHaveBeenCalled()
+  expect(m.deleteMany).not.toHaveBeenCalled()
 })
 
 test('OWNER 구성원과 본인은 대상이 아니다(400)', async () => {
@@ -95,12 +101,27 @@ test('OWNER 구성원과 본인은 대상이 아니다(400)', async () => {
   expect((await patch({ role: 'ADMIN' }, 'm-1')).status).toBe(400)
   m.findUnique.mockResolvedValue({ id: 'm-3', spaceId: 'sp-1', userId: 'u-owner', role: 'ADMIN' })
   expect((await del('m-3')).status).toBe(400)
-  expect(m.update).not.toHaveBeenCalled()
-  expect(m.delete).not.toHaveBeenCalled()
+  expect(m.updateMany).not.toHaveBeenCalled()
+  expect(m.deleteMany).not.toHaveBeenCalled()
 })
 
 test('역할 값이 OWNER 이거나 잘못되면 422', async () => {
   expect((await patch({ role: 'OWNER' })).status).toBe(422)
   expect((await patch({})).status).toBe(422)
-  expect(m.update).not.toHaveBeenCalled()
+  expect(m.updateMany).not.toHaveBeenCalled()
+})
+
+test('OWNER·본인 거부는 PATCH·DELETE 모두', async () => {
+  m.findUnique.mockResolvedValue({ id: 'm-1', spaceId: 'sp-1', userId: 'u-x', role: 'OWNER' })
+  expect((await del('m-1')).status).toBe(400)
+  m.findUnique.mockResolvedValue({ id: 'm-3', spaceId: 'sp-1', userId: 'u-owner', role: 'ADMIN' })
+  expect((await patch({ role: 'MEMBER' }, 'm-3')).status).toBe(400)
+})
+
+test('확인 뒤 OWNER 로 바뀌었거나 지워졌으면 404 이고 감사 로그를 남기지 않는다', async () => {
+  m.updateMany.mockResolvedValue({ count: 0 })
+  m.deleteMany.mockResolvedValue({ count: 0 })
+  expect((await patch({ role: 'MEMBER' })).status).toBe(404)
+  expect((await del()).status).toBe(404)
+  expect(writeAuditLog).not.toHaveBeenCalled()
 })

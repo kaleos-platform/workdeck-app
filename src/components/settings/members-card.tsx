@@ -55,8 +55,7 @@ export function MembersCard() {
       setLimitInput(body.approvalLimitKrw == null ? '' : String(body.approvalLimitKrw))
       if (body.myRole === 'OWNER') {
         const inv = await fetch(`/api/spaces/${body.spaceId}/invitations`)
-        // MFA(aal2)가 아니면 단계 인증 화면으로 보낸다(돌아올 경로 포함).
-        if (await redirectIfMfaRequired(inv)) return
+        // MFA(aal2)가 아니면 403 — 보기만 하는 화면이라 이동시키지 않고 메시지만(변경 동작에서 단계 인증으로 보낸다).
         const ib = await inv.json().catch(() => null)
         if (inv.ok) setInvites(ib.invitations)
         else setError(ib?.message ?? '초대 목록을 불러오지 못했습니다')
@@ -118,6 +117,7 @@ export function MembersCard() {
   // OWNER 전용 변경 요청 공통 — MFA 필요하면 단계 인증으로, 실패하면 메시지, 끝나면 목록을 다시 읽는다.
   async function mutate(url: string, init: RequestInit, failMessage: string): Promise<boolean> {
     setError(null)
+    setPending(true)
     try {
       const res = await fetch(url, init)
       if (await redirectIfMfaRequired(res)) return false
@@ -131,6 +131,8 @@ export function MembersCard() {
     } catch {
       setError(NET_ERR)
       return false
+    } finally {
+      setPending(false)
     }
   }
 
@@ -207,7 +209,7 @@ export function MembersCard() {
               </span>
               {myRole === 'OWNER' && m.role !== 'OWNER' ? (
                 <span className="flex items-center gap-1">
-                  <Select value={m.role} onValueChange={(v) => changeRole(m, v)}>
+                  <Select value={m.role} onValueChange={(v) => changeRole(m, v)} disabled={pending}>
                     <SelectTrigger className="w-28" aria-label={`${m.user.email} 역할`}>
                       <SelectValue />
                     </SelectTrigger>
@@ -216,7 +218,12 @@ export function MembersCard() {
                       <SelectItem value="MEMBER">MEMBER</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="ghost" size="sm" onClick={() => removeMember(m)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeMember(m)}
+                    disabled={pending}
+                  >
                     내보내기
                   </Button>
                 </span>
