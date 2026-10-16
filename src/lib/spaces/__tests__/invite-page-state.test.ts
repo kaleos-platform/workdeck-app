@@ -27,3 +27,15 @@ it('invited_at도 password_set도 없으면 ready', () => {
     inviteView({ ...pending, user: { email: 'invitee@example.com', user_metadata: {} } })
   ).toBe('ready')
 })
+it('초대 계정이라도 Google 등으로 로그인했으면 비밀번호 없이 ready', () => {
+  const u = {
+    email: 'invitee@example.com',
+    invited_at: '2026-10-15T00:00:00Z',
+    user_metadata: {},
+    app_metadata: { providers: ['google'] },
+  }
+  expect(inviteView({ ...pending, user: u })).toBe('ready')
+  expect(inviteView({ ...pending, user: { ...u, app_metadata: { providers: ['email'] } } })).toBe(
+    'needs_password'
+  )
+})
