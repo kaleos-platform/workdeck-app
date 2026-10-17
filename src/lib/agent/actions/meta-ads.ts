@@ -83,6 +83,7 @@ function defineMetaAction(name: MetaActionName): ActionDefinition<Params> {
 
 // 실행과 같은 요청(metaActionRequest)에 validate_only만 더한다. 연결 실패도 거부한다(검증 못 한 제안을 큐에 넣지 않음).
 // 검증 단계 오류는 대부분 파라미터 문제라 자격증명 lastError에 기록하지 않는다.
+// ponytail: 여기서 복호화한 기록(ctx.decryptedCredentialIds)은 MCP 경로에선 도구 감사가 이미 남기고, 웹 POST 경로에선 남지 않는다.
 async function validateOnly(
   ctx: { spaceId: string; decryptedCredentialIds: string[] },
   name: MetaActionName,
@@ -93,7 +94,16 @@ async function validateOnly(
   const { endpoint, body } = metaActionRequest(name, adAccountId, params)
   try {
     await assertActionInAccount(cred, name, params, adAccountId)
-    await graphRequest(cred, 'POST', endpoint, { ...body, execution_options: ['validate_only'] })
+    const res = await graphRequest(cred, 'POST', endpoint, {
+      ...body,
+      execution_options: ['validate_only'],
+    })
+    // validate_only 성공은 {success:true}뿐이다. id가 오면 Meta가 옵션을 무시하고 실제로 만든 것이다(adstudy 사례).
+    if (res && typeof res === 'object' && 'id' in res) {
+      throw new ToolUserError(
+        `Meta가 사전 검증을 무시하고 실제로 생성했습니다(id ${String((res as { id: unknown }).id)}). 광고 관리자에서 확인·삭제가 필요합니다`
+      )
+    }
   } catch (err) {
     if (!(err instanceof MetaApiError)) throw err
     throw new ToolUserError(`Meta 사전 검증 실패: ${maskSecrets(err.message)}`)

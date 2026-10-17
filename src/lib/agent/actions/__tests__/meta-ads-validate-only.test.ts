@@ -38,6 +38,7 @@ const cred = { id: 'cred-1', secret: { accessToken: 't', appSecret: 's' }, confi
 
 beforeEach(() => {
   jest.clearAllMocks()
+  ;(assertActionInAccount as jest.Mock).mockReset().mockResolvedValue(undefined)
   ;(loadMetaCred as jest.Mock).mockResolvedValue(cred)
   graph.mockResolvedValue({ success: true })
 })
@@ -99,3 +100,31 @@ it.each([
     expect(graph).not.toHaveBeenCalled()
   }
 )
+
+it('응답에 id 가 오면(검증 무시하고 실제 생성) 제안을 거부한다', async () => {
+  graph.mockResolvedValue({ id: '120000000099' })
+  await expect(validate('creative.create', { name: 'c', object_story_id: '1_2' })).rejects.toThrow(
+    /실제로 생성했습니다\(id 120000000099\)/
+  )
+})
+
+describe('검증 대상 표 — 새 액션은 기본 제외', () => {
+  const { META_ACTIONS, META_VALIDATE_ONLY_ACTIONS } = jest.requireActual(
+    '@/lib/agent/integrations/meta-ads'
+  )
+  it('검증 대상은 create·update 7개이고 adstudy·status 는 없다', () => {
+    expect([...META_VALIDATE_ONLY_ACTIONS].sort()).toEqual([
+      'ad.create',
+      'ad.update',
+      'adset.create',
+      'adset.update',
+      'campaign.create',
+      'campaign.update',
+      'creative.create',
+    ])
+    for (const name of Object.keys(META_ACTIONS)) {
+      if (name.startsWith('adstudy.') || name.endsWith('update_status'))
+        expect(META_VALIDATE_ONLY_ACTIONS.has(name)).toBe(false)
+    }
+  })
+})
