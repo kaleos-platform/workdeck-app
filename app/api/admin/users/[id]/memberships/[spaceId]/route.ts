@@ -36,15 +36,16 @@ export async function POST(
   const membership = await prisma.spaceMember.create({ data: { spaceId, userId: id, role } })
   // 개인 Space에 구성원을 넣으면 팀 Space로 전환한다(초대 경로와 같은 규칙).
   if (space.type === 'PERSONAL') {
-    await prisma.space.updateMany({
+    const { count } = await prisma.space.updateMany({
       where: { id: spaceId, type: 'PERSONAL' },
       data: { type: 'ORGANIZATION' },
     })
-    await writeAuditLog(auth.user.id, 'space.type.convert', 'space', spaceId, {
-      from: 'PERSONAL',
-      to: 'ORGANIZATION',
-      via: 'admin.membership.add',
-    })
+    if (count > 0)
+      await writeAuditLog(auth.user.id, 'space.type.convert', 'space', spaceId, {
+        from: 'PERSONAL',
+        to: 'ORGANIZATION',
+        via: 'admin.membership.add',
+      })
   }
   await writeAuditLog(auth.user.id, 'user.membership.add', 'space_member', membership.id, {
     userId: id,

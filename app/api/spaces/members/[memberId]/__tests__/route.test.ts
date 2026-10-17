@@ -81,7 +81,11 @@ test('내보낸 사람이 요청한 승인 대기 건은 거절하고 건수를 
   pa.updateMany.mockResolvedValue({ count: 2 })
   expect((await del()).status).toBe(200)
   expect(pa.updateMany).toHaveBeenCalledWith({
-    where: { spaceId: 'sp-1', requesterUserId: 'u-2', status: 'PENDING' },
+    where: {
+      spaceId: 'sp-1',
+      status: 'PENDING',
+      OR: [{ requesterUserId: 'u-2' }, { actorType: 'user', actorId: 'u-2' }],
+    },
     data: expect.objectContaining({
       status: 'REJECTED',
       decidedBy: 'u-owner',

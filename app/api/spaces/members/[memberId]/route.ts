@@ -70,7 +70,12 @@ export async function DELETE(_request: Request, { params }: Ctx) {
     })
     if (count === 0) return null
     const rejected = await tx.agentPendingAction.updateMany({
-      where: { spaceId: target.spaceId, requesterUserId: target.userId, status: 'PENDING' },
+      where: {
+        spaceId: target.spaceId,
+        status: 'PENDING',
+        // 에이전트 경유(requesterUserId)와 본인 MCP·웹 세션(actorType user) 둘 다.
+        OR: [{ requesterUserId: target.userId }, { actorType: 'user', actorId: target.userId }],
+      },
       data: {
         status: 'REJECTED',
         decidedBy: ownerId,
@@ -78,6 +83,7 @@ export async function DELETE(_request: Request, { params }: Ctx) {
         error: '요청자 내보냄',
       },
     })
+    // ponytail: Slack 승인 메시지는 갱신하지 않는다(버튼을 누르면 '이미 처리됨'). 필요하면 id를 받아 syncSlackDecision.
     return { rejectedActions: rejected.count }
   })
   if (!removed) return errorResponse(NOT_FOUND, 404)

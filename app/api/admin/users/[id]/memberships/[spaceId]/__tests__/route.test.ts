@@ -79,6 +79,7 @@ it('사용자나 Space가 없으면 404', async () => {
 
 it('개인 Space에 추가하면 팀 Space로 전환하고 감사 로그를 남긴다', async () => {
   m.space.findUnique.mockResolvedValue({ id: 'sp-1', type: 'PERSONAL' })
+  m.space.updateMany.mockResolvedValue({ count: 1 })
   expect((await call({ role: 'MEMBER' })).status).toBe(201)
   expect(m.space.updateMany).toHaveBeenCalledWith({
     where: { id: 'sp-1', type: 'PERSONAL' },

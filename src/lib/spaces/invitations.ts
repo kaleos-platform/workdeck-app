@@ -95,16 +95,6 @@ export async function createInvitation(input: {
     data: { revokedAt: now },
   })
 
-  // 개인 Space의 첫 초대는 팀 Space로 전환한다(OWNER+MFA 경로만 여기 온다). 이미 전환됐으면 0건.
-  const converted =
-    space.type === 'PERSONAL' &&
-    (
-      await prisma.space.updateMany({
-        where: { id: space.id, type: 'PERSONAL' },
-        data: { type: 'ORGANIZATION' },
-      })
-    ).count > 0
-
   const token = randomBytes(32).toString('base64url')
   const invitation = await prisma.spaceInvitation.create({
     data: {
@@ -117,6 +107,16 @@ export async function createInvitation(input: {
     },
     select: { id: true, email: true, role: true, expiresAt: true },
   })
+  // 개인 Space의 첫 초대는 팀 Space로 전환한다(OWNER+MFA 경로만 여기 온다). 초대가 만들어진 뒤에만 — 실패한 초대가 전환만 남기지 않게. 이미 전환됐으면 0건.
+  const converted =
+    space.type === 'PERSONAL' &&
+    (
+      await prisma.space.updateMany({
+        where: { id: space.id, type: 'PERSONAL' },
+        data: { type: 'ORGANIZATION' },
+      })
+    ).count > 0
+
   return {
     invitation: invitation as {
       id: string

@@ -285,9 +285,11 @@ export function ApprovalDetailSheet({
             </section>
           )}
 
-          {action.status === 'FAILED' && action.error && (
+          {(action.status === 'FAILED' || action.status === 'REJECTED') && action.error && (
             <section>
-              <h3 className="mb-2 text-sm font-semibold text-destructive">실패 사유</h3>
+              <h3 className="mb-2 text-sm font-semibold text-destructive">
+                {action.status === 'FAILED' ? '실패 사유' : '거절 사유'}
+              </h3>
               <p className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
                 {action.error}
               </p>

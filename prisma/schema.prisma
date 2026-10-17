@@ -613,7 +613,7 @@ model AgentPendingAction {
   decidedAt  DateTime?
   executedAt DateTime?
   result     Json? // execute 성공 결과
-  error      String? // execute 실패 메시지
+  error      String? // FAILED: execute 실패 메시지 / REJECTED: 자동 거절 사유(예: 요청자 내보냄)
 
   idempotencyKey String? @unique // 재시도 멱등 — 동일 키 재요청 시 기존 액션 반환
   slackChannelId String? // Phase 6 Slack 연동 예약

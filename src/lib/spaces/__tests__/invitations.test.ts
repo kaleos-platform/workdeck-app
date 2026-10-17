@@ -125,6 +125,14 @@ describe('createInvitation', () => {
     expect(r.converted).toBe(true)
     expect(m.spaceInvitation.create).toHaveBeenCalled()
   })
+  it('초대 생성이 실패하면 개인 Space를 전환하지 않는다', async () => {
+    m.space.findUnique.mockResolvedValue({ id: 'sp-1', type: 'PERSONAL' })
+    m.spaceInvitation.create.mockRejectedValueOnce(new Error('db down'))
+    await expect(
+      createInvitation({ spaceId: 'sp-1', email: 'a@b.com', role: 'MEMBER', invitedById: 'u' })
+    ).rejects.toThrow('db down')
+    expect(m.space.updateMany).not.toHaveBeenCalled()
+  })
   it('팀 Space는 전환하지 않는다', async () => {
     const r = await createInvitation({
       spaceId: 'sp-1',
