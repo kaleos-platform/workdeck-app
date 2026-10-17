@@ -595,6 +595,11 @@ async function accessToken(cred: GoogleCred): Promise<string> {
   return data.access_token
 }
 
+/** 연동 점검용 — refresh token 으로 access token 을 받아 본다(데이터 API는 부르지 않는다). */
+export async function verifyGoogleCred(cred: GoogleCred): Promise<void> {
+  await accessToken(cred)
+}
+
 /**
  * Google API 호출. checkedUrl은 targetUrl/actionUrl이 검사한 URL이거나 config 숫자 id로만 만든 URL(runReport)이어야 한다.
  * 토큰은 서버 안에서만 쓰고, 응답의 자격증명 값은 지우고, OAuth·API 실패는 자격증명 lastError에 남긴다.

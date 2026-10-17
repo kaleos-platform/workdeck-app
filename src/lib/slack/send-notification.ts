@@ -116,3 +116,28 @@ export async function sendSystemNotification(opts: {
     return false
   }
 }
+
+/**
+ * Space 단위 운영 알림 — 그 Space 의 notifications 채널 하나로만 보낸다(Deck 토글 없음).
+ * 연동 자격증명 장애처럼 그 Space 관리자만 알아야 하는 알림에 쓴다. 채널이 없으면 false.
+ */
+export async function sendSpaceNotification(opts: {
+  spaceId: string
+  text: string
+  blocks?: unknown[]
+}): Promise<boolean> {
+  try {
+    const channel = await prisma.spaceSlackChannel.findFirst({
+      where: { spaceId: opts.spaceId, kind: NOTIFICATION_CHANNEL_KIND },
+      orderBy: { createdAt: 'desc' },
+      select: { channelId: true, installation: { select: { botToken: true, botTokenIv: true } } },
+    })
+    if (!channel) return false
+    const token = decryptBotToken(channel.installation.botToken, channel.installation.botTokenIv)
+    const blocks = opts.blocks ?? [{ type: 'section', text: { type: 'mrkdwn', text: opts.text } }]
+    return await sendToChannel(token, channel.channelId, { blocks, text: opts.text }, 'Space 알림')
+  } catch (err) {
+    console.error('[slack] sendSpaceNotification 에러:', err)
+    return false
+  }
+}
