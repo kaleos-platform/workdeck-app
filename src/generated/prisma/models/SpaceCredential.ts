@@ -32,6 +32,8 @@ export type SpaceCredentialMinAggregateOutputType = {
   iv: string | null
   lastVerifiedAt: Date | null
   lastError: string | null
+  healthError: string | null
+  healthAlertedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,8 @@ export type SpaceCredentialMaxAggregateOutputType = {
   iv: string | null
   lastVerifiedAt: Date | null
   lastError: string | null
+  healthError: string | null
+  healthAlertedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -57,6 +61,8 @@ export type SpaceCredentialCountAggregateOutputType = {
   config: number
   lastVerifiedAt: number
   lastError: number
+  healthError: number
+  healthAlertedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -71,6 +77,8 @@ export type SpaceCredentialMinAggregateInputType = {
   iv?: true
   lastVerifiedAt?: true
   lastError?: true
+  healthError?: true
+  healthAlertedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -83,6 +91,8 @@ export type SpaceCredentialMaxAggregateInputType = {
   iv?: true
   lastVerifiedAt?: true
   lastError?: true
+  healthError?: true
+  healthAlertedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -96,6 +106,8 @@ export type SpaceCredentialCountAggregateInputType = {
   config?: true
   lastVerifiedAt?: true
   lastError?: true
+  healthError?: true
+  healthAlertedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -182,6 +194,8 @@ export type SpaceCredentialGroupByOutputType = {
   config: runtime.JsonValue | null
   lastVerifiedAt: Date | null
   lastError: string | null
+  healthError: string | null
+  healthAlertedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: SpaceCredentialCountAggregateOutputType | null
@@ -216,6 +230,8 @@ export type SpaceCredentialWhereInput = {
   config?: Prisma.JsonNullableFilter<"SpaceCredential">
   lastVerifiedAt?: Prisma.DateTimeNullableFilter<"SpaceCredential"> | Date | string | null
   lastError?: Prisma.StringNullableFilter<"SpaceCredential"> | string | null
+  healthError?: Prisma.StringNullableFilter<"SpaceCredential"> | string | null
+  healthAlertedAt?: Prisma.DateTimeNullableFilter<"SpaceCredential"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceCredential"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceCredential"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -230,6 +246,8 @@ export type SpaceCredentialOrderByWithRelationInput = {
   config?: Prisma.SortOrderInput | Prisma.SortOrder
   lastVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastError?: Prisma.SortOrderInput | Prisma.SortOrder
+  healthError?: Prisma.SortOrderInput | Prisma.SortOrder
+  healthAlertedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -248,6 +266,8 @@ export type SpaceCredentialWhereUniqueInput = Prisma.AtLeast<{
   config?: Prisma.JsonNullableFilter<"SpaceCredential">
   lastVerifiedAt?: Prisma.DateTimeNullableFilter<"SpaceCredential"> | Date | string | null
   lastError?: Prisma.StringNullableFilter<"SpaceCredential"> | string | null
+  healthError?: Prisma.StringNullableFilter<"SpaceCredential"> | string | null
+  healthAlertedAt?: Prisma.DateTimeNullableFilter<"SpaceCredential"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceCredential"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceCredential"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -262,6 +282,8 @@ export type SpaceCredentialOrderByWithAggregationInput = {
   config?: Prisma.SortOrderInput | Prisma.SortOrder
   lastVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastError?: Prisma.SortOrderInput | Prisma.SortOrder
+  healthError?: Prisma.SortOrderInput | Prisma.SortOrder
+  healthAlertedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SpaceCredentialCountOrderByAggregateInput
@@ -281,6 +303,8 @@ export type SpaceCredentialScalarWhereWithAggregatesInput = {
   config?: Prisma.JsonNullableWithAggregatesFilter<"SpaceCredential">
   lastVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SpaceCredential"> | Date | string | null
   lastError?: Prisma.StringNullableWithAggregatesFilter<"SpaceCredential"> | string | null
+  healthError?: Prisma.StringNullableWithAggregatesFilter<"SpaceCredential"> | string | null
+  healthAlertedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SpaceCredential"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceCredential"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceCredential"> | Date | string
 }
@@ -293,6 +317,8 @@ export type SpaceCredentialCreateInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Date | string | null
   lastError?: string | null
+  healthError?: string | null
+  healthAlertedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutSpaceCredentialsInput
@@ -307,6 +333,8 @@ export type SpaceCredentialUncheckedCreateInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Date | string | null
   lastError?: string | null
+  healthError?: string | null
+  healthAlertedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -319,6 +347,8 @@ export type SpaceCredentialUpdateInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthAlertedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutSpaceCredentialsNestedInput
@@ -333,6 +363,8 @@ export type SpaceCredentialUncheckedUpdateInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthAlertedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -346,6 +378,8 @@ export type SpaceCredentialCreateManyInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Date | string | null
   lastError?: string | null
+  healthError?: string | null
+  healthAlertedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -358,6 +392,8 @@ export type SpaceCredentialUpdateManyMutationInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthAlertedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -371,6 +407,8 @@ export type SpaceCredentialUncheckedUpdateManyInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthAlertedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -399,6 +437,8 @@ export type SpaceCredentialCountOrderByAggregateInput = {
   config?: Prisma.SortOrder
   lastVerifiedAt?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
+  healthError?: Prisma.SortOrder
+  healthAlertedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -411,6 +451,8 @@ export type SpaceCredentialMaxOrderByAggregateInput = {
   iv?: Prisma.SortOrder
   lastVerifiedAt?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
+  healthError?: Prisma.SortOrder
+  healthAlertedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -423,6 +465,8 @@ export type SpaceCredentialMinOrderByAggregateInput = {
   iv?: Prisma.SortOrder
   lastVerifiedAt?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
+  healthError?: Prisma.SortOrder
+  healthAlertedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -477,6 +521,8 @@ export type SpaceCredentialCreateWithoutSpaceInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Date | string | null
   lastError?: string | null
+  healthError?: string | null
+  healthAlertedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -489,6 +535,8 @@ export type SpaceCredentialUncheckedCreateWithoutSpaceInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Date | string | null
   lastError?: string | null
+  healthError?: string | null
+  healthAlertedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -531,6 +579,8 @@ export type SpaceCredentialScalarWhereInput = {
   config?: Prisma.JsonNullableFilter<"SpaceCredential">
   lastVerifiedAt?: Prisma.DateTimeNullableFilter<"SpaceCredential"> | Date | string | null
   lastError?: Prisma.StringNullableFilter<"SpaceCredential"> | string | null
+  healthError?: Prisma.StringNullableFilter<"SpaceCredential"> | string | null
+  healthAlertedAt?: Prisma.DateTimeNullableFilter<"SpaceCredential"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceCredential"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceCredential"> | Date | string
 }
@@ -543,6 +593,8 @@ export type SpaceCredentialCreateManySpaceInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Date | string | null
   lastError?: string | null
+  healthError?: string | null
+  healthAlertedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -555,6 +607,8 @@ export type SpaceCredentialUpdateWithoutSpaceInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthAlertedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -567,6 +621,8 @@ export type SpaceCredentialUncheckedUpdateWithoutSpaceInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthAlertedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -579,6 +635,8 @@ export type SpaceCredentialUncheckedUpdateManyWithoutSpaceInput = {
   config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthAlertedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -594,6 +652,8 @@ export type SpaceCredentialSelect<ExtArgs extends runtime.Types.Extensions.Inter
   config?: boolean
   lastVerifiedAt?: boolean
   lastError?: boolean
+  healthError?: boolean
+  healthAlertedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -608,6 +668,8 @@ export type SpaceCredentialSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   config?: boolean
   lastVerifiedAt?: boolean
   lastError?: boolean
+  healthError?: boolean
+  healthAlertedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -622,6 +684,8 @@ export type SpaceCredentialSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   config?: boolean
   lastVerifiedAt?: boolean
   lastError?: boolean
+  healthError?: boolean
+  healthAlertedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -636,11 +700,13 @@ export type SpaceCredentialSelectScalar = {
   config?: boolean
   lastVerifiedAt?: boolean
   lastError?: boolean
+  healthError?: boolean
+  healthAlertedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SpaceCredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "provider" | "encryptedPayload" | "iv" | "config" | "lastVerifiedAt" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceCredential"]>
+export type SpaceCredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "provider" | "encryptedPayload" | "iv" | "config" | "lastVerifiedAt" | "lastError" | "healthError" | "healthAlertedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceCredential"]>
 export type SpaceCredentialInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -665,6 +731,8 @@ export type $SpaceCredentialPayload<ExtArgs extends runtime.Types.Extensions.Int
     config: runtime.JsonValue | null
     lastVerifiedAt: Date | null
     lastError: string | null
+    healthError: string | null
+    healthAlertedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["spaceCredential"]>
@@ -1099,6 +1167,8 @@ export interface SpaceCredentialFieldRefs {
   readonly config: Prisma.FieldRef<"SpaceCredential", 'Json'>
   readonly lastVerifiedAt: Prisma.FieldRef<"SpaceCredential", 'DateTime'>
   readonly lastError: Prisma.FieldRef<"SpaceCredential", 'String'>
+  readonly healthError: Prisma.FieldRef<"SpaceCredential", 'String'>
+  readonly healthAlertedAt: Prisma.FieldRef<"SpaceCredential", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"SpaceCredential", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SpaceCredential", 'DateTime'>
 }

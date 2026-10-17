@@ -12213,6 +12213,8 @@ export const SpaceCredentialScalarFieldEnum = {
   config: 'config',
   lastVerifiedAt: 'lastVerifiedAt',
   lastError: 'lastError',
+  healthError: 'healthError',
+  healthAlertedAt: 'healthAlertedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

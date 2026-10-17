@@ -7,8 +7,9 @@ Space 의 Meta 광고 연동(`SpaceCredential`, provider `meta-ads`)은 Meta 앱
 ## 장애 감지
 
 - 매일 08:00 KST cron `/api/cron/credential-health` 가 Space 마다 광고 계정 조회(통화)로 토큰을 점검한다.
-- 정상 → 오류로 바뀌면 그 Space 의 Slack **notifications** 채널에 한 번 알리고 `lastError` 에 남긴다.
-  오류가 이어지는 동안은 다시 알리지 않고, 복구되면 "복구되었습니다" 를 한 번 알린다.
+- 점검 실패를 처음 알리면 그 Space 의 Slack **notifications** 채널에 한 번 알리고 `lastError`·`healthError` 에 남긴다.
+  알림 채널이 없거나 발송에 실패하면 다음 날 다시 시도한다. 알린 뒤 오류가 이어지는 동안은 다시 알리지 않고,
+  풀리면 "복구되었습니다" 를 한 번 알린다(알림 상태는 `healthAlertedAt`).
 - 실행·검증 경로의 Graph 오류도 `lastError` 에 남는다(제안 단계 validate_only 오류는 남기지 않는다).
 - workdeck 자체가 내려가면 이 cron 도 돌지 않는다. 그때는 에이전트의 일일 스크립트가 "조회 실패" 로 보고한다.
 
@@ -18,7 +19,8 @@ Space 의 Meta 광고 연동(`SpaceCredential`, provider `meta-ads`)은 Meta 앱
    권한은 `ads_read`, `ads_management`, `business_management` 만 준다. 대상 광고 계정을 시스템 사용자에 할당한다.
    토큰 평문은 채팅·티켓·커밋에 붙이지 않는다.
 2. **현재 config 확인.** 교체는 비밀값과 config 를 함께 보낸다(PUT 은 전체 교체). 현재 브랜드→광고 계정 매핑
-   (`adAccounts`)과 `defaultBrand` 를 그대로 다시 넣는다. config 에는 비밀값이 없다.
+   (`adAccounts`)과 `defaultBrand`, 있으면 `graphVersion` 을 그대로 다시 넣는다. `accountCurrencies` 는 서버가
+   저장 시 다시 채우므로 넣지 않는다. config 에는 비밀값이 없다.
 3. **workdeck 에 저장.** 해당 Space 의 ADMIN 이상 계정으로 로그인하고 2단계 인증을 마친 브라우저에서,
    `https://app.workdeck.work` 탭의 개발자 콘솔로 보낸다(평문이 셸 기록에 남지 않게).
 
@@ -37,7 +39,8 @@ Space 의 Meta 광고 연동(`SpaceCredential`, provider `meta-ads`)은 Meta 앱
    - 성공(200)하면 `lastError` 가 비워진다.
 
 4. **확인.** MCP `meta_ads_list_campaigns`(조회)와 `meta_ads_list_actions`(승인 큐)를 한 번 부른다.
-   다음 날 08:00 점검에서 알림이 없거나 "복구" 알림이 오면 끝이다.
+   장애 알림이 나간 뒤 교체했다면 다음 날 08:00 점검에서 "복구" 알림이 온다. 알림 없이 교체했다면
+   연동 행의 `lastVerifiedAt` 이 다음 점검 시각으로 갱신되는지로 확인한다.
 5. **옛 토큰 폐기(Meta).** 새 토큰으로 조회가 되는 것을 확인한 뒤 Meta 에서 옛 토큰을 폐기한다.
 
 ## 하지 않는 것
