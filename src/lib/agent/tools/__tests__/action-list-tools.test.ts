@@ -80,3 +80,48 @@ it('결과·제안 내용의 비밀값을 가리고 생성 id는 남긴다', asy
   expect(a.error).toBe('failed access_token=[redacted]')
   expect(a.summary).toBe('token=[redacted] 로 생성')
 })
+
+describe('waitSec — 승인·실행이 끝날 때까지 기다린다', () => {
+  beforeEach(() => jest.useFakeTimers())
+  afterEach(() => jest.useRealTimers())
+
+  it('PENDING → APPROVED → EXECUTED 로 바뀌면 끝난 결과와 waiting:false', async () => {
+    findMany
+      .mockResolvedValueOnce([{ ...row, status: 'PENDING' }])
+      .mockResolvedValueOnce([{ ...row, status: 'APPROVED' }])
+      .mockResolvedValueOnce([{ ...row, status: 'EXECUTED' }])
+    const p = tool.execute(ctx, { actionId: 'a1', waitSec: 30 })
+    await jest.advanceTimersByTimeAsync(6000)
+    const out = (await p) as { waiting: boolean; actions: { status: string }[] }
+    expect(out.waiting).toBe(false)
+    expect(out.actions[0].status).toBe('EXECUTED')
+    expect(findMany).toHaveBeenCalledTimes(3)
+  })
+
+  it('시간 안에 안 끝나면 waiting:true 로 돌려준다', async () => {
+    findMany.mockResolvedValue([{ ...row, status: 'PENDING' }])
+    const p = tool.execute(ctx, { actionId: 'a1', waitSec: 7 })
+    await jest.advanceTimersByTimeAsync(10000)
+    const out = (await p) as { waiting: boolean }
+    expect(out.waiting).toBe(true)
+    // 3초 간격 → 첫 조회 + 2번 재조회(7초 안)
+    expect(findMany).toHaveBeenCalledTimes(3)
+  })
+
+  it('actionId 없이 waitSec 만 주면 기다리지 않고 waiting 도 없다', async () => {
+    findMany.mockResolvedValue([{ ...row, status: 'PENDING' }])
+    const out = (await tool.execute(ctx, { waitSec: 30 })) as Record<string, unknown>
+    expect(findMany).toHaveBeenCalledTimes(1)
+    expect(out).not.toHaveProperty('waiting')
+  })
+
+  it('다른 Space 의 actionId 는 조건에 걸려 빈 결과·즉시 반환', async () => {
+    findMany.mockResolvedValue([])
+    const out = (await tool.execute(ctx, { actionId: 'other', waitSec: 30 })) as {
+      waiting: boolean
+      actions: unknown[]
+    }
+    expect(out).toEqual({ waiting: false, actions: [] })
+    expect(findMany.mock.calls[0][0].where).toMatchObject({ spaceId: 'sp-1', id: 'other' })
+  })
+})
