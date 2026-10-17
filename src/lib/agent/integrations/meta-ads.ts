@@ -149,6 +149,21 @@ export const META_ACTIONS = {
 
 export type MetaActionName = keyof typeof META_ACTIONS
 
+/**
+ * 제안 단계에서 Meta에 execution_options=["validate_only"]로 미리 보내 보는 액션.
+ * adstudy.*는 넣지 않는다 — /{business_id}/ad_studies는 validate_only를 무시하고 실제로 A/B 테스트를 만든다(2026-10-12 확인).
+ * *_status는 id·status뿐이라 검증할 것이 없다.
+ */
+export const META_VALIDATE_ONLY_ACTIONS: ReadonlySet<MetaActionName> = new Set<MetaActionName>([
+  'campaign.create',
+  'campaign.update',
+  'adset.create',
+  'adset.update',
+  'creative.create',
+  'ad.create',
+  'ad.update',
+])
+
 // 예산 파라미터를 실을 수 있는 액션 — metaSpendKrw로 지출 금액을 알려 승인 한도 판정(requiredDecisionRole)에 쓴다.
 // 지출 키(META_MONEY_KEYS)는 이 액션들의 허용 목록에만 있다(테스트가 강제).
 export const META_BUDGET_ACTIONS: ReadonlySet<MetaActionName> = new Set<MetaActionName>([
