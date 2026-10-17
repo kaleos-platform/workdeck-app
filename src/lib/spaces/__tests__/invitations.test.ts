@@ -1,7 +1,7 @@
 /** @jest-environment node */
 jest.mock('@/lib/prisma', () => {
   const p = {
-    space: { findUnique: jest.fn() },
+    space: { findUnique: jest.fn(), updateMany: jest.fn() },
     spaceMember: { findFirst: jest.fn(), findUnique: jest.fn(), create: jest.fn() },
     spaceInvitation: {
       count: jest.fn(),
@@ -29,7 +29,7 @@ import {
 } from '../invitations'
 
 const m = prisma as unknown as {
-  space: { findUnique: jest.Mock }
+  space: { findUnique: jest.Mock; updateMany: jest.Mock }
   spaceMember: { findFirst: jest.Mock; findUnique: jest.Mock; create: jest.Mock }
   spaceInvitation: {
     count: jest.Mock
@@ -109,11 +109,47 @@ describe('createInvitation', () => {
     expect(JSON.stringify(data)).not.toContain(r.token)
     expect(r.token.length).toBeGreaterThanOrEqual(43)
   })
-  it('개인 Space는 거부', async () => {
+  it('개인 Space의 첫 초대는 팀 Space로 전환하고 초대를 만든다', async () => {
     m.space.findUnique.mockResolvedValue({ id: 'sp-1', type: 'PERSONAL' })
+    m.space.updateMany.mockResolvedValue({ count: 1 })
+    const r = await createInvitation({
+      spaceId: 'sp-1',
+      email: 'a@b.com',
+      role: 'MEMBER',
+      invitedById: 'u',
+    })
+    expect(m.space.updateMany).toHaveBeenCalledWith({
+      where: { id: 'sp-1', type: 'PERSONAL' },
+      data: { type: 'ORGANIZATION' },
+    })
+    expect(r.converted).toBe(true)
+    expect(m.spaceInvitation.create).toHaveBeenCalled()
+  })
+  it('초대 생성이 실패하면 개인 Space를 전환하지 않는다', async () => {
+    m.space.findUnique.mockResolvedValue({ id: 'sp-1', type: 'PERSONAL' })
+    m.spaceInvitation.create.mockRejectedValueOnce(new Error('db down'))
     await expect(
       createInvitation({ spaceId: 'sp-1', email: 'a@b.com', role: 'MEMBER', invitedById: 'u' })
-    ).rejects.toMatchObject({ status: 400, reason: 'personal_space' })
+    ).rejects.toThrow('db down')
+    expect(m.space.updateMany).not.toHaveBeenCalled()
+  })
+  it('팀 Space는 전환하지 않는다', async () => {
+    const r = await createInvitation({
+      spaceId: 'sp-1',
+      email: 'a@b.com',
+      role: 'MEMBER',
+      invitedById: 'u',
+    })
+    expect(m.space.updateMany).not.toHaveBeenCalled()
+    expect(r.converted).toBe(false)
+  })
+  it('이미 구성원이면 개인 Space여도 전환하지 않는다', async () => {
+    m.space.findUnique.mockResolvedValue({ id: 'sp-1', type: 'PERSONAL' })
+    m.spaceMember.findFirst.mockResolvedValue({ id: 'mem' })
+    await expect(
+      createInvitation({ spaceId: 'sp-1', email: 'a@b.com', role: 'MEMBER', invitedById: 'u' })
+    ).rejects.toMatchObject({ status: 409 })
+    expect(m.space.updateMany).not.toHaveBeenCalled()
   })
   it('이미 구성원이면 409', async () => {
     m.spaceMember.findFirst.mockResolvedValue({ id: 'mem' })

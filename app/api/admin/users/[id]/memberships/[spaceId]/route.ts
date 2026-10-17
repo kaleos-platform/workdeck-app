@@ -26,8 +26,6 @@ export async function POST(
   ])
   if (!user) return errorResponse('사용자를 찾을 수 없습니다', 404)
   if (!space) return errorResponse('Space를 찾을 수 없습니다', 404)
-  if (space.type === 'PERSONAL')
-    return errorResponse('개인 Space에는 구성원을 추가할 수 없습니다', 400)
 
   const existing = await prisma.spaceMember.findUnique({
     where: { spaceId_userId: { spaceId, userId: id } },
@@ -36,6 +34,19 @@ export async function POST(
 
   // ponytail: 동시 요청 시 create가 P2002를 던져 500 — 운영자 1명 화면이라 허용, 필요하면 P2002를 409로 매핑
   const membership = await prisma.spaceMember.create({ data: { spaceId, userId: id, role } })
+  // 개인 Space에 구성원을 넣으면 팀 Space로 전환한다(초대 경로와 같은 규칙).
+  if (space.type === 'PERSONAL') {
+    const { count } = await prisma.space.updateMany({
+      where: { id: spaceId, type: 'PERSONAL' },
+      data: { type: 'ORGANIZATION' },
+    })
+    if (count > 0)
+      await writeAuditLog(auth.user.id, 'space.type.convert', 'space', spaceId, {
+        from: 'PERSONAL',
+        to: 'ORGANIZATION',
+        via: 'admin.membership.add',
+      })
+  }
   await writeAuditLog(auth.user.id, 'user.membership.add', 'space_member', membership.id, {
     userId: id,
     spaceId,

@@ -42,13 +42,19 @@ export async function POST(request: Request, { params }: Ctx) {
   }
   const email = normalizeEmail(parsed.data.email)
   try {
-    const { invitation, token } = await createInvitation({
+    const { invitation, token, converted } = await createInvitation({
       spaceId,
       email,
       role: parsed.data.role,
       invitedById: g.userId,
     })
     // 감사 로그를 메일보다 먼저 — 로그 실패가 '메일은 갔는데 500·링크 없음'을 만들지 않게.
+    if (converted)
+      await writeAuditLog(g.userId, 'space.type.convert', 'space', spaceId, {
+        from: 'PERSONAL',
+        to: 'ORGANIZATION',
+        via: 'invitation',
+      })
     await writeAuditLog(g.userId, 'space.invitation.create', 'space_invitation', invitation.id, {
       spaceId,
       email,

@@ -23,7 +23,7 @@ export function makeListActionsTool(opts: {
 }): ToolDefinition {
   return {
     name: opts.name,
-    description: `${opts.label} 제안(승인 대기 큐) 목록을 최신순으로 반환합니다. 상태(PENDING·APPROVED·REJECTED·EXECUTED·FAILED·EXPIRED), 제안 내용, 실행 결과(생성된 객체 id 포함), 실패 사유를 담습니다. 제안 직후 받은 actionId나 workId로 좁힐 수 있습니다. actionId와 waitSec(최대 ${MAX_WAIT_SEC}초)을 주면 승인·실행이 끝날 때까지 기다렸다 결과를 돌려줍니다 — 승인 링크를 사용자에게 보여 준 뒤 호출하고, 응답의 waiting 이 true 면 다시 호출하세요.`,
+    description: `${opts.label} 제안(승인 대기 큐) 목록을 최신순으로 반환합니다. 상태(PENDING·APPROVED·REJECTED·EXECUTED·FAILED·EXPIRED), 제안 내용, 실행 결과(생성된 객체 id 포함), 실패·거절 사유(error)를 담습니다. 제안 직후 받은 actionId나 workId로 좁힐 수 있습니다. actionId와 waitSec(최대 ${MAX_WAIT_SEC}초)을 주면 승인·실행이 끝날 때까지 기다렸다 결과를 돌려줍니다 — 승인 링크를 사용자에게 보여 준 뒤 호출하고, 응답의 waiting 이 true 면 다시 호출하세요.`,
     inputSchema: {
       status: z.enum(STATUSES).optional(),
       actionId: z.string().min(1).optional(),
