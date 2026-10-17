@@ -729,6 +729,9 @@ model SpaceCredential {
   config           Json?
   lastVerifiedAt   DateTime?
   lastError        String?
+  // 일일 점검(credential-health) 전용 상태 — lastError(모든 API 오류 진단용)와 분리해 알림 전이를 판단한다.
+  healthError      String?
+  healthAlertedAt  DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
