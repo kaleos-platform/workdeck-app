@@ -900,6 +900,25 @@ describe('PR4 객체·영상·활동 조회', () => {
     expect(schema.safeParse({ since: '2026/10/13' }).success).toBe(false)
   })
 
+  it('list_activities: since 가 until 보다 늦으면 거부', async () => {
+    await expect(
+      tool('meta_ads_list_activities').execute(ctx(), { since: '2026-10-18', until: '2026-10-17' })
+    ).rejects.toThrow('since는 until보다 늦을 수 없습니다')
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('get_object(creative): account_id 로 소속 확인', async () => {
+    fetchMock
+      .mockResolvedValueOnce(ok({ account_id: '111' }))
+      .mockResolvedValueOnce(ok({ id: '8' }))
+    await tool('meta_ads_get_object').execute(ctx(), {
+      brand: 'brand-a',
+      type: 'creative',
+      object_id: '8',
+    })
+    expect(urls()[1].searchParams.get('fields')).toMatch(/object_story_spec/)
+  })
+
   it('새 도구는 모두 read·meta:read', () => {
     for (const n of ['meta_ads_get_object', 'meta_ads_list_videos', 'meta_ads_list_activities']) {
       expect(tool(n).mode).toBe('read')

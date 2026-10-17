@@ -181,7 +181,7 @@ const after = z.string().min(1).max(512).optional().describe('이전 응답 pagi
 const getObject: ToolDefinition = {
   name: 'meta_ads_get_object',
   description:
-    '광고 세트·광고·소재·A/B 테스트 한 건의 상세를 반환합니다. adset: targeting·예산·기간·게재 상태·issues_info, ad: 게재 상태·검토 결과(ad_review_feedback)·소재, creative: object_story_spec·url_tags·degrees_of_freedom_spec, adstudy: cells·기간·쿨다운. 이 Space 광고 계정에 속한 객체만 조회합니다.',
+    '광고 세트·광고·소재·A/B 테스트 한 건의 상세를 반환합니다. adset: targeting·예산·기간·게재 상태·issues_info, ad: 게재 상태·검토 결과(ad_review_feedback)·소재, creative: object_story_spec·url_tags·degrees_of_freedom_spec, adstudy: cells·기간·쿨다운. 이 Space 광고 계정에 속한 객체만 조회합니다(adstudy는 cells의 캠페인·광고세트 소속을 하나씩 확인해 느릴 수 있고, cells 100개·항목 500개를 넘으면 거부합니다).',
   inputSchema: {
     brand,
     type: z.enum(['adset', 'ad', 'creative', 'adstudy']),
@@ -235,6 +235,9 @@ const listActivities: ToolDefinition = {
   mode: 'read',
   scope: 'meta:read',
   async execute(ctx, p) {
+    if (p.since && p.until && (p.since as string) > (p.until as string)) {
+      throw new ToolUserError('since는 until보다 늦을 수 없습니다')
+    }
     const cred = await loadMetaCred(ctx.spaceId, ctx.decryptedCredentialIds)
     const account = resolveAdAccount(cred.config, p.brand as string | undefined)
     return graphRequest(cred, 'GET', `/${account}/activities`, {
