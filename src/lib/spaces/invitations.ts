@@ -12,7 +12,6 @@ type Reason =
   | 'accepted'
   | 'email_mismatch'
   | 'email_unverified'
-  | 'personal_space'
   | 'already_member'
   | 'too_many'
 
@@ -23,7 +22,6 @@ const MESSAGES: Record<Reason, string> = {
   accepted: '이미 사용한 초대입니다',
   email_mismatch: '초대받은 이메일 계정으로 로그인하세요',
   email_unverified: '이메일 인증을 마친 뒤 수락하세요',
-  personal_space: '개인 Space에는 초대할 수 없습니다',
   already_member: '이미 이 Space의 구성원입니다',
   too_many: '대기 중인 초대가 너무 많습니다. 쓰지 않는 초대를 취소하세요',
 }
@@ -78,7 +76,6 @@ export async function createInvitation(input: {
     select: { id: true, type: true },
   })
   if (!space) throw new InvitationError(404, 'not_found')
-  if (space.type === 'PERSONAL') throw new InvitationError(400, 'personal_space')
 
   const member = await prisma.spaceMember.findFirst({
     where: { spaceId: input.spaceId, user: { email: { equals: email, mode: 'insensitive' } } },
@@ -97,6 +94,16 @@ export async function createInvitation(input: {
     where: { spaceId: input.spaceId, email, ...pendingWhere(now) },
     data: { revokedAt: now },
   })
+
+  // 개인 Space의 첫 초대는 팀 Space로 전환한다(OWNER+MFA 경로만 여기 온다). 이미 전환됐으면 0건.
+  const converted =
+    space.type === 'PERSONAL' &&
+    (
+      await prisma.space.updateMany({
+        where: { id: space.id, type: 'PERSONAL' },
+        data: { type: 'ORGANIZATION' },
+      })
+    ).count > 0
 
   const token = randomBytes(32).toString('base64url')
   const invitation = await prisma.spaceInvitation.create({
@@ -118,6 +125,7 @@ export async function createInvitation(input: {
       expiresAt: Date
     },
     token,
+    converted,
   }
 }
 

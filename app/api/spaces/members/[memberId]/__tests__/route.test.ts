@@ -2,9 +2,15 @@
 jest.mock('@/lib/agent/identity/space-admin', () => ({ requireSpaceOwner: jest.fn() }))
 jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
 jest.mock('@/lib/admin/auth', () => ({ writeAuditLog: jest.fn() }))
-jest.mock('@/lib/prisma', () => ({
-  prisma: { spaceMember: { findUnique: jest.fn(), updateMany: jest.fn(), deleteMany: jest.fn() } },
-}))
+jest.mock('@/lib/prisma', () => {
+  const p = {
+    spaceMember: { findUnique: jest.fn(), updateMany: jest.fn(), deleteMany: jest.fn() },
+    agentPendingAction: { updateMany: jest.fn() },
+    $transaction: jest.fn(),
+  }
+  p.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(p))
+  return { prisma: p }
+})
 
 import { NextResponse } from 'next/server'
 import { requireSpaceOwner } from '@/lib/agent/identity/space-admin'
@@ -17,6 +23,8 @@ const m = prisma.spaceMember as unknown as Record<
   'findUnique' | 'updateMany' | 'deleteMany',
   jest.Mock
 >
+const pa = (prisma as unknown as { agentPendingAction: { updateMany: jest.Mock } })
+  .agentPendingAction
 const ctx = (memberId = 'm-2') => ({ params: Promise.resolve({ memberId }) })
 const patch = (body: unknown, id?: string) =>
   PATCH(new Request('http://x', { method: 'PATCH', body: JSON.stringify(body) }), ctx(id))
@@ -27,6 +35,7 @@ beforeEach(() => {
   m.findUnique.mockResolvedValue({ id: 'm-2', spaceId: 'sp-1', userId: 'u-2', role: 'ADMIN' })
   m.updateMany.mockResolvedValue({ count: 1 })
   m.deleteMany.mockResolvedValue({ count: 1 })
+  pa.updateMany.mockResolvedValue({ count: 0 })
   ;(requireSpaceOwner as jest.Mock).mockResolvedValue({ userId: 'u-owner' })
   ;(requireAal2 as jest.Mock).mockResolvedValue(null)
 })
@@ -63,8 +72,23 @@ test('OWNER 가 내보내면 삭제하고 감사 로그를 남긴다', async () 
       spaceId: 'sp-1',
       userId: 'u-2',
       role: 'ADMIN',
+      rejectedActions: 0,
     }
   )
+})
+
+test('내보낸 사람이 요청한 승인 대기 건은 거절하고 건수를 감사 로그에 남긴다', async () => {
+  pa.updateMany.mockResolvedValue({ count: 2 })
+  expect((await del()).status).toBe(200)
+  expect(pa.updateMany).toHaveBeenCalledWith({
+    where: { spaceId: 'sp-1', requesterUserId: 'u-2', status: 'PENDING' },
+    data: expect.objectContaining({
+      status: 'REJECTED',
+      decidedBy: 'u-owner',
+      error: '요청자 내보냄',
+    }),
+  })
+  expect((writeAuditLog as jest.Mock).mock.calls[0][4]).toMatchObject({ rejectedActions: 2 })
 })
 
 test('없는 구성원 404', async () => {
@@ -124,4 +148,5 @@ test('확인 뒤 OWNER 로 바뀌었거나 지워졌으면 404 이고 감사 로
   expect((await patch({ role: 'MEMBER' })).status).toBe(404)
   expect((await del()).status).toBe(404)
   expect(writeAuditLog).not.toHaveBeenCalled()
+  expect(pa.updateMany).not.toHaveBeenCalled()
 })

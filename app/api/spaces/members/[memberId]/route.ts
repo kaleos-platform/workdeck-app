@@ -63,14 +63,29 @@ export async function DELETE(_request: Request, { params }: Ctx) {
   if ('error' in g) return g.error
   const { target, ownerId } = g
 
-  const { count } = await prisma.spaceMember.deleteMany({
-    where: { id: target.id, spaceId: target.spaceId, role: { not: 'OWNER' } },
+  // 내보낸 사람이 요청한 승인 대기 건은 같은 트랜잭션에서 거절한다 — 모르고 승인하지 않게.
+  const removed = await prisma.$transaction(async (tx) => {
+    const { count } = await tx.spaceMember.deleteMany({
+      where: { id: target.id, spaceId: target.spaceId, role: { not: 'OWNER' } },
+    })
+    if (count === 0) return null
+    const rejected = await tx.agentPendingAction.updateMany({
+      where: { spaceId: target.spaceId, requesterUserId: target.userId, status: 'PENDING' },
+      data: {
+        status: 'REJECTED',
+        decidedBy: ownerId,
+        decidedAt: new Date(),
+        error: '요청자 내보냄',
+      },
+    })
+    return { rejectedActions: rejected.count }
   })
-  if (count === 0) return errorResponse(NOT_FOUND, 404)
+  if (!removed) return errorResponse(NOT_FOUND, 404)
   await writeAuditLog(ownerId, 'space.member.remove', 'space_member', target.id, {
     spaceId: target.spaceId,
     userId: target.userId,
     role: target.role,
+    rejectedActions: removed.rejectedActions,
   })
   return NextResponse.json({ ok: true })
 }
