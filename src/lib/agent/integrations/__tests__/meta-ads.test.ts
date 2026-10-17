@@ -299,11 +299,14 @@ describe('meta-ads (포팅)', () => {
     expect(s).not.toMatch(/tok-x|proof-y|"z"/)
   })
 
-  it('MCP 도구는 조회 4 + 제안 1 — 승인·실행 도구는 노출하지 않는다', () => {
+  it('MCP 도구는 조회 7 + 제안 1 — 승인·실행 도구는 노출하지 않는다', () => {
     expect(metaAdsTools.map((t) => t.name)).toEqual([
       'meta_ads_list_campaigns',
       'meta_ads_list_ads',
       'meta_ads_get_insights',
+      'meta_ads_get_object',
+      'meta_ads_list_videos',
+      'meta_ads_list_activities',
       'meta_ads_propose_action',
       'meta_ads_list_actions',
     ])
@@ -825,5 +828,82 @@ describe('meta-ads (포팅)', () => {
     await expect(
       fetchAdAccountCurrencies({ accessToken: 'token', appSecret: 'secret' }, CONFIG)
     ).rejects.toThrow('Unsupported get request')
+  })
+})
+
+describe('PR4 객체·영상·활동 조회', () => {
+  const urls = () => fetchMock.mock.calls.map((c) => new URL(c[0]))
+
+  it('get_object(adset): 계정 소속 확인 후 고정 필드로 조회', async () => {
+    fetchMock
+      .mockResolvedValueOnce(ok({ account_id: '111' }))
+      .mockResolvedValueOnce(ok({ id: '5' }))
+    await tool('meta_ads_get_object').execute(ctx(), {
+      brand: 'brand-a',
+      type: 'adset',
+      object_id: '5',
+    })
+    const [check, get] = urls()
+    expect(check.pathname).toBe('/v26.0/5')
+    expect(check.searchParams.get('fields')).toBe('account_id')
+    expect(get.pathname).toBe('/v26.0/5')
+    expect(get.searchParams.get('fields')).toMatch(/targeting.*daily_budget.*issues_info/)
+  })
+
+  it('get_object: 다른 계정 객체는 상세를 조회하지 않고 거부', async () => {
+    fetchMock.mockResolvedValueOnce(ok({ account_id: '999' }))
+    await expect(
+      tool('meta_ads_get_object').execute(ctx(), { brand: 'brand-a', type: 'ad', object_id: '7' })
+    ).rejects.toThrow('이 Space의 광고 계정에 속하지 않는 객체입니다')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('get_object(adstudy): 비즈니스가 다르면 거부', async () => {
+    fetchMock
+      .mockResolvedValueOnce(ok({ business: { id: 'b1' } }))
+      .mockResolvedValueOnce(ok({ business: { id: 'b2' }, cells: { data: [] } }))
+    await expect(
+      tool('meta_ads_get_object').execute(ctx(), {
+        brand: 'brand-a',
+        type: 'adstudy',
+        object_id: '9',
+      })
+    ).rejects.toThrow('이 Space 광고 계정의 비즈니스가 아닙니다')
+  })
+
+  it('get_object: object_id 는 숫자만, type 은 정해진 값만', () => {
+    const schema = z.object(tool('meta_ads_get_object').inputSchema)
+    expect(schema.safeParse({ type: 'adset', object_id: '../me' }).success).toBe(false)
+    expect(schema.safeParse({ type: 'campaign', object_id: '1' }).success).toBe(false)
+  })
+
+  it('list_videos: 브랜드 계정 advideos, 썸네일 포함, after 전달', async () => {
+    await tool('meta_ads_list_videos').execute(ctx(), { brand: 'brand-b', after: 'CUR' })
+    const u = urls()[0]
+    expect(u.pathname).toBe('/v26.0/act_222/advideos')
+    expect(u.searchParams.get('fields')).toMatch(/thumbnails\{/)
+    expect(u.searchParams.get('after')).toBe('CUR')
+    expect(u.searchParams.get('limit')).toBe('25')
+  })
+
+  it('list_activities: 계정 activities, since·until 전달, 날짜 형식 검사', async () => {
+    await tool('meta_ads_list_activities').execute(ctx(), {
+      brand: 'brand-a',
+      since: '2026-10-13',
+      until: '2026-10-17',
+    })
+    const u = urls()[0]
+    expect(u.pathname).toBe('/v26.0/act_111/activities')
+    expect(u.searchParams.get('since')).toBe('2026-10-13')
+    expect(u.searchParams.get('until')).toBe('2026-10-17')
+    const schema = z.object(tool('meta_ads_list_activities').inputSchema)
+    expect(schema.safeParse({ since: '2026/10/13' }).success).toBe(false)
+  })
+
+  it('새 도구는 모두 read·meta:read', () => {
+    for (const n of ['meta_ads_get_object', 'meta_ads_list_videos', 'meta_ads_list_activities']) {
+      expect(tool(n).mode).toBe('read')
+      expect(tool(n).scope).toBe('meta:read')
+    }
   })
 })

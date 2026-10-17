@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import {
   META_ACTIONS,
+  assertActionInAccount,
   assertMetaTarget,
   assertObjectInAccount,
   graphRequest,
@@ -163,10 +164,97 @@ const proposeAction: ToolDefinition = {
   },
 }
 
+// 객체 상세 — 유형마다 필드를 고정한다(임의 fields 를 받지 않는다).
+const OBJECT_FIELDS = {
+  adset:
+    'id,name,campaign_id,status,effective_status,configured_status,targeting,daily_budget,lifetime_budget,bid_strategy,optimization_goal,billing_event,start_time,end_time,issues_info,updated_time',
+  ad: 'id,name,campaign_id,adset_id,status,effective_status,configured_status,ad_review_feedback,issues_info,creative{id,name},updated_time',
+  creative:
+    'id,name,status,object_story_spec,object_story_id,effective_object_story_id,asset_feed_spec,url_tags,degrees_of_freedom_spec,thumbnail_url',
+  adstudy:
+    'id,name,type,description,start_time,end_time,cooldown_start_time,observation_end_time,cells{id,name,treatment_percentage,adsets{id,name},campaigns{id,name}}',
+} as const
+const NUMERIC = /^\d+$/
+const DAY_ONLY = /^\d{4}-\d{2}-\d{2}$/
+const after = z.string().min(1).max(512).optional().describe('이전 응답 paging.cursors.after')
+
+const getObject: ToolDefinition = {
+  name: 'meta_ads_get_object',
+  description:
+    '광고 세트·광고·소재·A/B 테스트 한 건의 상세를 반환합니다. adset: targeting·예산·기간·게재 상태·issues_info, ad: 게재 상태·검토 결과(ad_review_feedback)·소재, creative: object_story_spec·url_tags·degrees_of_freedom_spec, adstudy: cells·기간·쿨다운. 이 Space 광고 계정에 속한 객체만 조회합니다.',
+  inputSchema: {
+    brand,
+    type: z.enum(['adset', 'ad', 'creative', 'adstudy']),
+    object_id: z.string().regex(NUMERIC),
+  },
+  mode: 'read',
+  scope: 'meta:read',
+  async execute(ctx, p) {
+    const cred = await loadMetaCred(ctx.spaceId, ctx.decryptedCredentialIds)
+    const account = resolveAdAccount(cred.config, p.brand as string | undefined)
+    const id = p.object_id as string
+    const type = p.type as keyof typeof OBJECT_FIELDS
+    // Space 경계: 광고 세트·광고·소재는 account_id, A/B 테스트는 비즈니스·cells 소속으로 확인한다(수정 검사와 같은 규칙).
+    if (type === 'adstudy')
+      await assertActionInAccount(cred, 'adstudy.update', { study_id: id }, account)
+    else await assertObjectInAccount(cred, id, account)
+    return graphRequest(cred, 'GET', `/${id}`, { fields: OBJECT_FIELDS[type] })
+  },
+}
+
+const listVideos: ToolDefinition = {
+  name: 'meta_ads_list_videos',
+  description:
+    '선택한 브랜드 광고 계정의 영상 목록(제목·길이·처리 상태·썸네일)을 최신순으로 반환합니다. 광고 관리자에서 올린 영상의 id를 찾아 creative.create 제안에 쓸 때 사용합니다.',
+  inputSchema: { brand, limit: z.number().int().min(1).max(100).optional(), after },
+  mode: 'read',
+  scope: 'meta:read',
+  async execute(ctx, p) {
+    const cred = await loadMetaCred(ctx.spaceId, ctx.decryptedCredentialIds)
+    const account = resolveAdAccount(cred.config, p.brand as string | undefined)
+    return graphRequest(cred, 'GET', `/${account}/advideos`, {
+      fields:
+        'id,title,length,status,created_time,updated_time,thumbnails{uri,is_preferred,width,height}',
+      limit: (p.limit as number | undefined) ?? 25,
+      after: p.after as string | undefined,
+    })
+  },
+}
+
+const listActivities: ToolDefinition = {
+  name: 'meta_ads_list_activities',
+  description:
+    '선택한 브랜드 광고 계정의 변경 기록(언제·누가·어떤 객체를·무엇을 바꿨는지)을 최신순으로 반환합니다. since·until(YYYY-MM-DD)로 기간을 좁힐 수 있습니다.',
+  inputSchema: {
+    brand,
+    since: z.string().regex(DAY_ONLY).optional(),
+    until: z.string().regex(DAY_ONLY).optional(),
+    limit: z.number().int().min(1).max(100).optional(),
+    after,
+  },
+  mode: 'read',
+  scope: 'meta:read',
+  async execute(ctx, p) {
+    const cred = await loadMetaCred(ctx.spaceId, ctx.decryptedCredentialIds)
+    const account = resolveAdAccount(cred.config, p.brand as string | undefined)
+    return graphRequest(cred, 'GET', `/${account}/activities`, {
+      fields:
+        'event_time,event_type,translated_event_type,actor_id,actor_name,object_id,object_name,object_type,extra_data,date_time_in_timezone',
+      since: p.since as string | undefined,
+      until: p.until as string | undefined,
+      limit: (p.limit as number | undefined) ?? 50,
+      after: p.after as string | undefined,
+    })
+  },
+}
+
 export const metaAdsTools: ToolDefinition[] = [
   listCampaigns,
   listAds,
   getInsights,
+  getObject,
+  listVideos,
+  listActivities,
   proposeAction,
   makeListActionsTool({
     name: 'meta_ads_list_actions',
