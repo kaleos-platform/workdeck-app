@@ -73,6 +73,14 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const [baseManagementName, setBaseManagementName] = useState('')
   const [internalCode, setInternalCode] = useState('')
   const [memo, setMemo] = useState('')
+  // 상품 페이지 URL — 직접 입력하거나 "불러오기"로 채널·상품명을 함께 추정한다.
+  const [pageUrl, setPageUrl] = useState('')
+  const [urlLoading, setUrlLoading] = useState(false)
+  const [urlHint, setUrlHint] = useState<{
+    candidates: Array<{ id: string; name: string }>
+    searchName: string | null
+    fetchError: string | null
+  } | null>(null)
   const [keywords, setKeywords] = useState<string[]>([])
 
   const [productCtx, setProductCtx] = useState<ProductContext | null>(null)
@@ -595,6 +603,42 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     }
   }
 
+  async function handleLoadFromUrl() {
+    const url = pageUrl.trim()
+    if (!url) {
+      toast.error('상품 페이지 URL 을 입력해 주세요')
+      return
+    }
+    setUrlLoading(true)
+    try {
+      const res = await fetch('/api/sh/products/listings/from-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data?.message ?? 'URL 을 불러오지 못했습니다')
+        return
+      }
+      setPageUrl(data.pageUrl)
+      // 이미 다른 채널을 골랐다면 조용히 덮어쓰지 않고 후보만 안내한다.
+      if (data.channelId && !channelId) setChannelId(data.channelId)
+      const autoPicked = data.channelId && !channelId
+      const fillName = data.searchName && !baseSearchName.trim()
+      if (fillName) setBaseSearchName(data.searchName)
+      setUrlHint({
+        candidates: autoPicked ? [] : (data.candidates ?? []),
+        searchName: data.searchName && !fillName ? data.searchName : null,
+        fetchError: data.fetchError ?? null,
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'URL 을 불러오지 못했습니다')
+    } finally {
+      setUrlLoading(false)
+    }
+  }
+
   const readyToSave =
     channelId.trim().length > 0 && baseSearchName.trim().length > 0 && rows.length > 0
 
@@ -612,6 +656,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       baseManagementName: baseManagementName.trim() || undefined,
       baseInternalCode: internalCode.trim() || undefined,
       memo: memo.trim() || undefined,
+      pageUrl: pageUrl.trim() || undefined,
       keywords,
       listings: rows.map((row) => ({
         // manual 모드(manualNames 있음): row 자체 이름 우선, suffix 없음
@@ -695,6 +740,66 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
+          <div className="space-y-1.5 rounded-md border bg-muted/30 p-3">
+            <Label htmlFor="listing-page-url">상품 페이지 URL로 불러오기</Label>
+            <div className="flex gap-2">
+              <Input
+                id="listing-page-url"
+                value={pageUrl}
+                onChange={(e) => setPageUrl(e.target.value)}
+                placeholder="https://… 판매채널에 올린 상품 페이지 주소"
+                maxLength={2000}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleLoadFromUrl}
+                disabled={urlLoading || !pageUrl.trim()}
+              >
+                {urlLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+                불러오기
+              </Button>
+            </div>
+            {urlHint?.candidates && urlHint.candidates.length > 0 && (
+              <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                판매채널을 선택하세요:
+                {urlHint.candidates.map((c) => (
+                  <Button
+                    key={c.id}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => setChannelId(c.id)}
+                  >
+                    {c.name}
+                  </Button>
+                ))}
+              </p>
+            )}
+            {urlHint?.searchName && (
+              <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                불러온 상품명: {urlHint.searchName}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => {
+                    setBaseSearchName(urlHint.searchName ?? '')
+                    setUrlHint({ ...urlHint, searchName: null })
+                  }}
+                >
+                  적용
+                </Button>
+              </p>
+            )}
+            {urlHint?.fetchError && (
+              <p className="text-xs text-amber-600">
+                상품명을 자동으로 가져오지 못했습니다 — URL만 저장됩니다 ({urlHint.fetchError})
+              </p>
+            )}
+          </div>
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="listing-channel">판매채널 *</Label>

@@ -13099,6 +13099,7 @@ export const ChannelScalarFieldEnum = {
   isActive: 'isActive',
   useSimulation: 'useSimulation',
   adminUrl: 'adminUrl',
+  storeUrl: 'storeUrl',
   freeShipping: 'freeShipping',
   freeShippingThreshold: 'freeShippingThreshold',
   usesMarketingBudget: 'usesMarketingBudget',
@@ -13314,6 +13315,7 @@ export const ProductListingScalarFieldEnum = {
   displayName: 'displayName',
   managementName: 'managementName',
   keywords: 'keywords',
+  pageUrl: 'pageUrl',
   retailPrice: 'retailPrice',
   channelStock: 'channelStock',
   status: 'status',
@@ -13369,6 +13371,7 @@ export const ChannelProductScalarFieldEnum = {
   baseInternalCode: 'baseInternalCode',
   memo: 'memo',
   keywords: 'keywords',
+  pageUrl: 'pageUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

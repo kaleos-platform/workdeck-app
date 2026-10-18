@@ -117,6 +117,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       autoAvailableStock: available,
       channelStock: listing.channelStock,
       memo: listing.memo,
+      pageUrl: listing.pageUrl,
       items: listing.items.map((it) => ({
         optionId: it.optionId,
         optionName: it.option.name,
@@ -234,6 +235,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         channelStock: input.channelStock === undefined ? undefined : input.channelStock,
         status: input.status ?? undefined,
         memo: input.memo === undefined ? undefined : input.memo,
+        pageUrl: input.pageUrl,
       },
     })
     if (input.items) {

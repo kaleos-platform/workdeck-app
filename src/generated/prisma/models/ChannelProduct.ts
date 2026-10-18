@@ -33,6 +33,7 @@ export type ChannelProductMinAggregateOutputType = {
   baseManagementName: string | null
   baseInternalCode: string | null
   memo: string | null
+  pageUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -46,6 +47,7 @@ export type ChannelProductMaxAggregateOutputType = {
   baseManagementName: string | null
   baseInternalCode: string | null
   memo: string | null
+  pageUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +62,7 @@ export type ChannelProductCountAggregateOutputType = {
   baseInternalCode: number
   memo: number
   keywords: number
+  pageUrl: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -75,6 +78,7 @@ export type ChannelProductMinAggregateInputType = {
   baseManagementName?: true
   baseInternalCode?: true
   memo?: true
+  pageUrl?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,6 +92,7 @@ export type ChannelProductMaxAggregateInputType = {
   baseManagementName?: true
   baseInternalCode?: true
   memo?: true
+  pageUrl?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -102,6 +107,7 @@ export type ChannelProductCountAggregateInputType = {
   baseInternalCode?: true
   memo?: true
   keywords?: true
+  pageUrl?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -189,6 +195,7 @@ export type ChannelProductGroupByOutputType = {
   baseInternalCode: string | null
   memo: string | null
   keywords: runtime.JsonValue
+  pageUrl: string | null
   createdAt: Date
   updatedAt: Date
   _count: ChannelProductCountAggregateOutputType | null
@@ -224,6 +231,7 @@ export type ChannelProductWhereInput = {
   baseInternalCode?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   memo?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   keywords?: Prisma.JsonFilter<"ChannelProduct">
+  pageUrl?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -242,6 +250,7 @@ export type ChannelProductOrderByWithRelationInput = {
   baseInternalCode?: Prisma.SortOrderInput | Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   keywords?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -263,6 +272,7 @@ export type ChannelProductWhereUniqueInput = Prisma.AtLeast<{
   baseInternalCode?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   memo?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   keywords?: Prisma.JsonFilter<"ChannelProduct">
+  pageUrl?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -281,6 +291,7 @@ export type ChannelProductOrderByWithAggregationInput = {
   baseInternalCode?: Prisma.SortOrderInput | Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   keywords?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ChannelProductCountOrderByAggregateInput
@@ -301,6 +312,7 @@ export type ChannelProductScalarWhereWithAggregatesInput = {
   baseInternalCode?: Prisma.StringNullableWithAggregatesFilter<"ChannelProduct"> | string | null
   memo?: Prisma.StringNullableWithAggregatesFilter<"ChannelProduct"> | string | null
   keywords?: Prisma.JsonWithAggregatesFilter<"ChannelProduct">
+  pageUrl?: Prisma.StringNullableWithAggregatesFilter<"ChannelProduct"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ChannelProduct"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ChannelProduct"> | Date | string
 }
@@ -313,6 +325,7 @@ export type ChannelProductCreateInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
@@ -331,6 +344,7 @@ export type ChannelProductUncheckedCreateInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
@@ -345,6 +359,7 @@ export type ChannelProductUpdateInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
@@ -363,6 +378,7 @@ export type ChannelProductUncheckedUpdateInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
@@ -379,6 +395,7 @@ export type ChannelProductCreateManyInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -391,6 +408,7 @@ export type ChannelProductUpdateManyMutationInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -405,6 +423,7 @@ export type ChannelProductUncheckedUpdateManyInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -434,6 +453,7 @@ export type ChannelProductCountOrderByAggregateInput = {
   baseInternalCode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
   keywords?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -447,6 +467,7 @@ export type ChannelProductMaxOrderByAggregateInput = {
   baseManagementName?: Prisma.SortOrder
   baseInternalCode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -460,6 +481,7 @@ export type ChannelProductMinOrderByAggregateInput = {
   baseManagementName?: Prisma.SortOrder
   baseInternalCode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -588,6 +610,7 @@ export type ChannelProductCreateWithoutSpaceInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   channel: Prisma.ChannelCreateNestedOneWithoutChannelProductsInput
@@ -604,6 +627,7 @@ export type ChannelProductUncheckedCreateWithoutSpaceInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
@@ -649,6 +673,7 @@ export type ChannelProductScalarWhereInput = {
   baseInternalCode?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   memo?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   keywords?: Prisma.JsonFilter<"ChannelProduct">
+  pageUrl?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
 }
@@ -661,6 +686,7 @@ export type ChannelProductCreateWithoutChannelInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
@@ -677,6 +703,7 @@ export type ChannelProductUncheckedCreateWithoutChannelInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
@@ -717,6 +744,7 @@ export type ChannelProductCreateWithoutListingsInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
@@ -734,6 +762,7 @@ export type ChannelProductUncheckedCreateWithoutListingsInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutChannelProductInput
@@ -763,6 +792,7 @@ export type ChannelProductUpdateWithoutListingsInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
@@ -780,6 +810,7 @@ export type ChannelProductUncheckedUpdateWithoutListingsInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutChannelProductNestedInput
@@ -793,6 +824,7 @@ export type ChannelProductCreateWithoutKeywordChangesInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
@@ -810,6 +842,7 @@ export type ChannelProductUncheckedCreateWithoutKeywordChangesInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
@@ -839,6 +872,7 @@ export type ChannelProductUpdateWithoutKeywordChangesInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
@@ -856,6 +890,7 @@ export type ChannelProductUncheckedUpdateWithoutKeywordChangesInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
@@ -870,6 +905,7 @@ export type ChannelProductCreateManySpaceInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -882,6 +918,7 @@ export type ChannelProductUpdateWithoutSpaceInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneRequiredWithoutChannelProductsNestedInput
@@ -898,6 +935,7 @@ export type ChannelProductUncheckedUpdateWithoutSpaceInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
@@ -913,6 +951,7 @@ export type ChannelProductUncheckedUpdateManyWithoutSpaceInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -926,6 +965,7 @@ export type ChannelProductCreateManyChannelInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -938,6 +978,7 @@ export type ChannelProductUpdateWithoutChannelInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
@@ -954,6 +995,7 @@ export type ChannelProductUncheckedUpdateWithoutChannelInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
@@ -969,6 +1011,7 @@ export type ChannelProductUncheckedUpdateManyWithoutChannelInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1023,6 +1066,7 @@ export type ChannelProductSelect<ExtArgs extends runtime.Types.Extensions.Intern
   baseInternalCode?: boolean
   memo?: boolean
   keywords?: boolean
+  pageUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1042,6 +1086,7 @@ export type ChannelProductSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   baseInternalCode?: boolean
   memo?: boolean
   keywords?: boolean
+  pageUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1058,6 +1103,7 @@ export type ChannelProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   baseInternalCode?: boolean
   memo?: boolean
   keywords?: boolean
+  pageUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1074,11 +1120,12 @@ export type ChannelProductSelectScalar = {
   baseInternalCode?: boolean
   memo?: boolean
   keywords?: boolean
+  pageUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ChannelProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "baseSearchName" | "baseDisplayName" | "baseManagementName" | "baseInternalCode" | "memo" | "keywords" | "createdAt" | "updatedAt", ExtArgs["result"]["channelProduct"]>
+export type ChannelProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "baseSearchName" | "baseDisplayName" | "baseManagementName" | "baseInternalCode" | "memo" | "keywords" | "pageUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["channelProduct"]>
 export type ChannelProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
@@ -1113,6 +1160,7 @@ export type $ChannelProductPayload<ExtArgs extends runtime.Types.Extensions.Inte
     baseInternalCode: string | null
     memo: string | null
     keywords: runtime.JsonValue
+    pageUrl: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["channelProduct"]>
@@ -1551,6 +1599,7 @@ export interface ChannelProductFieldRefs {
   readonly baseInternalCode: Prisma.FieldRef<"ChannelProduct", 'String'>
   readonly memo: Prisma.FieldRef<"ChannelProduct", 'String'>
   readonly keywords: Prisma.FieldRef<"ChannelProduct", 'Json'>
+  readonly pageUrl: Prisma.FieldRef<"ChannelProduct", 'String'>
   readonly createdAt: Prisma.FieldRef<"ChannelProduct", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ChannelProduct", 'DateTime'>
 }

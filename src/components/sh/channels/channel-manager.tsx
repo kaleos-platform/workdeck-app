@@ -45,6 +45,7 @@ type Channel = {
   channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
   useSimulation: boolean
   adminUrl: string | null
+  storeUrl?: string | null
   freeShipping: boolean
   freeShippingThreshold: number | null
   feeRates: { categoryName: string; ratePercent: number }[]

@@ -6,6 +6,7 @@ import {
   PRODUCT_LIST_FIELD_MAX_ITEMS,
   PRODUCT_LIST_FIELD_MAX_ITEM_LENGTH,
 } from '@/lib/sh/constants'
+import { normalizeHttpUrl } from '@/lib/sh/product-page-url'
 
 // ─── 공용 id 검증 ──────────────────────────────────────────────────────────────
 //
@@ -18,6 +19,21 @@ const idLike = z.string().min(8).max(64)
 // 빈 문자열이나 null을 undefined로 정규화하는 전처리기 — 프론트가 비어있는 필드를
 // null 또는 ''로 보내는 케이스를 모두 허용한다
 const emptyToUndefined = z.preprocess((v) => (v === null || v === '' ? undefined : v), z.string())
+
+// 선택 http(s) URL — ''/null → null, undefined → 미전달(PATCH 시 미변경)
+const nullableHttpUrl = (max: number) =>
+  z
+    .preprocess(
+      (v) => (typeof v === 'string' ? v.trim() || null : v),
+      z.union([
+        z
+          .string()
+          .max(max)
+          .refine((s) => normalizeHttpUrl(s) !== null, 'http(s) URL 형식이 아닙니다'),
+        z.null(),
+      ])
+    )
+    .optional()
 
 export const brandSchema = z.object({
   name: z.string().min(1, '브랜드명을 입력하세요').max(100),
@@ -205,6 +221,8 @@ export const channelSchema = z.object({
   // adminUrl/숫자 필드: null/'' 입력을 undefined로 정규화한 뒤 inner schema가 undefined도 허용하도록
   // .optional()은 반드시 inner schema에 붙여야 함 (preprocess 결과가 undefined여도 통과)
   adminUrl: z.preprocess(toUndef, z.string().url().optional()),
+  // 상점 주소 — 상품 페이지 URL 로 판매채널을 추정할 때 쓴다. ''/null=해제.
+  storeUrl: nullableHttpUrl(500),
   freeShipping: z.boolean().default(false),
   freeShippingThreshold: z.preprocess(toOptionalNumber, z.number().nonnegative().optional()),
   usesMarketingBudget: z.boolean().default(false),
@@ -310,6 +328,9 @@ export const productListingItemSchema = z.object({
 })
 export type ProductListingItemInput = z.infer<typeof productListingItemSchema>
 
+// 상품 페이지 URL — ChannelProduct / ProductListing 공용
+export const pageUrlSchema = nullableHttpUrl(2000)
+
 // 리스팅·채널상품이 함께 쓰는 등록 키워드 규칙 — 항목 trim 후 1~50자, 최대 30개.
 export const keywordListSchema = z
   .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
@@ -338,6 +359,7 @@ export const productListingSchema = z
       .optional(),
     status: z.enum(['ACTIVE', 'SUSPENDED']).default('ACTIVE'),
     memo: emptyToUndefined.pipe(z.string().trim().max(500)).optional(),
+    pageUrl: pageUrlSchema,
     items: z.array(productListingItemSchema).min(1, '구성 옵션을 1개 이상 추가해 주세요').max(50),
   })
   .superRefine((v, ctx) => {
@@ -379,6 +401,7 @@ export const productListingPatchSchema = z
       .optional(),
     status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
     memo: emptyToUndefined.pipe(z.string().trim().max(500)).optional().nullable(),
+    pageUrl: pageUrlSchema,
     items: z.array(productListingItemSchema).min(1).max(50).optional(),
   })
   .superRefine((v, ctx) => {
