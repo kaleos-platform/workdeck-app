@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { ActionDefinition } from './types'
 import { prisma } from '@/lib/prisma'
+import { ToolUserError } from '@/lib/agent/tools/errors'
 import type { AnalysisType } from '@/generated/prisma/enums'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
@@ -18,7 +19,7 @@ async function requireSpaceWorkspace(
     where: { id: workspaceId, spaceId },
     select: { id: true },
   })
-  if (!ws) throw new Error('이 공간에 연결된 워크스페이스가 아닙니다')
+  if (!ws) throw new ToolUserError('이 공간에 연결된 워크스페이스가 아닙니다')
   return ws
 }
 
