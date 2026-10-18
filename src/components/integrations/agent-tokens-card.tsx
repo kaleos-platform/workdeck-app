@@ -24,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useCurrentSpaceName } from '@/hooks/use-current-space'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { SCOPES } from '@/lib/agent/identity/principal'
 import { CopyCodeBlock } from './copy-code-block'
@@ -68,7 +67,8 @@ export function AgentTokensCard() {
   const [pending, setPending] = useState(false)
   const [edit, setEdit] = useState<EditTarget | null>(null)
   const [issue, setIssue] = useState<Issued | null>(null)
-  const spaceName = useCurrentSpaceName()
+  // 쓰기 대상(spaceId)과 같은 응답의 이름 — 다른 탭에서 전환해도 표시와 대상이 어긋나지 않는다.
+  const [spaceName, setSpaceName] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setError(null)
@@ -77,6 +77,7 @@ export function AgentTokensCard() {
       const body = await res.json().catch(() => null)
       if (!res.ok) return setError(body?.message ?? '에이전트 목록을 불러오지 못했습니다')
       setSpaceId(body.spaceId)
+      setSpaceName(body.spaceName ?? null)
       const ar = await fetch(`/api/spaces/${body.spaceId}/agents`)
       const ab = await ar.json().catch(() => null)
       if (!ar.ok) return setError(ab?.message ?? '에이전트 목록을 불러오지 못했습니다')

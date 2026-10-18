@@ -1,9 +1,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { useCurrentSpaceName } from '../use-current-space'
+import { useCurrentSpace, useCurrentSpaceName } from '../use-current-space'
 
-let current: { name: string } | null
+let current: { id: string; name: string } | null
 beforeEach(() => {
-  current = { name: 'Space A' }
+  current = { id: 'sp-a', name: 'Space A' }
   global.fetch = jest.fn(async () => ({
     ok: true,
     json: async () => ({ current }),
@@ -14,7 +14,7 @@ it('처음 이름을 읽고, focus 시 다시 읽어 갱신한다', async () => 
   const { result } = renderHook(() => useCurrentSpaceName())
   expect(result.current).toBeNull()
   await waitFor(() => expect(result.current).toBe('Space A'))
-  current = { name: 'Space B' }
+  current = { id: 'sp-b', name: 'Space B' }
   act(() => {
     window.dispatchEvent(new Event('focus'))
   })
@@ -32,7 +32,7 @@ it('visibilitychange 는 보일 때만 다시 읽는다', async () => {
   })
   expect((global.fetch as jest.Mock).mock.calls.length).toBe(calls)
   vis.mockReturnValue('visible')
-  current = { name: 'Space B' }
+  current = { id: 'sp-b', name: 'Space B' }
   act(() => {
     document.dispatchEvent(new Event('visibilitychange'))
   })
@@ -52,7 +52,7 @@ it('언마운트 후에는 리스너를 제거하고 늦은 응답을 무시한�
   window.dispatchEvent(new Event('focus'))
   expect((global.fetch as jest.Mock).mock.calls.length).toBe(n)
   await act(async () => {
-    resolve({ ok: true, json: async () => ({ current: { name: 'Late' } }) })
+    resolve({ ok: true, json: async () => ({ current: { id: 'sp-l', name: 'Late' } }) })
   })
   expect(result.current).toBeNull()
   expect(err).not.toHaveBeenCalled()
@@ -67,7 +67,7 @@ it('오래된 응답이 최신 응답을 덮지 않는다', async () => {
   act(() => {
     window.dispatchEvent(new Event('focus'))
   })
-  const body = (name: string) => ({ ok: true, json: async () => ({ current: { name } }) })
+  const body = (name: string) => ({ ok: true, json: async () => ({ current: { id: name, name } }) })
   await act(async () => {
     resolvers[1](body('New'))
   })
@@ -75,4 +75,9 @@ it('오래된 응답이 최신 응답을 덮지 않는다', async () => {
     resolvers[0](body('Old'))
   })
   expect(result.current).toBe('New')
+})
+
+it('useCurrentSpace 는 id 와 이름을 함께 준다', async () => {
+  const { result } = renderHook(() => useCurrentSpace())
+  await waitFor(() => expect(result.current).toEqual({ id: 'sp-a', name: 'Space A' }))
 })

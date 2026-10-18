@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useCurrentSpaceName } from '@/hooks/use-current-space'
+import { useCurrentSpace } from '@/hooks/use-current-space'
 import { ExpiryCountdown } from './expiry-countdown'
 import { DECK_LABELS, SOURCE_LABELS, STATUS_LABELS, type AgentPendingActionDTO } from './types'
 
@@ -103,13 +103,15 @@ export function ApprovalDetailSheet({
   onDecided,
 }: ApprovalDetailSheetProps) {
   const [isDeciding, setIsDeciding] = useState(false)
-  const spaceName = useCurrentSpaceName()
+  const current = useCurrentSpace()
   const [outcomeNote, setOutcomeNote] = useState<{
     kind: 'executed' | 'failed' | 'conflict' | 'expired'
     message: string
   } | null>(null)
 
   if (!action) return null
+  // 승인 대상은 action.spaceId — 현재 Space 와 같을 때만 이름을 붙인다(다르면 기본 문구).
+  const spaceName = current?.id === action.spaceId ? current.name : null
 
   const beforeEntries = toEntries(action.beforeState)
   const isPending = action.status === 'PENDING'

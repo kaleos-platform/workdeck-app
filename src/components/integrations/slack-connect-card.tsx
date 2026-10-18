@@ -36,13 +36,21 @@ const SLACK_TOAST_MESSAGE: Record<string, { title: string; variant: 'default' | 
   },
 }
 
+// 화면에 보이는 Space(data.space)로 쓰기를 고정한다 — 없으면 서버가 쿠키(현재 Space)로 정한다.
+export function withSpace(url: string, spaceId: string | undefined): string {
+  if (!spaceId) return url
+  return `${url}${url.includes('?') ? '&' : '?'}spaceId=${encodeURIComponent(spaceId)}`
+}
+
 function ChannelRow({
   kind,
   channel,
+  spaceId,
   onSaved,
 }: {
   kind: SlackChannelKind
   channel: SlackChannelsResponse['channels'][number] | undefined
+  spaceId: string | undefined
   onSaved: () => void
 }) {
   const [channelId, setChannelId] = useState(channel?.channelId ?? '')
@@ -59,7 +67,7 @@ function ChannelRow({
     setSaving(true)
     setError(null)
     try {
-      const res = await fetch('/api/slack/channels', {
+      const res = await fetch(withSpace('/api/slack/channels', spaceId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ channelId: trimmed, kind }),
@@ -71,13 +79,13 @@ function ChannelRow({
     } finally {
       setSaving(false)
     }
-  }, [channelId, kind, onSaved])
+  }, [channelId, kind, spaceId, onSaved])
 
   const handleRemove = useCallback(async () => {
     setSaving(true)
     setError(null)
     try {
-      const res = await fetch(`/api/slack/channels?kind=${kind}`, {
+      const res = await fetch(withSpace(`/api/slack/channels?kind=${kind}`, spaceId), {
         method: 'DELETE',
       })
       if (res.ok) {
@@ -89,7 +97,7 @@ function ChannelRow({
     } finally {
       setSaving(false)
     }
-  }, [kind, onSaved])
+  }, [kind, spaceId, onSaved])
 
   return (
     <div className="space-y-1.5">
@@ -129,9 +137,11 @@ function ChannelRow({
 // 에이전트가 slack_post로 글을 올릴 수 있는 채널(여러 개). 승인·알림 채널에는 보내지 않는다.
 function AgentChannels({
   channels,
+  spaceId,
   onSaved,
 }: {
   channels: SlackChannelsResponse['channels']
+  spaceId: string | undefined
   onSaved: () => void
 }) {
   const [channelId, setChannelId] = useState('')
@@ -158,7 +168,7 @@ function AgentChannels({
 
   const handleAdd = () =>
     run(
-      '/api/slack/channels',
+      withSpace('/api/slack/channels', spaceId),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -168,7 +178,7 @@ function AgentChannels({
     )
   const handleRemove = (id: string) =>
     run(
-      `/api/slack/channels?kind=agent&channelId=${encodeURIComponent(id)}`,
+      withSpace(`/api/slack/channels?kind=agent&channelId=${encodeURIComponent(id)}`, spaceId),
       { method: 'DELETE' },
       '채널을 해제하지 못했습니다'
     )
@@ -234,6 +244,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
   const [data, setData] = useState<SlackChannelsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const spaceName = data?.space?.name ?? null
+  const spaceId = data?.space?.id
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -279,7 +290,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
             <AlertTitle>{toast.title}</AlertTitle>
             {slackStatus === 'team_changed' && (
               <Button asChild size="sm" variant="outline">
-                <Link href={'/api/slack/oauth/install?reconnect=1'}>
+                <Link href={withSpace('/api/slack/oauth/install?reconnect=1', spaceId)}>
                   {spaceName ? `「${spaceName}」에 재연결` : '재연결'}
                 </Link>
               </Button>
@@ -296,7 +307,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
               있습니다.
             </p>
             <Button asChild size="sm">
-              <Link href={'/api/slack/oauth/install'}>
+              <Link href={withSpace('/api/slack/oauth/install', spaceId)}>
                 {spaceName ? `「${spaceName}」에 Slack 연결` : 'Slack 연결'}
               </Link>
             </Button>
@@ -319,11 +330,22 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <ChannelRow kind="approvals" channel={approvalsChannel} onSaved={load} />
-              <ChannelRow kind="notifications" channel={notificationsChannel} onSaved={load} />
+              <ChannelRow
+                kind="approvals"
+                channel={approvalsChannel}
+                spaceId={spaceId}
+                onSaved={load}
+              />
+              <ChannelRow
+                kind="notifications"
+                channel={notificationsChannel}
+                spaceId={spaceId}
+                onSaved={load}
+              />
             </div>
             <AgentChannels
               channels={data.channels.filter((c) => c.kind === 'agent')}
+              spaceId={spaceId}
               onSaved={load}
             />
           </div>

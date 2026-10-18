@@ -165,6 +165,34 @@ describe('?spaceId 전환', () => {
     expect(response.cookies.get('session')?.value).toBe('new')
   })
 
+  test.each<Record<string, string>>([
+    { 'next-router-prefetch': '1', rsc: '1' },
+    { purpose: 'prefetch' },
+    { 'sec-purpose': 'prefetch' },
+  ])('prefetch 는 전환하지 않는다 %o', async (headers) => {
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/my-deck?spaceId=sp-b', { headers })
+    )
+    expect(response.status).toBe(200)
+    expect(response.cookies.get('wd_space')).toBeUndefined()
+  })
+
+  test('일반 RSC 이동(router.replace)은 전환한다', async () => {
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/my-deck?spaceId=sp-b', { headers: { rsc: '1' } })
+    )
+    expect(response.status).toBe(307)
+    expect(response.cookies.get('wd_space')?.value).toBe('sp-b')
+  })
+
+  test('POST 는 전환하지 않는다', async () => {
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/my-deck?spaceId=sp-b', { method: 'POST' })
+    )
+    expect(response.status).not.toBe(307)
+    expect(response.cookies.get('wd_space')).toBeUndefined()
+  })
+
   test('/api 는 건드리지 않는다', async () => {
     const response = await proxy(
       new NextRequest('https://app.workdeck.work/api/agent/actions?spaceId=sp-b')

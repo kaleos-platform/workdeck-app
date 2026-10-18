@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { ApprovalDetailSheet } from '../approval-detail-sheet'
 import type { AgentPendingActionDTO } from '../types'
 
@@ -47,7 +47,7 @@ function mockCurrent(body: unknown, ok = true) {
 }
 
 it('승인·거부 버튼에 현재 Space 이름이 들어간다', async () => {
-  mockCurrent({ current: { id: 'sp-a', name: 'Space A', role: 'OWNER' } })
+  mockCurrent({ current: { id: 'sp-1', name: 'Space A', role: 'OWNER' } })
   renderSheet()
   expect(await screen.findByRole('button', { name: '「Space A」에서 승인' })).toBeEnabled()
   expect(screen.getByRole('button', { name: '「Space A」에서 거부' })).toBeInTheDocument()
@@ -58,4 +58,14 @@ it('이름을 못 받으면 기존 문구를 유지한다', async () => {
   renderSheet()
   expect(await screen.findByRole('button', { name: '승인' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: '거부' })).toBeInTheDocument()
+})
+
+// 회귀: 승인 대상은 action.spaceId — 현재 Space 가 다르면(다른 탭에서 전환) 이름을 붙이지 않는다.
+it('제안의 Space 가 현재 Space 와 다르면 이름 없이 기본 문구다', async () => {
+  mockCurrent({ current: { id: 'sp-other', name: 'Space B', role: 'OWNER' } })
+  renderSheet()
+  await waitFor(() => expect(global.fetch).toHaveBeenCalled())
+  await new Promise((r) => setTimeout(r, 0))
+  expect(screen.getByRole('button', { name: '승인' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Space B/ })).toBeNull()
 })

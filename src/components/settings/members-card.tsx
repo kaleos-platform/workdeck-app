@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useCurrentSpaceName } from '@/hooks/use-current-space'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Member = { id: string; role: string; user: { email: string; name: string | null } }
@@ -21,7 +20,8 @@ const NET_ERR = '네트워크 오류로 요청하지 못했습니다.'
 
 export function MembersCard() {
   const [spaceId, setSpaceId] = useState<string | null>(null)
-  const spaceName = useCurrentSpaceName()
+  // 쓰기 대상(spaceId)과 같은 응답에서 받은 이름 — 다른 탭에서 전환해도 표시와 대상이 어긋나지 않는다.
+  const [spaceName, setSpaceName] = useState<string | null>(null)
   const [myRole, setMyRole] = useState<string | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [invites, setInvites] = useState<Invitation[]>([])
@@ -44,6 +44,7 @@ export function MembersCard() {
         return setError(body?.message ?? '구성원 목록은 관리자 이상만 볼 수 있습니다.')
       if (!res.ok) return setError(body?.message ?? '구성원을 불러오지 못했습니다')
       setSpaceId(body.spaceId)
+      setSpaceName(body.spaceName ?? null)
       setMyRole(body.myRole)
       setMembers(body.members)
       setLimit(body.approvalLimitKrw ?? null)

@@ -49,7 +49,7 @@ export async function resolveWorkspace(opts?: DeckContextOptions) {
 
   // Space 구성원은 그 Space 의 워크스페이스(resolveSpaceCoupangWorkspaceId — resolveCollectionAuth 와 같은
   // 해석기). ownerId 만 보면 초대받은 구성원은 쿠팡 데이터를 못 본다. 멤버십이 없으면 기존처럼 본인 소유.
-  // ponytail: Space 는 최고참 멤버십(resolveSpaceContext) — 다중 Space 선택은 앱 전체 과제.
+  // Space 는 현재 Space(resolveSpaceContext → resolveCurrentMembership: 쿠키 wd_space → OWNER 최고참 → 최고참).
   const spaceId = 'error' in deckContext ? null : deckContext.space.id
   const workspace = await measureCoupangAds('auth_workspace', async () => {
     if (spaceId) {

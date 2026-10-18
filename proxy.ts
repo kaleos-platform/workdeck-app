@@ -60,9 +60,16 @@ export async function proxy(request: NextRequest) {
   }
   // 페이지 GET 의 ?spaceId= 는 현재 Space 전환 입력이다(초대 수락·승인 링크). 응답 쿠키는 같은 요청의
   // layout 에 안 보이므로 쿠키를 싣고 spaceId 를 뗀 URL 로 한 번 더 보낸다. 멤버십 검증은 서버 해석기가 한다.
+  // Link prefetch 는 사용자가 이동하지 않아도 오므로 전환하지 않는다(일반 RSC 이동 — router.replace — 은 전환).
+  const h = request.headers
+  const isPrefetch =
+    h.has('next-router-prefetch') ||
+    h.get('purpose') === 'prefetch' ||
+    !!h.get('sec-purpose')?.includes('prefetch')
   const requestedSpace = request.nextUrl.searchParams.get('spaceId')
   if (
     request.method === 'GET' &&
+    !isPrefetch &&
     !isPathOrChild(pathname, '/api') &&
     requestedSpace &&
     /^[A-Za-z0-9_-]{1,64}$/.test(requestedSpace) &&
