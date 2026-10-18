@@ -14,6 +14,7 @@ import { requiredDecisionRole, spendKrwOf } from '@/lib/agent/actions/decision-p
 import { maskParams } from '@/lib/agent/audit'
 import type { Actor } from '@/lib/agent/identity/principal'
 import type { AgentActionStatus } from '@/generated/prisma/enums'
+import { ToolUserError } from '@/lib/agent/tools/errors'
 
 const VALID_STATUS: AgentActionStatus[] = [
   'PENDING',
@@ -141,7 +142,9 @@ export async function POST(req: NextRequest) {
     })
     return NextResponse.json(result, { status: 201 })
   } catch (err) {
-    const message = err instanceof Error ? err.message : '액션 생성 실패'
-    return errorResponse(message, 400)
+    // 검증 실패(ToolUserError)만 사유를 돌려준다 — 그 밖의 오류(Prisma 등)는 내부 정보가 섞일 수 있다.
+    if (err instanceof ToolUserError) return errorResponse(err.message, 400)
+    console.error('[agent/actions] 액션 생성 실패', err)
+    return errorResponse('액션 생성에 실패했습니다', 500)
   }
 }
