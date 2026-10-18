@@ -46,12 +46,6 @@ export async function resolveWorkspace(opts?: DeckContextOptions) {
   const user = 'error' in deckContext ? await getUser() : deckContext.user
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
 
-  // 구성원의 쓰기는 ADMIN 이상 — 워크스페이스를 Space 축으로 해석하므로 MEMBER 는 조회만.
-  if (!('error' in deckContext) && opts?.write) {
-    const denied = assertRole(deckContext.role, 'ADMIN')
-    if (denied) return { error: denied }
-  }
-
   // Space 구성원은 그 Space 의 워크스페이스(resolveSpaceCoupangWorkspaceId — resolveCollectionAuth 와 같은
   // 해석기). ownerId 만 보면 초대받은 구성원은 쿠팡 데이터를 못 본다. 멤버십이 없으면 기존처럼 본인 소유.
   // ponytail: Space 는 최고참 멤버십(resolveSpaceContext) — 다중 Space 선택은 앱 전체 과제.
@@ -142,6 +136,11 @@ export async function resolveRequestedSpaceContext(requestedSpaceId: string | nu
   }
 }
 
+const DECK_WRITE_MIN_ROLE: Partial<Record<string, SpaceMemberRole>> = {
+  'coupang-ads': 'ADMIN',
+  finance: 'ADMIN',
+}
+
 // 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
 export async function resolveDeckContext(deckKey = 'coupang-ads', opts?: DeckContextOptions) {
   const resolved = await resolveSpaceContext()
@@ -153,6 +152,13 @@ export async function resolveDeckContext(deckKey = 'coupang-ads', opts?: DeckCon
     })
   )
   if (!deckInstance?.isActive) return { error: errorResponse('카드가 활성화되지 않았습니다', 403) }
+
+  // Deck 별 쓰기 최소 역할(에디 결정 2026-10-18) — 돈·계좌가 걸린 Deck 만 ADMIN, 나머지는 구성원 누구나.
+  const minRole = DECK_WRITE_MIN_ROLE[deckKey]
+  if (opts?.write && minRole) {
+    const denied = assertRole(resolved.role, minRole)
+    if (denied) return { error: denied }
+  }
 
   // 구독 만료 Space 의 쓰기 차단 — 조회(write 미지정)는 그대로 통과한다.
   if (opts?.write) {
