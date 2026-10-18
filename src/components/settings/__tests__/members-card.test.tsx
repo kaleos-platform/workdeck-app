@@ -5,11 +5,6 @@ import { MembersCard } from '../members-card'
 jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn() }))
 const mfaRedirect = redirectIfMfaRequired as jest.Mock
 
-jest.mock('next/navigation', () => ({
-  useSearchParams: () => new URLSearchParams('spaceId=sp-1'),
-  usePathname: () => '/settings/members',
-}))
-
 const json = (body: unknown, status = 200) =>
   Promise.resolve({ ok: status < 400, status, json: async () => body })
 let fetchMock: jest.Mock
@@ -193,7 +188,7 @@ describe('OWNER 구성원 관리·승인 한도', () => {
   beforeEach(() => {
     jest.spyOn(window, 'confirm').mockReturnValue(true)
     fetchMock.mockImplementation((url: string) => {
-      if (url.startsWith('/api/spaces/members?')) return json(team)
+      if (url === '/api/spaces/members') return json(team)
       if (url === '/api/spaces/sp-1/invitations') return json({ invitations: [] })
       return json({ ok: true })
     })

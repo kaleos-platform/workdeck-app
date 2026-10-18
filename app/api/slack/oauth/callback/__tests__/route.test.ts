@@ -216,7 +216,7 @@ test('두 Space 사용자: team_changed → 재연결 버튼 → 같은 Space로
   const first = new URL((await callback()).headers.get('location')!)
   expect(first.searchParams.get('slack')).toBe('team_changed')
   const spaceId = first.searchParams.get('spaceId')
-  expect(spaceId).toBe('sp-kaleos') // 없으면 install이 400 SPACE_REQUIRED
+  expect(spaceId).toBe('sp-kaleos') // 재연결 링크에 선택 Space 를 명시
   expect(p.slackInstallation.upsert).not.toHaveBeenCalled()
 
   // 카드의 재연결 링크: /api/slack/oauth/install?reconnect=1&spaceId=<선택>

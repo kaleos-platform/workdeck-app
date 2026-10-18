@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { KeyRound } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,11 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  SpaceRequiredPicker,
-  readSpaceRequired,
-  type SpaceChoice,
-} from '@/components/common/space-required-picker'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { SCOPES } from '@/lib/agent/identity/principal'
 import { CopyCodeBlock } from './copy-code-block'
@@ -67,11 +61,8 @@ const tokenState = (t: Token) =>
 const CONFIG_SNIPPET = `export WORKDECK_AGENT_TOKEN='<위 토큰>'\n${CLAUDE_CODE_CMD} --header "Authorization: Bearer $WORKDECK_AGENT_TOKEN"`
 
 export function AgentTokensCard() {
-  const spaceParam = useSearchParams().get('spaceId')
-  const q = spaceParam ? `?spaceId=${encodeURIComponent(spaceParam)}` : ''
   const [spaceId, setSpaceId] = useState<string | null>(null)
   const [agents, setAgents] = useState<Agent[]>([])
-  const [choices, setChoices] = useState<SpaceChoice[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [edit, setEdit] = useState<EditTarget | null>(null)
@@ -80,9 +71,7 @@ export function AgentTokensCard() {
   const load = useCallback(async () => {
     setError(null)
     try {
-      const res = await fetch(`/api/spaces/members${q}`)
-      const picked = await readSpaceRequired(res)
-      if (picked) return setChoices(picked)
+      const res = await fetch('/api/spaces/members')
       const body = await res.json().catch(() => null)
       if (!res.ok) return setError(body?.message ?? '에이전트 목록을 불러오지 못했습니다')
       setSpaceId(body.spaceId)
@@ -93,7 +82,7 @@ export function AgentTokensCard() {
     } catch {
       setError(NET_ERR)
     }
-  }, [q])
+  }, [])
 
   useEffect(() => {
     void load()
@@ -170,8 +159,6 @@ export function AgentTokensCard() {
     setIssue({ agentId: issue.agentId, token: body.token })
     await load()
   }
-
-  if (choices) return <SpaceRequiredPicker spaces={choices} />
 
   return (
     <Card>

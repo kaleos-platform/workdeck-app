@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AgentTokensCard } from '../agent-tokens-card'
 
 jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn(async () => false) }))
-jest.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams() }))
 
 const res = (body: unknown, status = 200) => {
   const r = { ok: status < 400, status, json: async () => body, clone: () => r }

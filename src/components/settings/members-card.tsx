@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { SpaceRequiredPicker, type SpaceChoice } from '@/components/common/space-required-picker'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Member = { id: string; role: string; user: { email: string; name: string | null } }
@@ -21,13 +19,10 @@ type Created = { link: string; emailSent: boolean; emailSkipReason?: string; exp
 const NET_ERR = '네트워크 오류로 요청하지 못했습니다.'
 
 export function MembersCard() {
-  const spaceParam = useSearchParams().get('spaceId')
-  const q = spaceParam ? `?spaceId=${encodeURIComponent(spaceParam)}` : ''
   const [spaceId, setSpaceId] = useState<string | null>(null)
   const [myRole, setMyRole] = useState<string | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [invites, setInvites] = useState<Invitation[]>([])
-  const [choices, setChoices] = useState<SpaceChoice[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'ADMIN' | 'MEMBER'>('ADMIN')
@@ -41,10 +36,8 @@ export function MembersCard() {
   const load = useCallback(async () => {
     setError(null)
     try {
-      const res = await fetch(`/api/spaces/members${q}`)
+      const res = await fetch('/api/spaces/members')
       const body = await res.json().catch(() => null)
-      if (res.status === 400 && body?.code === 'SPACE_REQUIRED')
-        return setChoices(body.spaces ?? [])
       if (res.status === 403)
         return setError(body?.message ?? '구성원 목록은 관리자 이상만 볼 수 있습니다.')
       if (!res.ok) return setError(body?.message ?? '구성원을 불러오지 못했습니다')
@@ -63,7 +56,7 @@ export function MembersCard() {
     } catch {
       setError(NET_ERR)
     }
-  }, [q])
+  }, [])
 
   useEffect(() => {
     void load()
@@ -180,8 +173,6 @@ export function MembersCard() {
       // 클립보드를 못 쓰면 아래 읽기 전용 입력에서 직접 복사한다.
     }
   }
-
-  if (choices) return <SpaceRequiredPicker spaces={choices} />
 
   const notice = !created
     ? null

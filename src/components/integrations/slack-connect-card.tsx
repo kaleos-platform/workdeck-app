@@ -2,18 +2,12 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { CheckCircle2, Slack, XCircle } from 'lucide-react'
-import {
-  SpaceRequiredPicker,
-  readSpaceRequired,
-  type SpaceChoice,
-} from '@/components/common/space-required-picker'
 import type { SlackChannelKind, SlackChannelsResponse } from './types'
 
 const KIND_LABEL: Record<SlackChannelKind, string> = {
@@ -45,12 +39,10 @@ const SLACK_TOAST_MESSAGE: Record<string, { title: string; variant: 'default' | 
 function ChannelRow({
   kind,
   channel,
-  spaceQuery,
   onSaved,
 }: {
   kind: SlackChannelKind
   channel: SlackChannelsResponse['channels'][number] | undefined
-  spaceQuery: string
   onSaved: () => void
 }) {
   const [channelId, setChannelId] = useState(channel?.channelId ?? '')
@@ -67,7 +59,7 @@ function ChannelRow({
     setSaving(true)
     setError(null)
     try {
-      const res = await fetch(`/api/slack/channels${spaceQuery ? `?${spaceQuery}` : ''}`, {
+      const res = await fetch('/api/slack/channels', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ channelId: trimmed, kind }),
@@ -79,18 +71,15 @@ function ChannelRow({
     } finally {
       setSaving(false)
     }
-  }, [channelId, kind, spaceQuery, onSaved])
+  }, [channelId, kind, onSaved])
 
   const handleRemove = useCallback(async () => {
     setSaving(true)
     setError(null)
     try {
-      const res = await fetch(
-        `/api/slack/channels?kind=${kind}${spaceQuery ? `&${spaceQuery}` : ''}`,
-        {
-          method: 'DELETE',
-        }
-      )
+      const res = await fetch(`/api/slack/channels?kind=${kind}`, {
+        method: 'DELETE',
+      })
       if (res.ok) {
         setChannelId('')
         onSaved()
@@ -100,7 +89,7 @@ function ChannelRow({
     } finally {
       setSaving(false)
     }
-  }, [kind, spaceQuery, onSaved])
+  }, [kind, onSaved])
 
   return (
     <div className="space-y-1.5">
@@ -140,11 +129,9 @@ function ChannelRow({
 // 에이전트가 slack_post로 글을 올릴 수 있는 채널(여러 개). 승인·알림 채널에는 보내지 않는다.
 function AgentChannels({
   channels,
-  spaceQuery,
   onSaved,
 }: {
   channels: SlackChannelsResponse['channels']
-  spaceQuery: string
   onSaved: () => void
 }) {
   const [channelId, setChannelId] = useState('')
@@ -169,10 +156,9 @@ function AgentChannels({
     [onSaved]
   )
 
-  const sq = spaceQuery ? `&${spaceQuery}` : ''
   const handleAdd = () =>
     run(
-      `/api/slack/channels${spaceQuery ? `?${spaceQuery}` : ''}`,
+      '/api/slack/channels',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -182,7 +168,7 @@ function AgentChannels({
     )
   const handleRemove = (id: string) =>
     run(
-      `/api/slack/channels?kind=agent&channelId=${encodeURIComponent(id)}${sq}`,
+      `/api/slack/channels?kind=agent&channelId=${encodeURIComponent(id)}`,
       { method: 'DELETE' },
       '채널을 해제하지 못했습니다'
     )
@@ -245,17 +231,13 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
 }
 
 export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }) {
-  const spaceId = useSearchParams().get('spaceId')
-  const q = spaceId ? `spaceId=${encodeURIComponent(spaceId)}` : ''
   const [data, setData] = useState<SlackChannelsResponse | null>(null)
-  const [spaceChoices, setSpaceChoices] = useState<SpaceChoice[] | null>(null)
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/slack/channels${q ? `?${q}` : ''}`)
-      setSpaceChoices(await readSpaceRequired(res))
+      const res = await fetch('/api/slack/channels')
       const json: SlackChannelsResponse | null = res.ok ? await res.json() : null
       setData(json)
     } catch {
@@ -263,7 +245,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
     } finally {
       setLoading(false)
     }
-  }, [q])
+  }, [])
 
   useEffect(() => {
     load()
@@ -296,7 +278,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
             <AlertTitle>{toast.title}</AlertTitle>
             {slackStatus === 'team_changed' && (
               <Button asChild size="sm" variant="outline">
-                <Link href={`/api/slack/oauth/install?reconnect=1${q ? `&${q}` : ''}`}>재연결</Link>
+                <Link href={'/api/slack/oauth/install?reconnect=1'}>재연결</Link>
               </Button>
             )}
           </Alert>
@@ -304,8 +286,6 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
 
         {loading ? (
           <p className="text-sm text-muted-foreground">불러오는 중...</p>
-        ) : spaceChoices ? (
-          <SpaceRequiredPicker spaces={spaceChoices} />
         ) : !data?.installed ? (
           <div className="flex flex-col items-start gap-3 rounded-md border border-dashed p-4">
             <p className="text-sm text-muted-foreground">
@@ -313,7 +293,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
               있습니다.
             </p>
             <Button asChild size="sm">
-              <Link href={`/api/slack/oauth/install${q ? `?${q}` : ''}`}>Slack 연결</Link>
+              <Link href={'/api/slack/oauth/install'}>Slack 연결</Link>
             </Button>
           </div>
         ) : (
@@ -334,22 +314,11 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <ChannelRow
-                kind="approvals"
-                channel={approvalsChannel}
-                spaceQuery={q}
-                onSaved={load}
-              />
-              <ChannelRow
-                kind="notifications"
-                channel={notificationsChannel}
-                spaceQuery={q}
-                onSaved={load}
-              />
+              <ChannelRow kind="approvals" channel={approvalsChannel} onSaved={load} />
+              <ChannelRow kind="notifications" channel={notificationsChannel} onSaved={load} />
             </div>
             <AgentChannels
               channels={data.channels.filter((c) => c.kind === 'agent')}
-              spaceQuery={q}
               onSaved={load}
             />
           </div>
