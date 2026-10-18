@@ -13,6 +13,7 @@ import { productDisplayName } from '@/lib/sh/product-display'
 import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
 import { absorbKeywords } from '@/lib/sh/keyword-absorb'
+import { countRankSlots, getRankSlotLimit } from '@/lib/rank/slots'
 
 type Params = { params: Promise<{ listingId: string }> }
 const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
@@ -118,6 +119,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       channelStock: listing.channelStock,
       memo: listing.memo,
       pageUrl: listing.pageUrl,
+      rankTracking: listing.rankTracking,
       items: listing.items.map((it) => ({
         optionId: it.optionId,
         optionName: it.option.name,
@@ -158,6 +160,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       searchName: true,
       displayName: true, // 부분 수정 시 "패치 이후 실제 값"으로 노출용을 검증하기 위해 필요
       managementName: true,
+      rankTracking: true, // 꺼짐→켜짐 전환 때만 슬롯 한도를 검사한다
       keywords: true, // 부분 수정 시 "패치 이후 실제 값"으로 검증하기 위해 필요
       // §26 이력을 상품 단위로도 조회할 수 있게 귀속 상품을 추정하기 위한 최소 조회.
       // 삭제된 옵션은 제외 — 살아있는 옵션이 상품 하나뿐인데 삭제 옵션이 섞여 있으면
@@ -213,6 +216,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   // 이력 대상 값은 "패치 이후 유효값" 기준이다(부분 수정이므로 요청 본문만으로는 알 수 없다).
   const nextKeywords = input.keywords ?? existing.keywords
+
+  if (input.rankTracking !== undefined && existing.channelProductId) {
+    return errorResponse('그룹 소속 상품의 순위 추적은 채널상품에서 설정합니다', 400)
+  }
+  if (input.rankTracking === true && !existing.rankTracking) {
+    const limit = getRankSlotLimit()
+    const used =
+      (await countRankSlots(resolved.space.id, `ls:${listingId}`)) +
+      toKeywordList(nextKeywords).length
+    if (used > limit) {
+      return errorResponse(`순위 추적 슬롯 ${limit}개를 넘습니다 (현재 ${used}개 사용 중)`, 400)
+    }
+  }
   const changeDiff = diffKeywordChange({
     beforeName: existing.searchName,
     afterName: nextSearchName,
@@ -236,6 +252,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         status: input.status ?? undefined,
         memo: input.memo === undefined ? undefined : input.memo,
         pageUrl: input.pageUrl,
+        rankTracking: input.rankTracking,
       },
     })
     if (input.items) {

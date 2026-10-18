@@ -44,6 +44,8 @@ type Props = {
   aiNameButton?: { disabled: boolean; tooltip?: string; onClick: () => void }
   /** 검색용 상품명 입력란 아래 안내(재변경 경고 등) */
   searchNameNotice?: ReactNode
+  /** 상품 페이지 URL 아래 키워드 순위 추적 스위치 — 자동저장 배치와 별개로 즉시 저장된다. */
+  rankTrackingToggle?: ReactNode
 }
 
 /**
@@ -71,6 +73,7 @@ export function GroupBaseInfoCard({
   namesReadOnly,
   aiNameButton,
   searchNameNotice,
+  rankTrackingToggle,
 }: Props) {
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const pageUrlInvalid = pageUrl.trim() !== '' && !normalizeHttpUrl(pageUrl)
@@ -240,6 +243,7 @@ export function GroupBaseInfoCard({
             </p>
           )}
         </div>
+        {rankTrackingToggle}
         <div className="space-y-1.5">
           <Label htmlFor="group-memo">메모</Label>
           <Textarea

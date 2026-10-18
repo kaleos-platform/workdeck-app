@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 import { DEFAULT_KEYWORD_RULES, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
 import {
   directionParticle,
@@ -89,6 +90,8 @@ type Props = {
   onCleanup?: (cleaned: string[]) => void
   /** true 면 칩·글자수·위반 배지는 그대로 보여주되 편집(삭제·추가·정리·추천)은 막는다. */
   readOnly?: boolean
+  /** normalizeKeyword(키워드) → 칩 뒤에 붙는 순위 문구(예: '네 12위'). 추적 중인 대상만 넘긴다. */
+  rankBadges?: Record<string, string>
 }
 
 export function KeywordEditor({
@@ -102,6 +105,7 @@ export function KeywordEditor({
   rules,
   onCleanup,
   readOnly = false,
+  rankBadges,
 }: Props) {
   const [draft, setDraft] = useState('')
 
@@ -401,6 +405,11 @@ export function KeywordEditor({
                   </Tooltip>
                 )}
                 <span>{v}</span>
+                {rankBadges?.[normalizeKeyword(v)] && (
+                  <span className="text-xs font-normal text-muted-foreground">
+                    {rankBadges[normalizeKeyword(v)]}
+                  </span>
+                )}
                 {/* readOnly 일 때는 disabled 가 아니라 아예 렌더하지 않는다 — 회색 X 는
                     "지울 수 있는데 막혔다"로 읽혀 거짓 어포던스가 된다. */}
                 {!readOnly && (

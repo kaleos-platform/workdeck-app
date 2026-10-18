@@ -1792,6 +1792,40 @@ export type EnumBillingChargeStatusWithAggregatesFilter<$PrismaModel = never> = 
   _max?: Prisma.NestedEnumBillingChargeStatusFilter<$PrismaModel>
 }
 
+export type EnumRankSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.RankSource | Prisma.EnumRankSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.RankSource[] | Prisma.ListEnumRankSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RankSource[] | Prisma.ListEnumRankSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRankSourceFilter<$PrismaModel> | $Enums.RankSource
+}
+
+export type EnumRankStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.RankStatus | Prisma.EnumRankStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RankStatus[] | Prisma.ListEnumRankStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RankStatus[] | Prisma.ListEnumRankStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRankStatusFilter<$PrismaModel> | $Enums.RankStatus
+}
+
+export type EnumRankSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RankSource | Prisma.EnumRankSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.RankSource[] | Prisma.ListEnumRankSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RankSource[] | Prisma.ListEnumRankSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRankSourceWithAggregatesFilter<$PrismaModel> | $Enums.RankSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRankSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRankSourceFilter<$PrismaModel>
+}
+
+export type EnumRankStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RankStatus | Prisma.EnumRankStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RankStatus[] | Prisma.ListEnumRankStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RankStatus[] | Prisma.ListEnumRankStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRankStatusWithAggregatesFilter<$PrismaModel> | $Enums.RankStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRankStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRankStatusFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -3516,6 +3550,40 @@ export type NestedEnumBillingChargeStatusWithAggregatesFilter<$PrismaModel = nev
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumBillingChargeStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumBillingChargeStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumRankSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.RankSource | Prisma.EnumRankSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.RankSource[] | Prisma.ListEnumRankSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RankSource[] | Prisma.ListEnumRankSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRankSourceFilter<$PrismaModel> | $Enums.RankSource
+}
+
+export type NestedEnumRankStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.RankStatus | Prisma.EnumRankStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RankStatus[] | Prisma.ListEnumRankStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RankStatus[] | Prisma.ListEnumRankStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRankStatusFilter<$PrismaModel> | $Enums.RankStatus
+}
+
+export type NestedEnumRankSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RankSource | Prisma.EnumRankSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.RankSource[] | Prisma.ListEnumRankSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RankSource[] | Prisma.ListEnumRankSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRankSourceWithAggregatesFilter<$PrismaModel> | $Enums.RankSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRankSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRankSourceFilter<$PrismaModel>
+}
+
+export type NestedEnumRankStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RankStatus | Prisma.EnumRankStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RankStatus[] | Prisma.ListEnumRankStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RankStatus[] | Prisma.ListEnumRankStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRankStatusWithAggregatesFilter<$PrismaModel> | $Enums.RankStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRankStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRankStatusFilter<$PrismaModel>
 }
 
 

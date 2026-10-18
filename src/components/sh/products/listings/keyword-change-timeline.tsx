@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { KEYWORD_CHANGE_REASON_LABELS } from '@/lib/sh/keyword-labels'
 import { cn } from '@/lib/utils'
+import { formatRankNumber, sourceLongLabel, type RankSource } from '../keywords/rank-format'
 
 type ChangeLog = {
   id: string
@@ -164,6 +165,7 @@ export function KeywordChangeTimeline({
 }
 
 function TimelineRow({ row }: { row: ChangeLog }) {
+  const [effectOpen, setEffectOpen] = useState(false)
   const beforeSet = new Set(row.beforeKeywords)
   const afterSet = new Set(row.afterKeywords)
   const added = row.afterKeywords.filter((k) => !beforeSet.has(k))
@@ -225,7 +227,148 @@ function TimelineRow({ row }: { row: ChangeLog }) {
           관찰 지표: <span className="text-foreground">{row.observeMetric}</span>
         </p>
       )}
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="mt-1.5 h-7 px-2 text-xs"
+        aria-expanded={effectOpen}
+        onClick={() => setEffectOpen((v) => !v)}
+      >
+        효과 보기
+      </Button>
+      {effectOpen && <EffectPanel logId={row.id} />}
     </li>
+  )
+}
+
+type Effect =
+  | { unavailable: string }
+  | {
+      label: string
+      before: { from: string; to: string; quantity: number; revenue: number }
+      after: {
+        from: string
+        to: string
+        quantity: number
+        revenue: number
+        observedDays: number
+        complete: boolean
+      }
+      ranks: Array<{
+        keyword: string
+        source: RankSource
+        before: number | null
+        after: number | null
+      }>
+    }
+
+const OBSERVE_DAYS = 14
+
+/** 변화율 %. 비교 기준이 0 이하면 null(표시 시 "-"). sales-analytics 의 pctChange 와 같은 의미. */
+function pct(current: number, prev: number): string {
+  if (prev <= 0) return '-'
+  const v = Math.round(((current - prev) / prev) * 1000) / 10
+  return `${v > 0 ? '+' : ''}${v}%`
+}
+
+/** 펼칠 때 한 번만 조회한다 — 행마다 미리 부르면 이력 페이지 로드가 N+1 이 된다. */
+function EffectPanel({ logId }: { logId: string }) {
+  const [effect, setEffect] = useState<Effect | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await fetch(`/api/sh/keywords/changes/${logId}/effect`, { cache: 'no-store' })
+        if (!res.ok) throw new Error('효과를 불러오지 못했습니다')
+        const data: Effect = await res.json()
+        if (!cancelled) setEffect(data)
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : '효과를 불러오지 못했습니다')
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [logId])
+
+  if (error) return <p className="mt-2 text-xs text-destructive">{error}</p>
+  if (!effect) {
+    return (
+      <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+        불러오는 중...
+      </p>
+    )
+  }
+  if ('unavailable' in effect) {
+    return <p className="mt-2 text-xs text-muted-foreground">{effect.unavailable}</p>
+  }
+
+  const { before, after, ranks } = effect
+  return (
+    <div className="mt-2 space-y-2 rounded-md border bg-background p-2.5 text-xs">
+      <p className="font-medium">{effect.label}</p>
+      <table className="w-full text-left">
+        <thead className="text-muted-foreground">
+          <tr>
+            <th className="py-0.5 font-normal">지표</th>
+            <th className="py-0.5 font-normal">
+              변경 전 ({before.from}~{before.to})
+            </th>
+            <th className="py-0.5 font-normal">
+              변경 후 ({after.from}~{after.to})
+            </th>
+            <th className="py-0.5 font-normal">변화</th>
+          </tr>
+        </thead>
+        <tbody className="tabular-nums">
+          <tr>
+            <td className="py-0.5">판매 수량</td>
+            <td>{before.quantity.toLocaleString()}</td>
+            <td>{after.quantity.toLocaleString()}</td>
+            <td>{pct(after.quantity, before.quantity)}</td>
+          </tr>
+          <tr>
+            <td className="py-0.5">매출</td>
+            <td>{before.revenue.toLocaleString()}원</td>
+            <td>{after.revenue.toLocaleString()}원</td>
+            <td>{pct(after.revenue, before.revenue)}</td>
+          </tr>
+        </tbody>
+      </table>
+      {!after.complete && (
+        <p className="text-amber-600 dark:text-amber-400">
+          관찰 중 {after.observedDays}/{OBSERVE_DAYS}일
+        </p>
+      )}
+      {ranks.length > 0 && (
+        <table className="w-full text-left">
+          <thead className="text-muted-foreground">
+            <tr>
+              <th className="py-0.5 font-normal">키워드</th>
+              <th className="py-0.5 font-normal">변경 전 순위</th>
+              <th className="py-0.5 font-normal">변경 후 순위</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ranks.map((r) => (
+              <tr key={`${r.source}-${r.keyword}`}>
+                <td className="py-0.5">
+                  {r.keyword}
+                  <span className="ml-1 text-muted-foreground">{sourceLongLabel(r.source)}</span>
+                </td>
+                <td>{formatRankNumber(r.before)}</td>
+                <td>{formatRankNumber(r.after)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   )
 }
 
