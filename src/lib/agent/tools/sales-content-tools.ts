@@ -332,11 +332,16 @@ const proposePost: ToolDefinition = {
       )
     }
     const p = parsed.data
+    // 승인자가 채널을 id 가 아니라 이름으로 보게 요약에 싣는다(없으면 validateCreate 가 거부).
+    const channel = await prisma.salesContentChannel.findFirst({
+      where: { id: p.channelId, spaceId: ctx.spaceId },
+      select: { name: true },
+    })
     return createPendingAction({
       spaceId: ctx.spaceId,
       actionType: 'sales-content.post.publish',
       params: p,
-      summary: `게시물 발행 예약: ${p.title}${p.scheduledAt ? ` (${p.scheduledAt})` : ''}`,
+      summary: `[${channel?.name ?? '채널'}] 게시물 발행 예약: ${p.title}${p.scheduledAt ? ` (${p.scheduledAt})` : ''}`,
       source: 'MCP',
       actor: ctx.actor,
       requesterUserId: ctx.requesterUserId,
