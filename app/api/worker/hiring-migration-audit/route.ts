@@ -5,9 +5,14 @@ import { authenticateWorker, workerOwns } from '@/lib/worker-auth'
 import { decodeMigrationSnapshot } from '@/lib/hiring/migration/ledger'
 import { recoverOpeningPosting } from '@/lib/hiring/migration/posting-recovery'
 import { auditMigrationRecords } from '@/lib/hiring/migration/runtime-audit'
+import {
+  auditAssetManifest,
+  migrationAssetManifest,
+  readMigrationAsset,
+} from '@/lib/hiring/migration/asset-audit'
 
 export const runtime = 'nodejs'
-export const maxDuration = 30
+export const maxDuration = 60
 
 // 승인된 파일럿 계정만 검사한다. 임의 이메일·spaceId 입력은 받지 않는다.
 const accounts = { ameaning: 'hello@ameaning.co.kr', peakpay: 'devops@workdeck.work' } as const
@@ -15,6 +20,7 @@ const boundary = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/)
 const inputSchema = z
   .object({
     customer: z.enum(['ameaning', 'peakpay']),
+    assets: z.boolean().optional(),
     after: boundary.optional(),
     through: boundary.optional(),
   })
@@ -77,6 +83,7 @@ export async function POST(request: NextRequest) {
             through: null,
             next: null,
             summary: auditMigrationRecords([], { spaceId, sourceSpaceId: '' }),
+            assetWork: input.assets ? { spaceId, entries: [] } : undefined,
           }
         const where = { spaceId, id: { lte: upper } }
         const total = await tx.hiringMigrationRecord.count({ where })
@@ -99,20 +106,38 @@ export async function POST(request: NextRequest) {
         const records = await tx.hiringMigrationRecord.findMany({
           where: { ...where, id: { lte: upper, ...(input.after ? { gt: input.after } : {}) } },
           orderBy: { id: 'asc' },
-          take: 26,
+          take: input.assets ? 2 : 26,
         })
-        const batch = records.slice(0, 25)
+        const pageSize = input.assets ? 1 : 25
+        const batch = records.slice(0, pageSize)
+        const summary = auditMigrationRecords(batch, scope)
+        if (
+          input.assets &&
+          (summary.integrityFailed ||
+            summary.scopeFailed ||
+            summary.recoveryFailed ||
+            summary.unsupported)
+        )
+          throw Error('ASSET_MANIFEST_FAILED')
         return {
           customer: input.customer,
           total,
           through: upper,
-          next: records.length > 25 ? batch.at(-1)!.id : null,
-          summary: auditMigrationRecords(batch, scope),
+          next: records.length > pageSize ? batch.at(-1)!.id : null,
+          summary,
+          assetWork: input.assets
+            ? { spaceId, entries: batch.flatMap((record) => migrationAssetManifest(record, scope)) }
+            : undefined,
         }
       },
       { isolationLevel: 'RepeatableRead', timeout: 15000, maxWait: 5000 }
     )
-    return respond(result)
+    // 파일 GET은 DB transaction 종료 후 실행하며 경로·manifest를 응답에 포함하지 않는다.
+    const { assetWork, ...body } = result
+    const assets = assetWork
+      ? await auditAssetManifest(assetWork.entries, assetWork.spaceId, readMigrationAsset)
+      : undefined
+    return respond({ ...body, ...(assets ? { assets } : {}) })
   } catch (error) {
     // 예외 원문에는 접속 정보나 고객 원문이 포함될 수 있어 로그·응답에 전달하지 않는다.
     return respond(
