@@ -39,17 +39,16 @@
 
 ## PR2 — 읽기 MCP 도구 (스키마 변경 없음)
 
-- `src/lib/agent/identity/principal.ts` `SCOPES`에 `sc:read`, `sc:write` 추가(scope-contract 테스트 통과).
-- `src/lib/agent/tools/sales-content-tools.ts`, 전부 `requireDeck(ctx.spaceId, 'sales-content')`:
-  - `sc_list_brands` — 브랜드 + 프로필(톤·설명·customFields)
-  - `sc_list_products` — `brand?` 필터, 페르소나 연결 포함
-  - `sc_list_personas`
-  - `sc_list_channels` — 채널 목록(자격증명 값 제외, 연결 여부만)
-  - `sc_list_contents` — `status?`·`brand?`·기간 필터, 본문은 앞부분만
-  - `sc_get_content` — 본문·버전·배포·성과
-- 라우트와 같은 조회 함수를 공유한다(seller-hub 도구 패턴).
-- **운영 작업(사람):** 의식주의 에밀리 `SpaceAgentIdentity.scopes`에 `sc:read`(PR3 후 `sc:write`) 추가. prod 데이터 변경이라 사용자가 승인·실행.
-- 테스트: deck 비활성 거부, scope 없는 토큰 403, 다른 Space 데이터 미노출.
+- [x] `src/lib/agent/identity/principal.ts` `SCOPES` 에 `sc:read`, `sc:write` 추가. 구성원 세션은 전체 scope 라 바로 쓸 수 있고, 에이전트는 부여가 필요하다.
+- [x] `src/lib/agent/tools/sales-content-tools.ts`, 전부 `requireDeck(ctx.spaceId, 'sales-content')`:
+  - `sc_list_brands` — 브랜드 + 브랜드별 프로필, `commonProfile`
+  - `sc_list_products` — `brand`(이름 또는 id) 필터, 페르소나 연결 포함
+  - `sc_list_personas`, `sc_list_channels`(자격증명·config 제외, `hasCredential` 만)
+  - `sc_list_contents` — `status`·`limit`, 본문 앞 300자
+  - `sc_get_content` — 전체 본문·배포·배포별 성과 합계
+  - 콘텐츠 브랜드 필터는 없다(Content 에 브랜드 컬럼 없음). PR3 제안 도구에서 필요하면 다룬다.
+- [x] 검증: 단위 테스트(deck 게이트·Space 범위·브랜드 해석·자격증명 비노출), scope 계약 테스트, dev DB 실조회(의식주의 브랜드 3개).
+- **운영 작업(사람):** 에밀리 `scopes` 에 `sc:read` 추가. ADMIN 이 `PATCH /api/spaces/{spaceId}/agents/{agentId}` 로 바꿀 수 있다(전체 scope 배열을 보낸다). PR3 후 `sc:write`.
 
 ## PR3 — 콘텐츠 제안·승인 (승인 단위 확정 후 상세화)
 
