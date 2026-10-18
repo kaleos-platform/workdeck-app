@@ -55,7 +55,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
       <p className="text-sm text-muted-foreground">
         {app.posting?.title ?? '(삭제된 공고)'}
         {app.postingPosition?.name ? ` · ${app.postingPosition.name}` : ''} · 지원일{' '}
-        {app.createdAt.toLocaleString('ko-KR')}
+        {app.createdAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
       </p>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -178,7 +178,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
                     <li key={n.id} className="flex items-center justify-between gap-2">
                       <span className="font-medium">{NOTIFICATION_LABELS[n.notiType]}</span>
                       <span className="text-muted-foreground">
-                        {n.createdAt.toLocaleDateString('ko-KR')}
+                        {n.createdAt.toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}
                       </span>
                     </li>
                   ))}
