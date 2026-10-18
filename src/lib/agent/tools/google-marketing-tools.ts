@@ -54,7 +54,7 @@ const runReport: ToolDefinition = {
 const adminGet: ToolDefinition = {
   name: 'google_marketing_ga4_admin_get',
   description:
-    'GA4 Admin API GET. path는 이 브랜드 GA4 속성 아래여야 합니다(예: /v1beta/properties/<속성>/dataStreams).',
+    'GA4 Admin API GET. path는 v1beta/ 또는 v1alpha/로 시작하고 properties/<이 브랜드 속성 id> 아래여야 합니다(예: /v1beta/properties/<속성>/dataStreams). 영문·숫자·_ : / - 만 쓰고(%, ., ?, #, \\, // 불가) 쿼리는 query로 넘기세요.',
   inputSchema: { brand, path: z.string().min(1), query },
   mode: 'read',
   scope: 'google:read',

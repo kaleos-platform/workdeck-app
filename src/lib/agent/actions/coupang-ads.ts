@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { ActionDefinition } from './types'
 import { prisma } from '@/lib/prisma'
+import { ToolUserError } from '@/lib/agent/tools/errors'
 import type { AnalysisType } from '@/generated/prisma/enums'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
@@ -8,10 +9,24 @@ function def<T>(d: ActionDefinition<T>): ActionDefinition {
   return d as unknown as ActionDefinition
 }
 
+// payload의 workspaceId가 이 Space에 연결된(Workspace.spaceId FK) 워크스페이스인지 — resolveMcpWorkspace와 같은 축.
+// 세션 POST(/api/agent/actions)는 params를 그대로 받으므로 다른 Space의 workspaceId를 막는다.
+async function requireSpaceWorkspace(
+  spaceId: string,
+  workspaceId: string
+): Promise<{ id: string }> {
+  const ws = await prisma.workspace.findFirst({
+    where: { id: workspaceId, spaceId },
+    select: { id: true },
+  })
+  if (!ws) throw new ToolUserError('이 공간에 연결된 워크스페이스가 아닙니다')
+  return ws
+}
+
 // ─── 4) coupang-ads.analysis.trigger ────────────────────────────────────────
 // 재사용: app/api/analysis/trigger/route.ts POST의 실 로직(analysisReport.create PENDING).
 // 워크스페이스 스코프라 workspaceId 필요 — Phase 5 write tool이 resolveMcpWorkspace로
-// workspaceId를 구해 payload에 넣는다. execute는 그 workspaceId 실재 검증 후 생성.
+// workspaceId를 구해 payload에 넣는다. validateCreate·execute가 그 workspaceId가 이 Space 것인지 검증한다.
 const analysisTriggerParams = z.object({
   workspaceId: z.string(),
   from: z.string(),
@@ -27,13 +42,11 @@ const analysisTrigger: ActionDefinition<z.infer<typeof analysisTriggerParams>> =
   title: 'AI 분석 실행',
   paramsSchema: analysisTriggerParams,
   requiredRole: 'ADMIN',
-  execute: async (_ctx, params) => {
-    // 워크스페이스 실재 검증 — 임의 UUID 트리거 방지.
-    const ws = await prisma.workspace.findUnique({
-      where: { id: params.workspaceId },
-      select: { id: true },
-    })
-    if (!ws) throw new Error('워크스페이스를 찾을 수 없습니다')
+  validateCreate: async (ctx, params) => {
+    await requireSpaceWorkspace(ctx.spaceId, params.workspaceId)
+  },
+  execute: async (ctx, params) => {
+    const ws = await requireSpaceWorkspace(ctx.spaceId, params.workspaceId)
 
     const reportType = (params.reportType ?? 'DAILY_REVIEW') as AnalysisType
     const periodStart = new Date(params.from + 'T00:00:00+09:00')
@@ -71,7 +84,11 @@ const executionApprove: ActionDefinition<z.infer<typeof executionApproveParams>>
   title: '실행 태스크 승인',
   paramsSchema: executionApproveParams,
   requiredRole: 'ADMIN',
+  validateCreate: async (ctx, params) => {
+    await requireSpaceWorkspace(ctx.spaceId, params.workspaceId)
+  },
   execute: async (ctx, params) => {
+    await requireSpaceWorkspace(ctx.spaceId, params.workspaceId)
     // workspaceId 스코프로 소유 검증.
     const task = await prisma.executionTask.findFirst({
       where: { id: params.taskId, workspaceId: params.workspaceId },

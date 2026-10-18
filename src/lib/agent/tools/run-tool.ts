@@ -159,7 +159,7 @@ export function toolErrorMessage(err: unknown): string {
   return TOOL_INTERNAL_ERROR
 }
 
-/** 모든 도구 호출의 단일 관문: scope 검사 → 감사 행 생성 → 실행 → 결과 기록. */
+/** 모든 도구 호출의 단일 관문: scope 검사 → 입력 검증 → 감사 행 생성 → 실행 → 결과 기록. */
 export async function runTool(
   def: ToolDefinition,
   ctx: McpToolContext,
@@ -181,6 +181,17 @@ export async function runTool(
     throw err
   }
 
+  // MCP SDK는 등록 스키마로 이미 검증하지만 agent-loop·router는 아니다 — 여기서 한 번 더 같은 스키마로 거른다.
+  const parsed = z.object(def.inputSchema).safeParse(args)
+  if (!parsed.success) {
+    const detail = parsed.error.issues
+      .map((i) => `${i.path.join('.') || '(입력)'}: ${i.message}`)
+      .join('; ')
+    const err = new ToolUserError(`입력값이 올바르지 않습니다 — ${detail}`)
+    await startToolAudit({ ...base, outcome: 'denied', error: err.message }).catch(() => undefined)
+    throw err
+  }
+
   // 감사 행을 먼저 만든다. 못 만들면 AUDIT_UNAVAILABLE로 throw — 도구를 실행하지 않는다.
   const auditId = await startToolAudit(base)
   const started = Date.now()
@@ -194,7 +205,7 @@ export async function runTool(
 
   let result: unknown
   try {
-    result = await def.execute(ctx, args)
+    result = await def.execute(ctx, parsed.data)
   } catch (err) {
     await finish('error', errorSummary(err))
     if (err instanceof ToolUserError) throw err
