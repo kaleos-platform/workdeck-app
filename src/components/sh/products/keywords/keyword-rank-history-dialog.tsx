@@ -181,7 +181,9 @@ export function KeywordRankHistoryDialog({ targetKey, keyword, open, onOpenChang
                 const nameChanged = (c.beforeName ?? '').trim() !== (c.afterName ?? '').trim()
                 return (
                   <li key={c.id}>
-                    <span className="tabular-nums">{c.createdAt.slice(0, 10)}</span>
+                    <span className="tabular-nums">
+                      {formatDateToYmdKst(new Date(c.createdAt))}
+                    </span>
                     {nameChanged && ' · 상품명 변경'}
                     {added.length > 0 && ` · +${added.join(', +')}`}
                     {removed.length > 0 && ` · −${removed.join(', −')}`}
