@@ -27,16 +27,15 @@
 - 기록 실패는 응답을 막지 않는다(`recordTokens`와 같은 try/catch).
 - 테스트: 모드별 planClass, 기록 실패 시 결과 반환.
 
-## PR1 — 브랜드 단위 데이터 (마이그레이션 1개)
+## PR1 — 브랜드 단위 데이터 (마이그레이션 `20261018120000_sc_brand_scoped_profile`)
 
-- `BrandProfile`: `spaceId @unique` 제거, `brandId String? @unique`(→ `Brand`, onDelete Cascade) 추가, `@@index([spaceId])`. `brandId = null` 행은 "Space 공통" 1개만 허용(부분 unique index를 SQL로 추가).
-- `Product`: `brandId String?`(→ `Brand`, onDelete SetNull) + 인덱스.
-- 영향 코드(main 기준 `brandProfile` 참조 ~20곳): `findUnique({ where: { spaceId } })` → `findFirst({ where: { spaceId, brandId } })`. 브랜드 미지정이면 공통 프로필.
-  - `app/api/sc/brand-profile/route.ts`, `onboarding/{save,status,logo}`, `contents/[id]/generate`, `src/lib/sc/ideation.ts`, `src/lib/sc/schemas.ts`, settings 화면.
-- 콘텐츠 생성 프롬프트: 상품의 `brandId` → 해당 브랜드 프로필, 없으면 공통 프로필.
-- seller-ops 상품 가져오기(`map-inv-product.ts`): `InvProduct.brandId`를 그대로 복사.
-- 설정 화면: 브랜드 탭에 브랜드 선택(seller-hub Brand 목록 + "공통"). seller-hub 미설치 Space는 공통만.
-- 테스트: 브랜드별 프로필 분리, 공통 폴백, 가져오기 시 brandId 보존, 마이그레이션 후 기존 단일 프로필은 공통으로 남음.
+- [x] `BrandProfile`: `spaceId @unique` 제거, `brandId`(→ `Brand`, Cascade) + `@@unique([spaceId, brandId])`. `brandId = null` = Space 공통 프로필. 기존 행은 공통으로 남는다.
+  - 공통 프로필 1개 제약: Postgres 는 NULL 을 서로 다른 값으로 봐서 unique 로 안 걸린다. 부분 인덱스는 Prisma 가 drift 로 지울 위험이 있어 쓰지 않고, `src/lib/sc/brand-profile.ts` `saveBrandProfile` 이 advisory lock 트랜잭션으로 보장한다(온보딩 자료 등록과 같은 방식).
+- [x] `Product.brandId`(→ `Brand`, SetNull). seller-ops 가져오기는 `InvProduct.brand.id` 를 그대로 잇는다. 링크 추출·온보딩 상품은 null.
+- [x] 생성 프롬프트(콘텐츠 섹션·아이데이션): 상품 브랜드 프로필 → 없으면 공통 (`findBrandProfileForProducts`). 여러 브랜드가 섞이면 브랜드가 지정된 첫 상품을 따른다.
+- [x] API: `GET /api/sc/brands`(seller-hub Brand 읽기), `GET/PUT /api/sc/brand-profile?brandId=`, 상품 POST/PATCH `brandId`. 다른 Space 의 brandId 는 404.
+- [x] 화면: 브랜드 프로필 탭·상품 폼에 브랜드 선택(브랜드가 없는 Space 는 숨김). 온보딩·로고는 공통 프로필.
+- [x] 검증: jest(헬퍼 5·라우트 2·매핑 2 추가, sc·ai 235 통과), tsc 0, dev 서버 브라우저 QA(공통/크림드 분리 저장·재조회, 공통 2회 저장 시 1행, 상품 브랜드 저장). QA 데이터는 삭제.
 
 ## PR2 — 읽기 MCP 도구 (스키마 변경 없음)
 

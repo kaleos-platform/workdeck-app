@@ -27,6 +27,7 @@ export type AggregateBrandProfile = {
 export type BrandProfileMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
+  brandId: string | null
   companyName: string | null
   shortDescription: string | null
   logoUrl: string | null
@@ -37,6 +38,7 @@ export type BrandProfileMinAggregateOutputType = {
 export type BrandProfileMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
+  brandId: string | null
   companyName: string | null
   shortDescription: string | null
   logoUrl: string | null
@@ -47,6 +49,7 @@ export type BrandProfileMaxAggregateOutputType = {
 export type BrandProfileCountAggregateOutputType = {
   id: number
   spaceId: number
+  brandId: number
   companyName: number
   shortDescription: number
   toneOfVoice: number
@@ -61,6 +64,7 @@ export type BrandProfileCountAggregateOutputType = {
 export type BrandProfileMinAggregateInputType = {
   id?: true
   spaceId?: true
+  brandId?: true
   companyName?: true
   shortDescription?: true
   logoUrl?: true
@@ -71,6 +75,7 @@ export type BrandProfileMinAggregateInputType = {
 export type BrandProfileMaxAggregateInputType = {
   id?: true
   spaceId?: true
+  brandId?: true
   companyName?: true
   shortDescription?: true
   logoUrl?: true
@@ -81,6 +86,7 @@ export type BrandProfileMaxAggregateInputType = {
 export type BrandProfileCountAggregateInputType = {
   id?: true
   spaceId?: true
+  brandId?: true
   companyName?: true
   shortDescription?: true
   toneOfVoice?: true
@@ -166,6 +172,7 @@ export type BrandProfileGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 export type BrandProfileGroupByOutputType = {
   id: string
   spaceId: string
+  brandId: string | null
   companyName: string
   shortDescription: string | null
   toneOfVoice: runtime.JsonValue | null
@@ -199,6 +206,7 @@ export type BrandProfileWhereInput = {
   NOT?: Prisma.BrandProfileWhereInput | Prisma.BrandProfileWhereInput[]
   id?: Prisma.StringFilter<"BrandProfile"> | string
   spaceId?: Prisma.StringFilter<"BrandProfile"> | string
+  brandId?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
   companyName?: Prisma.StringFilter<"BrandProfile"> | string
   shortDescription?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
   toneOfVoice?: Prisma.JsonNullableFilter<"BrandProfile">
@@ -207,11 +215,13 @@ export type BrandProfileWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
 }
 
 export type BrandProfileOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrderInput | Prisma.SortOrder
   toneOfVoice?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -220,14 +230,17 @@ export type BrandProfileOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
+  brand?: Prisma.BrandOrderByWithRelationInput
 }
 
 export type BrandProfileWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  spaceId?: string
+  spaceId_brandId?: Prisma.BrandProfileSpaceIdBrandIdCompoundUniqueInput
   AND?: Prisma.BrandProfileWhereInput | Prisma.BrandProfileWhereInput[]
   OR?: Prisma.BrandProfileWhereInput[]
   NOT?: Prisma.BrandProfileWhereInput | Prisma.BrandProfileWhereInput[]
+  spaceId?: Prisma.StringFilter<"BrandProfile"> | string
+  brandId?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
   companyName?: Prisma.StringFilter<"BrandProfile"> | string
   shortDescription?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
   toneOfVoice?: Prisma.JsonNullableFilter<"BrandProfile">
@@ -236,11 +249,13 @@ export type BrandProfileWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
-}, "id" | "spaceId">
+  brand?: Prisma.XOR<Prisma.BrandNullableScalarRelationFilter, Prisma.BrandWhereInput> | null
+}, "id" | "spaceId_brandId">
 
 export type BrandProfileOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrderInput | Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrderInput | Prisma.SortOrder
   toneOfVoice?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -259,6 +274,7 @@ export type BrandProfileScalarWhereWithAggregatesInput = {
   NOT?: Prisma.BrandProfileScalarWhereWithAggregatesInput | Prisma.BrandProfileScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"BrandProfile"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"BrandProfile"> | string
+  brandId?: Prisma.StringNullableWithAggregatesFilter<"BrandProfile"> | string | null
   companyName?: Prisma.StringWithAggregatesFilter<"BrandProfile"> | string
   shortDescription?: Prisma.StringNullableWithAggregatesFilter<"BrandProfile"> | string | null
   toneOfVoice?: Prisma.JsonNullableWithAggregatesFilter<"BrandProfile">
@@ -277,12 +293,14 @@ export type BrandProfileCreateInput = {
   logoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutBrandProfileInput
+  space: Prisma.SpaceCreateNestedOneWithoutBrandProfilesInput
+  brand?: Prisma.BrandCreateNestedOneWithoutBrandProfilesInput
 }
 
 export type BrandProfileUncheckedCreateInput = {
   id?: string
   spaceId: string
+  brandId?: string | null
   companyName: string
   shortDescription?: string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -301,12 +319,14 @@ export type BrandProfileUpdateInput = {
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutBrandProfileNestedInput
+  space?: Prisma.SpaceUpdateOneRequiredWithoutBrandProfilesNestedInput
+  brand?: Prisma.BrandUpdateOneWithoutBrandProfilesNestedInput
 }
 
 export type BrandProfileUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -319,6 +339,7 @@ export type BrandProfileUncheckedUpdateInput = {
 export type BrandProfileCreateManyInput = {
   id?: string
   spaceId: string
+  brandId?: string | null
   companyName: string
   shortDescription?: string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -342,6 +363,7 @@ export type BrandProfileUpdateManyMutationInput = {
 export type BrandProfileUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -351,14 +373,25 @@ export type BrandProfileUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type BrandProfileNullableScalarRelationFilter = {
-  is?: Prisma.BrandProfileWhereInput | null
-  isNot?: Prisma.BrandProfileWhereInput | null
+export type BrandProfileListRelationFilter = {
+  every?: Prisma.BrandProfileWhereInput
+  some?: Prisma.BrandProfileWhereInput
+  none?: Prisma.BrandProfileWhereInput
+}
+
+export type BrandProfileOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type BrandProfileSpaceIdBrandIdCompoundUniqueInput = {
+  spaceId: string
+  brandId: string
 }
 
 export type BrandProfileCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
   toneOfVoice?: Prisma.SortOrder
@@ -371,6 +404,7 @@ export type BrandProfileCountOrderByAggregateInput = {
 export type BrandProfileMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
@@ -381,6 +415,7 @@ export type BrandProfileMaxOrderByAggregateInput = {
 export type BrandProfileMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrder
   companyName?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
@@ -388,36 +423,88 @@ export type BrandProfileMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type BrandProfileCreateNestedOneWithoutSpaceInput = {
-  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput>
-  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutSpaceInput
-  connect?: Prisma.BrandProfileWhereUniqueInput
+export type BrandProfileCreateNestedManyWithoutSpaceInput = {
+  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput> | Prisma.BrandProfileCreateWithoutSpaceInput[] | Prisma.BrandProfileUncheckedCreateWithoutSpaceInput[]
+  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutSpaceInput | Prisma.BrandProfileCreateOrConnectWithoutSpaceInput[]
+  createMany?: Prisma.BrandProfileCreateManySpaceInputEnvelope
+  connect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
 }
 
-export type BrandProfileUncheckedCreateNestedOneWithoutSpaceInput = {
-  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput>
-  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutSpaceInput
-  connect?: Prisma.BrandProfileWhereUniqueInput
+export type BrandProfileUncheckedCreateNestedManyWithoutSpaceInput = {
+  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput> | Prisma.BrandProfileCreateWithoutSpaceInput[] | Prisma.BrandProfileUncheckedCreateWithoutSpaceInput[]
+  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutSpaceInput | Prisma.BrandProfileCreateOrConnectWithoutSpaceInput[]
+  createMany?: Prisma.BrandProfileCreateManySpaceInputEnvelope
+  connect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
 }
 
-export type BrandProfileUpdateOneWithoutSpaceNestedInput = {
-  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput>
-  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutSpaceInput
-  upsert?: Prisma.BrandProfileUpsertWithoutSpaceInput
-  disconnect?: Prisma.BrandProfileWhereInput | boolean
-  delete?: Prisma.BrandProfileWhereInput | boolean
-  connect?: Prisma.BrandProfileWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.BrandProfileUpdateToOneWithWhereWithoutSpaceInput, Prisma.BrandProfileUpdateWithoutSpaceInput>, Prisma.BrandProfileUncheckedUpdateWithoutSpaceInput>
+export type BrandProfileUpdateManyWithoutSpaceNestedInput = {
+  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput> | Prisma.BrandProfileCreateWithoutSpaceInput[] | Prisma.BrandProfileUncheckedCreateWithoutSpaceInput[]
+  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutSpaceInput | Prisma.BrandProfileCreateOrConnectWithoutSpaceInput[]
+  upsert?: Prisma.BrandProfileUpsertWithWhereUniqueWithoutSpaceInput | Prisma.BrandProfileUpsertWithWhereUniqueWithoutSpaceInput[]
+  createMany?: Prisma.BrandProfileCreateManySpaceInputEnvelope
+  set?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  disconnect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  delete?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  connect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  update?: Prisma.BrandProfileUpdateWithWhereUniqueWithoutSpaceInput | Prisma.BrandProfileUpdateWithWhereUniqueWithoutSpaceInput[]
+  updateMany?: Prisma.BrandProfileUpdateManyWithWhereWithoutSpaceInput | Prisma.BrandProfileUpdateManyWithWhereWithoutSpaceInput[]
+  deleteMany?: Prisma.BrandProfileScalarWhereInput | Prisma.BrandProfileScalarWhereInput[]
 }
 
-export type BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput = {
-  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput>
-  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutSpaceInput
-  upsert?: Prisma.BrandProfileUpsertWithoutSpaceInput
-  disconnect?: Prisma.BrandProfileWhereInput | boolean
-  delete?: Prisma.BrandProfileWhereInput | boolean
-  connect?: Prisma.BrandProfileWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.BrandProfileUpdateToOneWithWhereWithoutSpaceInput, Prisma.BrandProfileUpdateWithoutSpaceInput>, Prisma.BrandProfileUncheckedUpdateWithoutSpaceInput>
+export type BrandProfileUncheckedUpdateManyWithoutSpaceNestedInput = {
+  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput> | Prisma.BrandProfileCreateWithoutSpaceInput[] | Prisma.BrandProfileUncheckedCreateWithoutSpaceInput[]
+  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutSpaceInput | Prisma.BrandProfileCreateOrConnectWithoutSpaceInput[]
+  upsert?: Prisma.BrandProfileUpsertWithWhereUniqueWithoutSpaceInput | Prisma.BrandProfileUpsertWithWhereUniqueWithoutSpaceInput[]
+  createMany?: Prisma.BrandProfileCreateManySpaceInputEnvelope
+  set?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  disconnect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  delete?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  connect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  update?: Prisma.BrandProfileUpdateWithWhereUniqueWithoutSpaceInput | Prisma.BrandProfileUpdateWithWhereUniqueWithoutSpaceInput[]
+  updateMany?: Prisma.BrandProfileUpdateManyWithWhereWithoutSpaceInput | Prisma.BrandProfileUpdateManyWithWhereWithoutSpaceInput[]
+  deleteMany?: Prisma.BrandProfileScalarWhereInput | Prisma.BrandProfileScalarWhereInput[]
+}
+
+export type BrandProfileCreateNestedManyWithoutBrandInput = {
+  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutBrandInput, Prisma.BrandProfileUncheckedCreateWithoutBrandInput> | Prisma.BrandProfileCreateWithoutBrandInput[] | Prisma.BrandProfileUncheckedCreateWithoutBrandInput[]
+  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutBrandInput | Prisma.BrandProfileCreateOrConnectWithoutBrandInput[]
+  createMany?: Prisma.BrandProfileCreateManyBrandInputEnvelope
+  connect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+}
+
+export type BrandProfileUncheckedCreateNestedManyWithoutBrandInput = {
+  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutBrandInput, Prisma.BrandProfileUncheckedCreateWithoutBrandInput> | Prisma.BrandProfileCreateWithoutBrandInput[] | Prisma.BrandProfileUncheckedCreateWithoutBrandInput[]
+  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutBrandInput | Prisma.BrandProfileCreateOrConnectWithoutBrandInput[]
+  createMany?: Prisma.BrandProfileCreateManyBrandInputEnvelope
+  connect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+}
+
+export type BrandProfileUpdateManyWithoutBrandNestedInput = {
+  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutBrandInput, Prisma.BrandProfileUncheckedCreateWithoutBrandInput> | Prisma.BrandProfileCreateWithoutBrandInput[] | Prisma.BrandProfileUncheckedCreateWithoutBrandInput[]
+  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutBrandInput | Prisma.BrandProfileCreateOrConnectWithoutBrandInput[]
+  upsert?: Prisma.BrandProfileUpsertWithWhereUniqueWithoutBrandInput | Prisma.BrandProfileUpsertWithWhereUniqueWithoutBrandInput[]
+  createMany?: Prisma.BrandProfileCreateManyBrandInputEnvelope
+  set?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  disconnect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  delete?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  connect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  update?: Prisma.BrandProfileUpdateWithWhereUniqueWithoutBrandInput | Prisma.BrandProfileUpdateWithWhereUniqueWithoutBrandInput[]
+  updateMany?: Prisma.BrandProfileUpdateManyWithWhereWithoutBrandInput | Prisma.BrandProfileUpdateManyWithWhereWithoutBrandInput[]
+  deleteMany?: Prisma.BrandProfileScalarWhereInput | Prisma.BrandProfileScalarWhereInput[]
+}
+
+export type BrandProfileUncheckedUpdateManyWithoutBrandNestedInput = {
+  create?: Prisma.XOR<Prisma.BrandProfileCreateWithoutBrandInput, Prisma.BrandProfileUncheckedCreateWithoutBrandInput> | Prisma.BrandProfileCreateWithoutBrandInput[] | Prisma.BrandProfileUncheckedCreateWithoutBrandInput[]
+  connectOrCreate?: Prisma.BrandProfileCreateOrConnectWithoutBrandInput | Prisma.BrandProfileCreateOrConnectWithoutBrandInput[]
+  upsert?: Prisma.BrandProfileUpsertWithWhereUniqueWithoutBrandInput | Prisma.BrandProfileUpsertWithWhereUniqueWithoutBrandInput[]
+  createMany?: Prisma.BrandProfileCreateManyBrandInputEnvelope
+  set?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  disconnect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  delete?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  connect?: Prisma.BrandProfileWhereUniqueInput | Prisma.BrandProfileWhereUniqueInput[]
+  update?: Prisma.BrandProfileUpdateWithWhereUniqueWithoutBrandInput | Prisma.BrandProfileUpdateWithWhereUniqueWithoutBrandInput[]
+  updateMany?: Prisma.BrandProfileUpdateManyWithWhereWithoutBrandInput | Prisma.BrandProfileUpdateManyWithWhereWithoutBrandInput[]
+  deleteMany?: Prisma.BrandProfileScalarWhereInput | Prisma.BrandProfileScalarWhereInput[]
 }
 
 export type BrandProfileCreateWithoutSpaceInput = {
@@ -429,10 +516,12 @@ export type BrandProfileCreateWithoutSpaceInput = {
   logoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  brand?: Prisma.BrandCreateNestedOneWithoutBrandProfilesInput
 }
 
 export type BrandProfileUncheckedCreateWithoutSpaceInput = {
   id?: string
+  brandId?: string | null
   companyName: string
   shortDescription?: string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -447,15 +536,103 @@ export type BrandProfileCreateOrConnectWithoutSpaceInput = {
   create: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput>
 }
 
-export type BrandProfileUpsertWithoutSpaceInput = {
-  update: Prisma.XOR<Prisma.BrandProfileUpdateWithoutSpaceInput, Prisma.BrandProfileUncheckedUpdateWithoutSpaceInput>
-  create: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput>
-  where?: Prisma.BrandProfileWhereInput
+export type BrandProfileCreateManySpaceInputEnvelope = {
+  data: Prisma.BrandProfileCreateManySpaceInput | Prisma.BrandProfileCreateManySpaceInput[]
+  skipDuplicates?: boolean
 }
 
-export type BrandProfileUpdateToOneWithWhereWithoutSpaceInput = {
-  where?: Prisma.BrandProfileWhereInput
+export type BrandProfileUpsertWithWhereUniqueWithoutSpaceInput = {
+  where: Prisma.BrandProfileWhereUniqueInput
+  update: Prisma.XOR<Prisma.BrandProfileUpdateWithoutSpaceInput, Prisma.BrandProfileUncheckedUpdateWithoutSpaceInput>
+  create: Prisma.XOR<Prisma.BrandProfileCreateWithoutSpaceInput, Prisma.BrandProfileUncheckedCreateWithoutSpaceInput>
+}
+
+export type BrandProfileUpdateWithWhereUniqueWithoutSpaceInput = {
+  where: Prisma.BrandProfileWhereUniqueInput
   data: Prisma.XOR<Prisma.BrandProfileUpdateWithoutSpaceInput, Prisma.BrandProfileUncheckedUpdateWithoutSpaceInput>
+}
+
+export type BrandProfileUpdateManyWithWhereWithoutSpaceInput = {
+  where: Prisma.BrandProfileScalarWhereInput
+  data: Prisma.XOR<Prisma.BrandProfileUpdateManyMutationInput, Prisma.BrandProfileUncheckedUpdateManyWithoutSpaceInput>
+}
+
+export type BrandProfileScalarWhereInput = {
+  AND?: Prisma.BrandProfileScalarWhereInput | Prisma.BrandProfileScalarWhereInput[]
+  OR?: Prisma.BrandProfileScalarWhereInput[]
+  NOT?: Prisma.BrandProfileScalarWhereInput | Prisma.BrandProfileScalarWhereInput[]
+  id?: Prisma.StringFilter<"BrandProfile"> | string
+  spaceId?: Prisma.StringFilter<"BrandProfile"> | string
+  brandId?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
+  companyName?: Prisma.StringFilter<"BrandProfile"> | string
+  shortDescription?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
+  toneOfVoice?: Prisma.JsonNullableFilter<"BrandProfile">
+  customFields?: Prisma.JsonFilter<"BrandProfile">
+  logoUrl?: Prisma.StringNullableFilter<"BrandProfile"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"BrandProfile"> | Date | string
+}
+
+export type BrandProfileCreateWithoutBrandInput = {
+  id?: string
+  companyName: string
+  shortDescription?: string | null
+  toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  logoUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutBrandProfilesInput
+}
+
+export type BrandProfileUncheckedCreateWithoutBrandInput = {
+  id?: string
+  spaceId: string
+  companyName: string
+  shortDescription?: string | null
+  toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  logoUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BrandProfileCreateOrConnectWithoutBrandInput = {
+  where: Prisma.BrandProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.BrandProfileCreateWithoutBrandInput, Prisma.BrandProfileUncheckedCreateWithoutBrandInput>
+}
+
+export type BrandProfileCreateManyBrandInputEnvelope = {
+  data: Prisma.BrandProfileCreateManyBrandInput | Prisma.BrandProfileCreateManyBrandInput[]
+  skipDuplicates?: boolean
+}
+
+export type BrandProfileUpsertWithWhereUniqueWithoutBrandInput = {
+  where: Prisma.BrandProfileWhereUniqueInput
+  update: Prisma.XOR<Prisma.BrandProfileUpdateWithoutBrandInput, Prisma.BrandProfileUncheckedUpdateWithoutBrandInput>
+  create: Prisma.XOR<Prisma.BrandProfileCreateWithoutBrandInput, Prisma.BrandProfileUncheckedCreateWithoutBrandInput>
+}
+
+export type BrandProfileUpdateWithWhereUniqueWithoutBrandInput = {
+  where: Prisma.BrandProfileWhereUniqueInput
+  data: Prisma.XOR<Prisma.BrandProfileUpdateWithoutBrandInput, Prisma.BrandProfileUncheckedUpdateWithoutBrandInput>
+}
+
+export type BrandProfileUpdateManyWithWhereWithoutBrandInput = {
+  where: Prisma.BrandProfileScalarWhereInput
+  data: Prisma.XOR<Prisma.BrandProfileUpdateManyMutationInput, Prisma.BrandProfileUncheckedUpdateManyWithoutBrandInput>
+}
+
+export type BrandProfileCreateManySpaceInput = {
+  id?: string
+  brandId?: string | null
+  companyName: string
+  shortDescription?: string | null
+  toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  logoUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type BrandProfileUpdateWithoutSpaceInput = {
@@ -467,10 +644,72 @@ export type BrandProfileUpdateWithoutSpaceInput = {
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  brand?: Prisma.BrandUpdateOneWithoutBrandProfilesNestedInput
 }
 
 export type BrandProfileUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.StringFieldUpdateOperationsInput | string
+  shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BrandProfileUncheckedUpdateManyWithoutSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.StringFieldUpdateOperationsInput | string
+  shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BrandProfileCreateManyBrandInput = {
+  id?: string
+  spaceId: string
+  companyName: string
+  shortDescription?: string | null
+  toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  logoUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BrandProfileUpdateWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  companyName?: Prisma.StringFieldUpdateOperationsInput | string
+  shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutBrandProfilesNestedInput
+}
+
+export type BrandProfileUncheckedUpdateWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  companyName?: Prisma.StringFieldUpdateOperationsInput | string
+  shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BrandProfileUncheckedUpdateManyWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   companyName?: Prisma.StringFieldUpdateOperationsInput | string
   shortDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toneOfVoice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -485,6 +724,7 @@ export type BrandProfileUncheckedUpdateWithoutSpaceInput = {
 export type BrandProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
+  brandId?: boolean
   companyName?: boolean
   shortDescription?: boolean
   toneOfVoice?: boolean
@@ -493,11 +733,13 @@ export type BrandProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.BrandProfile$brandArgs<ExtArgs>
 }, ExtArgs["result"]["brandProfile"]>
 
 export type BrandProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
+  brandId?: boolean
   companyName?: boolean
   shortDescription?: boolean
   toneOfVoice?: boolean
@@ -506,11 +748,13 @@ export type BrandProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.BrandProfile$brandArgs<ExtArgs>
 }, ExtArgs["result"]["brandProfile"]>
 
 export type BrandProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
+  brandId?: boolean
   companyName?: boolean
   shortDescription?: boolean
   toneOfVoice?: boolean
@@ -519,11 +763,13 @@ export type BrandProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.BrandProfile$brandArgs<ExtArgs>
 }, ExtArgs["result"]["brandProfile"]>
 
 export type BrandProfileSelectScalar = {
   id?: boolean
   spaceId?: boolean
+  brandId?: boolean
   companyName?: boolean
   shortDescription?: boolean
   toneOfVoice?: boolean
@@ -533,25 +779,30 @@ export type BrandProfileSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BrandProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "companyName" | "shortDescription" | "toneOfVoice" | "customFields" | "logoUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["brandProfile"]>
+export type BrandProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "brandId" | "companyName" | "shortDescription" | "toneOfVoice" | "customFields" | "logoUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["brandProfile"]>
 export type BrandProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.BrandProfile$brandArgs<ExtArgs>
 }
 export type BrandProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.BrandProfile$brandArgs<ExtArgs>
 }
 export type BrandProfileIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  brand?: boolean | Prisma.BrandProfile$brandArgs<ExtArgs>
 }
 
 export type $BrandProfilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "BrandProfile"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
+    brand: Prisma.$BrandPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     spaceId: string
+    brandId: string | null
     companyName: string
     shortDescription: string | null
     toneOfVoice: runtime.JsonValue | null
@@ -954,6 +1205,7 @@ readonly fields: BrandProfileFieldRefs;
 export interface Prisma__BrandProfileClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  brand<T extends Prisma.BrandProfile$brandArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BrandProfile$brandArgs<ExtArgs>>): Prisma.Prisma__BrandClient<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -985,6 +1237,7 @@ export interface Prisma__BrandProfileClient<T, Null = never, ExtArgs extends run
 export interface BrandProfileFieldRefs {
   readonly id: Prisma.FieldRef<"BrandProfile", 'String'>
   readonly spaceId: Prisma.FieldRef<"BrandProfile", 'String'>
+  readonly brandId: Prisma.FieldRef<"BrandProfile", 'String'>
   readonly companyName: Prisma.FieldRef<"BrandProfile", 'String'>
   readonly shortDescription: Prisma.FieldRef<"BrandProfile", 'String'>
   readonly toneOfVoice: Prisma.FieldRef<"BrandProfile", 'Json'>
@@ -1385,6 +1638,25 @@ export type BrandProfileDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many BrandProfiles to delete.
    */
   limit?: number
+}
+
+/**
+ * BrandProfile.brand
+ */
+export type BrandProfile$brandArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Brand
+   */
+  select?: Prisma.BrandSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Brand
+   */
+  omit?: Prisma.BrandOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BrandInclude<ExtArgs> | null
+  where?: Prisma.BrandWhereInput
 }
 
 /**

@@ -27,6 +27,8 @@ export const productSchema = z.object({
   oneLinerPitch: emptyToUndefined.pipe(z.string().max(200)).optional(),
   customFields: customFieldsSchema,
   isActive: z.boolean().default(true),
+  // seller-hub Brand id. null = 브랜드 미지정
+  brandId: z.string().min(1).max(100).nullish(),
 })
 export type ProductInput = z.infer<typeof productSchema>
 
@@ -40,7 +42,7 @@ export const personaSchema = z.object({
 })
 export type PersonaInput = z.infer<typeof personaSchema>
 
-// ─── Brand Profile (Space당 1개) ───────────────────────────────────────────
+// ─── Brand Profile (브랜드별, brandId 없음 = Space 공통) ──────────────────────────
 
 export const brandProfileSchema = z.object({
   companyName: z.string().min(1, '회사명을 입력하세요').max(200),
