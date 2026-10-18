@@ -71,10 +71,7 @@ const postingGraph = {
 }
 const json = (value: unknown): unknown => JSON.parse(JSON.stringify(value))
 
-export async function importOpeningApplication(
-  db: Pick<PrismaClient, '$transaction'>,
-  raw: OpeningApplicationImport
-) {
+export function planOpeningApplication(raw: OpeningApplicationImport) {
   const parsed = inputSchema.safeParse(raw)
   const snapshotResult = openingApplicationSnapshotSchema.safeParse(raw.snapshot)
   if (
@@ -177,10 +174,19 @@ export async function importOpeningApplication(
     snapshot.fileMappings.length !== input.files.length
   )
     throw Error('Migration file mapping incomplete')
-  const pii = buildApplicationPii(piiEntries)
   const { snapshot: _snapshot, ...decisions } = input
   const rawOnlyEntryCount = app.application_entries.length - input.pii.length
   void _snapshot
+  return { input, app, operational: operational.data, piiEntries, decisions, rawOnlyEntryCount }
+}
+
+export async function importOpeningApplication(
+  db: Pick<PrismaClient, '$transaction'>,
+  raw: OpeningApplicationImport
+) {
+  const { input, app, operational, piiEntries, decisions, rawOnlyEntryCount } =
+    planOpeningApplication(raw)
+  const pii = buildApplicationPii(piiEntries)
   return db.$transaction(async (tx) => {
     const parentRecord = await tx.hiringMigrationRecord.findUnique({
       where: {
@@ -268,10 +274,10 @@ export async function importOpeningApplication(
               postingId: input.postingId,
               postingPositionId: input.position?.targetId ?? null,
               ...pii.columns,
-              memo: operational.data.memo ?? null,
-              referrer: operational.data.referrer ?? null,
-              duplicated: operational.data.duplicated ?? false,
-              directRegistration: operational.data.direct_registration ?? false,
+              memo: operational.memo ?? null,
+              referrer: operational.referrer ?? null,
+              duplicated: operational.duplicated ?? false,
+              directRegistration: operational.direct_registration ?? false,
               applicationEntries: [],
               stage: input.state.stage,
               hiringStage: input.state.hiringStage,

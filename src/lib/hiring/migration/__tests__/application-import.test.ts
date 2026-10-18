@@ -4,6 +4,8 @@ import type { PrismaClient } from '@/generated/prisma/client'
 import { importOpeningApplication, type OpeningApplicationImport } from '../application-import'
 import { migrationHash, migrationSourceRef } from '../ledger'
 import { encryptPii } from '@/lib/del/encryption'
+import { recoverOpeningApplication } from '../application-recovery'
+import { spawnSync } from 'node:child_process'
 const at = '2026-10-03T00:00:00.000Z'
 function input(): OpeningApplicationImport {
   return {
@@ -126,6 +128,63 @@ it('한 transaction에서 원문과 PII를 보존하고 재실행은 추가 생�
   expect((await importOpeningApplication(db, input())).status).toBe('existing')
   expect(tx.hiringApplication.create).toHaveBeenCalledTimes(1)
 })
+
+it.each(['v0', 'v1'])(
+  '%s executor 원장에서 입력을 복구하고 재실행해도 추가 생성하지 않는다',
+  async (version) => {
+    process.env.ENCRYPTION_WRITE_VERSION = version
+    const first = await importOpeningApplication(db, input())
+    const recovered = recoverOpeningApplication(first.record, {
+      sourceSpaceId: '1',
+      spaceId: 'space',
+    })
+    expect(recovered).toEqual(input())
+    expect((await importOpeningApplication(db, recovered)).status).toBe('existing')
+    expect(tx.hiringApplication.create).toHaveBeenCalledTimes(1)
+  }
+)
+
+it('다른 고객·변환 버전·원본 ID·snapshot 시각·손상을 복구하지 않는다', async () => {
+  const { record } = await importOpeningApplication(db, input())
+  for (const override of [
+    { spaceId: 'other' },
+    { transformVersion: 'unknown' },
+    { targetModel: 'HiringPosting' },
+    { sourceRef: '["opening.work","application","4","0"]' },
+    { sourceSnapshotAt: new Date('2026-10-04T00:00:00Z') },
+    { sourceHash: '0'.repeat(64) },
+  ]) {
+    expect(() =>
+      recoverOpeningApplication(
+        { ...record, ...override },
+        { sourceSpaceId: '1', spaceId: 'space' }
+      )
+    ).toThrow(/^APPLICATION_RECOVERY_FAILED$/)
+  }
+  expect(() => recoverOpeningApplication(record, { sourceSpaceId: '2', spaceId: 'space' })).toThrow(
+    /^APPLICATION_RECOVERY_FAILED$/
+  )
+})
+
+it('공통 복구 CLI는 HMAC 키 없이 지원서 원장을 검사하고 집계만 출력한다', async () => {
+  const { record } = await importOpeningApplication(db, input())
+  const env = { ...process.env }
+  delete env.HIRING_HMAC_KEY
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/audit-opening-recovery.mjs', '--source-space', '1', '--target-space', 'space'],
+    { input: JSON.stringify(record), encoding: 'utf8', env }
+  )
+  expect(result.status).toBe(0)
+  expect(JSON.parse(result.stdout)).toEqual({
+    status: 'RECOVERABLE',
+    writes: 0,
+    applications: 1,
+    files: 0,
+    stores: 0,
+  })
+  expect(result.stdout + result.stderr).not.toContain('합성 이름')
+})
 it('대상 편집 충돌을 덮어쓰지 않는다', async () => {
   await importOpeningApplication(db, input())
   application!.memo = '고객 편집'
@@ -213,7 +272,11 @@ it('검증된 파일 대응은 연결하고 경로/checksum/검증표시 오류�
       path: `space/migration/${createHash('sha256').update(sourceRef).digest('hex')}/${sha256}`,
     },
   ]
-  expect((await importOpeningApplication(db, packet)).status).toBe('created')
+  const imported = await importOpeningApplication(db, packet)
+  expect(imported.status).toBe('created')
+  expect(
+    recoverOpeningApplication(imported.record, { sourceSpaceId: '1', spaceId: 'space' })
+  ).toEqual(packet)
   expect(application?.files).toEqual([
     expect.objectContaining({ id: 'file', spaceId: 'space', sizeBytes: 10 }),
   ])
