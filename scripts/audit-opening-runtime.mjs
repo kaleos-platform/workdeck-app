@@ -57,6 +57,12 @@ export async function auditRuntimeCustomer(customer, requestPage) {
         if (!Number.isSafeInteger(value) || value < 0) throw Error('AUDIT_RESPONSE_INVALID')
         totals[model][key] += value
       }
+    for (const key of fields) {
+      const modelTotal = models.reduce((count, model) => count + s.models[model][key], 0)
+      const expected =
+        key === 'checked' ? s.checked - s.unsupported : key === 'unsupported' ? 0 : s[key]
+      if (modelTotal !== expected) throw Error('AUDIT_COUNTS_INVALID')
+    }
     if (reply.next === null) {
       if (sum.checked !== total) throw Error('AUDIT_INCOMPLETE')
       return { customer, total, pages: page + 1, summary: { ...sum, models: totals } }

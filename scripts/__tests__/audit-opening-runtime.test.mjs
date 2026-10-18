@@ -54,6 +54,8 @@ test('실패 건수를 성공으로 바꾸지 않고 미지원 고객을 거부�
     const r = reply(1, null, 1)
     r.summary.integrityVerified = 0
     r.summary.integrityFailed = 1
+    r.summary.models.HiringPosting.integrityVerified = 0
+    r.summary.models.HiringPosting.integrityFailed = 1
     return r
   })
   assert.equal(report.summary.integrityFailed, 1)
@@ -62,5 +64,16 @@ test('실패 건수를 성공으로 바꾸지 않고 미지원 고객을 거부�
       throw Error('must not request')
     }),
     /INVALID_CUSTOMER/
+  )
+})
+
+test('모델별 합계가 전체 합계와 다르면 완료로 보고하지 않는다', async () => {
+  await assert.rejects(
+    auditRuntimeCustomer('peakpay', async () => {
+      const r = reply(1, null, 1)
+      r.summary.models.HiringPosting = stat(0)
+      return r
+    }),
+    /AUDIT_COUNTS_INVALID/
   )
 })

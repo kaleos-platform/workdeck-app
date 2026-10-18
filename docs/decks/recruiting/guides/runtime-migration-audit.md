@@ -29,4 +29,4 @@ node scripts/audit-opening-runtime.mjs --env /secure/workdeck.env --customer pea
 
 CLI는 같은 through를 유지하면서 페이지를 순차 요청하고 마지막 checked 합계가 total과 다르면 실패한다. 반복 cursor·상한 변경·비정상 집계도 거부한다. exit 0은 조회 범위 내 무결성/복구 오류 없음, exit 2는 검토할 실패 건수 있음, exit 1은 호출 또는 완주 검증 실패다. total은 별도 원장 집계와도 비교해야 한다. 페이지마다 별도의 읽기 snapshot이므로 전체 작업 동안 원본·대상 쓰기를 동결했다고 가정하지 않는다.
 
-로컬 검증: 관련 Jest 10 suites/171 tests, CLI 3 tests, TypeScript·전체 lint(오류 0/기존 경고 63)·webpack production build 통과. 실제 운영 결과는 배포 후 별도 기록한다.
+로컬 검증: 관련 Jest 10 suites/171 tests, CLI 4 tests, TypeScript·전체 lint(오류 0/기존 경고 63)·webpack production build 통과. 실제 운영 결과는 배포 후 별도 기록한다.
