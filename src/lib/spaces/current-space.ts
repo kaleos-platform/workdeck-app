@@ -2,15 +2,9 @@ import 'server-only'
 import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { CURRENT_SPACE_COOKIE, CURRENT_SPACE_COOKIE_OPTIONS } from './current-space-cookie'
 
-export const CURRENT_SPACE_COOKIE = 'wd_space'
-export const CURRENT_SPACE_COOKIE_OPTIONS = {
-  httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: true,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 365,
-}
+export { CURRENT_SPACE_COOKIE, CURRENT_SPACE_COOKIE_OPTIONS }
 
 type Role = 'OWNER' | 'ADMIN' | 'MEMBER'
 export type CurrentMembership = { role: Role; space: { id: string; name: string } }
