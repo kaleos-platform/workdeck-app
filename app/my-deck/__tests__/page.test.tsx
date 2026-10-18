@@ -9,6 +9,7 @@ jest.mock('@/lib/prisma', () => ({
     deckApp: { findMany: jest.fn() },
   },
 }))
+jest.mock('@/lib/spaces/current-space', () => ({ resolveCurrentMembership: jest.fn() }))
 jest.mock('@/lib/billing/entitlement', () => ({ resolveEntitlement: jest.fn() }))
 jest.mock('@/components/my-deck/my-deck-client', () => ({ MyDeckClient: () => null }))
 jest.mock('next/navigation', () => ({
@@ -18,6 +19,7 @@ jest.mock('next/navigation', () => ({
 }))
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
+import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
 import MyDeckPage from '../page'
 
@@ -38,25 +40,25 @@ beforeEach(() => {
   jest.mocked(resolveEntitlement).mockResolvedValue({ decks: {} } as never)
 })
 
+const resolve = resolveCurrentMembership as jest.Mock
+const cur = (id: string) => ({ role: 'MEMBER', space: { id, name: id } })
+
 it('?spaceId의 구성원이면 그 Space를 보여준다', async () => {
-  findFirst.mockImplementation(({ where }) => Promise.resolve(member(where.spaceId ?? 'sp-first')))
+  resolve.mockResolvedValue(cur('sp-1'))
+  findFirst.mockImplementation(({ where }) => Promise.resolve(member(where.spaceId)))
   expect((await render('sp-1')).props.spaceName).toBe('sp-1')
-  expect(findFirst).toHaveBeenCalledTimes(1)
+  expect(resolve).toHaveBeenCalledWith('u', 'sp-1')
   expect(findFirst.mock.calls[0][0].where).toEqual({ userId: 'u', spaceId: 'sp-1' })
 })
 
-it('?spaceId의 구성원이 아니면 첫 멤버십으로 돌아간다', async () => {
-  findFirst.mockImplementation(({ where }) =>
-    Promise.resolve(where.spaceId ? null : member('sp-first'))
-  )
+it('?spaceId의 구성원이 아니면(forbidden) 기본 Space로 돌아간다', async () => {
+  resolve.mockResolvedValueOnce({ forbidden: true }).mockResolvedValueOnce(cur('sp-first'))
+  findFirst.mockImplementation(({ where }) => Promise.resolve(member(where.spaceId)))
   expect((await render('sp-other')).props.spaceName).toBe('sp-first')
-  expect(findFirst.mock.calls[1][0].where).toEqual({ userId: 'u' })
+  expect(resolve).toHaveBeenLastCalledWith('u')
 })
 
-it('spaceId 없으면 기존처럼 첫 멤버십, 멤버십 없으면 /workspace-setup', async () => {
-  findFirst.mockResolvedValueOnce(member('sp-first'))
-  expect((await render()).props.spaceName).toBe('sp-first')
-  expect(findFirst.mock.calls[0][0].where).toEqual({ userId: 'u' })
-  findFirst.mockResolvedValue(null)
+it('멤버십 없으면 /workspace-setup', async () => {
+  resolve.mockResolvedValue(null)
   await expect(render()).rejects.toThrow('redirect:/workspace-setup')
 })
