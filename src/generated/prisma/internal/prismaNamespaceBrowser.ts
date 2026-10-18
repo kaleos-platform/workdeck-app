@@ -203,7 +203,8 @@ export const ModelName = {
   BillingMethod: 'BillingMethod',
   BillingCharge: 'BillingCharge',
   AdminAuditLog: 'AdminAuditLog',
-  WorkerToken: 'WorkerToken'
+  WorkerToken: 'WorkerToken',
+  KeywordRankSnapshot: 'KeywordRankSnapshot'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1621,6 +1622,7 @@ export const ProductListingScalarFieldEnum = {
   managementName: 'managementName',
   keywords: 'keywords',
   pageUrl: 'pageUrl',
+  rankTracking: 'rankTracking',
   retailPrice: 'retailPrice',
   channelStock: 'channelStock',
   status: 'status',
@@ -1677,6 +1679,7 @@ export const ChannelProductScalarFieldEnum = {
   memo: 'memo',
   keywords: 'keywords',
   pageUrl: 'pageUrl',
+  rankTracking: 'rankTracking',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2815,6 +2818,25 @@ export const WorkerTokenScalarFieldEnum = {
 } as const
 
 export type WorkerTokenScalarFieldEnum = (typeof WorkerTokenScalarFieldEnum)[keyof typeof WorkerTokenScalarFieldEnum]
+
+
+export const KeywordRankSnapshotScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  targetKey: 'targetKey',
+  channelProductId: 'channelProductId',
+  listingId: 'listingId',
+  source: 'source',
+  keyword: 'keyword',
+  date: 'date',
+  status: 'status',
+  rank: 'rank',
+  adShown: 'adShown',
+  errorCode: 'errorCode',
+  createdAt: 'createdAt'
+} as const
+
+export type KeywordRankSnapshotScalarFieldEnum = (typeof KeywordRankSnapshotScalarFieldEnum)[keyof typeof KeywordRankSnapshotScalarFieldEnum]
 
 
 export const SortOrder = {

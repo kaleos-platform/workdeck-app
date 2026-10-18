@@ -15,6 +15,7 @@ import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
 import { keywordListSchema, pageUrlSchema } from '@/lib/sh/schemas'
 import { absorbKeywords } from '@/lib/sh/keyword-absorb'
+import { countRankSlots, getRankSlotLimit } from '@/lib/rank/slots'
 import {
   applyBaseRename,
   deriveBaseValues,
@@ -37,6 +38,8 @@ const patchSchema = z.object({
   // 상품 페이지 URL — 이름·검색어가 아니므로 변경 이력 대상이 아니다.
   pageUrl: pageUrlSchema,
   keywords: keywordListSchema.optional(),
+  // 키워드 순위 추적 on/off — 이름·검색어가 아니므로 변경 이력 대상이 아니다.
+  rankTracking: z.boolean().optional(),
   // true면 baseSearchName/baseDisplayName 변경을 자식 리스팅에도 전파한다.
   // 요청 본문 전용 필드 — ChannelProduct 컬럼이 아니므로 update data 로 흘려보내면 안 된다(아래 구조분해).
   propagateNames: z.boolean().optional(),
@@ -275,6 +278,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       baseInternalCode: cp.baseInternalCode,
       memo: cp.memo,
       pageUrl: cp.pageUrl,
+      rankTracking: cp.rankTracking,
       keywords: Array.isArray(cp.keywords) ? (cp.keywords as string[]) : [],
     },
     product,
@@ -303,6 +307,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       // deriveBaseValues 로 자식 리스팅에서 역산한 값을 쓴다.
       baseSearchName: true,
       keywords: true,
+      rankTracking: true, // 꺼짐→켜짐 전환 때만 슬롯 한도를 검사한다
       // 이력 귀속 상품 추정용. 채널상품은 리스팅 여러 개를 묶고 각 리스팅이 여러 옵션을
       // 가질 수 있어 단일 상품으로 떨어지지 않을 수 있다(GET 의 kind:'mixed' 참조).
       // 삭제된 옵션은 제외 — listings/[listingId] 와 같은 귀속 오염을 막는다.
@@ -329,6 +334,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const nextSearchName = updateData.baseSearchName ?? cp.baseSearchName
   const nextKeywords = updateData.keywords ?? cp.keywords
+
+  if (updateData.rankTracking === true && !cp.rankTracking) {
+    const limit = getRankSlotLimit()
+    const used =
+      (await countRankSlots(resolved.space.id, `cp:${id}`)) + toKeywordList(nextKeywords).length
+    if (used > limit) {
+      return errorResponse(`순위 추적 슬롯 ${limit}개를 넘습니다 (현재 ${used}개 사용 중)`, 400)
+    }
+  }
   const changeDiff = diffKeywordChange({
     beforeName: cp.baseSearchName,
     afterName: nextSearchName,

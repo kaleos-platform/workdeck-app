@@ -48,6 +48,8 @@ import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { ChannelKeywordImportDialog } from './channel-keyword-import-dialog'
 import { KeywordEditor } from './keyword-editor'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
+import { RankTrackingToggle } from '../keywords/rank-tracking-toggle'
+import { useKeywordRankBadges } from '../keywords/use-keyword-rank-badges'
 import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
 import { NameCounter } from './name-counter'
 import { NameValidationPanel } from './name-validation-panel'
@@ -88,6 +90,7 @@ export type ListingFormInitial = {
   status: 'ACTIVE' | 'SUSPENDED'
   memo: string | null
   pageUrl?: string | null
+  rankTracking?: boolean
   items: ItemDraft[]
   availableStock: number
   autoAvailableStock?: number
@@ -125,6 +128,10 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   const [deleting, setDeleting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [historyKey, setHistoryKey] = useState(0)
+  const [rankTracking, setRankTracking] = useState(initial?.rankTracking ?? false)
+  const rankBadges = useKeywordRankBadges(
+    mode === 'edit' && initial?.id && rankTracking ? `ls:${initial.id}` : null
+  )
   // 저장 성공 시 갱신되는 "서버에 반영된 값". initial 은 이 페이지가 다시 마운트되기 전까지
   // 갱신되지 않으므로, 이것을 쓰지 않으면 저장 후에도 상품명이 바뀐 상태로 판정된다.
   const [savedName, setSavedName] = useState(initial?.searchName ?? '')
@@ -518,6 +525,16 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             />
           </div>
 
+          {mode === 'edit' && initial?.id && (
+            <RankTrackingToggle
+              idPrefix="listing"
+              url={`/api/sh/products/listings/${initial.id}`}
+              checked={rankTracking}
+              hasPageUrl={pageUrl.trim() !== ''}
+              onChange={setRankTracking}
+            />
+          )}
+
           <div className="space-y-1.5">
             <Label htmlFor="listing-memo">메모</Label>
             <Textarea
@@ -697,6 +714,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             productName={searchName}
             optionNames={optionNames}
             rules={rules}
+            rankBadges={rankBadges}
           />
           {/* 채널 검색어 → 키워드 마스터 단방향 등록. 두 저장소는 동기화하지 않으므로
               사용자가 명시적으로 누를 때만 올라간다. */}

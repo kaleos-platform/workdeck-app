@@ -62,6 +62,8 @@ import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
 import { ChannelKeywordImportDialog } from './channel-keyword-import-dialog'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
+import { RankTrackingToggle } from '../keywords/rank-tracking-toggle'
+import { useKeywordRankBadges } from '../keywords/use-keyword-rank-badges'
 import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
 import { GroupBulkEditBar, type BulkPatch } from './group-bulk-edit-bar'
@@ -118,6 +120,7 @@ type GroupDetail = {
     baseInternalCode: string | null
     memo: string | null
     pageUrl?: string | null
+    rankTracking?: boolean
     keywords: string[]
   }
   listings: GroupListingFull[]
@@ -153,6 +156,8 @@ export function GroupDetailView({ channelProductId }: Props) {
   const [baseInternalCode, setBaseInternalCode] = useState('')
   const [memo, setMemo] = useState('')
   const [pageUrl, setPageUrl] = useState('')
+  const [rankTracking, setRankTracking] = useState(false)
+  const rankBadges = useKeywordRankBadges(rankTracking ? `cp:${channelProductId}` : null)
 
   // 옵션 CRUD state
   const [deleteTarget, setDeleteTarget] = useState<{ ids: string[]; label: string } | null>(null)
@@ -185,6 +190,7 @@ export function GroupDetailView({ channelProductId }: Props) {
       setData(d)
       setKeywords(d.channelProduct.keywords ?? [])
       setPageUrl(d.channelProduct.pageUrl ?? '')
+      setRankTracking(d.channelProduct.rankTracking ?? false)
       setRows(d.listings)
       setSelected(new Set())
       // single 모드에서만 자동 suffix 추출. mixed는 channel-product 기본값 사용.
@@ -1408,6 +1414,15 @@ export function GroupDetailView({ channelProductId }: Props) {
         onBaseInternalCodeChange={(v) => handleBaseChange('internalCode', v)}
         onMemoChange={(v) => handleBaseChange('memo', v)}
         onPageUrlChange={(v) => handleBaseChange('pageUrl', v)}
+        rankTrackingToggle={
+          <RankTrackingToggle
+            idPrefix="group"
+            url={`/api/sh/products/listings/channel-products/${channelProductId}`}
+            checked={rankTracking}
+            hasPageUrl={pageUrl.trim() !== ''}
+            onChange={setRankTracking}
+          />
+        }
         disabled={mutating}
         namesReadOnly={readOnly}
         searchNameNotice={
@@ -1502,6 +1517,7 @@ export function GroupDetailView({ channelProductId }: Props) {
             optionNames={optionNames}
             rules={rules}
             readOnly={readOnly}
+            rankBadges={rankBadges}
           />
           {/* 채널상품 그룹은 리스팅이 여럿이라 귀속 상품을 하나로 특정할 수 없다.
               링크 없이 키워드만 마스터로 올린다(연결은 키워드 관리에서 붙인다). */}

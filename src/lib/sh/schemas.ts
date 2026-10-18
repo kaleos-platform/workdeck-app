@@ -402,6 +402,7 @@ export const productListingPatchSchema = z
     status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
     memo: emptyToUndefined.pipe(z.string().trim().max(500)).optional().nullable(),
     pageUrl: pageUrlSchema,
+    rankTracking: z.boolean().optional(),
     items: z.array(productListingItemSchema).min(1).max(50).optional(),
   })
   .superRefine((v, ctx) => {

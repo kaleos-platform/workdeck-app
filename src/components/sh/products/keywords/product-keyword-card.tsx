@@ -20,6 +20,7 @@ import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 
 import { KeywordChangeTimeline } from '../listings/keyword-change-timeline'
 import { KeywordEditor } from '../listings/keyword-editor'
+import { useKeywordRankBadges } from './use-keyword-rank-badges'
 import { NameChangeCooldownNotice } from '../listings/name-change-cooldown-notice'
 import { NameCounter } from '../listings/name-counter'
 import { NameValidationPanel } from '../listings/name-validation-panel'
@@ -40,6 +41,8 @@ export type KeywordCard = {
   keywords: string[]
   listingCount: number
   nameEditable: boolean
+  /** 서버가 내려주면 꺼진 카드는 순위 조회를 건너뛴다. 없으면(undefined) 조회해 본다. */
+  rankTracking?: boolean
 }
 
 type Props = {
@@ -66,6 +69,9 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
   const [keywordDraftOpen, setKeywordDraftOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyKey, setHistoryKey] = useState(0)
+  const rankBadges = useKeywordRankBadges(
+    card.rankTracking === false ? null : `${card.kind === 'listing' ? 'ls' : 'cp'}:${card.id}`
+  )
 
   // 상품명·키워드 두 다이얼로그가 이 훅 하나를 공유한다 — load() 는 멱등이라 두 버튼 중 먼저
   // 눌린 쪽에서만 실제 fetch 가 나가고, 나중에 다른 버튼을 눌러도 이미 받아온 결과를 재사용한다
@@ -329,6 +335,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             productName={searchName}
             rules={rules}
             readOnly={readOnly}
+            rankBadges={rankBadges}
           />
         </div>
 
