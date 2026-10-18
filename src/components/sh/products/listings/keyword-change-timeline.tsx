@@ -309,6 +309,8 @@ function EffectPanel({ logId }: { logId: string }) {
   }
 
   const { before, after, ranks } = effect
+  // 변경 당일·다음 날에는 관찰할 날이 없다 — 시작일이 종료일보다 늦은 기간을 그대로 보여주지 않는다.
+  const notStarted = after.observedDays === 0
   return (
     <div className="mt-2 space-y-2 rounded-md border bg-background p-2.5 text-xs">
       <p className="font-medium">{effect.label}</p>
@@ -320,7 +322,7 @@ function EffectPanel({ logId }: { logId: string }) {
               변경 전 ({before.from}~{before.to})
             </th>
             <th className="py-0.5 font-normal">
-              변경 후 ({after.from}~{after.to})
+              {notStarted ? '변경 후 (관찰 전)' : `변경 후 (${after.from}~${after.to})`}
             </th>
             <th className="py-0.5 font-normal">변화</th>
           </tr>
@@ -329,20 +331,22 @@ function EffectPanel({ logId }: { logId: string }) {
           <tr>
             <td className="py-0.5">판매 수량</td>
             <td>{before.quantity.toLocaleString()}</td>
-            <td>{after.quantity.toLocaleString()}</td>
-            <td>{pct(after.quantity, before.quantity)}</td>
+            <td>{notStarted ? '—' : after.quantity.toLocaleString()}</td>
+            <td>{notStarted ? '-' : pct(after.quantity, before.quantity)}</td>
           </tr>
           <tr>
             <td className="py-0.5">매출</td>
             <td>{before.revenue.toLocaleString()}원</td>
-            <td>{after.revenue.toLocaleString()}원</td>
-            <td>{pct(after.revenue, before.revenue)}</td>
+            <td>{notStarted ? '—' : `${after.revenue.toLocaleString()}원`}</td>
+            <td>{notStarted ? '-' : pct(after.revenue, before.revenue)}</td>
           </tr>
         </tbody>
       </table>
       {!after.complete && (
         <p className="text-amber-600 dark:text-amber-400">
-          관찰 중 {after.observedDays}/{OBSERVE_DAYS}일
+          {notStarted
+            ? `변경 다음 날부터 ${OBSERVE_DAYS}일 동안 관찰합니다`
+            : `관찰 중 ${after.observedDays}/${OBSERVE_DAYS}일`}
         </p>
       )}
       {ranks.length > 0 && (
