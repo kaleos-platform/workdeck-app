@@ -23,9 +23,8 @@
  * "등록됨"인데 워커는 영원히 못 보는 무음 실패가 된다. 해석 실패는 409 로 명시한다.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { errorResponse, resolveSpaceContext, type SpaceMemberRole } from '@/lib/api-helpers'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
+import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 import { authenticateWorker, resolveWorkerWorkspaceId } from '@/lib/worker-auth'
 
 export type CollectionAuthContext =
@@ -48,26 +47,11 @@ export async function resolveCollectionAuth(
   // `?: undefined`로 타입에 남아있어). truthy 체크까지 함께 해야 한다.
   if ('error' in spaceCtx && spaceCtx.error) return { error: spaceCtx.error }
 
-  // 1순위: 현재 Space 에 연결된 쿠팡 워크스페이스.
-  //
-  // Workspace.ownerId 축으로 잡으면 안 된다. 운영 데이터에서 쿠팡 재고·크롤링 자격은
-  // 모두 한 워크스페이스에 있는데 그 소유자는 특정 계정 하나뿐이라, 다른 멤버가 로그인해
-  // 저장하면 "자기 소유 워크스페이스"(쿠팡 데이터가 없는 곳)에 조용히 저장된다. UI 는
-  // 저장 성공으로 보이지만 워커는 그 워크스페이스를 보지 않아 연결 테스트·수집이 계속
-  // 실패한다. cron(resolveCoupangWorkspaceForSpace) 이 쓰는 축과 반드시 일치해야 한다.
-  const coupang = await resolveCoupangWorkspaceForSpace(spaceCtx.space.id)
-  if (coupang) {
-    return { kind: 'session', workspaceId: coupang.workspaceId, role: spaceCtx.role }
-  }
-
-  // 2순위: 쿠팡 연동 위치가 아직 없는 신규 Space — 본인 소유 워크스페이스로 폴백한다.
-  const owned = await prisma.workspace.findUnique({
-    where: { ownerId: spaceCtx.user.id },
-    select: { id: true },
-  })
-  if (owned) {
-    return { kind: 'session', workspaceId: owned.id, role: spaceCtx.role }
-  }
+  // Space → 쿠팡 워크스페이스 해석은 resolveWorkspace 와 같은 함수(엄격 키 → Space 연결 → 다른 Space 에
+  // 묶이지 않은 본인 소유). Workspace.ownerId 만 보면 다른 멤버가 저장할 때 쿠팡 데이터가 없는 자기
+  // 워크스페이스에 조용히 저장된다 — cron 이 보는 축과 일치해야 한다.
+  const workspaceId = await resolveSpaceCoupangWorkspaceId(spaceCtx.space.id, spaceCtx.user.id)
+  if (workspaceId) return { kind: 'session', workspaceId, role: spaceCtx.role }
 
   return {
     error: errorResponse(

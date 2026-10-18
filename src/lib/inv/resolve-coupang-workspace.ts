@@ -86,3 +86,34 @@ export async function resolveCoupangWorkspaceForSpaceStrict(
 
   return { workspaceId: workspace.id, locationId: location.id }
 }
+
+/**
+ * 세션(사람) 요청용 Space → 쿠팡 워크스페이스 해석. resolveWorkspace·resolveCollectionAuth 가 공유한다.
+ * 1) 로켓그로스 위치 키(엄격) 2) 키가 있는데 모호하면 null(fail closed — 본인 소유로 새지 않는다)
+ * 3) Space 에 연결된 워크스페이스 4) 본인 소유 — 다른 Space 에 연결되지 않은 것만.
+ */
+export async function resolveSpaceCoupangWorkspaceId(
+  spaceId: string,
+  userId: string
+): Promise<string | null> {
+  const strict = await resolveCoupangWorkspaceForSpaceStrict(spaceId)
+  if (strict) return strict.workspaceId
+  const keyed = await prisma.invStorageLocation.count({
+    where: {
+      spaceId,
+      externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
+      isActive: true,
+      externalIntegrationKey: { not: null },
+    },
+  })
+  if (keyed > 0) return null
+
+  const linked = await prisma.workspace.findUnique({ where: { spaceId }, select: { id: true } })
+  if (linked) return linked.id
+
+  const own = await prisma.workspace.findFirst({
+    where: { ownerId: userId, OR: [{ spaceId: null }, { spaceId }] },
+    select: { id: true },
+  })
+  return own?.id ?? null
+}

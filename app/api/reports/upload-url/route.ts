@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 // GET /api/reports/upload-url?fileName={fileName}
 // 브라우저가 Supabase Storage에 직접 업로드하기 위한 signed URL 발급
 export async function GET(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
   const user = 'user' in resolved ? resolved.user : undefined

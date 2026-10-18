@@ -73,6 +73,15 @@ export async function ensureCoupangLocation(
   spaceId: string,
   workspaceId?: string
 ): Promise<{ locationId: string; created: boolean }> {
+  // 키는 그 Space 에 연결된 워크스페이스만 — 구성원이 자기 소유 워크스페이스로 Space 의 쿠팡 축을
+  // 선점하지 못하게(이 키가 resolveWorkspace·cron 의 1순위 해석 축이다).
+  if (workspaceId) {
+    const owned = await prisma.workspace.findFirst({
+      where: { id: workspaceId, spaceId },
+      select: { id: true },
+    })
+    if (!owned) workspaceId = undefined
+  }
   const existing = await prisma.invStorageLocation.findFirst({
     where: { spaceId, externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH },
     select: { id: true, externalIntegrationKey: true },
