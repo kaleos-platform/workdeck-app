@@ -127,3 +127,15 @@ test('admin 루트 rewrite에도 갱신된 요청 쿠키와 응답 쿠키를 전
   expect(response.headers.get('x-middleware-request-cookie')).toContain('session=new')
   expect(response.cookies.get('session')?.value).toBe('new')
 })
+
+test.each(['/settings/ai', '/settings/members?tab=x', '/approvals'])(
+  '로그인 안 한 %s 는 그 경로로 돌아오게 로그인으로 보낸다',
+  async (path) => {
+    auth.getUser.mockResolvedValue({ data: { user: null }, error: null })
+    const response = await proxy(new NextRequest(`https://app.workdeck.work${path}`))
+    expect(response.status).toBe(307)
+    const location = new URL(response.headers.get('location')!)
+    expect(location.pathname).toBe('/login')
+    expect(location.searchParams.get('redirectTo')).toBe(path)
+  }
+)
