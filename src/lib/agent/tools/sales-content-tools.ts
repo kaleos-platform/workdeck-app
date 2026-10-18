@@ -59,7 +59,7 @@ const profileSelect = {
 const listBrands: ToolDefinition = {
   name: 'sc_list_brands',
   description:
-    '브랜드 목록과 브랜드별 콘텐츠 프로필(회사명·한 줄 소개·톤·커스텀 필드)을 반환합니다. profile 이 null 인 브랜드는 공통 프로필(commonProfile)을 씁니다. 콘텐츠를 쓰기 전에 톤과 금칙어를 여기서 확인하세요.',
+    '브랜드 목록과 브랜드별 콘텐츠 프로필(회사명·한 줄 소개·톤·커스텀 필드)을 반환합니다. profile 이 null 인 브랜드는 공통 프로필(commonProfile)을 씁니다. 블로그·SNS 게시물(초안 포함)을 요청받으면 직접 쓰기 전에 이 도구 → sc_list_products → sc_list_channels 순으로 브랜드 톤·상품 사실·채널을 확인하고, 완성한 글은 대화에 붙이지 말고 sc_propose_post 로 승인 대기에 올리세요.',
   inputSchema: {},
   mode: 'read',
   scope: 'sc:read',
@@ -319,7 +319,7 @@ const getContent: ToolDefinition = {
 const proposePost: ToolDefinition = {
   name: 'sc_propose_post',
   description:
-    '게시물 1건의 발행을 제안합니다(제목·본문·채널·연결 URL·예약 시각). 즉시 발행되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN)가 한 번 승인하면 콘텐츠가 만들어지고 해당 채널로 발행이 예약됩니다. 본문은 텍스트로 쓰고 `# `·`## `·`### ` 로 시작하는 줄은 소제목이 됩니다(50자 이상). targetUrl 은 글에서 연결할 상품·랜딩 페이지이고, 클릭 추적용 짧은 링크로 바뀝니다. scheduledAt(ISO 8601)을 비우거나 승인 시점이 이미 지났으면 승인 즉시 발행합니다. 쓰기 전에 sc_list_brands 로 브랜드 톤을, sc_list_channels 로 채널 id 를 확인하세요.',
+    '게시물 1건의 발행을 제안합니다(제목·본문·채널·연결 URL·예약 시각). 즉시 발행되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN)가 한 번 승인하면 콘텐츠가 만들어지고 해당 채널로 발행이 예약됩니다. 블로그·SNS 게시물을 요청받았을 때 결과물을 내는 경로가 이 도구입니다 — 대화에 본문을 붙이는 대신 여기로 올리고, 대화에는 제목과 승인 대기 등록 사실만 알리세요. 본문은 일반 텍스트로 쓰고 `# `·`## `·`### ` 로 시작하는 줄만 소제목이 됩니다(50자 이상). `*굵게*`·`_기울임_`·`**` 같은 마크다운·슬랙 서식은 변환되지 않고 기호가 그대로 게시되니 쓰지 마세요. 상품 사실(구성·대상·효능)은 sc_list_products 결과에 있는 것만 쓰고 지어내지 마세요. 활성 채널이 없으면 제안이 거부되니, 그때는 사용자에게 세일즈 콘텐츠 채널 등록이 필요하다고 알리세요. targetUrl 은 글에서 연결할 상품·랜딩 페이지이고, 클릭 추적용 짧은 링크로 바뀝니다. scheduledAt(ISO 8601)을 비우거나 승인 시점이 이미 지났으면 승인 즉시 발행합니다. 쓰기 전에 sc_list_brands 로 브랜드 톤을, sc_list_channels 로 채널 id 를 확인하세요.',
   inputSchema: postPublishParams.shape,
   mode: 'write',
   scope: 'sc:write',
