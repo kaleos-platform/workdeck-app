@@ -21,6 +21,7 @@ export default async function ApprovalsLayout({ children }: { children: React.Re
       variant="workdeck"
       mode="my-deck"
       isOwner={shell.isOwner}
+      role={shell.role}
       activeDecks={shell.activeDecks}
     >
       {children}

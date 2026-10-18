@@ -113,6 +113,7 @@ import {
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
+import { hasRole, type Role } from '@/lib/auth/roles'
 
 type SidebarProps = {
   workspaceName: string
@@ -121,6 +122,7 @@ type SidebarProps = {
   activeDecks?: Array<{ id: string; name: string }>
   /** 구독·결제 메뉴는 소유자에게만 노출한다 */
   isOwner?: boolean
+  role?: Role
 }
 
 const NVB_AD_TYPE = '신규 구매 고객 확보'
@@ -313,9 +315,12 @@ export function Sidebar({
   mode = 'default',
   activeDecks = [],
   isOwner = false,
+  role,
 }: SidebarProps) {
   const pathname = usePathname()
   const { signOut } = useAuth()
+  // AI 설정·구성원은 ADMIN 이상(서버 기준). 역할을 모르면(레이아웃이 안 넘김) 숨기지 않는다.
+  const canAdmin = role ? hasRole(role, 'ADMIN') : true
   const { collapsed, toggle, expand, mounted } = useSidebarCollapsed()
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0)
@@ -499,25 +504,29 @@ export function Sidebar({
                 }
                 collapsed={collapsed}
               />
-              <RailLink
-                href={SETTINGS_AI_PATH}
-                icon={Sparkles}
-                label="AI 설정"
-                isActive={
-                  pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)
-                }
-                collapsed={collapsed}
-              />
-              <RailLink
-                href={SETTINGS_MEMBERS_PATH}
-                icon={Users}
-                label="구성원"
-                isActive={
-                  pathname === SETTINGS_MEMBERS_PATH ||
-                  pathname.startsWith(`${SETTINGS_MEMBERS_PATH}/`)
-                }
-                collapsed={collapsed}
-              />
+              {canAdmin && (
+                <>
+                  <RailLink
+                    href={SETTINGS_AI_PATH}
+                    icon={Sparkles}
+                    label="AI 설정"
+                    isActive={
+                      pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)
+                    }
+                    collapsed={collapsed}
+                  />
+                  <RailLink
+                    href={SETTINGS_MEMBERS_PATH}
+                    icon={Users}
+                    label="구성원"
+                    isActive={
+                      pathname === SETTINGS_MEMBERS_PATH ||
+                      pathname.startsWith(`${SETTINGS_MEMBERS_PATH}/`)
+                    }
+                    collapsed={collapsed}
+                  />
+                </>
+              )}
               {isOwner && (
                 <>
                   <RailLink

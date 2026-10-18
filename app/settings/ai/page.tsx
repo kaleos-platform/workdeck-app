@@ -1,6 +1,14 @@
 import { AiSettingsForm } from '@/components/settings/ai-settings-form'
+import { loadShellContext } from '@/lib/workspace-shell'
+import { RoleRequired } from '@/components/settings/role-required'
+import { redirect } from 'next/navigation'
+import { getUser } from '@/hooks/use-user'
+import { SETTINGS_AI_PATH } from '@/lib/deck-routes'
 
-export default function AiSettingsPage() {
+export default async function AiSettingsPage() {
+  const user = await getUser()
+  if (!user) redirect(`/login?redirectTo=${encodeURIComponent(SETTINGS_AI_PATH)}`)
+  const role = (await loadShellContext(user.id))?.role ?? 'MEMBER'
   return (
     <div className="space-y-6 p-6">
       <header className="space-y-1">
@@ -10,7 +18,9 @@ export default function AiSettingsPage() {
           전체에 적용됩니다.
         </p>
       </header>
-      <AiSettingsForm />
+      <RoleRequired role={role} min="ADMIN">
+        <AiSettingsForm />
+      </RoleRequired>
     </div>
   )
 }

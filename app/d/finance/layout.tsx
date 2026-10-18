@@ -3,10 +3,10 @@ import { DeckShell } from '@/components/layout/deck-shell'
 import { FINANCE_DECK_ID } from '@/lib/deck-routes'
 
 export default async function FinanceLayout({ children }: { children: React.ReactNode }) {
-  const { spaceName } = await requireDeckAccess(FINANCE_DECK_ID)
+  const { spaceName, readOnlyNotice } = await requireDeckAccess(FINANCE_DECK_ID)
 
   return (
-    <DeckShell workspaceName={spaceName} variant="finance">
+    <DeckShell workspaceName={spaceName} variant="finance" readOnlyNotice={readOnlyNotice}>
       {children}
     </DeckShell>
   )
