@@ -26,8 +26,8 @@ export const loadShellContext = cache(async function loadShellContext(userId: st
     : []
   return {
     workspaceName: current?.space.name ?? workspace!.name,
-    isOwner: current?.role === 'OWNER',
-    // 멤버십 없이 Workspace만 있는 레거시 계정은 소유자다.
+    // 멤버십 없이 Workspace만 있는 레거시 계정은 소유자다(role·isOwner 같은 판정).
+    isOwner: (current?.role ?? 'OWNER') === 'OWNER',
     role: (current?.role ?? 'OWNER') as Role,
     spaceId: current?.space.id ?? null,
     activeDecks,

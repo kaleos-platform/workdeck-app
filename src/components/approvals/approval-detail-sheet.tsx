@@ -76,14 +76,26 @@ function ParamsView({ payload }: { payload: unknown }) {
   if (isFlatObject(payload)) {
     return (
       <dl className="space-y-1 rounded-md border p-3 text-sm">
-        {Object.entries(payload).map(([key, v]) => (
-          <div key={key} className="flex justify-between gap-4">
-            <dt className="shrink-0 text-muted-foreground">{key}</dt>
-            <dd className="text-right break-all text-foreground">
-              <ExpandableText text={v == null ? '-' : String(v)} limit={200} />
-            </dd>
-          </div>
-        ))}
+        {Object.entries(payload).map(([key, v]) => {
+          const text = v == null ? '-' : String(v)
+          // 게시물 본문처럼 길거나 여러 줄인 값은 승인자가 끝까지 읽을 수 있게 줄바꿈을 살려 아래에 둔다.
+          if (text.length > 200 || text.includes('\n')) {
+            return (
+              <div key={key} className="space-y-1">
+                <dt className="text-muted-foreground">{key}</dt>
+                <dd className="max-h-96 overflow-y-auto rounded bg-muted/40 p-2 break-words whitespace-pre-wrap text-foreground">
+                  {text}
+                </dd>
+              </div>
+            )
+          }
+          return (
+            <div key={key} className="flex justify-between gap-4">
+              <dt className="shrink-0 text-muted-foreground">{key}</dt>
+              <dd className="text-right break-all text-foreground">{text}</dd>
+            </div>
+          )
+        })}
       </dl>
     )
   }

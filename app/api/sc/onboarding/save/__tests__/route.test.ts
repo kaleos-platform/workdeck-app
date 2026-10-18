@@ -13,20 +13,22 @@ it('이미 저장된 상품의 URL 표현과 AI 상품명이 바뀌어도 중복
   const tx = {
     $queryRaw: jest.fn(),
     product: {
-      findMany: jest
-        .fn()
-        .mockResolvedValue([
-          {
-            name: '기존 수납함',
-            customFields: [
-              { key: '출처', value: 'https://meaninglab.co.kr/product/detail.html?product_no=62' },
-            ],
-          },
-        ]),
+      findMany: jest.fn().mockResolvedValue([
+        {
+          name: '기존 수납함',
+          customFields: [
+            { key: '출처', value: 'https://meaninglab.co.kr/product/detail.html?product_no=62' },
+          ],
+        },
+      ]),
       create: jest.fn(),
     },
     persona: { findMany: jest.fn().mockResolvedValue([]), create: jest.fn() },
-    brandProfile: { upsert: jest.fn() },
+    brandProfile: {
+      findFirst: jest.fn().mockResolvedValue({ id: 'bp1' }),
+      update: jest.fn(),
+      create: jest.fn(),
+    },
     salesContentOnboarding: { upsert: jest.fn() },
   }
   ;(prisma.$transaction as jest.Mock).mockImplementation(async (run) => run(tx))
@@ -52,9 +54,14 @@ it('이미 저장된 상품의 URL 표현과 AI 상품명이 바뀌어도 중복
   expect(response.status).toBe(200)
   expect(await response.json()).toMatchObject({ savedProducts: 0, skippedProducts: 1 })
   expect(tx.product.create).not.toHaveBeenCalled()
-  expect(tx.brandProfile.upsert).toHaveBeenCalledWith(
+  // 공통 프로필(brandId null)을 갱신한다
+  expect(tx.brandProfile.findFirst).toHaveBeenCalledWith(
+    expect.objectContaining({ where: { spaceId: expect.any(String), brandId: null } })
+  )
+  expect(tx.brandProfile.update).toHaveBeenCalledWith(
     expect.objectContaining({
-      update: expect.objectContaining({
+      where: { id: 'bp1' },
+      data: expect.objectContaining({
         customFields: [{ key: '기존 근거', value: '유지할 내용' }],
       }),
     })

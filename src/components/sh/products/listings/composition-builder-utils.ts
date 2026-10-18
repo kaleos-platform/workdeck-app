@@ -5,6 +5,7 @@ export type BuilderAttributeDef = {
 
 export type BuilderOptionRow = {
   id: string
+  productId: string
   name: string
   sku: string | null
   retailPrice: number | null
@@ -13,6 +14,7 @@ export type BuilderOptionRow = {
 
 export type BuilderItemEntry = {
   optionId: string
+  productId: string
   optionName: string
   sku: string | null
   quantity: number
@@ -299,6 +301,7 @@ export function buildMultiProductGroups(picks: MultiProductPick[]): BuilderBuilt
           ...g.items,
           {
             optionId: opt.id,
+            productId: opt.productId,
             optionName: opt.name,
             sku: opt.sku,
             quantity,

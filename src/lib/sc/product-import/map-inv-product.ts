@@ -15,7 +15,7 @@ export type InvProductLike = {
   manufactureCountry?: unknown
   msrp?: unknown
   status?: unknown
-  brand?: { name?: unknown } | null
+  brand?: { id?: unknown; name?: unknown } | null
 }
 
 export type ProductDraft = {
@@ -23,6 +23,7 @@ export type ProductDraft = {
   oneLinerPitch: string
   customFields: { key: string; value: string }[]
   isActive: boolean
+  brandId?: string | null
 }
 
 const NAME_MAX = 200
@@ -87,5 +88,7 @@ export function invProductToDraft(p: InvProductLike): ProductDraft {
       .filter(([, value]) => value.length > 0)
       .map(([key, value]) => ({ key, value })),
     isActive: p.status == null || p.status === 'ACTIVE',
+    // 같은 Space 의 seller-hub Brand 를 그대로 잇는다(복사본이어도 브랜드는 원본 기준).
+    brandId: typeof p.brand?.id === 'string' ? p.brand.id : null,
   }
 }
