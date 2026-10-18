@@ -2,9 +2,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { toast } from 'sonner'
 import { ApprovalList } from '../approval-list'
 
-jest.mock('next/navigation', () => ({
-  useSearchParams: () => new URLSearchParams('spaceId=sp-1'),
-}))
 jest.mock('sonner', () => ({ toast: { error: jest.fn(), success: jest.fn(), info: jest.fn() } }))
 
 const action = {

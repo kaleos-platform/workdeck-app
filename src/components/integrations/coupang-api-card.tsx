@@ -35,6 +35,7 @@ import {
   Check,
   AlertTriangle,
 } from 'lucide-react'
+import { useCurrentSpaceName } from '@/hooks/use-current-space'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type ApiCredentialResponse = {
@@ -60,6 +61,7 @@ const PROBE_POLL_TIMEOUT_MS = 60000
 export function CoupangApiCard() {
   const [data, setData] = useState<ApiCredentialResponse>(null)
   const [loading, setLoading] = useState(true)
+  const spaceName = useCurrentSpaceName()
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -458,6 +460,8 @@ export function CoupangApiCard() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   저장 중...
                 </>
+              ) : spaceName ? (
+                `「${spaceName}」에 저장`
               ) : (
                 '저장'
               )}

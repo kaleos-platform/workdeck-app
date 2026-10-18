@@ -6,8 +6,8 @@ import { hasRole, type Role } from '@/lib/auth/roles'
 
 /**
  * 경로의 spaceId 기준으로 required 역할 이상인지 확인한다.
- * resolveSpaceContext(최고참 멤버십)를 쓰지 않는다 — 두 Space에 속한 구성원(상원)이
- * 다른 Space의 에이전트를 관리할 수 있어야 하기 때문이다.
+ * resolveSpaceContext(현재 Space 멤버십)를 쓰지 않는다 — 두 Space에 속한 구성원이
+ * 현재 Space가 아닌 경로의 Space도 관리할 수 있어야 하기 때문이다.
  */
 async function requireSpaceRole(
   spaceId: string,

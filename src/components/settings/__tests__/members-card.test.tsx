@@ -5,11 +5,6 @@ import { MembersCard } from '../members-card'
 jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn() }))
 const mfaRedirect = redirectIfMfaRequired as jest.Mock
 
-jest.mock('next/navigation', () => ({
-  useSearchParams: () => new URLSearchParams('spaceId=sp-1'),
-  usePathname: () => '/settings/members',
-}))
-
 const json = (body: unknown, status = 200) =>
   Promise.resolve({ ok: status < 400, status, json: async () => body })
 let fetchMock: jest.Mock
@@ -193,7 +188,7 @@ describe('OWNER 구성원 관리·승인 한도', () => {
   beforeEach(() => {
     jest.spyOn(window, 'confirm').mockReturnValue(true)
     fetchMock.mockImplementation((url: string) => {
-      if (url.startsWith('/api/spaces/members?')) return json(team)
+      if (url === '/api/spaces/members') return json(team)
       if (url === '/api/spaces/sp-1/invitations') return json({ invitations: [] })
       return json({ ok: true })
     })
@@ -206,6 +201,29 @@ describe('OWNER 구성원 관리·승인 한도', () => {
     fireEvent.click(screen.getByRole('button', { name: '내보내기' }))
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith('/api/spaces/members/m2', { method: 'DELETE' })
+    )
+  })
+
+  // 회귀: 다른 탭에서 전환해 현재 Space(쿠키)가 바뀌어도 이름은 쓰기 대상(members 응답)의 것.
+  it('내보내기 확인 문구와 초대 버튼에 쓰기 대상 Space 이름이 들어간다', async () => {
+    const base = fetchMock.getMockImplementation()!
+    fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+      url === '/api/spaces/current'
+        ? json({ current: { id: 'sp-2', name: 'Space B' } })
+        : url.startsWith('/api/spaces/members')
+          ? base(url, init).then(async (r: { json: () => Promise<object> }) => {
+              const b = await r.json()
+              return { ok: true, status: 200, json: async () => ({ ...b, spaceName: 'Space A' }) }
+            })
+          : base(url, init)
+    )
+    render(<MembersCard />)
+    await screen.findByText(/admin@example.com/)
+    expect(await screen.findByRole('button', { name: '「Space A」에 초대' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '「Space B」에 초대' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '내보내기' }))
+    expect(window.confirm).toHaveBeenCalledWith(
+      '「Space A」에서 admin@example.com 님을 내보낼까요?'
     )
   })
 

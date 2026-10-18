@@ -11,6 +11,10 @@ import {
   normalizeHost,
 } from '@/lib/domain'
 import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
+import {
+  CURRENT_SPACE_COOKIE,
+  CURRENT_SPACE_COOKIE_OPTIONS,
+} from '@/lib/spaces/current-space-cookie'
 import { MARKETING_ONLY_PATHS } from '@/lib/marketing/routes'
 
 function isPathOrChild(pathname: string, base: string) {
@@ -53,6 +57,30 @@ export async function proxy(request: NextRequest) {
   if (response !== supabaseResponse) {
     // redirect/rewrite 응답에서도 세션 갱신·삭제 쿠키를 보존한다.
     for (const cookie of supabaseResponse.cookies.getAll()) response.cookies.set(cookie)
+  }
+  // 페이지 GET 의 ?spaceId= 는 현재 Space 전환 입력이다(초대 수락·승인 링크). 응답 쿠키는 같은 요청의
+  // layout 에 안 보이므로 쿠키를 싣고 spaceId 를 뗀 URL 로 한 번 더 보낸다. 멤버십 검증은 서버 해석기가 한다.
+  // Link prefetch 는 사용자가 이동하지 않아도 오므로 전환하지 않는다(일반 RSC 이동 — router.replace — 은 전환).
+  const h = request.headers
+  const isPrefetch =
+    h.has('next-router-prefetch') ||
+    h.get('purpose') === 'prefetch' ||
+    !!h.get('sec-purpose')?.includes('prefetch')
+  const requestedSpace = request.nextUrl.searchParams.get('spaceId')
+  if (
+    request.method === 'GET' &&
+    !isPrefetch &&
+    !isPathOrChild(pathname, '/api') &&
+    requestedSpace &&
+    /^[A-Za-z0-9_-]{1,64}$/.test(requestedSpace) &&
+    !(response.status >= 300 && response.status < 400)
+  ) {
+    const url = request.nextUrl.clone()
+    url.searchParams.delete('spaceId')
+    const redirect = NextResponse.redirect(url)
+    for (const cookie of supabaseResponse.cookies.getAll()) redirect.cookies.set(cookie)
+    redirect.cookies.set(CURRENT_SPACE_COOKIE, requestedSpace, CURRENT_SPACE_COOKIE_OPTIONS)
+    return redirect
   }
   return response
 }

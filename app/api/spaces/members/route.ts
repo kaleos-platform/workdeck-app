@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
   ])
   return NextResponse.json({
     spaceId: ctx.space.id,
+    spaceName: ctx.space.name,
     myRole: ctx.role,
     members,
     approvalLimitKrw: space?.approvalLimitKrw ?? null,

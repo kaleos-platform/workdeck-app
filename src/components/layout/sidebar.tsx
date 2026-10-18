@@ -111,6 +111,7 @@ import {
   SETTINGS_PAYMENTS_PATH,
   SETTINGS_MEMBERS_PATH,
 } from '@/lib/deck-routes'
+import { SpaceSwitcher } from './space-switcher'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { hasRole, type Role } from '@/lib/auth/roles'
@@ -558,9 +559,7 @@ export function Sidebar({
                 <Separator className="mb-3 bg-white/10" />
                 <section className="rounded-xl bg-white/[0.02] px-3 py-3">
                   <div className="mb-3 px-1">
-                    <p className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
-                      {workspaceName}
-                    </p>
+                    <SpaceSwitcher fallbackName={workspaceName} />
                     <p className="mt-1 text-[11px] text-zinc-500">사용 중인 업무 빠른 진입</p>
                   </div>
                   {isMyDeckMode && activeDecks.length > 0 ? (

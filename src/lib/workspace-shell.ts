@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
+import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import type { Role } from '@/lib/auth/roles'
 
 /**
@@ -10,31 +11,26 @@ import type { Role } from '@/lib/auth/roles'
 export const loadShellContext = cache(async function loadShellContext(userId: string) {
   const [workspace, membership] = await Promise.all([
     prisma.workspace.findUnique({ where: { ownerId: userId }, select: { id: true, name: true } }),
-    prisma.spaceMember.findFirst({
-      where: { userId },
-      select: {
-        spaceId: true,
-        role: true,
-        space: {
-          select: {
-            name: true,
-            deckInstances: {
-              where: { isActive: true },
-              include: { deckApp: { select: { id: true, name: true } } },
-              orderBy: { createdAt: 'asc' },
-            },
-          },
-        },
-      },
-    }),
+    resolveCurrentMembership(userId),
   ])
-  if (!workspace && !membership) return null
+  const current = membership && !('forbidden' in membership) ? membership : null
+  if (!workspace && !current) return null
+  const activeDecks = current
+    ? (
+        await prisma.deckInstance.findMany({
+          where: { spaceId: current.space.id, isActive: true },
+          include: { deckApp: { select: { id: true, name: true } } },
+          orderBy: { createdAt: 'asc' },
+        })
+      ).map(({ deckApp }) => deckApp)
+    : []
   return {
-    workspaceName: workspace?.name ?? membership!.space.name,
-    isOwner: membership?.role === 'OWNER',
+    workspaceName: current?.space.name ?? workspace!.name,
+    isOwner: current?.role === 'OWNER',
     // 멤버십 없이 Workspace만 있는 레거시 계정은 소유자다.
-    role: (membership?.role ?? 'OWNER') as Role,
-    activeDecks: membership?.space.deckInstances.map(({ deckApp }) => deckApp) ?? [],
+    role: (current?.role ?? 'OWNER') as Role,
+    spaceId: current?.space.id ?? null,
+    activeDecks,
   }
 })
 

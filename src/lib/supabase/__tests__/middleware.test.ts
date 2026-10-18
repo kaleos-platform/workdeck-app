@@ -139,3 +139,83 @@ test.each(['/settings/ai', '/settings/members?tab=x', '/approvals'])(
     expect(location.searchParams.get('redirectTo')).toBe(path)
   }
 )
+
+describe('?spaceId 전환', () => {
+  test('페이지 GET 은 wd_space 쿠키를 싣고 spaceId 를 뗀 URL 로 보낸다', async () => {
+    const response = await proxy(new NextRequest('https://app.workdeck.work/my-deck?spaceId=sp-b'))
+    expect(response.status).toBe(307)
+    expect(
+      new URL(response.headers.get('location')!).pathname +
+        new URL(response.headers.get('location')!).search
+    ).toBe('/my-deck')
+    expect(response.cookies.get('wd_space')?.value).toBe('sp-b')
+  })
+
+  test('다른 쿼리는 유지하고 세션 쿠키도 싣는다', async () => {
+    auth.getUser.mockImplementation(async () => {
+      cookieBridge.setAll([{ name: 'session', value: 'new', options: { path: '/' } }])
+      return { data: { user: { id: 'user' } }, error: null }
+    })
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/settings/members?spaceId=sp-b&tab=x')
+    )
+    const location = new URL(response.headers.get('location')!)
+    expect(location.pathname).toBe('/settings/members')
+    expect(location.search).toBe('?tab=x')
+    expect(response.cookies.get('session')?.value).toBe('new')
+  })
+
+  test.each<Record<string, string>>([
+    { 'next-router-prefetch': '1', rsc: '1' },
+    { purpose: 'prefetch' },
+    { 'sec-purpose': 'prefetch' },
+  ])('prefetch 는 전환하지 않는다 %o', async (headers) => {
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/my-deck?spaceId=sp-b', { headers })
+    )
+    expect(response.status).toBe(200)
+    expect(response.cookies.get('wd_space')).toBeUndefined()
+  })
+
+  test('일반 RSC 이동(router.replace)은 전환한다', async () => {
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/my-deck?spaceId=sp-b', { headers: { rsc: '1' } })
+    )
+    expect(response.status).toBe(307)
+    expect(response.cookies.get('wd_space')?.value).toBe('sp-b')
+  })
+
+  test('POST 는 전환하지 않는다', async () => {
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/my-deck?spaceId=sp-b', { method: 'POST' })
+    )
+    expect(response.status).not.toBe(307)
+    expect(response.cookies.get('wd_space')).toBeUndefined()
+  })
+
+  test('/api 는 건드리지 않는다', async () => {
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/api/agent/actions?spaceId=sp-b')
+    )
+    expect(response.status).toBe(200)
+    expect(response.cookies.get('wd_space')).toBeUndefined()
+  })
+
+  test.each(['/my-deck', '/my-deck?spaceId=' + 'x'.repeat(200), '/my-deck?spaceId=a%20b'])(
+    '없거나 형식이 이상하면 쿠키·redirect 없음 %s',
+    async (path) => {
+      const response = await proxy(new NextRequest(`https://app.workdeck.work${path}`))
+      expect(response.status).toBe(200)
+      expect(response.cookies.get('wd_space')).toBeUndefined()
+    }
+  )
+
+  test('비로그인은 로그인 redirect 그대로', async () => {
+    auth.getUser.mockResolvedValue({ data: { user: null }, error: null })
+    const response = await proxy(
+      new NextRequest('https://app.workdeck.work/settings/ai?spaceId=sp-b')
+    )
+    expect(new URL(response.headers.get('location')!).pathname).toBe('/login')
+    expect(response.cookies.get('wd_space')).toBeUndefined()
+  })
+})

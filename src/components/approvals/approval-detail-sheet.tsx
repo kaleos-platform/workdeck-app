@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useCurrentSpace } from '@/hooks/use-current-space'
 import { ExpiryCountdown } from './expiry-countdown'
 import { DECK_LABELS, SOURCE_LABELS, STATUS_LABELS, type AgentPendingActionDTO } from './types'
 
@@ -102,12 +103,15 @@ export function ApprovalDetailSheet({
   onDecided,
 }: ApprovalDetailSheetProps) {
   const [isDeciding, setIsDeciding] = useState(false)
+  const current = useCurrentSpace()
   const [outcomeNote, setOutcomeNote] = useState<{
     kind: 'executed' | 'failed' | 'conflict' | 'expired'
     message: string
   } | null>(null)
 
   if (!action) return null
+  // 승인 대상은 action.spaceId — 현재 Space 와 같을 때만 이름을 붙인다(다르면 기본 문구).
+  const spaceName = current?.id === action.spaceId ? current.name : null
 
   const beforeEntries = toEntries(action.beforeState)
   const isPending = action.status === 'PENDING'
@@ -204,14 +208,14 @@ export function ApprovalDetailSheet({
         disabled={!canDecide || isDeciding || !isPending}
         onClick={() => decide('reject')}
       >
-        거부
+        {spaceName ? `「${spaceName}」에서 거부` : '거부'}
       </Button>
       <Button
         className="flex-1"
         disabled={!canDecide || needsOwner || isDeciding || !isPending}
         onClick={() => decide('approve')}
       >
-        승인
+        {spaceName ? `「${spaceName}」에서 승인` : '승인'}
       </Button>
     </>
   )
