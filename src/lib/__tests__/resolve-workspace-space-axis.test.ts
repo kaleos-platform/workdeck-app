@@ -10,7 +10,7 @@ jest.mock('@/lib/coupang-ads/server-timing', () => ({
   measureCoupangAds: (_: string, fn: () => unknown) => fn(),
 }))
 jest.mock('@/lib/inv/resolve-coupang-workspace', () => ({
-  resolveCoupangWorkspaceForSpace: jest.fn(),
+  resolveSpaceCoupangWorkspaceId: jest.fn(),
 }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
@@ -22,7 +22,7 @@ jest.mock('@/lib/prisma', () => ({
 
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
+import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 import { resolveWorkspace } from '../api-helpers'
 
 const m = prisma as unknown as {
@@ -30,7 +30,7 @@ const m = prisma as unknown as {
   deckInstance: { findUnique: jest.Mock }
   workspace: { findUnique: jest.Mock }
 }
-const coupang = resolveCoupangWorkspaceForSpace as jest.Mock
+const spaceWs = resolveSpaceCoupangWorkspaceId as jest.Mock
 const member = (role: string) =>
   m.spaceMember.findFirst.mockResolvedValue({ role, space: { id: 'sp-1', name: 'S' } })
 
@@ -38,40 +38,36 @@ beforeEach(() => {
   jest.resetAllMocks()
   ;(getUser as jest.Mock).mockResolvedValue({ id: 'u-1' })
   m.deckInstance.findUnique.mockResolvedValue({ isActive: true })
-  coupang.mockResolvedValue(null)
+  spaceWs.mockResolvedValue(null)
   m.workspace.findUnique.mockResolvedValue(null)
 })
 
-test('구성원은 Space 의 쿠팡 워크스페이스를 쓴다(본인 소유 조회 없음)', async () => {
+test('구성원은 Space 해석기의 워크스페이스를 쓴다(본인 소유 조회 없음)', async () => {
   member('ADMIN')
-  coupang.mockResolvedValue({ workspaceId: 'ws-coupang', locationId: 'loc' })
+  spaceWs.mockResolvedValue('ws-space')
   const r = await resolveWorkspace()
-  expect(r).toMatchObject({ workspace: { id: 'ws-coupang' }, role: 'ADMIN' })
+  expect(r).toMatchObject({ workspace: { id: 'ws-space' }, role: 'ADMIN' })
+  expect(spaceWs).toHaveBeenCalledWith('sp-1', 'u-1')
   expect(m.workspace.findUnique).not.toHaveBeenCalled()
 })
 
-test('쿠팡 위치가 없으면 Space 에 연결된 워크스페이스, 그것도 없으면 본인 소유', async () => {
-  member('MEMBER')
-  m.workspace.findUnique.mockImplementation(({ where }) =>
-    where.spaceId ? { id: 'ws-linked' } : { id: 'ws-own' }
-  )
-  expect(await resolveWorkspace()).toMatchObject({ workspace: { id: 'ws-linked' } })
-  m.workspace.findUnique.mockImplementation(({ where }) =>
-    where.spaceId ? null : { id: 'ws-own' }
-  )
-  expect(await resolveWorkspace()).toMatchObject({ workspace: { id: 'ws-own' } })
+test('Space 해석 실패면 404(본인 소유로 새지 않는다)', async () => {
+  member('ADMIN')
+  m.workspace.findUnique.mockResolvedValue({ id: 'ws-own' })
+  const r = await resolveWorkspace()
+  expect('error' in r && r.error?.status).toBe(404)
 })
 
 test('MEMBER 의 쓰기는 403, ADMIN·OWNER 는 통과', async () => {
-  coupang.mockResolvedValue({ workspaceId: 'ws-coupang', locationId: 'loc' })
+  spaceWs.mockResolvedValue('ws-space')
   member('MEMBER')
   const denied = await resolveWorkspace({ write: true })
   expect('error' in denied && denied.error?.status).toBe(403)
-  expect(await resolveWorkspace()).toMatchObject({ workspace: { id: 'ws-coupang' } })
+  expect(await resolveWorkspace()).toMatchObject({ workspace: { id: 'ws-space' } })
   for (const role of ['ADMIN', 'OWNER']) {
     member(role)
     expect(await resolveWorkspace({ write: true })).toMatchObject({
-      workspace: { id: 'ws-coupang' },
+      workspace: { id: 'ws-space' },
     })
   }
 })
@@ -80,7 +76,7 @@ test('Space 멤버십이 없으면 기존처럼 본인 소유 워크스페이스
   m.spaceMember.findFirst.mockResolvedValue(null)
   m.workspace.findUnique.mockResolvedValue({ id: 'ws-own' })
   expect(await resolveWorkspace({ write: true })).toMatchObject({ workspace: { id: 'ws-own' } })
-  expect(coupang).not.toHaveBeenCalled()
+  expect(spaceWs).not.toHaveBeenCalled()
   expect(m.workspace.findUnique).toHaveBeenCalledWith({
     where: { ownerId: 'u-1' },
     select: { id: true },

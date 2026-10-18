@@ -82,9 +82,12 @@ describe.each(GUARDED_DECKS)('deck write 가드 커버리지 — $deck', ({ call
     expect(missing).toEqual([])
   })
 
+  // GET 이지만 실제로는 쓰기인 라우트(업로드용 signed URL 발급) — 구성원 쓰기 게이트·구독 차단 대상.
+  const GET_WRITES = new Set(['app/api/reports/upload-url/route.ts'])
+
   test('GET 핸들러는 write 를 넘기지 않는다 (조회 차단 방지)', () => {
     const wrong = calls
-      .filter((c) => c.handler === 'GET' && c.hasWrite)
+      .filter((c) => c.handler === 'GET' && c.hasWrite && !GET_WRITES.has(c.file))
       .map((c) => `${c.file}:${c.line}`)
     expect(wrong).toEqual([])
   })
