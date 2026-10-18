@@ -942,21 +942,21 @@ export type EnumKeywordLinkRoleWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumKeywordLinkRoleFilter<$PrismaModel>
 }
 
-export type EnumKeywordChangeReasonFilter<$PrismaModel = never> = {
-  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel> | $Enums.KeywordChangeReason
+export type EnumKeywordChangeReasonNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumKeywordChangeReasonNullableFilter<$PrismaModel> | $Enums.KeywordChangeReason | null
 }
 
-export type EnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel> | $Enums.KeywordChangeReason
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
+export type EnumKeywordChangeReasonNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumKeywordChangeReasonNullableWithAggregatesFilter<$PrismaModel> | $Enums.KeywordChangeReason | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordChangeReasonNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordChangeReasonNullableFilter<$PrismaModel>
 }
 
 export type EnumScResourceKindFilter<$PrismaModel = never> = {
@@ -2668,21 +2668,21 @@ export type NestedEnumKeywordLinkRoleWithAggregatesFilter<$PrismaModel = never> 
   _max?: Prisma.NestedEnumKeywordLinkRoleFilter<$PrismaModel>
 }
 
-export type NestedEnumKeywordChangeReasonFilter<$PrismaModel = never> = {
-  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel> | $Enums.KeywordChangeReason
+export type NestedEnumKeywordChangeReasonNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumKeywordChangeReasonNullableFilter<$PrismaModel> | $Enums.KeywordChangeReason | null
 }
 
-export type NestedEnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel> | $Enums.KeywordChangeReason
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
+export type NestedEnumKeywordChangeReasonNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumKeywordChangeReasonNullableWithAggregatesFilter<$PrismaModel> | $Enums.KeywordChangeReason | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordChangeReasonNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordChangeReasonNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumScResourceKindFilter<$PrismaModel = never> = {

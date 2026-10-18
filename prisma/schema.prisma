@@ -2478,6 +2478,8 @@ model ChannelProduct {
   channel  Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
   listings ProductListing[]
 
+  keywordChanges KeywordChangeLog[] // §26 변경 이력 (채널상품 단위)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2650,10 +2652,7 @@ model ChannelKeywordRule {
 
 // §25 "변경 가능" 사유 목록 + 운영 실무에 필요한 최소 항목(최초 등록·오탈자·기타).
 //
-// ⚠️ 이 enum 은 "변경해도 되는 사유"만 담는다. §25 가 못박은 "변경하지 않음"
-// (노출이 조금 줄었다 / 광고 성과가 며칠 좋지 않다 / 경쟁사가 바꿨다 / 키워드를 하나 더
-// 발견했다)에 해당하는 값은 **의도적으로 없다.** 사유를 고를 수 없다는 사실 자체가
-// 억제 게이트다 — 편의를 이유로 여기에 값을 추가하면 기능의 취지가 무너진다.
+// 2026-10 사유 입력 폐지 이후로는 새로 쓰이지 않는다 — 이전 이력 표시용으로만 남긴다.
 // 한국어 라벨은 src/lib/sh/keyword-labels.ts 의 KEYWORD_CHANGE_REASON_LABELS.
 enum KeywordChangeReason {
   WRONG_MAIN_KEYWORD // 잘못된 메인 키워드
@@ -2668,10 +2667,11 @@ enum KeywordChangeReason {
 }
 
 // §26 변경 기록. 상품명·검색어를 바꿀 때마다 1행씩 쌓이는 append-only 이력.
+// 저장 라우트(리스팅·채널상품 PATCH)가 값이 실제로 바뀌면 **사유 없이 자동으로** 남긴다.
 //
-// 대상은 listingId(채널 리스팅) 또는 productId(InvProduct) 이며 **둘 다 null 일 수 있다**
-// (채널상품 단위 변경처럼 단일 상품으로 귀속되지 않는 경우). 둘 다 null 인 행은 대상
-// 필터에 걸리지 않고 space 전체 목록에서만 보인다.
+// 귀속은 키워드가 저장된 곳이다 — 채널상품 단위 변경은 channelProductId, 리스팅 단위
+// 변경은 listingId(그룹 소속이면 channelProductId 도 함께). productId 는 구성 상품이
+// 하나일 때만 채운다. channelProductId 도입 전(2026-10) 채널상품 행은 productId 로만 찾힌다.
 //
 // ⚠️ actorUserId 에 FK 를 걸지 않는다 — AdminAuditLog 와 같은 이유다. User 를 참조하는
 // non-CASCADE FK 때문에 계정 삭제가 500 으로 죽은 사고가 있었고, 이력은 담당자 계정이
@@ -2679,8 +2679,9 @@ enum KeywordChangeReason {
 model KeywordChangeLog {
   id        String  @id @default(cuid())
   spaceId   String
-  listingId String? // ProductListing — 채널 리스팅 단위 변경
-  productId String? // InvProduct — 상품 단위 변경
+  listingId        String? // ProductListing — 채널 리스팅 단위 변경
+  channelProductId String? // ChannelProduct — 채널상품(그룹) 단위 변경, 또는 리스팅의 소속 그룹
+  productId        String? // InvProduct — 상품 단위 변경
 
   beforeName     String? // 기존 상품명
   afterName      String? // 변경 상품명
@@ -2688,9 +2689,10 @@ model KeywordChangeLog {
   beforeKeywords Json    @default("[]")
   afterKeywords  Json    @default("[]")
 
-  reason        KeywordChangeReason
-  reasonNote    String? // OTHER 이면 필수 — DB 제약으로는 표현할 수 없어 앱에서 검증한다
-  observeMetric String? // §26 "관찰 지표" — 이 변경의 효과를 무엇으로 판단할지
+  // 사유 입력은 폐지됐다(2026-10 자동 기록 전환) — 이전에 입력된 행만 값이 있다.
+  reason        KeywordChangeReason?
+  reasonNote    String?
+  observeMetric String?
 
   // §26 "가능하면 여러 요소를 동시에 바꾸지 않는다". 상품명과 검색어를 한 번에 바꾼 변경은
   // 어느 쪽이 성과에 영향을 줬는지 분리할 수 없으므로 표시해 둔다.
@@ -2700,13 +2702,15 @@ model KeywordChangeLog {
   actorUserId String? // 담당자 User.id (FK 없음)
 
   space   Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  listing ProductListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
-  product InvProduct?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  listing        ProductListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  channelProduct ChannelProduct? @relation(fields: [channelProductId], references: [id], onDelete: SetNull)
+  product        InvProduct?     @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
   @@index([spaceId, createdAt])
   @@index([listingId, createdAt])
+  @@index([channelProductId, createdAt])
   @@index([productId, createdAt])
 }
 

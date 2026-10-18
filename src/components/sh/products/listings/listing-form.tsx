@@ -46,8 +46,8 @@ import { countNamingViolations, type ListingNamingResult } from '@/lib/sh/keywor
 import { OptionPickerDialog, type PickedOption } from './option-picker-dialog'
 import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
-import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
+import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
 import { NameCounter } from './name-counter'
 import { NameValidationPanel } from './name-validation-panel'
 
@@ -121,11 +121,9 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
-  // §25-26 변경 게이트 — 편집 모드에서 상품명·검색어가 실제로 바뀐 저장만 여기를 거친다.
-  const [gateOpen, setGateOpen] = useState(false)
   const [historyKey, setHistoryKey] = useState(0)
   // 저장 성공 시 갱신되는 "서버에 반영된 값". initial 은 이 페이지가 다시 마운트되기 전까지
-  // 갱신되지 않으므로, 이것을 쓰지 않으면 한 번 이름을 바꾼 뒤로는 가격만 고쳐도 게이트가 뜬다.
+  // 갱신되지 않으므로, 이것을 쓰지 않으면 저장 후에도 상품명이 바뀐 상태로 판정된다.
   const [savedName, setSavedName] = useState(initial?.searchName ?? '')
   const [savedKeywords, setSavedKeywords] = useState<string[]>(initial?.keywords ?? [])
 
@@ -271,8 +269,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
 
   const formValid = channelId.trim().length > 0 && searchName.trim().length > 0 && items.length > 0
 
-  // §25-26 게이트 판정. 생성 모드는 before 가 없어 대상이 아니고,
-  // 가격·재고·메모만 고친 저장도 여기서 false 가 되어 그대로 지나간다.
+  // 상품명·검색어 변경 판정 — 재변경 경고와 저장 후 이력 새로고침에 쓴다(기록은 서버가 자동으로 한다).
   const keywordChange = useMemo(
     () =>
       diffKeywordChange({
@@ -283,16 +280,10 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       }),
     [savedName, savedKeywords, searchName, keywords]
   )
-  const gateRequired = mode === 'edit' && keywordChange.changed
 
-  async function handleSave(changeMeta?: KeywordChangeMeta) {
+  async function handleSave() {
     if (!formValid) {
       toast.error('필수 항목을 입력해 주세요')
-      return
-    }
-    // 사유 없이 들어온 저장이 게이트 대상이면 다이얼로그로 돌린다.
-    if (gateRequired && !changeMeta) {
-      setGateOpen(true)
       return
     }
     setSaving(true)
@@ -320,8 +311,6 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
           quantity: it.quantity,
           sortOrder: idx,
         })),
-        // 사유 필드는 게이트를 통과한 저장에만 실린다 — 서버는 이때만 이력을 남긴다.
-        ...(changeMeta ?? {}),
       }
       const url =
         mode === 'create' ? '/api/sh/products/listings' : `/api/sh/products/listings/${initial!.id}`
@@ -351,8 +340,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       if (mode === 'edit') {
         setSavedName(normalizedSearchName)
         setSavedKeywords(keywords)
-        setGateOpen(false)
-        if (changeMeta) setHistoryKey((k) => k + 1)
+        if (keywordChange.changed) setHistoryKey((k) => k + 1)
       }
       const id = mode === 'create' ? data.listing.id : initial!.id
       router.push(getSellerHubListingPath(id))
@@ -406,7 +394,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             </Button>
             <Button onClick={() => handleSave()} disabled={!formValid || saving}>
               {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-              {gateRequired ? '변경 사유 입력' : '저장'}
+              저장
             </Button>
           </div>
         </div>
@@ -469,6 +457,13 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               field="searchName"
               rules={rules}
             />
+            {mode === 'edit' && initial && (
+              <NameChangeCooldownNotice
+                listingId={initial.id}
+                savedName={savedName}
+                editing={keywordChange.nameChanged}
+              />
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -716,19 +711,6 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       {/* 변경 이력 (§26) — 편집 모드에서만. 생성 화면에는 남길 과거가 없다. */}
       {mode === 'edit' && initial?.id && (
         <KeywordChangeTimeline listingId={initial.id} refreshKey={historyKey} />
-      )}
-
-      {mode === 'edit' && initial && (
-        <KeywordChangeDialog
-          open={gateOpen}
-          onOpenChange={setGateOpen}
-          beforeName={savedName}
-          afterName={searchName.trim()}
-          beforeKeywords={savedKeywords}
-          afterKeywords={keywords}
-          saving={saving}
-          onConfirm={(meta) => handleSave(meta)}
-        />
       )}
 
       <OptionPickerDialog

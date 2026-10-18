@@ -1739,6 +1739,7 @@ export const KeywordChangeLogScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   listingId: 'listingId',
+  channelProductId: 'channelProductId',
   productId: 'productId',
   beforeName: 'beforeName',
   afterName: 'afterName',
