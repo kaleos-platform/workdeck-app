@@ -1,58 +1,39 @@
 /** @jest-environment node */
 jest.mock('@/hooks/use-user', () => ({ getUser: jest.fn() }))
-jest.mock('@/lib/prisma', () => ({ prisma: { spaceMember: { findMany: jest.fn() } } }))
+jest.mock('@/lib/spaces/current-space', () => ({ resolveCurrentMembership: jest.fn() }))
 import { getUser } from '@/hooks/use-user'
-import { prisma } from '@/lib/prisma'
-import { resolveRequestedSpaceContext } from '@/lib/api-helpers'
+import { resolveCurrentMembership } from '@/lib/spaces/current-space'
+import { resolveRequestedSpaceContext, resolveSpaceContext } from '@/lib/api-helpers'
 
-const findMany = prisma.spaceMember.findMany as jest.Mock
-const TWO = [
-  { role: 'ADMIN', space: { id: 'sp-aml', name: '의식주의' } },
-  { role: 'ADMIN', space: { id: 'sp-kaleos', name: 'Kaleos' } },
-]
-
+const current = resolveCurrentMembership as jest.Mock
 beforeEach(() => {
-  jest.clearAllMocks()
-  ;(getUser as jest.Mock).mockResolvedValue({ id: 'u-sangwon' })
+  jest.resetAllMocks()
+  ;(getUser as jest.Mock).mockResolvedValue({ id: 'u-1' })
 })
 
-it('두 Space 사용자 + 선택 없음 → 400 SPACE_REQUIRED(최고참으로 떨어지지 않음)', async () => {
-  findMany.mockResolvedValue(TWO)
+it('선택 없음 → 현재 Space(쿠키·기본값), SPACE_REQUIRED 없음', async () => {
+  current.mockResolvedValue({ role: 'ADMIN', space: { id: 'sp-b', name: 'Space B' } })
+  const r = await resolveRequestedSpaceContext(null)
+  expect(r).toMatchObject({ space: { id: 'sp-b' }, role: 'ADMIN' })
+  expect(current).toHaveBeenCalledWith('u-1', null)
+})
+
+it('명시 Space 비구성원 → 403', async () => {
+  current.mockResolvedValue({ forbidden: true })
+  const r = await resolveRequestedSpaceContext('sp-x')
+  if (!('error' in r)) throw new Error('error 기대')
+  expect(r.error.status).toBe(403)
+})
+
+it('멤버십 없음 → 404', async () => {
+  current.mockResolvedValue(null)
   const r = await resolveRequestedSpaceContext(null)
   if (!('error' in r)) throw new Error('error 기대')
-  expect(r.error.status).toBe(400)
-  await expect(r.error.json()).resolves.toMatchObject({
-    code: 'SPACE_REQUIRED',
-    spaces: [
-      { id: 'sp-aml', name: '의식주의', role: 'ADMIN' },
-      { id: 'sp-kaleos', name: 'Kaleos', role: 'ADMIN' },
-    ],
-  })
+  expect(r.error.status).toBe(404)
 })
 
-it('선택한 Space의 구성원이면 그 Space와 역할', async () => {
-  findMany.mockResolvedValue(TWO)
-  await expect(resolveRequestedSpaceContext('sp-kaleos')).resolves.toMatchObject({
-    space: { id: 'sp-kaleos' },
-    role: 'ADMIN',
-  })
-})
-
-it('구성원이 아닌 Space를 고르면 403', async () => {
-  findMany.mockResolvedValue(TWO)
-  const r = await resolveRequestedSpaceContext('sp-other')
-  expect('error' in r && r.error.status).toBe(403)
-})
-
-it('단일 Space 사용자는 선택 없이 그 Space(기존 동작)', async () => {
-  findMany.mockResolvedValue([TWO[0]])
-  await expect(resolveRequestedSpaceContext(null)).resolves.toMatchObject({
-    space: { id: 'sp-aml' },
-  })
-})
-
-it('로그인하지 않으면 401', async () => {
-  ;(getUser as jest.Mock).mockResolvedValue(null)
-  const r = await resolveRequestedSpaceContext('sp-aml')
-  expect('error' in r && r.error.status).toBe(401)
+it('resolveSpaceContext 도 현재 Space', async () => {
+  current.mockResolvedValue({ role: 'OWNER', space: { id: 'sp-a', name: 'Space A' } })
+  expect(await resolveSpaceContext()).toMatchObject({ space: { id: 'sp-a' }, role: 'OWNER' })
+  expect(current).toHaveBeenCalledWith('u-1')
 })
