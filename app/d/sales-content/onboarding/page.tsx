@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
 
   const [brandProfile, productCount, personaCount, channelCount, resources, onboarding] =
     await Promise.all([
-      prisma.brandProfile.findUnique({ where: { spaceId } }),
+      prisma.brandProfile.findFirst({ where: { spaceId, brandId: null } }),
       prisma.product.count({ where: { spaceId, isActive: true } }),
       prisma.persona.count({ where: { spaceId, isActive: true } }),
       prisma.salesContentChannel.count({ where: { spaceId } }),

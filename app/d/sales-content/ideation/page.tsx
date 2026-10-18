@@ -20,7 +20,7 @@ export default async function IdeationPage() {
       orderBy: { name: 'asc' },
       select: { id: true, name: true },
     }),
-    prisma.brandProfile.findUnique({
+    prisma.brandProfile.findFirst({
       where: { spaceId: resolved.space.id },
       select: { id: true },
     }),

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { deploymentCreateSchema } from '@/lib/sc/schemas'
-import { deriveUtmDefaults, generateShortSlug, normalizeKebab } from '@/lib/sc/utm'
+import { createDeployment, DeploymentSlugError } from '@/lib/sc/deployments'
 
 export async function GET() {
   const resolved = await resolveDeckContext('sales-content')
@@ -50,51 +50,11 @@ export async function POST(req: NextRequest) {
   if (!content) return errorResponse('콘텐츠를 찾을 수 없습니다', 404)
   if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
 
-  const utmDefaults = deriveUtmDefaults({
-    channelPlatformSlug: channel.platformSlug,
-    channelKind: channel.kind,
-    campaignSlug: parsed.data.utmCampaign ?? null,
-    contentTitle: content.title,
-  })
-
-  // slug 충돌 대비 — 최대 5 회 재시도.
-  let lastError: unknown
-  for (let i = 0; i < 5; i++) {
-    const slug = generateShortSlug()
-    try {
-      const created = await prisma.contentDeployment.create({
-        data: {
-          spaceId: resolved.space.id,
-          contentId: parsed.data.contentId,
-          channelId: parsed.data.channelId,
-          shortSlug: slug,
-          targetUrl: parsed.data.targetUrl,
-          scheduledAt: parsed.data.scheduledAt ? new Date(parsed.data.scheduledAt) : null,
-          utmSource: parsed.data.utmSource
-            ? normalizeKebab(parsed.data.utmSource)
-            : utmDefaults.utmSource,
-          utmMedium: parsed.data.utmMedium
-            ? normalizeKebab(parsed.data.utmMedium)
-            : utmDefaults.utmMedium,
-          utmCampaign: parsed.data.utmCampaign
-            ? normalizeKebab(parsed.data.utmCampaign)
-            : utmDefaults.utmCampaign,
-          utmContent: parsed.data.utmContent ? normalizeKebab(parsed.data.utmContent) : null,
-          utmTerm: parsed.data.utmTerm ? normalizeKebab(parsed.data.utmTerm) : null,
-        },
-      })
-      return NextResponse.json({ deployment: created }, { status: 201 })
-    } catch (err: unknown) {
-      lastError = err
-      const code =
-        typeof err === 'object' && err != null && 'code' in err
-          ? (err as { code: string }).code
-          : null
-      if (code === 'P2002') continue // slug 충돌 → 재시도
-      throw err
-    }
+  try {
+    const created = await createDeployment(resolved.space.id, content, channel, parsed.data)
+    return NextResponse.json({ deployment: created }, { status: 201 })
+  } catch (err) {
+    if (!(err instanceof DeploymentSlugError)) throw err
+    return errorResponse('shortSlug 생성에 5회 연속 실패했습니다', 500, { detail: err.message })
   }
-  return errorResponse('shortSlug 생성에 5회 연속 실패했습니다', 500, {
-    detail: lastError instanceof Error ? lastError.message : String(lastError),
-  })
 }

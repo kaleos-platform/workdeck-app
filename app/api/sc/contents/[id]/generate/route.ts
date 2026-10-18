@@ -8,6 +8,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { contentGenerateSectionSchema } from '@/lib/sc/schemas'
 import { generateTextForSpace } from '@/lib/ai/resolve'
+import { findBrandProfileForProducts } from '@/lib/sc/brand-profile'
 import { buildSectionFillPrompt } from '@/lib/sc/section-prompts'
 import type { IdeaItem } from '@/lib/sc/ideation'
 
@@ -38,10 +39,18 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   // 맥락 수집 — 페르소나/상품 정보는 ideationId 를 통해 lookup (Content 에 직접 FK 없음)
   const [brand, ideation] = await Promise.all([
-    prisma.brandProfile.findUnique({
-      where: { spaceId: resolved.space.id },
-      select: { toneOfVoice: true },
-    }),
+    findBrandProfileForProducts(
+      resolved.space.id,
+      content.ideationId
+        ? (
+            await prisma.ideationProduct.findMany({
+              where: { ideationId: content.ideationId },
+              select: { productId: true },
+            })
+          ).map((p) => p.productId)
+        : [],
+      { toneOfVoice: true }
+    ),
     content.ideationId
       ? prisma.ideation.findUnique({
           where: { id: content.ideationId },
@@ -79,13 +88,17 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
 
   try {
-    const { result, providerName } = await generateTextForSpace(resolved.space.id, {
-      system: built.system,
-      messages: built.messages,
-      responseFormat: 'text',
-      maxTokens: 800,
-      temperature: 0.7,
-    })
+    const { result, providerName } = await generateTextForSpace(
+      resolved.space.id,
+      {
+        system: built.system,
+        messages: built.messages,
+        responseFormat: 'text',
+        maxTokens: 800,
+        temperature: 0.7,
+      },
+      { actor: { type: 'user', id: resolved.user.id } }
+    )
 
     await prisma.textGenerationLog.create({
       data: {

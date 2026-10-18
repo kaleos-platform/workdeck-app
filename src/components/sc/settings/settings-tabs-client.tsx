@@ -7,10 +7,7 @@ import type { RuleStatus, RuleScope, RuleSource } from '@/generated/prisma/enums
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductList } from '@/components/sc/settings/product-list'
-import {
-  AddProductDialog,
-  type AddProductMode,
-} from '@/components/sc/settings/add-product-dialog'
+import { AddProductDialog, type AddProductMode } from '@/components/sc/settings/add-product-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -216,7 +213,7 @@ function SalesInfoTab({
           <div>
             <h2 className="text-lg font-semibold tracking-tight">브랜드 프로필</h2>
             <p className="text-sm text-muted-foreground">
-              Space당 1개. 콘텐츠 톤·금칙어·비주얼 가이드의 단일 소스입니다.
+              브랜드별로 작성합니다. 브랜드를 정하지 않은 상품은 공통 프로필을 씁니다.
             </p>
           </div>
           <BrandProfileForm initial={brandProfileInitial} />

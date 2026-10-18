@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { ActionDefinition } from './types'
 import { prisma } from '@/lib/prisma'
+import { ToolUserError } from '@/lib/agent/tools/errors'
 import { learnRule } from '@/lib/finance/classify'
 import { normalizeFinKey, directionForType } from '@/lib/finance/kifrs-seed'
 import { normalizeMemoInput } from '@/lib/finance/memo'
@@ -22,12 +23,35 @@ const reclassifyParams = z.object({
   learn: z.boolean().optional(),
 })
 
+// 제안 시점 검증 — 다른 Space 의 id 로 승인 불가 액션이 큐에 쌓이지 않게(실행 시점에도 spaceId 로 다시 막는다).
+async function assertInSpace(
+  kind: 'transaction' | 'category' | 'account',
+  id: string,
+  spaceId: string
+): Promise<void> {
+  const where = { id, spaceId }
+  const found =
+    kind === 'transaction'
+      ? await prisma.finTransaction.findFirst({ where, select: { id: true } })
+      : kind === 'category'
+        ? await prisma.finCategory.findFirst({ where, select: { id: true } })
+        : await prisma.finAccount.findFirst({ where, select: { id: true } })
+  if (!found) {
+    const label = { transaction: '거래', category: '카테고리', account: '계좌' }[kind]
+    throw new ToolUserError(`이 Space 에서 ${label}를 찾을 수 없습니다: ${id}`)
+  }
+}
+
 const reclassify: ActionDefinition<z.infer<typeof reclassifyParams>> = {
   actionType: 'finance.transaction.reclassify',
   deckKey: 'finance',
   title: '거래 재분류',
   paramsSchema: reclassifyParams,
   requiredRole: 'ADMIN',
+  validateCreate: async (ctx, params) => {
+    await assertInSpace('transaction', params.transactionId, ctx.spaceId)
+    await assertInSpace('category', params.categoryId, ctx.spaceId)
+  },
   // 실행 전 상태 스냅샷 — diff·감사용. 실패해도 액션 생성은 진행되므로 관대하게(없으면 null).
   snapshot: async (ctx, params) => {
     const txn = await prisma.finTransaction.findFirst({
@@ -96,6 +120,10 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
   title: '분류 규칙 추가',
   paramsSchema: classruleParams,
   requiredRole: 'ADMIN',
+  validateCreate: async (ctx, params) => {
+    await assertInSpace('category', params.categoryId, ctx.spaceId)
+    if (params.accountId) await assertInSpace('account', params.accountId, ctx.spaceId)
+  },
   execute: async (ctx, params) => {
     const spaceId = ctx.spaceId
 
