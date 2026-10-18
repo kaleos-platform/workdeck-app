@@ -7,6 +7,10 @@ jest.mock('@/lib/agent/identity/agent-token', () => ({
   revokeAgentToken: jest.fn(),
 }))
 jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
+jest.mock('@/lib/agent/identity/oauth-client-consent', () => ({
+  OAUTH_CONSENT_REQUIRED: '동의 필요',
+  hasActiveOAuthConsent: jest.fn(),
+}))
 jest.mock('@/lib/admin/auth', () => ({ writeAuditLog: jest.fn() }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
@@ -18,6 +22,7 @@ import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { issueAgentToken, revokeAgentToken } from '@/lib/agent/identity/agent-token'
 import { prisma } from '@/lib/prisma'
 import { requireAal2 } from '@/lib/auth/mfa'
+import { hasActiveOAuthConsent } from '@/lib/agent/identity/oauth-client-consent'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { GET as listAgents, POST as createAgent } from '../route'
 import { PATCH as patchAgent } from '../[agentId]/route'
@@ -299,6 +304,67 @@ describe('/api/spaces/[spaceId]/agents', () => {
         spaceId: 'sp1',
         agentId: 'ag1',
       })
+    })
+  })
+
+  describe('OAuth 클라이언트 연결 — 본인 동의 필요', () => {
+    const consent = hasActiveOAuthConsent as jest.Mock
+    beforeEach(() => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      aal2.mockResolvedValue(null)
+    })
+
+    it('생성 시 본인 동의가 없으면 403, 만들지 않는다', async () => {
+      consent.mockResolvedValue(false)
+      const res = await createAgent(
+        json({ name: '연동', kind: 'integration', scopes: ['ads:read'], oauthClientId: 'cl-x' }),
+        params({ spaceId: 'sp1' })
+      )
+      expect(res.status).toBe(403)
+      expect(consent).toHaveBeenCalledWith('u1', 'cl-x')
+      expect(p.spaceAgent.create).not.toHaveBeenCalled()
+    })
+
+    it('생성 시 본인 동의가 있으면 만든다', async () => {
+      consent.mockResolvedValue(true)
+      p.spaceAgent.create.mockResolvedValue({
+        id: 'ag9',
+        name: '연동',
+        kind: 'integration',
+        scopes: ['ads:read'],
+      })
+      const res = await createAgent(
+        json({ name: '연동', kind: 'integration', scopes: ['ads:read'], oauthClientId: 'cl-mine' }),
+        params({ spaceId: 'sp1' })
+      )
+      expect(res.status).toBe(201)
+    })
+
+    it('PATCH 연결은 본인 동의가 없으면 403, 갱신 없음', async () => {
+      consent.mockResolvedValue(false)
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'integration' })
+      const res = await patchAgent(
+        json({ oauthClientId: 'cl-x' }, 'PATCH'),
+        params({ spaceId: 'sp1', agentId: 'ag1' })
+      )
+      expect(res.status).toBe(403)
+      expect(p.spaceAgent.update).not.toHaveBeenCalled()
+    })
+
+    it('PATCH 해제(null)는 동의 확인 없이 된다', async () => {
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'integration' })
+      p.spaceAgent.update.mockResolvedValue({
+        id: 'ag1',
+        scopes: [],
+        status: 'ACTIVE',
+        oauthClientId: null,
+      })
+      const res = await patchAgent(
+        json({ oauthClientId: null }, 'PATCH'),
+        params({ spaceId: 'sp1', agentId: 'ag1' })
+      )
+      expect(res.status).toBe(200)
+      expect(consent).not.toHaveBeenCalled()
     })
   })
 })
