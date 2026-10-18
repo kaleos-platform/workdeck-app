@@ -17,10 +17,12 @@ import { prisma } from '@/lib/prisma'
 // tool 레지스트리를 통제 가능한 스텁으로 대체. execute를 감시해 정형 명령이
 // 올바른 tool을 부르는지 검증한다.
 jest.mock('@/lib/agent/tools', () => {
+  const { z } = jest.requireActual<typeof import('zod')>('zod')
+  // runTool이 inputSchema로 입력을 거르므로(모르는 키 제거) 검증하는 인자는 스키마에 둔다.
   const mk = (name: string, mode: 'read' | 'write' = 'read') => ({
     name,
     description: name,
-    inputSchema: {},
+    inputSchema: { campaignId: z.string().optional() },
     mode,
     execute: jest.fn(async () => ({ ok: true, tool: name })),
   })
