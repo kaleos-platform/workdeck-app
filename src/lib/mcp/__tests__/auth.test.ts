@@ -134,7 +134,7 @@ describe('verifyToken', () => {
     })
   })
 
-  it('연동 계정 Space의 구성원이 아니면 authError (바인딩만으로 Space를 주지 않음)', async () => {
+  it('연동 계정 Space의 구성원이 아니면 바인딩을 무시하고 본인 Space(user actor) — 선점 DoS 방지', async () => {
     getClaims.mockResolvedValue(claims())
     p.spaceAgent.findUnique.mockResolvedValue({
       id: 'int1',
@@ -146,12 +146,11 @@ describe('verifyToken', () => {
     p.spaceMember.findUnique.mockResolvedValue(null)
     p.spaceMember.findMany.mockResolvedValue([{ spaceId: 'sp1' }])
     const info = await verifyToken(req({ 'x-workdeck-space-id': 'sp1' }), 'jwt')
-    expect(info?.extra).toHaveProperty('authError')
     expect(p.spaceMember.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({ where: { spaceId_userId: { spaceId: 'sp2', userId: 'u1' } } })
     )
-    // 바인딩된 client_id는 헤더·멤버십 경로로 넘어가지 않는다
-    expect(p.spaceMember.findMany).not.toHaveBeenCalled()
+    // 바인딩된 Space(sp2)는 주지 않는다 — 본인 멤버십(sp1)의 user actor
+    expect(info?.extra).toMatchObject({ spaceId: 'sp1', actor: { type: 'user', id: 'u1' } })
   })
 
   it('허용 목록이 있으면 목록 밖 미바인딩 client_id → undefined', async () => {
@@ -201,13 +200,17 @@ describe('verifyToken', () => {
   it.each([
     ['integration이 아닌 신원', { kind: 'agent', status: 'ACTIVE' }],
     ['비활성 연동 계정', { kind: 'integration', status: 'DISABLED' }],
-  ])('바인딩된 client_id가 %s이면 authError (멤버십 경로로 폴백하지 않음)', async (_l, over) => {
-    getClaims.mockResolvedValue(claims())
-    p.spaceAgent.findUnique.mockResolvedValue({ id: 'int1', spaceId: 'sp2', scopes: [], ...over })
-    const info = await verifyToken(req(), 'jwt')
-    expect(info?.extra).toEqual({ authError: expect.any(String) })
-    expect(p.spaceMember.findMany).not.toHaveBeenCalled()
-  })
+  ])(
+    '그 Space 구성원인데 바인딩된 client_id가 %s이면 authError (멤버십 경로로 폴백하지 않음)',
+    async (_l, over) => {
+      getClaims.mockResolvedValue(claims())
+      p.spaceAgent.findUnique.mockResolvedValue({ id: 'int1', spaceId: 'sp2', scopes: [], ...over })
+      p.spaceMember.findUnique.mockResolvedValue({ role: 'ADMIN' })
+      const info = await verifyToken(req(), 'jwt')
+      expect(info?.extra).toEqual({ authError: expect.any(String) })
+      expect(p.spaceMember.findMany).not.toHaveBeenCalled()
+    }
+  )
 
   it('허용 목록 안의 미바인딩 client_id → 허용', async () => {
     process.env.MCP_ALLOWED_CLIENT_IDS = 'a, cid-1'
@@ -217,7 +220,25 @@ describe('verifyToken', () => {
     expect(info?.extra).toMatchObject({ spaceId: 'sp1' })
   })
 
-  it('바인딩된 client_id는 허용 목록과 무관하게 바인딩 경로(구성원 확인 필수)', async () => {
+  it('바인딩된 client_id는 허용 목록과 무관하게 바인딩 경로(그 Space 구성원)', async () => {
+    process.env.MCP_ALLOWED_CLIENT_IDS = 'cid-ok'
+    getClaims.mockResolvedValue(claims())
+    p.spaceAgent.findUnique.mockResolvedValue({
+      id: 'int1',
+      spaceId: 'sp2',
+      kind: 'integration',
+      scopes: [],
+      status: 'ACTIVE',
+    })
+    p.spaceMember.findUnique.mockResolvedValue({ role: 'MEMBER' })
+    const info = await verifyToken(req(), 'jwt')
+    expect(info?.extra).toMatchObject({
+      spaceId: 'sp2',
+      actor: { type: 'integration', id: 'int1' },
+    })
+  })
+
+  it('바인딩 Space 비구성원 + 허용 목록 밖 client_id → 일반 규칙대로 401', async () => {
     process.env.MCP_ALLOWED_CLIENT_IDS = 'cid-ok'
     getClaims.mockResolvedValue(claims())
     p.spaceAgent.findUnique.mockResolvedValue({
@@ -228,7 +249,6 @@ describe('verifyToken', () => {
       status: 'ACTIVE',
     })
     p.spaceMember.findUnique.mockResolvedValue(null)
-    const info = await verifyToken(req(), 'jwt')
-    expect(info?.extra).toHaveProperty('authError')
+    await expect(verifyToken(req(), 'jwt')).resolves.toBeUndefined()
   })
 })

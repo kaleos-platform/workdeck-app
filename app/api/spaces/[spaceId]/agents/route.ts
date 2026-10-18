@@ -10,6 +10,10 @@ import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { parseScopes } from '@/lib/agent/identity/principal'
+import {
+  OAUTH_CONSENT_REQUIRED,
+  hasActiveOAuthConsent,
+} from '@/lib/agent/identity/oauth-client-consent'
 
 type Ctx = { params: Promise<{ spaceId: string }> }
 
@@ -62,6 +66,12 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   }
   if (parsed.data.oauthClientId && parsed.data.kind !== 'integration') {
     return errorResponse('OAuth 클라이언트는 연동 계정에만 연결할 수 있습니다', 400)
+  }
+  if (
+    parsed.data.oauthClientId &&
+    !(await hasActiveOAuthConsent(auth.userId, parsed.data.oauthClientId))
+  ) {
+    return errorResponse(OAUTH_CONSENT_REQUIRED, 403)
   }
 
   try {
