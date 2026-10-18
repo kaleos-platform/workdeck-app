@@ -12,9 +12,9 @@ jest.mock('@/lib/coupang-ads/server-timing', () => ({
 jest.mock('@/lib/inv/resolve-coupang-workspace', () => ({
   resolveSpaceCoupangWorkspaceId: jest.fn(),
 }))
+jest.mock('@/lib/spaces/current-space', () => ({ resolveCurrentMembership: jest.fn() }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    spaceMember: { findFirst: jest.fn() },
     deckInstance: { findUnique: jest.fn() },
     workspace: { findUnique: jest.fn() },
   },
@@ -22,17 +22,20 @@ jest.mock('@/lib/prisma', () => ({
 
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
+import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 import { canWriteDeck, resolveDeckContext, resolveWorkspace } from '../api-helpers'
 
 const m = prisma as unknown as {
-  spaceMember: { findFirst: jest.Mock }
   deckInstance: { findUnique: jest.Mock }
   workspace: { findUnique: jest.Mock }
 }
 const spaceWs = resolveSpaceCoupangWorkspaceId as jest.Mock
 const member = (role: string) =>
-  m.spaceMember.findFirst.mockResolvedValue({ role, space: { id: 'sp-1', name: 'S' } })
+  (resolveCurrentMembership as jest.Mock).mockResolvedValue({
+    role,
+    space: { id: 'sp-1', name: 'S' },
+  })
 
 beforeEach(() => {
   jest.resetAllMocks()
@@ -73,7 +76,7 @@ test('MEMBER 의 쓰기는 403, ADMIN·OWNER 는 통과', async () => {
 })
 
 test('Space 멤버십이 없으면 기존처럼 본인 소유 워크스페이스', async () => {
-  m.spaceMember.findFirst.mockResolvedValue(null)
+  ;(resolveCurrentMembership as jest.Mock).mockResolvedValue(null)
   m.workspace.findUnique.mockResolvedValue({ id: 'ws-own' })
   expect(await resolveWorkspace({ write: true })).toMatchObject({ workspace: { id: 'ws-own' } })
   expect(spaceWs).not.toHaveBeenCalled()

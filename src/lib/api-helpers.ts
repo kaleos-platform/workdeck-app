@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { authenticateWorker, resolveWorkerWorkspaceId } from '@/lib/worker-auth'
+import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 
 // 에러 응답 생성 헬퍼 — extra 필드를 병합해 추가 정보를 포함할 수 있음
@@ -48,7 +49,7 @@ export async function resolveWorkspace(opts?: DeckContextOptions) {
 
   // Space 구성원은 그 Space 의 워크스페이스(resolveSpaceCoupangWorkspaceId — resolveCollectionAuth 와 같은
   // 해석기). ownerId 만 보면 초대받은 구성원은 쿠팡 데이터를 못 본다. 멤버십이 없으면 기존처럼 본인 소유.
-  // ponytail: Space 는 최고참 멤버십(resolveSpaceContext) — 다중 Space 선택은 앱 전체 과제.
+  // Space 는 현재 Space(resolveSpaceContext → resolveCurrentMembership: 쿠키 wd_space → OWNER 최고참 → 최고참).
   const spaceId = 'error' in deckContext ? null : deckContext.space.id
   const workspace = await measureCoupangAds('auth_workspace', async () => {
     if (spaceId) {
@@ -75,19 +76,16 @@ export async function resolveWorkspace(opts?: DeckContextOptions) {
 
 export type SpaceMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER'
 
-// 인증 + Space 멤버십 검증 (Deck 활성화 여부와 무관)
+// 인증 + 현재 Space 멤버십(쿠키 → OWNER 최고참 → 최고참) — Deck 활성화와 무관
 export const resolveSpaceContext = cache(async function resolveSpaceContext() {
   const user = await measureCoupangAds('auth_user', getUser)
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
 
   const membership = await measureCoupangAds('auth_membership', () =>
-    prisma.spaceMember.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'asc' }, // 결정적 최고참 멤버십
-      include: { space: { select: { id: true, name: true } } },
-    })
+    resolveCurrentMembership(user.id)
   )
-  if (!membership) return { error: errorResponse('공간이 없습니다', 404) }
+  if (!membership || 'forbidden' in membership)
+    return { error: errorResponse('공간이 없습니다', 404) }
 
   return {
     user,
@@ -97,10 +95,8 @@ export const resolveSpaceContext = cache(async function resolveSpaceContext() {
 })
 
 /**
- * 인증 + 명시적 Space 선택 + 멤버십 검증(웹 세션용). Task 4의 MCP Space 결정 규칙과 같다.
- * - requestedSpaceId가 있으면 그 Space의 구성원이어야 한다(아니면 403 — Space 존재 여부는 드러내지 않는다).
- * - 없으면 멤버십이 1개일 때만 그 Space. 2개 이상이면 400 SPACE_REQUIRED + 선택지 —
- *   최고참 멤버십으로 조용히 떨어지지 않는다(두 Space ADMIN이 다른 Space에 쓰는 사고 방지).
+ * 인증 + Space 선택(웹 세션용). requested(?spaceId)가 있으면 그 Space 구성원이어야 한다(아니면 403).
+ * 없으면 현재 Space(쿠키·기본값) — 사이드바에 늘 보이는 Space 다.
  */
 export async function resolveRequestedSpaceContext(requestedSpaceId: string | null): Promise<
   | {
@@ -113,27 +109,11 @@ export async function resolveRequestedSpaceContext(requestedSpaceId: string | nu
   const user = await getUser()
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
 
-  const memberships = await prisma.spaceMember.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'asc' },
-    select: { role: true, space: { select: { id: true, name: true } } },
-  })
-  if (memberships.length === 0) return { error: errorResponse('공간이 없습니다', 404) }
-
-  if (requestedSpaceId) {
-    const m = memberships.find((x) => x.space.id === requestedSpaceId)
-    if (!m) return { error: errorResponse('이 Space의 구성원이 아닙니다', 403) }
-    return { user, space: m.space, role: m.role as SpaceMemberRole }
-  }
-  if (memberships.length === 1) {
-    return { user, space: memberships[0].space, role: memberships[0].role as SpaceMemberRole }
-  }
-  return {
-    error: errorResponse('여러 Space에 속해 있습니다. Space를 선택하세요', 400, {
-      code: 'SPACE_REQUIRED',
-      spaces: memberships.map((m) => ({ id: m.space.id, name: m.space.name, role: m.role })),
-    }),
-  }
+  const membership = await resolveCurrentMembership(user.id, requestedSpaceId)
+  if (!membership) return { error: errorResponse('공간이 없습니다', 404) }
+  if ('forbidden' in membership)
+    return { error: errorResponse('이 Space의 구성원이 아닙니다', 403) }
+  return { user, space: membership.space, role: membership.role as SpaceMemberRole }
 }
 
 const DECK_WRITE_MIN_ROLE: Partial<Record<string, SpaceMemberRole>> = {

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { MyDeckClient } from '@/components/my-deck/my-deck-client'
+import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
 
 function findMembership(where: { userId: string; spaceId?: string }) {
@@ -43,10 +44,12 @@ export default async function MyDeckPage({
   // 구성원이 아니면 기존처럼 첫 멤버십. (여러 Space 선택 UI는 후속)
   const { spaceId } = await searchParams
   const requested = typeof spaceId === 'string' && spaceId ? spaceId : undefined
-  const membership =
-    (requested && (await findMembership({ userId: user.id, spaceId: requested }))) ||
-    (await findMembership({ userId: user.id }))
+  // 비구성원 요청(forbidden)은 403 대신 기본 Space로 돌아간다.
+  let current = await resolveCurrentMembership(user.id, requested)
+  if (current && 'forbidden' in current) current = await resolveCurrentMembership(user.id)
+  if (!current || 'forbidden' in current) redirect('/workspace-setup')
 
+  const membership = await findMembership({ userId: user.id, spaceId: current.space.id })
   if (!membership) redirect('/workspace-setup')
 
   const { space } = membership

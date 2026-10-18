@@ -3,8 +3,8 @@
  *  GET   — 단건 조회 (액션 소속 space 멤버만).
  *  PATCH — { action: "approve" | "reject" }. 액션 소속 space에서 필요 역할 이상인 멤버만.
  *
- * 보안: resolveSpaceContext는 호출자의 "최고참" space를 주므로 그것과 비교하면
- *   다중 space에서 오·과권한이 난다. 반드시 **액션의 spaceId에 대한 호출자 멤버십**을
+ * 보안: resolveSpaceContext는 호출자의 "현재" space(쿠키 wd_space)를 주므로 그것과 비교하면
+ *   다중 space에서 오·과권한이 난다(현재 Space ≠ 액션의 Space). 반드시 **액션의 spaceId에 대한 호출자 멤버십**을
  *   조회해 역할을 확인한다(cross-space IDOR 차단).
  */
 import { NextRequest, NextResponse } from 'next/server'

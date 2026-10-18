@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AgentTokensCard } from '../agent-tokens-card'
 
 jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn(async () => false) }))
-jest.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams() }))
 
 const res = (body: unknown, status = 200) => {
   const r = { ok: status < 400, status, json: async () => body, clone: () => r }
@@ -57,4 +56,33 @@ it('에이전트를 나열하고 발급한 토큰은 대화상자에서 한 번�
   fireEvent.click(screen.getByRole('button', { name: '토큰 발급' }))
   await screen.findByRole('button', { name: '발급' })
   expect(screen.queryByDisplayValue('wdk_agt_t1.TESTTOKEN')).not.toBeInTheDocument()
+})
+
+// 회귀: 현재 Space(쿠키)가 다른 탭에서 바뀌어도 제목은 발급 대상(members 응답 spaceId)의 이름.
+it('토큰 발급 대화상자 제목에 발급 대상 Space 이름이 보인다', async () => {
+  const base = fetchMock.getMockImplementation()!
+  fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+    url === '/api/spaces/current'
+      ? res({ current: { id: 'sp-2', name: 'Space B' } })
+      : url.startsWith('/api/spaces/members')
+        ? res({ spaceId: 'sp-1', spaceName: 'Space A' })
+        : base(url, init)
+  )
+  render(<AgentTokensCard />)
+  await screen.findByText('테스트 에이전트')
+  fireEvent.click(screen.getByRole('button', { name: '토큰 발급' }))
+  expect(await screen.findByText('「Space A」 토큰 발급')).toBeInTheDocument()
+  fireEvent.click(await screen.findByRole('button', { name: '발급' }))
+  await waitFor(() =>
+    expect(fetchMock.mock.calls.find((c) => c[1]?.method === 'POST')?.[0]).toBe(
+      '/api/spaces/sp-1/agents/ag1/tokens'
+    )
+  )
+})
+
+it('Space 이름을 못 받으면 대화상자 제목은 기존 문구다', async () => {
+  render(<AgentTokensCard />)
+  await screen.findByText('테스트 에이전트')
+  fireEvent.click(screen.getByRole('button', { name: '토큰 발급' }))
+  expect(await screen.findByRole('heading', { name: '토큰 발급' })).toBeInTheDocument()
 })
