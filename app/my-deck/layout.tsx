@@ -19,6 +19,7 @@ export default async function MyDeckLayout({ children }: { children: React.React
       variant="workdeck"
       mode="my-deck"
       isOwner={shell.isOwner}
+      role={shell.role}
       activeDecks={shell.activeDecks}
     >
       {children}

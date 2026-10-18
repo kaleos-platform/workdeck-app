@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
-import { resolveDeckContext } from '@/lib/api-helpers'
+import { canWriteDeck, resolveDeckContext } from '@/lib/api-helpers'
 import { SETTINGS_BILLING_PATH } from '@/lib/deck-routes'
 import { canUseDeck } from './entitlement'
 import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
@@ -14,7 +14,9 @@ import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
  * 막힌 경우 구독 관리 화면으로 보내되 `?subscribe=` 를 실어 해당 업무의 구독 확인
  * 모달이 바로 열리게 한다 — 사용자가 왜 막혔는지 알고 곧장 해결할 수 있다.
  */
-export async function requireDeckAccess(deckAppId: string): Promise<{ spaceName: string }> {
+export async function requireDeckAccess(
+  deckAppId: string
+): Promise<{ spaceName: string; readOnlyNotice?: string }> {
   const user = await measureCoupangAds('layout_user', getUser)
   if (!user) redirect('/login')
 
@@ -27,5 +29,10 @@ export async function requireDeckAccess(deckAppId: string): Promise<{ spaceName:
     redirect(`${SETTINGS_BILLING_PATH}?subscribe=${encodeURIComponent(deckAppId)}`)
   }
 
-  return { spaceName: resolved.space.name }
+  return {
+    spaceName: resolved.space.name,
+    readOnlyNotice: canWriteDeck(deckAppId, resolved.role)
+      ? undefined
+      : '조회 전용입니다 — 이 업무의 변경은 권한이 있는 구성원(ADMIN 이상)만 할 수 있습니다.',
+  }
 }

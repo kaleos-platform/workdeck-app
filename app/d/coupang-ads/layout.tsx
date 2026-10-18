@@ -4,11 +4,11 @@ import { measureCoupangAds, withCoupangAdsPageTiming } from '@/lib/coupang-ads/s
 
 export default async function CoupangAdsLayout({ children }: { children: React.ReactNode }) {
   return withCoupangAdsPageTiming(async () => {
-    const { spaceName } = await measureCoupangAds('layout_guard', () =>
+    const { spaceName, readOnlyNotice } = await measureCoupangAds('layout_guard', () =>
       requireDeckAccess('coupang-ads')
     )
     return (
-      <DeckShell workspaceName={spaceName} variant="coupang-ads">
+      <DeckShell workspaceName={spaceName} variant="coupang-ads" readOnlyNotice={readOnlyNotice}>
         {children}
       </DeckShell>
     )

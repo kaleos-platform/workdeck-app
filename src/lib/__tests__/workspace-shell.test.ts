@@ -29,6 +29,7 @@ it('구성원만 있으면 Space 이름으로 셸을 만든다', async () => {
   expect(await loadShellContext('u')).toEqual({
     workspaceName: '조직 Space',
     isOwner: false,
+    role: 'ADMIN',
     activeDecks: [{ id: 'finance', name: '재무' }],
   })
 })
@@ -40,4 +41,10 @@ it('Workspace가 있으면 기존처럼 Workspace 이름', async () => {
     workspaceName: '내 워크스페이스',
     isOwner: true,
   })
+})
+
+it('멤버십 없이 Workspace만 있는 레거시 계정은 OWNER', async () => {
+  m.workspace.findUnique.mockResolvedValue({ id: 'w', name: '내 워크스페이스' })
+  m.spaceMember.findFirst.mockResolvedValue(null)
+  expect(await loadShellContext('u')).toMatchObject({ role: 'OWNER' })
 })
