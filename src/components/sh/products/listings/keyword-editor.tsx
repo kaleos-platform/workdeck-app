@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils'
 
 // 저장 스키마(schemas.ts)와 같은 하드 상한. rules.maxKeywords(쿠팡 20)는 "권장"이라
 // 여기서 입력을 막지 않는다 — 21~30개를 이미 보유한 리스팅이 존재한다.
-const MAX_KEYWORDS = 30
+export const MAX_KEYWORDS = 30
 
 const SEVERITY_RANK: Record<ViolationSeverity, number> = { INFO: 0, WARN: 1, ERROR: 2 }
 

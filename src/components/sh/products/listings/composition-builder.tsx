@@ -45,6 +45,7 @@ type AttributeDef = { name: string; values: Array<{ value: string; code?: string
 
 type OptionRow = {
   id: string
+  productId: string
   name: string
   sku: string | null
   retailPrice: number | null
@@ -80,6 +81,7 @@ type BuilderMode = 'simple' | 'advanced'
 
 export type ItemEntry = {
   optionId: string
+  productId: string
   optionName: string
   sku: string | null
   quantity: number
@@ -155,6 +157,7 @@ async function fetchProductDetail(productId: string): Promise<ProductDetail> {
   const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
   const options: OptionRow[] = prod.options.map((o) => ({
     id: o.id,
+    productId: prod.id,
     name: o.name,
     sku: o.sku,
     retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
@@ -381,6 +384,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
           items: [
             {
               optionId: defaultOpt.id,
+              productId: defaultOpt.productId,
               optionName: defaultOpt.name,
               sku: defaultOpt.sku,
               quantity: 1,
@@ -471,6 +475,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
           if (!opt) continue
           groupItems.push({
             optionId: opt.id,
+            productId: opt.productId,
             optionName: opt.name,
             sku: opt.sku,
             quantity: sc.qty,
@@ -769,6 +774,7 @@ function ManualRowEditor({
   function addOptionToRow(opt: OptionRow) {
     const newItem: ItemEntry = {
       optionId: opt.id,
+      productId: opt.productId,
       optionName: opt.name,
       sku: opt.sku,
       quantity: 1,
