@@ -1,8 +1,8 @@
 /**
  * Workspace → Space → SlackInstallation 알림 채널 해석.
  * 워커(coupang-ads/seller-ops)가 workspaceId 하나로 어느 Slack 채널에 알림을 보낼지
- * 찾을 때 쓴다. User 1:Workspace 1:PERSONAL Space 1 모델이라 Workspace.ownerId로
- * 해당 유저의 SpaceMember를 찾고(여러 개면 OWNER 우선), 그 spaceId로 설치·채널을 조회한다.
+ * 찾을 때 쓴다. Workspace.spaceId가 있으면 그 Space, 없으면 Workspace.ownerId의
+ * SpaceMember(여러 개면 OWNER 우선)로 Space를 정하고, 그 spaceId로 설치·채널을 조회한다.
  *
  * 이 파일은 App Router 라우트가 아니라 순수 조회 함수다 — 워커 인증 API 라우트가
  * 이 함수를 호출해 감싸는 형태로 노출한다(라우트 자체는 별도 작업으로 추가 예정).
@@ -21,6 +21,7 @@ export type SlackNotificationTarget = {
 
 /**
  * workspaceId로 알림 대상 Space를 해석한다.
+ * Workspace.spaceId(FK)가 있으면 그 Space. 없을 때만 레거시 규칙 —
  * User 1:Workspace 1:PERSONAL Space 1 모델이라 Workspace.ownerId로 유저의 SpaceMember를
  * 찾고, 같은 유저가 여러 Space 멤버십을 가질 수 있으므로 OWNER 우선, 없으면 최고참(createdAt asc).
  * 알림 채널 조회와 Deck 토글 게이트가 같은 Space를 보도록 공유한다.
@@ -28,9 +29,10 @@ export type SlackNotificationTarget = {
 export async function resolveNotificationSpaceId(workspaceId: string): Promise<string | null> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
-    select: { ownerId: true },
+    select: { ownerId: true, spaceId: true },
   })
   if (!workspace) return null
+  if (workspace.spaceId) return workspace.spaceId
 
   const memberships = await prisma.spaceMember.findMany({
     where: { userId: workspace.ownerId },

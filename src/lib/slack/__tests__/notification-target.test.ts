@@ -33,6 +33,34 @@ describe('resolveSlackNotificationTarget', () => {
     expect(findManySpaceMember).not.toHaveBeenCalled()
   })
 
+  it('Workspace.spaceId가 있으면 owner 멤버십을 보지 않고 그 Space를 쓴다', async () => {
+    findUniqueWorkspace.mockResolvedValue({ ownerId: 'user1', spaceId: 'space-fk' })
+    findUniqueSpaceSlackChannel.mockResolvedValue(null)
+
+    await resolveSlackNotificationTarget('ws1')
+
+    expect(findManySpaceMember).not.toHaveBeenCalled()
+    expect(findUniqueSpaceSlackChannel).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { spaceId: 'space-fk', kind: 'notifications' } })
+    )
+  })
+
+  it('Workspace.spaceId가 null이면 owner 멤버십(OWNER 우선)으로 폴백한다', async () => {
+    findUniqueWorkspace.mockResolvedValue({ ownerId: 'user1', spaceId: null })
+    findManySpaceMember.mockResolvedValue([
+      { spaceId: 'space-old', role: 'MEMBER' },
+      { spaceId: 'space-own', role: 'OWNER' },
+    ])
+    findUniqueSpaceSlackChannel.mockResolvedValue(null)
+
+    await resolveSlackNotificationTarget('ws1')
+
+    expect(findManySpaceMember).toHaveBeenCalled()
+    expect(findUniqueSpaceSlackChannel).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { spaceId: 'space-own', kind: 'notifications' } })
+    )
+  })
+
   it('owner의 Space 멤버십이 없으면 null', async () => {
     findUniqueWorkspace.mockResolvedValue({ ownerId: 'user1' })
     findManySpaceMember.mockResolvedValue([])
