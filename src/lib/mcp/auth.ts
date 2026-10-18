@@ -59,16 +59,19 @@ export async function resolveUserPrincipal(
     where: { oauthClientId: clientId },
     select: { id: true, spaceId: true, kind: true, scopes: true, status: true },
   })
-  if (bound) {
+  // 바인딩은 그 Space 구성원에게만 적용한다. 구성원이 아니면 바인딩을 무시하고 일반 사용자 경로로 —
+  // 남이 client_id 를 먼저 묶어도(client_id 는 비밀이 아니다) 다른 Space 사용자의 접속을 막지 못하게.
+  // 바인딩만으로 Space 를 주지 않는다는 원칙은 그대로(구성원 확인 후에만 그 Space).
+  const member =
+    bound &&
+    (await prisma.spaceMember.findUnique({
+      where: { spaceId_userId: { spaceId: bound.spaceId, userId } },
+      select: { role: true },
+    }))
+  if (bound && member) {
     if (bound.kind !== 'integration')
       return { ok: false, reason: '연동 계정이 아닌 신원에 묶인 클라이언트입니다' }
     if (bound.status !== 'ACTIVE') return { ok: false, reason: '연동 계정이 비활성화되었습니다' }
-    // 바인딩만으로 Space를 주지 않는다 — 사용자가 그 Space 구성원인지 다시 확인한다.
-    const member = await prisma.spaceMember.findUnique({
-      where: { spaceId_userId: { spaceId: bound.spaceId, userId } },
-      select: { role: true },
-    })
-    if (!member) return { ok: false, reason: '연동 계정이 속한 Space의 구성원이 아닙니다' }
     return {
       ok: true,
       principal: {
