@@ -23,6 +23,7 @@ import type { KeywordTypeKey } from '@/lib/sh/keyword-score'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { cn } from '@/lib/utils'
 
+import { KeywordChangeTimeline } from './keyword-change-timeline'
 import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
 
 import { StepFactSheet, type ProductHints } from './steps/step-01-fact-sheet'
@@ -126,6 +127,7 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
   const [terms, setTerms] = useState<ResearchTerm[]>([])
   const [finalKeywords, setFinalKeywords] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+  const [historyKey, setHistoryKey] = useState(0)
 
   // ─── 초기 로드 ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -430,6 +432,7 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
       }
       // 반영된 값을 기준선으로 올린다 — 이후 변경 판정이 방금 저장한 값 기준이 되도록.
       setListing((prev) => (prev ? { ...prev, searchName: name, keywords: keywordsToSave } : prev))
+      setHistoryKey((k) => k + 1)
       toast.success('상품명과 검색어를 반영했습니다')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : '저장에 실패했습니다')
@@ -591,6 +594,14 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
           channelProductId={listing.channelProductId}
           savedName={listing.searchName}
           editing={keywordChange.nameChanged}
+        />
+      )}
+
+      {isLast && listing && (
+        <KeywordChangeTimeline
+          listingId={listing.id}
+          channelProductId={listing.channelProductId}
+          refreshKey={historyKey}
         />
       )}
 

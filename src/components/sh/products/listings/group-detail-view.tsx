@@ -59,6 +59,7 @@ import { NameDraftDialog } from '../keywords/name-draft-dialog'
 import { useNameDraft } from '../keywords/use-name-draft'
 import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
+import { ChannelKeywordImportDialog } from './channel-keyword-import-dialog'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
 import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
@@ -453,6 +454,11 @@ export function GroupDetailView({ channelProductId }: Props) {
     toast.success(`${selected.size}개 판매 옵션에 적용했습니다`)
     scheduleAutoSave(patch.status !== undefined ? 0 : 400)
   }
+
+  const listingProductIds = useMemo(
+    () => [...new Set((data?.listings ?? []).flatMap((l) => l.items.map((it) => it.productId)))],
+    [data?.listings]
+  )
 
   function handleKeywordsChange(next: string[]) {
     setKeywords(next)
@@ -1423,6 +1429,16 @@ export function GroupDetailView({ channelProductId }: Props) {
           </div>
           <CardAction className="flex items-center gap-1.5">
             {readOnly && <Badge variant="outline">연동 채널 (읽기전용)</Badge>}
+            {!readOnly && (
+              <ChannelKeywordImportDialog
+                productIds={listingProductIds}
+                currentChannelId={data.channel.id}
+                value={keywords}
+                onChange={handleKeywordsChange}
+                excludeCard={{ kind: 'channelProduct', id: channelProductId }}
+                disabled={saving || mutating}
+              />
+            )}
             {!readOnly && (
               <TooltipProvider delayDuration={200}>
                 <Tooltip>

@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Loader2, Lock, Sparkles } from 'lucide-react'
+import { ChevronDown, ChevronRight, History, Loader2, Lock, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -18,6 +18,7 @@ import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/l
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 
+import { KeywordChangeTimeline } from '../listings/keyword-change-timeline'
 import { KeywordEditor } from '../listings/keyword-editor'
 import { NameChangeCooldownNotice } from '../listings/name-change-cooldown-notice'
 import { NameCounter } from '../listings/name-counter'
@@ -63,6 +64,8 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
   const [saving, setSaving] = useState(false)
   const [nameDraftOpen, setNameDraftOpen] = useState(false)
   const [keywordDraftOpen, setKeywordDraftOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyKey, setHistoryKey] = useState(0)
 
   // 상품명·키워드 두 다이얼로그가 이 훅 하나를 공유한다 — load() 는 멱등이라 두 버튼 중 먼저
   // 눌린 쪽에서만 실제 fetch 가 나가고, 나중에 다른 버튼을 눌러도 이미 받아온 결과를 재사용한다
@@ -180,6 +183,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
       toast.success('저장했습니다')
+      setHistoryKey((k) => k + 1)
       onSaved()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
@@ -336,6 +340,33 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             </Button>
           </div>
         )}
+
+        {/* 변경 이력 — 펼칠 때만 마운트해 카드 수만큼 조회가 나가지 않게 한다. */}
+        <div className="space-y-3 border-t pt-3">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5"
+            aria-expanded={historyOpen}
+            onClick={() => setHistoryOpen((v) => !v)}
+          >
+            {historyOpen ? (
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            )}
+            <History className="h-4 w-4" aria-hidden="true" />
+            변경 이력
+          </Button>
+          {historyOpen && (
+            <KeywordChangeTimeline
+              listingId={card.kind === 'listing' ? card.id : null}
+              channelProductId={card.kind === 'channelProduct' ? card.id : null}
+              refreshKey={historyKey}
+            />
+          )}
+        </div>
       </CardContent>
 
       {!readOnly && !nameLocked && (
