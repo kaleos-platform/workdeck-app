@@ -256,6 +256,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       sellerProductId: l.coupangProductItem?.sellerProductId ?? null,
       items: l.items.map((it) => ({
         optionId: it.optionId,
+        productId: it.option.productId,
         optionName: it.option.name,
         sku: it.option.sku,
         quantity: it.quantity,
