@@ -67,7 +67,7 @@ import { GroupBaseInfoCard } from './group-base-info-card'
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { PricingScenarioHistoryPanel } from '../pricing-sim/pricing-scenario-history-panel'
 
-/** 게이트 보류 중 잠기는 액션의 안내 문구 */
+/** 상품명·검색어 저장 보류 중 잠기는 액션의 안내 문구 */
 const PENDING_BLOCK_HINT = '상품명·검색어 변경을 먼저 저장해 주세요'
 
 type GroupListingFull = GroupListingRow & {
@@ -472,18 +472,17 @@ export function GroupDetailView({ channelProductId }: Props) {
     scheduleAutoSave(800)
   }
 
-  // 진단이 제거를 권한 키워드를 지운다. 자동저장은 게이트를 우회하지 않는다 — runAutoSave 는
-  // 사유가 필요한데 없으면 keywords 를 body 에 아예 담지 않으므로, 실제 반영은 사용자가
-  // 변경 사유를 입력해 저장할 때 일어난다. 디바운스는 유지해야 다른 dirty 필드와 같은
-  // 사이클에 처리되고 게이트 칩이 즉시 갱신된다.
+  // 진단이 제거를 권한 키워드를 지운다. 자동저장은 보류된 keywords 를 body 에 담지 않으므로
+  // 실제 반영은 사용자가 저장 버튼을 누를 때 일어난다(namePending 참조). 디바운스는 유지해야
+  // 다른 dirty 필드와 같은 사이클에 처리되고 보류 칩이 즉시 갱신된다.
   function handleRemoveKeywordFromDraft(keyword: string) {
     const target = normalizeKeyword(keyword)
     setKeywords((prev: string[]) => prev.filter((k) => normalizeKeyword(k) !== target))
     scheduleAutoSave(800)
   }
 
-  // 제안대로 하나만 바꾼다. 저장은 게이트를 거친다 — runAutoSave 는 사유가 없으면 keywords 를
-  // body 에 담지 않으므로 여기서 바로 persist 되지 않는다.
+  // 제안대로 하나만 바꾼다. 자동저장은 보류된 keywords 를 body 에 담지 않으므로 여기서 바로
+  // persist 되지 않는다 — 저장 버튼에서 나간다.
   function handleReplaceKeywordFromDraft(keyword: string, next: string) {
     const target = normalizeKeyword(keyword)
     const replacement = normalizeKeyword(next)
@@ -969,7 +968,8 @@ export function GroupDetailView({ channelProductId }: Props) {
               baseSearchName: derivedBase.baseSearchName,
               baseDisplayName: derivedBase.baseDisplayName,
             },
-            { searchName: snapBase.searchName, displayName: snapBase.displayName }
+            // 서버(CP PATCH)에 보내는 값과 같게 trim 한다 — 로컬 표시가 DB 와 어긋나지 않도록.
+            { searchName: snapBase.searchName.trim(), displayName: snapBase.displayName.trim() }
           )
           renamedById.set(l.id, renamed)
         }
@@ -1171,6 +1171,10 @@ export function GroupDetailView({ channelProductId }: Props) {
 
   /** 저장 버튼 — 보류 중인 상품명·검색어까지 저장한다. 대기 중인 자동 저장은 먼저 정리한다. */
   async function explicitSave() {
+    if (baseDirty && !baseSearchName.trim()) {
+      toast.error('상품명(검색용)을 입력해 주세요')
+      return
+    }
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current)
       autoSaveTimerRef.current = null

@@ -4,7 +4,7 @@
 //
 // 상태는 전부 이 컴포넌트의 로컬이다. 초안을 DB 에 저장하지 않으므로 중간에 이탈하면 사라진다.
 // 저장은 마지막 STEP 08 에서 `saveToListing` 한 곳으로만 나간다 —
-// 변경 이력 게이트(§25-26)도 같은 함수 안에 있다.
+// 변경 이력(§26)은 서버가 저장 시 자동으로 남긴다.
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
