@@ -156,7 +156,7 @@ function routeRequest(
   }
 
   // 보호된 라우트 정의 (로그인 필수)
-  const protectedRoutes = ['/workspace-setup', '/my-deck', '/space']
+  const protectedRoutes = ['/workspace-setup', '/my-deck', '/space', '/settings', '/approvals']
   const isDeckProtectedRoute = isPathOrChild(pathname, '/d') && !isDeckLoginRoute
   const isProtectedRoute =
     isDeckProtectedRoute || protectedRoutes.some((route) => isPathOrChild(pathname, route))
