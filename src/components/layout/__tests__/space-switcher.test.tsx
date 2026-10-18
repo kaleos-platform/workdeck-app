@@ -20,7 +20,7 @@ const respond = (spaces: typeof two, postStatus = 204) => {
 
 it('Space 가 하나면 이름만(전환 메뉴 없음)', async () => {
   respond([two[0]])
-  render(<SpaceSwitcher fallbackName="Space A" navigate={assign} />)
+  render(<SpaceSwitcher fallbackName="Fallback" navigate={assign} />)
   expect(await screen.findByText('Space A')).toBeInTheDocument()
   expect(screen.queryByRole('combobox')).toBeNull()
 })
@@ -41,6 +41,12 @@ it('POST 실패면 이동하지 않고 select 를 다시 활성화', async () =>
   render(<SpaceSwitcher fallbackName="Space A" navigate={assign} />)
   const select = await screen.findByRole('combobox')
   await userEvent.selectOptions(select, 'sp-b')
+  await waitFor(() =>
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/spaces/current',
+      expect.objectContaining({ method: 'POST' })
+    )
+  )
   await waitFor(() => expect(select).toBeEnabled())
   expect(assign).not.toHaveBeenCalled()
 })
