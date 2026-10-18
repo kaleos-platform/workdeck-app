@@ -56,6 +56,21 @@ beforeEach(() => {
 })
 
 describe('authenticateWorker', () => {
+  test('읽기 검증은 유효 토큰의 사용 시각을 갱신하지 않는다', async () => {
+    mock.workerToken.findUnique.mockResolvedValue({
+      id: 't1',
+      spaceId: 'space-a',
+      revokedAt: null,
+      expiresAt: FUTURE,
+      lastUsedAt: null,
+    })
+    resolveWs.mockResolvedValue(null)
+    const result = await authenticateWorker(h('wdw_read_only'), { touchLastUsed: false })
+    expect(result).toEqual({
+      scope: { kind: 'space', tokenId: 't1', spaceId: 'space-a', workspaceId: null },
+    })
+    expect(mock.workerToken.update).not.toHaveBeenCalled()
+  })
   test('헤더 없음 → 401', async () => {
     const r = await authenticateWorker(h())
     expect('error' in r && r.error.status).toBe(401)
