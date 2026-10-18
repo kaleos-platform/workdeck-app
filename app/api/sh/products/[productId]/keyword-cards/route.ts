@@ -7,6 +7,7 @@ import {
   type GroupListingForBase,
   type OptionAttribute,
 } from '@/lib/sh/listing-name-propagation'
+import { productDisplayName } from '@/lib/sh/product-display'
 
 type Params = { params: Promise<{ productId: string }> }
 
@@ -41,7 +42,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { productId } = await params
   const product = await prisma.invProduct.findFirst({
     where: { id: productId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, name: true, internalName: true },
   })
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
 
@@ -208,5 +209,5 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }
   }
 
-  return NextResponse.json({ cards: [...cards.values()] })
+  return NextResponse.json({ productName: productDisplayName(product), cards: [...cards.values()] })
 }

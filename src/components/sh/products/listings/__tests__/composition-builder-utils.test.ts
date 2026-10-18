@@ -158,6 +158,7 @@ describe('buildBackedValueSet', () => {
 function option(id: string, attributeValues: Record<string, string>) {
   return {
     id,
+    productId: 'p1',
     name: Object.values(attributeValues).join(' / '),
     sku: null,
     retailPrice: null,

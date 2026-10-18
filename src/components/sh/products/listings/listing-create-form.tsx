@@ -30,6 +30,7 @@ import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/l
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 import { deriveBaseValues, type OptionAttribute } from '@/lib/sh/listing-name-propagation'
 
+import { ChannelKeywordImportDialog } from './channel-keyword-import-dialog'
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { CompositionRowsTable, type CompositionRow } from './composition-rows-table'
 import { KeywordEditor } from './keyword-editor'
@@ -161,6 +162,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             items: [
               {
                 optionId: option.id,
+                productId: prefill.productId,
                 optionName: option.name,
                 sku: option.sku ?? null,
                 quantity: 1,
@@ -258,6 +260,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           suffixParts: [],
           items: validResults.map((r) => ({
             optionId: r.option.id,
+            productId: r.item.productId,
             optionName: r.option.name,
             sku: r.option.sku ?? null,
             quantity: r.item.quantity,
@@ -327,6 +330,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             channelStock: number | null
             items: Array<{
               optionId: string
+              productId: string
               optionName: string
               sku: string | null
               quantity: number
@@ -417,6 +421,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               suffixParts: [],
               items: l.items.map((it) => ({
                 optionId: it.optionId,
+                productId: it.productId,
                 optionName: it.optionName,
                 sku: it.sku,
                 quantity: it.quantity,
@@ -448,6 +453,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             suffixParts,
             items: l.items.map((it) => ({
               optionId: it.optionId,
+              productId: it.productId,
               optionName: it.optionName,
               sku: it.sku,
               quantity: it.quantity,
@@ -523,6 +529,12 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       cancelled = true
     }
   }, [productCtxId])
+
+  // 판매채널 키워드 불러오기 대상 — 혼합 세트면 구성 상품 전부.
+  const compositionProductIds = useMemo(
+    () => [...new Set(rows.flatMap((r) => r.items.map((it) => it.productId)))],
+    [rows]
+  )
 
   // 조회 시점 이후 사용자가 방금 추가한 키워드는 걸러낸다.
   const keywordSuggestions = useMemo(() => {
@@ -793,13 +805,22 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                 . 최대 30개.
               </CardDescription>
             </div>
-            {/* 신규 등록에는 아직 리스팅 id 가 없으므로 인자 없이 연다(연습 모드). */}
-            <Button asChild variant="outline" size="sm" className="gap-1">
-              <Link href={getSellerHubNamingSopPath()}>
-                <ListChecks className="h-4 w-4" aria-hidden="true" />
-                상품명 작성 SOP
-              </Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <ChannelKeywordImportDialog
+                productIds={compositionProductIds}
+                currentChannelId={channelId || null}
+                value={keywords}
+                onChange={setKeywords}
+                disabled={saving}
+              />
+              {/* 신규 등록에는 아직 리스팅 id 가 없으므로 인자 없이 연다(연습 모드). */}
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link href={getSellerHubNamingSopPath()}>
+                  <ListChecks className="h-4 w-4" aria-hidden="true" />
+                  상품명 작성 SOP
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
