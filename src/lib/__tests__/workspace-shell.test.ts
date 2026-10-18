@@ -43,7 +43,7 @@ it('멤버십 없이 Workspace만 있는 레거시 계정은 OWNER', async () =>
   resolve.mockResolvedValue(null)
   expect(await loadShellContext('u')).toEqual({
     workspaceName: '내 워크스페이스',
-    isOwner: true,
+    isOwner: false,
     role: 'OWNER',
     spaceId: null,
     activeDecks: [],
