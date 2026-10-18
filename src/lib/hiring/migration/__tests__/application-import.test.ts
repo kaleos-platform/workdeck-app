@@ -5,6 +5,7 @@ import { importOpeningApplication, type OpeningApplicationImport } from '../appl
 import { migrationHash, migrationSourceRef } from '../ledger'
 import { encryptPii } from '@/lib/del/encryption'
 import { recoverOpeningApplication } from '../application-recovery'
+import { auditMigrationRecords } from '../runtime-audit'
 import { spawnSync } from 'node:child_process'
 const at = '2026-10-03T00:00:00.000Z'
 function input(): OpeningApplicationImport {
@@ -134,6 +135,14 @@ it.each(['v0', 'v1'])(
   async (version) => {
     process.env.ENCRYPTION_WRITE_VERSION = version
     const first = await importOpeningApplication(db, input())
+    expect(
+      auditMigrationRecords([first.record], { sourceSpaceId: '1', spaceId: 'space' })
+    ).toMatchObject({
+      checked: 1,
+      integrityVerified: 1,
+      recoveryFailed: 0,
+      models: { HiringApplication: { checked: 1, integrityVerified: 1 } },
+    })
     const recovered = recoverOpeningApplication(first.record, {
       sourceSpaceId: '1',
       spaceId: 'space',
