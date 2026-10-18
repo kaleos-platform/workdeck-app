@@ -80,7 +80,7 @@ describe('runTool', () => {
     const extra = { spaceId: 'sp1', actor: { type: 'user', id: 'u1' }, scopes: [...ALL_SCOPES] }
     expect(readAuthExtra(extra)).toEqual({ ok: true, principal: extra })
   })
-  it('systemToolContext는 내장 에이전트 actor와 전체 scope, 요청자는 비어 있다', () => {
+  it('systemToolContext는 내장 에이전트 actor와 slack:write를 뺀 scope, 요청자는 비어 있다', () => {
     const c = systemToolContext('sp1')
     expect(c.actor).toEqual({ type: 'system', id: 'workdeck-agent' })
     expect(c.scopes).toContain('ads:write')

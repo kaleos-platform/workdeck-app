@@ -14,7 +14,8 @@ import type { ConversationTurn } from './conversation'
  *  - tool 스키마: zod 4의 z.toJSONSchema로 네이티브 변환(Anthropic tool = { name, description, input_schema }).
  *  - stop_reason === "tool_use"면 모든 tool_use 블록을 실행하고 tool_result 전부를 단일 user 메시지로 반환.
  *  - 최대 8 iteration. 초과 시 폴백 텍스트.
- *  - tool ctx는 MCP와 같은 McpToolContext(내장 에이전트 actor=system). write tool은 createPendingAction만 호출.
+ *  - tool ctx는 MCP와 같은 McpToolContext(내장 에이전트 actor=system). ctx.scopes 밖의 도구는 모델에 노출하지 않는다
+ *    (내장 에이전트는 slack:write가 없어 승인 큐를 거치지 않는 slack_post가 빠진다 — 노출되는 write는 승인 큐 경유).
  */
 
 const DEFAULT_MODEL = 'claude-opus-4-8'
@@ -30,13 +31,15 @@ function toInputSchema(def: ToolDefinition): Record<string, unknown> {
   return z.toJSONSchema(z.object(def.inputSchema)) as Record<string, unknown>
 }
 
-// toolDefinitions 전체를 Anthropic tool 배열로 변환(read/write 모두 — write는 createPendingAction만 호출).
-function buildAnthropicTools(): Anthropic.Tool[] {
-  return toolDefinitions.map((def) => ({
-    name: def.name,
-    description: def.description,
-    input_schema: toInputSchema(def) as Anthropic.Tool.InputSchema,
-  }))
+// ctx.scopes로 쓸 수 있는 도구만 Anthropic tool 배열로 변환(scope 밖 도구는 runTool도 거부한다).
+function buildAnthropicTools(ctx: McpToolContext): Anthropic.Tool[] {
+  return toolDefinitions
+    .filter((def) => !def.scope || ctx.scopes.includes(def.scope))
+    .map((def) => ({
+      name: def.name,
+      description: def.description,
+      input_schema: toInputSchema(def) as Anthropic.Tool.InputSchema,
+    }))
 }
 
 function buildSystemPrompt(): string {
@@ -73,7 +76,7 @@ const toolByName = new Map<string, ToolDefinition>(toolDefinitions.map((d) => [d
 export async function runAgentLoop(args: RunAgentLoopArgs): Promise<AgentLoopResult> {
   const client = new Anthropic() // ANTHROPIC_API_KEY 환경변수 사용
   const model = resolveModel()
-  const tools = buildAnthropicTools()
+  const tools = buildAnthropicTools(args.ctx)
 
   const messages: Anthropic.MessageParam[] = [
     ...args.history.map((t) => ({ role: t.role, content: t.content })),

@@ -36,6 +36,14 @@ jest.mock('@/lib/agent/tools', () => {
         mode: 'write',
         execute: writeExec,
       },
+      {
+        name: 'slack_post',
+        description: 'slack',
+        inputSchema: {},
+        mode: 'write',
+        scope: 'slack:write',
+        execute: jest.fn(),
+      },
     ],
   }
 })
@@ -92,6 +100,18 @@ describe('runAgentLoop', () => {
     expect(toolResultMsg).toBeDefined()
     expect(toolResultMsg.role).toBe('user')
     expect(toolResultMsg.content[0].type).toBe('tool_result')
+  })
+
+  test('내장 에이전트에는 scope 밖 도구(slack_post)를 노출하지 않는다', async () => {
+    mockCreate.mockResolvedValueOnce({
+      stop_reason: 'end_turn',
+      content: [{ type: 'text', text: 'ok' }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+    })
+
+    await runAgentLoop(baseArgs)
+    const names = (mockCreate.mock.calls[0][0].tools as Array<{ name: string }>).map((t) => t.name)
+    expect(names).toEqual(['ads_get_kpi', 'ads_trigger_analysis'])
   })
 
   test('8 iteration 초과 → 폴백 텍스트', async () => {
