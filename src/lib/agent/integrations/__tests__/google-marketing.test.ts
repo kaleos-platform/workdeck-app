@@ -467,6 +467,32 @@ describe('google-marketing (포팅)', () => {
       expect.objectContaining({ where: { id: 'gcred' } })
     )
   })
+  it.each([400, 404, 429, 500])(
+    'Google API %d(호출 오류·일시 장애)는 자격증명 lastError 에 남기지 않는다',
+    async (status) => {
+      fetchMock.mockImplementation(async (url: string | URL) =>
+        String(url).includes('oauth2')
+          ? { ok: true, json: async () => ({ access_token: 'at' }) }
+          : { ok: false, status, json: async () => ({ error: { message: `fail ${status}` } }) }
+      )
+      const err = await action('ga4.custom_dimension.create')
+        .execute(execCtx(), { target: TARGET, params: { parameterName: 'p' } })
+        .catch((e: Error) => e)
+      expect((err as Error).message).toContain(`fail ${status}`)
+      expect(prisma.spaceCredential.update).not.toHaveBeenCalled()
+    }
+  )
+  it('연결 실패(네트워크)는 자격증명 lastError 에 남기지 않는다', async () => {
+    fetchMock.mockImplementation(async (url: string | URL) => {
+      if (String(url).includes('oauth2'))
+        return { ok: true, json: async () => ({ access_token: 'at' }) }
+      throw new Error('ECONNRESET')
+    })
+    await expect(
+      tool('google_marketing_ga4_run_report').execute(ctx(), { request: {} })
+    ).rejects.toThrow('Google API에 연결하지 못했습니다')
+    expect(prisma.spaceCredential.update).not.toHaveBeenCalled()
+  })
   it('fetch 실패 원문(URL·본문)을 노출하지 않는다', async () => {
     fetchMock.mockRejectedValue(new Error('connect failed refresh_token=rt client_secret=cs'))
     await expect(
