@@ -46,6 +46,8 @@ type Props = {
   value: string[]
   onChange: (next: string[]) => void
   disabled?: boolean
+  /** 편집 중인 자기 자신의 카드 — 자기 키워드를 자기에게 붙이는 일을 막으려 목록에서 뺀다. */
+  excludeCard?: { kind: 'channelProduct' | 'listing'; id: string }
 }
 
 export function ChannelKeywordImportDialog({
@@ -54,6 +56,7 @@ export function ChannelKeywordImportDialog({
   value,
   onChange,
   disabled,
+  excludeCard,
 }: Props) {
   // 어떤 구성(productKey)에 대한 결과인지 함께 둔다 — 구성이 바뀌면 응답 도착 전까지 로딩으로 본다.
   const [fetched, setFetched] = useState<{ key: string; groups: ProductCards[] }>({
@@ -66,6 +69,8 @@ export function ChannelKeywordImportDialog({
 
   // 버튼 활성 여부를 열기 전에 알아야 하므로 구성이 바뀔 때마다 미리 불러온다. 실패는 조용히 무시(부가 기능).
   const productKey = productIds.join(',')
+  const excludeKey = excludeCard ? `${excludeCard.kind}:${excludeCard.id}` : ''
+  const fetchKey = `${productKey}|${excludeKey}`
   useEffect(() => {
     if (!productKey) return
     let cancelled = false
@@ -74,21 +79,23 @@ export function ChannelKeywordImportDialog({
         const res = await fetch(`/api/sh/products/${productId}/keyword-cards`)
         if (!res.ok) return null
         const data: { productName?: string; cards?: KeywordCard[] } = await res.json()
-        const cards = (data.cards ?? []).filter((c) => c.keywords.length > 0)
+        const cards = (data.cards ?? []).filter(
+          (c) => c.keywords.length > 0 && `${c.kind}:${c.id}` !== excludeKey
+        )
         return cards.length > 0 ? { productId, productName: data.productName ?? '', cards } : null
       })
     )
       .then((rs) => rs.filter((r): r is ProductCards => r !== null))
       .catch(() => [])
       .then((groups) => {
-        if (!cancelled) setFetched({ key: productKey, groups })
+        if (!cancelled) setFetched({ key: fetchKey, groups })
       })
     return () => {
       cancelled = true
     }
-  }, [productKey])
+  }, [productKey, excludeKey, fetchKey])
 
-  const loading = Boolean(productKey) && fetched.key !== productKey
+  const loading = Boolean(productKey) && fetched.key !== fetchKey
   const groups = productKey && !loading ? fetched.groups : []
 
   const existing = useMemo(() => new Set(value.map(normalizeKeyword)), [value])

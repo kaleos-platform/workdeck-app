@@ -45,6 +45,7 @@ import { countNamingViolations, type ListingNamingResult } from '@/lib/sh/keywor
 
 import { OptionPickerDialog, type PickedOption } from './option-picker-dialog'
 import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
+import { ChannelKeywordImportDialog } from './channel-keyword-import-dialog'
 import { KeywordEditor } from './keyword-editor'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
 import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
@@ -654,12 +655,22 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               <CardDescription>검색 노출을 위한 키워드. 최대 30개</CardDescription>
             </div>
             {mode === 'edit' && initial?.id && (
-              <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link href={getSellerHubNamingSopPath(initial.id)}>
-                  <ListChecks className="h-4 w-4" aria-hidden="true" />
-                  상품명 작성 SOP
-                </Link>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <ChannelKeywordImportDialog
+                  productIds={Array.from(new Set(items.map((it) => it.productId)))}
+                  currentChannelId={channelId || null}
+                  value={keywords}
+                  onChange={setKeywords}
+                  excludeCard={{ kind: 'listing', id: initial.id }}
+                  disabled={saving}
+                />
+                <Button asChild variant="outline" size="sm" className="gap-1">
+                  <Link href={getSellerHubNamingSopPath(initial.id)}>
+                    <ListChecks className="h-4 w-4" aria-hidden="true" />
+                    상품명 작성 SOP
+                  </Link>
+                </Button>
+              </div>
             )}
           </div>
         </CardHeader>

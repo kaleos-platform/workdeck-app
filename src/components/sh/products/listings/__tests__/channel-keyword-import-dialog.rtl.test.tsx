@@ -104,6 +104,27 @@ describe('ChannelKeywordImportDialog', () => {
     expect(onChange).toHaveBeenCalledWith([...value, '여름브라'])
   })
 
+  it('excludeCard 로 지정한 자기 카드는 목록에서 빠진다', async () => {
+    await openDialog({ excludeCard: { kind: 'channelProduct', id: 'cp1' } })
+    expect(screen.queryByText('쿠팡')).not.toBeInTheDocument()
+    expect(screen.getByText('스마트스토어')).toBeInTheDocument()
+  })
+
+  it('자기 카드뿐이면 불러오기 버튼이 비활성', async () => {
+    render(
+      <ChannelKeywordImportDialog
+        productIds={['p2']}
+        currentChannelId={null}
+        value={[]}
+        onChange={jest.fn()}
+        excludeCard={{ kind: 'listing', id: 'l2' }}
+      />
+    )
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled())
+    await new Promise((r) => setTimeout(r, 0))
+    expect(screen.getByRole('button', { name: /판매채널 키워드 불러오기/ })).toBeDisabled()
+  })
+
   it('혼합 세트면 상품별로 묶어 보여준다', async () => {
     await openDialog({ productIds: ['p1', 'p2'] })
     expect(screen.getByRole('heading', { name: '쿨 브라' })).toBeInTheDocument()
