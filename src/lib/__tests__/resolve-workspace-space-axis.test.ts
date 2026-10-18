@@ -23,7 +23,7 @@ jest.mock('@/lib/prisma', () => ({
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
-import { resolveWorkspace } from '../api-helpers'
+import { resolveDeckContext, resolveWorkspace } from '../api-helpers'
 
 const m = prisma as unknown as {
   spaceMember: { findFirst: jest.Mock }
@@ -81,4 +81,16 @@ test('Space 멤버십이 없으면 기존처럼 본인 소유 워크스페이스
     where: { ownerId: 'u-1' },
     select: { id: true },
   })
+})
+
+test('Deck 별 쓰기 최소 역할 — 재무만 ADMIN, 재고·콘텐츠·채용은 MEMBER 도 쓰기', async () => {
+  member('MEMBER')
+  const finance = await resolveDeckContext('finance', { write: true })
+  expect('error' in finance && finance.error?.status).toBe(403)
+  expect(await resolveDeckContext('finance')).toMatchObject({ role: 'MEMBER' })
+  for (const deck of ['seller-hub', 'sales-content', 'recruiting']) {
+    expect(await resolveDeckContext(deck, { write: true })).toMatchObject({ role: 'MEMBER' })
+  }
+  member('ADMIN')
+  expect(await resolveDeckContext('finance', { write: true })).toMatchObject({ role: 'ADMIN' })
 })
