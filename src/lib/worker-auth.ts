@@ -49,7 +49,8 @@ function forbidden(message = '다른 공간의 자원에 접근할 수 없습니
 }
 
 export async function authenticateWorker(
-  headers: Headers
+  headers: Headers,
+  options: { touchLastUsed?: boolean } = {}
 ): Promise<{ scope: WorkerScope } | { error: NextResponse }> {
   const presented = headers.get('x-worker-api-key')
   if (!presented) return { error: unauthorized() }
@@ -62,7 +63,11 @@ export async function authenticateWorker(
     })
     if (!row || row.revokedAt || row.expiresAt.getTime() <= Date.now())
       return { error: unauthorized() }
-    if (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > LAST_USED_THROTTLE_MS) {
+    // 읽기 전용 진단은 인증 과정에서도 DB 쓰기를 수행하지 않는다.
+    if (
+      options.touchLastUsed !== false &&
+      (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > LAST_USED_THROTTLE_MS)
+    ) {
       await prisma.workerToken
         .update({ where: { id: row.id }, data: { lastUsedAt: new Date() } })
         .catch(() => undefined) // 사용 시각 기록 실패가 인증을 막으면 안 된다
