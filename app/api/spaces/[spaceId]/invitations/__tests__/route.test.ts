@@ -56,6 +56,31 @@ beforeEach(() => {
   ;(sendInviteEmail as jest.Mock).mockResolvedValue({ sent: true })
 })
 
+it('개인 Space가 전환되면 space.type.convert 감사 로그를 남긴다', async () => {
+  ;(createInvitation as jest.Mock).mockResolvedValue({
+    invitation: {
+      id: 'inv-1',
+      email: 'invitee@example.com',
+      role: 'MEMBER',
+      expiresAt: new Date(),
+    },
+    token: 'TOKEN123',
+    converted: true,
+  })
+  expect((await post({ email: 'invitee@example.com', role: 'MEMBER' })).status).toBe(201)
+  expect(writeAuditLog).toHaveBeenCalledWith('u-owner', 'space.type.convert', 'space', 'sp-1', {
+    from: 'PERSONAL',
+    to: 'ORGANIZATION',
+    via: 'invitation',
+  })
+})
+
+it('전환이 없으면 전환 감사 로그도 없다', async () => {
+  await post({ email: 'invitee@example.com', role: 'ADMIN' })
+  const actions = (writeAuditLog as jest.Mock).mock.calls.map((c) => c[1])
+  expect(actions).not.toContain('space.type.convert')
+})
+
 it('OWNER가 아니면 그 오류, 초대하지 않는다', async () => {
   const denied = new Response(null, { status: 403 })
   ;(requireSpaceOwner as jest.Mock).mockResolvedValue({ error: denied })

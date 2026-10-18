@@ -6,7 +6,7 @@ jest.mock('@/lib/admin/auth', () => ({
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: { findUnique: jest.fn() },
-    space: { findUnique: jest.fn() },
+    space: { findUnique: jest.fn(), updateMany: jest.fn() },
     spaceMember: { findUnique: jest.fn(), create: jest.fn() },
   },
 }))
@@ -17,7 +17,7 @@ import { POST } from '../route'
 
 const m = prisma as unknown as {
   user: { findUnique: jest.Mock }
-  space: { findUnique: jest.Mock }
+  space: { findUnique: jest.Mock; updateMany: jest.Mock }
   spaceMember: { findUnique: jest.Mock; create: jest.Mock }
 }
 const call = (body: unknown) =>
@@ -77,9 +77,24 @@ it('사용자나 Space가 없으면 404', async () => {
   expect((await call({ role: 'ADMIN' })).status).toBe(404)
 })
 
-it('개인 Space에는 추가하지 않는다(400)', async () => {
+it('개인 Space에 추가하면 팀 Space로 전환하고 감사 로그를 남긴다', async () => {
   m.space.findUnique.mockResolvedValue({ id: 'sp-1', type: 'PERSONAL' })
-  expect((await call({ role: 'MEMBER' })).status).toBe(400)
+  m.space.updateMany.mockResolvedValue({ count: 1 })
+  expect((await call({ role: 'MEMBER' })).status).toBe(201)
+  expect(m.space.updateMany).toHaveBeenCalledWith({
+    where: { id: 'sp-1', type: 'PERSONAL' },
+    data: { type: 'ORGANIZATION' },
+  })
+  expect(writeAuditLog).toHaveBeenCalledWith('op-1', 'space.type.convert', 'space', 'sp-1', {
+    from: 'PERSONAL',
+    to: 'ORGANIZATION',
+    via: 'admin.membership.add',
+  })
+})
+
+it('팀 Space는 전환하지 않는다', async () => {
+  expect((await call({ role: 'MEMBER' })).status).toBe(201)
+  expect(m.space.updateMany).not.toHaveBeenCalled()
 })
 
 it('이미 구성원이면 409(역할은 PATCH로 바꾼다)', async () => {
