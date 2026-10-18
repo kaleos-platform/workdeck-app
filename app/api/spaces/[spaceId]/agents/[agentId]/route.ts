@@ -10,6 +10,10 @@ import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { parseScopes } from '@/lib/agent/identity/principal'
+import {
+  OAUTH_CONSENT_REQUIRED,
+  hasActiveOAuthConsent,
+} from '@/lib/agent/identity/oauth-client-consent'
 
 type Ctx = { params: Promise<{ spaceId: string; agentId: string }> }
 
@@ -46,6 +50,10 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   if (scopes !== undefined || status === 'ACTIVE' || oauthClientId !== undefined) {
     const mfa = await requireAal2()
     if (mfa) return mfa
+  }
+  // 연결(해제 아님)은 연결하는 ADMIN 본인이 그 클라이언트에 동의했어야 한다 — 남의 클라이언트 선점 방지.
+  if (oauthClientId && !(await hasActiveOAuthConsent(auth.userId, oauthClientId))) {
+    return errorResponse(OAUTH_CONSENT_REQUIRED, 403)
   }
 
   try {

@@ -59,16 +59,19 @@ export async function resolveUserPrincipal(
     where: { oauthClientId: clientId },
     select: { id: true, spaceId: true, kind: true, scopes: true, status: true },
   })
-  if (bound) {
+  // 바인딩은 그 Space 구성원에게만 적용한다. 구성원이 아니면 바인딩을 무시하고 일반 사용자 경로로 —
+  // 남이 client_id 를 먼저 묶어도(client_id 는 비밀이 아니다) 다른 Space 사용자의 접속을 막지 못하게.
+  // 바인딩만으로 Space 를 주지 않는다는 원칙은 그대로(구성원 확인 후에만 그 Space).
+  const member =
+    bound &&
+    (await prisma.spaceMember.findUnique({
+      where: { spaceId_userId: { spaceId: bound.spaceId, userId } },
+      select: { role: true },
+    }))
+  if (bound && member) {
     if (bound.kind !== 'integration')
       return { ok: false, reason: '연동 계정이 아닌 신원에 묶인 클라이언트입니다' }
     if (bound.status !== 'ACTIVE') return { ok: false, reason: '연동 계정이 비활성화되었습니다' }
-    // 바인딩만으로 Space를 주지 않는다 — 사용자가 그 Space 구성원인지 다시 확인한다.
-    const member = await prisma.spaceMember.findUnique({
-      where: { spaceId_userId: { spaceId: bound.spaceId, userId } },
-      select: { role: true },
-    })
-    if (!member) return { ok: false, reason: '연동 계정이 속한 Space의 구성원이 아닙니다' }
     return {
       ok: true,
       principal: {
@@ -116,10 +119,10 @@ export async function resolveUserPrincipal(
  *  2. Supabase JWT: getClaims(JWKS 서명 검증) 뒤 aud === 'authenticated',
  *     iss === `${NEXT_PUBLIC_SUPABASE_URL(끝 슬래시 제거)}/auth/v1`, client_id 필수(브라우저 세션 JWT 거부).
  *  3. client_id가 연동 계정(SpaceAgent.oauthClientId)에 묶여 있으면 actor = 연동 계정, Space = 그 Space.
- *     사용자는 그 Space 구성원이어야 한다.
- *  4. 묶여 있지 않으면 actor = user. `x-workdeck-space-id` 헤더(구성원이어야 함) → 멤버십 1개면 그 Space →
+ *     그 Space 구성원에게만 적용 — 비구성원은 바인딩을 무시하고 4번 경로(선점 DoS 방지).
+ *  4. 묶여 있지 않거나 바인딩 Space 비구성원이면 actor = user. `x-workdeck-space-id` 헤더(구성원이어야 함) → 멤버십 1개면 그 Space →
  *     2개 이상이면 client_id를 알려 주는 authError(최고참 멤버십으로 떨어지지 않는다).
- *  5. MCP_ALLOWED_CLIENT_IDS(쉼표 구분, 선택)가 있으면 바인딩되지 않은 client_id는 목록에 있을 때만 허용.
+ *  5. MCP_ALLOWED_CLIENT_IDS(쉼표 구분, 선택)가 있으면 4번 경로의 client_id는 목록에 있을 때만 허용.
  *
  * 모든 예외(JWKS 실패·malformed 토큰·DB 오류·모르는 저장 scope)는 undefined(401)이다.
  * 로그에는 토큰 원문을 남기지 않는다.
