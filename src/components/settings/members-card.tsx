@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useCurrentSpaceName } from '@/hooks/use-current-space'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Member = { id: string; role: string; user: { email: string; name: string | null } }
@@ -20,6 +21,7 @@ const NET_ERR = '네트워크 오류로 요청하지 못했습니다.'
 
 export function MembersCard() {
   const [spaceId, setSpaceId] = useState<string | null>(null)
+  const spaceName = useCurrentSpaceName()
   const [myRole, setMyRole] = useState<string | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [invites, setInvites] = useState<Invitation[]>([])
@@ -143,7 +145,14 @@ export function MembersCard() {
   }
 
   function removeMember(m: Member) {
-    if (!confirm(`${m.user.email} 님을 이 Space에서 내보낼까요?`)) return
+    if (
+      !confirm(
+        spaceName
+          ? `「${spaceName}」에서 ${m.user.email} 님을 내보낼까요?`
+          : `${m.user.email} 님을 이 Space에서 내보낼까요?`
+      )
+    )
+      return
     void mutate(`/api/spaces/members/${m.id}`, { method: 'DELETE' }, '구성원을 내보내지 못했습니다')
   }
 
@@ -282,7 +291,7 @@ export function MembersCard() {
                 </SelectContent>
               </Select>
               <Button onClick={invite} disabled={pending || !email.trim()}>
-                초대 보내기
+                {spaceName ? `「${spaceName}」에 초대` : '초대 보내기'}
               </Button>
             </div>
             {created && (

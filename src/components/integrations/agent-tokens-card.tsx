@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useCurrentSpaceName } from '@/hooks/use-current-space'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { SCOPES } from '@/lib/agent/identity/principal'
 import { CopyCodeBlock } from './copy-code-block'
@@ -67,6 +68,7 @@ export function AgentTokensCard() {
   const [pending, setPending] = useState(false)
   const [edit, setEdit] = useState<EditTarget | null>(null)
   const [issue, setIssue] = useState<Issued | null>(null)
+  const spaceName = useCurrentSpaceName()
 
   const load = useCallback(async () => {
     setError(null)
@@ -279,6 +281,7 @@ export function AgentTokensCard() {
       )}
       {issue && (
         <IssueDialog
+          spaceName={spaceName}
           token={issue.token}
           pending={pending}
           onClose={() => setIssue(null)}
@@ -374,11 +377,13 @@ function AgentDialog({
 }
 
 function IssueDialog({
+  spaceName,
   token,
   pending,
   onClose,
   onIssue,
 }: {
+  spaceName: string | null
   token: string | null
   pending: boolean
   onClose: () => void
@@ -401,7 +406,7 @@ function IssueDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>토큰 발급</DialogTitle>
+          <DialogTitle>{spaceName ? `「${spaceName}」 토큰 발급` : '토큰 발급'}</DialogTitle>
           <DialogDescription>
             MCP 클라이언트가 이 에이전트로 접속할 때 쓰는 토큰입니다.
           </DialogDescription>

@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Loader2, CheckCircle2, XCircle, Eye, EyeOff, Pencil, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useCurrentSpaceName } from '@/hooks/use-current-space'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type CredentialFormValues = {
@@ -25,6 +26,7 @@ export function CredentialForm() {
   const [status, setStatus] = useState<ConnectionStatus>('unknown')
   const [savedLoginId, setSavedLoginId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const spaceName = useCurrentSpaceName()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -245,6 +247,8 @@ export function CredentialForm() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   저장 중...
                 </>
+              ) : spaceName ? (
+                `「${spaceName}」에 저장`
               ) : (
                 '저장'
               )}

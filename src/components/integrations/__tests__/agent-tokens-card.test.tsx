@@ -57,3 +57,15 @@ it('에이전트를 나열하고 발급한 토큰은 대화상자에서 한 번�
   await screen.findByRole('button', { name: '발급' })
   expect(screen.queryByDisplayValue('wdk_agt_t1.TESTTOKEN')).not.toBeInTheDocument()
 })
+
+it('토큰 발급 대화상자 제목에 현재 Space 이름이 보인다', async () => {
+  const base = fetchMock.getMockImplementation()!
+  fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+    url === '/api/spaces/current' ? res({ current: { name: 'Space A' } }) : base(url, init)
+  )
+  render(<AgentTokensCard />)
+  await screen.findByText('테스트 에이전트')
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/spaces/current'))
+  fireEvent.click(screen.getByRole('button', { name: '토큰 발급' }))
+  expect(await screen.findByText('「Space A」 토큰 발급')).toBeInTheDocument()
+})

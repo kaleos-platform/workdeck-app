@@ -233,6 +233,7 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
 export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }) {
   const [data, setData] = useState<SlackChannelsResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const spaceName = data?.space?.name ?? null
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -278,7 +279,9 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
             <AlertTitle>{toast.title}</AlertTitle>
             {slackStatus === 'team_changed' && (
               <Button asChild size="sm" variant="outline">
-                <Link href={'/api/slack/oauth/install?reconnect=1'}>재연결</Link>
+                <Link href={'/api/slack/oauth/install?reconnect=1'}>
+                  {spaceName ? `「${spaceName}」에 재연결` : '재연결'}
+                </Link>
               </Button>
             )}
           </Alert>
@@ -293,7 +296,9 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
               있습니다.
             </p>
             <Button asChild size="sm">
-              <Link href={'/api/slack/oauth/install'}>Slack 연결</Link>
+              <Link href={'/api/slack/oauth/install'}>
+                {spaceName ? `「${spaceName}」에 Slack 연결` : 'Slack 연결'}
+              </Link>
             </Button>
           </div>
         ) : (

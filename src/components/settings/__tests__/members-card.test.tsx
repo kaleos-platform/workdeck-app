@@ -204,6 +204,20 @@ describe('OWNER 구성원 관리·승인 한도', () => {
     )
   })
 
+  it('내보내기 확인 문구와 초대 버튼에 현재 Space 이름이 들어간다', async () => {
+    const base = fetchMock.getMockImplementation()!
+    fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+      url === '/api/spaces/current' ? json({ current: { name: 'Space A' } }) : base(url, init)
+    )
+    render(<MembersCard />)
+    await screen.findByText(/admin@example.com/)
+    expect(await screen.findByRole('button', { name: '「Space A」에 초대' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '내보내기' }))
+    expect(window.confirm).toHaveBeenCalledWith(
+      '「Space A」에서 admin@example.com 님을 내보낼까요?'
+    )
+  })
+
   it('승인 한도를 저장하면 PUT 으로 보낸다', async () => {
     render(<MembersCard />)
     const input = await screen.findByLabelText('ADMIN 승인 한도(원)')
