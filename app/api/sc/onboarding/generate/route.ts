@@ -90,7 +90,9 @@ export async function POST(req: NextRequest) {
         const source = parseCollectedPage(nextProduct.extractedText!)
           ? nextProduct.page
           : await readProductPage(nextProduct.sourceUrl!)
-        const result = await extractSalesProduct(spaceId, source, audience)
+        const result = await extractSalesProduct(spaceId, source, audience, {
+          actor: { type: 'user', id: resolved.user.id },
+        })
         await prisma.scOnboardingResource.updateMany({
           where: { id: nextProduct.id, spaceId, extractedText: nextProduct.extractedText },
           data: {
@@ -141,13 +143,17 @@ export async function POST(req: NextRequest) {
 
     // JSON 파싱/검증 실패 시 1회 재시도
     for (let attempt = 0; attempt < 2 && !draft; attempt++) {
-      const { result, providerName: pn } = await generateTextForSpace(spaceId, {
-        system: ONBOARDING_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userPrompt }],
-        responseFormat: 'json',
-        maxTokens: 8000,
-        temperature: 0.3,
-      })
+      const { result, providerName: pn } = await generateTextForSpace(
+        spaceId,
+        {
+          system: ONBOARDING_SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: userPrompt }],
+          responseFormat: 'json',
+          maxTokens: 8000,
+          temperature: 0.3,
+        },
+        { actor: { type: 'user', id: resolved.user.id } }
+      )
       providerName = pn
       model = result.model
       contentPreview = result.content.slice(0, 500)

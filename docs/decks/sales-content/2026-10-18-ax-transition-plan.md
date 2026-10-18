@@ -21,7 +21,9 @@
 
 ## PR0 — AI 사용량을 UsageEvent에 기록 (스키마 변경 없음)
 
-- `src/lib/ai/resolve.ts` `generateTextForSpace`: 성공 시 `UsageEvent` 1행. `source:'workdeck'`, `provider`=실제 공급자 이름, `planClass`=WORKDECK→`payg` / BYOK→`payg`(고객 키, provider로 구분) / LOCAL_CLI→`local`, `model`, 토큰. actor는 `generateTextForSpace`의 선택 인자로 받고, 라우트가 로그인 사용자 id를 넘긴다(MCP 경유 시 ctx.actor).
+- [x] `src/lib/ai/resolve.ts` `generateTextForSpace`: 성공 시 `UsageEvent` 1행. `source:'workdeck'`, `provider`=실제 공급자 이름, `planClass`=WORKDECK→`payg` / BYOK→`byok` / LOCAL_CLI→`local`, `model`, 토큰. 세 번째 인자 `UsageContext { actor?, workId?, requesterUserId? }` — 라우트는 로그인 사용자, MCP 경유 시 ctx 값을 넘기고, 없으면 `system`.
+  - `byok`는 AX spec의 planClass 어휘(sub·payg·local)를 확장한 값이다. 고객 키 비용을 워크덱 비용과 섞지 않으려는 것.
+  - 실행자 전달: 범용 생성·콘텐츠 생성·온보딩(초안·상품 분석)·아이디어·상품 링크 추출. 발주 근거·인사이트는 system.
 - 기록 실패는 응답을 막지 않는다(`recordTokens`와 같은 try/catch).
 - 테스트: 모드별 planClass, 기록 실패 시 결과 반환.
 
@@ -55,7 +57,7 @@
 - 후보: `sc_propose_post`(브랜드·상품·채널·초안·예약 시각) 1건 → 승인 1회 → `Content`(APPROVED) + `ContentDeployment`(SCHEDULED) 생성 → 기존 워커 발행.
 - `src/lib/agent/actions/sales-content.ts` + `registry.ts` 등록. 실행 시 채널이 같은 Space인지·활성인지 재검증.
 - 구성원 화면 흐름의 `IN_REVIEW`→`APPROVED`는 유지한다.
-- 미정: 승인 단위(게시물 1건 1회 vs 초안·발행 분리).
+- 결정(2026-10-18): 게시물 1건에 승인 1회.
 
 ## PR4 — 화면 정리
 

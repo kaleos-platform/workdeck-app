@@ -79,13 +79,17 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
 
   try {
-    const { result, providerName } = await generateTextForSpace(resolved.space.id, {
-      system: built.system,
-      messages: built.messages,
-      responseFormat: 'text',
-      maxTokens: 800,
-      temperature: 0.7,
-    })
+    const { result, providerName } = await generateTextForSpace(
+      resolved.space.id,
+      {
+        system: built.system,
+        messages: built.messages,
+        responseFormat: 'text',
+        maxTokens: 800,
+        temperature: 0.7,
+      },
+      { actor: { type: 'user', id: resolved.user.id } }
+    )
 
     await prisma.textGenerationLog.create({
       data: {

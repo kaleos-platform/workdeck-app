@@ -14,6 +14,14 @@ import { GeminiApiProvider } from './providers/text-gemini-api'
 import { CodexCliProvider } from './providers/text-codex'
 import { GeminiCliProvider } from './providers/text-gemini'
 import { checkTextQuota, recordTextUsage } from './credit'
+import type { Actor } from '@/lib/agent/identity/principal'
+
+/** UsageEvent 에 남길 호출 맥락. 사용자를 모르는 호출부(정기 작업 등)는 system 으로 기록된다. */
+export interface UsageContext {
+  actor?: Actor
+  workId?: string
+  requesterUserId?: string | null
+}
 
 export type ResolvedAiMode = 'BYOK' | 'WORKDECK' | 'LOCAL_CLI'
 
@@ -119,7 +127,8 @@ export async function resolveSpaceAiProvider(spaceId: string): Promise<SpaceAiRe
  */
 export async function generateTextForSpace(
   spaceId: string,
-  req: TextGenerateRequest
+  req: TextGenerateRequest,
+  usage: UsageContext = {}
 ): Promise<{ result: TextGenerateResult; providerName: string; mode: ResolvedAiMode }> {
   const resolution = await resolveSpaceAiProvider(spaceId)
 
@@ -142,6 +151,7 @@ export async function generateTextForSpace(
         data: { lastVerifiedAt: new Date(), lastError: null },
       })
     }
+    await recordUsageEvent(spaceId, resolution, result, usage)
     return { result, providerName: resolution.provider.name, mode: resolution.mode }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
@@ -151,5 +161,40 @@ export async function generateTextForSpace(
         .catch(() => {})
     }
     throw err
+  }
+}
+
+// BYOK 는 고객 키로 과금되므로 워크덱 비용(payg)과 구분한다.
+const PLAN_CLASS: Record<ResolvedAiMode, string> = {
+  WORKDECK: 'payg',
+  BYOK: 'byok',
+  LOCAL_CLI: 'local',
+}
+
+/** AX 통합 사용량 기록. 실패해도 생성 결과는 돌려준다(agent/llm/usage.ts recordTokens 와 같은 방침). */
+async function recordUsageEvent(
+  spaceId: string,
+  resolution: SpaceAiResolution,
+  result: TextGenerateResult,
+  { actor = { type: 'system', id: 'workdeck-app' }, workId, requesterUserId }: UsageContext
+): Promise<void> {
+  try {
+    await prisma.usageEvent.create({
+      data: {
+        spaceId,
+        source: 'workdeck',
+        provider: resolution.provider.name,
+        planClass: PLAN_CLASS[resolution.mode],
+        model: result.model ?? resolution.provider.name,
+        actorType: actor.type,
+        actorId: actor.id,
+        inputTokens: result.usage?.inputTokens ?? 0,
+        outputTokens: result.usage?.outputTokens ?? 0,
+        workId,
+        requesterUserId,
+      },
+    })
+  } catch (err) {
+    console.error(`[ai] UsageEvent 기록 실패 (spaceId=${spaceId}):`, err)
   }
 }

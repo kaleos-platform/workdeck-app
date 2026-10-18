@@ -193,13 +193,17 @@ export async function runIdeation(input: RunIdeationInput): Promise<RunIdeationR
   while (attempt < 2) {
     attempt++
     try {
-      const { result, providerName } = await generateTextForSpace(input.spaceId, {
-        system: built.system,
-        messages: built.messages,
-        responseFormat: 'json',
-        maxTokens: 2048,
-        temperature: 0.7,
-      })
+      const { result, providerName } = await generateTextForSpace(
+        input.spaceId,
+        {
+          system: built.system,
+          messages: built.messages,
+          responseFormat: 'json',
+          maxTokens: 2048,
+          temperature: 0.7,
+        },
+        { actor: { type: 'user', id: input.userId } }
+      )
 
       const { parsed, error } = parseIdeaJson(result.content)
       if (error) {
