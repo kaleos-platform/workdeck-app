@@ -7,6 +7,8 @@ import { resolveSpaceContext, resolveWorkspace } from '@/lib/api-helpers'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { encryptField } from '@/lib/crypto/field-crypto'
 import { requireAal2 } from '@/lib/auth/mfa'
+import { ensureWorkspaceForUser } from '@/lib/workspace'
+import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 
 jest.mock('@/lib/api-helpers', () => {
   // 실제 역할 위계(OWNER > ADMIN > MEMBER)를 반영한 assertRole
@@ -22,7 +24,10 @@ jest.mock('@/lib/api-helpers', () => {
 jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn().mockResolvedValue(null) }))
 jest.mock('@/hooks/use-user', () => ({ getUser: async () => ({ id: 'u', user_metadata: {} }) }))
 jest.mock('@/lib/workspace', () => ({
-  ensureWorkspaceForUser: async () => ({ workspace: { id: 'ws' } }),
+  ensureWorkspaceForUser: jest.fn(async () => ({ workspace: { id: 'ws' } })),
+}))
+jest.mock('@/lib/inv/resolve-coupang-workspace', () => ({
+  resolveCoupangWorkspaceForSpace: jest.fn(async () => null),
 }))
 jest.mock('@/lib/collection/secret-crypto', () => ({
   encryptSecret: jest.fn(() => ({ encrypted: 'e', iv: 'i' })),
@@ -31,6 +36,7 @@ jest.mock('@/lib/billing/entitlement', () => ({ canWorkspaceCollect: jest.fn() }
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     coupangCredential: { upsert: jest.fn() },
+    workspace: { findUnique: jest.fn() },
     collectionRun: { findFirst: jest.fn(), create: jest.fn() },
   },
 }))
@@ -182,6 +188,40 @@ describe('PUT /api/collection/credentials — 역할·MFA 게이트', () => {
     const res = await sessionPut()
     expect((await res?.json()).code).toBe('MFA_REQUIRED')
     expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+  })
+
+  it('구성원은 Space의 쿠팡 워크스페이스에 저장하고 자기 워크스페이스를 만들지 않는다', async () => {
+    ;(resolveSpaceContext as jest.Mock).mockResolvedValue({ role: 'ADMIN', space: { id: 'sp-1' } })
+    ;(resolveCoupangWorkspaceForSpace as jest.Mock).mockResolvedValueOnce({
+      workspaceId: 'ws-coupang',
+      locationId: 'loc',
+    })
+    expect((await sessionPut())?.status).toBe(200)
+    expect(ensureWorkspaceForUser).not.toHaveBeenCalled()
+    expect((prisma.coupangCredential.upsert as jest.Mock).mock.calls[0][0].where).toEqual({
+      workspaceId: 'ws-coupang',
+    })
+  })
+
+  it('쿠팡 연동 위치가 없으면 Space에 연결된 워크스페이스를 쓴다', async () => {
+    ;(resolveSpaceContext as jest.Mock).mockResolvedValue({ role: 'ADMIN', space: { id: 'sp-1' } })
+    ;(prisma.workspace.findUnique as jest.Mock).mockResolvedValueOnce({ id: 'ws-space' })
+    expect((await sessionPut())?.status).toBe(200)
+    expect(prisma.workspace.findUnique).toHaveBeenCalledWith({
+      where: { spaceId: 'sp-1' },
+      select: { id: true },
+    })
+    expect(ensureWorkspaceForUser).not.toHaveBeenCalled()
+  })
+
+  it('Space 워크스페이스가 없으면 ADMIN 은 409, OWNER 는 ensure', async () => {
+    ;(resolveSpaceContext as jest.Mock).mockResolvedValue({ role: 'ADMIN', space: { id: 'sp-1' } })
+    ;(prisma.workspace.findUnique as jest.Mock).mockResolvedValue(null)
+    expect((await sessionPut())?.status).toBe(409)
+    expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+    ;(resolveSpaceContext as jest.Mock).mockResolvedValue({ role: 'OWNER', space: { id: 'sp-1' } })
+    expect((await sessionPut())?.status).toBe(200)
+    expect(ensureWorkspaceForUser).toHaveBeenCalled()
   })
 
   it('워커 PUT(x-worker-api-key)은 MFA·역할 검사를 하지 않는다', async () => {

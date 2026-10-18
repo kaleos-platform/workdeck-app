@@ -4,6 +4,7 @@ import { resolveWorkspace, resolveSpaceContext, errorResponse, assertRole } from
 import { getUser } from '@/hooks/use-user'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
+import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { decryptField, fieldWriteVersion, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
@@ -94,12 +95,31 @@ export async function PUT(request: NextRequest) {
     // 사람(세션)의 자격증명 저장만 aal2 를 요구한다. 워커 재전달은 토큰 인증이라 제외.
     const mfaError = await requireAal2()
     if (mfaError) return mfaError
-    const ensured = await ensureWorkspaceForUser({
-      id: user.id,
-      email: user.email,
-      name: user.user_metadata?.name ?? null,
-    })
-    workspace = ensured.workspace
+    // 구성원이면 그 Space의 워크스페이스에 저장한다(resolveCollectionAuth와 같은 축).
+    // 초대받은 ADMIN이 ensure로 자기 소유의 빈 워크스페이스를 만들면 워커가 못 보는 무음 실패가 된다.
+    let spaceWorkspaceId: string | null = null
+    if ('space' in spaceCtx && spaceCtx.space) {
+      const spaceId = spaceCtx.space.id
+      spaceWorkspaceId =
+        (await resolveCoupangWorkspaceForSpace(spaceId))?.workspaceId ??
+        (await prisma.workspace.findUnique({ where: { spaceId }, select: { id: true } }))?.id ??
+        null
+      if (!spaceWorkspaceId && spaceCtx.role !== 'OWNER') {
+        return errorResponse(
+          '이 Space의 워크스페이스를 찾지 못했습니다. Space OWNER가 먼저 쿠팡 연동을 설정하세요',
+          409
+        )
+      }
+    }
+    workspace = spaceWorkspaceId
+      ? { id: spaceWorkspaceId }
+      : (
+          await ensureWorkspaceForUser({
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.name ?? null,
+          })
+        ).workspace
   }
 
   let body: {
