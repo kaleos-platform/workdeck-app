@@ -6,6 +6,7 @@ import { migrationHash, migrationSourceRef } from '../ledger'
 import { encryptPii } from '@/lib/del/encryption'
 import { recoverOpeningApplication } from '../application-recovery'
 import { auditMigrationRecords } from '../runtime-audit'
+import { migrationAssetManifest } from '../asset-audit'
 import { spawnSync } from 'node:child_process'
 const at = '2026-10-03T00:00:00.000Z'
 function input(): OpeningApplicationImport {
@@ -286,6 +287,9 @@ it('검증된 파일 대응은 연결하고 경로/checksum/검증표시 오류�
   expect(
     recoverOpeningApplication(imported.record, { sourceSpaceId: '1', spaceId: 'space' })
   ).toEqual(packet)
+  expect(migrationAssetManifest(imported.record, { sourceSpaceId: '1', spaceId: 'space' })).toEqual(
+    [{ bucket: 'hiring-files', path: packet.files[0].path, sizeBytes: 10, sha256 }]
+  )
   expect(application?.files).toEqual([
     expect.objectContaining({ id: 'file', spaceId: 'space', sizeBytes: 10 }),
   ])

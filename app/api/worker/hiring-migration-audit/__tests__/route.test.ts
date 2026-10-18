@@ -187,3 +187,67 @@ test('손상된 기준 원장과 인증 DB 오류는 예외 원문을 응답하�
   expect(response.status).toBe(500)
   expect(await response.json()).toEqual({ code: 'MIGRATION_AUDIT_FAILED' })
 })
+
+test('파일 검사는 원장 1건씩 순회하고 집계만 반환한다', async () => {
+  const r = await call({ customer: 'ameaning', assets: true })
+  expect(r.status).toBe(200)
+  const body = await r.json()
+  expect(body.assets).toMatchObject({ images: { checked: 0 }, attachments: { checked: 0 } })
+  expect(tx.hiringMigrationRecord.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({ take: 2 })
+  )
+  expect(body).not.toHaveProperty('assetWork')
+})
+
+test('원장의 이미지 bytes를 transaction 이후 읽고 경로·manifest를 노출하지 않는다', async () => {
+  const { createHash } = await import('node:crypto')
+  const bytes = Buffer.from('합성 이미지')
+  const snapshot = {
+    ...packet,
+    content: {
+      ...packet.content,
+      detailImage: {
+        copiedImagePath: 'space-a/migration/qa.png',
+        verified: true,
+        sizeBytes: bytes.length,
+        sha256: createHash('sha256').update(bytes).digest('hex'),
+      },
+    },
+  }
+  const enc = encryptPii(JSON.stringify(snapshot))
+  const record = {
+    ...ledger(),
+    sourceHash: migrationHash(snapshot),
+    sourceSnapshotEnc: enc.encrypted,
+    sourceSnapshotIv: enc.iv,
+  }
+  tx.hiringMigrationRecord.findFirst.mockResolvedValue(record)
+  tx.hiringMigrationRecord.findMany.mockResolvedValue([record])
+  let transactionEnded = false
+  ;(prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
+    const result = await fn(tx)
+    transactionEnded = true
+    return result
+  })
+  process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co'
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'synthetic-service-key'
+  const read = jest.spyOn(global, 'fetch').mockImplementation(async () => {
+    expect(transactionEnded).toBe(true)
+    return new Response(bytes)
+  })
+  try {
+    const r = await call({ customer: 'ameaning', assets: true })
+    expect(r.status).toBe(200)
+    const body = await r.json()
+    expect(body.assets.images).toMatchObject({ checked: 1, verified: 1 })
+    expect(read).toHaveBeenCalledWith(
+      'https://example.supabase.co/storage/v1/object/authenticated/hiring-assets/space-a/migration/qa.png',
+      expect.objectContaining({ method: 'GET' })
+    )
+    expect(JSON.stringify(body)).not.toContain('qa.png')
+    expect(JSON.stringify(body)).not.toContain('합성 이미지')
+    expect(JSON.stringify(body)).not.toContain(snapshot.content.detailImage.sha256)
+  } finally {
+    read.mockRestore()
+  }
+})
