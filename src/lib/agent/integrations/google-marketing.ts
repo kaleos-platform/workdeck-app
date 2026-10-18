@@ -553,13 +553,22 @@ export async function loadGoogleCred(spaceId: string, audit: string[]): Promise<
   return { id: c.id, secret: c.secret, config: c.config as unknown as GoogleConfig }
 }
 
-/** Google OAuth·API가 거부·실패한 오류 — 자격증명 lastError에 기록한다(경계 거부는 기록하지 않는다). */
+/**
+ * Google OAuth·API가 거부·실패한 오류. record=true(인증·권한 실패)만 자격증명 lastError 에 남긴다 —
+ * 잘못된 경로(404)·요청(400)·일시 장애(429·5xx·시간 초과)는 자격증명 문제가 아니라 호출 오류다.
+ */
 export class GoogleApiError extends ToolUserError {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    readonly record = true
+  ) {
     super(maskSecrets(message))
     this.name = 'GoogleApiError'
   }
 }
+
+// 자격증명(토큰·권한) 문제로 볼 Google API 응답 코드.
+const CREDENTIAL_ERROR_STATUS = new Set([401, 403])
 
 // 오류 객체에 요청 본문(refresh token)·헤더가 섞일 수 있어 원문을 쓰지 않는다.
 async function send(url: string | URL, init: RequestInit): Promise<Response> {
@@ -569,7 +578,8 @@ async function send(url: string | URL, init: RequestInit): Promise<Response> {
     throw new GoogleApiError(
       err instanceof Error && err.name === 'TimeoutError'
         ? 'Google API 응답이 없습니다(시간 초과)'
-        : 'Google API에 연결하지 못했습니다'
+        : 'Google API에 연결하지 못했습니다',
+      false
     )
   }
 }
@@ -602,7 +612,7 @@ export async function verifyGoogleCred(cred: GoogleCred): Promise<void> {
 
 /**
  * Google API 호출. checkedUrl은 targetUrl/actionUrl이 검사한 URL이거나 config 숫자 id로만 만든 URL(runReport)이어야 한다.
- * 토큰은 서버 안에서만 쓰고, 응답의 자격증명 값은 지우고, OAuth·API 실패는 자격증명 lastError에 남긴다.
+ * 토큰은 서버 안에서만 쓰고, 응답의 자격증명 값은 지우고, OAuth 실패·401·403만 자격증명 lastError에 남긴다.
  */
 export async function googleRequest(
   cred: GoogleCred,
@@ -626,11 +636,15 @@ export async function googleRequest(
     const res = await send(url, init)
     const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } }
     if (!res.ok) {
-      throw new GoogleApiError(data?.error?.message || `Google API 요청 실패 (${res.status})`)
+      throw new GoogleApiError(
+        data?.error?.message || `Google API 요청 실패 (${res.status})`,
+        CREDENTIAL_ERROR_STATUS.has(res.status)
+      )
     }
     return sanitizeGoogleResponse(data)
   } catch (err) {
-    if (err instanceof GoogleApiError) await recordCredentialError(cred.id, err.message)
+    if (err instanceof GoogleApiError && err.record)
+      await recordCredentialError(cred.id, err.message)
     throw err
   }
 }
