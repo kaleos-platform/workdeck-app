@@ -23,6 +23,7 @@ jest.mock('@/lib/api-helpers', () => {
 
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { PATCH } from '../../../../app/api/sh/products/listings/channel-products/[id]/route'
+import { PATCH as PATCH_LISTING } from '../../../../app/api/sh/products/listings/[listingId]/route'
 
 // throwaway IDs — 다른 e2e와 충돌 없는 고유 hex 영역(fa/fb, 기존 파일들이 쓰는 대역 grep으로 확인)
 const SPACE_ID = 'e2e00000-0000-4000-8000-0000000000fa'
@@ -272,7 +273,7 @@ d('PATCH /channel-products/[id] — propagateNames 배선 (dev DB)', () => {
     expect(listing.memo).toBe('메모유지')
   })
 
-  test('6) KeywordChangeLog는 base 기준 1건만 생긴다(자식 수만큼 아님)', async () => {
+  test('6) KeywordChangeLog는 사유 없이 base 기준 1건만 자동으로 생긴다(자식 수만큼 아님)', async () => {
     const attrs = [{ name: '색상', values: [{ value: '블랙' }, { value: '화이트' }] }]
     const productId = await makeProduct('P6 상품', attrs)
     const optBlack = await makeOption(productId, '블랙', { 색상: '블랙' })
@@ -288,7 +289,6 @@ d('PATCH /channel-products/[id] — propagateNames 배선 (dev DB)', () => {
       patchReq({
         baseSearchName: '로그신상품',
         propagateNames: true,
-        changeReason: 'SPEC_CHANGE',
       }),
       { params: Promise.resolve({ id: cpId }) }
     )
@@ -300,5 +300,30 @@ d('PATCH /channel-products/[id] — propagateNames 배선 (dev DB)', () => {
     expect(logs).toHaveLength(1)
     expect(logs[0].beforeName).toBe('로그상품')
     expect(logs[0].afterName).toBe('로그신상품')
+    expect(logs[0].channelProductId).toBe(cpId)
+    expect(logs[0].reason).toBeNull()
+  })
+
+  test('7) 리스팅 PATCH — 이름이 바뀌면 그룹까지 귀속해 자동 기록, 가격만 바꾸면 기록 없음', async () => {
+    const productId = await makeProduct('P7 상품')
+    const opt = await makeOption(productId, '기본')
+    const cpId = await makeChannelProduct('리스팅로그')
+    const listingId = await makeListing(cpId, opt, {
+      searchName: '리스팅로그 기본',
+      displayName: '리스팅로그 기본',
+    })
+    const params = { params: Promise.resolve({ listingId }) }
+
+    const priceOnly = await PATCH_LISTING(patchReq({ retailPrice: 12000 }), params)
+    expect(priceOnly!.status).toBe(200)
+    expect(await prisma.keywordChangeLog.count({ where: { listingId } })).toBe(0)
+
+    const renamed = await PATCH_LISTING(patchReq({ searchName: '리스팅로그 새이름' }), params)
+    expect(renamed!.status).toBe(200)
+    const logs = await prisma.keywordChangeLog.findMany({ where: { listingId } })
+    expect(logs).toHaveLength(1)
+    expect(logs[0].channelProductId).toBe(cpId)
+    expect(logs[0].productId).toBe(productId)
+    expect(logs[0].reason).toBeNull()
   })
 })

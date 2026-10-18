@@ -59,16 +59,16 @@ import { NameDraftDialog } from '../keywords/name-draft-dialog'
 import { useNameDraft } from '../keywords/use-name-draft'
 import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
-import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
+import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
 import { GroupBulkEditBar, type BulkPatch } from './group-bulk-edit-bar'
 import { GroupBaseInfoCard } from './group-base-info-card'
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { PricingScenarioHistoryPanel } from '../pricing-sim/pricing-scenario-history-panel'
 
-/** 게이트 보류 중 잠기는 액션의 안내 문구 */
-const GATE_BLOCK_HINT = '상품명·검색어 변경 사유를 먼저 입력해 주세요'
+/** 상품명·검색어 저장 보류 중 잠기는 액션의 안내 문구 */
+const PENDING_BLOCK_HINT = '상품명·검색어 변경을 먼저 저장해 주세요'
 
 type GroupListingFull = GroupListingRow & {
   memo: string | null
@@ -163,8 +163,6 @@ export function GroupDetailView({ channelProductId }: Props) {
   const [groupDeleteOpen, setGroupDeleteOpen] = useState(false)
   const [groupActionLoading, setGroupActionLoading] = useState(false)
 
-  // §25-26 변경 게이트
-  const [gateOpen, setGateOpen] = useState(false)
   const [historyKey, setHistoryKey] = useState(0)
 
   // AI 초안 다이얼로그 2종(상품명·키워드) — useNameDraft 훅 하나를 공유해 화면 방문당
@@ -380,15 +378,15 @@ export function GroupDetailView({ channelProductId }: Props) {
   const totalDirty = baseDirty || keywordsDirty || dirtyRowIds.size > 0
   const dirtyCount = (baseDirty ? 1 : 0) + (keywordsDirty ? 1 : 0) + dirtyRowIds.size
 
-  // §25-26 게이트 판정.
+  // 상품명·검색어 보류 판정.
+  //
+  // 이 화면은 자동 저장이지만, 상품명·검색어 변경은 저장 버튼을 눌러야 나간다. 서버가 변경마다
+  // 이력을 자동으로 남기므로, 타이핑 중간값이 자동 저장되면 이력이 글자 단위로 쌓인다.
   //
   // dirty 와는 다른 잣대를 쓴다. dirty 는 "저장 요청을 보낼 것인가"(순서 변경 포함)이고,
-  // 게이트는 "채널에 나가는 값이 실제로 달라지는가"(집합·공백 정규화 비교)다. 그래서
-  // 칩 순서만 바꾼 저장은 게이트 없이 지나간다 — 서버도 그런 변경은 기록하지 않는다.
-  //
-  // 비교 대상은 화면의 파생값이 아니라 ChannelProduct 저장값이다. 서버(CP PATCH)가 같은
-  // 기준으로 before/after 와 multiChange 를 계산하므로 다이얼로그가 보여주는 diff 와
-  // 실제로 남는 이력이 어긋나지 않는다.
+  // 여기는 "채널에 나가는 값이 실제로 달라지는가"(집합·공백 정규화 비교)다. 그래서 칩 순서만
+  // 바꾼 저장은 보류 없이 지나간다 — 서버도 그런 변경은 기록하지 않는다.
+  // 비교 대상은 ChannelProduct 저장값이다 — 서버(CP PATCH)의 이력 판정과 같은 기준이다.
   const nameToSave = baseDirty ? baseSearchName : (data?.channelProduct.baseSearchName ?? '')
   const savedKeywords = data?.channelProduct.keywords
   const keywordsToSave = useMemo(
@@ -405,7 +403,7 @@ export function GroupDetailView({ channelProductId }: Props) {
       }),
     [data?.channelProduct.baseSearchName, data?.channelProduct.keywords, nameToSave, keywordsToSave]
   )
-  const gateNeeded = keywordChange.changed
+  const namePending = keywordChange.changed
 
   function handleRowChange(id: string, patch: BulkPatch) {
     setRows((prev) =>
@@ -474,18 +472,17 @@ export function GroupDetailView({ channelProductId }: Props) {
     scheduleAutoSave(800)
   }
 
-  // 진단이 제거를 권한 키워드를 지운다. 자동저장은 게이트를 우회하지 않는다 — runAutoSave 는
-  // 사유가 필요한데 없으면 keywords 를 body 에 아예 담지 않으므로, 실제 반영은 사용자가
-  // 변경 사유를 입력해 저장할 때 일어난다. 디바운스는 유지해야 다른 dirty 필드와 같은
-  // 사이클에 처리되고 게이트 칩이 즉시 갱신된다.
+  // 진단이 제거를 권한 키워드를 지운다. 자동저장은 보류된 keywords 를 body 에 담지 않으므로
+  // 실제 반영은 사용자가 저장 버튼을 누를 때 일어난다(namePending 참조). 디바운스는 유지해야
+  // 다른 dirty 필드와 같은 사이클에 처리되고 보류 칩이 즉시 갱신된다.
   function handleRemoveKeywordFromDraft(keyword: string) {
     const target = normalizeKeyword(keyword)
     setKeywords((prev: string[]) => prev.filter((k) => normalizeKeyword(k) !== target))
     scheduleAutoSave(800)
   }
 
-  // 제안대로 하나만 바꾼다. 저장은 게이트를 거친다 — runAutoSave 는 사유가 없으면 keywords 를
-  // body 에 담지 않으므로 여기서 바로 persist 되지 않는다.
+  // 제안대로 하나만 바꾼다. 자동저장은 보류된 keywords 를 body 에 담지 않으므로 여기서 바로
+  // persist 되지 않는다 — 저장 버튼에서 나간다.
   function handleReplaceKeywordFromDraft(keyword: string, next: string) {
     const target = normalizeKeyword(keyword)
     const replacement = normalizeKeyword(next)
@@ -871,15 +868,14 @@ export function GroupDetailView({ channelProductId }: Props) {
     }
   }
 
-  /** 저장 성공 여부를 돌려준다 — 게이트 다이얼로그는 성공했을 때만 닫아야 한다. */
-  async function doSave(changeMeta?: KeywordChangeMeta): Promise<boolean> {
+  /** 저장 성공 여부를 돌려준다. explicit=true 는 저장 버튼 — 보류 중인 상품명·검색어도 보낸다. */
+  async function doSave(explicit = false): Promise<boolean> {
     if (!data) return false
     setSaving(true)
 
-    // 게이트 대상인데 사유가 없으면 상품명·검색어만 이번 배치에서 뺀다.
-    // 가격·재고·판매상태·메모 등 나머지는 평소대로 자동 저장된다 — 게이트는 §25 가 지목한
-    // 두 값에만 마찰을 만들면 되고, 무관한 편집까지 붙잡으면 그건 그냥 고장이다.
-    const snapGated = gateNeeded && !changeMeta
+    // 자동 저장에서는 상품명·검색어만 이번 배치에서 뺀다(위 namePending 참조).
+    // 가격·재고·판매상태·메모 등 나머지는 평소대로 자동 저장된다.
+    const snapHeld = namePending && !explicit
 
     // 스냅샷 — 저장 도중 state가 바뀌어도 이 배치는 일관되게 적용
     const snapBaseDirty = baseDirty
@@ -898,6 +894,9 @@ export function GroupDetailView({ channelProductId }: Props) {
 
     const origById = new Map(data.listings.map((l) => [l.id, l]))
     const failures: string[] = []
+    // 이름 전파는 서버(CP PATCH propagateNames)가 한 트랜잭션으로 한다. 같은 함수로 계산한
+    // 결과를 저장 성공 후 로컬 state 에만 반영한다.
+    const renamedById = new Map<string, { searchName: string; displayName: string }>()
     const patchedById = new Map<
       string,
       {
@@ -950,10 +949,7 @@ export function GroupDetailView({ channelProductId }: Props) {
           )
           return suffix ? ` ${suffix}` : ''
         }
-        // 게이트 보류 중에는 이름을 리스팅으로 내려보내지 않는다. 여기서 새 이름이 먼저
-        // 나가면 리스팅만 바뀌고 ChannelProduct 는 옛 이름으로 남아, 나중에 사유를 넣고
-        // 저장할 때 서버가 계산하는 before 가 이미 어긋나 있게 된다.
-        if (!snapGated) {
+        if (!snapHeld) {
           const renamed = applyBaseRename(
             {
               id: l.id,
@@ -972,10 +968,10 @@ export function GroupDetailView({ channelProductId }: Props) {
               baseSearchName: derivedBase.baseSearchName,
               baseDisplayName: derivedBase.baseDisplayName,
             },
-            { searchName: snapBase.searchName, displayName: snapBase.displayName }
+            // 서버(CP PATCH)에 보내는 값과 같게 trim 한다 — 로컬 표시가 DB 와 어긋나지 않도록.
+            { searchName: snapBase.searchName.trim(), displayName: snapBase.displayName.trim() }
           )
-          patch.searchName = renamed.searchName
-          patch.displayName = renamed.displayName
+          renamedById.set(l.id, renamed)
         }
         patch.managementName = snapBase.managementName.trim()
           ? (
@@ -1025,20 +1021,25 @@ export function GroupDetailView({ channelProductId }: Props) {
     // 상품명이 이미 새 값이라 §26 동시 변경(multiChange)이 영영 기록되지 않는다.
     const cpBody: Record<string, unknown> = {}
     if (snapBaseDirty) {
-      // 게이트 보류 중이면 상품명만 빼고 나머지 기본 정보는 그대로 저장한다.
-      if (!snapGated) cpBody.baseSearchName = snapBase.searchName.trim() || undefined
-      cpBody.baseDisplayName = snapBase.displayName.trim() || null
+      // 보류 중이면 상품명 2종만 빼고 나머지 기본 정보는 그대로 저장한다.
+      if (!snapHeld) {
+        cpBody.baseSearchName = snapBase.searchName.trim() || undefined
+        cpBody.baseDisplayName = snapBase.displayName.trim() || null
+        // single 구성은 서버가 자식 리스팅 이름까지 같은 트랜잭션에서 바꾼다.
+        // mixed 는 서버가 400 으로 거절하므로 보내지 않는다(이름 전파 대상 아님).
+        if (!isMixed) cpBody.propagateNames = true
+      }
       cpBody.baseManagementName = snapBase.managementName.trim() || null
       cpBody.baseInternalCode = snapBase.internalCode.trim() || null
       cpBody.memo = snapBase.memo.trim() || null
     }
-    if (snapKeywordsDirty && !snapGated) cpBody.keywords = snapKeywords
+    if (snapKeywordsDirty && !snapHeld) cpBody.keywords = snapKeywords
 
     const cpFieldCount = Object.keys(cpBody).length
-    if (changeMeta) Object.assign(cpBody, changeMeta)
 
     let channelProductBaseSaved = false
     let keywordsSaved = false
+    let namesPropagated = false
     if (cpFieldCount > 0) {
       const label =
         snapBaseDirty && snapKeywordsDirty
@@ -1057,7 +1058,8 @@ export function GroupDetailView({ channelProductId }: Props) {
           failures.push(`${label}: ${err?.message ?? '저장 실패'}`)
         } else {
           channelProductBaseSaved = snapBaseDirty
-          keywordsSaved = snapKeywordsDirty && !snapGated
+          keywordsSaved = snapKeywordsDirty && !snapHeld
+          namesPropagated = cpBody.propagateNames === true
         }
       } catch (err) {
         failures.push(`${label}: ${err instanceof Error ? err.message : '저장 실패'}`)
@@ -1065,7 +1067,12 @@ export function GroupDetailView({ channelProductId }: Props) {
     }
 
     // 로컬 data 업데이트 — load() 대신 저장된 값만 반영해 in-flight 편집 보호
+    // 표(rows)는 data 와 별도 state 라 전파된 이름을 따로 반영한다.
+    if (namesPropagated && renamedById.size > 0) {
+      setRows((prev) => prev.map((r) => ({ ...r, ...renamedById.get(r.id) })))
+    }
     if (patchedById.size > 0 || keywordsSaved || channelProductBaseSaved) {
+      const renamedNow = namesPropagated ? renamedById : new Map()
       setData((prev) => {
         if (!prev) return prev
         // channel-product 레벨 업데이트 (keywords + mixed 모드 base 필드)
@@ -1076,14 +1083,14 @@ export function GroupDetailView({ channelProductId }: Props) {
         if (channelProductBaseSaved) {
           nextChannelProduct = {
             ...nextChannelProduct,
-            // 보류한 상품명은 로컬에도 반영하지 않는다 — 여기서 옮기면 게이트 기준선이
-            // 새 값으로 올라가 사유를 받지 못한 채 게이트가 사라진다.
-            ...(snapGated
+            // 보류한 상품명은 로컬에도 반영하지 않는다 — 여기서 옮기면 보류 기준선이
+            // 새 값으로 올라가 저장되지 않은 채 보류가 풀린다.
+            ...(snapHeld
               ? {}
               : {
                   baseSearchName: snapBase.searchName.trim() || nextChannelProduct.baseSearchName,
+                  baseDisplayName: snapBase.displayName.trim() || null,
                 }),
-            baseDisplayName: snapBase.displayName.trim() || null,
             baseManagementName: snapBase.managementName.trim() || null,
             baseInternalCode: snapBase.internalCode.trim() || null,
             memo: snapBase.memo.trim() || null,
@@ -1093,10 +1100,12 @@ export function GroupDetailView({ channelProductId }: Props) {
           ...prev,
           channelProduct: nextChannelProduct,
           listings: prev.listings.map((l) => {
+            const renamed = renamedNow.get(l.id)
             const p = patchedById.get(l.id)
-            if (!p) return l
+            if (!p) return renamed ? { ...l, ...renamed } : l
             return {
               ...l,
+              ...renamed,
               ...(p.searchName !== undefined ? { searchName: p.searchName } : {}),
               ...(p.displayName !== undefined ? { displayName: p.displayName } : {}),
               ...(p.managementName !== undefined ? { managementName: p.managementName } : {}),
@@ -1160,14 +1169,18 @@ export function GroupDetailView({ channelProductId }: Props) {
 
   runAutoSaveRef.current = runAutoSave
 
-  /** 게이트 확인 → 사유를 실어 한 번 더 저장한다. 대기 중인 자동 저장은 먼저 정리한다. */
-  async function confirmGatedSave(meta: KeywordChangeMeta) {
+  /** 저장 버튼 — 보류 중인 상품명·검색어까지 저장한다. 대기 중인 자동 저장은 먼저 정리한다. */
+  async function explicitSave() {
+    if (baseDirty && !baseSearchName.trim()) {
+      toast.error('상품명(검색용)을 입력해 주세요')
+      return
+    }
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current)
       autoSaveTimerRef.current = null
     }
     if (activeSavePromiseRef.current) await activeSavePromiseRef.current
-    const promise = doSave(meta)
+    const promise = doSave(true)
     activeSavePromiseRef.current = promise.then(() => undefined)
     let ok = false
     try {
@@ -1175,10 +1188,7 @@ export function GroupDetailView({ channelProductId }: Props) {
     } finally {
       activeSavePromiseRef.current = null
     }
-    if (ok) {
-      setGateOpen(false)
-      setHistoryKey((k) => k + 1)
-    }
+    if (ok) setHistoryKey((k) => k + 1)
   }
 
   function scheduleAutoSave(delay: number) {
@@ -1273,12 +1283,12 @@ export function GroupDetailView({ channelProductId }: Props) {
               void runAutoSave()
             }}
           />
-          {/* 게이트 보류 중에는 상품명·검색어가 자동 저장되지 않는다.
-              저장 칩만으로는 "곧 저장됨"과 구분되지 않으므로 버튼이 직접 알린다. */}
-          {gateNeeded && (
+          {/* 보류 중에는 상품명·검색어가 자동 저장되지 않는다.
+              저장 칩만으로는 "곧 저장됨"과 구분되지 않으므로 직접 알린다. */}
+          {namePending && (
             <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/50 bg-amber-50 px-2 py-1 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
               <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-              상품명·검색어는 사유 입력 후 저장됩니다
+              상품명·검색어는 저장 버튼을 눌러야 반영됩니다
             </span>
           )}
           <Button
@@ -1291,16 +1301,16 @@ export function GroupDetailView({ channelProductId }: Props) {
                 clearTimeout(autoRetryTimerRef.current)
                 autoRetryTimerRef.current = null
               }
-              if (gateNeeded) {
-                setGateOpen(true)
+              if (namePending) {
+                await explicitSave()
                 return
               }
               await flushPendingSave()
             }}
-            disabled={(!totalDirty && !gateNeeded) || saving || mutating || groupActionLoading}
+            disabled={(!totalDirty && !namePending) || saving || mutating || groupActionLoading}
           >
             {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-            {gateNeeded ? '변경 사유 입력' : '저장'}
+            저장
           </Button>
           <Button
             variant="outline"
@@ -1378,6 +1388,13 @@ export function GroupDetailView({ channelProductId }: Props) {
         onMemoChange={(v) => handleBaseChange('memo', v)}
         disabled={mutating}
         namesReadOnly={readOnly}
+        searchNameNotice={
+          <NameChangeCooldownNotice
+            channelProductId={channelProductId}
+            savedName={data.channelProduct.baseSearchName}
+            editing={keywordChange.nameChanged}
+          />
+        }
         aiNameButton={
           readOnly
             ? undefined
@@ -1479,11 +1496,11 @@ export function GroupDetailView({ channelProductId }: Props) {
                 await flushPendingSave()
                 setAddBuilderOpen(true)
               }}
-              // 게이트 보류 중 차단. 두 버튼은 편집 중인 baseSearchName 으로 리스팅을 새로
-              // 만들기 때문에, 열어두면 사유 없이 새 이름이 리스팅에 실려 나가고 ChannelProduct
-              // 만 옛 이름으로 남는다(= 게이트 우회).
-              disabled={mutating || gateNeeded}
-              title={gateNeeded ? GATE_BLOCK_HINT : undefined}
+              // 보류 중 차단. 두 버튼은 편집 중인 baseSearchName 으로 리스팅을 새로 만들기
+              // 때문에, 열어두면 새 이름이 리스팅에만 실려 나가고 ChannelProduct 는 옛 이름으로
+              // 남는다(이력도 빠진다).
+              disabled={mutating || namePending}
+              title={namePending ? PENDING_BLOCK_HINT : undefined}
             >
               <Plus className="mr-1 h-4 w-4" />
               옵션 추가
@@ -1495,8 +1512,8 @@ export function GroupDetailView({ channelProductId }: Props) {
                 await flushPendingSave()
                 setResetConfirmOpen(true)
               }}
-              disabled={mutating || gateNeeded}
-              title={gateNeeded ? GATE_BLOCK_HINT : undefined}
+              disabled={mutating || namePending}
+              title={namePending ? PENDING_BLOCK_HINT : undefined}
             >
               <Layers className="mr-1 h-4 w-4" />
               구성 다시 설정
@@ -1542,29 +1559,13 @@ export function GroupDetailView({ channelProductId }: Props) {
         </CardContent>
       </Card>
 
-      {/* 변경 이력 (§26).
-          채널 상품 저장은 서버가 listingId 없이 productId 로만 이력을 남기므로 상품 기준으로 읽는다.
-          혼합 구성은 서버가 귀속 상품을 특정하지 못해(productId=null) 어떤 키로도 조회되지 않는다. */}
+      {/* 변경 이력 (§26). channelProductId 로 이 그룹의 이력을 읽는다. 단일 구성은 상품 기준
+          이력(channelProductId 도입 전 채널상품 행 포함)도 함께 보여준다. */}
       <KeywordChangeTimeline
+        channelProductId={channelProductId}
         productId={data.product.kind === 'single' ? data.product.id : null}
         crossChannelNotice={data.product.kind === 'single'}
-        unavailableReason={
-          data.product.kind === 'single'
-            ? null
-            : '혼합 구성 판매채널 상품은 귀속 상품을 특정할 수 없어 이력을 이 화면에서 조회할 수 없습니다. 변경 기록 자체는 정상적으로 저장됩니다.'
-        }
         refreshKey={historyKey}
-      />
-
-      <KeywordChangeDialog
-        open={gateOpen}
-        onOpenChange={setGateOpen}
-        beforeName={data.channelProduct.baseSearchName}
-        afterName={nameToSave}
-        beforeKeywords={data.channelProduct.keywords}
-        afterKeywords={keywordsToSave}
-        saving={saving}
-        onConfirm={confirmGatedSave}
       />
 
       {/* AI 초안 다이얼로그 2종 — useNameDraft 훅 하나를 공유한다(화면 방문당 API 호출 1회).

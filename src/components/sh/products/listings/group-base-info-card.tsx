@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Lock, Sparkles } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -39,6 +39,8 @@ type Props = {
   namesReadOnly?: boolean
   /** AI 상품명 버튼. 연동 채널(namesReadOnly)이면 아예 렌더하지 않는다(부모가 undefined 로 전달). */
   aiNameButton?: { disabled: boolean; tooltip?: string; onClick: () => void }
+  /** 검색용 상품명 입력란 아래 안내(재변경 경고 등) */
+  searchNameNotice?: ReactNode
 }
 
 /**
@@ -63,6 +65,7 @@ export function GroupBaseInfoCard({
   disabled,
   namesReadOnly,
   aiNameButton,
+  searchNameNotice,
 }: Props) {
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
@@ -160,6 +163,7 @@ export function GroupBaseInfoCard({
             rules={rules}
             readOnly={disabled || namesReadOnly}
           />
+          {searchNameNotice}
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">

@@ -20,7 +20,8 @@ type ChangeLog = {
   afterName: string | null
   beforeKeywords: string[]
   afterKeywords: string[]
-  reason: KeywordChangeReason
+  /** 사유 입력 폐지(2026-10) 이전 기록만 값이 있다. */
+  reason: KeywordChangeReason | null
   reasonNote: string | null
   observeMetric: string | null
   multiChange: boolean
@@ -28,15 +29,13 @@ type ChangeLog = {
 }
 
 type Props = {
+  /** 조회 대상 — 주어진 조건들을 OR 로 묶는다. */
   /** 리스팅 단위 이력. listing PATCH 가 남긴 기록이 여기로 묶인다. */
   listingId?: string | null
-  /** 상품 단위 이력. 채널 상품(그룹) PATCH 는 listingId 없이 productId 로만 남는다. */
+  /** 채널상품(그룹) 단위 이력. 그룹 소속 리스팅의 기록도 함께 묶인다. */
+  channelProductId?: string | null
+  /** 상품 단위 이력 — channelProductId 도입 전 채널상품 기록은 이것으로만 찾힌다. */
   productId?: string | null
-  /**
-   * 조회 키를 만들 수 없는 경우의 안내 문구. 예: 혼합 구성 채널 상품은
-   * 서버가 productId 를 특정하지 못해 이력이 어느 키로도 조회되지 않는다.
-   */
-  unavailableReason?: string | null
   /** 저장 후 목록을 다시 불러오기 위한 신호. 값이 바뀔 때마다 재조회한다. */
   refreshKey?: number
   /** 상품 단위 조회는 채널을 가리지 않으므로 그 사실을 함께 알린다. */
@@ -47,8 +46,8 @@ const PAGE_SIZE = 20
 
 export function KeywordChangeTimeline({
   listingId,
+  channelProductId,
   productId,
-  unavailableReason,
   refreshKey = 0,
   crossChannelNotice = false,
 }: Props) {
@@ -58,8 +57,7 @@ export function KeywordChangeTimeline({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const queryKey = listingId ?? productId ?? null
-  const disabled = Boolean(unavailableReason) || !queryKey
+  const disabled = !listingId && !channelProductId && !productId
 
   const load = useCallback(
     async (targetPage: number) => {
@@ -69,7 +67,8 @@ export function KeywordChangeTimeline({
       try {
         const params = new URLSearchParams()
         if (listingId) params.set('listingId', listingId)
-        else if (productId) params.set('productId', productId)
+        if (channelProductId) params.set('channelProductId', channelProductId)
+        if (productId) params.set('productId', productId)
         params.set('page', String(targetPage))
         params.set('pageSize', String(PAGE_SIZE))
         const res = await fetch(`/api/sh/keywords/changes?${params.toString()}`, {
@@ -86,7 +85,7 @@ export function KeywordChangeTimeline({
         setLoading(false)
       }
     },
-    [disabled, listingId, productId]
+    [disabled, listingId, channelProductId, productId]
   )
 
   // refreshKey 가 바뀌면 항상 1페이지부터 다시 읽는다 — 새 기록은 최신순 맨 앞에 붙는다.
@@ -104,16 +103,12 @@ export function KeywordChangeTimeline({
           변경 이력
         </CardTitle>
         <CardDescription>
-          상품명·검색어를 언제 왜 바꿨는지의 기록입니다. 수정·삭제할 수 없습니다.
+          상품명·검색어를 언제 바꿨는지 저장할 때 자동으로 남는 기록입니다. 수정·삭제할 수 없습니다.
           {crossChannelNotice && ' 이 상품의 다른 채널 기록도 함께 표시됩니다.'}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {unavailableReason ? (
-          <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
-            {unavailableReason}
-          </p>
-        ) : error ? (
+        {error ? (
           <div className="space-y-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-4 text-center">
             <p className="text-sm text-destructive">{error}</p>
             <Button variant="outline" size="sm" onClick={() => void load(page)}>
@@ -185,7 +180,9 @@ function TimelineRow({ row }: { row: ChangeLog }) {
         >
           {formatDateTime(row.createdAt)}
         </time>
-        <Badge variant="secondary">{KEYWORD_CHANGE_REASON_LABELS[row.reason]}</Badge>
+        {row.reason && (
+          <Badge variant="secondary">{KEYWORD_CHANGE_REASON_LABELS[row.reason]}</Badge>
+        )}
         {row.multiChange && (
           <Badge
             variant="outline"
