@@ -10,16 +10,19 @@ const LABEL: Record<Role, string> = {
 export function RoleRequired({
   role,
   min,
+  what = '이 설정',
   children,
 }: {
   role: Role
   min: Role
+  /** 안내에 쓸 대상 이름(예: 'Slack·쿠팡 API·에이전트 연동') */
+  what?: string
   children: React.ReactNode
 }) {
   if (hasRole(role, min)) return <>{children}</>
   return (
     <p className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-      이 설정은 {LABEL[min]}만 볼 수 있습니다. 필요하면 Space 소유자에게 요청하세요.
+      {what}은 {LABEL[min]}만 볼 수 있습니다. 필요하면 Space 소유자에게 요청하세요.
     </p>
   )
 }

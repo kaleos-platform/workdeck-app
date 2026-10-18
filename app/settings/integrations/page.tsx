@@ -33,7 +33,7 @@ export default async function IntegrationsSettingsPage({
 
       <div className="grid gap-6">
         {/* Slack·쿠팡 API·에이전트는 ADMIN 이상, 내 MCP 연결 가이드는 누구나 */}
-        <RoleRequired role={role} min="ADMIN">
+        <RoleRequired role={role} min="ADMIN" what="Slack·쿠팡 API·에이전트 연동">
           <SlackConnectCard slackStatus={slack ?? null} />
           <CoupangApiCard />
           <AgentToggleCard />

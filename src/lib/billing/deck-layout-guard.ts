@@ -33,6 +33,6 @@ export async function requireDeckAccess(
     spaceName: resolved.space.name,
     readOnlyNotice: canWriteDeck(deckAppId, resolved.role)
       ? undefined
-      : '조회 전용입니다 — 이 업무의 변경은 ADMIN 이상만 할 수 있습니다.',
+      : '조회 전용입니다 — 이 업무의 변경은 권한이 있는 구성원(ADMIN 이상)만 할 수 있습니다.',
   }
 }
