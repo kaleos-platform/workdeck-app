@@ -36,6 +36,21 @@ jest.mock('@/lib/agent/tools', () => {
         mode: 'write',
         execute: writeExec,
       },
+      {
+        name: 'ads_list_campaigns',
+        description: 'list',
+        inputSchema: { search: jest.requireActual<typeof import('zod')>('zod').z.string().max(5) },
+        mode: 'read',
+        execute: jest.fn(),
+      },
+      {
+        name: 'slack_post',
+        description: 'slack',
+        inputSchema: {},
+        mode: 'write',
+        scope: 'slack:write',
+        execute: jest.fn(),
+      },
     ],
   }
 })
@@ -94,6 +109,18 @@ describe('runAgentLoop', () => {
     expect(toolResultMsg.content[0].type).toBe('tool_result')
   })
 
+  test('내장 에이전트에는 scope 밖 도구(slack_post)를 노출하지 않는다', async () => {
+    mockCreate.mockResolvedValueOnce({
+      stop_reason: 'end_turn',
+      content: [{ type: 'text', text: 'ok' }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+    })
+
+    await runAgentLoop(baseArgs)
+    const names = (mockCreate.mock.calls[0][0].tools as Array<{ name: string }>).map((t) => t.name)
+    expect(names).toEqual(['ads_get_kpi', 'ads_trigger_analysis', 'ads_list_campaigns'])
+  })
+
   test('8 iteration 초과 → 폴백 텍스트', async () => {
     // 매번 tool_use만 반환해 종료되지 않게 한다.
     mockCreate.mockResolvedValue({
@@ -128,6 +155,33 @@ describe('runAgentLoop', () => {
     expect(resultContent).toContain('pending_approval')
     expect(resultContent).toContain('approvalUrl')
     expect(r.text).toBe('승인 대기 등록됨')
+  })
+
+  test('스키마에 맞지 않는 입력(최대 길이 초과)은 실행하지 않고 is_error로 돌려준다', async () => {
+    mockCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tv',
+            name: 'ads_list_campaigns',
+            input: { search: 'x'.repeat(6) },
+          },
+        ],
+        usage: { input_tokens: 10, output_tokens: 5 },
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: '다시 시도' }],
+        usage: { input_tokens: 12, output_tokens: 6 },
+      })
+
+    await runAgentLoop(baseArgs)
+    expect(execOf('ads_list_campaigns')).not.toHaveBeenCalled()
+    const result = findToolResultMsg(mockCreate.mock.calls[1][0].messages).content[0]
+    expect(result.is_error).toBe(true)
+    expect(result.content).toContain('입력값이 올바르지 않습니다')
   })
 
   test('알 수 없는 tool → is_error tool_result', async () => {

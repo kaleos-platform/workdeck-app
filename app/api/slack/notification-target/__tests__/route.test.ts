@@ -10,6 +10,7 @@ import { GET } from '../route'
 const authenticateWorker = jest.fn()
 const resolveSlackNotificationTarget = jest.fn()
 const resolveDeckNotifyEnabled = jest.fn()
+const resolveNotificationSpaceId = jest.fn()
 
 jest.mock('@/lib/worker-auth', () => {
   const actual = jest.requireActual('@/lib/worker-auth')
@@ -21,6 +22,7 @@ jest.mock('@/lib/worker-auth', () => {
 jest.mock('@/lib/slack/notification-target', () => ({
   resolveSlackNotificationTarget: (...a: unknown[]) => resolveSlackNotificationTarget(...a),
   resolveDeckNotifyEnabled: (...a: unknown[]) => resolveDeckNotifyEnabled(...a),
+  resolveNotificationSpaceId: (...a: unknown[]) => resolveNotificationSpaceId(...a),
 }))
 
 // 라우트 핸들러 반환 타입이 추론상 `Response | undefined`라 응답을 좁혀 반환한다.
@@ -75,5 +77,24 @@ describe('GET /api/slack/notification-target', () => {
 
     expect(body).toEqual({ target: { channelId: 'C1' }, notifyEnabled: true })
     expect(resolveDeckNotifyEnabled).toHaveBeenCalledWith('ws1', 'coupang-ads', 'collection_done')
+  })
+
+  it('Space 토큰인데 알림 Space가 토큰 Space와 다르면 403, 채널을 조회하지 않는다', async () => {
+    authenticateWorker.mockResolvedValue({
+      scope: { kind: 'space', tokenId: 't', spaceId: 'sp-a', workspaceId: 'ws-1' },
+    })
+    resolveNotificationSpaceId.mockResolvedValue('sp-b')
+    const res = await callGet('?workspaceId=ws-1')
+    expect(res.status).toBe(403)
+    expect(resolveSlackNotificationTarget).not.toHaveBeenCalled()
+  })
+
+  it('Space 토큰과 알림 Space가 같으면 통과', async () => {
+    authenticateWorker.mockResolvedValue({
+      scope: { kind: 'space', tokenId: 't', spaceId: 'sp-a', workspaceId: 'ws-1' },
+    })
+    resolveNotificationSpaceId.mockResolvedValue('sp-a')
+    const res = await callGet('?workspaceId=ws-1')
+    expect(res.status).toBe(200)
   })
 })

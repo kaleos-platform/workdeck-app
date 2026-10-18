@@ -10,6 +10,7 @@ import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import {
   resolveSlackNotificationTarget,
   resolveDeckNotifyEnabled,
+  resolveNotificationSpaceId,
 } from '@/lib/slack/notification-target'
 
 export const runtime = 'nodejs'
@@ -22,6 +23,13 @@ export async function GET(req: NextRequest) {
   if (!workspaceId) return errorResponse('workspaceId는 필수입니다', 400)
   const denied = assertWorkerOwns(auth.scope, { workspaceId })
   if (denied) return denied
+  // Space 토큰이면 알림 Space(Workspace.spaceId 우선)도 토큰 Space와 같아야 한다 — 레거시 키로
+  // 워크스페이스와 Space 축이 어긋난 데이터에서 다른 Space의 채널·bot 토큰을 받지 못하게.
+  if (auth.scope.kind === 'space') {
+    const notifySpaceId = await resolveNotificationSpaceId(workspaceId)
+    if (notifySpaceId && notifySpaceId !== auth.scope.spaceId)
+      return errorResponse('다른 공간의 자원에 접근할 수 없습니다', 403)
+  }
 
   // deckKey가 주어지면 해당 Deck의 알림 토글 상태를 함께 반환한다(미지정이면 항상 true).
   // eventKey까지 주어지면 이벤트 단위 토글도 반영한다.
