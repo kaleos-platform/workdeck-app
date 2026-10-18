@@ -47,7 +47,11 @@ jest.mock('../block-edit-overlay', () => ({
     ) : null,
 }))
 
-function Form() {
+function Form({
+  appliedTemplate = null,
+}: {
+  appliedTemplate?: { id: string | null; name: string; at: string | null } | null
+}) {
   const [contents, setContents] = useState<WizardContentData[]>([
     { id: 'text', contentType: 'text', title: null, data: null, imagePath: null, sortOrder: 0 },
   ])
@@ -58,7 +62,7 @@ function Form() {
       positions={[]}
       spacePositions={[]}
       onPositionsChange={() => {}}
-      appliedTemplate={null}
+      appliedTemplate={appliedTemplate}
       onChange={setContents}
     />
   )
@@ -190,3 +194,92 @@ it('이미지 업로드 응답을 기다린 후 편집기를 닫는다', async (
   })
   await waitFor(() => expect(screen.queryByTestId('text-editor')).not.toBeInTheDocument())
 })
+
+it.each(['sample', 'missing', 'network'])(
+  '%s 템플릿은 덮어쓰기 없이 새 템플릿으로 저장한다',
+  async (kind) => {
+    global.fetch = jest.fn().mockImplementation(async (_url, options) => {
+      if (options?.method === 'POST')
+        return { ok: true, json: async () => ({ template: { id: 'new-template' } }) }
+      if (kind === 'network') throw Error('network')
+      return {
+        ok: kind !== 'missing',
+        json: async () => ({ templates: [{ id: 'applied', isSample: true }] }),
+      }
+    })
+    render(<Form appliedTemplate={{ id: 'applied', name: 'QA 샘플', at: null }} />)
+    fireEvent.click(screen.getByRole('button', { name: '템플릿으로 저장' }))
+    await screen.findByRole('dialog', { name: '템플릿으로 저장' })
+    expect(screen.queryByRole('radio', { name: /기존 템플릿 덮어쓰기/ })).not.toBeInTheDocument()
+    expect(
+      screen.getByText(
+        kind === 'sample'
+          ? '샘플 템플릿은 읽기 전용입니다. 새 템플릿으로 저장해 사용하세요.'
+          : '기존 템플릿을 확인할 수 없습니다. 현재 공고를 새 템플릿으로 저장할 수 있습니다.'
+      )
+    ).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('템플릿 이름'), { target: { value: 'QA 새 템플릿' } })
+    fireEvent.click(screen.getByRole('button', { name: /^저장$/ }))
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/hiring-posts/templates',
+        expect.objectContaining({ method: 'POST' })
+      )
+    )
+    const request = (fetch as jest.Mock).mock.calls.find(
+      ([, options]) => options?.method === 'POST'
+    )
+    expect(JSON.parse(request[1].body)).toEqual({ name: 'QA 새 템플릿', postingId: 'qa' })
+  }
+)
+it('현재 고객 소유 템플릿은 확인 후 덮어쓰기를 유지한다', async () => {
+  global.fetch = jest
+    .fn()
+    .mockImplementation(async (_url, options) =>
+      options?.method === 'POST'
+        ? { ok: true, json: async () => ({ template: { id: 'applied' } }) }
+        : { ok: true, json: async () => ({ templates: [{ id: 'applied', isSample: false }] }) }
+    )
+  render(<Form appliedTemplate={{ id: 'applied', name: 'QA 소유 템플릿', at: null }} />)
+  fireEvent.click(screen.getByRole('button', { name: '템플릿으로 저장' }))
+  expect(await screen.findByRole('radio', { name: /기존 템플릿 덮어쓰기/ })).toBeChecked()
+  await waitFor(() =>
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/hiring-posts/templates',
+      expect.objectContaining({ cache: 'no-store' })
+    )
+  )
+  fireEvent.click(screen.getByRole('button', { name: /^저장$/ }))
+  await waitFor(() =>
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/hiring-posts/templates',
+      expect.objectContaining({ method: 'POST' })
+    )
+  )
+  const request = (fetch as jest.Mock).mock.calls.find(([, options]) => options?.method === 'POST')
+  expect(JSON.parse(request[1].body)).toMatchObject({ templateId: 'applied' })
+})
+
+it('템플릿 조회가 응답하지 않아도 5초 후 새 저장을 제공한다', async () => {
+  global.fetch = jest.fn(
+    (_url, options) =>
+      new Promise((_resolve, reject) => {
+        options?.signal?.addEventListener('abort', () => reject(new Error('timeout')), {
+          once: true,
+        })
+      })
+  ) as jest.Mock
+  render(<Form appliedTemplate={{ id: 'applied', name: 'QA 지연 템플릿', at: null }} />)
+  fireEvent.click(screen.getByRole('button', { name: '템플릿으로 저장' }))
+  expect(fetch).toHaveBeenCalledWith(
+    '/api/hiring-posts/templates',
+    expect.objectContaining({ signal: expect.any(AbortSignal), cache: 'no-store' })
+  )
+  await screen.findByText(
+    '기존 템플릿을 확인할 수 없습니다. 현재 공고를 새 템플릿으로 저장할 수 있습니다.',
+    {},
+    { timeout: 7000 }
+  )
+  expect(screen.queryByRole('radio', { name: /기존 템플릿 덮어쓰기/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /^저장$/ })).toBeEnabled()
+}, 10000)

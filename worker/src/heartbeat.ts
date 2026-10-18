@@ -6,35 +6,35 @@
 
 const BASE_URL = process.env.WORKDECK_API_URL || 'http://localhost:3000'
 const API_KEY = process.env.WORKER_API_KEY || ''
-const SERVICE = 'inventory-collector'
 export const HEARTBEAT_INTERVAL_MS = 120_000 // 2분
 
-export function startWorkerHeartbeat() {
+// service 별로 따로 감시된다(cron/inventory-stale-check 의 WORKER_SERVICES).
+export function startWorkerHeartbeat(service = 'inventory-collector', baseUrl = BASE_URL) {
   if (!API_KEY) {
     console.warn('[heartbeat] WORKER_API_KEY 미설정 — heartbeat 비활성화')
     return
   }
 
   // 즉시 1회 발송
-  void sendHeartbeat()
+  void sendHeartbeat(service, baseUrl)
 
   setInterval(() => {
-    void sendHeartbeat()
+    void sendHeartbeat(service, baseUrl)
   }, HEARTBEAT_INTERVAL_MS)
 
-  console.log(`[heartbeat] 시작 (service=${SERVICE}, ${HEARTBEAT_INTERVAL_MS / 1000}초 간격)`)
+  console.log(`[heartbeat] 시작 (service=${service}, ${HEARTBEAT_INTERVAL_MS / 1000}초 간격)`)
 }
 
-async function sendHeartbeat() {
+async function sendHeartbeat(service: string, baseUrl: string) {
   try {
-    const res = await fetch(`${BASE_URL}/api/worker/heartbeat`, {
+    const res = await fetch(`${baseUrl}/api/worker/heartbeat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-worker-api-key': API_KEY,
       },
       body: JSON.stringify({
-        service: SERVICE,
+        service,
         metadata: {
           pid: process.pid,
           nodeVersion: process.version,
