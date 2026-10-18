@@ -13,7 +13,7 @@ import {
 } from '@/lib/sh/listing-calc'
 import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
-import { keywordListSchema } from '@/lib/sh/schemas'
+import { keywordListSchema, pageUrlSchema } from '@/lib/sh/schemas'
 import { absorbKeywords } from '@/lib/sh/keyword-absorb'
 import {
   applyBaseRename,
@@ -34,6 +34,8 @@ const patchSchema = z.object({
   baseManagementName: z.string().max(400).nullable().optional(),
   baseInternalCode: z.string().max(100).nullable().optional(),
   memo: z.string().max(1000).nullable().optional(),
+  // 상품 페이지 URL — 이름·검색어가 아니므로 변경 이력 대상이 아니다.
+  pageUrl: pageUrlSchema,
   keywords: keywordListSchema.optional(),
   // true면 baseSearchName/baseDisplayName 변경을 자식 리스팅에도 전파한다.
   // 요청 본문 전용 필드 — ChannelProduct 컬럼이 아니므로 update data 로 흘려보내면 안 된다(아래 구조분해).
@@ -272,6 +274,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       baseManagementName: cp.baseManagementName,
       baseInternalCode: cp.baseInternalCode,
       memo: cp.memo,
+      pageUrl: cp.pageUrl,
       keywords: Array.isArray(cp.keywords) ? (cp.keywords as string[]) : [],
     },
     product,
@@ -433,6 +436,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           baseManagementName: true,
           baseInternalCode: true,
           memo: true,
+          pageUrl: true,
           keywords: true,
           updatedAt: true,
         },

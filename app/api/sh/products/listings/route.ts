@@ -285,6 +285,7 @@ export async function POST(req: NextRequest) {
         channelStock: input.channelStock ?? null,
         status: input.status,
         memo: input.memo ?? null,
+        pageUrl: input.pageUrl ?? null,
       },
     })
     await tx.productListingItem.createMany({

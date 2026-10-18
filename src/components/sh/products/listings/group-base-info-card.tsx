@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, type ReactNode } from 'react'
-import { Lock, Sparkles } from 'lucide-react'
+import { ExternalLink, Lock, Sparkles } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { rulesForNameField, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
+import { normalizeHttpUrl } from '@/lib/sh/product-page-url'
 
 import { NameCounter } from './name-counter'
 import { NameValidationPanel } from './name-validation-panel'
@@ -27,12 +28,14 @@ type Props = {
   baseManagementName: string
   baseInternalCode: string
   memo: string
+  pageUrl: string
   inconsistentBases: string[]
   onBaseSearchNameChange: (v: string) => void
   onBaseDisplayNameChange: (v: string) => void
   onBaseManagementNameChange: (v: string) => void
   onBaseInternalCodeChange: (v: string) => void
   onMemoChange: (v: string) => void
+  onPageUrlChange: (v: string) => void
   disabled?: boolean
   /** 연동 채널(externalSource != null)이면 true — 상품명(검색용·노출용) 입력·검증 패널·
    * AI 상품명 버튼을 잠근다. `disabled`(옵션 CRUD 중)와는 뜻이 다르다 — 섞지 않는다. */
@@ -56,18 +59,21 @@ export function GroupBaseInfoCard({
   baseManagementName,
   baseInternalCode,
   memo,
+  pageUrl,
   inconsistentBases,
   onBaseSearchNameChange,
   onBaseDisplayNameChange,
   onBaseManagementNameChange,
   onBaseInternalCodeChange,
   onMemoChange,
+  onPageUrlChange,
   disabled,
   namesReadOnly,
   aiNameButton,
   searchNameNotice,
 }: Props) {
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
+  const pageUrlInvalid = pageUrl.trim() !== '' && !normalizeHttpUrl(pageUrl)
   const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
 
   return (
@@ -202,6 +208,37 @@ export function GroupBaseInfoCard({
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="group-page-url">상품 페이지 URL</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="group-page-url"
+              value={pageUrl}
+              onChange={(e) => onPageUrlChange(e.target.value)}
+              placeholder="https://… — 판매채널에 올린 실제 상품 페이지 주소"
+              maxLength={2000}
+              disabled={disabled}
+              aria-invalid={pageUrlInvalid}
+            />
+            {normalizeHttpUrl(pageUrl) && (
+              <Button type="button" variant="outline" size="icon" asChild>
+                <a
+                  href={normalizeHttpUrl(pageUrl)!.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="상품 페이지 열기"
+                >
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                </a>
+              </Button>
+            )}
+          </div>
+          {pageUrlInvalid && (
+            <p className="text-xs text-destructive">
+              https:// 로 시작하는 주소를 입력하세요 — 고칠 때까지 이 값만 저장되지 않습니다.
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="group-memo">메모</Label>

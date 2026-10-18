@@ -54,6 +54,7 @@ export type ChannelMinAggregateOutputType = {
   isActive: boolean | null
   useSimulation: boolean | null
   adminUrl: string | null
+  storeUrl: string | null
   freeShipping: boolean | null
   freeShippingThreshold: runtime.Decimal | null
   usesMarketingBudget: boolean | null
@@ -84,6 +85,7 @@ export type ChannelMaxAggregateOutputType = {
   isActive: boolean | null
   useSimulation: boolean | null
   adminUrl: string | null
+  storeUrl: string | null
   freeShipping: boolean | null
   freeShippingThreshold: runtime.Decimal | null
   usesMarketingBudget: boolean | null
@@ -114,6 +116,7 @@ export type ChannelCountAggregateOutputType = {
   isActive: number
   useSimulation: number
   adminUrl: number
+  storeUrl: number
   freeShipping: number
   freeShippingThreshold: number
   usesMarketingBudget: number
@@ -164,6 +167,7 @@ export type ChannelMinAggregateInputType = {
   isActive?: true
   useSimulation?: true
   adminUrl?: true
+  storeUrl?: true
   freeShipping?: true
   freeShippingThreshold?: true
   usesMarketingBudget?: true
@@ -194,6 +198,7 @@ export type ChannelMaxAggregateInputType = {
   isActive?: true
   useSimulation?: true
   adminUrl?: true
+  storeUrl?: true
   freeShipping?: true
   freeShippingThreshold?: true
   usesMarketingBudget?: true
@@ -224,6 +229,7 @@ export type ChannelCountAggregateInputType = {
   isActive?: true
   useSimulation?: true
   adminUrl?: true
+  storeUrl?: true
   freeShipping?: true
   freeShippingThreshold?: true
   usesMarketingBudget?: true
@@ -341,6 +347,7 @@ export type ChannelGroupByOutputType = {
   isActive: boolean
   useSimulation: boolean
   adminUrl: string | null
+  storeUrl: string | null
   freeShipping: boolean
   freeShippingThreshold: runtime.Decimal | null
   usesMarketingBudget: boolean
@@ -394,6 +401,7 @@ export type ChannelWhereInput = {
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
+  storeUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
   freeShipping?: Prisma.BoolFilter<"Channel"> | boolean
   freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
@@ -438,6 +446,7 @@ export type ChannelOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  storeUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
   freeShippingThreshold?: Prisma.SortOrderInput | Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
@@ -487,6 +496,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
+  storeUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
   freeShipping?: Prisma.BoolFilter<"Channel"> | boolean
   freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
@@ -531,6 +541,7 @@ export type ChannelOrderByWithAggregationInput = {
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  storeUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
   freeShippingThreshold?: Prisma.SortOrderInput | Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
@@ -569,6 +580,7 @@ export type ChannelScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
+  storeUrl?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
   freeShipping?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   freeShippingThreshold?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
@@ -596,6 +608,7 @@ export type ChannelCreateInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -640,6 +653,7 @@ export type ChannelUncheckedCreateInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -678,6 +692,7 @@ export type ChannelUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -722,6 +737,7 @@ export type ChannelUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -763,6 +779,7 @@ export type ChannelCreateManyInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -790,6 +807,7 @@ export type ChannelUpdateManyMutationInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -820,6 +838,7 @@ export type ChannelUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -880,6 +899,7 @@ export type ChannelCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
+  storeUrl?: Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
   freeShippingThreshold?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
@@ -919,6 +939,7 @@ export type ChannelMaxOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
+  storeUrl?: Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
   freeShippingThreshold?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
@@ -949,6 +970,7 @@ export type ChannelMinOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   useSimulation?: Prisma.SortOrder
   adminUrl?: Prisma.SortOrder
+  storeUrl?: Prisma.SortOrder
   freeShipping?: Prisma.SortOrder
   freeShippingThreshold?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
@@ -1279,6 +1301,7 @@ export type ChannelCreateWithoutSpaceInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1321,6 +1344,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1391,6 +1415,7 @@ export type ChannelScalarWhereInput = {
   isActive?: Prisma.BoolFilter<"Channel"> | boolean
   useSimulation?: Prisma.BoolFilter<"Channel"> | boolean
   adminUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
+  storeUrl?: Prisma.StringNullableFilter<"Channel"> | string | null
   freeShipping?: Prisma.BoolFilter<"Channel"> | boolean
   freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
@@ -1418,6 +1443,7 @@ export type ChannelCreateWithoutInvMovementsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1461,6 +1487,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1514,6 +1541,7 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1557,6 +1585,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1594,6 +1623,7 @@ export type ChannelCreateWithoutDelOrdersInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1637,6 +1667,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1690,6 +1721,7 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1733,6 +1765,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1770,6 +1803,7 @@ export type ChannelCreateWithoutProductAliasesInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1813,6 +1847,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1866,6 +1901,7 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1909,6 +1945,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1946,6 +1983,7 @@ export type ChannelCreateWithoutColumnMappingPresetsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -1989,6 +2027,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2042,6 +2081,7 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2085,6 +2125,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2122,6 +2163,7 @@ export type ChannelCreateWithoutChannelTypeDefInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2164,6 +2206,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2228,6 +2271,7 @@ export type ChannelCreateWithoutFulfillmentChannelsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2271,6 +2315,7 @@ export type ChannelUncheckedCreateWithoutFulfillmentChannelsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2313,6 +2358,7 @@ export type ChannelCreateWithoutRepresentativeChannelInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2355,6 +2401,7 @@ export type ChannelUncheckedCreateWithoutRepresentativeChannelInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2414,6 +2461,7 @@ export type ChannelUpdateWithoutFulfillmentChannelsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2457,6 +2505,7 @@ export type ChannelUncheckedUpdateWithoutFulfillmentChannelsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2510,6 +2559,7 @@ export type ChannelCreateWithoutFeeRatesInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2553,6 +2603,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2606,6 +2657,7 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2649,6 +2701,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2686,6 +2739,7 @@ export type ChannelCreateWithoutPricingScenariosInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2729,6 +2783,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2782,6 +2837,7 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2825,6 +2881,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2862,6 +2919,7 @@ export type ChannelCreateWithoutPricingScenarioChannelsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2905,6 +2963,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -2958,6 +3017,7 @@ export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3001,6 +3061,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3038,6 +3099,7 @@ export type ChannelCreateWithoutProductListingsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3081,6 +3143,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3134,6 +3197,7 @@ export type ChannelUpdateWithoutProductListingsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3177,6 +3241,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3214,6 +3279,7 @@ export type ChannelCreateWithoutChannelProductsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3257,6 +3323,7 @@ export type ChannelUncheckedCreateWithoutChannelProductsInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3310,6 +3377,7 @@ export type ChannelUpdateWithoutChannelProductsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3353,6 +3421,7 @@ export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3390,6 +3459,7 @@ export type ChannelCreateWithoutKeywordRuleInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3433,6 +3503,7 @@ export type ChannelUncheckedCreateWithoutKeywordRuleInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3486,6 +3557,7 @@ export type ChannelUpdateWithoutKeywordRuleInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3529,6 +3601,7 @@ export type ChannelUncheckedUpdateWithoutKeywordRuleInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3568,6 +3641,7 @@ export type ChannelCreateManySpaceInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3595,6 +3669,7 @@ export type ChannelUpdateWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3637,6 +3712,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3677,6 +3753,7 @@ export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3706,6 +3783,7 @@ export type ChannelCreateManyChannelTypeDefInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3733,6 +3811,7 @@ export type ChannelUpdateWithoutChannelTypeDefInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3775,6 +3854,7 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3815,6 +3895,7 @@ export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3844,6 +3925,7 @@ export type ChannelCreateManyRepresentativeChannelInput = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: string | null
+  storeUrl?: string | null
   freeShipping?: boolean
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
@@ -3871,6 +3953,7 @@ export type ChannelUpdateWithoutRepresentativeChannelInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3913,6 +3996,7 @@ export type ChannelUncheckedUpdateWithoutRepresentativeChannelInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3953,6 +4037,7 @@ export type ChannelUncheckedUpdateManyWithoutRepresentativeChannelInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4095,6 +4180,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
+  storeUrl?: boolean
   freeShipping?: boolean
   freeShippingThreshold?: boolean
   usesMarketingBudget?: boolean
@@ -4140,6 +4226,7 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
+  storeUrl?: boolean
   freeShipping?: boolean
   freeShippingThreshold?: boolean
   usesMarketingBudget?: boolean
@@ -4173,6 +4260,7 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
+  storeUrl?: boolean
   freeShipping?: boolean
   freeShippingThreshold?: boolean
   usesMarketingBudget?: boolean
@@ -4206,6 +4294,7 @@ export type ChannelSelectScalar = {
   isActive?: boolean
   useSimulation?: boolean
   adminUrl?: boolean
+  storeUrl?: boolean
   freeShipping?: boolean
   freeShippingThreshold?: boolean
   usesMarketingBudget?: boolean
@@ -4226,7 +4315,7 @@ export type ChannelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "representativeChannelId" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "adCostPct" | "shippingFeeType" | "shippingFee" | "shippingFeePct" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "paymentFeeVatIncluded" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "representativeChannelId" | "isActive" | "useSimulation" | "adminUrl" | "storeUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "adCostPct" | "shippingFeeType" | "shippingFee" | "shippingFeePct" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "paymentFeeVatIncluded" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
@@ -4283,6 +4372,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     isActive: boolean
     useSimulation: boolean
     adminUrl: string | null
+    storeUrl: string | null
     freeShipping: boolean
     freeShippingThreshold: runtime.Decimal | null
     usesMarketingBudget: boolean
@@ -4747,6 +4837,7 @@ export interface ChannelFieldRefs {
   readonly isActive: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly useSimulation: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly adminUrl: Prisma.FieldRef<"Channel", 'String'>
+  readonly storeUrl: Prisma.FieldRef<"Channel", 'String'>
   readonly freeShipping: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly freeShippingThreshold: Prisma.FieldRef<"Channel", 'Decimal'>
   readonly usesMarketingBudget: Prisma.FieldRef<"Channel", 'Boolean'>

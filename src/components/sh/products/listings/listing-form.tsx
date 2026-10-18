@@ -87,6 +87,7 @@ export type ListingFormInitial = {
   channelStock: number | null
   status: 'ACTIVE' | 'SUSPENDED'
   memo: string | null
+  pageUrl?: string | null
   items: ItemDraft[]
   availableStock: number
   autoAvailableStock?: number
@@ -109,6 +110,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   const [internalCode, setInternalCode] = useState(initial?.internalCode ?? '')
   const [managementName, setManagementName] = useState(initial?.managementName ?? '')
   const [memo, setMemo] = useState(initial?.memo ?? '')
+  const [pageUrl, setPageUrl] = useState(initial?.pageUrl ?? '')
   const [retailPrice, setRetailPrice] = useState<string>(
     initial?.retailPrice != null ? String(initial.retailPrice) : ''
   )
@@ -303,6 +305,8 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             : managementName.trim() || undefined,
         internalCode: internalCode.trim() || undefined,
         memo: memo.trim() || undefined,
+        // 수정 모드에서는 null 로 비움을 전달, 생성 모드에서는 생략
+        pageUrl: pageUrl.trim() || (mode === 'edit' ? null : undefined),
         retailPrice: retailPrice.trim() === '' ? undefined : Number(retailPrice),
         channelStock: channelStock.trim() === '' ? null : Number(channelStock),
         keywords,
@@ -500,6 +504,17 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               onChange={(e) => setManagementName(e.target.value)}
               placeholder="내부 목록에 표시될 이름. 비우면 검색용 상품명을 사용합니다"
               maxLength={MAX_NAME_LENGTH}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="listing-page-url">상품 페이지 URL</Label>
+            <Input
+              id="listing-page-url"
+              value={pageUrl}
+              onChange={(e) => setPageUrl(e.target.value)}
+              placeholder="https://… — 판매채널에 올린 실제 상품 페이지 주소"
+              maxLength={2000}
             />
           </div>
 

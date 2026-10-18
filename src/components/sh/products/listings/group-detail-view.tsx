@@ -47,6 +47,7 @@ import { computeDiscount, computeEffectiveStatus } from '@/lib/sh/listing-calc'
 import { resolveKeywordRules, withChannelDefaults } from '@/lib/sh/keyword-rules'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
+import { normalizeHttpUrl } from '@/lib/sh/product-page-url'
 import {
   type OptionAttribute,
   applyBaseRename,
@@ -116,6 +117,7 @@ type GroupDetail = {
     baseManagementName: string | null
     baseInternalCode: string | null
     memo: string | null
+    pageUrl?: string | null
     keywords: string[]
   }
   listings: GroupListingFull[]
@@ -150,6 +152,7 @@ export function GroupDetailView({ channelProductId }: Props) {
   const [baseManagementName, setBaseManagementName] = useState('')
   const [baseInternalCode, setBaseInternalCode] = useState('')
   const [memo, setMemo] = useState('')
+  const [pageUrl, setPageUrl] = useState('')
 
   // 옵션 CRUD state
   const [deleteTarget, setDeleteTarget] = useState<{ ids: string[]; label: string } | null>(null)
@@ -181,6 +184,7 @@ export function GroupDetailView({ channelProductId }: Props) {
       const d: GroupDetail = await res.json()
       setData(d)
       setKeywords(d.channelProduct.keywords ?? [])
+      setPageUrl(d.channelProduct.pageUrl ?? '')
       setRows(d.listings)
       setSelected(new Set())
       // single 모드에서만 자동 suffix 추출. mixed는 channel-product 기본값 사용.
@@ -323,6 +327,8 @@ export function GroupDetailView({ channelProductId }: Props) {
 
   const baseDirty = useMemo(() => {
     if (!data) return false
+    // pageUrl 은 파생값이 아니라 CP 저장값과 직접 비교한다(single/mixed 공통).
+    if (pageUrl.trim() !== (data.channelProduct.pageUrl ?? '')) return true
     if (data.product.kind === 'single') {
       // single: derived suffix 기반 비교
       if (!derivedBase) return false
@@ -350,6 +356,7 @@ export function GroupDetailView({ channelProductId }: Props) {
     baseManagementName,
     baseInternalCode,
     memo,
+    pageUrl,
   ])
 
   const keywordsDirty = useMemo(() => {
@@ -520,13 +527,14 @@ export function GroupDetailView({ channelProductId }: Props) {
   }
 
   function handleBaseChange(
-    field: 'searchName' | 'displayName' | 'managementName' | 'internalCode' | 'memo',
+    field: 'searchName' | 'displayName' | 'managementName' | 'internalCode' | 'memo' | 'pageUrl',
     value: string
   ) {
     if (field === 'searchName') setBaseSearchName(value)
     else if (field === 'displayName') setBaseDisplayName(value)
     else if (field === 'managementName') setBaseManagementName(value)
     else if (field === 'internalCode') setBaseInternalCode(value)
+    else if (field === 'pageUrl') setPageUrl(value)
     else setMemo(value)
     scheduleAutoSave(800)
   }
@@ -894,6 +902,7 @@ export function GroupDetailView({ channelProductId }: Props) {
       managementName: baseManagementName,
       internalCode: baseInternalCode,
       memo,
+      pageUrl,
     }
 
     const isMixed = data.product.kind === 'mixed'
@@ -1038,6 +1047,10 @@ export function GroupDetailView({ channelProductId }: Props) {
       cpBody.baseManagementName = snapBase.managementName.trim() || null
       cpBody.baseInternalCode = snapBase.internalCode.trim() || null
       cpBody.memo = snapBase.memo.trim() || null
+      // 형식이 틀린 URL 은 빼고 보낸다 — 서버가 본문 전체를 400 으로 거절해 같은 요청의
+      // 메모·관리명까지 저장되지 않는다. 입력란이 오류를 표시하고 고칠 때까지 dirty 로 남는다.
+      const nextPageUrl = snapBase.pageUrl.trim()
+      if (!nextPageUrl || normalizeHttpUrl(nextPageUrl)) cpBody.pageUrl = nextPageUrl || null
     }
     if (snapKeywordsDirty && !snapHeld) cpBody.keywords = snapKeywords
 
@@ -1100,6 +1113,7 @@ export function GroupDetailView({ channelProductId }: Props) {
             baseManagementName: snapBase.managementName.trim() || null,
             baseInternalCode: snapBase.internalCode.trim() || null,
             memo: snapBase.memo.trim() || null,
+            pageUrl: snapBase.pageUrl.trim() || null,
           }
         }
         return {
@@ -1386,12 +1400,14 @@ export function GroupDetailView({ channelProductId }: Props) {
         baseManagementName={baseManagementName}
         baseInternalCode={baseInternalCode}
         memo={memo}
+        pageUrl={pageUrl}
         inconsistentBases={derivedBase?.inconsistentBases ?? []}
         onBaseSearchNameChange={(v) => handleBaseChange('searchName', v)}
         onBaseDisplayNameChange={(v) => handleBaseChange('displayName', v)}
         onBaseManagementNameChange={(v) => handleBaseChange('managementName', v)}
         onBaseInternalCodeChange={(v) => handleBaseChange('internalCode', v)}
         onMemoChange={(v) => handleBaseChange('memo', v)}
+        onPageUrlChange={(v) => handleBaseChange('pageUrl', v)}
         disabled={mutating}
         namesReadOnly={readOnly}
         searchNameNotice={
