@@ -138,7 +138,7 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
                   <p className="whitespace-pre-wrap">{c.content}</p>
                   <div className="mt-1.5 flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      {new Date(c.createdAt).toLocaleString('ko-KR')}
+                      {new Date(c.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
                       {c.editedAt && ' (수정됨)'}
                     </span>
                     {c.userId === currentUserId && (

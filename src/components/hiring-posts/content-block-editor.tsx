@@ -79,7 +79,11 @@ function formatTemplateAt(at: string | null): string | null {
   if (!at) return null
   const d = new Date(at)
   if (Number.isNaN(d.getTime())) return null
-  return d.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })
+  return d.toLocaleString('ko-KR', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Seoul',
+  })
 }
 
 // Tiptap doc 에 실제 내용(텍스트/이미지 등)이 있는지 — 빈 문단만 있는 doc 은 false.

@@ -37,7 +37,7 @@ type Props = {
 function formatClosingDate(value: string | null): string | null {
   if (!value) return null
   const d = new Date(value)
-  return `마감 ${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`
+  return `마감 ${d.getUTCFullYear()}. ${d.getUTCMonth() + 1}. ${d.getUTCDate()}.`
 }
 
 function copyText(value: string, successMessage: string, description?: string) {

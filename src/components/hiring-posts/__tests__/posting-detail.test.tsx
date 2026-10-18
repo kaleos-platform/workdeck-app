@@ -103,6 +103,9 @@ it('지난 마감일을 팝업에서 수정해 한 요청으로 발행한다', a
       embedHtml="<p>QA</p>"
     />
   )
+  expect(screen.getByRole('region', { name: '모집 기간 및 접수 상태' })).toHaveTextContent(
+    '마감 2023. 11. 30.'
+  )
   fireEvent.click(screen.getByRole('button', { name: '공고 발행' }))
   expect(screen.getByRole('dialog')).toHaveTextContent('마감일이 지났습니다')
   expect(screen.getByRole('button', { name: '발행하기' })).toBeDisabled()
