@@ -4,6 +4,7 @@ import { resolveWorkspace, resolveSpaceContext, errorResponse, assertRole } from
 import { getUser } from '@/hooks/use-user'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
+import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { decryptField, fieldWriteVersion, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
@@ -45,10 +46,10 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  // 사용자 인증
-  const resolved = await resolveWorkspace()
-  if ('error' in resolved) return resolved.error
-  const { workspace } = resolved
+  // 사용자 인증 — PUT 과 같은 해석기(Space 의 쿠팡 워크스페이스 → 본인 워크스페이스).
+  const auth = await resolveCollectionAuth(request)
+  if ('error' in auth) return auth.error
+  const workspace = { id: auth.workspaceId }
 
   const credential = await prisma.coupangCredential.findUnique({
     where: { workspaceId: workspace.id },
@@ -77,7 +78,7 @@ export async function PUT(request: NextRequest) {
   // 워커 여부는 헤더 존재로 정한다 — 인증과 토큰 범위 검사는 resolveWorkspace 가 한다(틀린 키는 401).
   const isWorker = !!request.headers.get('x-worker-api-key')
 
-  let workspace: { id: string }
+  let workspace: { id: string } | undefined
   if (isWorker) {
     const resolved = await resolveWorkspace({ write: true })
     if ('error' in resolved) return resolved.error
@@ -94,12 +95,21 @@ export async function PUT(request: NextRequest) {
     // 사람(세션)의 자격증명 저장만 aal2 를 요구한다. 워커 재전달은 토큰 인증이라 제외.
     const mfaError = await requireAal2()
     if (mfaError) return mfaError
-    const ensured = await ensureWorkspaceForUser({
-      id: user.id,
-      email: user.email,
-      name: user.user_metadata?.name ?? null,
-    })
-    workspace = ensured.workspace
+    // 구성원이면 형제 수집 라우트와 같은 해석기(resolveCollectionAuth)로 Space의 워크스페이스에 저장한다.
+    // ensure 로 저장자 소유 워크스페이스를 만들면, 초대받은 ADMIN 은 워커가 보지 않는 빈 워크스페이스에
+    // 저장하는 무음 실패가 된다. ensure 는 멤버십이 없는 첫 사용자와, 워크스페이스가 없는 OWNER 만.
+    if ('space' in spaceCtx && spaceCtx.space) {
+      const auth = await resolveCollectionAuth(request)
+      if (!('error' in auth)) workspace = { id: auth.workspaceId }
+      else if (auth.error.status !== 409 || spaceCtx.role !== 'OWNER') return auth.error
+    }
+    workspace ??= (
+      await ensureWorkspaceForUser({
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.name ?? null,
+      })
+    ).workspace
   }
 
   let body: {
