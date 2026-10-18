@@ -460,7 +460,10 @@ export function ContentBlockEditor({
     let status: 'owned' | 'sample' | 'unavailable' | null = templateInfo?.id ? 'unavailable' : null
     try {
       if (templateInfo?.id) {
-        const res = await fetch('/api/hiring-posts/templates')
+        const res = await fetch('/api/hiring-posts/templates', {
+          signal: AbortSignal.timeout(5000),
+          cache: 'no-store',
+        })
         if (res.ok) {
           const { templates } = await res.json()
           const template = Array.isArray(templates)

@@ -7,3 +7,5 @@
 기존 컴포넌트와 radio/button/dialog의 스타일을 유지한다. 현재 저장소에서 DESIGN.md는 확인되지 않아 새로운 시각 규칙을 도입하지 않았다.
 
 원래 동작으로 sample·missing·network·owned 확인 테스트 4개가 실패하는 것을 확인한 후 수정했다. 관련 UI 18 suites/93 tests·webpack production build·TypeScript·전체 lint(오류 0·기존 경고 63)가 통과했다. 독립 리뷰 지적을 수정하고 해소를 확인했다. PR 검사와 운영 재검증은 배포 단계에서 확인한다.
+
+운영 재검증에서 정보 조회가 지연될 때 확인 중 상태가 계속 유지되는 것을 확인했다. 조회에 5초 AbortSignal timeout과 no-store를 적용해 지연 시에도 새 저장을 제공한다. 실제 미응답 fetch가 abort 후 새 저장으로 전환되는 회귀 테스트를 추가한다.
