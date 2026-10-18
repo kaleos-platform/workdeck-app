@@ -6,7 +6,7 @@ import { errorResponse } from '@/lib/api-helpers'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { writeAuditLog } from '@/lib/admin/auth'
-import { issueAgentToken } from '@/lib/agent/identity/agent-token'
+import { issueAgentToken, revokeAgentToken } from '@/lib/agent/identity/agent-token'
 
 type Ctx = { params: Promise<{ spaceId: string; agentId: string }> }
 const bodySchema = z.object({ expiresInDays: z.number().int().min(1).max(365).optional() })
@@ -31,11 +31,16 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
 
   const issued = await issueAgentToken(agent.id, { expiresInDays: parsed.data.expiresInDays })
-  // 평문 토큰은 절대 로그에 남기지 않는다.
-  await writeAuditLog(auth.userId, 'space.agent.token.issue', 'agent_token', issued.tokenId, {
-    spaceId,
-    agentId: agent.id,
-    expiresAt: issued.expiresAt.toISOString(),
-  })
+  // 평문 토큰은 절대 로그에 남기지 않는다. 감사 기록이 실패하면 발급한 토큰을 폐기한다(기록 없는 활성 토큰 금지).
+  try {
+    await writeAuditLog(auth.userId, 'space.agent.token.issue', 'agent_token', issued.tokenId, {
+      spaceId,
+      agentId: agent.id,
+      expiresAt: issued.expiresAt?.toISOString() ?? null,
+    })
+  } catch (err) {
+    await revokeAgentToken(agent.id, issued.tokenId)
+    throw err
+  }
   return NextResponse.json(issued, { status: 201, headers: { 'Cache-Control': 'no-store' } })
 }

@@ -39,7 +39,7 @@ type Token = {
   id: string
   createdAt: string
   lastUsedAt: string | null
-  expiresAt: string
+  expiresAt: string | null
   revokedAt: string | null
 }
 type Agent = {
@@ -62,9 +62,9 @@ const SCOPE_GROUPS = [
 ]
 const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString('ko-KR') : '-')
 const tokenState = (t: Token) =>
-  t.revokedAt ? '폐기' : new Date(t.expiresAt) < new Date() ? '만료' : '활성'
-const configSnippet = (token: string) =>
-  `${CLAUDE_CODE_CMD} --header "Authorization: Bearer ${token}"`
+  t.revokedAt ? '폐기' : t.expiresAt && new Date(t.expiresAt) < new Date() ? '만료' : '활성'
+// 토큰을 명령에 직접 넣으면 셸 기록에 남는다 — 환경변수로 넘긴다.
+const CONFIG_SNIPPET = `export WORKDECK_AGENT_TOKEN='<위 토큰>'\n${CLAUDE_CODE_CMD} --header "Authorization: Bearer $WORKDECK_AGENT_TOKEN"`
 
 export function AgentTokensCard() {
   const spaceParam = useSearchParams().get('spaceId')
@@ -440,7 +440,7 @@ function IssueDialog({
             </div>
             <div className="space-y-1.5">
               <p className="font-medium">Claude Code 예시</p>
-              <CopyCodeBlock code={configSnippet(token)} />
+              <CopyCodeBlock code={CONFIG_SNIPPET} />
             </div>
           </div>
         ) : (

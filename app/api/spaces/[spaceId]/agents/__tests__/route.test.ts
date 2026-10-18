@@ -127,6 +127,21 @@ describe('/api/spaces/[spaceId]/agents', () => {
     expect(issueAgentToken).not.toHaveBeenCalled()
   })
 
+  it('발급 감사 기록이 실패하면 방금 발급한 토큰을 폐기한다', async () => {
+    admin.mockResolvedValue({ userId: 'u1' })
+    p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', status: 'ACTIVE' })
+    ;(issueAgentToken as jest.Mock).mockResolvedValue({
+      tokenId: 't9',
+      token: 'wdk_agt_t9.s',
+      expiresAt: new Date('2027-01-07T00:00:00Z'),
+    })
+    audit.mockRejectedValueOnce(new Error('db down'))
+    await expect(
+      issueToken(json({ expiresInDays: 30 }), params({ spaceId: 'sp1', agentId: 'ag1' }))
+    ).rejects.toThrow('db down')
+    expect(revokeAgentToken).toHaveBeenCalledWith('ag1', 't9')
+  })
+
   it('토큰은 한 번만 응답하고 no-store', async () => {
     admin.mockResolvedValue({ userId: 'u1' })
     p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', status: 'ACTIVE' })
@@ -193,21 +208,22 @@ describe('/api/spaces/[spaceId]/agents', () => {
       })
     })
 
-    it.each([{ scopes: ['ads:read'] }, { status: 'ACTIVE' }, { oauthClientId: 'cl_1' }])(
-      'PATCH %p 는 aal2가 필요하다',
-      async (body) => {
-        admin.mockResolvedValue({ userId: 'u1' })
-        aal2.mockResolvedValue(mfaRes())
-        p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'integration' })
-        const res = await patchAgent(
-          json(body, 'PATCH'),
-          params({ spaceId: 'sp1', agentId: 'ag1' })
-        )
-        expect(res.status).toBe(403)
-        expect(p.spaceAgent.update).not.toHaveBeenCalled()
-        expect(audit).not.toHaveBeenCalled()
-      }
-    )
+    it.each([
+      { scopes: ['ads:read'] },
+      { status: 'ACTIVE' },
+      { oauthClientId: 'cl_1' },
+      { status: 'DISABLED', scopes: ['ads:read'] },
+      { status: 'DISABLED', oauthClientId: null },
+      { scopes: [] },
+    ])('PATCH %p 는 aal2가 필요하다', async (body) => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      aal2.mockResolvedValue(mfaRes())
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'integration' })
+      const res = await patchAgent(json(body, 'PATCH'), params({ spaceId: 'sp1', agentId: 'ag1' }))
+      expect(res.status).toBe(403)
+      expect(p.spaceAgent.update).not.toHaveBeenCalled()
+      expect(audit).not.toHaveBeenCalled()
+    })
 
     it('DISABLED만 바꾸는 PATCH는 aal2 없이 되고 감사 로그를 남긴다', async () => {
       admin.mockResolvedValue({ userId: 'u1' })
@@ -225,7 +241,17 @@ describe('/api/spaces/[spaceId]/agents', () => {
         changed: ['status'],
         scopes: ['ads:read'],
         status: 'DISABLED',
+        oauthClientId: undefined,
       })
+    })
+
+    it('빈 PATCH는 400, 쓰기·감사 로그 없음', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })
+      const res = await patchAgent(json({}, 'PATCH'), params({ spaceId: 'sp1', agentId: 'ag1' }))
+      expect(res.status).toBe(400)
+      expect(p.spaceAgent.update).not.toHaveBeenCalled()
+      expect(audit).not.toHaveBeenCalled()
     })
 
     it('토큰 발급은 aal2가 필요하다', async () => {

@@ -32,6 +32,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
   const parsed = patchSchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
+  if (Object.keys(parsed.data).length === 0) return errorResponse('변경할 항목이 없습니다', 400)
   if (parsed.data.oauthClientId && agent.kind !== 'integration') {
     return errorResponse('OAuth 클라이언트는 연동 계정에만 연결할 수 있습니다', 400)
   }
@@ -58,6 +59,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       changed: Object.keys(parsed.data),
       scopes: updated.scopes,
       status: updated.status,
+      oauthClientId: updated.oauthClientId,
     })
     return NextResponse.json({ agent: updated })
   } catch (err) {
