@@ -263,9 +263,7 @@ export async function notifyAutoReconciliation(params: {
   })
 
   const blocks: Block[] = [
-    header(
-      skipped ? ':warning: 자동 재고 대조 건너뜀' : ':clipboard: 자동 재고 대조 — 확인 필요'
-    ),
+    header(skipped ? ':warning: 자동 재고 대조 건너뜀' : ':clipboard: 자동 재고 대조 — 확인 필요'),
     divider(),
     section(`*스냅샷 기준일*\n${formatDate(params.snapshotDate)}`),
     section(lines.join('\n')),
@@ -285,6 +283,12 @@ export async function notifyAutoReconciliation(params: {
  * 워커 heartbeat가 임계치를 넘기면 운영자에게 즉시 알린다.
  * dedupe는 호출측(cron)에서 관리.
  */
+// 맥미니 launchd 라벨(heartbeat service → 재시작 대상).
+const WORKER_LAUNCHD_LABELS: Record<string, string> = {
+  'inventory-collector': 'ai.workdeck.coupang-worker',
+  'sales-content-worker': 'ai.workdeck.sc-worker',
+}
+
 export async function notifyWorkerDown(params: {
   service: string
   lastPingAt: Date | null
@@ -303,7 +307,9 @@ export async function notifyWorkerDown(params: {
     section(`*마지막 heartbeat*\n${lastPingText}`),
     section(
       `heartbeat가 ${params.thresholdMinutes}분 이상 끊겼습니다. 워커 호스트를 점검하세요.\n` +
-        '```\npm2 status workdeck-worker\npm2 logs workdeck-worker --lines 200\npm2 restart workdeck-worker\n```'
+        '```\nlaunchctl list | grep ai.workdeck\nlaunchctl kickstart -k gui/$(id -u)/' +
+        (WORKER_LAUNCHD_LABELS[params.service] ?? 'ai.workdeck.<worker>') +
+        '\n```'
     ),
   ]
 
