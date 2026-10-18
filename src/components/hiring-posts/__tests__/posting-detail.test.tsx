@@ -148,3 +148,26 @@ it('보관 공고는 재발행 대신 복사해서 새 모집한다', () => {
   expect(screen.queryByRole('button', { name: '공고 발행' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: '복사해서 새 모집' })).toBeInTheDocument()
 })
+
+it('발행 상태라도 마감일이 지나면 HTML 지원 링크에 새 모집 안내를 표시한다', () => {
+  const { rerender } = render(
+    <PostingDetail
+      posting={{ id: 'test', uuid: 'qa', title: 'QA', status: 'ACTIVE', closingDate: '2000-01-01' }}
+      origin="https://workdeck.test"
+      embedHtml="<p>QA</p>"
+      usesFormLink
+    />
+  )
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    '새로운 모집은 공고를 복사해 발행한 뒤 새 지원서 링크를 사용하세요.'
+  )
+  rerender(
+    <PostingDetail
+      posting={{ id: 'test', uuid: 'qa', title: 'QA', status: 'ACTIVE', closingDate: '2000-01-01' }}
+      origin="https://workdeck.test"
+      embedHtml="<p>QA</p>"
+      usesFormLink={false}
+    />
+  )
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})

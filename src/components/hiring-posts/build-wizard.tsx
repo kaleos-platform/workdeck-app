@@ -391,7 +391,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
         <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
           {step === 'form' ? (
             <Button disabled={leaving} onClick={() => selectStep('decorate')}>
-              설정 저장하고 돌아가기
+              {recruitmentLocked ? '공고 꾸미기로 돌아가기' : '설정 저장하고 돌아가기'}
             </Button>
           ) : step === 'decorate' ? (
             <>
