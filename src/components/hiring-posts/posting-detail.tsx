@@ -233,10 +233,12 @@ export function PostingDetail({
                 )}
               </div>
             )}
-            {usesFormLink && status !== 'ACTIVE' && (
+            {usesFormLink && (status !== 'ACTIVE' || expired) && (
               <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">
-                HTML에 Workdeck 지원서 링크가 포함되어 있지만 현재 지원 접수가 열려 있지 않습니다.
-                접수를 시작하거나 링크를 변경하세요.
+                HTML에 Workdeck 지원서 링크가 포함되어 있지만 현재 지원 접수가 열려 있지 않습니다.{' '}
+                {locked
+                  ? '새로운 모집은 공고를 복사해 발행한 뒤 새 지원서 링크를 사용하세요.'
+                  : '공고 발행 버튼에서 마감일을 확인하고 발행해 주세요.'}
               </p>
             )}
             <Button
