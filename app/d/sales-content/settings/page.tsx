@@ -36,8 +36,9 @@ export default async function SettingsPage() {
         updatedAt: true,
       },
     }),
-    prisma.brandProfile.findUnique({
-      where: { spaceId },
+    // 공통 프로필이 기본 편집 대상. 브랜드별 프로필은 폼에서 브랜드를 고르면 불러온다.
+    prisma.brandProfile.findFirst({
+      where: { spaceId, brandId: null },
     }),
     prisma.salesContentChannel.findMany({
       where: { spaceId },

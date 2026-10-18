@@ -18,6 +18,8 @@ export const SCOPES = [
   'browser:read',
   'browser:write',
   'slack:write',
+  'sc:read',
+  'sc:write',
 ] as const
 
 export type Scope = (typeof SCOPES)[number]

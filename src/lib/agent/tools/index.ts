@@ -7,6 +7,7 @@ import { writeTools } from './write-tools'
 import { slackTools } from './slack-tools'
 import { metaAdsTools } from './meta-ads-tools'
 import { googleMarketingTools } from './google-marketing-tools'
+import { salesContentTools } from './sales-content-tools'
 
 export type { ToolMode, McpToolContext, ToolDefinition } from './types'
 
@@ -25,4 +26,5 @@ export const toolDefinitions: ToolDefinition[] = [
   ...slackTools,
   ...metaAdsTools,
   ...googleMarketingTools,
+  ...salesContentTools,
 ]

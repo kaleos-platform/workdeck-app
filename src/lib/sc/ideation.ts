@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { generateTextForSpace } from '@/lib/ai/resolve'
+import { findBrandProfileForProducts } from '@/lib/sc/brand-profile'
 import {
   buildIdeationPrompt,
   type IdeationBrandCtx,
@@ -100,14 +101,11 @@ async function loadBuilderContext(input: RunIdeationInput): Promise<{
         customFields: true,
       },
     }),
-    prisma.brandProfile.findUnique({
-      where: { spaceId: input.spaceId },
-      select: {
-        companyName: true,
-        shortDescription: true,
-        toneOfVoice: true,
-        customFields: true,
-      },
+    findBrandProfileForProducts(input.spaceId, input.productIds ?? [], {
+      companyName: true,
+      shortDescription: true,
+      toneOfVoice: true,
+      customFields: true,
     }),
     loadActiveRules({
       spaceId: input.spaceId,

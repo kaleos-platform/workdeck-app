@@ -44,6 +44,11 @@ export interface ActionDefinition<TParams = Record<string, unknown>> {
    * null 을 반환하면 이번 요청은 지출이 아니다.
    */
   spendKrw?: (params: TParams) => number | null
+  /**
+   * 실행이 실패하면 외부·DB 변경이 전혀 남지 않는 액션만 true(예: 단일 DB 트랜잭션).
+   * true 면 FAILED 로 끝난 같은 내용의 제안을 멱등 키에 막히지 않고 다시 만들 수 있다.
+   */
+  retryableAfterFailure?: boolean
   // 생성 시점 가드 (선택) — throw하면 액션 생성 자체가 거부된다.
   // snapshot과 달리 실패해도 생성이 진행되지 않는다 — 사람이 실행 불가능한
   // 액션(예: 연동 안 된 space)을 승인 큐에서 보는 사고를 막는다.
