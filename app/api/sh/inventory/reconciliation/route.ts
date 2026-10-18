@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 import { parseReconciliationFile, type ParseResult } from '@/lib/inv/reconciliation-parser'
 import { getCoupangInventoryRows } from '@/lib/inv/reconciliation-sources'
 import { runReconciliationMatch, ReconciliationCoreError } from '@/lib/inv/reconciliation-core'
@@ -96,11 +97,9 @@ export async function POST(req: NextRequest) {
         locationId = mapped.id
       }
 
-      // Workspace ↔ Space 직접 연결이 없으므로 현재 유저의 쿠팡 Workspace 경유
-      const workspace = await prisma.workspace.findUnique({
-        where: { ownerId: resolved.user.id },
-        select: { id: true },
-      })
+      // Space → 쿠팡 워크스페이스(resolveWorkspace 와 같은 해석기 — 구성원도 Space 의 워크스페이스)
+      const workspaceId = await resolveSpaceCoupangWorkspaceId(resolved.space.id, resolved.user.id)
+      const workspace = workspaceId ? { id: workspaceId } : null
       if (!workspace) {
         return errorResponse(
           '쿠팡 광고 관리에 연결된 워크스페이스가 없습니다. 쿠팡 광고 관리에서 크레덴셜을 등록한 뒤 다시 시도해 주세요.',
@@ -110,7 +109,14 @@ export async function POST(req: NextRequest) {
 
       // 자동 동기화 cron이 워크스페이스를 결정적으로 해석할 수 있도록, 로켓그로스
       // 위치의 externalIntegrationKey 에 페어 workspaceId 를 1회 backfill 한다.
-      if (locationId) {
+      // 키는 그 Space 에 연결된 워크스페이스만 — 구성원 본인 소유로 Space 의 쿠팡 축을 선점하지 못하게.
+      const linked =
+        locationId &&
+        (await prisma.workspace.findFirst({
+          where: { id: workspace.id, spaceId: resolved.space.id },
+          select: { id: true },
+        }))
+      if (locationId && linked) {
         await prisma.invStorageLocation
           .updateMany({
             where: {
