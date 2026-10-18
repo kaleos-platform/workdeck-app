@@ -76,6 +76,12 @@ export function BlockEditOverlay({
       }}
     >
       <DialogContent
+        onEscapeKeyDown={(event) => {
+          // 캔버스는 Escape로 텍스트 편집·도구 선택을 끝낸다. 바깥 팝업이 먼저 닫히면 입력을 잃는다.
+          if (isDesign && event.target instanceof Element && event.target.closest('.excalidraw')) {
+            event.preventDefault()
+          }
+        }}
         className={
           isPopup
             ? 'flex max-h-[85vh] w-full max-w-lg flex-col gap-0 p-0'
