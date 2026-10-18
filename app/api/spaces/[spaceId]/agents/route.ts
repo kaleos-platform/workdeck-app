@@ -7,6 +7,8 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { errorResponse } from '@/lib/api-helpers'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
+import { requireAal2 } from '@/lib/auth/mfa'
+import { writeAuditLog } from '@/lib/admin/auth'
 import { parseScopes } from '@/lib/agent/identity/principal'
 
 type Ctx = { params: Promise<{ spaceId: string }> }
@@ -47,6 +49,8 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   const { spaceId } = await params
   const auth = await requireSpaceAdmin(spaceId)
   if ('error' in auth) return auth.error
+  const mfa = await requireAal2()
+  if (mfa) return mfa
 
   const parsed = createSchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
@@ -70,6 +74,12 @@ export async function POST(req: NextRequest, { params }: Ctx) {
         oauthClientId: parsed.data.oauthClientId,
       },
       select: AGENT_SELECT,
+    })
+    await writeAuditLog(auth.userId, 'space.agent.create', 'space_agent', agent.id, {
+      spaceId,
+      name: agent.name,
+      kind: agent.kind,
+      scopes: agent.scopes,
     })
     return NextResponse.json({ agent }, { status: 201 })
   } catch (err) {

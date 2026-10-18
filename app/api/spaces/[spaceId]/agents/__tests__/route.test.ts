@@ -6,6 +6,8 @@ jest.mock('@/lib/agent/identity/agent-token', () => ({
   issueAgentToken: jest.fn(),
   revokeAgentToken: jest.fn(),
 }))
+jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
+jest.mock('@/lib/admin/auth', () => ({ writeAuditLog: jest.fn() }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     spaceAgent: { findMany: jest.fn(), create: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
@@ -15,19 +17,27 @@ jest.mock('@/lib/prisma', () => ({
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { issueAgentToken, revokeAgentToken } from '@/lib/agent/identity/agent-token'
 import { prisma } from '@/lib/prisma'
+import { requireAal2 } from '@/lib/auth/mfa'
+import { writeAuditLog } from '@/lib/admin/auth'
 import { GET as listAgents, POST as createAgent } from '../route'
 import { PATCH as patchAgent } from '../[agentId]/route'
 import { POST as issueToken } from '../[agentId]/tokens/route'
 import { DELETE as revokeToken } from '../[agentId]/tokens/[tokenId]/route'
 
 const admin = requireSpaceAdmin as jest.Mock
+const aal2 = requireAal2 as jest.Mock
+const audit = writeAuditLog as jest.Mock
+const mfaRes = () => new Response(JSON.stringify({ code: 'MFA_REQUIRED' }), { status: 403 })
 const p = prisma as unknown as { spaceAgent: Record<string, jest.Mock> }
 const params = <T>(v: T) => ({ params: Promise.resolve(v) })
 const json = (body: unknown, method = 'POST') =>
   new NextRequest('http://x/api', { method, body: JSON.stringify(body) })
 
 describe('/api/spaces/[spaceId]/agents', () => {
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+    aal2.mockResolvedValue(null)
+  })
 
   it('ADMIN이 아니면 403을 그대로 돌려준다', async () => {
     admin.mockResolvedValue({ error: new Response('{}', { status: 403 }) })
@@ -146,5 +156,123 @@ describe('/api/spaces/[spaceId]/agents', () => {
     )
     expect(res.status).toBe(400)
     expect(issueAgentToken).not.toHaveBeenCalled()
+  })
+
+  describe('MFA·감사 로그', () => {
+    it('에이전트 생성은 aal2가 없으면 MFA 응답을 그대로 주고 쓰지 않는다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      aal2.mockResolvedValue(mfaRes())
+      const res = await createAgent(
+        json({ name: '테스트 에이전트', kind: 'agent', scopes: ['ads:read'] }),
+        params({ spaceId: 'sp1' })
+      )
+      expect(res.status).toBe(403)
+      expect((await res.json()).code).toBe('MFA_REQUIRED')
+      expect(p.spaceAgent.create).not.toHaveBeenCalled()
+      expect(audit).not.toHaveBeenCalled()
+    })
+
+    it('에이전트 생성 시 감사 로그를 남긴다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      p.spaceAgent.create.mockResolvedValue({
+        id: 'ag1',
+        name: '테스트 에이전트',
+        kind: 'agent',
+        scopes: ['ads:read'],
+      })
+      const res = await createAgent(
+        json({ name: '테스트 에이전트', kind: 'agent', scopes: ['ads:read'] }),
+        params({ spaceId: 'sp1' })
+      )
+      expect(res.status).toBe(201)
+      expect(audit).toHaveBeenCalledWith('u1', 'space.agent.create', 'space_agent', 'ag1', {
+        spaceId: 'sp1',
+        name: '테스트 에이전트',
+        kind: 'agent',
+        scopes: ['ads:read'],
+      })
+    })
+
+    it.each([{ scopes: ['ads:read'] }, { status: 'ACTIVE' }, { oauthClientId: 'cl_1' }])(
+      'PATCH %p 는 aal2가 필요하다',
+      async (body) => {
+        admin.mockResolvedValue({ userId: 'u1' })
+        aal2.mockResolvedValue(mfaRes())
+        p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'integration' })
+        const res = await patchAgent(
+          json(body, 'PATCH'),
+          params({ spaceId: 'sp1', agentId: 'ag1' })
+        )
+        expect(res.status).toBe(403)
+        expect(p.spaceAgent.update).not.toHaveBeenCalled()
+        expect(audit).not.toHaveBeenCalled()
+      }
+    )
+
+    it('DISABLED만 바꾸는 PATCH는 aal2 없이 되고 감사 로그를 남긴다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      aal2.mockResolvedValue(mfaRes())
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })
+      p.spaceAgent.update.mockResolvedValue({ id: 'ag1', scopes: ['ads:read'], status: 'DISABLED' })
+      const res = await patchAgent(
+        json({ status: 'DISABLED' }, 'PATCH'),
+        params({ spaceId: 'sp1', agentId: 'ag1' })
+      )
+      expect(res.status).toBe(200)
+      expect(aal2).not.toHaveBeenCalled()
+      expect(audit).toHaveBeenCalledWith('u1', 'space.agent.update', 'space_agent', 'ag1', {
+        spaceId: 'sp1',
+        changed: ['status'],
+        scopes: ['ads:read'],
+        status: 'DISABLED',
+      })
+    })
+
+    it('토큰 발급은 aal2가 필요하다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      aal2.mockResolvedValue(mfaRes())
+      const res = await issueToken(json({}), params({ spaceId: 'sp1', agentId: 'ag1' }))
+      expect(res.status).toBe(403)
+      expect(issueAgentToken).not.toHaveBeenCalled()
+      expect(audit).not.toHaveBeenCalled()
+    })
+
+    it('토큰 발급 감사 로그에 평문 토큰이 없다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', status: 'ACTIVE' })
+      ;(issueAgentToken as jest.Mock).mockResolvedValue({
+        tokenId: 't1',
+        token: 'wdk_agt_t1.SECRETVALUE',
+        expiresAt: new Date('2027-01-07T00:00:00Z'),
+      })
+      const res = await issueToken(
+        json({ expiresInDays: 30 }),
+        params({ spaceId: 'sp1', agentId: 'ag1' })
+      )
+      expect(res.status).toBe(201)
+      expect(audit).toHaveBeenCalledWith('u1', 'space.agent.token.issue', 'agent_token', 't1', {
+        spaceId: 'sp1',
+        agentId: 'ag1',
+        expiresAt: '2027-01-07T00:00:00.000Z',
+      })
+      expect(JSON.stringify(audit.mock.calls)).not.toContain('SECRETVALUE')
+    })
+
+    it('토큰 폐기는 aal2 없이 되고 감사 로그를 남긴다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      aal2.mockResolvedValue(mfaRes())
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1' })
+      ;(revokeAgentToken as jest.Mock).mockResolvedValue(true)
+      const res = await revokeToken(
+        new NextRequest('http://x/api', { method: 'DELETE' }),
+        params({ spaceId: 'sp1', agentId: 'ag1', tokenId: 't1' })
+      )
+      expect(res.status).toBe(200)
+      expect(aal2).not.toHaveBeenCalled()
+      expect(audit).toHaveBeenCalledWith('u1', 'space.agent.token.revoke', 'agent_token', 't1', {
+        spaceId: 'sp1',
+        agentId: 'ag1',
+      })
+    })
   })
 })

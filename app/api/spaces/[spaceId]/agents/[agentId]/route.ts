@@ -1,9 +1,14 @@
-/** PATCH — scope·상태·OAuth 클라이언트 바인딩 변경 (Space ADMIN 이상). */
+/**
+ * PATCH — scope·상태·OAuth 클라이언트 바인딩 변경 (Space ADMIN 이상).
+ * 권한을 넓힐 수 있는 변경(scope·ACTIVE·OAuth 바인딩)은 MFA(aal2) 필요, DISABLED만이면 불필요.
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { errorResponse } from '@/lib/api-helpers'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
+import { requireAal2 } from '@/lib/auth/mfa'
+import { writeAuditLog } from '@/lib/admin/auth'
 import { parseScopes } from '@/lib/agent/identity/principal'
 
 type Ctx = { params: Promise<{ spaceId: string; agentId: string }> }
@@ -36,12 +41,23 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   } catch (err) {
     return errorResponse(err instanceof Error ? err.message : 'scope 오류', 400)
   }
+  const { status, oauthClientId } = parsed.data
+  if (scopes !== undefined || status === 'ACTIVE' || oauthClientId !== undefined) {
+    const mfa = await requireAal2()
+    if (mfa) return mfa
+  }
 
   try {
     const updated = await prisma.spaceAgent.update({
       where: { id: agent.id },
-      data: { scopes, status: parsed.data.status, oauthClientId: parsed.data.oauthClientId },
+      data: { scopes, status, oauthClientId },
       select: { id: true, name: true, kind: true, scopes: true, status: true, oauthClientId: true },
+    })
+    await writeAuditLog(auth.userId, 'space.agent.update', 'space_agent', agent.id, {
+      spaceId,
+      changed: Object.keys(parsed.data),
+      scopes: updated.scopes,
+      status: updated.status,
     })
     return NextResponse.json({ agent: updated })
   } catch (err) {

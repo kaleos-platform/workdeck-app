@@ -5,8 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plug } from 'lucide-react'
 import { CopyCodeBlock } from './copy-code-block'
 
-const MCP_URL = 'https://app.workdeck.work/api/mcp/mcp'
-const CLAUDE_CODE_CMD = `claude mcp add --transport http workdeck ${MCP_URL}`
+export const MCP_URL = 'https://app.workdeck.work/api/mcp/mcp'
+export const CLAUDE_CODE_CMD = `claude mcp add --transport http workdeck ${MCP_URL}`
 const CODEX_CONFIG = `[mcp_servers.workdeck]
 command = "npx"
 args = ["-y", "mcp-remote", "${MCP_URL}"]`

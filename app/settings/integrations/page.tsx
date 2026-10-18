@@ -3,6 +3,7 @@ import { getUser } from '@/hooks/use-user'
 import { SETTINGS_INTEGRATIONS_PATH } from '@/lib/deck-routes'
 import { SlackConnectCard } from '@/components/integrations/slack-connect-card'
 import { AgentToggleCard } from '@/components/integrations/agent-toggle-card'
+import { AgentTokensCard } from '@/components/integrations/agent-tokens-card'
 import { McpGuideCard } from '@/components/integrations/mcp-guide-card'
 import { CoupangApiCard } from '@/components/integrations/coupang-api-card'
 import { loadShellContext } from '@/lib/workspace-shell'
@@ -37,6 +38,7 @@ export default async function IntegrationsSettingsPage({
           <SlackConnectCard slackStatus={slack ?? null} />
           <CoupangApiCard />
           <AgentToggleCard />
+          <AgentTokensCard />
         </RoleRequired>
         <McpGuideCard />
       </div>
