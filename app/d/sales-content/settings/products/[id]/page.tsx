@@ -21,6 +21,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     oneLinerPitch: product.oneLinerPitch ?? '',
     customFields: (product.customFields as { key: string; value: string }[] | null) ?? [],
     isActive: product.isActive,
+    brandId: product.brandId,
   }
 
   return (

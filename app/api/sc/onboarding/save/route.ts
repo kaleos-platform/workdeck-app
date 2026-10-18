@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { saveBrandProfile } from '@/lib/sc/brand-profile'
 import { brandProfileSchema, productSchema, personaSchema } from '@/lib/sc/schemas'
 import { normalizeResourceUrl } from '@/lib/sc/onboarding/crawl'
 
@@ -104,11 +105,7 @@ export async function POST(req: NextRequest) {
           toneOfVoice: brand.toneOfVoice ?? [],
           customFields: brand.customFields ?? [],
         }
-        await tx.brandProfile.upsert({
-          where: { spaceId },
-          create: { spaceId, ...data },
-          update: data,
-        })
+        await saveBrandProfile(tx, spaceId, null, data)
         await tx.salesContentOnboarding.upsert({
           where: { spaceId },
           create: { spaceId, completedAt: new Date() },

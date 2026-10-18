@@ -24,7 +24,9 @@ export async function POST(req: NextRequest) {
     const source = pastedText
       ? { text: pastedText, imageUrls: [], sourceUrl: url }
       : await readProductPage(url!)
-    const result = await extractSalesProduct(resolved.space.id, source)
+    const result = await extractSalesProduct(resolved.space.id, source, '', {
+      actor: { type: 'user', id: resolved.user.id },
+    })
     await prisma.textGenerationLog.create({
       data: {
         spaceId: resolved.space.id,

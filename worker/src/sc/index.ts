@@ -3,6 +3,9 @@
 // 환경변수: WORKER_API_KEY, WEB_APP_URL (기본 http://127.0.0.1:3000)
 import 'dotenv/config'
 import { runScLoop } from './runner.js'
+import { startWorkerHeartbeat } from '../heartbeat.js'
+
+startWorkerHeartbeat('sales-content-worker', process.env.WEB_APP_URL ?? 'http://127.0.0.1:3000')
 
 runScLoop().catch((err) => {
   console.error('[sc-worker] 치명적 오류:', err)

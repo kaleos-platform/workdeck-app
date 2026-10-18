@@ -223,6 +223,11 @@ export function ContentBlockEditor({
   const [templateInfo, setTemplateInfo] = useState<AppliedTemplate | null>(appliedTemplate)
   // 저장 모드: 현재 템플릿 덮어쓰기 vs 새 템플릿
   const [saveMode, setSaveMode] = useState<'overwrite' | 'new'>('new')
+  const [saveTemplateStatus, setSaveTemplateStatus] = useState<
+    'owned' | 'sample' | 'unavailable' | null
+  >(null)
+  const [checkingTemplate, setCheckingTemplate] = useState(false)
+  const checkingTemplateRef = useRef(false)
 
   const hasPositionsBlock = contents.some((c) => c.contentType === 'positions')
   // 비동기 저장 완료 후 최신 contents 를 참조하기 위한 ref(await 동안 부모 state 가 갱신될 수 있음)
@@ -448,15 +453,37 @@ export function ContentBlockEditor({
     }
   }
 
-  function openSaveDialog() {
-    // 현재 템플릿이 있으면 덮어쓰기 기본 + 이름 프리필
-    if (templateInfo?.id) {
-      setSaveMode('overwrite')
-      setTemplateName(templateInfo.name)
-    } else {
-      setSaveMode('new')
-      setTemplateName('')
+  async function openSaveDialog() {
+    if (checkingTemplateRef.current) return
+    checkingTemplateRef.current = true
+    setCheckingTemplate(true)
+    let status: 'owned' | 'sample' | 'unavailable' | null = templateInfo?.id ? 'unavailable' : null
+    try {
+      if (templateInfo?.id) {
+        const res = await fetch('/api/hiring-posts/templates', {
+          signal: AbortSignal.timeout(5000),
+          cache: 'no-store',
+        })
+        if (res.ok) {
+          const { templates } = await res.json()
+          const template = Array.isArray(templates)
+            ? templates.find(
+                (item: { id?: unknown; isSample?: unknown } | null) => item?.id === templateInfo.id
+              )
+            : null
+          if (template?.id === templateInfo.id && typeof template.isSample === 'boolean')
+            status = template.isSample ? 'sample' : 'owned'
+        }
+      }
+    } catch {
+      // 삭제·조회 실패 시 원본에 덮어쓰지 않고 새 템플릿 저장을 제공한다.
+    } finally {
+      checkingTemplateRef.current = false
+      setCheckingTemplate(false)
     }
+    setSaveTemplateStatus(status)
+    setSaveMode(status === 'owned' ? 'overwrite' : 'new')
+    setTemplateName(status === 'owned' ? (templateInfo?.name ?? '') : '')
     setSaveDialogOpen(true)
   }
 
@@ -467,7 +494,8 @@ export function ContentBlockEditor({
       toast.error('템플릿 이름을 입력하세요')
       return
     }
-    const overwriteId = saveMode === 'overwrite' ? (templateInfo?.id ?? null) : null
+    const overwriteId =
+      saveMode === 'overwrite' && saveTemplateStatus === 'owned' ? (templateInfo?.id ?? null) : null
     setSavingTemplate(true)
     try {
       await runMutation(async () => {
@@ -610,16 +638,16 @@ export function ContentBlockEditor({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Button size="sm" variant="outline" onClick={openLoadDialog}>
+          <Button size="sm" variant="outline" onClick={openLoadDialog} disabled={checkingTemplate}>
             <FolderOpen /> 템플릿 불러오기
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={openSaveDialog}
-            disabled={contents.length === 0}
+            disabled={contents.length === 0 || checkingTemplate}
           >
-            <Save /> 템플릿으로 저장
+            <Save /> {checkingTemplate ? '템플릿 확인 중…' : '템플릿으로 저장'}
           </Button>
         </div>
       </div>
@@ -791,7 +819,7 @@ export function ContentBlockEditor({
               현재 공고 내용을 템플릿으로 저장해 다음 공고에 재사용하세요.
             </DialogDescription>
           </DialogHeader>
-          {templateInfo?.id && (
+          {saveTemplateStatus === 'owned' && templateInfo?.id && (
             <div className="space-y-1.5">
               <Label>저장 방식</Label>
               <div className="space-y-1">
@@ -823,6 +851,13 @@ export function ContentBlockEditor({
                 </label>
               </div>
             </div>
+          )}
+          {(saveTemplateStatus === 'sample' || saveTemplateStatus === 'unavailable') && (
+            <p className="text-sm text-muted-foreground">
+              {saveTemplateStatus === 'sample'
+                ? '샘플 템플릿은 읽기 전용입니다. 새 템플릿으로 저장해 사용하세요.'
+                : '기존 템플릿을 확인할 수 없습니다. 현재 공고를 새 템플릿으로 저장할 수 있습니다.'}
+            </p>
           )}
           <div className="space-y-1.5">
             <Label htmlFor="tpl-name">템플릿 이름</Label>

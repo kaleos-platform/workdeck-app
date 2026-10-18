@@ -5,7 +5,9 @@ import { prisma } from '@/lib/prisma'
 import { createPendingAction } from '../create'
 
 jest.mock('@/lib/prisma', () => ({
-  prisma: { agentPendingAction: { findUnique: jest.fn(), create: jest.fn() } },
+  prisma: {
+    agentPendingAction: { findUnique: jest.fn(), create: jest.fn(), updateMany: jest.fn() },
+  },
 }))
 jest.mock('@/lib/billing/entitlement', () => ({
   assertDeckWritable: jest.fn().mockResolvedValue(null),
@@ -16,7 +18,11 @@ jest.mock('../registry', () => ({
   getActionDefinition: () => ({ deckKey: 'seller-hub', paramsSchema: z.object({}) }),
 }))
 
-const action = prisma.agentPendingAction as unknown as { findUnique: jest.Mock; create: jest.Mock }
+const action = prisma.agentPendingAction as unknown as {
+  findUnique: jest.Mock
+  create: jest.Mock
+  updateMany: jest.Mock
+}
 const draft = {
   spaceId: 'space-a',
   actionType: 'test.action',
@@ -57,4 +63,34 @@ test('생성 경합(P2002) 승자가 같은 Space → 승자 반환', async () =
     .mockResolvedValueOnce({ id: 'a2', spaceId: 'space-a', expiresAt })
   action.create.mockRejectedValue(Object.assign(new Error('unique'), { code: 'P2002' }))
   expect((await createPendingAction(draft)).actionId).toBe('a2')
+})
+
+test.each(['REJECTED', 'EXPIRED'])('같은 키의 %s 액션 → 키를 풀고 새로 만든다', async (status) => {
+  action.findUnique.mockResolvedValue({ id: 'a1', spaceId: 'space-a', expiresAt, status })
+  action.create.mockResolvedValue({ id: 'a2', spaceId: 'space-a', expiresAt })
+  const res = await createPendingAction(draft)
+  expect(action.updateMany).toHaveBeenCalledWith({
+    where: { id: 'a1', idempotencyKey: 'k1' },
+    data: { idempotencyKey: null },
+  })
+  expect(res.actionId).toBe('a2')
+})
+
+test('FAILED 는 외부 실행 여부를 모르므로 기본은 기존 반환', async () => {
+  action.findUnique.mockResolvedValue({ id: 'a1', spaceId: 'space-a', expiresAt, status: 'FAILED' })
+  const res = await createPendingAction(draft)
+  expect(res.actionId).toBe('a1')
+  expect(action.updateMany).not.toHaveBeenCalled()
+})
+
+test('같은 키의 EXECUTED 액션 → 중복 실행 방지로 기존 반환', async () => {
+  action.findUnique.mockResolvedValue({
+    id: 'a1',
+    spaceId: 'space-a',
+    expiresAt,
+    status: 'EXECUTED',
+  })
+  const res = await createPendingAction(draft)
+  expect(res.actionId).toBe('a1')
+  expect(action.create).not.toHaveBeenCalled()
 })

@@ -9,13 +9,14 @@ export { CURRENT_SPACE_COOKIE, CURRENT_SPACE_COOKIE_OPTIONS }
 type Role = 'OWNER' | 'ADMIN' | 'MEMBER'
 export type CurrentMembership = { role: Role; space: { id: string; name: string } }
 
-export function listMemberships(userId: string) {
+// 요청 안에서 한 번만 조회한다(cache) — 해석기와 /api/spaces/current 목록이 함께 쓴다.
+export const listMemberships = cache(function listMemberships(userId: string) {
   return prisma.spaceMember.findMany({
     where: { userId },
     orderBy: { createdAt: 'asc' },
     select: { role: true, createdAt: true, space: { select: { id: true, name: true } } },
   }) as Promise<Array<CurrentMembership & { createdAt: Date }>>
-}
+})
 
 /**
  * 현재 Space 멤버십: requested(?spaceId) → 쿠키 wd_space → OWNER 최고참 → 최고참.
