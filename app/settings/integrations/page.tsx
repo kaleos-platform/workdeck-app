@@ -5,6 +5,8 @@ import { SlackConnectCard } from '@/components/integrations/slack-connect-card'
 import { AgentToggleCard } from '@/components/integrations/agent-toggle-card'
 import { McpGuideCard } from '@/components/integrations/mcp-guide-card'
 import { CoupangApiCard } from '@/components/integrations/coupang-api-card'
+import { loadShellContext } from '@/lib/workspace-shell'
+import { RoleRequired } from '@/components/settings/role-required'
 
 // 에이전트 연동 설정 — Slack 연결, workdeck 에이전트 토글, 내 MCP 클라이언트 연결 가이드.
 export default async function IntegrationsSettingsPage({
@@ -18,6 +20,7 @@ export default async function IntegrationsSettingsPage({
   }
 
   const { slack } = await searchParams
+  const role = (await loadShellContext(user.id))?.role ?? 'MEMBER'
 
   return (
     <div className="space-y-6">
@@ -29,9 +32,12 @@ export default async function IntegrationsSettingsPage({
       </div>
 
       <div className="grid gap-6">
-        <SlackConnectCard slackStatus={slack ?? null} />
-        <CoupangApiCard />
-        <AgentToggleCard />
+        {/* Slack·쿠팡 API·에이전트는 ADMIN 이상, 내 MCP 연결 가이드는 누구나 */}
+        <RoleRequired role={role} min="ADMIN" what="Slack·쿠팡 API·에이전트 연동">
+          <SlackConnectCard slackStatus={slack ?? null} />
+          <CoupangApiCard />
+          <AgentToggleCard />
+        </RoleRequired>
         <McpGuideCard />
       </div>
     </div>

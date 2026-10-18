@@ -23,7 +23,7 @@ jest.mock('@/lib/prisma', () => ({
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
-import { resolveDeckContext, resolveWorkspace } from '../api-helpers'
+import { canWriteDeck, resolveDeckContext, resolveWorkspace } from '../api-helpers'
 
 const m = prisma as unknown as {
   spaceMember: { findFirst: jest.Mock }
@@ -93,4 +93,10 @@ test('Deck 별 쓰기 최소 역할 — 재무만 ADMIN, 재고·콘텐츠·채�
   }
   member('ADMIN')
   expect(await resolveDeckContext('finance', { write: true })).toMatchObject({ role: 'ADMIN' })
+})
+
+test('canWriteDeck — 화면 조회 전용 안내 판정이 서버 표와 같다', () => {
+  expect(canWriteDeck('finance', 'MEMBER')).toBe(false)
+  expect(canWriteDeck('coupang-ads', 'ADMIN')).toBe(true)
+  expect(canWriteDeck('seller-hub', 'MEMBER')).toBe(true)
 })

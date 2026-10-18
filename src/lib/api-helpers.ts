@@ -141,6 +141,12 @@ const DECK_WRITE_MIN_ROLE: Partial<Record<string, SpaceMemberRole>> = {
   finance: 'ADMIN',
 }
 
+/** 이 역할이 Deck 에 쓸 수 있는지(화면의 조회 전용 안내용 — 판정은 resolveDeckContext 가 한다). */
+export function canWriteDeck(deckKey: string, role: SpaceMemberRole): boolean {
+  const min = DECK_WRITE_MIN_ROLE[deckKey]
+  return !min || ROLE_HIERARCHY[role] >= ROLE_HIERARCHY[min]
+}
+
 // 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
 export async function resolveDeckContext(deckKey = 'coupang-ads', opts?: DeckContextOptions) {
   const resolved = await resolveSpaceContext()

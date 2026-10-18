@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
 import type { DeckVariant } from '@/lib/deck-meta'
+import type { Role } from '@/lib/auth/roles'
 
 type DeckShellProps = {
   workspaceName: string
@@ -11,6 +12,10 @@ type DeckShellProps = {
   dataDeck?: string
   /** 구독·결제 메뉴 노출 여부 (SpaceMember.role === 'OWNER') */
   isOwner?: boolean
+  /** 설정 메뉴 노출 판정용 Space 역할 */
+  role?: Role
+  /** 쓰기 권한이 없는 Deck 에서 상단에 보이는 조회 전용 안내 */
+  readOnlyNotice?: string
   children: React.ReactNode
 }
 
@@ -26,6 +31,8 @@ export function DeckShell({
   activeDecks,
   dataDeck,
   isOwner,
+  role,
+  readOnlyNotice,
   children,
 }: DeckShellProps) {
   return (
@@ -36,11 +43,19 @@ export function DeckShell({
         mode={mode}
         activeDecks={activeDecks}
         isOwner={isOwner}
+        role={role}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header variant={variant} />
         <main className="flex-1 overflow-y-auto">
-          <div className="p-8">{children}</div>
+          <div className="p-8">
+            {readOnlyNotice && (
+              <p className="mb-6 rounded-md border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
+                {readOnlyNotice}
+              </p>
+            )}
+            {children}
+          </div>
         </main>
       </div>
     </div>

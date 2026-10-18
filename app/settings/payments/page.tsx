@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { SETTINGS_PAYMENTS_PATH } from '@/lib/deck-routes'
 import { PaymentSettingsClient } from '@/components/billing/payment-settings-client'
+import { loadShellContext } from '@/lib/workspace-shell'
+import { RoleRequired } from '@/components/settings/role-required'
 
 // 결제 관리 — 결제수단과 결제 내역. 업무 구독은 /settings/billing.
 export default async function PaymentSettingsPage({
@@ -13,6 +15,7 @@ export default async function PaymentSettingsPage({
   if (!user) {
     redirect(`/login?redirectTo=${encodeURIComponent(SETTINGS_PAYMENTS_PATH)}`)
   }
+  const role = (await loadShellContext(user.id))?.role ?? 'MEMBER'
 
   const { cardRegistered, error } = await searchParams
 
@@ -25,7 +28,12 @@ export default async function PaymentSettingsPage({
         </p>
       </div>
 
-      <PaymentSettingsClient cardRegistered={cardRegistered ?? null} initialError={error ?? null} />
+      <RoleRequired role={role} min="OWNER">
+        <PaymentSettingsClient
+          cardRegistered={cardRegistered ?? null}
+          initialError={error ?? null}
+        />
+      </RoleRequired>
     </div>
   )
 }
