@@ -4,6 +4,7 @@ import { sellerHubActions } from './seller-hub'
 import { coupangAdsActions } from './coupang-ads'
 import { metaAdsActions } from './meta-ads'
 import { googleMarketingActions } from './google-marketing'
+import { salesContentActions } from './sales-content'
 
 /**
  * 전체 액션 정의 단일 소스.
@@ -15,6 +16,7 @@ const allActions: ActionDefinition[] = [
   ...coupangAdsActions,
   ...metaAdsActions,
   ...googleMarketingActions,
+  ...salesContentActions,
 ]
 
 const byType = new Map<string, ActionDefinition>(allActions.map((a) => [a.actionType, a]))

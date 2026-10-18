@@ -32,6 +32,11 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ message: '링크가 비활성화되었습니다' }, { status: 410 })
   }
 
+  // 저장 경로는 http(s) 만 받지만, 그 전에 저장된 행이 javascript:·data: 로 새지 않게 여기서도 막는다.
+  if (!/^https?:\/\//i.test(deployment.targetUrl)) {
+    return NextResponse.json({ message: '링크 대상 URL 이 올바르지 않습니다' }, { status: 410 })
+  }
+
   let destination: string
   try {
     destination = buildTargetUrl(deployment.targetUrl, {

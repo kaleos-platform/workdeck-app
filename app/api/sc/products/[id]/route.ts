@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productSchema } from '@/lib/sc/schemas'
+import { isSpaceBrand } from '@/lib/sc/brand-profile'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const resolved = await resolveDeckContext('sales-content')
@@ -39,6 +40,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const data = parsed.data
+  if (data.brandId && !(await isSpaceBrand(resolved.space.id, data.brandId))) {
+    return errorResponse('브랜드를 찾을 수 없습니다', 404)
+  }
 
   const product = await prisma.product.update({
     where: { id },
@@ -47,6 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(data.oneLinerPitch !== undefined && { oneLinerPitch: data.oneLinerPitch ?? null }),
       ...(data.customFields !== undefined && { customFields: (data.customFields ?? []) as never }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.brandId !== undefined && { brandId: data.brandId }),
     },
   })
   return NextResponse.json({ product })

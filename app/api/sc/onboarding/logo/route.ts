@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
-import { prisma } from '@/lib/prisma'
+import { saveBrandProfileNow } from '@/lib/sc/brand-profile'
 import { uploadBrandLogo, ALLOWED_LOGO_MIME, MAX_LOGO_BYTES } from '@/lib/sc/onboarding/storage'
 
 export async function POST(req: NextRequest) {
@@ -31,11 +31,7 @@ export async function POST(req: NextRequest) {
     })
 
     // BrandProfile이 아직 없으면 회사명 placeholder로 생성 (온보딩 중 로고 먼저 올리는 케이스)
-    const profile = await prisma.brandProfile.upsert({
-      where: { spaceId },
-      create: { spaceId, companyName: '', logoUrl: publicUrl },
-      update: { logoUrl: publicUrl },
-    })
+    const profile = await saveBrandProfileNow(spaceId, null, { logoUrl: publicUrl })
     return NextResponse.json({ logoUrl: profile.logoUrl })
   } catch (err) {
     return errorResponse(err instanceof Error ? err.message : '로고 업로드에 실패했습니다', 500)

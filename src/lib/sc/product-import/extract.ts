@@ -1,4 +1,4 @@
-import { generateTextForSpace } from '@/lib/ai/resolve'
+import { generateTextForSpace, type UsageContext } from '@/lib/ai/resolve'
 import { safeFetchHtml } from '@/lib/net/safe-fetch'
 import { htmlToText, HTML_TEXT_MAX_CHARS } from '@/lib/sh/html-to-text'
 import { prepareProductImages } from './images'
@@ -40,7 +40,8 @@ export async function extractSalesProduct(
     title?: string
     warnings?: string[]
   },
-  audience = ''
+  audience = '',
+  usage: UsageContext = {}
 ) {
   const prepared = await prepareProductImages(source.imageUrls)
   prepared.warnings.unshift(...(source.warnings ?? []))
@@ -56,19 +57,23 @@ export async function extractSalesProduct(
   let raw: ReturnType<typeof productExtractSchema.safeParse> | undefined
   let generated: Awaited<ReturnType<typeof generateTextForSpace>> | undefined
   for (let attempt = 0; attempt < 2; attempt++) {
-    generated = await generateTextForSpace(spaceId, {
-      system: PRODUCT_EXTRACT_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: `${prompt}\n우선 고객군: ${audience || '자료에서 확인되는 구매자'}\n${prepared.warnings.join('\n')}`,
-          images: prepared.images,
-        },
-      ],
-      responseFormat: 'json',
-      maxTokens: 6000,
-      temperature: 0.2,
-    })
+    generated = await generateTextForSpace(
+      spaceId,
+      {
+        system: PRODUCT_EXTRACT_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: 'user',
+            content: `${prompt}\n우선 고객군: ${audience || '자료에서 확인되는 구매자'}\n${prepared.warnings.join('\n')}`,
+            images: prepared.images,
+          },
+        ],
+        responseFormat: 'json',
+        maxTokens: 6000,
+        temperature: 0.2,
+      },
+      usage
+    )
     try {
       raw = productExtractSchema.safeParse(
         JSON.parse(

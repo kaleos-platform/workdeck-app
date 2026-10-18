@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StringArrayField } from './string-array-field'
 import { CustomFieldsEditor, type CustomField } from '@/components/sc/shared/custom-fields-editor'
+import { BrandSelect } from '@/components/sc/shared/brand-select'
 
 type BrandProfileFormState = {
   companyName: string
@@ -30,11 +31,42 @@ type Props = {
 export function BrandProfileForm({ initial }: Props) {
   const router = useRouter()
   const [state, setState] = useState<BrandProfileFormState>({ ...EMPTY, ...initial })
+  // null = Space 공통 프로필(초기값). 브랜드를 고르면 그 브랜드 프로필을 불러와 편집한다.
+  const [brandId, setBrandId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
 
   function update<K extends keyof BrandProfileFormState>(key: K, value: BrandProfileFormState[K]) {
     setState((prev) => ({ ...prev, [key]: value }))
+  }
+
+  // 불러오기에 성공한 뒤에만 brandId 를 바꾼다. 먼저 바꾸면 실패 시 이전 브랜드 내용이 폼에 남은 채
+  // 새 브랜드로 저장돼 덮어쓴다.
+  async function selectBrand(next: string | null) {
+    setMessage(null)
+    setLoading(true)
+    try {
+      const qs = next ? `?brandId=${encodeURIComponent(next)}` : ''
+      const res = await fetch(`/api/sc/brand-profile${qs}`, { cache: 'no-store' })
+      if (!res.ok) throw new Error('프로필을 불러오지 못했습니다')
+      const { profile } = await res.json()
+      setState(
+        profile
+          ? {
+              companyName: profile.companyName ?? '',
+              shortDescription: profile.shortDescription ?? '',
+              toneOfVoice: profile.toneOfVoice ?? [],
+              customFields: profile.customFields ?? [],
+            }
+          : EMPTY
+      )
+      setBrandId(next)
+    } catch (err) {
+      setMessage({ kind: 'error', text: err instanceof Error ? err.message : String(err) })
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -48,6 +80,7 @@ export function BrandProfileForm({ initial }: Props) {
         shortDescription: state.shortDescription || undefined,
         toneOfVoice: state.toneOfVoice.length ? state.toneOfVoice : undefined,
         customFields: cleanCustomFields.length ? cleanCustomFields : undefined,
+        brandId,
       }
       const res = await fetch('/api/sc/brand-profile', {
         method: 'PUT',
@@ -69,6 +102,14 @@ export function BrandProfileForm({ initial }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      <BrandSelect
+        id="brandProfileBrand"
+        label="편집할 브랜드"
+        value={brandId}
+        onChange={selectBrand}
+        noneLabel="공통(브랜드를 정하지 않은 상품에 사용)"
+        disabled={loading || submitting}
+      />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">회사 프로필</CardTitle>
@@ -139,7 +180,7 @@ export function BrandProfileForm({ initial }: Props) {
       )}
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting || loading}>
           {submitting ? '저장 중…' : '저장'}
         </Button>
       </div>

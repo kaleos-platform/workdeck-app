@@ -84,3 +84,12 @@ describe('clampText', () => {
     expect(clampText('abcdef', 3)).toBe('abc')
   })
 })
+
+describe('브랜드', () => {
+  it('seller-hub 브랜드 id 를 그대로 잇는다', () => {
+    expect(invProductToDraft({ name: 'A', brand: { id: 'b1', name: '크림드' } }).brandId).toBe('b1')
+  })
+  it('브랜드가 없으면 null', () => {
+    expect(invProductToDraft({ name: 'A', brand: null }).brandId).toBeNull()
+  })
+})

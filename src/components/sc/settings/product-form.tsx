@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BrandSelect } from '@/components/sc/shared/brand-select'
 import { CustomFieldsEditor, type CustomField } from '@/components/sc/shared/custom-fields-editor'
 import { SALES_CONTENT_PRODUCTS_PATH } from '@/lib/deck-routes'
 
@@ -17,6 +18,7 @@ export type ProductFormState = {
   oneLinerPitch: string
   customFields: CustomField[]
   isActive: boolean
+  brandId: string | null
 }
 
 type Props = {
@@ -33,6 +35,7 @@ const EMPTY: ProductFormState = {
   oneLinerPitch: '',
   customFields: [],
   isActive: true,
+  brandId: null,
 }
 
 export function ProductForm({ mode, productId, initial, onSaved, onCancel }: Props) {
@@ -66,6 +69,7 @@ export function ProductForm({ mode, productId, initial, onSaved, onCancel }: Pro
         oneLinerPitch: state.oneLinerPitch || undefined,
         customFields: cleanCustomFields.length ? cleanCustomFields : undefined,
         isActive: state.isActive,
+        brandId: state.brandId,
       }
 
       const url = mode === 'create' ? '/api/sc/products' : `/api/sc/products/${productId}`
@@ -126,6 +130,14 @@ export function ProductForm({ mode, productId, initial, onSaved, onCancel }: Pro
               value={state.oneLinerPitch}
               onChange={(e) => update('oneLinerPitch', e.target.value)}
               maxLength={200}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <BrandSelect
+              id="brandId"
+              label="브랜드"
+              value={state.brandId}
+              onChange={(v) => update('brandId', v)}
             />
           </div>
           <div className="flex items-center gap-2">

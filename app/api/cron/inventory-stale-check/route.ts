@@ -8,7 +8,8 @@ const STALE_THRESHOLD_DAYS = 2
 const WORKER_HEARTBEAT_THRESHOLD_MIN = 10 // 10분 이상 ping 없으면 다운으로 간주
 /** stale 재알림 간격 — cron 이 24시간 주기라 하루 1회 발송이 된다. */
 const STALE_RENOTIFY_WINDOW_MS = 20 * 60 * 60 * 1000
-const WORKER_SERVICE = 'inventory-collector'
+// 쿠팡 수집 워커 + 세일즈 콘텐츠 발행 워커(worker/src/heartbeat.ts 의 service 값).
+const WORKER_SERVICES = ['inventory-collector', 'sales-content-worker']
 
 function kstMidnight(d: Date): Date {
   const kst = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
@@ -113,80 +114,85 @@ export const GET = withCronRun('/api/cron/inventory-stale-check', async () => {
 
   // 워커 heartbeat 체크 — 마지막 ping이 임계치 이전이면 Slack 알림
   // dedupe: metadata.lastNotifiedAt이 12시간 이내면 재발송 생략
-  let workerCheck: {
-    service: string
-    lastPingAt: string | null
-    minutesSincePing: number | null
-    down: boolean
-    notified: boolean
-  } = {
-    service: WORKER_SERVICE,
-    lastPingAt: null,
-    minutesSincePing: null,
-    down: false,
-    notified: false,
-  }
-
-  try {
-    const heartbeat = await prisma.workerHeartbeat.findUnique({
-      where: { service: WORKER_SERVICE },
-    })
-
-    const lastPingAt = heartbeat?.lastPingAt ?? null
-    const minutesSincePing = lastPingAt
-      ? Math.floor((Date.now() - lastPingAt.getTime()) / 60_000)
-      : null
-    const down = minutesSincePing === null || minutesSincePing >= WORKER_HEARTBEAT_THRESHOLD_MIN
-
-    workerCheck = {
+  const workers = []
+  for (const WORKER_SERVICE of WORKER_SERVICES) {
+    let workerCheck: {
+      service: string
+      lastPingAt: string | null
+      minutesSincePing: number | null
+      down: boolean
+      notified: boolean
+    } = {
       service: WORKER_SERVICE,
-      lastPingAt: lastPingAt?.toISOString() ?? null,
-      minutesSincePing,
-      down,
+      lastPingAt: null,
+      minutesSincePing: null,
+      down: false,
       notified: false,
     }
 
-    if (down) {
-      const meta = (heartbeat?.metadata ?? {}) as { lastNotifiedAt?: string }
-      const lastNotifiedAt = meta.lastNotifiedAt ? new Date(meta.lastNotifiedAt) : null
-      const dedupeWindowMs = 12 * 60 * 60 * 1000 // 12시간
-      const shouldNotify =
-        !lastNotifiedAt || Date.now() - lastNotifiedAt.getTime() >= dedupeWindowMs
+    try {
+      const heartbeat = await prisma.workerHeartbeat.findUnique({
+        where: { service: WORKER_SERVICE },
+      })
 
-      if (shouldNotify) {
-        try {
-          await notifyWorkerDown({
-            service: WORKER_SERVICE,
-            lastPingAt,
-            thresholdMinutes: WORKER_HEARTBEAT_THRESHOLD_MIN,
-          })
-          workerCheck.notified = true
-        } catch (err) {
-          console.error('[cron/inventory-stale-check] worker-down Slack 실패:', err)
-        }
+      const lastPingAt = heartbeat?.lastPingAt ?? null
+      const minutesSincePing = lastPingAt
+        ? Math.floor((Date.now() - lastPingAt.getTime()) / 60_000)
+        : null
+      const down = minutesSincePing === null || minutesSincePing >= WORKER_HEARTBEAT_THRESHOLD_MIN
 
-        // dedupe marker 갱신 — heartbeat row가 없으면 placeholder 생성
-        if (heartbeat) {
-          await prisma.workerHeartbeat.update({
-            where: { service: WORKER_SERVICE },
-            data: {
-              metadata: { ...meta, lastNotifiedAt: new Date().toISOString() },
-            },
-          })
-        } else {
-          await prisma.workerHeartbeat.create({
-            data: {
+      workerCheck = {
+        service: WORKER_SERVICE,
+        lastPingAt: lastPingAt?.toISOString() ?? null,
+        minutesSincePing,
+        down,
+        notified: false,
+      }
+
+      if (down) {
+        const meta = (heartbeat?.metadata ?? {}) as { lastNotifiedAt?: string }
+        const lastNotifiedAt = meta.lastNotifiedAt ? new Date(meta.lastNotifiedAt) : null
+        const dedupeWindowMs = 12 * 60 * 60 * 1000 // 12시간
+        const shouldNotify =
+          !lastNotifiedAt || Date.now() - lastNotifiedAt.getTime() >= dedupeWindowMs
+
+        if (shouldNotify) {
+          try {
+            await notifyWorkerDown({
               service: WORKER_SERVICE,
-              lastPingAt: new Date(0),
-              metadata: { lastNotifiedAt: new Date().toISOString() },
-            },
-          })
+              lastPingAt,
+              thresholdMinutes: WORKER_HEARTBEAT_THRESHOLD_MIN,
+            })
+            workerCheck.notified = true
+          } catch (err) {
+            console.error('[cron/inventory-stale-check] worker-down Slack 실패:', err)
+          }
+
+          // dedupe marker 갱신 — heartbeat row가 없으면 placeholder 생성
+          if (heartbeat) {
+            await prisma.workerHeartbeat.update({
+              where: { service: WORKER_SERVICE },
+              data: {
+                metadata: { ...meta, lastNotifiedAt: new Date().toISOString() },
+              },
+            })
+          } else {
+            await prisma.workerHeartbeat.create({
+              data: {
+                service: WORKER_SERVICE,
+                lastPingAt: new Date(0),
+                metadata: { lastNotifiedAt: new Date().toISOString() },
+              },
+            })
+          }
         }
       }
+    } catch (err) {
+      console.error('[cron/inventory-stale-check] worker heartbeat 체크 실패:', err)
     }
-  } catch (err) {
-    console.error('[cron/inventory-stale-check] worker heartbeat 체크 실패:', err)
+
+    workers.push(workerCheck)
   }
 
-  return { workspaces: checked, worker: workerCheck }
+  return { workspaces: checked, workers }
 })

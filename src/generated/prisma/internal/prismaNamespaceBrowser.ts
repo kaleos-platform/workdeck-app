@@ -1765,6 +1765,7 @@ export type KeywordChangeLogScalarFieldEnum = (typeof KeywordChangeLogScalarFiel
 export const ProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
+  brandId: 'brandId',
   name: 'name',
   oneLinerPitch: 'oneLinerPitch',
   customFields: 'customFields',
@@ -1803,6 +1804,7 @@ export type PersonaScalarFieldEnum = (typeof PersonaScalarFieldEnum)[keyof typeo
 export const BrandProfileScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
+  brandId: 'brandId',
   companyName: 'companyName',
   shortDescription: 'shortDescription',
   toneOfVoice: 'toneOfVoice',

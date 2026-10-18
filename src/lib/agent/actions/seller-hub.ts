@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { ActionDefinition } from './types'
 import { prisma } from '@/lib/prisma'
+import { ToolUserError } from '@/lib/agent/tools/errors'
 import { forecastOption, buildDailySeries } from '@/lib/inv/forecast'
 import { computeBiasAdjust } from '@/lib/inv/forecast/bias-adjust'
 import { roundUp } from '@/lib/inv/round'
@@ -42,6 +43,15 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
   title: '발주 계획 생성',
   paramsSchema: reorderPlanParams,
   requiredRole: 'ADMIN',
+  // 제안 시점 검증 — 다른 Space 의 상품 id 로 승인 불가 액션이 큐에 쌓이지 않게(실행 시점에도 spaceId 로 막는다).
+  validateCreate: async (ctx, params) => {
+    const product = await prisma.invProduct.findFirst({
+      where: { id: params.productId, spaceId: ctx.spaceId, status: 'ACTIVE' },
+      select: { id: true },
+    })
+    if (!product)
+      throw new ToolUserError(`이 Space 에서 활성 상품을 찾을 수 없습니다: ${params.productId}`)
+  },
   execute: async (ctx, params) => {
     const spaceId = ctx.spaceId
     // createdById는 User FK — 제안자가 에이전트일 수 있으므로 승인한 구성원으로 기록한다.
