@@ -172,10 +172,17 @@ export const contentGenerateSectionSchema = z.object({
 
 // ─── Deployment ─────────────────────────────────────────────────────────────
 
+export const httpUrl = z
+  .string()
+  .url()
+  .max(2000)
+  .refine((v) => /^https?:\/\//i.test(v), 'http(s) 주소만 쓸 수 있습니다')
+
 export const deploymentCreateSchema = z.object({
   contentId: z.string().cuid(),
   channelId: z.string().cuid(),
-  targetUrl: z.string().url().max(2000),
+  // /c/[slug] 가 그대로 Location 에 넣으므로 http(s) 만 받는다(javascript:·data: 차단).
+  targetUrl: httpUrl,
   scheduledAt: z.string().datetime().optional().nullable(),
   utmCampaign: emptyToUndefined.pipe(z.string().max(80)).optional(),
   utmContent: emptyToUndefined.pipe(z.string().max(80)).optional(),

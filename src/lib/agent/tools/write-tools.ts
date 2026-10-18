@@ -12,7 +12,7 @@ import type { ToolDefinition } from './types'
  */
 
 // 액션 파라미터로 안정적 멱등 키 생성 — 동일 요청 재시도가 중복 액션을 만들지 않도록.
-function idempotencyKeyFor(actionType: string, spaceId: string, params: unknown): string {
+export function idempotencyKeyFor(actionType: string, spaceId: string, params: unknown): string {
   const h = createHash('sha256')
   h.update(actionType)
   h.update('\0')

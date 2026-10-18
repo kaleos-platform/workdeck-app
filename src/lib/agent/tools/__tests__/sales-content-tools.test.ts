@@ -34,10 +34,13 @@ it('모든 도구가 sales-content 카드 활성 여부를 먼저 확인한다',
   ;(requireDeck as jest.Mock).mockRejectedValue(
     new Error('sales-content 카드가 활성화되지 않았습니다')
   )
-  for (const t of salesContentTools) {
-    await expect(t.execute(ctx, { contentId: 'c1' })).rejects.toThrow('활성화되지')
+  try {
+    for (const t of salesContentTools) {
+      await expect(t.execute(ctx, { contentId: 'c1' })).rejects.toThrow('활성화되지')
+    }
+  } finally {
+    ;(requireDeck as jest.Mock).mockReset()
   }
-  ;(requireDeck as jest.Mock).mockReset()
 })
 
 it('sc_list_brands: 브랜드별 프로필과 공통 프로필을 나눈다', async () => {

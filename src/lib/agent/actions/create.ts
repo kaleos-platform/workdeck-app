@@ -39,6 +39,11 @@ function toResultInSpace(
  *     → INSERT(PENDING, expiresAt=now+expiryHours(기본 72h)).
  *  4. 생성 중 idempotencyKey 경합(P2002)이면 승자 액션을 재조회해 반환.
  */
+// 같은 멱등 키로 새 제안을 허용하는 종료 상태. 실행된 적이 없는 상태만 기본 허용한다.
+// FAILED 는 외부 API 가 이미 실행됐을 수 있어(응답 타임아웃 등) 액션이 retryableAfterFailure 로
+// "실패하면 아무것도 남지 않는다"고 선언한 경우에만 허용한다.
+const NEVER_EXECUTED: string[] = ['REJECTED', 'EXPIRED']
+
 export async function createPendingAction(draft: PendingActionDraft): Promise<PendingActionResult> {
   const def = getActionDefinition(draft.actionType)
   if (!def) throw new ToolUserError(`알 수 없는 액션 유형: ${draft.actionType}`)
@@ -57,12 +62,24 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
   if (blocked) throw new ToolUserError(blocked)
 
   // 멱등: 동일 키 기존 액션이 있으면 새로 만들지 않고 그대로 반환.
+  // 단 실패·거절·만료로 끝난 액션은 다시 실행될 수 없으므로 키를 풀고 새로 만든다
+  // (그대로 돌려주면 같은 내용의 재요청이 영원히 막힌다). 실행 완료는 중복 실행 방지를 위해 그대로 반환.
   if (draft.idempotencyKey) {
     const existing = await prisma.agentPendingAction.findUnique({
       where: { idempotencyKey: draft.idempotencyKey },
-      select: { id: true, spaceId: true, expiresAt: true },
+      select: { id: true, spaceId: true, expiresAt: true, status: true },
     })
-    if (existing) return toResultInSpace(existing, draft.spaceId)
+    if (existing) {
+      const ended =
+        existing.spaceId === draft.spaceId &&
+        (NEVER_EXECUTED.includes(existing.status) ||
+          (existing.status === 'FAILED' && def.retryableAfterFailure === true))
+      if (!ended) return toResultInSpace(existing, draft.spaceId)
+      await prisma.agentPendingAction.updateMany({
+        where: { id: existing.id, idempotencyKey: draft.idempotencyKey },
+        data: { idempotencyKey: null },
+      })
+    }
   }
 
   // validateCreate·snapshot용. 생성 시점이라 deciderId·actionId는 없다.

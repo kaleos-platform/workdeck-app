@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireDeck } from '@/lib/mcp/context'
+import { createPendingAction } from '@/lib/agent/actions/create'
+import { postPublishParams } from '@/lib/agent/actions/sales-content'
+import { idempotencyKeyFor } from './write-tools'
 import { pickDailyMetrics } from '@/lib/sc/metrics-dedup'
 import { redactErrorMessage } from '@/lib/sc/notifications'
 import { ToolUserError } from './errors'
@@ -313,6 +316,38 @@ const getContent: ToolDefinition = {
   },
 }
 
+const proposePost: ToolDefinition = {
+  name: 'sc_propose_post',
+  description:
+    '게시물 1건의 발행을 제안합니다(제목·본문·채널·연결 URL·예약 시각). 즉시 발행되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN)가 한 번 승인하면 콘텐츠가 만들어지고 해당 채널로 발행이 예약됩니다. 본문은 텍스트로 쓰고 `# `·`## `·`### ` 로 시작하는 줄은 소제목이 됩니다(50자 이상). targetUrl 은 글에서 연결할 상품·랜딩 페이지이고, 클릭 추적용 짧은 링크로 바뀝니다. scheduledAt(ISO 8601)을 비우거나 승인 시점이 이미 지났으면 승인 즉시 발행합니다. 쓰기 전에 sc_list_brands 로 브랜드 톤을, sc_list_channels 로 채널 id 를 확인하세요.',
+  inputSchema: postPublishParams.shape,
+  mode: 'write',
+  scope: 'sc:write',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    const parsed = postPublishParams.safeParse(params)
+    if (!parsed.success) {
+      throw new ToolUserError(
+        `입력값 오류: ${parsed.error.issues.map((i) => i.message).join(', ')}`
+      )
+    }
+    const p = parsed.data
+    return createPendingAction({
+      spaceId: ctx.spaceId,
+      actionType: 'sales-content.post.publish',
+      params: p,
+      summary: `게시물 발행 예약: ${p.title}${p.scheduledAt ? ` (${p.scheduledAt})` : ''}`,
+      source: 'MCP',
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
+      // 같은 제안 재시도가 승인 건을 중복으로 만들지 않게.
+      idempotencyKey: idempotencyKeyFor('sales-content.post.publish', ctx.spaceId, p),
+    })
+  },
+}
+
 export const salesContentTools: ToolDefinition[] = [
   listBrands,
   listProducts,
@@ -320,4 +355,5 @@ export const salesContentTools: ToolDefinition[] = [
   listChannels,
   listContents,
   getContent,
+  proposePost,
 ]
