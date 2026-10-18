@@ -50,6 +50,7 @@ const STATUS_TABS: Array<{ value: 'ALL' | PostingStatus; label: string }> = [
 function formatDate(value: string | null): string {
   if (!value) return '-'
   return new Date(value).toLocaleDateString('ko-KR', {
+    timeZone: 'Asia/Seoul',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

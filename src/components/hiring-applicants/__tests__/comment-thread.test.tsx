@@ -11,6 +11,16 @@ const comment = {
 }
 const props = { applicationId: 'app-qa', currentUserId: 'qa', initial: [comment] }
 
+it('코멘트 시각은 실행 환경과 관계없이 한국 시간으로 표시한다', () => {
+  render(
+    <CommentThread
+      {...props}
+      initial={[{ ...comment, createdAt: '2026-10-18T15:33:17.000Z' }]}
+    />
+  )
+  expect(screen.getByText('2026. 10. 19. 오전 12:33:17')).toBeInTheDocument()
+})
+
 it('추가 중 입력·편집·삭제를 잠그고 성공 응답을 반영한다', async () => {
   let finish!: (v: unknown) => void
   global.fetch = jest.fn(
