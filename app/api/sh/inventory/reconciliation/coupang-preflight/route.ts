@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 
 // GET /api/sh/inventory/reconciliation/coupang-preflight
@@ -20,10 +21,8 @@ export async function GET() {
       where: { spaceId, externalSource: 'coupang_rocket_growth', isActive: true },
       select: { id: true, name: true },
     }),
-    prisma.workspace.findUnique({
-      where: { ownerId: userId },
-      select: { id: true },
-    }),
+    // Space → 쿠팡 워크스페이스(reconciliation POST·resolveWorkspace 와 같은 해석기)
+    resolveSpaceCoupangWorkspaceId(spaceId, userId).then((id) => (id ? { id } : null)),
   ])
 
   const coupangActive = !!deckInstance?.isActive

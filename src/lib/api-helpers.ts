@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { authenticateWorker, resolveWorkerWorkspaceId } from '@/lib/worker-auth'
+import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 
 // 에러 응답 생성 헬퍼 — extra 필드를 병합해 추가 정보를 포함할 수 있음
 export function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
@@ -45,12 +46,23 @@ export async function resolveWorkspace(opts?: DeckContextOptions) {
   const user = 'error' in deckContext ? await getUser() : deckContext.user
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
 
-  const workspace = await measureCoupangAds('auth_workspace', () =>
-    prisma.workspace.findUnique({
-      where: { ownerId: user.id },
-      select: { id: true },
-    })
-  )
+  // 구성원의 쓰기는 ADMIN 이상 — 워크스페이스를 Space 축으로 해석하므로 MEMBER 는 조회만.
+  if (!('error' in deckContext) && opts?.write) {
+    const denied = assertRole(deckContext.role, 'ADMIN')
+    if (denied) return { error: denied }
+  }
+
+  // Space 구성원은 그 Space 의 워크스페이스(resolveSpaceCoupangWorkspaceId — resolveCollectionAuth 와 같은
+  // 해석기). ownerId 만 보면 초대받은 구성원은 쿠팡 데이터를 못 본다. 멤버십이 없으면 기존처럼 본인 소유.
+  // ponytail: Space 는 최고참 멤버십(resolveSpaceContext) — 다중 Space 선택은 앱 전체 과제.
+  const spaceId = 'error' in deckContext ? null : deckContext.space.id
+  const workspace = await measureCoupangAds('auth_workspace', async () => {
+    if (spaceId) {
+      const id = await resolveSpaceCoupangWorkspaceId(spaceId, user.id)
+      return id ? { id } : null
+    }
+    return prisma.workspace.findUnique({ where: { ownerId: user.id }, select: { id: true } })
+  })
   if (!workspace) return { error: errorResponse('워크스페이스가 없습니다', 404) }
 
   if ('error' in deckContext) {
