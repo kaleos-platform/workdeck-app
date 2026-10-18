@@ -130,7 +130,7 @@ export async function checkAndRunCollection(
       executedToday.add(ws)
       retryQueue.delete(ws) // 새 정기 실행 — 이전(어제 잔류 등) 재시도 상태 초기화
     }
-    const label = isCron ? '시작' : `재시도(${(retry?.attempts ?? 0) + 1}/${MAX_RETRIES})`
+    const label = isCron ? '시작' : `재시도(${retry?.attempts ?? 0}/${MAX_RETRIES})`
     console.log(`[collection-scheduler] 수집 ${label}: workspace=${ws}, now=${nowHHMM}`)
 
     inFlight.add(ws) // await 전 동기 잠금 — 다음 tick 의 중복 실행 차단
