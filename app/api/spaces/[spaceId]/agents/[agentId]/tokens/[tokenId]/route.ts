@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { errorResponse } from '@/lib/api-helpers'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
+import { writeAuditLog } from '@/lib/admin/auth'
 import { revokeAgentToken } from '@/lib/agent/identity/agent-token'
 
 type Ctx = { params: Promise<{ spaceId: string; agentId: string; tokenId: string }> }
@@ -18,5 +19,9 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
   if (!agent) return errorResponse('에이전트를 찾을 수 없습니다', 404)
   const ok = await revokeAgentToken(agent.id, tokenId)
   if (!ok) return errorResponse('토큰을 찾을 수 없거나 이미 폐기되었습니다', 404)
+  await writeAuditLog(auth.userId, 'space.agent.token.revoke', 'agent_token', tokenId, {
+    spaceId,
+    agentId: agent.id,
+  })
   return NextResponse.json({ ok: true })
 }
