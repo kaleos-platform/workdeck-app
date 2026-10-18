@@ -77,3 +77,44 @@ test('모델별 합계가 전체 합계와 다르면 완료로 보고하지 않�
     /AUDIT_COUNTS_INVALID/
   )
 })
+
+test('파일 검사 모드 누락과 불완전 집계를 완료로 보고하지 않는다', async () => {
+  await assert.rejects(
+    auditRuntimeCustomer('peakpay', async () => reply(1, null, 1), true),
+    /AUDIT_ASSETS_INVALID/
+  )
+  const stat = {
+    checked: 1,
+    verified: 1,
+    manifestMissing: 0,
+    manifestInvalid: 0,
+    readFailed: 0,
+    sizeMismatch: 0,
+    checksumMismatch: 0,
+  }
+  let request
+  const report = await auditRuntimeCustomer(
+    'peakpay',
+    async (input) => {
+      request = input
+      return {
+        ...reply(1, null, 1),
+        assets: { images: stat, attachments: { ...stat, checked: 0, verified: 0 } },
+      }
+    },
+    true
+  )
+  assert.equal(request.assets, true)
+  assert.equal(report.assets.images.verified, 1)
+  await assert.rejects(
+    auditRuntimeCustomer(
+      'peakpay',
+      async () => ({
+        ...reply(1, null, 1),
+        assets: { images: { ...stat, checked: 2 }, attachments: stat },
+      }),
+      true
+    ),
+    /AUDIT_ASSETS_INVALID/
+  )
+})
