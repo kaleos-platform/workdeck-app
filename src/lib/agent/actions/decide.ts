@@ -8,7 +8,10 @@ import { prisma } from '@/lib/prisma'
 import { approveAndExecute, rejectAction } from '@/lib/agent/actions/execute'
 import { syncSlackDecision } from '@/lib/slack/sync-decision'
 import { maskParams } from '@/lib/agent/audit'
+import { getActionDefinition } from '@/lib/agent/actions/registry'
 import type { DecisionOutcome } from '@/lib/agent/actions/execute'
+
+export const SPEND_BULK_APPROVE_DENIED = '지출 건은 한 건씩 승인하세요'
 
 export type DecideResult =
   | { status: 404 | 403; error: string; outcome?: undefined }
@@ -18,7 +21,9 @@ export type DecideResult =
 export async function decideAction(
   userId: string,
   actionId: string,
-  decision: 'approve' | 'reject'
+  decision: 'approve' | 'reject',
+  /** 일괄 승인: 지출 액션은 결정하지 않고 403(한 건씩 확인하며 승인하도록). 거절은 영향 없음. */
+  opts: { excludeSpendApprove?: boolean } = {}
 ): Promise<DecideResult> {
   const action = await prisma.agentPendingAction.findUnique({
     where: { id: actionId },
@@ -32,6 +37,14 @@ export async function decideAction(
     select: { role: true },
   })
   if (!member?.role) return { status: 403, error: '권한이 없습니다' }
+
+  if (
+    opts.excludeSpendApprove &&
+    decision === 'approve' &&
+    getActionDefinition(action.actionType)?.spendKrw
+  ) {
+    return { status: 403, error: SPEND_BULK_APPROVE_DENIED }
+  }
 
   const outcome =
     decision === 'approve'

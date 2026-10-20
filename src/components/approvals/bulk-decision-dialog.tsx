@@ -63,10 +63,12 @@ export function BulkDecisionDialog({
       ? current.name
       : null
 
+  // 지출 건은 일괄 승인에서 제외(서버도 forbidden 처리) — 한 건씩 확인하며 승인한다. 거절은 모두 대상.
+  const isSpend = (a: AgentPendingActionDTO) => a.spendKrw != null
+  const excluded = decision === 'approve' ? actions.filter(isSpend) : []
+  const targets = decision === 'approve' ? actions.filter((a) => !isSpend(a)) : actions
   const byType = new Map<string, number>()
-  for (const a of actions) byType.set(a.actionType, (byType.get(a.actionType) ?? 0) + 1)
-  const spendActions = actions.filter((a) => (a.spendKrw ?? 0) > 0)
-  const totalSpend = spendActions.reduce((sum, a) => sum + (a.spendKrw ?? 0), 0)
+  for (const a of targets) byType.set(a.actionType, (byType.get(a.actionType) ?? 0) + 1)
 
   function setRun(v: boolean) {
     setRunning(v)
@@ -83,15 +85,15 @@ export function BulkDecisionDialog({
   }
 
   async function submit() {
-    if (!decision || running || actions.length === 0) return
+    if (!decision || running || targets.length === 0) return
     setRun(true)
     setError(null)
-    setSummaries(Object.fromEntries(actions.map((a) => [a.id, a.summary])))
+    setSummaries(Object.fromEntries(targets.map((a) => [a.id, a.summary])))
     try {
       const res = await fetch('/api/agent/actions/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: decision, actionIds: actions.map((a) => a.id) }),
+        body: JSON.stringify({ action: decision, actionIds: targets.map((a) => a.id) }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok || !Array.isArray(data?.results)) {
@@ -99,14 +101,15 @@ export function BulkDecisionDialog({
         return
       }
       setResults(data.results)
-      onDone()
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('workdeck:approvals-changed'))
-      }
     } catch {
       setError('네트워크 오류가 발생했습니다')
     } finally {
       setRun(false)
+      // 오류여도 일부가 처리됐을 수 있다 — 목록을 실제 상태로 다시 불러온다.
+      onDone()
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('workdeck:approvals-changed'))
+      }
     }
   }
 
@@ -118,7 +121,7 @@ export function BulkDecisionDialog({
           {!results && (
             <DialogDescription>
               {spaceName ? `「${spaceName}」에서 ` : ''}
-              {actions.length}건을 {label}합니다.
+              {targets.length}건을 {label}합니다.
             </DialogDescription>
           )}
         </DialogHeader>
@@ -148,13 +151,16 @@ export function BulkDecisionDialog({
               ))}
             </ul>
             <ul className="max-h-48 list-disc space-y-0.5 overflow-y-auto pl-5 text-xs text-muted-foreground">
-              {actions.map((a) => (
+              {targets.map((a) => (
                 <li key={a.id}>{a.summary}</li>
               ))}
+              {excluded.map((a) => (
+                <li key={a.id}>{a.summary} — 제외(한 건씩 승인)</li>
+              ))}
             </ul>
-            {spendActions.length > 0 && (
+            {excluded.length > 0 && (
               <p className="font-medium">
-                지출 포함 {spendActions.length}건 · 합계 {totalSpend.toLocaleString('ko-KR')}원
+                지출 {excluded.length}건은 제외됩니다 — 상세 화면에서 한 건씩 승인하세요
               </p>
             )}
             {error && <p className="text-destructive">{error}</p>}
@@ -171,10 +177,10 @@ export function BulkDecisionDialog({
               </Button>
               <Button
                 variant={decision === 'reject' ? 'destructive' : 'default'}
-                disabled={running}
+                disabled={running || targets.length === 0}
                 onClick={submit}
               >
-                {running ? '처리 중...' : `${actions.length}건 ${label}`}
+                {running ? '처리 중...' : `${targets.length}건 ${label}`}
               </Button>
             </>
           )}

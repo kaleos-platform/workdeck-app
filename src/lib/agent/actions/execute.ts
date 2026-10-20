@@ -159,7 +159,7 @@ export async function approveAndExecute(
       deciderUserId: deciderId,
     })
   } catch (err) {
-    return fail(err instanceof Error ? err.message : '감사 기록 실패')
+    return fail(executionError(err))
   }
 
   // 실행 — 성공 EXECUTED, 실패 FAILED. try는 execute만 감싼다:
