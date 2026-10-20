@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import type { Prisma } from '@/generated/prisma/client'
+import {
+  compareOpeningApplicationTarget,
+  type ApplicationAuditGroup,
+} from '@/lib/hiring/migration/application-target-audit'
 import { prisma } from '@/lib/prisma'
 import { authenticateWorker, workerOwns } from '@/lib/worker-auth'
 import { decodeMigrationSnapshot } from '@/lib/hiring/migration/ledger'
@@ -23,11 +28,42 @@ const inputSchema = z
     assets: z.boolean().optional(),
     after: boundary.optional(),
     through: boundary.optional(),
+    verifyApplications: z
+      .array(z.string().regex(/^[1-9]\d{0,18}$/))
+      .min(1)
+      .max(7)
+      .refine((ids) => new Set(ids).size === ids.length)
+      .optional(),
   })
   .strict()
+  .refine((x) => !x.verifyApplications || (!x.after && !x.through))
   .refine((x) => !x.after || (x.through !== undefined && x.after < x.through))
 const respond = (body: unknown, status = 200) =>
   NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } })
+
+async function resolveAuditScope(
+  tx: Prisma.TransactionClient,
+  spaceId: string,
+  where: Prisma.HiringMigrationRecordWhereInput
+) {
+  const anchor = await tx.hiringMigrationRecord.findFirst({
+    where: { ...where, targetModel: 'HiringPosting' },
+    orderBy: { id: 'asc' },
+  })
+  if (!anchor) throw Error('AUDIT_ANCHOR_REQUIRED')
+  const stored = decodeMigrationSnapshot(anchor)
+  if (
+    !stored ||
+    typeof stored !== 'object' ||
+    !('sourceSpaceId' in stored) ||
+    typeof stored.sourceSpaceId !== 'string' ||
+    !/^[1-9]\d{0,18}$/.test(stored.sourceSpaceId)
+  )
+    throw Error('AUDIT_ANCHOR_INVALID')
+  const scope = { spaceId, sourceSpaceId: stored.sourceSpaceId }
+  recoverOpeningPosting(anchor, scope)
+  return scope
+}
 
 export async function POST(request: NextRequest) {
   let auth: Awaited<ReturnType<typeof authenticateWorker>>
@@ -67,6 +103,52 @@ export async function POST(request: NextRequest) {
           throw Error('AUDIT_SCOPE_UNAVAILABLE')
         const spaceId = memberships[0].spaceId
         if (!workerOwns(auth.scope, { spaceId })) throw Error('AUDIT_SCOPE_FORBIDDEN')
+        if (input.verifyApplications) {
+          const scope = await resolveAuditScope(tx, spaceId, { spaceId })
+          const records = await tx.hiringMigrationRecord.findMany({
+            where: {
+              spaceId,
+              targetModel: 'HiringApplication',
+              sourceRef: {
+                in: input.verifyApplications.map((id) =>
+                  JSON.stringify(['opening.work', 'application', id, '0'])
+                ),
+              },
+            },
+            orderBy: { id: 'asc' },
+          })
+          const summary = {
+            checked: records.length,
+            verified: 0,
+            different: 0,
+            failed: 0,
+            missingTargets: 0,
+            missingRecords: input.verifyApplications.length - records.length,
+            physicalHashMatches: 0,
+            differences: {} as Partial<Record<ApplicationAuditGroup, number>>,
+          }
+          for (const record of records) {
+            const current = await tx.hiringApplication.findFirst({
+              where: { id: record.targetId, spaceId },
+              include: {
+                files: { orderBy: { id: 'asc' } },
+                posting: { select: { spaceId: true } },
+                postingPosition: { select: { spaceId: true, postingId: true } },
+                stores: {
+                  orderBy: { storeId: 'asc' },
+                  include: { store: { select: { spaceId: true } } },
+                },
+              },
+            })
+            const result = compareOpeningApplicationTarget(record, current, scope)
+            if (result.status === 'missing') summary.missingTargets++
+            else summary[result.status]++
+            if (result.physicalHashMatches) summary.physicalHashMatches++
+            for (const group of result.differentGroups)
+              summary.differences[group] = (summary.differences[group] ?? 0) + 1
+          }
+          return { customer: input.customer, applicationTargets: summary }
+        }
         const upper =
           input.through ??
           (
@@ -87,22 +169,7 @@ export async function POST(request: NextRequest) {
           }
         const where = { spaceId, id: { lte: upper } }
         const total = await tx.hiringMigrationRecord.count({ where })
-        const anchor = await tx.hiringMigrationRecord.findFirst({
-          where: { ...where, targetModel: 'HiringPosting' },
-          orderBy: { id: 'asc' },
-        })
-        if (!anchor) throw Error('AUDIT_ANCHOR_REQUIRED')
-        const stored = decodeMigrationSnapshot(anchor)
-        if (
-          !stored ||
-          typeof stored !== 'object' ||
-          !('sourceSpaceId' in stored) ||
-          typeof stored.sourceSpaceId !== 'string' ||
-          !/^[1-9]\d{0,18}$/.test(stored.sourceSpaceId)
-        )
-          throw Error('AUDIT_ANCHOR_INVALID')
-        const scope = { spaceId, sourceSpaceId: stored.sourceSpaceId }
-        recoverOpeningPosting(anchor, scope)
+        const scope = await resolveAuditScope(tx, spaceId, where)
         const records = await tx.hiringMigrationRecord.findMany({
           where: { ...where, id: { lte: upper, ...(input.after ? { gt: input.after } : {}) } },
           orderBy: { id: 'asc' },

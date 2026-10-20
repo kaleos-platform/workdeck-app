@@ -12,6 +12,10 @@ jest.mock('@/lib/inv/resolve-coupang-workspace', () => ({
   resolveCoupangWorkspaceForSpaceStrict: jest.fn(async () => null),
 }))
 import { prisma } from '@/lib/prisma'
+jest.mock('@/lib/hiring/migration/application-target-audit', () => ({
+  compareOpeningApplicationTarget: jest.fn(),
+}))
+import { compareOpeningApplicationTarget } from '@/lib/hiring/migration/application-target-audit'
 
 const at = '2026-10-03T00:00:00Z'
 const packet = {
@@ -67,6 +71,7 @@ const tx = {
   $executeRawUnsafe: jest.fn(),
   $queryRawUnsafe: jest.fn(),
   spaceMember: { findMany: jest.fn() },
+  hiringApplication: { findFirst: jest.fn() },
   hiringMigrationRecord: { findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn() },
 }
 const call = (body: unknown = { customer: 'ameaning' }, key: string | null = 'test-worker') =>
@@ -250,4 +255,61 @@ test('원장의 이미지 bytes를 transaction 이후 읽고 경로·manifest를
   } finally {
     read.mockRestore()
   }
+})
+
+test.each([
+  { customer: 'peakpay', verifyApplications: [] },
+  { customer: 'peakpay', verifyApplications: ['1', '1'] },
+  { customer: 'peakpay', verifyApplications: ['../bad'] },
+  { customer: 'peakpay', verifyApplications: Array.from({ length: 8 }, (_, i) => String(i + 1)) },
+  { customer: 'peakpay', verifyApplications: ['1'], after: 'record-a', through: 'record-z' },
+])('지원서 검사의 잘못된 범위는 조회 전 거부한다: %j', async (body) => {
+  expect((await call(body)).status).toBe(400)
+  expect(prisma.$transaction).not.toHaveBeenCalled()
+})
+
+test('선택 지원서만 같은 고객에서 읽고 차이 항목 집계만 반환한다', async () => {
+  const record = {
+    ...ledger(),
+    targetModel: 'HiringApplication',
+    sourceRef: '["opening.work","application","3","0"]',
+  }
+  tx.hiringMigrationRecord.findMany.mockResolvedValue([record])
+  tx.hiringApplication.findFirst.mockResolvedValue({ id: 'target-a', spaceId: 'space-a' })
+  ;(compareOpeningApplicationTarget as jest.Mock).mockReturnValue({
+    status: 'different',
+    physicalHashMatches: false,
+    differentGroups: ['pii', 'files'],
+  })
+  const response = await call({ customer: 'peakpay', verifyApplications: ['3', '4'] })
+  expect(response.status).toBe(200)
+  expect(await response.json()).toEqual({
+    customer: 'peakpay',
+    applicationTargets: {
+      checked: 1,
+      verified: 0,
+      different: 1,
+      failed: 0,
+      missingTargets: 0,
+      missingRecords: 1,
+      physicalHashMatches: 0,
+      differences: { pii: 1, files: 1 },
+    },
+  })
+  expect(tx.hiringMigrationRecord.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: expect.objectContaining({
+        spaceId: 'space-a',
+        targetModel: 'HiringApplication',
+        sourceRef: {
+          in: ['["opening.work","application","3","0"]', '["opening.work","application","4","0"]'],
+        },
+      }),
+    })
+  )
+  expect(tx.hiringApplication.findFirst).toHaveBeenCalledWith(
+    expect.objectContaining({ where: { id: 'target-a', spaceId: 'space-a' } })
+  )
+  expect(tx.$executeRawUnsafe).toHaveBeenCalledWith('SET TRANSACTION READ ONLY')
+  expect(prisma.workerToken.update).not.toHaveBeenCalled()
 })
