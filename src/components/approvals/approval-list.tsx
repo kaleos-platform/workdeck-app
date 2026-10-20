@@ -11,9 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { FloatingActionBar, floatingActionButtonClass } from '@/components/ui/floating-action-bar'
 import { ExpiryCountdown } from './expiry-countdown'
 import { ApprovalDetailSheet } from './approval-detail-sheet'
+import { BulkDecisionDialog } from './bulk-decision-dialog'
 import {
+  BULK_LIMIT,
   DECK_LABELS,
   SOURCE_LABELS,
   STATUS_LABELS,
@@ -63,6 +68,9 @@ export function ApprovalList() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [canDecide, setCanDecide] = useState(false)
   const [viewerRole, setViewerRole] = useState<string | null>(null)
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
+  const [bulkDecision, setBulkDecision] = useState<'approve' | 'reject' | null>(null)
+  const [bulkRunning, setBulkRunning] = useState(false)
 
   const fetchActions = useCallback(async () => {
     setIsLoading(true)
@@ -106,6 +114,35 @@ export function ApprovalList() {
     }
     return rows
   }, [actions, tab, sourceFilter])
+
+  // 일괄 선택 대상 — 결정 권한이 있을 때 보이는 PENDING 행. OWNER 필요 항목도 선택은 되고(거절 가능),
+  // 승인 시에는 서버가 항목별로 forbidden 처리한다.
+  const selectable = useMemo(
+    () => (canDecide ? filtered.filter((a) => a.status === 'PENDING') : []),
+    [canDecide, filtered]
+  )
+  // 필터·탭이 바뀌어 보이지 않게 된 행은 선택에서 자연히 빠진다.
+  const checked = useMemo(
+    () => selectable.filter((a) => checkedIds.has(a.id)),
+    [selectable, checkedIds]
+  )
+  const capped = selectable.length > BULK_LIMIT
+  const allChecked =
+    checked.length > 0 && checked.length === Math.min(selectable.length, BULK_LIMIT)
+
+  function toggleOne(id: string, on: boolean) {
+    if (on && checked.length >= BULK_LIMIT) return
+    setCheckedIds((prev) => {
+      const next = new Set(prev)
+      if (on) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
+
+  function toggleAll(on: boolean) {
+    setCheckedIds(new Set(on ? selectable.slice(0, BULK_LIMIT).map((a) => a.id) : []))
+  }
 
   const selectedAction = useMemo(
     () => actions.find((a) => a.id === selectedId) ?? null,
@@ -170,6 +207,24 @@ export function ApprovalList() {
         </div>
       ) : (
         <div className="grid gap-3">
+          {selectable.length > 0 && (
+            <div className="flex items-center gap-2 px-1 text-sm">
+              <Checkbox
+                id="approvals-select-all"
+                checked={allChecked}
+                disabled={bulkRunning}
+                onCheckedChange={(v) => toggleAll(v === true)}
+              />
+              <label htmlFor="approvals-select-all" className="cursor-pointer">
+                전체 선택
+              </label>
+              {capped && (
+                <span className="text-xs text-muted-foreground">
+                  한 번에 최대 {BULK_LIMIT}건까지 선택됩니다
+                </span>
+              )}
+            </div>
+          )}
           {filtered.map((action) => (
             <Card
               key={action.id}
@@ -178,6 +233,20 @@ export function ApprovalList() {
             >
               <CardContent className="flex flex-col gap-2 py-2">
                 <div className="flex flex-wrap items-center gap-2">
+                  {selectable.includes(action) && (
+                    // 체크박스 클릭이 카드의 상세 열기로 번지지 않게 막는다.
+                    <span onClick={(e) => e.stopPropagation()} className="flex">
+                      <Checkbox
+                        aria-label={`${action.summary} 선택`}
+                        checked={checkedIds.has(action.id)}
+                        disabled={
+                          bulkRunning ||
+                          (!checkedIds.has(action.id) && checked.length >= BULK_LIMIT)
+                        }
+                        onCheckedChange={(v) => toggleOne(action.id, v === true)}
+                      />
+                    </span>
+                  )}
                   <Badge variant="outline">{DECK_LABELS[action.deckKey] ?? action.deckKey}</Badge>
                   <Badge variant="secondary">{action.actionType}</Badge>
                   <Badge variant={statusBadgeVariant(action.status)}>
@@ -196,6 +265,47 @@ export function ApprovalList() {
           ))}
         </div>
       )}
+
+      <FloatingActionBar
+        open={checked.length > 0}
+        onClear={() => setCheckedIds(new Set())}
+        clearDisabled={bulkRunning}
+        actions={
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              disabled={bulkRunning}
+              onClick={() => setBulkDecision('approve')}
+            >
+              승인
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              disabled={bulkRunning}
+              onClick={() => setBulkDecision('reject')}
+            >
+              거절
+            </Button>
+          </>
+        }
+      >
+        <span className="text-sm font-medium">{checked.length}건 선택됨</span>
+      </FloatingActionBar>
+
+      <BulkDecisionDialog
+        decision={bulkDecision}
+        actions={checked}
+        onOpenChange={(o) => !o && setBulkDecision(null)}
+        onRunningChange={setBulkRunning}
+        onDone={() => {
+          setCheckedIds(new Set())
+          fetchActions()
+        }}
+      />
 
       <ApprovalDetailSheet
         action={selectedAction}
