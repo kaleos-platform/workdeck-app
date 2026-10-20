@@ -7,6 +7,11 @@ import { encryptPii } from '@/lib/del/encryption'
 import { recoverOpeningApplication } from '../application-recovery'
 import { auditMigrationRecords } from '../runtime-audit'
 import { migrationAssetManifest } from '../asset-audit'
+import {
+  compareOpeningApplicationTarget,
+  type ApplicationAuditTarget,
+} from '../application-target-audit'
+import { buildApplicationPii } from '@/lib/hiring/pii'
 import { spawnSync } from 'node:child_process'
 const at = '2026-10-03T00:00:00.000Z'
 function input(): OpeningApplicationImport {
@@ -293,6 +298,28 @@ it('검증된 파일 대응은 연결하고 경로/checksum/검증표시 오류�
   expect(application?.files).toEqual([
     expect.objectContaining({ id: 'file', spaceId: 'space', sizeBytes: 10 }),
   ])
+  const target = {
+    ...application,
+    posting: { spaceId: 'space' },
+    postingPosition: null,
+    files: (application!.files as Array<Record<string, unknown>>).map((f) => ({
+      ...f,
+      applicationId: 'app',
+    })),
+  } as unknown as ApplicationAuditTarget
+  expect(
+    compareOpeningApplicationTarget(imported.record, target, {
+      sourceSpaceId: '1',
+      spaceId: 'space',
+    }).status
+  ).toBe('verified')
+  expect(
+    compareOpeningApplicationTarget(
+      imported.record,
+      { ...target, files: target.files.map((f) => ({ ...f, sizeBytes: 11 })) },
+      { sourceSpaceId: '1', spaceId: 'space' }
+    )
+  ).toMatchObject({ status: 'different', differentGroups: expect.arrayContaining(['files']) })
   packet.files[0].path = 'foreign/file'
   await expect(importOpeningApplication(db, packet)).rejects.toThrow('Migration file path conflict')
 })
@@ -366,3 +393,143 @@ it.each([{ value: null }, { value: '' }, { value: undefined }, { value: [] }])(
     expect(application?.files).toEqual([])
   }
 )
+
+it('재암호화와 수정 시각 변경은 업무값과 physical hash를 구분한다', async () => {
+  process.env.ENCRYPTION_WRITE_VERSION = 'v0'
+  const { record } = await importOpeningApplication(db, input())
+  const before = {
+    ...JSON.parse(JSON.stringify(application)),
+    posting: { spaceId: 'space' },
+    postingPosition: null,
+  } as ApplicationAuditTarget
+  expect(
+    compareOpeningApplicationTarget(record, before, { sourceSpaceId: '1', spaceId: 'space' })
+  ).toMatchObject({ status: 'verified', physicalHashMatches: true })
+  process.env.ENCRYPTION_WRITE_VERSION = 'v1'
+  const changed = {
+    ...before,
+    ...buildApplicationPii([{ key: 'name', type: 'string', value: '합성 이름' }]).columns,
+    updatedAt: new Date('2026-10-21T00:00:00Z'),
+  }
+  expect(
+    compareOpeningApplicationTarget(record, changed, { sourceSpaceId: '1', spaceId: 'space' })
+  ).toEqual({ status: 'verified', physicalHashMatches: false, differentGroups: [] })
+  expect(record.targetHash).toBe(migrationHash(JSON.parse(JSON.stringify(application))))
+  delete process.env.ENCRYPTION_WRITE_VERSION
+})
+
+it.each([
+  ['state', { stage: 'ACCEPTED' }],
+  ['operational', { memo: '변경한 메모' }],
+  ['relations', { postingId: 'other-post' }],
+  ['entries', { applicationEntries: [{ key: 'custom', value: 'changed' }] }],
+  ['dates', { createdAt: new Date('2026-10-04T00:00:00Z') }],
+  ['derivedPii', { maskedName: '변경' }],
+  ['files', { files: [{ id: 'extra-file' }] }],
+])('업무 변경 %s는 보류하고 원문을 응답하지 않는다', async (group, override) => {
+  const { record } = await importOpeningApplication(db, input())
+  const target = {
+    ...application,
+    posting: { spaceId: 'space' },
+    postingPosition: null,
+    ...override,
+  } as unknown as ApplicationAuditTarget
+  const result = compareOpeningApplicationTarget(record, target, {
+    sourceSpaceId: '1',
+    spaceId: 'space',
+  })
+  expect(result.status).toBe('different')
+  expect(result.differentGroups).toContain(group)
+  expect(JSON.stringify(result)).not.toContain('합성 이름')
+  expect(JSON.stringify(result)).not.toContain('변경한 메모')
+})
+
+it('PII 의미 변경·암호문 손상·누락·고객 범위 이탈을 구분한다', async () => {
+  const { record } = await importOpeningApplication(db, input())
+  const target = {
+    ...application,
+    posting: { spaceId: 'space' },
+    postingPosition: null,
+  } as unknown as ApplicationAuditTarget
+  const scope = { sourceSpaceId: '1', spaceId: 'space' }
+  const changed = {
+    ...target,
+    ...buildApplicationPii([{ key: 'name', type: 'string', value: '다른 이름' }]).columns,
+  }
+  expect(compareOpeningApplicationTarget(record, changed, scope)).toMatchObject({
+    status: 'different',
+    differentGroups: expect.arrayContaining(['pii', 'derivedPii']),
+  })
+  expect(
+    compareOpeningApplicationTarget(record, { ...target, nameEnc: 'broken' }, scope).status
+  ).toBe('failed')
+  expect(compareOpeningApplicationTarget(record, null, scope).status).toBe('missing')
+  expect(
+    compareOpeningApplicationTarget(
+      record,
+      { ...target, spaceId: 'other', nameEnc: 'broken' },
+      scope
+    )
+  ).toMatchObject({ status: 'different', differentGroups: ['identity'] })
+  expect(
+    compareOpeningApplicationTarget({ ...record, sourceHash: '0'.repeat(64) }, target, scope).status
+  ).toBe('failed')
+})
+
+it.each([
+  { posting: { spaceId: 'other' } },
+  { postingPositionId: 'position', postingPosition: { spaceId: 'space', postingId: 'other-post' } },
+  { postingPositionId: 'position', postingPosition: { spaceId: 'other', postingId: 'post' } },
+  { stores: [{ storeId: 'store', applicationId: 'app', store: { spaceId: 'other' } }] },
+])('부모 공고·직무·매장 행의 실제 고객 소속 이탈을 차단한다', async (override) => {
+  const { record } = await importOpeningApplication(db, input())
+  const target = {
+    ...application,
+    posting: { spaceId: 'space' },
+    postingPosition: null,
+    ...override,
+  } as unknown as ApplicationAuditTarget
+  expect(
+    compareOpeningApplicationTarget(record, target, { spaceId: 'space', sourceSpaceId: '1' })
+  ).toMatchObject({ status: 'different', differentGroups: expect.arrayContaining(['relations']) })
+})
+
+it('정상 직무·매장 관계를 검증한 뒤 ID 유지 상태의 소속 변경도 감지한다', async () => {
+  const packet = input()
+  packet.position = { sourceId: '9', targetId: 'position', evidenceRef: 'review:position' }
+  packet.stores = [{ sourceId: '10', targetId: 'store', evidenceRef: 'review:store' }]
+  const snapshot = packet.snapshot as {
+    application: { posting_position_id: string | null }
+    sourceStoreIds: string[]
+  }
+  snapshot.application.posting_position_id = '9'
+  snapshot.sourceStoreIds = ['10']
+  const original = tx.hiringMigrationRecord.findUnique.getMockImplementation()!
+  tx.hiringMigrationRecord.findUnique.mockImplementation(async (args) => {
+    const record = await original(args)
+    return record
+      ? { ...record, metadata: { positionMap: [{ sourceId: '9', targetId: 'position' }] } }
+      : record
+  })
+  tx.hiringPostingPosition.findFirst.mockResolvedValue({ id: 'position' })
+  tx.hiringPostingStore.count.mockResolvedValue(1)
+  const { record } = await importOpeningApplication(db, packet)
+  const target = {
+    ...application,
+    posting: { spaceId: 'space' },
+    postingPosition: { spaceId: 'space', postingId: 'post' },
+    stores: [{ storeId: 'store', applicationId: 'app', store: { spaceId: 'space' } }],
+  } as unknown as ApplicationAuditTarget
+  const scope = { sourceSpaceId: '1', spaceId: 'space' }
+  expect(compareOpeningApplicationTarget(record, target, scope).status).toBe('verified')
+  for (const changed of [
+    { ...target, posting: { spaceId: 'other' } },
+    { ...target, postingPosition: { spaceId: 'other', postingId: 'post' } },
+    { ...target, postingPosition: { spaceId: 'space', postingId: 'other-post' } },
+    { ...target, stores: target.stores.map((s) => ({ ...s, store: { spaceId: 'other' } })) },
+  ])
+    expect(compareOpeningApplicationTarget(record, changed, scope)).toMatchObject({
+      status: 'different',
+      differentGroups: expect.arrayContaining(['relations']),
+    })
+})
