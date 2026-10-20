@@ -67,6 +67,25 @@ test('감사 시작 기록 실패 → 실행하지 않고 FAILED', async () => {
   )
 })
 
+test('감사 시작 기록의 Prisma 오류 → 일반 문구로 FAILED(쿼리 원문 미노출)', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  ;(startToolAudit as jest.Mock).mockRejectedValue(
+    new Prisma.PrismaClientKnownRequestError(
+      'Invalid `prisma.toolAudit.create()` {"secret":"s3"}',
+      {
+        code: 'P2002',
+        clientVersion: 'test',
+      }
+    )
+  )
+  await expect(approveAndExecute('a1', 'u-decider')).resolves.toEqual({
+    ok: false,
+    status: 'FAILED',
+    error: ACTION_INTERNAL_ERROR,
+  })
+  expect(execute).not.toHaveBeenCalled()
+})
+
 test('감사 행은 원래 행위자·요청자·workId + 별도 승인자로 실행 전에 만든다', async () => {
   await approveAndExecute('a1', 'u-decider')
   expect(startToolAudit).toHaveBeenCalledWith(

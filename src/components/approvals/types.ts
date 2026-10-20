@@ -60,3 +60,13 @@ export const STATUS_LABELS: Record<AgentActionStatusValue, string> = {
   FAILED: '실패',
   EXPIRED: '만료됨',
 }
+
+// POST /api/agent/actions/bulk 항목별 결과.
+export type BulkDecisionResult = {
+  actionId: string
+  ok: boolean
+  status: 'ok' | 'forbidden' | 'conflict' | 'not_found' | 'failed'
+  message: string
+}
+
+export const BULK_LIMIT = 20
