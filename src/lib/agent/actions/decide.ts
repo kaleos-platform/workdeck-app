@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma'
 import { approveAndExecute, rejectAction } from '@/lib/agent/actions/execute'
 import { syncSlackDecision } from '@/lib/slack/sync-decision'
 import { maskParams } from '@/lib/agent/audit'
-import { getActionDefinition } from '@/lib/agent/actions/registry'
+import { spendKrwOf } from '@/lib/agent/actions/decision-policy'
 import type { DecisionOutcome } from '@/lib/agent/actions/execute'
 
 export const SPEND_BULK_APPROVE_DENIED = '지출 건은 한 건씩 승인하세요'
@@ -27,7 +27,7 @@ export async function decideAction(
 ): Promise<DecideResult> {
   const action = await prisma.agentPendingAction.findUnique({
     where: { id: actionId },
-    select: { id: true, spaceId: true, actionType: true },
+    select: { id: true, spaceId: true, actionType: true, payload: true },
   })
   if (!action) return { status: 404, error: '액션을 찾을 수 없습니다' }
 
@@ -38,11 +38,8 @@ export async function decideAction(
   })
   if (!member?.role) return { status: 403, error: '권한이 없습니다' }
 
-  if (
-    opts.excludeSpendApprove &&
-    decision === 'approve' &&
-    getActionDefinition(action.actionType)?.spendKrw
-  ) {
+  // 지출 금액이 있거나(number) payload를 해석 못 하면(undefined) 지출로 본다. 비예산 액션(null)은 통과.
+  if (opts.excludeSpendApprove && decision === 'approve' && spendKrwOf(action) !== null) {
     return { status: 403, error: SPEND_BULK_APPROVE_DENIED }
   }
 

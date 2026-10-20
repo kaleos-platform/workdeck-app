@@ -71,7 +71,7 @@ const TIME_BUDGET_MS = 240_000
 export async function POST(req: NextRequest) {
   const user = await getUser()
   if (!user) return errorResponse('인증이 필요합니다', 401)
-  if (!req.headers.get('content-type')?.startsWith('application/json')) {
+  if (!req.headers.get('content-type')?.toLowerCase().startsWith('application/json')) {
     return errorResponse('Content-Type은 application/json이어야 합니다', 415)
   }
 

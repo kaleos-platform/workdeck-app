@@ -15,11 +15,18 @@ jest.mock('@/lib/agent/actions/execute', () => ({
   rejectAction: jest.fn(),
 }))
 jest.mock('@/lib/slack/sync-decision', () => ({ syncSlackDecision: jest.fn() }))
-// actionType 'spend'만 지출 액션.
-jest.mock('@/lib/agent/actions/registry', () => ({
-  getActionDefinition: (t: string) =>
-    t === 'spend' ? { spendKrw: () => 1000 } : { actionType: t },
-}))
+// 'spend'는 예산 액션(금액 있음), 'nobudget'은 spendKrw가 있지만 비예산(null — meta pause 등), 그 외는 정의에 spendKrw 없음.
+jest.mock('@/lib/agent/actions/registry', () => {
+  const schema = { safeParse: (d: unknown) => ({ success: true, data: d }) }
+  return {
+    getActionDefinition: (t: string) =>
+      t === 'spend'
+        ? { paramsSchema: schema, spendKrw: () => 1000 }
+        : t === 'nobudget'
+          ? { paramsSchema: schema, spendKrw: () => null }
+          : { actionType: t },
+  }
+})
 
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
@@ -36,6 +43,7 @@ const SPACES: Record<string, string> = {
   'act-b': 'sp-1',
   'act-c': 'sp-2',
   'act-spend': 'sp-1',
+  'act-nobudget': 'sp-1',
 }
 
 const call = (body: unknown, contentType = 'application/json') =>
@@ -54,7 +62,9 @@ beforeEach(() => {
       ? {
           id: where.id,
           spaceId: SPACES[where.id],
-          actionType: where.id === 'act-spend' ? 'spend' : 't',
+          actionType:
+            where.id === 'act-spend' ? 'spend' : where.id === 'act-nobudget' ? 'nobudget' : 't',
+          payload: {},
         }
       : null
   )
@@ -170,6 +180,23 @@ it('일괄 승인은 지출 액션을 결정하지 않고 forbidden, 나머지�
   ])
   expect(approveAndExecute).toHaveBeenCalledTimes(1)
   expect(approveAndExecute).toHaveBeenCalledWith('act-a', 'user-1')
+})
+
+it('일괄 승인은 spendKrw 정의가 있어도 비예산 액션(null)은 승인한다', async () => {
+  ;(approveAndExecute as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 'EXECUTED',
+    result: null,
+  })
+  const { results } = await (await call({ action: 'approve', actionIds: ['act-nobudget'] })).json()
+  expect(results).toEqual([expect.objectContaining({ actionId: 'act-nobudget', status: 'ok' })])
+})
+
+it('Content-Type 대소문자와 무관하게 JSON을 받는다', async () => {
+  ;(rejectAction as jest.Mock).mockResolvedValue({ ok: false, status: 'REJECTED' })
+  expect((await call({ action: 'reject', actionIds: ['act-a'] }, 'Application/JSON')).status).toBe(
+    200
+  )
 })
 
 it('일괄 거절은 지출 액션도 결정한다', async () => {
