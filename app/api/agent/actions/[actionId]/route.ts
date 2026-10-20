@@ -11,8 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
 import { errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { approveAndExecute, rejectAction } from '@/lib/agent/actions/execute'
-import { syncSlackDecision } from '@/lib/slack/sync-decision'
+import { decideAction } from '@/lib/agent/actions/decide'
 import { maskParams } from '@/lib/agent/audit'
 import type { SpaceMemberRole } from '@/lib/api-helpers'
 
@@ -64,36 +63,8 @@ export async function PATCH(
     return errorResponse('action은 approve 또는 reject여야 합니다', 400)
   }
 
-  const action = await prisma.agentPendingAction.findUnique({
-    where: { id: actionId },
-    select: { id: true, spaceId: true, actionType: true },
-  })
-  if (!action) return errorResponse('액션을 찾을 수 없습니다', 404)
-
-  // 액션 소속 space에서의 호출자 역할 — cross-space 승인 차단.
-  const role = await callerRoleInSpace(user.id, action.spaceId)
-  if (!role) return errorResponse('권한이 없습니다', 403)
-
-  const outcome =
-    decision === 'approve'
-      ? await approveAndExecute(actionId, user.id)
-      : await rejectAction(actionId, user.id)
-
-  // 응답의 실행 결과·오류 메시지도 GET과 같은 규칙으로 비밀 값을 가린다(maskParams가 문자열에 maskSecrets 적용).
-  // 역할 부족(지출 제안은 OWNER) — 상태 변화 없음.
-  if (outcome.status === 'FORBIDDEN') {
-    return NextResponse.json({ outcome: maskParams(outcome) }, { status: 403 })
-  }
-
-  // 구독 만료로 차단 — 아무 상태도 바뀌지 않았으므로 Slack 동기화도 하지 않는다.
-  if (outcome.status === 'BLOCKED') {
-    return NextResponse.json({ outcome: maskParams(outcome) }, { status: 402 })
-  }
-
-  // 결정 후 Slack 원본 메시지를 최종 상태로 동기화(sync 내부가 무해 — no-op·실패 흡수).
-  await syncSlackDecision(actionId)
-
-  // CONFLICT(이미 처리) 또는 EXPIRED(승인 유효기간 만료)면 409, 그 외는 결과 그대로 200.
-  const httpStatus = outcome.status === 'CONFLICT' || outcome.status === 'EXPIRED' ? 409 : 200
-  return NextResponse.json({ outcome: maskParams(outcome) }, { status: httpStatus })
+  // 판정 규칙은 일괄 승인(bulk)과 공유한다 — decideAction.
+  const r = await decideAction(user.id, actionId, decision)
+  if (r.error !== undefined) return errorResponse(r.error, r.status)
+  return NextResponse.json({ outcome: r.outcome }, { status: r.status })
 }
