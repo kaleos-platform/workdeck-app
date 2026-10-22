@@ -21,6 +21,8 @@ const USER_ID = 'e2e00000-0000-4000-8000-000000000012'
 const RUN = !!(process.env.DATABASE_URL || process.env.DIRECT_URL)
 
 let mockUserId = ''
+// 라우트의 Space 해석이 cookies()(wd_space)를 읽는다 — 요청 스코프 밖이라 빈 쿠키로 대체(→ OWNER 멤버십).
+jest.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined }) }))
 jest.mock('@/hooks/use-user', () => ({
   getUser: async () => (mockUserId ? { id: mockUserId } : null),
 }))
@@ -69,11 +71,7 @@ function previewRequest(buf: Buffer, fileName: string): NextRequest {
   })
 }
 
-function commitRequest(
-  buf: Buffer,
-  fileName: string,
-  fields: Record<string, string>
-): NextRequest {
+function commitRequest(buf: Buffer, fileName: string, fields: Record<string, string>): NextRequest {
   const fd = new FormData()
   fd.append('file', fileFrom(buf, fileName))
   for (const [k, v] of Object.entries(fields)) fd.append(k, v)
@@ -250,7 +248,9 @@ d('매핑 규칙(프리셋) 라이프사이클 E2E', () => {
 
     const listRes = await call(presetsGet())
     const list = await listRes.json()
-    expect(list.presets.find((p: { id: string }) => p.id === presetId)?.name).toBe('기업은행 사업용')
+    expect(list.presets.find((p: { id: string }) => p.id === presetId)?.name).toBe(
+      '기업은행 사업용'
+    )
 
     const preview = await call(importPreview(previewRequest(bankCsv(5), 'x.csv')))
     const body = await preview.json()

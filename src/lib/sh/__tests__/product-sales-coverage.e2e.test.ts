@@ -1,6 +1,11 @@
 // 커버리지 불변식 — 상품 랭킹 합계가 채널 탭 총매출과 어긋나면 배지가 거짓말을 한다.
 // 읽기 전용. DATABASE_URL 이 가리키는 DB 의 실제 데이터로 검증한다.
 
+import path from 'path'
+import { config } from 'dotenv'
+
+config({ path: path.resolve(process.cwd(), '.env.local') })
+
 import { prisma } from '@/lib/prisma'
 import { loadProductSales } from '@/lib/sh/product-sales'
 import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
