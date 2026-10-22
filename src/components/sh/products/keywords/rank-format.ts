@@ -5,6 +5,12 @@ export type RankStatus = 'RANKED' | 'NOT_IN_TOP100' | 'FAILED' | 'SKIPPED'
 
 export type RankSnapshot = { date: string; status: RankStatus; rank: number | null }
 
+/**
+ * 순위 수집 소스가 없어 보류 중(2026-10): 네이버 쇼핑 검색 API 종료, 쿠팡 비로그인 차단.
+ * false 면 추적 토글·칩 배지·순위 메뉴·순위 페이지를 숨긴다. 테이블·API·수집 코드는 남겨 둔다.
+ */
+export const RANK_TRACKING_ENABLED = false
+
 /** 효과 패널의 중앙값 등에서 "100위 밖"을 나타내는 값 */
 export const OUT_OF_TOP100_RANK = 101
 
