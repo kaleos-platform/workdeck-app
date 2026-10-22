@@ -70,4 +70,41 @@ d('Space 격리', () => {
       runTool(tool('ads_get_kpi'), agentCtx(B), { startDate: '2026-10-01', endDate: '2026-10-07' })
     ).rejects.toThrow('쿠팡 워크스페이스가 이 Space에 연결되어 있지 않습니다')
   })
+
+  it('Space A 에이전트가 Space B의 같은 이름 비밀값을 쓰면 거부된다', async () => {
+    const uid = 'e2e00000-0000-4000-8000-0000000000d1'
+    await prisma.user.upsert({
+      where: { id: uid },
+      update: {},
+      create: { id: uid, email: 'e2e-secret-isolation@example.invalid' },
+    })
+    const created = await prisma.spaceSecret.create({
+      data: {
+        spaceId: B,
+        name: 'e2e-shared-name',
+        kind: 'API_KEY',
+        encryptedPayload: 'x',
+        iv: 'x',
+        config: {},
+        allowedAgentIds: ['ag-e2e'],
+        createdById: uid,
+      },
+    })
+    try {
+      await expect(
+        runTool(
+          tool('secret_http_read'),
+          { ...agentCtx(A), scopes: ['secret:read'] },
+          {
+            secret: 'e2e-shared-name',
+            op: 'x',
+            path: '/x',
+          }
+        )
+      ).rejects.toThrow('사용할 수 없는 비밀값입니다')
+    } finally {
+      await prisma.spaceSecret.delete({ where: { id: created.id } })
+      await prisma.user.delete({ where: { id: uid } })
+    }
+  })
 })

@@ -20,6 +20,8 @@ export const SCOPES = [
   'slack:write',
   'sc:read',
   'sc:write',
+  'secret:read',
+  'secret:write',
 ] as const
 
 export type Scope = (typeof SCOPES)[number]

@@ -2,7 +2,7 @@ import { normalizePath, pickFields, type ApiKeyConfig, type ReadOp } from './con
 import { ToolUserError } from '@/lib/agent/tools/errors'
 
 export interface CallInput {
-  method: 'GET' | 'POST'
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   path: string
   query: Record<string, string>
   body?: Record<string, unknown>

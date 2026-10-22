@@ -81,6 +81,42 @@ export async function loadSecretForUse(
   return { id: row.id, revision: row.revision, value, config: row.config as ApiKeyConfig }
 }
 
+/** 승인 실행용: 제안 때 본 행과 같은지(Space·종류·revision·원 행위자 허용) 다시 확인한 뒤 복호화한다. */
+export async function loadSecretForApproval(
+  spaceId: string,
+  secretId: string,
+  revision: number,
+  actor: Actor,
+  audit: string[]
+): Promise<{ id: string; value: string; config: ApiKeyConfig }> {
+  const row = await prisma.spaceSecret.findUnique({
+    where: { id: secretId },
+    select: {
+      id: true,
+      config: true,
+      spaceId: true,
+      kind: true,
+      revision: true,
+      allowedAgentIds: true,
+      encryptedPayload: true,
+      iv: true,
+    },
+  })
+  if (
+    !row ||
+    row.spaceId !== spaceId ||
+    row.kind !== 'API_KEY' ||
+    row.revision !== revision ||
+    actor.type !== 'agent' ||
+    !row.allowedAgentIds.includes(actor.id)
+  ) {
+    throw new ToolUserError('비밀값이 바뀌어 실행하지 않았습니다. 다시 제안하세요')
+  }
+  const value = decryptField('space-secret', row.encryptedPayload, row.iv)
+  audit.push('secret:' + row.id)
+  return { id: row.id, value, config: row.config as ApiKeyConfig }
+}
+
 /** loadSecretForUse와 같은 검사. 복호화·감사 push 없음(제안 생성용). */
 export async function assertSecretUsable(
   spaceId: string,
