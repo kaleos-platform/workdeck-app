@@ -13,8 +13,9 @@ import {
 } from '@/lib/sh/listing-calc'
 import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
-import { keywordChangeReasonFields } from '@/lib/sh/schemas'
+import { keywordListSchema, pageUrlSchema } from '@/lib/sh/schemas'
 import { absorbKeywords } from '@/lib/sh/keyword-absorb'
+import { countRankSlots, getRankSlotLimit } from '@/lib/rank/slots'
 import {
   applyBaseRename,
   deriveBaseValues,
@@ -34,12 +35,14 @@ const patchSchema = z.object({
   baseManagementName: z.string().max(400).nullable().optional(),
   baseInternalCode: z.string().max(100).nullable().optional(),
   memo: z.string().max(1000).nullable().optional(),
-  keywords: z.array(z.string()).optional(),
+  // 상품 페이지 URL — 이름·검색어가 아니므로 변경 이력 대상이 아니다.
+  pageUrl: pageUrlSchema,
+  keywords: keywordListSchema.optional(),
+  // 키워드 순위 추적 on/off — 이름·검색어가 아니므로 변경 이력 대상이 아니다.
+  rankTracking: z.boolean().optional(),
   // true면 baseSearchName/baseDisplayName 변경을 자식 리스팅에도 전파한다.
   // 요청 본문 전용 필드 — ChannelProduct 컬럼이 아니므로 update data 로 흘려보내면 안 된다(아래 구조분해).
   propagateNames: z.boolean().optional(),
-  // §26 이력 기록용 — 저장 필드가 아니므로 update data 로 흘려보내면 안 된다(아래 구조분해).
-  ...keywordChangeReasonFields,
 })
 
 // product 공통 메타 필드 (single: 해당 product, mixed: 첫 번째 product 기준 backward-compat)
@@ -256,6 +259,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       sellerProductId: l.coupangProductItem?.sellerProductId ?? null,
       items: l.items.map((it) => ({
         optionId: it.optionId,
+        productId: it.option.productId,
         optionName: it.option.name,
         sku: it.option.sku,
         quantity: it.quantity,
@@ -273,6 +277,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
       baseManagementName: cp.baseManagementName,
       baseInternalCode: cp.baseInternalCode,
       memo: cp.memo,
+      pageUrl: cp.pageUrl,
+      rankTracking: cp.rankTracking,
       keywords: Array.isArray(cp.keywords) ? (cp.keywords as string[]) : [],
     },
     product,
@@ -301,6 +307,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       // deriveBaseValues 로 자식 리스팅에서 역산한 값을 쓴다.
       baseSearchName: true,
       keywords: true,
+      rankTracking: true, // 꺼짐→켜짐 전환 때만 슬롯 한도를 검사한다
       // 이력 귀속 상품 추정용. 채널상품은 리스팅 여러 개를 묶고 각 리스팅이 여러 옵션을
       // 가질 수 있어 단일 상품으로 떨어지지 않을 수 있다(GET 의 kind:'mixed' 참조).
       // 삭제된 옵션은 제외 — listings/[listingId] 와 같은 귀속 오염을 막는다.
@@ -322,32 +329,37 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const first = parsed.error.issues[0]
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
-  // 사유 필드·propagateNames는 ChannelProduct 컬럼이 아니다 — 남은 필드만 update data 로 넘긴다.
-  const { changeReason, reasonNote, observeMetric, propagateNames, ...updateData } = parsed.data
-
-  // 저장 전에 400 판정을 끝낸다(값만 바뀌고 에러가 나가는 상태 방지).
-  if (changeReason === 'OTHER' && !reasonNote?.trim()) {
-    return errorResponse('기타 사유는 변경 사유 메모가 필요합니다', 400)
-  }
+  // propagateNames는 ChannelProduct 컬럼이 아니다 — 남은 필드만 update data 로 넘긴다.
+  const { propagateNames, ...updateData } = parsed.data
 
   const nextSearchName = updateData.baseSearchName ?? cp.baseSearchName
   const nextKeywords = updateData.keywords ?? cp.keywords
+
+  if (updateData.rankTracking === true && !cp.rankTracking) {
+    const limit = getRankSlotLimit()
+    const used =
+      (await countRankSlots(resolved.space.id, `cp:${id}`)) + toKeywordList(nextKeywords).length
+    if (used > limit) {
+      return errorResponse(`순위 추적 슬롯 ${limit}개를 넘습니다 (현재 ${used}개 사용 중)`, 400)
+    }
+  }
   const changeDiff = diffKeywordChange({
     beforeName: cp.baseSearchName,
     afterName: nextSearchName,
     beforeKeywords: cp.keywords,
     afterKeywords: nextKeywords,
   })
-  const shouldLogChange = Boolean(changeReason) && changeDiff.changed
+  // §26 변경 이력 — 상품명·검색어가 실제로 바뀌면 자동으로 남긴다.
+  const shouldLogChange = changeDiff.changed
 
   // 리스팅 구성 상품이 정확히 하나일 때만 productId 로 귀속한다. 여러 상품이 섞였거나
   // 리스팅이 없으면 대상 없이(둘 다 null) 남는다 — space 전체 목록에서만 보인다.
   const productIds = new Set(cp.listings.flatMap((l) => l.items.map((it) => it.option.productId)))
   const logProductId = productIds.size === 1 ? [...productIds][0] : null
 
-  // propagateNames=true 일 때만 자식 리스팅 이름 전파를 준비한다. 플래그가 없으면(기존
-  // group-detail-view 요청) 아래 블록은 전혀 실행되지 않고 기존 경로를 그대로 탄다 —
-  // 그 화면은 자기가 리스팅을 따로 PATCH 하므로 서버가 또 전파하면 이중 쓰기가 된다.
+  // propagateNames=true 일 때만 자식 리스팅 이름 전파를 준비한다. 상품명을 바꾸는 화면
+  // (키워드 카드·그룹 상세)은 모두 이 플래그로 보낸다 — 자식 이름 변경이 CP 저장·이력과 한
+  // 트랜잭션으로 묶이고, 이력은 채널상품 1행으로 남는다.
   let listingUpdates: Array<{ id: string; searchName: string; displayName: string }> = []
   if (propagateNames === true) {
     // mixed 재검증 — CP 전체 자식이 여러 상품을 섞고 있으면 상품명 일괄 변경 대상이 아니다.
@@ -438,23 +450,22 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           baseManagementName: true,
           baseInternalCode: true,
           memo: true,
+          pageUrl: true,
           keywords: true,
           updatedAt: true,
         },
       })
       // 저장과 이력을 한 트랜잭션으로 묶는다 — 변경만 남고 기록이 빠지는 상태를 만들지 않는다.
-      if (shouldLogChange && changeReason) {
+      if (shouldLogChange) {
         await tx.keywordChangeLog.create({
           data: {
             spaceId: resolved.space.id,
+            channelProductId: id,
             productId: logProductId,
             beforeName: cp.baseSearchName,
             afterName: nextSearchName,
             beforeKeywords: toKeywordList(cp.keywords),
             afterKeywords: toKeywordList(nextKeywords),
-            reason: changeReason,
-            reasonNote: reasonNote ?? null,
-            observeMetric: observeMetric ?? null,
             multiChange: changeDiff.multiChange,
             actorUserId: resolved.user.id,
           },

@@ -7,6 +7,7 @@ import {
   type GroupListingForBase,
   type OptionAttribute,
 } from '@/lib/sh/listing-name-propagation'
+import { productDisplayName } from '@/lib/sh/product-display'
 
 type Params = { params: Promise<{ productId: string }> }
 
@@ -19,6 +20,7 @@ type Card = {
   searchName: string
   displayName: string | null
   keywords: string[]
+  rankTracking: boolean
   listingCount: number
   nameEditable: boolean
 }
@@ -41,7 +43,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { productId } = await params
   const product = await prisma.invProduct.findFirst({
     where: { id: productId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, name: true, internalName: true },
   })
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
 
@@ -59,6 +61,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       searchName: true,
       displayName: true,
       keywords: true,
+      rankTracking: true,
       channel: { select: { name: true, externalSource: true } },
       channelProduct: {
         select: {
@@ -66,6 +69,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
           baseSearchName: true,
           baseDisplayName: true,
           keywords: true,
+          rankTracking: true,
         },
       },
       items: {
@@ -97,6 +101,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         searchName: l.channelProduct.baseSearchName,
         displayName: l.channelProduct.baseDisplayName,
         keywords: toKeywordList(l.channelProduct.keywords),
+        rankTracking: l.channelProduct.rankTracking,
         listingCount: 1,
         nameEditable: true, // 아래에서 CP 전체 자식 기준으로 교정한다
       })
@@ -112,6 +117,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       searchName: l.searchName,
       displayName: l.displayName,
       keywords: toKeywordList(l.keywords),
+      rankTracking: l.rankTracking,
       listingCount: 1,
       nameEditable: true, // 전파 대상이 없는 단독 리스팅은 항상 편집 가능
     })
@@ -208,5 +214,5 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }
   }
 
-  return NextResponse.json({ cards: [...cards.values()] })
+  return NextResponse.json({ productName: productDisplayName(product), cards: [...cards.values()] })
 }

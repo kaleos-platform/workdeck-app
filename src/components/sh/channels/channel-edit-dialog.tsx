@@ -48,6 +48,7 @@ export type Channel = {
   channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
   useSimulation: boolean
   adminUrl: string | null
+  storeUrl?: string | null
   freeShipping: boolean
   freeShippingThreshold: number | null
   feeRates: { categoryName: string; ratePercent: number }[]
@@ -106,6 +107,7 @@ export function ChannelEditDialog({
     useState<string>(REPRESENTATIVE_NONE)
   const [fName, setFName] = useState('')
   const [fAdminUrl, setFAdminUrl] = useState('')
+  const [fStoreUrl, setFStoreUrl] = useState('')
   const [fUseSimulation, setFUseSimulation] = useState(true)
   const [fIsActive, setFIsActive] = useState(true)
 
@@ -176,6 +178,7 @@ export function ChannelEditDialog({
       setFTypeDefId(channel.channelTypeDefId ?? NO_TYPE)
       setFName(channel.name)
       setFAdminUrl(channel.adminUrl ?? '')
+      setFStoreUrl(channel.storeUrl ?? '')
       setFUseSimulation(channel.useSimulation)
       setFIsActive(channel.isActive)
       setFExternalSource(channel.externalSource ?? EXTERNAL_SOURCE_NONE)
@@ -218,6 +221,7 @@ export function ChannelEditDialog({
       setFTypeDefId(NO_TYPE)
       setFName('')
       setFAdminUrl('')
+      setFStoreUrl('')
       setFUseSimulation(true)
       setFIsActive(true)
       setFExternalSource(EXTERNAL_SOURCE_NONE)
@@ -329,6 +333,7 @@ export function ChannelEditDialog({
 
       if (fAdminUrl.trim()) body.adminUrl = fAdminUrl.trim()
       else body.adminUrl = null
+      body.storeUrl = fStoreUrl.trim() || null
 
       // 배송비 산정 방식 — FIXED: shippingFee(원), PERCENT: shippingFeePct(판매가 %→/100 저장)
       body.shippingFeeType = fShippingFeeType
@@ -551,6 +556,20 @@ export function ChannelEditDialog({
                         onChange={(e) => setFAdminUrl(e.target.value)}
                         placeholder="https://wing.coupang.com/..."
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="ch-store-url">상점 주소 (선택)</Label>
+                      <Input
+                        id="ch-store-url"
+                        value={fStoreUrl}
+                        onChange={(e) => setFStoreUrl(e.target.value)}
+                        placeholder="https://smartstore.naver.com/내상점"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        상품 페이지 URL 로 판매채널을 알아볼 때 씁니다. 예:
+                        https://smartstore.naver.com/내상점
+                      </p>
                     </div>
 
                     <div className="flex items-center justify-between rounded-md border p-3">

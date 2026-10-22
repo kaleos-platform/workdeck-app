@@ -28,6 +28,8 @@ type ListingDetail = {
   autoAvailableStock: number
   channelStock: number | null
   memo: string | null
+  pageUrl: string | null
+  rankTracking?: boolean
   items: Array<{
     optionId: string
     optionName: string
@@ -103,6 +105,9 @@ export default function ListingDetailPage({ params }: { params: Promise<{ listin
     channelStock: listing.channelStock,
     status: listing.status,
     memo: listing.memo,
+    // 빠뜨리면 폼이 빈 값으로 시작해 저장 시 pageUrl 이 null 로 지워진다.
+    pageUrl: listing.pageUrl,
+    rankTracking: listing.rankTracking,
     availableStock: listing.availableStock,
     autoAvailableStock: listing.autoAvailableStock,
     items: listing.items.map((it) => ({

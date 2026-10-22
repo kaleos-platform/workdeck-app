@@ -131,3 +131,22 @@ describe('KeywordEditor 예외 단어 등록', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
   })
 })
+
+describe('KeywordEditor 순위 배지', () => {
+  it('rankBadges 가 있으면 해당 칩 뒤에 순위 문구를 붙인다', () => {
+    render(
+      <KeywordEditor
+        value={['여름 브라', '티셔츠브라']}
+        onChange={jest.fn()}
+        rankBadges={{ '여름 브라': '네 12위' }}
+      />
+    )
+    expect(screen.getByText('네 12위')).toBeInTheDocument()
+    expect(screen.queryAllByText(/위$/)).toHaveLength(1)
+  })
+
+  it('rankBadges 가 없으면 배지가 없다', () => {
+    render(<KeywordEditor value={['여름 브라']} onChange={jest.fn()} />)
+    expect(screen.queryByText(/12위/)).not.toBeInTheDocument()
+  })
+})

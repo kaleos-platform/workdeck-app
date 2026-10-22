@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { KEYWORD_CHANGE_REASON_LABELS } from '@/lib/sh/keyword-labels'
 import { cn } from '@/lib/utils'
+import { formatRankNumber, sourceLongLabel, type RankSource } from '../keywords/rank-format'
 
 type ChangeLog = {
   id: string
@@ -20,7 +21,8 @@ type ChangeLog = {
   afterName: string | null
   beforeKeywords: string[]
   afterKeywords: string[]
-  reason: KeywordChangeReason
+  /** 사유 입력 폐지(2026-10) 이전 기록만 값이 있다. */
+  reason: KeywordChangeReason | null
   reasonNote: string | null
   observeMetric: string | null
   multiChange: boolean
@@ -28,15 +30,13 @@ type ChangeLog = {
 }
 
 type Props = {
+  /** 조회 대상 — 주어진 조건들을 OR 로 묶는다. */
   /** 리스팅 단위 이력. listing PATCH 가 남긴 기록이 여기로 묶인다. */
   listingId?: string | null
-  /** 상품 단위 이력. 채널 상품(그룹) PATCH 는 listingId 없이 productId 로만 남는다. */
+  /** 채널상품(그룹) 단위 이력. 그룹 소속 리스팅의 기록도 함께 묶인다. */
+  channelProductId?: string | null
+  /** 상품 단위 이력 — channelProductId 도입 전 채널상품 기록은 이것으로만 찾힌다. */
   productId?: string | null
-  /**
-   * 조회 키를 만들 수 없는 경우의 안내 문구. 예: 혼합 구성 채널 상품은
-   * 서버가 productId 를 특정하지 못해 이력이 어느 키로도 조회되지 않는다.
-   */
-  unavailableReason?: string | null
   /** 저장 후 목록을 다시 불러오기 위한 신호. 값이 바뀔 때마다 재조회한다. */
   refreshKey?: number
   /** 상품 단위 조회는 채널을 가리지 않으므로 그 사실을 함께 알린다. */
@@ -47,8 +47,8 @@ const PAGE_SIZE = 20
 
 export function KeywordChangeTimeline({
   listingId,
+  channelProductId,
   productId,
-  unavailableReason,
   refreshKey = 0,
   crossChannelNotice = false,
 }: Props) {
@@ -58,8 +58,7 @@ export function KeywordChangeTimeline({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const queryKey = listingId ?? productId ?? null
-  const disabled = Boolean(unavailableReason) || !queryKey
+  const disabled = !listingId && !channelProductId && !productId
 
   const load = useCallback(
     async (targetPage: number) => {
@@ -69,7 +68,8 @@ export function KeywordChangeTimeline({
       try {
         const params = new URLSearchParams()
         if (listingId) params.set('listingId', listingId)
-        else if (productId) params.set('productId', productId)
+        if (channelProductId) params.set('channelProductId', channelProductId)
+        if (productId) params.set('productId', productId)
         params.set('page', String(targetPage))
         params.set('pageSize', String(PAGE_SIZE))
         const res = await fetch(`/api/sh/keywords/changes?${params.toString()}`, {
@@ -86,7 +86,7 @@ export function KeywordChangeTimeline({
         setLoading(false)
       }
     },
-    [disabled, listingId, productId]
+    [disabled, listingId, channelProductId, productId]
   )
 
   // refreshKey 가 바뀌면 항상 1페이지부터 다시 읽는다 — 새 기록은 최신순 맨 앞에 붙는다.
@@ -104,16 +104,12 @@ export function KeywordChangeTimeline({
           변경 이력
         </CardTitle>
         <CardDescription>
-          상품명·검색어를 언제 왜 바꿨는지의 기록입니다. 수정·삭제할 수 없습니다.
+          상품명·검색어를 언제 바꿨는지 저장할 때 자동으로 남는 기록입니다. 수정·삭제할 수 없습니다.
           {crossChannelNotice && ' 이 상품의 다른 채널 기록도 함께 표시됩니다.'}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {unavailableReason ? (
-          <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
-            {unavailableReason}
-          </p>
-        ) : error ? (
+        {error ? (
           <div className="space-y-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-4 text-center">
             <p className="text-sm text-destructive">{error}</p>
             <Button variant="outline" size="sm" onClick={() => void load(page)}>
@@ -169,6 +165,7 @@ export function KeywordChangeTimeline({
 }
 
 function TimelineRow({ row }: { row: ChangeLog }) {
+  const [effectOpen, setEffectOpen] = useState(false)
   const beforeSet = new Set(row.beforeKeywords)
   const afterSet = new Set(row.afterKeywords)
   const added = row.afterKeywords.filter((k) => !beforeSet.has(k))
@@ -185,7 +182,9 @@ function TimelineRow({ row }: { row: ChangeLog }) {
         >
           {formatDateTime(row.createdAt)}
         </time>
-        <Badge variant="secondary">{KEYWORD_CHANGE_REASON_LABELS[row.reason]}</Badge>
+        {row.reason && (
+          <Badge variant="secondary">{KEYWORD_CHANGE_REASON_LABELS[row.reason]}</Badge>
+        )}
         {row.multiChange && (
           <Badge
             variant="outline"
@@ -228,7 +227,152 @@ function TimelineRow({ row }: { row: ChangeLog }) {
           관찰 지표: <span className="text-foreground">{row.observeMetric}</span>
         </p>
       )}
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="mt-1.5 h-7 px-2 text-xs"
+        aria-expanded={effectOpen}
+        onClick={() => setEffectOpen((v) => !v)}
+      >
+        효과 보기
+      </Button>
+      {effectOpen && <EffectPanel logId={row.id} />}
     </li>
+  )
+}
+
+type Effect =
+  | { unavailable: string }
+  | {
+      label: string
+      before: { from: string; to: string; quantity: number; revenue: number }
+      after: {
+        from: string
+        to: string
+        quantity: number
+        revenue: number
+        observedDays: number
+        complete: boolean
+      }
+      ranks: Array<{
+        keyword: string
+        source: RankSource
+        before: number | null
+        after: number | null
+      }>
+    }
+
+const OBSERVE_DAYS = 14
+
+/** 변화율 %. 비교 기준이 0 이하면 null(표시 시 "-"). sales-analytics 의 pctChange 와 같은 의미. */
+function pct(current: number, prev: number): string {
+  if (prev <= 0) return '-'
+  const v = Math.round(((current - prev) / prev) * 1000) / 10
+  return `${v > 0 ? '+' : ''}${v}%`
+}
+
+/** 펼칠 때 한 번만 조회한다 — 행마다 미리 부르면 이력 페이지 로드가 N+1 이 된다. */
+function EffectPanel({ logId }: { logId: string }) {
+  const [effect, setEffect] = useState<Effect | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await fetch(`/api/sh/keywords/changes/${logId}/effect`, { cache: 'no-store' })
+        if (!res.ok) throw new Error('효과를 불러오지 못했습니다')
+        const data: Effect = await res.json()
+        if (!cancelled) setEffect(data)
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : '효과를 불러오지 못했습니다')
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [logId])
+
+  if (error) return <p className="mt-2 text-xs text-destructive">{error}</p>
+  if (!effect) {
+    return (
+      <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+        불러오는 중...
+      </p>
+    )
+  }
+  if ('unavailable' in effect) {
+    return <p className="mt-2 text-xs text-muted-foreground">{effect.unavailable}</p>
+  }
+
+  const { before, after, ranks } = effect
+  // 변경 당일·다음 날에는 관찰할 날이 없다 — 시작일이 종료일보다 늦은 기간을 그대로 보여주지 않는다.
+  const notStarted = after.observedDays === 0
+  return (
+    <div className="mt-2 space-y-2 rounded-md border bg-background p-2.5 text-xs">
+      <p className="font-medium">{effect.label}</p>
+      <table className="w-full text-left">
+        <thead className="text-muted-foreground">
+          <tr>
+            <th className="py-0.5 font-normal">지표</th>
+            <th className="py-0.5 font-normal">
+              변경 전 ({before.from}~{before.to})
+            </th>
+            <th className="py-0.5 font-normal">
+              {notStarted ? '변경 후 (관찰 전)' : `변경 후 (${after.from}~${after.to})`}
+            </th>
+            <th className="py-0.5 font-normal">변화</th>
+          </tr>
+        </thead>
+        <tbody className="tabular-nums">
+          <tr>
+            <td className="py-0.5">판매 수량</td>
+            <td>{before.quantity.toLocaleString()}</td>
+            <td>{notStarted ? '—' : after.quantity.toLocaleString()}</td>
+            <td>{notStarted ? '-' : pct(after.quantity, before.quantity)}</td>
+          </tr>
+          <tr>
+            <td className="py-0.5">매출</td>
+            <td>{before.revenue.toLocaleString()}원</td>
+            <td>{notStarted ? '—' : `${after.revenue.toLocaleString()}원`}</td>
+            <td>{notStarted ? '-' : pct(after.revenue, before.revenue)}</td>
+          </tr>
+        </tbody>
+      </table>
+      {!after.complete && (
+        <p className="text-amber-600 dark:text-amber-400">
+          {notStarted
+            ? `변경 다음 날부터 ${OBSERVE_DAYS}일 동안 관찰합니다`
+            : `관찰 중 ${after.observedDays}/${OBSERVE_DAYS}일`}
+        </p>
+      )}
+      {ranks.length > 0 && (
+        <table className="w-full text-left">
+          <thead className="text-muted-foreground">
+            <tr>
+              <th className="py-0.5 font-normal">키워드</th>
+              <th className="py-0.5 font-normal">변경 전 순위</th>
+              <th className="py-0.5 font-normal">변경 후 순위</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ranks.map((r) => (
+              <tr key={`${r.source}-${r.keyword}`}>
+                <td className="py-0.5">
+                  {r.keyword}
+                  <span className="ml-1 text-muted-foreground">{sourceLongLabel(r.source)}</span>
+                </td>
+                <td>{formatRankNumber(r.before)}</td>
+                <td>{formatRankNumber(r.after)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   )
 }
 
