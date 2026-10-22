@@ -86,6 +86,43 @@ describe('filterResponse', () => {
     )
     expect(JSON.stringify(r2)).not.toContain(encodeURIComponent(k2))
   })
+  it('허용 목록 뒤 maskSecrets로 한 번 더 거른다(spec §3.4) — 본문 문자열·헤더 값', () => {
+    const r = filterResponse(
+      OP,
+      {
+        ...res,
+        headers: { 'x-ratelimit-remaining': 'token=NEWTOKEN123' },
+        json: { orders: [], note: 'Bearer NEWTOKEN123' },
+      },
+      KEY
+    )
+    expect(r.body).toEqual({ orders: [], note: 'Bearer [redacted]' })
+    expect(r.headers).toEqual({ 'x-ratelimit-remaining': 'token=[redacted]' })
+  })
+  it('숫자·불리언으로 echo된 키도 가린다', () => {
+    const k = '12345678'
+    const r = filterResponse(
+      OP,
+      { ...res, json: { orders: [{ id: 12345678 }], note: 9912345678 } },
+      k
+    )
+    expect(r.body).toEqual({ orders: [{ id: '[redacted]' }], note: '[redacted]' })
+    const r2 = filterResponse(OP, { ...res, json: { orders: [], note: true } }, 'true')
+    expect(r2.body).toEqual({ orders: [], note: '[redacted]' })
+  })
+  it('URLSearchParams 인코딩(소문자 hex 포함)·정규식 메타문자 키도 가린다', () => {
+    const k = "K~()!'.*12345678"
+    const usp = new URLSearchParams({ k }).toString().slice(2)
+    const r = filterResponse(
+      OP,
+      { ...res, json: { orders: [], note: `a ${usp} b ${usp.toLowerCase()} c ${k} d` } },
+      k
+    )
+    expect(r.body).toEqual({ orders: [], note: 'a [redacted] b [redacted] c [redacted] d' })
+  })
+  it('json이 null(JSON 아님·처리 불가)이면 본문·헤더 없이 status만', () => {
+    expect(filterResponse(OP, { ...res, json: null }, KEY)).toEqual({ status: 200 })
+  })
   it('op=null이면 status만', () => {
     expect(filterResponse(null, res, KEY)).toEqual({ status: 200 })
   })

@@ -1,4 +1,5 @@
 import { displayUrl, normalizePath, pickFields, type ApiKeyConfig, type ReadOp } from './config'
+import { maskSecrets } from '@/lib/agent/audit'
 import { ToolUserError } from '@/lib/agent/tools/errors'
 
 export interface CallInput {
@@ -38,22 +39,38 @@ export function buildRequest(
 }
 
 /**
- * 응답에서 허용된 필드·헤더만 남긴다. op=null(승인 실행)은 상태 코드만.
- * set-cookie는 admin이 허용해도 항상 뺀다. 마지막으로 키 원문·base64·URL 인코딩이 남아 있으면 가린다(보조).
+ * 응답에서 허용된 필드·헤더만 남긴다. op=null(승인 실행)·json=null(JSON 아님·처리 불가)은 상태 코드만(spec §3.4).
+ * set-cookie는 admin이 허용해도 항상 뺀다. 그 뒤 키 원문·base64·URL 인코딩을 가리고 maskSecrets로 한 번 더 거른다(보조).
  */
 export function filterResponse(
   op: ReadOp | null,
   res: { status: number; headers: Record<string, string>; json: unknown },
   value: string
 ): { status: number; body?: unknown; headers?: Record<string, string> } {
-  if (!op) return { status: res.status }
+  if (!op || res.json === null) return { status: res.status }
   const allowed = new Set(op.responseHeaders.map((h) => h.toLowerCase()))
   allowed.delete('set-cookie')
-  const needles = [value, Buffer.from(value).toString('base64'), encodeURIComponent(value)]
-  const redact = (s: string) =>
-    needles.reduce((acc, n) => (n ? acc.split(n).join('[redacted]') : acc), s)
+  // 퍼센트 hex는 대소문자가 섞일 수 있어 대소문자 무시. 긴 것부터 맞춘다(교대는 앞의 것이 먼저 맞는다).
+  const needles = [
+    ...new Set([
+      value,
+      Buffer.from(value).toString('base64'),
+      encodeURIComponent(value),
+      new URLSearchParams({ k: value }).toString().slice(2),
+    ]),
+  ]
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length)
+    .map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const re = needles.length ? new RegExp(needles.join('|'), 'gi') : null
+  const redact = (s: string) => maskSecrets(re ? s.replace(re, '[redacted]') : s)
   const walk = (v: unknown): unknown => {
     if (typeof v === 'string') return redact(v)
+    // 숫자·불리언으로 echo된 키도 가린다
+    if (re && (typeof v === 'number' || typeof v === 'boolean')) {
+      re.lastIndex = 0
+      return re.test(String(v)) ? '[redacted]' : v
+    }
     if (Array.isArray(v)) return v.map(walk)
     if (v && typeof v === 'object')
       return Object.fromEntries(Object.entries(v).map(([k, x]) => [redact(k), walk(x)]))
