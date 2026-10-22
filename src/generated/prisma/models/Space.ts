@@ -306,6 +306,7 @@ export type SpaceWhereInput = {
   finStagedRows?: Prisma.FinStagedRowListRelationFilter
   finTransactions?: Prisma.FinTransactionListRelationFilter
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotListRelationFilter
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotListRelationFilter
   hiringStores?: Prisma.HiringStoreListRelationFilter
   hiringPositions?: Prisma.HiringPositionListRelationFilter
   hiringPostings?: Prisma.HiringPostingListRelationFilter
@@ -409,6 +410,7 @@ export type SpaceOrderByWithRelationInput = {
   finStagedRows?: Prisma.FinStagedRowOrderByRelationAggregateInput
   finTransactions?: Prisma.FinTransactionOrderByRelationAggregateInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotOrderByRelationAggregateInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotOrderByRelationAggregateInput
   hiringStores?: Prisma.HiringStoreOrderByRelationAggregateInput
   hiringPositions?: Prisma.HiringPositionOrderByRelationAggregateInput
   hiringPostings?: Prisma.HiringPostingOrderByRelationAggregateInput
@@ -515,6 +517,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   finStagedRows?: Prisma.FinStagedRowListRelationFilter
   finTransactions?: Prisma.FinTransactionListRelationFilter
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotListRelationFilter
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotListRelationFilter
   hiringStores?: Prisma.HiringStoreListRelationFilter
   hiringPositions?: Prisma.HiringPositionListRelationFilter
   hiringPostings?: Prisma.HiringPostingListRelationFilter
@@ -646,6 +649,7 @@ export type SpaceCreateInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -749,6 +753,7 @@ export type SpaceUncheckedCreateInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -852,6 +857,7 @@ export type SpaceUpdateInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -955,6 +961,7 @@ export type SpaceUncheckedUpdateInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2140,6 +2147,20 @@ export type SpaceUpdateOneRequiredWithoutFinBalanceSnapshotsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutFinBalanceSnapshotsInput, Prisma.SpaceUpdateWithoutFinBalanceSnapshotsInput>, Prisma.SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput>
 }
 
+export type SpaceCreateNestedOneWithoutFinLiabilitySnapshotsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutFinLiabilitySnapshotsInput, Prisma.SpaceUncheckedCreateWithoutFinLiabilitySnapshotsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutFinLiabilitySnapshotsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutFinLiabilitySnapshotsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutFinLiabilitySnapshotsInput, Prisma.SpaceUncheckedCreateWithoutFinLiabilitySnapshotsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutFinLiabilitySnapshotsInput
+  upsert?: Prisma.SpaceUpsertWithoutFinLiabilitySnapshotsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutFinLiabilitySnapshotsInput, Prisma.SpaceUpdateWithoutFinLiabilitySnapshotsInput>, Prisma.SpaceUncheckedUpdateWithoutFinLiabilitySnapshotsInput>
+}
+
 export type SpaceCreateNestedOneWithoutHiringStoresInput = {
   create?: Prisma.XOR<Prisma.SpaceCreateWithoutHiringStoresInput, Prisma.SpaceUncheckedCreateWithoutHiringStoresInput>
   connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutHiringStoresInput
@@ -2449,6 +2470,7 @@ export type SpaceCreateWithoutWorkspaceInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -2551,6 +2573,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -2669,6 +2692,7 @@ export type SpaceUpdateWithoutWorkspaceInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -2771,6 +2795,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2873,6 +2898,7 @@ export type SpaceCreateWithoutMembersInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -2975,6 +3001,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -3093,6 +3120,7 @@ export type SpaceUpdateWithoutMembersInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -3195,6 +3223,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3297,6 +3326,7 @@ export type SpaceCreateWithoutInvitationsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -3399,6 +3429,7 @@ export type SpaceUncheckedCreateWithoutInvitationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -3517,6 +3548,7 @@ export type SpaceUpdateWithoutInvitationsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -3619,6 +3651,7 @@ export type SpaceUncheckedUpdateWithoutInvitationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3722,6 +3755,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -3824,6 +3858,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -3942,6 +3977,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -4044,6 +4080,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4146,6 +4183,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -4248,6 +4286,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -4366,6 +4405,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -4468,6 +4508,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4570,6 +4611,7 @@ export type SpaceCreateWithoutAgentsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -4672,6 +4714,7 @@ export type SpaceUncheckedCreateWithoutAgentsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -4790,6 +4833,7 @@ export type SpaceUpdateWithoutAgentsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -4892,6 +4936,7 @@ export type SpaceUncheckedUpdateWithoutAgentsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4993,6 +5038,7 @@ export type SpaceCreateWithoutToolAuditLogsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -5095,6 +5141,7 @@ export type SpaceUncheckedCreateWithoutToolAuditLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -5213,6 +5260,7 @@ export type SpaceUpdateWithoutToolAuditLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -5315,6 +5363,7 @@ export type SpaceUncheckedUpdateWithoutToolAuditLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5417,6 +5466,7 @@ export type SpaceCreateWithoutUsageEventsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -5519,6 +5569,7 @@ export type SpaceUncheckedCreateWithoutUsageEventsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -5637,6 +5688,7 @@ export type SpaceUpdateWithoutUsageEventsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -5739,6 +5791,7 @@ export type SpaceUncheckedUpdateWithoutUsageEventsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5841,6 +5894,7 @@ export type SpaceCreateWithoutSpaceCredentialsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -5943,6 +5997,7 @@ export type SpaceUncheckedCreateWithoutSpaceCredentialsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -6061,6 +6116,7 @@ export type SpaceUpdateWithoutSpaceCredentialsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -6163,6 +6219,7 @@ export type SpaceUncheckedUpdateWithoutSpaceCredentialsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6266,6 +6323,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -6368,6 +6426,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -6486,6 +6545,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -6588,6 +6648,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6689,6 +6750,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -6791,6 +6853,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -6909,6 +6972,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -7011,6 +7075,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7113,6 +7178,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -7215,6 +7281,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -7333,6 +7400,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -7435,6 +7503,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7537,6 +7606,7 @@ export type SpaceCreateWithoutCoupangProductItemsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -7639,6 +7709,7 @@ export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -7757,6 +7828,7 @@ export type SpaceUpdateWithoutCoupangProductItemsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -7859,6 +7931,7 @@ export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7961,6 +8034,7 @@ export type SpaceCreateWithoutCoupangWriteJobsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -8063,6 +8137,7 @@ export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -8181,6 +8256,7 @@ export type SpaceUpdateWithoutCoupangWriteJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -8283,6 +8359,7 @@ export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8385,6 +8462,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -8487,6 +8565,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -8605,6 +8684,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -8707,6 +8787,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8809,6 +8890,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -8911,6 +8993,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -9029,6 +9112,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -9131,6 +9215,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9233,6 +9318,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -9335,6 +9421,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -9453,6 +9540,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -9555,6 +9643,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9657,6 +9746,7 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -9759,6 +9849,7 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -9877,6 +9968,7 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -9979,6 +10071,7 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10081,6 +10174,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -10183,6 +10277,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -10301,6 +10396,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -10403,6 +10499,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10505,6 +10602,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -10607,6 +10705,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -10725,6 +10824,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -10827,6 +10927,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10929,6 +11030,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -11031,6 +11133,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -11149,6 +11252,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -11251,6 +11355,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11353,6 +11458,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -11455,6 +11561,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -11573,6 +11680,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -11675,6 +11783,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11777,6 +11886,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -11879,6 +11989,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -11997,6 +12108,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -12099,6 +12211,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12201,6 +12314,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -12303,6 +12417,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -12421,6 +12536,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -12523,6 +12639,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12625,6 +12742,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -12727,6 +12845,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -12845,6 +12964,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -12947,6 +13067,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13049,6 +13170,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -13151,6 +13273,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -13269,6 +13392,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -13371,6 +13495,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13473,6 +13598,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -13575,6 +13701,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -13693,6 +13820,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -13795,6 +13923,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13897,6 +14026,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -13999,6 +14129,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -14117,6 +14248,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -14219,6 +14351,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14321,6 +14454,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -14423,6 +14557,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -14541,6 +14676,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -14643,6 +14779,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14745,6 +14882,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -14847,6 +14985,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -14965,6 +15104,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -15067,6 +15207,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15169,6 +15310,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -15271,6 +15413,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -15389,6 +15532,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -15491,6 +15635,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15593,6 +15738,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -15695,6 +15841,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -15813,6 +15960,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -15915,6 +16063,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16017,6 +16166,7 @@ export type SpaceCreateWithoutBrandsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -16119,6 +16269,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -16237,6 +16388,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -16339,6 +16491,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16441,6 +16594,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -16543,6 +16697,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -16661,6 +16816,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -16763,6 +16919,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16865,6 +17022,7 @@ export type SpaceCreateWithoutChannelsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -16967,6 +17125,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -17085,6 +17244,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -17187,6 +17347,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17289,6 +17450,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -17391,6 +17553,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -17509,6 +17672,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -17611,6 +17775,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17713,6 +17878,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -17815,6 +17981,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -17933,6 +18100,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -18035,6 +18203,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18137,6 +18306,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -18239,6 +18409,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -18357,6 +18528,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -18459,6 +18631,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18561,6 +18734,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -18663,6 +18837,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -18781,6 +18956,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -18883,6 +19059,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18985,6 +19162,7 @@ export type SpaceCreateWithoutAtomicWordsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -19087,6 +19265,7 @@ export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -19205,6 +19384,7 @@ export type SpaceUpdateWithoutAtomicWordsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -19307,6 +19487,7 @@ export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19409,6 +19590,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -19511,6 +19693,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -19629,6 +19812,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -19731,6 +19915,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19833,6 +20018,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -19935,6 +20121,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -20053,6 +20240,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -20155,6 +20343,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20257,6 +20446,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -20359,6 +20549,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -20477,6 +20668,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -20579,6 +20771,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20681,6 +20874,7 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -20783,6 +20977,7 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -20901,6 +21096,7 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -21003,6 +21199,7 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21105,6 +21302,7 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -21207,6 +21405,7 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -21325,6 +21524,7 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -21427,6 +21627,7 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21529,6 +21730,7 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -21631,6 +21833,7 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -21749,6 +21952,7 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -21851,6 +22055,7 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21953,6 +22158,7 @@ export type SpaceCreateWithoutProductsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -22055,6 +22261,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -22173,6 +22380,7 @@ export type SpaceUpdateWithoutProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -22275,6 +22483,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22377,6 +22586,7 @@ export type SpaceCreateWithoutPersonasInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -22479,6 +22689,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -22597,6 +22808,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -22699,6 +22911,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22801,6 +23014,7 @@ export type SpaceCreateWithoutBrandProfilesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -22903,6 +23117,7 @@ export type SpaceUncheckedCreateWithoutBrandProfilesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -23021,6 +23236,7 @@ export type SpaceUpdateWithoutBrandProfilesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -23123,6 +23339,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfilesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23225,6 +23442,7 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -23327,6 +23545,7 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -23445,6 +23664,7 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -23547,6 +23767,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23649,6 +23870,7 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -23751,6 +23973,7 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -23869,6 +24092,7 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -23971,6 +24195,7 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24073,6 +24298,7 @@ export type SpaceCreateWithoutAiSettingInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -24175,6 +24401,7 @@ export type SpaceUncheckedCreateWithoutAiSettingInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -24293,6 +24520,7 @@ export type SpaceUpdateWithoutAiSettingInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -24395,6 +24623,7 @@ export type SpaceUncheckedUpdateWithoutAiSettingInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24497,6 +24726,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -24599,6 +24829,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -24717,6 +24948,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -24819,6 +25051,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24921,6 +25154,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -25023,6 +25257,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -25141,6 +25376,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -25243,6 +25479,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25345,6 +25582,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -25447,6 +25685,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -25565,6 +25804,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -25667,6 +25907,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25769,6 +26010,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -25871,6 +26113,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -25989,6 +26232,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -26091,6 +26335,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26193,6 +26438,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -26295,6 +26541,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -26413,6 +26660,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -26515,6 +26763,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26617,6 +26866,7 @@ export type SpaceCreateWithoutContentsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -26719,6 +26969,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -26837,6 +27088,7 @@ export type SpaceUpdateWithoutContentsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -26939,6 +27191,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27041,6 +27294,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -27143,6 +27397,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -27261,6 +27516,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -27363,6 +27619,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27465,6 +27722,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -27567,6 +27825,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -27685,6 +27944,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -27787,6 +28047,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27889,6 +28150,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -27991,6 +28253,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -28109,6 +28372,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -28211,6 +28475,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28313,6 +28578,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -28415,6 +28681,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -28533,6 +28800,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -28635,6 +28903,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28737,6 +29006,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -28839,6 +29109,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -28957,6 +29228,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -29059,6 +29331,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29161,6 +29434,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -29263,6 +29537,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -29381,6 +29656,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -29483,6 +29759,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29585,6 +29862,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -29687,6 +29965,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -29805,6 +30084,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -29907,6 +30187,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30009,6 +30290,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -30111,6 +30393,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -30229,6 +30512,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -30331,6 +30615,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30433,6 +30718,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -30535,6 +30821,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -30653,6 +30940,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -30755,6 +31043,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30857,6 +31146,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -30959,6 +31249,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -31077,6 +31368,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -31179,6 +31471,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31281,6 +31574,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -31383,6 +31677,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -31501,6 +31796,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -31603,6 +31899,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31705,6 +32002,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -31807,6 +32105,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -31925,6 +32224,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -32027,6 +32327,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32129,6 +32430,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -32231,6 +32533,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -32349,6 +32652,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -32451,6 +32755,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32553,6 +32858,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -32655,6 +32961,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -32773,6 +33080,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -32875,6 +33183,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32977,6 +33286,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -33079,6 +33389,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -33197,6 +33508,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -33299,6 +33611,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33401,6 +33714,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -33503,6 +33817,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -33621,6 +33936,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -33723,6 +34039,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33825,6 +34142,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -33927,6 +34245,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -34045,6 +34364,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -34147,6 +34467,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34249,6 +34570,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -34351,6 +34673,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -34469,6 +34792,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -34571,6 +34895,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34673,6 +34998,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -34775,6 +35101,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -34893,6 +35220,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -34995,6 +35323,435 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  agents?: Prisma.SpaceAgentUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutFinLiabilitySnapshotsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  invitations?: Prisma.SpaceInvitationCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
+  keywordRankSnapshots?: Prisma.KeywordRankSnapshotCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  toolAuditLogs?: Prisma.ToolAuditLogCreateNestedManyWithoutSpaceInput
+  usageEvents?: Prisma.UsageEventCreateNestedManyWithoutSpaceInput
+  spaceCredentials?: Prisma.SpaceCredentialCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfiles?: Prisma.BrandProfileCreateNestedManyWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  agents?: Prisma.SpaceAgentCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutFinLiabilitySnapshotsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  invitations?: Prisma.SpaceInvitationUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
+  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  toolAuditLogs?: Prisma.ToolAuditLogUncheckedCreateNestedManyWithoutSpaceInput
+  usageEvents?: Prisma.UsageEventUncheckedCreateNestedManyWithoutSpaceInput
+  spaceCredentials?: Prisma.SpaceCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfiles?: Prisma.BrandProfileUncheckedCreateNestedManyWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  agents?: Prisma.SpaceAgentUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutFinLiabilitySnapshotsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutFinLiabilitySnapshotsInput, Prisma.SpaceUncheckedCreateWithoutFinLiabilitySnapshotsInput>
+}
+
+export type SpaceUpsertWithoutFinLiabilitySnapshotsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutFinLiabilitySnapshotsInput, Prisma.SpaceUncheckedUpdateWithoutFinLiabilitySnapshotsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutFinLiabilitySnapshotsInput, Prisma.SpaceUncheckedCreateWithoutFinLiabilitySnapshotsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutFinLiabilitySnapshotsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutFinLiabilitySnapshotsInput, Prisma.SpaceUncheckedUpdateWithoutFinLiabilitySnapshotsInput>
+}
+
+export type SpaceUpdateWithoutFinLiabilitySnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  invitations?: Prisma.SpaceInvitationUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
+  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  toolAuditLogs?: Prisma.ToolAuditLogUpdateManyWithoutSpaceNestedInput
+  usageEvents?: Prisma.UsageEventUpdateManyWithoutSpaceNestedInput
+  spaceCredentials?: Prisma.SpaceCredentialUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfiles?: Prisma.BrandProfileUpdateManyWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  agents?: Prisma.SpaceAgentUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutFinLiabilitySnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  invitations?: Prisma.SpaceInvitationUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  toolAuditLogs?: Prisma.ToolAuditLogUncheckedUpdateManyWithoutSpaceNestedInput
+  usageEvents?: Prisma.UsageEventUncheckedUpdateManyWithoutSpaceNestedInput
+  spaceCredentials?: Prisma.SpaceCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfiles?: Prisma.BrandProfileUncheckedUpdateManyWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35098,6 +35855,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
   hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
@@ -35200,6 +35958,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
@@ -35318,6 +36077,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
@@ -35420,6 +36180,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35522,6 +36283,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
   hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
@@ -35624,6 +36386,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
@@ -35742,6 +36505,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
@@ -35844,6 +36608,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35946,6 +36711,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
@@ -36048,6 +36814,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
@@ -36166,6 +36933,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
@@ -36268,6 +37036,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
@@ -36370,6 +37139,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -36472,6 +37242,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -36590,6 +37361,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -36692,6 +37464,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -36794,6 +37567,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -36896,6 +37670,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -37014,6 +37789,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -37116,6 +37892,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -37218,6 +37995,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -37320,6 +38098,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -37438,6 +38217,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -37540,6 +38320,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -37642,6 +38423,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -37744,6 +38526,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -37862,6 +38645,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -37964,6 +38748,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -38066,6 +38851,7 @@ export type SpaceCreateWithoutHiringUploadSessionsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -38168,6 +38954,7 @@ export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -38286,6 +39073,7 @@ export type SpaceUpdateWithoutHiringUploadSessionsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -38388,6 +39176,7 @@ export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -38490,6 +39279,7 @@ export type SpaceCreateWithoutHiringMigrationRecordsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -38592,6 +39382,7 @@ export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -38710,6 +39501,7 @@ export type SpaceUpdateWithoutHiringMigrationRecordsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -38812,6 +39604,7 @@ export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -38914,6 +39707,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -39016,6 +39810,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -39134,6 +39929,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -39236,6 +40032,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -39338,6 +40135,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -39440,6 +40238,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -39558,6 +40357,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -39660,6 +40460,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -39762,6 +40563,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -39864,6 +40666,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -39982,6 +40785,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -40084,6 +40888,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -40186,6 +40991,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -40288,6 +41094,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -40406,6 +41213,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -40508,6 +41316,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -40610,6 +41419,7 @@ export type SpaceCreateWithoutBillingChargesInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -40712,6 +41522,7 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -40830,6 +41641,7 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -40932,6 +41744,7 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -41034,6 +41847,7 @@ export type SpaceCreateWithoutWorkerTokensInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -41136,6 +41950,7 @@ export type SpaceUncheckedCreateWithoutWorkerTokensInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -41254,6 +42069,7 @@ export type SpaceUpdateWithoutWorkerTokensInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -41356,6 +42172,7 @@ export type SpaceUncheckedUpdateWithoutWorkerTokensInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -41457,6 +42274,7 @@ export type SpaceCreateWithoutKeywordRankSnapshotsInput = {
   finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
@@ -41559,6 +42377,7 @@ export type SpaceUncheckedCreateWithoutKeywordRankSnapshotsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
   finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
   hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
   hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
   hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
@@ -41677,6 +42496,7 @@ export type SpaceUpdateWithoutKeywordRankSnapshotsInput = {
   finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
@@ -41779,6 +42599,7 @@ export type SpaceUncheckedUpdateWithoutKeywordRankSnapshotsInput = {
   finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
   finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
   finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
   hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
@@ -41874,6 +42695,7 @@ export type SpaceCountOutputType = {
   finStagedRows: number
   finTransactions: number
   finBalanceSnapshots: number
+  finLiabilitySnapshots: number
   hiringStores: number
   hiringPositions: number
   hiringPostings: number
@@ -41962,6 +42784,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   finStagedRows?: boolean | SpaceCountOutputTypeCountFinStagedRowsArgs
   finTransactions?: boolean | SpaceCountOutputTypeCountFinTransactionsArgs
   finBalanceSnapshots?: boolean | SpaceCountOutputTypeCountFinBalanceSnapshotsArgs
+  finLiabilitySnapshots?: boolean | SpaceCountOutputTypeCountFinLiabilitySnapshotsArgs
   hiringStores?: boolean | SpaceCountOutputTypeCountHiringStoresArgs
   hiringPositions?: boolean | SpaceCountOutputTypeCountHiringPositionsArgs
   hiringPostings?: boolean | SpaceCountOutputTypeCountHiringPostingsArgs
@@ -42470,6 +43293,13 @@ export type SpaceCountOutputTypeCountFinBalanceSnapshotsArgs<ExtArgs extends run
 /**
  * SpaceCountOutputType without action
  */
+export type SpaceCountOutputTypeCountFinLiabilitySnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FinLiabilitySnapshotWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
 export type SpaceCountOutputTypeCountHiringStoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.HiringStoreWhereInput
 }
@@ -42669,6 +43499,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   finStagedRows?: boolean | Prisma.Space$finStagedRowsArgs<ExtArgs>
   finTransactions?: boolean | Prisma.Space$finTransactionsArgs<ExtArgs>
   finBalanceSnapshots?: boolean | Prisma.Space$finBalanceSnapshotsArgs<ExtArgs>
+  finLiabilitySnapshots?: boolean | Prisma.Space$finLiabilitySnapshotsArgs<ExtArgs>
   hiringStores?: boolean | Prisma.Space$hiringStoresArgs<ExtArgs>
   hiringPositions?: boolean | Prisma.Space$hiringPositionsArgs<ExtArgs>
   hiringPostings?: boolean | Prisma.Space$hiringPostingsArgs<ExtArgs>
@@ -42797,6 +43628,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   finStagedRows?: boolean | Prisma.Space$finStagedRowsArgs<ExtArgs>
   finTransactions?: boolean | Prisma.Space$finTransactionsArgs<ExtArgs>
   finBalanceSnapshots?: boolean | Prisma.Space$finBalanceSnapshotsArgs<ExtArgs>
+  finLiabilitySnapshots?: boolean | Prisma.Space$finLiabilitySnapshotsArgs<ExtArgs>
   hiringStores?: boolean | Prisma.Space$hiringStoresArgs<ExtArgs>
   hiringPositions?: boolean | Prisma.Space$hiringPositionsArgs<ExtArgs>
   hiringPostings?: boolean | Prisma.Space$hiringPostingsArgs<ExtArgs>
@@ -42898,6 +43730,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     finStagedRows: Prisma.$FinStagedRowPayload<ExtArgs>[]
     finTransactions: Prisma.$FinTransactionPayload<ExtArgs>[]
     finBalanceSnapshots: Prisma.$FinBalanceSnapshotPayload<ExtArgs>[]
+    finLiabilitySnapshots: Prisma.$FinLiabilitySnapshotPayload<ExtArgs>[]
     hiringStores: Prisma.$HiringStorePayload<ExtArgs>[]
     hiringPositions: Prisma.$HiringPositionPayload<ExtArgs>[]
     hiringPostings: Prisma.$HiringPostingPayload<ExtArgs>[]
@@ -43394,6 +44227,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   finStagedRows<T extends Prisma.Space$finStagedRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finStagedRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinStagedRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   finTransactions<T extends Prisma.Space$finTransactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   finBalanceSnapshots<T extends Prisma.Space$finBalanceSnapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finBalanceSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinBalanceSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  finLiabilitySnapshots<T extends Prisma.Space$finLiabilitySnapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finLiabilitySnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinLiabilitySnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hiringStores<T extends Prisma.Space$hiringStoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringStoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringStorePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hiringPositions<T extends Prisma.Space$hiringPositionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringPositionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringPositionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hiringPostings<T extends Prisma.Space$hiringPostingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringPostingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringPostingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -45580,6 +46414,30 @@ export type Space$finBalanceSnapshotsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.FinBalanceSnapshotScalarFieldEnum | Prisma.FinBalanceSnapshotScalarFieldEnum[]
+}
+
+/**
+ * Space.finLiabilitySnapshots
+ */
+export type Space$finLiabilitySnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FinLiabilitySnapshot
+   */
+  select?: Prisma.FinLiabilitySnapshotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FinLiabilitySnapshot
+   */
+  omit?: Prisma.FinLiabilitySnapshotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FinLiabilitySnapshotInclude<ExtArgs> | null
+  where?: Prisma.FinLiabilitySnapshotWhereInput
+  orderBy?: Prisma.FinLiabilitySnapshotOrderByWithRelationInput | Prisma.FinLiabilitySnapshotOrderByWithRelationInput[]
+  cursor?: Prisma.FinLiabilitySnapshotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FinLiabilitySnapshotScalarFieldEnum | Prisma.FinLiabilitySnapshotScalarFieldEnum[]
 }
 
 /**

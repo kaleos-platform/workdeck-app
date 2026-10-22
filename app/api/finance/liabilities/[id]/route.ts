@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { toNum, toNumOrNull } from '@/lib/finance/serialize'
+import { nowYmKst, ymOf } from '@/lib/finance/aggregate'
+import { recordLiabilitySnapshot } from '@/lib/finance/snapshot-rebuild'
 
 // 수정: 부채 부분 업데이트
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -68,20 +70,38 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
-  const liability = await prisma.finLiability.update({
-    where: { id },
-    data: {
-      ...(name !== undefined && { name: name.trim() }),
-      ...(lender !== undefined && { lender: lender?.trim() ?? null }),
-      ...(principal !== undefined && { principal }),
-      ...(balance !== undefined && { balance }),
-      ...(rate !== undefined && { rate }),
-      ...(dueDate !== undefined && { dueDate }),
-      ...(monthlyPayment !== undefined && { monthlyPayment }),
-      ...(memo !== undefined && { memo: memo?.trim() ?? null }),
-      ...(normalizedAccountId !== undefined && { accountId: normalizedAccountId }),
-      ...(normalizedBalanceAsOf !== undefined && { balanceAsOf: normalizedBalanceAsOf }),
-    },
+  const liability = await prisma.$transaction(async (tx) => {
+    const updated = await tx.finLiability.update({
+      where: { id },
+      data: {
+        ...(name !== undefined && { name: name.trim() }),
+        ...(lender !== undefined && { lender: lender?.trim() ?? null }),
+        ...(principal !== undefined && { principal }),
+        ...(balance !== undefined && { balance }),
+        ...(rate !== undefined && { rate }),
+        ...(dueDate !== undefined && { dueDate }),
+        ...(monthlyPayment !== undefined && { monthlyPayment }),
+        ...(memo !== undefined && { memo: memo?.trim() ?? null }),
+        ...(normalizedAccountId !== undefined && { accountId: normalizedAccountId }),
+        ...(normalizedBalanceAsOf !== undefined && { balanceAsOf: normalizedBalanceAsOf }),
+      },
+    })
+    if (balance !== undefined) {
+      // 상환 반영은 상환 거래일(txnDate 규약 — UTC getter) 월, 수기 수정은 지금(KST) 월.
+      await recordLiabilitySnapshot(tx, {
+        spaceId,
+        liabilityId: id,
+        name: updated.name,
+        yearMonth: normalizedBalanceAsOf ? ymOf(normalizedBalanceAsOf) : nowYmKst(),
+        balance,
+      })
+    } else if (name !== undefined) {
+      await tx.finLiabilitySnapshot.updateMany({
+        where: { spaceId, liabilityId: id },
+        data: { name: updated.name },
+      })
+    }
+    return updated
   })
 
   return NextResponse.json({
@@ -104,11 +124,21 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   const existing = await prisma.finLiability.findFirst({
     where: { id, spaceId },
-    select: { id: true },
+    select: { id: true, name: true },
   })
   if (!existing) return errorResponse('부채를 찾을 수 없습니다', 404)
 
-  await prisma.finLiability.delete({ where: { id } })
+  // 과거 달 부채 이력은 보존 — 삭제월부터 0으로 기록해 이월이 끊기게 한다.
+  await prisma.$transaction(async (tx) => {
+    await recordLiabilitySnapshot(tx, {
+      spaceId,
+      liabilityId: id,
+      name: existing.name,
+      yearMonth: nowYmKst(),
+      balance: 0,
+    })
+    await tx.finLiability.delete({ where: { id } })
+  })
 
   return NextResponse.json({ ok: true })
 }

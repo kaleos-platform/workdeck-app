@@ -180,6 +180,7 @@ export const ModelName = {
   FinStagedRow: 'FinStagedRow',
   FinTransaction: 'FinTransaction',
   FinBalanceSnapshot: 'FinBalanceSnapshot',
+  FinLiabilitySnapshot: 'FinLiabilitySnapshot',
   HiringStore: 'HiringStore',
   HiringPosition: 'HiringPosition',
   HiringPosting: 'HiringPosting',
@@ -2259,6 +2260,8 @@ export const FinAccountScalarFieldEnum = {
   openingBalance: 'openingBalance',
   currentBalance: 'currentBalance',
   currentBalanceAsOf: 'currentBalanceAsOf',
+  status: 'status',
+  statusChangedAt: 'statusChangedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2426,6 +2429,20 @@ export const FinBalanceSnapshotScalarFieldEnum = {
 } as const
 
 export type FinBalanceSnapshotScalarFieldEnum = (typeof FinBalanceSnapshotScalarFieldEnum)[keyof typeof FinBalanceSnapshotScalarFieldEnum]
+
+
+export const FinLiabilitySnapshotScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  liabilityId: 'liabilityId',
+  name: 'name',
+  yearMonth: 'yearMonth',
+  balance: 'balance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinLiabilitySnapshotScalarFieldEnum = (typeof FinLiabilitySnapshotScalarFieldEnum)[keyof typeof FinLiabilitySnapshotScalarFieldEnum]
 
 
 export const HiringStoreScalarFieldEnum = {

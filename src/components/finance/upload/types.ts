@@ -50,6 +50,12 @@ export type Account = {
   openingBalance?: number | null
   currentBalance?: number | null
   currentBalanceAsOf?: string | null
+  status?: 'ACTIVE' | 'INACTIVE'
+}
+
+/** 업로드 대상 후보 — 미사용 계좌는 선택·자동 선택에서 제외. */
+export function isUploadable(a: Account): boolean {
+  return a.status !== 'INACTIVE'
 }
 
 /** 파일 最古 거래(BANK만) — 계좌 추론·잔액 검증 근거 */
@@ -339,8 +345,9 @@ export function resolveInitialSelection(data: PreviewResponse): {
   // 계좌번호가 없는 export(신한 grid 등)에서는 직전에 올린 계좌가 그대로 미리 채워진다.
   // 실제로 새활용 계좌 파일 22건이 주거래로 조용히 적재된 사고가 이 경로로 일어났다.
   // 근거 없이 채우느니 비워서 사용자가 고르게 한다(계좌 미선택 = needs_review = 등록 차단).
-  const candidates = data.accounts.filter((a) => a.kind === resolvedKind)
-  const defaultAccount = matched?.id ?? (candidates.length === 1 ? candidates[0]?.id : null)
+  const candidates = data.accounts.filter((a) => a.kind === resolvedKind && isUploadable(a))
+  const usableMatch = matched && isUploadable(matched) ? matched : null
+  const defaultAccount = usableMatch?.id ?? (candidates.length === 1 ? candidates[0]?.id : null)
   const selectedAccount = candidates.find((a) => a.id === defaultAccount) ?? null
 
   return {

@@ -29,6 +29,7 @@ import {
   type Grain,
 } from '@/lib/finance/periods'
 import { computeLiabilityPending } from '@/lib/finance/liability'
+import { accountBalanceAt, buildBalanceTrend } from '@/lib/finance/balance-trend'
 import { computePnlMetrics, type PnlTxnFact } from '@/lib/finance/pnl-metrics'
 import { cashSection, fixedSectionOf, type CashSection } from '@/lib/finance/contra'
 import type { Prisma } from '@/generated/prisma/client'
@@ -669,85 +670,113 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
 
   const curEndYm = curMonths[curMonths.length - 1]
   const prevEndYm = prevMonths[prevMonths.length - 1]
-  const windowFrom = trendMonths[0] < prevMonths[0] ? prevMonths[0] : trendMonths[0]
-  const fetchFrom = prevMonths[0] < windowFrom ? prevMonths[0] : windowFrom
-  const { gte, lt } = rangeBounds(
-    fetchFrom < trendMonths[0] ? fetchFrom : trendMonths[0],
-    curEndYm > trendMonths[trendMonths.length - 1] ? curEndYm : trendMonths[trendMonths.length - 1]
-  )
+  // 잔액 추이의 버틸 개월수가 추이 첫 달 기준 직전 3개월 지출까지 본다.
+  const runwayFrom = addMonths(trendMonths[0], -3)
+  const fetchFrom = prevMonths[0] < runwayFrom ? prevMonths[0] : runwayFrom
+  const trendEndYm = trendMonths[trendMonths.length - 1]
+  const { gte, lt } = rangeBounds(fetchFrom, curEndYm > trendEndYm ? curEndYm : trendEndYm)
 
   // ── 데이터 로드 ──
   // 현재 기간에서 빠진 분석 제외 건수(이체 제외) — 잔액 변동과 수입−지출 불일치 안내용.
   const curRange = rangeBounds(curMonths[0], curEndYm)
-  const [txns, accounts, snapshots, liabilities, repaymentTxns, contra, excludedCount] =
-    await Promise.all([
-      prisma.finTransaction.findMany({
-        where: {
-          spaceId,
-          txnDate: { gte, lt },
-          ...(opts.includeExcluded ? {} : { excludeFromAnalysis: false }),
-        },
-        select: {
-          txnDate: true,
-          direction: true,
-          amount: true,
-          isTransfer: true,
-          cancelFlag: true,
-          categoryId: true,
-        },
-      }),
-      prisma.finAccount.findMany({
-        where: { spaceId },
-        select: {
-          id: true,
-          name: true,
-          kind: true,
-          institution: true,
-          accountNumber: true,
-          openingBalance: true,
-        },
-        orderBy: { createdAt: 'asc' },
-      }),
-      prisma.finBalanceSnapshot.findMany({
-        where: { spaceId },
-        select: { accountId: true, yearMonth: true, balance: true },
-        orderBy: { yearMonth: 'asc' },
-      }),
-      prisma.finLiability.findMany({
-        where: { spaceId },
-        select: {
-          id: true,
-          name: true,
-          lender: true,
-          principal: true,
-          balance: true,
-          rate: true,
-          dueDate: true,
-          monthlyPayment: true,
-          memo: true,
-          accountId: true,
-          balanceAsOf: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: 'asc' },
-      }),
-      // 부채에 연결된 상환 거래(감지용) — 링크된 것만이라 경량.
-      prisma.finTransaction.findMany({
-        where: { spaceId, liabilityId: { not: null } },
-        select: { liabilityId: true, amount: true, txnDate: true, direction: true },
-      }),
-      loadFixedSections(spaceId),
-      opts.includeExcluded
-        ? Promise.resolve(0)
-        : prisma.finTransaction.count({
-            where: {
-              spaceId,
-              isTransfer: false,
-              excludeFromAnalysis: true,
-              txnDate: { gte: curRange.gte, lt: curRange.lt },
-            },
-          }),
-    ])
+  const trendRange = rangeBounds(trendMonths[0], trendEndYm)
+  const [
+    txns,
+    accounts,
+    snapshots,
+    liabilities,
+    repaymentTxns,
+    contra,
+    excludedCount,
+    liabilitySnaps,
+    bankFlows,
+  ] = await Promise.all([
+    prisma.finTransaction.findMany({
+      where: {
+        spaceId,
+        txnDate: { gte, lt },
+        ...(opts.includeExcluded ? {} : { excludeFromAnalysis: false }),
+      },
+      select: {
+        txnDate: true,
+        direction: true,
+        amount: true,
+        isTransfer: true,
+        cancelFlag: true,
+        categoryId: true,
+      },
+    }),
+    prisma.finAccount.findMany({
+      where: { spaceId },
+      select: {
+        id: true,
+        name: true,
+        kind: true,
+        institution: true,
+        accountNumber: true,
+        openingBalance: true,
+        status: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    }),
+    prisma.finBalanceSnapshot.findMany({
+      where: { spaceId },
+      select: { accountId: true, yearMonth: true, balance: true },
+      orderBy: { yearMonth: 'asc' },
+    }),
+    prisma.finLiability.findMany({
+      where: { spaceId },
+      select: {
+        id: true,
+        name: true,
+        lender: true,
+        principal: true,
+        balance: true,
+        rate: true,
+        dueDate: true,
+        monthlyPayment: true,
+        memo: true,
+        accountId: true,
+        balanceAsOf: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    }),
+    // 부채에 연결된 상환 거래(감지용) — 링크된 것만이라 경량.
+    prisma.finTransaction.findMany({
+      where: { spaceId, liabilityId: { not: null } },
+      select: { liabilityId: true, amount: true, txnDate: true, direction: true },
+    }),
+    loadFixedSections(spaceId),
+    opts.includeExcluded
+      ? Promise.resolve(0)
+      : prisma.finTransaction.count({
+          where: {
+            spaceId,
+            isTransfer: false,
+            excludeFromAnalysis: true,
+            txnDate: { gte: curRange.gte, lt: curRange.lt },
+          },
+        }),
+    prisma.finLiabilitySnapshot.findMany({
+      where: { spaceId },
+      select: { liabilityId: true, name: true, yearMonth: true, balance: true },
+      orderBy: { yearMonth: 'asc' },
+    }),
+    // 잔액 체인 정합성 — BANK 계좌 전체 거래 월별 순액(이체·분석 제외 포함, 취소 상계).
+    prisma.$queryRaw<{ accountId: string; month: string; net: unknown }[]>`
+        SELECT t."accountId", to_char(t."txnDate", 'YYYY-MM') AS month,
+               sum(
+                 (CASE WHEN t.direction = 'IN' THEN t.amount ELSE -t.amount END)
+                 * (CASE WHEN t."cancelFlag" LIKE '%취소%' THEN -1 ELSE 1 END)
+               ) AS net
+        FROM "FinTransaction" t
+        JOIN "FinAccount" a ON a.id = t."accountId"
+        WHERE t."spaceId" = ${spaceId} AND a.kind = 'BANK'
+          AND t."txnDate" >= ${trendRange.gte} AND t."txnDate" < ${trendRange.lt}
+        GROUP BY 1, 2
+      `,
+  ])
 
   const rows: AggRow[] = txns.map((t) => ({
     txnDate: t.txnDate,
@@ -791,7 +820,8 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
   const cashAt = (ym: string) =>
     round2(
       bankAccounts.reduce(
-        (acc, a) => acc + (balAt(a.id, ym) ?? toNumOrNull(a.openingBalance) ?? 0),
+        (acc, a) =>
+          acc + accountBalanceAt(snapByAccount.get(a.id), ym, toNumOrNull(a.openingBalance)),
         0
       )
     )
@@ -837,16 +867,19 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
 
   // ── 계좌별 잔고 스냅샷 (UI) ──
   const sparkMonths = trendMonths.slice(-6)
-  const accountSnapshots = accounts.map((a) => ({
-    id: a.id,
-    name: a.name,
-    kind: a.kind,
-    institution: a.institution,
-    accountNumber: a.accountNumber,
-    balance: a.kind === 'BANK' ? balAt(a.id, curEndYm) : null,
-    openingBalance: toNumOrNull(a.openingBalance),
-    sparkline: a.kind === 'BANK' ? sparkMonths.map((m) => balAt(a.id, m)) : null,
-  }))
+  // 미사용 계좌는 잔액 0이라 목록에서 숨긴다(자산·부채 관리에서 관리).
+  const accountSnapshots = accounts
+    .filter((a) => a.status === 'ACTIVE')
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      kind: a.kind,
+      institution: a.institution,
+      accountNumber: a.accountNumber,
+      balance: a.kind === 'BANK' ? balAt(a.id, curEndYm) : null,
+      openingBalance: toNumOrNull(a.openingBalance),
+      sparkline: a.kind === 'BANK' ? sparkMonths.map((m) => balAt(a.id, m)) : null,
+    }))
 
   // ── 부채 현황 ──
   // 미반영 상환 감지 = 연결된 OUT 거래 중 txnDate > (balanceAsOf ?? createdAt)
@@ -906,5 +939,28 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
     expenseTop,
     liabilities: liabilityList,
     excludedCount,
+    balanceTrend: buildBalanceTrend({
+      months: trendMonths.filter((m) => m <= nowYm),
+      nowYm,
+      bankAccounts: bankAccounts.map((a) => ({
+        id: a.id,
+        name: a.name,
+        status: a.status,
+        openingBalance: toNumOrNull(a.openingBalance),
+      })),
+      accountSnaps: snapByAccount,
+      liabilitySnaps: liabilitySnaps.map((s) => ({
+        liabilityId: s.liabilityId,
+        name: s.name,
+        ym: s.yearMonth,
+        balance: toNum(s.balance),
+      })),
+      expenseByMonth: new Map([...monthAgg].map(([m, a]) => [m, a.expense])),
+      bankFlows: bankFlows.reduce((acc, r) => {
+        const m = acc.get(r.accountId) ?? new Map<string, number>()
+        m.set(r.month, toNum(r.net as never))
+        return acc.set(r.accountId, m)
+      }, new Map<string, Map<string, number>>()),
+    }),
   }
 }

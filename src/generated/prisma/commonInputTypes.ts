@@ -1408,6 +1408,13 @@ export type EnumFinAccountKindFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumFinAccountKindFilter<$PrismaModel> | $Enums.FinAccountKind
 }
 
+export type EnumFinAccountStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinAccountStatus | Prisma.EnumFinAccountStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FinAccountStatus[] | Prisma.ListEnumFinAccountStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FinAccountStatus[] | Prisma.ListEnumFinAccountStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFinAccountStatusFilter<$PrismaModel> | $Enums.FinAccountStatus
+}
+
 export type EnumFinAccountKindWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.FinAccountKind | Prisma.EnumFinAccountKindFieldRefInput<$PrismaModel>
   in?: $Enums.FinAccountKind[] | Prisma.ListEnumFinAccountKindFieldRefInput<$PrismaModel>
@@ -1416,6 +1423,16 @@ export type EnumFinAccountKindWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFinAccountKindFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFinAccountKindFilter<$PrismaModel>
+}
+
+export type EnumFinAccountStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinAccountStatus | Prisma.EnumFinAccountStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FinAccountStatus[] | Prisma.ListEnumFinAccountStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FinAccountStatus[] | Prisma.ListEnumFinAccountStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFinAccountStatusWithAggregatesFilter<$PrismaModel> | $Enums.FinAccountStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFinAccountStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFinAccountStatusFilter<$PrismaModel>
 }
 
 export type EnumFinCategoryTypeFilter<$PrismaModel = never> = {
@@ -3168,6 +3185,13 @@ export type NestedEnumFinAccountKindFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumFinAccountKindFilter<$PrismaModel> | $Enums.FinAccountKind
 }
 
+export type NestedEnumFinAccountStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinAccountStatus | Prisma.EnumFinAccountStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FinAccountStatus[] | Prisma.ListEnumFinAccountStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FinAccountStatus[] | Prisma.ListEnumFinAccountStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFinAccountStatusFilter<$PrismaModel> | $Enums.FinAccountStatus
+}
+
 export type NestedEnumFinAccountKindWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.FinAccountKind | Prisma.EnumFinAccountKindFieldRefInput<$PrismaModel>
   in?: $Enums.FinAccountKind[] | Prisma.ListEnumFinAccountKindFieldRefInput<$PrismaModel>
@@ -3176,6 +3200,16 @@ export type NestedEnumFinAccountKindWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFinAccountKindFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFinAccountKindFilter<$PrismaModel>
+}
+
+export type NestedEnumFinAccountStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FinAccountStatus | Prisma.EnumFinAccountStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FinAccountStatus[] | Prisma.ListEnumFinAccountStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FinAccountStatus[] | Prisma.ListEnumFinAccountStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFinAccountStatusWithAggregatesFilter<$PrismaModel> | $Enums.FinAccountStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFinAccountStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFinAccountStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumFinCategoryTypeFilter<$PrismaModel = never> = {

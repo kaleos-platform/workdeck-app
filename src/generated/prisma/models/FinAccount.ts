@@ -48,6 +48,8 @@ export type FinAccountMinAggregateOutputType = {
   openingBalance: runtime.Decimal | null
   currentBalance: runtime.Decimal | null
   currentBalanceAsOf: Date | null
+  status: $Enums.FinAccountStatus | null
+  statusChangedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -64,6 +66,8 @@ export type FinAccountMaxAggregateOutputType = {
   openingBalance: runtime.Decimal | null
   currentBalance: runtime.Decimal | null
   currentBalanceAsOf: Date | null
+  status: $Enums.FinAccountStatus | null
+  statusChangedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -80,6 +84,8 @@ export type FinAccountCountAggregateOutputType = {
   openingBalance: number
   currentBalance: number
   currentBalanceAsOf: number
+  status: number
+  statusChangedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -108,6 +114,8 @@ export type FinAccountMinAggregateInputType = {
   openingBalance?: true
   currentBalance?: true
   currentBalanceAsOf?: true
+  status?: true
+  statusChangedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +132,8 @@ export type FinAccountMaxAggregateInputType = {
   openingBalance?: true
   currentBalance?: true
   currentBalanceAsOf?: true
+  status?: true
+  statusChangedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -140,6 +150,8 @@ export type FinAccountCountAggregateInputType = {
   openingBalance?: true
   currentBalance?: true
   currentBalanceAsOf?: true
+  status?: true
+  statusChangedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -243,6 +255,8 @@ export type FinAccountGroupByOutputType = {
   openingBalance: runtime.Decimal | null
   currentBalance: runtime.Decimal | null
   currentBalanceAsOf: Date | null
+  status: $Enums.FinAccountStatus
+  statusChangedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: FinAccountCountAggregateOutputType | null
@@ -282,6 +296,8 @@ export type FinAccountWhereInput = {
   openingBalance?: Prisma.DecimalNullableFilter<"FinAccount"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.DecimalNullableFilter<"FinAccount"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.DateTimeNullableFilter<"FinAccount"> | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFilter<"FinAccount"> | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.DateTimeNullableFilter<"FinAccount"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"FinAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinAccount"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -306,6 +322,8 @@ export type FinAccountOrderByWithRelationInput = {
   openingBalance?: Prisma.SortOrderInput | Prisma.SortOrder
   currentBalance?: Prisma.SortOrderInput | Prisma.SortOrder
   currentBalanceAsOf?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
+  statusChangedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -334,6 +352,8 @@ export type FinAccountWhereUniqueInput = Prisma.AtLeast<{
   openingBalance?: Prisma.DecimalNullableFilter<"FinAccount"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.DecimalNullableFilter<"FinAccount"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.DateTimeNullableFilter<"FinAccount"> | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFilter<"FinAccount"> | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.DateTimeNullableFilter<"FinAccount"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"FinAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinAccount"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -358,6 +378,8 @@ export type FinAccountOrderByWithAggregationInput = {
   openingBalance?: Prisma.SortOrderInput | Prisma.SortOrder
   currentBalance?: Prisma.SortOrderInput | Prisma.SortOrder
   currentBalanceAsOf?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
+  statusChangedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.FinAccountCountOrderByAggregateInput
@@ -382,6 +404,8 @@ export type FinAccountScalarWhereWithAggregatesInput = {
   openingBalance?: Prisma.DecimalNullableWithAggregatesFilter<"FinAccount"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.DecimalNullableWithAggregatesFilter<"FinAccount"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.DateTimeNullableWithAggregatesFilter<"FinAccount"> | Date | string | null
+  status?: Prisma.EnumFinAccountStatusWithAggregatesFilter<"FinAccount"> | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"FinAccount"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"FinAccount"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"FinAccount"> | Date | string
 }
@@ -397,6 +421,8 @@ export type FinAccountCreateInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
@@ -421,6 +447,8 @@ export type FinAccountUncheckedCreateInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
@@ -443,6 +471,8 @@ export type FinAccountUpdateInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
@@ -467,6 +497,8 @@ export type FinAccountUncheckedUpdateInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
@@ -490,6 +522,8 @@ export type FinAccountCreateManyInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -505,6 +539,8 @@ export type FinAccountUpdateManyMutationInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -521,6 +557,8 @@ export type FinAccountUncheckedUpdateManyInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -552,6 +590,8 @@ export type FinAccountCountOrderByAggregateInput = {
   openingBalance?: Prisma.SortOrder
   currentBalance?: Prisma.SortOrder
   currentBalanceAsOf?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  statusChangedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -573,6 +613,8 @@ export type FinAccountMaxOrderByAggregateInput = {
   openingBalance?: Prisma.SortOrder
   currentBalance?: Prisma.SortOrder
   currentBalanceAsOf?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  statusChangedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -589,6 +631,8 @@ export type FinAccountMinOrderByAggregateInput = {
   openingBalance?: Prisma.SortOrder
   currentBalance?: Prisma.SortOrder
   currentBalanceAsOf?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  statusChangedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -652,6 +696,10 @@ export type FinAccountUncheckedUpdateManyWithoutSpaceNestedInput = {
 
 export type EnumFinAccountKindFieldUpdateOperationsInput = {
   set?: $Enums.FinAccountKind
+}
+
+export type EnumFinAccountStatusFieldUpdateOperationsInput = {
+  set?: $Enums.FinAccountStatus
 }
 
 export type FinAccountCreateNestedOneWithoutLiabilitiesInput = {
@@ -769,6 +817,8 @@ export type FinAccountCreateWithoutSpaceInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportCreateNestedManyWithoutAccountInput
@@ -791,6 +841,8 @@ export type FinAccountUncheckedCreateWithoutSpaceInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
@@ -843,6 +895,8 @@ export type FinAccountScalarWhereInput = {
   openingBalance?: Prisma.DecimalNullableFilter<"FinAccount"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.DecimalNullableFilter<"FinAccount"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.DateTimeNullableFilter<"FinAccount"> | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFilter<"FinAccount"> | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.DateTimeNullableFilter<"FinAccount"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"FinAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinAccount"> | Date | string
 }
@@ -858,6 +912,8 @@ export type FinAccountCreateWithoutLiabilitiesInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
@@ -881,6 +937,8 @@ export type FinAccountUncheckedCreateWithoutLiabilitiesInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
@@ -918,6 +976,8 @@ export type FinAccountUpdateWithoutLiabilitiesInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
@@ -941,6 +1001,8 @@ export type FinAccountUncheckedUpdateWithoutLiabilitiesInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
@@ -962,6 +1024,8 @@ export type FinAccountCreateWithoutClassRulesInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
@@ -985,6 +1049,8 @@ export type FinAccountUncheckedCreateWithoutClassRulesInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
@@ -1022,6 +1088,8 @@ export type FinAccountUpdateWithoutClassRulesInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
@@ -1045,6 +1113,8 @@ export type FinAccountUncheckedUpdateWithoutClassRulesInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
@@ -1066,6 +1136,8 @@ export type FinAccountCreateWithoutMappingPresetsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
@@ -1089,6 +1161,8 @@ export type FinAccountUncheckedCreateWithoutMappingPresetsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
@@ -1126,6 +1200,8 @@ export type FinAccountUpdateWithoutMappingPresetsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
@@ -1149,6 +1225,8 @@ export type FinAccountUncheckedUpdateWithoutMappingPresetsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
@@ -1170,6 +1248,8 @@ export type FinAccountCreateWithoutImportsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
@@ -1193,6 +1273,8 @@ export type FinAccountUncheckedCreateWithoutImportsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   transactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutAccountInput
@@ -1230,6 +1312,8 @@ export type FinAccountUpdateWithoutImportsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
@@ -1253,6 +1337,8 @@ export type FinAccountUncheckedUpdateWithoutImportsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   transactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutAccountNestedInput
@@ -1274,6 +1360,8 @@ export type FinAccountCreateWithoutStagedRowsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
@@ -1297,6 +1385,8 @@ export type FinAccountUncheckedCreateWithoutStagedRowsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
@@ -1334,6 +1424,8 @@ export type FinAccountUpdateWithoutStagedRowsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
@@ -1357,6 +1449,8 @@ export type FinAccountUncheckedUpdateWithoutStagedRowsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
@@ -1378,6 +1472,8 @@ export type FinAccountCreateWithoutTransactionsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
@@ -1401,6 +1497,8 @@ export type FinAccountUncheckedCreateWithoutTransactionsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
@@ -1438,6 +1536,8 @@ export type FinAccountUpdateWithoutTransactionsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
@@ -1461,6 +1561,8 @@ export type FinAccountUncheckedUpdateWithoutTransactionsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
@@ -1482,6 +1584,8 @@ export type FinAccountCreateWithoutBalanceSnapshotsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinAccountsInput
@@ -1505,6 +1609,8 @@ export type FinAccountUncheckedCreateWithoutBalanceSnapshotsInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   imports?: Prisma.FinImportUncheckedCreateNestedManyWithoutAccountInput
@@ -1542,6 +1648,8 @@ export type FinAccountUpdateWithoutBalanceSnapshotsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinAccountsNestedInput
@@ -1565,6 +1673,8 @@ export type FinAccountUncheckedUpdateWithoutBalanceSnapshotsInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
@@ -1586,6 +1696,8 @@ export type FinAccountCreateManySpaceInput = {
   openingBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Date | string | null
+  status?: $Enums.FinAccountStatus
+  statusChangedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1601,6 +1713,8 @@ export type FinAccountUpdateWithoutSpaceInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUpdateManyWithoutAccountNestedInput
@@ -1623,6 +1737,8 @@ export type FinAccountUncheckedUpdateWithoutSpaceInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imports?: Prisma.FinImportUncheckedUpdateManyWithoutAccountNestedInput
@@ -1645,6 +1761,8 @@ export type FinAccountUncheckedUpdateManyWithoutSpaceInput = {
   openingBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentBalanceAsOf?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumFinAccountStatusFieldUpdateOperationsInput | $Enums.FinAccountStatus
+  statusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1746,6 +1864,8 @@ export type FinAccountSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   openingBalance?: boolean
   currentBalance?: boolean
   currentBalanceAsOf?: boolean
+  status?: boolean
+  statusChangedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1771,6 +1891,8 @@ export type FinAccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   openingBalance?: boolean
   currentBalance?: boolean
   currentBalanceAsOf?: boolean
+  status?: boolean
+  statusChangedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1788,6 +1910,8 @@ export type FinAccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   openingBalance?: boolean
   currentBalance?: boolean
   currentBalanceAsOf?: boolean
+  status?: boolean
+  statusChangedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1805,11 +1929,13 @@ export type FinAccountSelectScalar = {
   openingBalance?: boolean
   currentBalance?: boolean
   currentBalanceAsOf?: boolean
+  status?: boolean
+  statusChangedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FinAccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "holder" | "kind" | "institution" | "accountNumber" | "accountType" | "openingBalance" | "currentBalance" | "currentBalanceAsOf" | "createdAt" | "updatedAt", ExtArgs["result"]["finAccount"]>
+export type FinAccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "holder" | "kind" | "institution" | "accountNumber" | "accountType" | "openingBalance" | "currentBalance" | "currentBalanceAsOf" | "status" | "statusChangedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["finAccount"]>
 export type FinAccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   imports?: boolean | Prisma.FinAccount$importsArgs<ExtArgs>
@@ -1852,6 +1978,8 @@ export type $FinAccountPayload<ExtArgs extends runtime.Types.Extensions.Internal
     openingBalance: runtime.Decimal | null
     currentBalance: runtime.Decimal | null
     currentBalanceAsOf: Date | null
+    status: $Enums.FinAccountStatus
+    statusChangedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["finAccount"]>
@@ -2296,6 +2424,8 @@ export interface FinAccountFieldRefs {
   readonly openingBalance: Prisma.FieldRef<"FinAccount", 'Decimal'>
   readonly currentBalance: Prisma.FieldRef<"FinAccount", 'Decimal'>
   readonly currentBalanceAsOf: Prisma.FieldRef<"FinAccount", 'DateTime'>
+  readonly status: Prisma.FieldRef<"FinAccount", 'FinAccountStatus'>
+  readonly statusChangedAt: Prisma.FieldRef<"FinAccount", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"FinAccount", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"FinAccount", 'DateTime'>
 }

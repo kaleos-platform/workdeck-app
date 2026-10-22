@@ -506,15 +506,16 @@ model Space {
   aiSetting SpaceAiSetting?
 
   // ─── 재무 관리 Deck (Finance) ───
-  finAccounts         FinAccount[]
-  finLiabilities      FinLiability[]
-  finCategories       FinCategory[]
-  finClassRules       FinClassRule[]
-  finMappingPresets   FinMappingPreset[]
-  finImports          FinImport[]
-  finStagedRows       FinStagedRow[]
-  finTransactions     FinTransaction[]
-  finBalanceSnapshots FinBalanceSnapshot[]
+  finAccounts           FinAccount[]
+  finLiabilities        FinLiability[]
+  finCategories         FinCategory[]
+  finClassRules         FinClassRule[]
+  finMappingPresets     FinMappingPreset[]
+  finImports            FinImport[]
+  finStagedRows         FinStagedRow[]
+  finTransactions       FinTransaction[]
+  finBalanceSnapshots   FinBalanceSnapshot[]
+  finLiabilitySnapshots FinLiabilitySnapshot[]
 
   // ─── 채용 관리 Deck (Hiring) ───
   hiringStores           HiringStore[]
@@ -3651,9 +3652,14 @@ enum FinSnapshotSource {
   MANUAL // 사용자 입력
 }
 
+enum FinAccountStatus {
+  ACTIVE
+  INACTIVE // 미사용 — 잔액 0일 때만 전환. 업로드 후보·잔액 추이 경고·계좌별 잔고에서 제외
+}
+
 // 금융 계좌 (은행 계좌 / 카드). 파일 업로드 시 preamble에서 자동 감지 후 사용자 확인.
 model FinAccount {
-  id                 String         @id @default(cuid())
+  id                 String           @id @default(cuid())
   spaceId            String
   name               String
   holder             String? // 실제 계좌 예금주명
@@ -3661,11 +3667,13 @@ model FinAccount {
   institution        String // 은행·카드사명
   accountNumber      String? // 마스킹 가능
   accountType        String? // 입출금/보통예금/법인카드 등
-  openingBalance     Decimal?       @db.Decimal(18, 2)
+  openingBalance     Decimal?         @db.Decimal(18, 2)
   // 기준(현재) 잔액 — 표시용. 은행 거래 확정 시 마지막 일자 거래후잔액으로 자동 갱신(기준일 이후일 때만).
   // 대시보드 잔액 계산(월별 스냅샷)에는 관여하지 않는다.
-  currentBalance     Decimal?       @db.Decimal(18, 2)
+  currentBalance     Decimal?         @db.Decimal(18, 2)
   currentBalanceAsOf DateTime?
+  status             FinAccountStatus @default(ACTIVE)
+  statusChangedAt    DateTime?
 
   space            Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   imports          FinImport[]
@@ -3911,6 +3919,25 @@ model FinBalanceSnapshot {
   @@unique([spaceId, accountId, yearMonth])
   @@index([spaceId])
   @@index([accountId])
+}
+
+// 부채 × 월말 잔액 스냅샷 (잔액 추이·월별 순자산). 부채 생성·잔액 변경·삭제 시 해당 월 upsert,
+// 빈 달은 직전 값 이월. liabilityId 는 soft ref — 부채를 삭제해도 과거 달 이력은 남는다(삭제월=0).
+model FinLiabilitySnapshot {
+  id          String  @id @default(cuid())
+  spaceId     String
+  liabilityId String
+  name        String // 삭제 후에도 표시할 부채명 복사본
+  yearMonth   String // "YYYY-MM"
+  balance     Decimal @db.Decimal(18, 2)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, liabilityId, yearMonth])
+  @@index([spaceId])
 }
 
 // ════════════════════════════════════════════════════════════════════════════
