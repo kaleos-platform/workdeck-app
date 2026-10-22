@@ -117,14 +117,14 @@ export async function loadSecretForApproval(
   return { id: row.id, value, config: row.config as ApiKeyConfig }
 }
 
-/** loadSecretForUse와 같은 검사. 복호화·감사 push 없음(제안 생성용). */
+/** loadSecretForUse와 같은 검사. 복호화·감사 push 없음(제안 생성용). baseUrl은 승인 화면 표시용. */
 export async function assertSecretUsable(
   spaceId: string,
   name: string,
   actor: Actor
-): Promise<{ id: string; revision: number }> {
-  const { id, revision } = await findUsable(spaceId, name, actor)
-  return { id, revision }
+): Promise<{ id: string; revision: number; baseUrl: string }> {
+  const { id, revision, config } = await findUsable(spaceId, name, actor)
+  return { id, revision, baseUrl: (config as ApiKeyConfig).baseUrl }
 }
 
 /** lastError에는 오류 코드나 `HTTP <status>`만 기록한다. 기록 실패는 무시한다. */

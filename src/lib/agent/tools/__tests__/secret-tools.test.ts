@@ -125,7 +125,11 @@ describe('secret_http_propose', () => {
   })
 
   it('createPendingAction 인자에 값이 없고 revision이 들어간다', async () => {
-    ;(store.assertSecretUsable as jest.Mock).mockResolvedValue({ id: 's1', revision: 3 })
+    ;(store.assertSecretUsable as jest.Mock).mockResolvedValue({
+      id: 's1',
+      revision: 3,
+      baseUrl: 'https://api.example.com/',
+    })
     ;(createPendingAction as jest.Mock).mockResolvedValue({ status: 'pending_approval' })
     await runTool(propose, ctx(['secret:write']), {
       secret: 'my-key',
@@ -136,7 +140,13 @@ describe('secret_http_propose', () => {
     })
     const arg = (createPendingAction as jest.Mock).mock.calls[0][0]
     expect(arg.actionType).toBe('secret.http.request')
-    expect(arg.params).toMatchObject({ secretId: 's1', secretName: 'my-key', revision: 3 })
+    expect(arg.params).toMatchObject({
+      secretId: 's1',
+      secretName: 'my-key',
+      target: 'my-key',
+      url: 'https://api.example.com/x',
+      revision: 3,
+    })
     expect(JSON.stringify(arg)).not.toContain(KEY)
     expect(store.loadSecretForUse).not.toHaveBeenCalled()
   })

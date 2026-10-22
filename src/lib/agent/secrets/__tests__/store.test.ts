@@ -82,6 +82,7 @@ it('허용된 agent는 복호화되고 audit에 secret:id가 남는다', async (
   await expect(assertSecretUsable('sp1', 'x', { type: 'agent', id: 'a1' })).resolves.toEqual({
     id: 's1',
     revision: 2,
+    baseUrl: CONFIG.baseUrl,
   })
 })
 

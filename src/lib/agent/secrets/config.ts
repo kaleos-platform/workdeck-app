@@ -116,6 +116,9 @@ export function normalizePath(path: string): string {
   return path
 }
 
+/** 승인 화면에 보일 요청 URL(baseUrl + 정규화 path). 인증 query는 넣지 않는다. */
+export const displayUrl = (baseUrl: string, path: string) => baseUrl.replace(/\/+$/, '') + path
+
 const fullMatch = (re: string, v: string) => new RegExp(`^(?:${re})$`).test(v)
 
 const patternToRegex = (p: string) =>

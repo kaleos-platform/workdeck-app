@@ -1,4 +1,4 @@
-import { normalizePath, pickFields, type ApiKeyConfig, type ReadOp } from './config'
+import { displayUrl, normalizePath, pickFields, type ApiKeyConfig, type ReadOp } from './config'
 import { ToolUserError } from '@/lib/agent/tools/errors'
 
 export interface CallInput {
@@ -22,7 +22,8 @@ export function buildRequest(
   ) {
     throw new ToolUserError('허용되지 않는 query입니다')
   }
-  const url = new URL(config.baseUrl.replace(/\/+$/, '') + normalizePath(input.path))
+  // 승인 화면 표시 URL과 같은 조립(displayUrl).
+  const url = new URL(displayUrl(config.baseUrl, normalizePath(input.path)))
   for (const [k, v] of Object.entries(query)) url.searchParams.append(k, v)
   const headers: Record<string, string> = { accept: 'application/json' }
   if (config.auth.in === 'header') {

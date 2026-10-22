@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { createPendingAction } from '@/lib/agent/actions/create'
-import { matchReadOp, normalizePath } from '@/lib/agent/secrets/config'
+import { displayUrl, matchReadOp, normalizePath } from '@/lib/agent/secrets/config'
 import { buildRequest, filterResponse } from '@/lib/agent/secrets/call'
 import { SecretHttpError, secretRequest } from '@/lib/agent/secrets/http-client'
 import {
@@ -84,16 +84,24 @@ const httpPropose: ToolDefinition = {
   mode: 'write',
   scope: 'secret:write',
   async execute(ctx, p) {
-    const { id, revision } = await assertSecretUsable(ctx.spaceId, p.secret as string, ctx.actor)
+    const { id, revision, baseUrl } = await assertSecretUsable(
+      ctx.spaceId,
+      p.secret as string,
+      ctx.actor
+    )
+    const path = normalizePath(p.path as string)
     return createPendingAction({
       spaceId: ctx.spaceId,
       actionType: 'secret.http.request',
       params: {
         secretId: id,
         secretName: p.secret,
+        // 승인 화면·Slack 표시용 — maskParams가 secret* 키를 가리므로 가려지지 않는 키로 한 번 더 싣는다.
+        target: p.secret,
+        url: displayUrl(baseUrl, path),
         revision,
         method: p.method,
-        path: normalizePath(p.path as string),
+        path,
         query: p.query,
         body: p.body,
       },

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { normalizePath } from '@/lib/agent/secrets/config'
+import { displayUrl, normalizePath } from '@/lib/agent/secrets/config'
 import { buildRequest, filterResponse } from '@/lib/agent/secrets/call'
 import { SecretHttpError, secretRequest } from '@/lib/agent/secrets/http-client'
 import {
@@ -14,6 +14,9 @@ import type { ActionDefinition } from './types'
 const paramsSchema = z.object({
   secretId: z.string().min(1),
   secretName: z.string().min(1),
+  // 표시 전용(실행은 secretId·revision·path로 다시 조립). validateCreate가 일치를 확인한다.
+  target: z.string().min(1),
+  url: z.string().min(1),
   revision: z.number().int(),
   method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
   path: z.string().min(1),
@@ -31,12 +34,19 @@ const secretHttpRequest: ActionDefinition<Params> = {
   expiryHours: 24,
   validateCreate: async (ctx, p) => {
     normalizePath(p.path)
-    const { id, revision } = await assertSecretUsable(ctx.spaceId, p.secretName, ctx.actor)
+    const { id, revision, baseUrl } = await assertSecretUsable(ctx.spaceId, p.secretName, ctx.actor)
     if (id !== p.secretId || revision !== p.revision)
       throw new ToolUserError('비밀값이 바뀌었습니다. 다시 제안하세요')
+    if (p.target !== p.secretName || p.url !== displayUrl(baseUrl, p.path))
+      throw new ToolUserError('표시 정보가 요청과 다릅니다. 다시 제안하세요')
   },
-  // 제안 시점의 비밀값 메타(값 없음) — 승인 화면·감사용.
-  snapshot: async (_ctx, p) => ({ secretName: p.secretName, revision: p.revision }),
+  // 제안 시점의 비밀값 메타(값 없음) — 승인 화면·감사용. maskParams가 가리지 않는 키만 쓴다(spec §3.5).
+  snapshot: async (_ctx, p) => ({
+    target: p.target,
+    method: p.method,
+    url: p.url,
+    revision: p.revision,
+  }),
   execute: async (ctx, p) => {
     const sec = await loadSecretForApproval(
       ctx.spaceId,
