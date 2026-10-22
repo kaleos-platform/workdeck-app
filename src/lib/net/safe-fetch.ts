@@ -230,7 +230,7 @@ function validateUrlStructure(rawUrl: string): URL {
 }
 
 /** 호스트명을 DNS로 조회하고, 모든 주소가 차단 대역이 아닌지 검증한다. */
-async function validateHostAddresses(hostname: string): Promise<void> {
+export async function validateHostAddresses(hostname: string): Promise<void> {
   const literal = asIpLiteral(hostname)
   if (literal) {
     if (isBlockedAddress(literal.address, literal.family)) {
@@ -285,7 +285,7 @@ function decompressBody(input: Uint8Array, encoding: string): Uint8Array {
  * 주소로 Node가 그대로 연결하므로(재조회 없음) 검증·연결 시점이 항상 일치한다.
  * hostname을 IP로 바꿔치기하지 않으므로 TLS servername(SNI)은 그대로 보존된다.
  */
-const secureLookup: LookupFunction = (hostname, options, callback) => {
+export const secureLookup: LookupFunction = (hostname, options, callback) => {
   const wantsAll = typeof options === 'object' && options !== null && options.all === true
 
   dns.promises.lookup(hostname, { all: true }).then(
