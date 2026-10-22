@@ -15,6 +15,7 @@ export const SCOPES = [
   'meta:write',
   'google:read',
   'google:write',
+  'naver:read',
   'browser:read',
   'browser:write',
   'slack:write',
