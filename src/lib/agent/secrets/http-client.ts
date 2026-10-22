@@ -81,6 +81,7 @@ function send(r: SecretRequest): Promise<SecretResponse> {
         hostname: r.url.hostname,
         port: r.url.port ? Number(r.url.port) : 443,
         path: `${r.url.pathname}${r.url.search}`,
+        agent: false, // 전역 keep-alive 풀 재사용 금지(풀 키는 lookup을 무시한다)
         lookup: secureLookup,
         servername: r.url.hostname,
         // accept는 호출자 값보다 고정값이 우선한다

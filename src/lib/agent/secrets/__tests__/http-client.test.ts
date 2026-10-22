@@ -135,8 +135,24 @@ describe('secretRequest', () => {
     await secretRequest({ ...req, headers: { accept: 'text/plain', 'x-a': '1' } })
     const opts = mockHttpsRequest.mock.calls[0][0] as https.RequestOptions
     expect(opts.lookup).toBe(secureLookup)
+    expect(opts.agent).toBe(false)
     expect(opts.headers).toMatchObject({ accept: 'application/json', 'x-a': '1' })
     const e = await codeOf(secretRequest({ ...req, url: new URL('http://api.example.com/') }))
     expect(e.code).toBe('NETWORK')
+  })
+
+  it('응답이 없으면 15초 뒤 TIMEOUT이고 req.destroy를 호출한다', async () => {
+    jest.useFakeTimers()
+    try {
+      mockLookup.mockResolvedValue(PUBLIC)
+      const r = { on: jest.fn().mockReturnThis(), end: jest.fn(), destroy: jest.fn() }
+      mockHttpsRequest.mockReturnValueOnce(r)
+      const p = codeOf(secretRequest(req))
+      await jest.advanceTimersByTimeAsync(15000)
+      expect((await p).code).toBe('TIMEOUT')
+      expect(r.destroy).toHaveBeenCalled()
+    } finally {
+      jest.useRealTimers()
+    }
   })
 })
