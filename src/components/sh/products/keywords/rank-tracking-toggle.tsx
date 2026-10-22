@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { RANK_TRACKING_ENABLED } from './rank-format'
 
 type Props = {
   /** PATCH 대상 — 채널상품 또는 리스팅 API 경로 */
@@ -46,6 +47,8 @@ export function RankTrackingToggle({ url, checked, hasPageUrl, onChange, idPrefi
       setBusy(false)
     }
   }
+
+  if (!RANK_TRACKING_ENABLED) return null
 
   return (
     <div className="space-y-1.5">
