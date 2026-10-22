@@ -23,6 +23,8 @@ export type ApiKeyConfig = {
 }
 
 const NOT_READ_OP = '등록된 조회 operation이 아닙니다'
+// 에이전트가 넣는 query·body 값 상한 — 정규식 평가 비용·업스트림 남용을 막는다.
+const MAX_VALUE_LEN = 1000
 const FORBIDDEN_AUTH_HEADERS = new Set([
   'host',
   'cookie',
@@ -140,7 +142,7 @@ const keysAllowed = (
   Object.keys(vals).every((k) => {
     if (!Object.hasOwn(allow, k)) return false
     const s = str(vals[k])
-    return s !== null && fullMatch(allow[k], s)
+    return s !== null && s.length <= MAX_VALUE_LEN && fullMatch(allow[k], s)
   })
 
 export function matchReadOp(

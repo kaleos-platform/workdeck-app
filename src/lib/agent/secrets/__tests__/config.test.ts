@@ -157,3 +157,18 @@ describe('pickFields', () => {
     expect(pickFields('SK_TEST_0123456789abcdef', ['a'])).toEqual({})
   })
 })
+
+it('query·body 값이 1000자를 넘으면 정규식이 허용해도 같은 메시지로 거부', () => {
+  const loose = apiKeyConfigSchema.parse({
+    ...cfg,
+    readOps: [{ ...cfg.readOps[0], query: { q: '.*' }, body: { s: '.*' } }],
+  })
+  const req = { op: 'list_orders', method: 'POST', path: '/shops/s1/orders/search' }
+  expect(matchReadOp(loose, { ...req, query: { q: 'a'.repeat(1000) } }).id).toBe('list_orders')
+  expect(() => matchReadOp(loose, { ...req, query: { q: 'a'.repeat(1001) } })).toThrow(
+    '등록된 조회 operation이 아닙니다'
+  )
+  expect(() => matchReadOp(loose, { ...req, query: {}, body: { s: 'a'.repeat(1001) } })).toThrow(
+    '등록된 조회 operation이 아닙니다'
+  )
+})
