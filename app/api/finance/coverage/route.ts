@@ -39,7 +39,8 @@ export async function GET(req: NextRequest) {
 
   const [accounts, confirmedRows, stagedRows, lastImports] = await Promise.all([
     prisma.finAccount.findMany({
-      where: { spaceId, ...(accountIdFilter ? { id: accountIdFilter } : {}) },
+      // 미사용 계좌는 영구 공백으로 보이므로 제외
+      where: { spaceId, status: 'ACTIVE', ...(accountIdFilter ? { id: accountIdFilter } : {}) },
       select: { id: true, name: true, kind: true, institution: true, accountNumber: true },
       orderBy: { createdAt: 'asc' },
     }),

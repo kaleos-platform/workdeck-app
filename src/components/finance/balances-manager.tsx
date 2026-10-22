@@ -15,7 +15,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Check, CreditCard, History, Landmark, Pencil, Plus, Trash2, Wallet, X } from 'lucide-react'
+import {
+  Archive,
+  ArchiveRestore,
+  Check,
+  CreditCard,
+  History,
+  Landmark,
+  Pencil,
+  Plus,
+  Trash2,
+  Wallet,
+  X,
+} from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +53,67 @@ interface Account {
   openingBalance: number | null
   currentBalance: number | null
   currentBalanceAsOf: string | null
+  status: 'ACTIVE' | 'INACTIVE'
+}
+
+/** 사용/미사용 전환 — 은행 계좌는 잔액 0일 때만 서버가 허용(409 메시지에 남은 잔액 안내). */
+async function toggleAccountStatus(acct: Account, onReload: () => Promise<void>) {
+  const next = acct.status === 'INACTIVE' ? 'ACTIVE' : 'INACTIVE'
+  try {
+    const res = await fetch(`/api/finance/accounts/${acct.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: next }),
+    })
+    const data = (await res.json().catch(() => ({}))) as { message?: string }
+    if (!res.ok) throw new Error(data?.message ?? '상태 변경 실패')
+    toast.success(
+      next === 'INACTIVE' ? `"${acct.name}" 미사용으로 전환` : `"${acct.name}" 사용으로 전환`
+    )
+    await onReload()
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : '상태 변경 실패')
+  }
+}
+
+function StatusToggleButton({ acct, onReload }: { acct: Account; onReload: () => Promise<void> }) {
+  const inactive = acct.status === 'INACTIVE'
+  return (
+    <Button
+      variant="ghost"
+      size="icon-xs"
+      onClick={() => toggleAccountStatus(acct, onReload)}
+      aria-label={inactive ? '사용으로 전환' : '미사용으로 전환'}
+      title={inactive ? '사용으로 전환' : '미사용으로 전환'}
+    >
+      {inactive ? <ArchiveRestore className="size-3.5" /> : <Archive className="size-3.5" />}
+    </Button>
+  )
+}
+
+/** 사용 중 목록 + 접힌 미사용 그룹. 미사용 계좌는 잔액 추이·업로드 후보에서 빠진다. */
+function AccountGroups({
+  accounts,
+  renderRow,
+}: {
+  accounts: Account[]
+  renderRow: (acct: Account) => React.ReactNode
+}) {
+  const active = accounts.filter((a) => a.status !== 'INACTIVE')
+  const inactive = accounts.filter((a) => a.status === 'INACTIVE')
+  return (
+    <>
+      {active.length > 0 && <div className="divide-y">{active.map(renderRow)}</div>}
+      {inactive.length > 0 && (
+        <details className="group">
+          <summary className="cursor-pointer text-xs text-muted-foreground select-none">
+            미사용 {inactive.length}개
+          </summary>
+          <div className="divide-y opacity-60">{inactive.map(renderRow)}</div>
+        </details>
+      )}
+    </>
+  )
 }
 
 interface Liability {
@@ -93,7 +166,11 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
   }
 
   async function handleDelete(acct: Account) {
-    if (!confirm(`"${acct.name}" 계좌를 삭제하시겠습니까?\n연결된 거래 내역도 함께 삭제됩니다.`))
+    if (
+      !confirm(
+        `"${acct.name}" 계좌를 삭제하시겠습니까?\n연결된 거래 내역과 월별 잔액 이력도 함께 삭제됩니다.\n더 이상 쓰지 않는 계좌라면 삭제 대신 미사용으로 전환하면 이력이 보존됩니다.`
+      )
+    )
       return
     try {
       const res = await fetch(`/api/finance/accounts/${acct.id}`, { method: 'DELETE' })
@@ -136,8 +213,9 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
         ) : accounts.length === 0 ? (
           <p className="text-xs text-muted-foreground">등록된 계좌가 없습니다</p>
         ) : (
-          <div className="divide-y">
-            {accounts.map((acct) => {
+          <AccountGroups
+            accounts={accounts}
+            renderRow={(acct) => {
               const isLoan = linkedAccountIds.has(acct.id)
               return (
                 <div key={acct.id} className="flex items-center gap-3 py-2.5">
@@ -175,6 +253,7 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
                         <History className="size-3.5" />
                       </Link>
                     </Button>
+                    <StatusToggleButton acct={acct} onReload={onReload} />
                     <Button
                       variant="ghost"
                       size="icon-xs"
@@ -195,8 +274,8 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
                   </div>
                 </div>
               )
-            })}
-          </div>
+            }}
+          />
         )}
 
         <AccountFormDialog
@@ -275,8 +354,9 @@ function CardsPanel({ cards, loading, onReload }: CardsPanelProps) {
         ) : cards.length === 0 ? (
           <p className="text-xs text-muted-foreground">등록된 카드가 없습니다</p>
         ) : (
-          <div className="divide-y">
-            {cards.map((card) => (
+          <AccountGroups
+            accounts={cards}
+            renderRow={(card) => (
               <div key={card.id} className="flex items-center gap-3 py-2.5">
                 <CreditCard className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                 <div className="min-w-0 flex-1">
@@ -293,6 +373,7 @@ function CardsPanel({ cards, loading, onReload }: CardsPanelProps) {
                       <History className="size-3.5" />
                     </Link>
                   </Button>
+                  <StatusToggleButton acct={card} onReload={onReload} />
                   <Button
                     variant="ghost"
                     size="icon-xs"
@@ -312,8 +393,8 @@ function CardsPanel({ cards, loading, onReload }: CardsPanelProps) {
                   </Button>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+          />
         )}
 
         <AccountFormDialog

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { toNum, toNumOrNull } from '@/lib/finance/serialize'
+import { nowYmKst } from '@/lib/finance/aggregate'
+import { recordLiabilitySnapshot } from '@/lib/finance/snapshot-rebuild'
 
 // 조회: spaceId 기준 부채 전체 (createdAt asc)
 export async function GET() {
@@ -64,22 +66,32 @@ export async function POST(req: NextRequest) {
     if (!account) return errorResponse('연결할 계좌를 찾을 수 없습니다', 400)
   }
 
-  const liability = await prisma.finLiability.create({
-    data: {
+  const liability = await prisma.$transaction(async (tx) => {
+    const created = await tx.finLiability.create({
+      data: {
+        spaceId,
+        name: name.trim(),
+        lender: lender?.trim() ?? null,
+        principal,
+        balance,
+        rate: rate ?? null,
+        dueDate: dueDate ?? null,
+        monthlyPayment: monthlyPayment ?? null,
+        memo: memo?.trim() ?? null,
+        accountId: normalizedAccountId,
+        // 입력 잔액은 "지금까지의 상환"이 이미 반영된 값 → 이 시점을 워터마크로.
+        // 이후 연결되는 상환 거래만 "감지" 대상이 되어 이중집계를 막는다.
+        balanceAsOf: new Date(),
+      },
+    })
+    await recordLiabilitySnapshot(tx, {
       spaceId,
-      name: name.trim(),
-      lender: lender?.trim() ?? null,
-      principal,
+      liabilityId: created.id,
+      name: created.name,
+      yearMonth: nowYmKst(),
       balance,
-      rate: rate ?? null,
-      dueDate: dueDate ?? null,
-      monthlyPayment: monthlyPayment ?? null,
-      memo: memo?.trim() ?? null,
-      accountId: normalizedAccountId,
-      // 입력 잔액은 "지금까지의 상환"이 이미 반영된 값 → 이 시점을 워터마크로.
-      // 이후 연결되는 상환 거래만 "감지" 대상이 되어 이중집계를 막는다.
-      balanceAsOf: new Date(),
-    },
+    })
+    return created
   })
 
   return NextResponse.json(

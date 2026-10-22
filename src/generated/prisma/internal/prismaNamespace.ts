@@ -513,6 +513,7 @@ export const ModelName = {
   FinStagedRow: 'FinStagedRow',
   FinTransaction: 'FinTransaction',
   FinBalanceSnapshot: 'FinBalanceSnapshot',
+  FinLiabilitySnapshot: 'FinLiabilitySnapshot',
   HiringStore: 'HiringStore',
   HiringPosition: 'HiringPosition',
   HiringPosting: 'HiringPosting',
@@ -552,7 +553,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -10102,6 +10103,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FinLiabilitySnapshot: {
+      payload: Prisma.$FinLiabilitySnapshotPayload<ExtArgs>
+      fields: Prisma.FinLiabilitySnapshotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FinLiabilitySnapshotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FinLiabilitySnapshotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>
+        }
+        findFirst: {
+          args: Prisma.FinLiabilitySnapshotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FinLiabilitySnapshotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>
+        }
+        findMany: {
+          args: Prisma.FinLiabilitySnapshotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>[]
+        }
+        create: {
+          args: Prisma.FinLiabilitySnapshotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>
+        }
+        createMany: {
+          args: Prisma.FinLiabilitySnapshotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FinLiabilitySnapshotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>[]
+        }
+        delete: {
+          args: Prisma.FinLiabilitySnapshotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>
+        }
+        update: {
+          args: Prisma.FinLiabilitySnapshotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>
+        }
+        deleteMany: {
+          args: Prisma.FinLiabilitySnapshotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FinLiabilitySnapshotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FinLiabilitySnapshotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>[]
+        }
+        upsert: {
+          args: Prisma.FinLiabilitySnapshotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinLiabilitySnapshotPayload>
+        }
+        aggregate: {
+          args: Prisma.FinLiabilitySnapshotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFinLiabilitySnapshot>
+        }
+        groupBy: {
+          args: Prisma.FinLiabilitySnapshotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FinLiabilitySnapshotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FinLiabilitySnapshotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FinLiabilitySnapshotCountAggregateOutputType> | number
+        }
+      }
+    }
     HiringStore: {
       payload: Prisma.$HiringStorePayload<ExtArgs>
       fields: Prisma.HiringStoreFieldRefs
@@ -13947,6 +14022,8 @@ export const FinAccountScalarFieldEnum = {
   openingBalance: 'openingBalance',
   currentBalance: 'currentBalance',
   currentBalanceAsOf: 'currentBalanceAsOf',
+  status: 'status',
+  statusChangedAt: 'statusChangedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -14114,6 +14191,20 @@ export const FinBalanceSnapshotScalarFieldEnum = {
 } as const
 
 export type FinBalanceSnapshotScalarFieldEnum = (typeof FinBalanceSnapshotScalarFieldEnum)[keyof typeof FinBalanceSnapshotScalarFieldEnum]
+
+
+export const FinLiabilitySnapshotScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  liabilityId: 'liabilityId',
+  name: 'name',
+  yearMonth: 'yearMonth',
+  balance: 'balance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FinLiabilitySnapshotScalarFieldEnum = (typeof FinLiabilitySnapshotScalarFieldEnum)[keyof typeof FinLiabilitySnapshotScalarFieldEnum]
 
 
 export const HiringStoreScalarFieldEnum = {
@@ -15496,6 +15587,20 @@ export type ListEnumFinAccountKindFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'FinAccountStatus'
+ */
+export type EnumFinAccountStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinAccountStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'FinAccountStatus[]'
+ */
+export type ListEnumFinAccountStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinAccountStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'FinCategoryType'
  */
 export type EnumFinCategoryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinCategoryType'>
@@ -16012,6 +16117,7 @@ export type GlobalOmitConfig = {
   finStagedRow?: Prisma.FinStagedRowOmit
   finTransaction?: Prisma.FinTransactionOmit
   finBalanceSnapshot?: Prisma.FinBalanceSnapshotOmit
+  finLiabilitySnapshot?: Prisma.FinLiabilitySnapshotOmit
   hiringStore?: Prisma.HiringStoreOmit
   hiringPosition?: Prisma.HiringPositionOmit
   hiringPosting?: Prisma.HiringPostingOmit

@@ -687,6 +687,11 @@ export type FinTransaction = Prisma.FinTransactionModel
  */
 export type FinBalanceSnapshot = Prisma.FinBalanceSnapshotModel
 /**
+ * Model FinLiabilitySnapshot
+ * 
+ */
+export type FinLiabilitySnapshot = Prisma.FinLiabilitySnapshotModel
+/**
  * Model HiringStore
  * 
  */

@@ -36,6 +36,8 @@ import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 import Link from 'next/link'
 import { Pencil, Trash2, Plus } from 'lucide-react'
 import { AccountDialog } from '@/components/finance/account-dialog'
+import { BalanceTrendCard } from '@/components/finance/balance-trend-card'
+import type { BalanceTrendRow } from '@/lib/finance/balance-trend'
 import {
   LiabilityFormDialog,
   type Liability as LiabilityFormData,
@@ -116,6 +118,7 @@ interface DashboardData {
   liabilities: LiabilityItem[]
   /** 현재 기간 수입·지출에서 빠진 분석 제외 거래 수(포함 토글 on 이면 0). */
   excludedCount: number
+  balanceTrend: BalanceTrendRow[]
 }
 
 // ─── 앵커 헬퍼 ────────────────────────────────────────────────────────────────
@@ -607,6 +610,8 @@ export function DashboardView() {
               )}
             </CardContent>
           </Card>
+
+          <BalanceTrendCard rows={data.balanceTrend} />
 
           <div className="grid gap-4 lg:grid-cols-2">
             {/* 계좌별 잔고 스냅샷 */}

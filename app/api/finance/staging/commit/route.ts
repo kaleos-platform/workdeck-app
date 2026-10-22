@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
     import: { status: 'DRAFT' },
     classStatus: 'CLASSIFIED',
     resolution: { not: 'DUP_SAME' },
+    // 미사용 계좌는 잔액 0이 전제 — 전환 전에 남은 DRAFT 행이 확정돼 잔액이 바뀌지 않게 제외(검토 대기로 남음).
+    account: { status: 'ACTIVE' },
     ...(importId ? { importId } : {}),
   }
 

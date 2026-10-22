@@ -167,9 +167,12 @@ export async function POST(req: NextRequest) {
   // 계좌 소유 검증 + 종류 일치 검증
   const account = await prisma.finAccount.findFirst({
     where: { id: accountId, spaceId },
-    select: { id: true, kind: true },
+    select: { id: true, kind: true, status: true },
   })
   if (!account) return errorResponse('계좌를 찾을 수 없습니다', 404)
+  if (account.status === 'INACTIVE') {
+    return errorResponse('미사용 계좌입니다. 사용으로 전환한 뒤 업로드하세요.', 400)
+  }
   if (account.kind !== kind) {
     return errorResponse(
       `선택한 계좌(${account.kind === 'BANK' ? '은행' : '카드'})와 업로드 종류(${kind === 'BANK' ? '은행' : '카드'})가 일치하지 않습니다`,
