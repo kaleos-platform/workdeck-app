@@ -38,6 +38,11 @@ describe('buildRequest', () => {
       buildRequest(KEY, QUERY_CFG, { method: 'GET', path: '/orders', query: { api_key: 'x' } })
     ).toThrow('허용되지 않는 query')
   })
+  it('auth.name 충돌 검사는 대소문자를 구분하지 않는다', () => {
+    expect(() =>
+      buildRequest(KEY, QUERY_CFG, { method: 'GET', path: '/orders', query: { API_KEY: 'x' } })
+    ).toThrow('허용되지 않는 query')
+  })
   it('query가 undefined여도 동작하고, 위험한 path는 거부', () => {
     expect(() =>
       buildRequest(KEY, HEADER_CFG, { method: 'GET', path: '/orders', query: undefined as never })

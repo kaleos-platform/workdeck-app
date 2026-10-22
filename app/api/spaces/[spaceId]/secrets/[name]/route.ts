@@ -19,7 +19,6 @@ import {
 type Ctx = { params: Promise<{ spaceId: string; name: string }> }
 
 const bodySchema = z.object({
-  kind: z.string(),
   value: z.string().min(8).max(4096),
   config: apiKeyConfigSchema,
   allowedAgentIds: z.array(z.string()).max(100),
@@ -33,10 +32,14 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   if (mfaError) return mfaError
 
   if (!SECRET_NAME_RE.test(name)) return errorResponse('이름이 올바르지 않습니다', 400)
-  const parsed = bodySchema.safeParse(await req.json().catch(() => null))
+  const raw = await req.json().catch(() => null)
+  // kind를 먼저 본다 — LOGIN·ENV는 config 모양이 달라 스키마 오류가 아니라 이 안내를 받아야 한다.
+  if ((raw as { kind?: unknown } | null)?.kind !== 'API_KEY') {
+    return errorResponse('이 단계에서는 API_KEY만 등록할 수 있습니다', 400)
+  }
+  const parsed = bodySchema.safeParse(raw)
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
-  const { kind, value, config } = parsed.data
-  if (kind !== 'API_KEY') return errorResponse('이 단계에서는 API_KEY만 등록할 수 있습니다', 400)
+  const { value, config } = parsed.data
 
   const existing = await findSecretKind(spaceId, name)
   if (existing && existing !== 'API_KEY') {
@@ -45,7 +48,9 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 
   const allowedAgentIds = [...new Set(parsed.data.allowedAgentIds)]
   if (allowedAgentIds.length > 0) {
-    const found = await prisma.spaceAgent.count({ where: { spaceId, id: { in: allowedAgentIds } } })
+    const found = await prisma.spaceAgent.count({
+      where: { spaceId, status: 'ACTIVE', id: { in: allowedAgentIds } },
+    })
     if (found !== allowedAgentIds.length) {
       return errorResponse('이 Space의 에이전트만 허용할 수 있습니다', 400)
     }

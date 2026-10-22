@@ -1,6 +1,6 @@
 /** @jest-environment node */
 jest.mock('@/lib/prisma', () => ({
-  prisma: { spaceSecret: { upsert: jest.fn(), findUnique: jest.fn() } },
+  prisma: { spaceSecret: { upsert: jest.fn(), findUnique: jest.fn(), findMany: jest.fn() } },
 }))
 jest.mock('@/lib/crypto/field-crypto', () => ({
   encryptField: jest.fn(() => ({ encrypted: 'OPAQUE_CIPHERTEXT', iv: 'OPAQUE_IV' })),
@@ -8,7 +8,7 @@ jest.mock('@/lib/crypto/field-crypto', () => ({
 }))
 import { prisma } from '@/lib/prisma'
 import { decryptField } from '@/lib/crypto/field-crypto'
-import { assertSecretUsable, loadSecretForUse, saveApiKeySecret } from '../store'
+import { assertSecretUsable, listSecretMeta, loadSecretForUse, saveApiKeySecret } from '../store'
 
 const KEY = 'SK_TEST_0123456789abcdef'
 const CONFIG = {
@@ -77,4 +77,25 @@ it('허용된 agent는 복호화되고 audit에 secret:id가 남는다', async (
     id: 's1',
     revision: 2,
   })
+})
+
+it('listSecretMeta는 암호문·IV를 select하지 않고 결과에 키가 없다', async () => {
+  const findMany = prisma.spaceSecret.findMany as jest.Mock
+  findMany.mockResolvedValue([
+    {
+      name: 'x',
+      kind: 'API_KEY',
+      config: CONFIG,
+      allowedAgentIds: ['a1'],
+      revision: 1,
+      lastUsedAt: null,
+      lastError: null,
+      updatedAt: new Date(),
+    },
+  ])
+  const out = await listSecretMeta('sp1')
+  const { select } = findMany.mock.calls[0][0]
+  expect(select).not.toHaveProperty('encryptedPayload')
+  expect(select).not.toHaveProperty('iv')
+  expect(JSON.stringify(out)).not.toContain('SK_TEST')
 })

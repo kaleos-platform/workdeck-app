@@ -15,7 +15,11 @@ export function buildRequest(
   input: CallInput
 ): { url: URL; headers: Record<string, string>; body?: string } {
   const query = input.query ?? {}
-  if (config.auth.in === 'query' && Object.hasOwn(query, config.auth.name)) {
+  const authName = config.auth.name
+  if (
+    config.auth.in === 'query' &&
+    Object.keys(query).some((k) => k.toLowerCase() === authName.toLowerCase())
+  ) {
     throw new ToolUserError('허용되지 않는 query입니다')
   }
   const url = new URL(config.baseUrl.replace(/\/+$/, '') + normalizePath(input.path))

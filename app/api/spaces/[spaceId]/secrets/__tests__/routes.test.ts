@@ -146,3 +146,16 @@ it('reveal: 감사 시작 실패면 503이고 값을 읽지도 내보내지도 �
   expect(await res.text()).not.toContain('SK_TEST')
   expect(store.revealSecretValue).not.toHaveBeenCalled()
 })
+
+it('kind가 LOGIN이고 config가 {}여도 API_KEY 안내 메시지로 400', async () => {
+  const res = await put({ kind: 'LOGIN', value: 'x', config: {}, allowedAgentIds: [] })
+  expect(res.status).toBe(400)
+  expect(await res.text()).toContain('이 단계에서는 API_KEY만 등록할 수 있습니다')
+})
+
+it('allowedAgentIds는 ACTIVE 에이전트만 센다', async () => {
+  await put()
+  expect(prisma.spaceAgent.count).toHaveBeenCalledWith({
+    where: expect.objectContaining({ spaceId: 'sp1', status: 'ACTIVE' }),
+  })
+})
