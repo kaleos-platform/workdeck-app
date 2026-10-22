@@ -22,7 +22,7 @@ export async function rebuildDerivedSnapshots(
     const manualMonths = new Set(manual.map((m) => m.yearMonth))
     const remaining = await tx.finTransaction.findMany({
       where: { spaceId, accountId, balanceAfter: { not: null } },
-      select: { txnDate: true, balanceAfter: true },
+      select: { txnDate: true, balanceAfter: true, direction: true, amount: true },
     })
     const snaps = deriveMonthEndSnapshots(remaining, manualMonths)
     if (snaps.length > 0) {

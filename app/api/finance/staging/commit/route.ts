@@ -13,12 +13,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
 import { shouldPreserveClassification } from '@/lib/finance/staging-resolution'
-
-/** Date → "YYYY-MM" (로컬). */
-function yearMonth(d: Date): string {
-  // txnDate는 KST 벽시계를 UTC로 저장하는 규약 → UTC getter(snapshots.ts yearMonth와 동일)
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
-}
+import { deriveMonthEndSnapshots, sortByBalanceChain } from '@/lib/finance/snapshots'
 
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('finance', { write: true })
@@ -214,13 +209,11 @@ export async function POST(req: NextRequest) {
             balanceAfter: { not: null },
             ...(rangeStart ? { txnDate: { gte: rangeStart } } : {}),
           },
-          select: { txnDate: true, balanceAfter: true },
-          orderBy: { txnDate: 'asc' },
+          select: { txnDate: true, balanceAfter: true, direction: true, amount: true },
         })
-        const lastByMonth = new Map<string, (typeof withBalance)[number]['balanceAfter']>()
-        for (const t of withBalance) lastByMonth.set(yearMonth(t.txnDate), t.balanceAfter)
-        for (const [ym, balance] of lastByMonth) {
-          if (balance == null) continue
+        // 같은 초 입출금은 잔액 체인 순서로 — 월말·현재 잔액이 중간값으로 잡히지 않게.
+        const ordered = sortByBalanceChain(withBalance)
+        for (const { yearMonth: ym, balance } of deriveMonthEndSnapshots(ordered)) {
           await tx.finBalanceSnapshot.upsert({
             where: { spaceId_accountId_yearMonth: { spaceId, accountId, yearMonth: ym } },
             update: { balance, source: 'DERIVED' },
@@ -230,7 +223,7 @@ export async function POST(req: NextRequest) {
 
         // 계좌 기준(현재) 잔액 갱신 — 최신 일자 거래후잔액을 기준잔액으로.
         // 가드: 기준일 이후 데이터일 때만(오래된 파일 재업로드가 최신 잔액을 되돌리지 않도록).
-        const latest = withBalance[withBalance.length - 1]
+        const latest = ordered[ordered.length - 1]
         if (latest?.balanceAfter != null) {
           const acct = await tx.finAccount.findUnique({
             where: { id: accountId },

@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { deriveMonthEndSnapshots, yearMonth } from '../snapshots'
+import { deriveMonthEndSnapshots, sortByBalanceChain, yearMonth } from '../snapshots'
 
 /**
  * txnDate는 "KST 벽시계 자릿수를 UTC로 저장"하는 규약이라 Prisma가 돌려주는 값은 항상
@@ -64,5 +64,53 @@ describe('deriveMonthEndSnapshots — 월말 잔고 파생', () => {
 
   test('빈 입력 → 빈 배열', () => {
     expect(deriveMonthEndSnapshots([])).toEqual([])
+  })
+})
+
+describe('sortByBalanceChain — 같은 시각 거래는 잔액 체인 순서', () => {
+  const t = (iso: string, direction: 'IN' | 'OUT', amount: number, balanceAfter: number) => ({
+    txnDate: d(iso),
+    direction,
+    amount,
+    balanceAfter,
+  })
+
+  test('통과성 입출금(같은 초 입금→출금)이 DB 순서로 뒤집혀 와도 월말=출금 후 잔액 (prod 디딤돌 2026-07)', () => {
+    const out = deriveMonthEndSnapshots([
+      t('2026-07-16T16:25:08', 'OUT', 5500000, 0),
+      t('2026-07-24T18:13:08', 'OUT', 3121730, 0),
+      t('2026-07-24T18:13:08', 'IN', 3121730, 3121730),
+      t('2026-07-24T18:13:14', 'OUT', 378270, 0),
+      t('2026-07-24T18:13:14', 'IN', 378270, 378270),
+    ])
+    expect(out).toEqual([{ yearMonth: '2026-07', balance: 0 }])
+  })
+
+  test('출금이 먼저 와도 직전 잔액에서 이어지는 순서로 (prod 성동구 보조금 2026-05)', () => {
+    const ordered = sortByBalanceChain([
+      t('2026-05-22T14:15:25', 'IN', 705000, 2430000),
+      t('2026-05-22T14:19:53', 'OUT', 3750000, 1680000),
+      t('2026-05-22T14:19:53', 'IN', 3000000, 5430000),
+      t('2026-05-28T18:45:11', 'OUT', 6575000, 365000),
+      t('2026-05-28T18:45:11', 'IN', 5260000, 6940000),
+    ])
+    expect(ordered.map((x) => x.balanceAfter)).toEqual([2430000, 5430000, 1680000, 6940000, 365000])
+  })
+
+  test('앞 거래가 없는 첫 그룹도 시작점이 하나면 체인 순서로', () => {
+    const ordered = sortByBalanceChain([
+      t('2026-05-22T14:19:53', 'OUT', 3750000, 1680000),
+      t('2026-05-22T14:19:53', 'IN', 3000000, 5430000),
+    ])
+    expect(ordered.map((x) => x.balanceAfter)).toEqual([5430000, 1680000])
+  })
+
+  test('체인이 안 이어지면 원래 순서 유지', () => {
+    const ordered = sortByBalanceChain([
+      t('2026-05-01T00:00:00', 'IN', 100, 100),
+      t('2026-05-02T00:00:00', 'IN', 5, 999),
+      t('2026-05-02T00:00:00', 'OUT', 7, 888),
+    ])
+    expect(ordered.map((x) => x.balanceAfter)).toEqual([100, 999, 888])
   })
 })
