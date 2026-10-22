@@ -139,11 +139,11 @@ export function buildBalanceTrend(input: BalanceTrendInput): BalanceTrendRow[] {
       (burnMonths.length || 1)
     const runwayMonths = burn > 0 ? Math.round((cash / burn) * 10) / 10 : null
 
-    // 계좌별로 (잔액 증감 − 거래 순액). 직전 잔액을 모르는 계좌(기초잔액 없는 첫 데이터 달)는
-    // 시작 잔액 전체가 차이로 잡히므로 제외한다.
+    // 계좌별로 (잔액 증감 − 거래 순액). 직전 달까지 스냅샷이 없는 계좌(첫 데이터 달)는 제외 —
+    // openingBalance 는 "첫 거래 직전 잔액"이 보장되지 않아(prod 에선 임의 시점 잔액) 시작 잔액이 차이로 잡힌다.
     let flowGap = 0
     for (const a of bankAccounts) {
-      if (!knownAt(a, prevYm)) continue
+      if (!lastAtOrBefore(accountSnaps.get(a.id), prevYm)) continue
       const snaps = accountSnaps.get(a.id)
       const delta =
         accountBalanceAt(snaps, ym, a.openingBalance) -

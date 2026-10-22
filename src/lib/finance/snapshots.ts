@@ -47,24 +47,26 @@ function chainGroup<T extends ChainTxn<unknown>>(group: T[], anchor: number | nu
     return group
   const prev = (t: T) =>
     cents(t.balanceAfter) - (t.direction === 'IN' ? cents(t.amount) : -cents(t.amount))
-  // 앞 거래가 없으면(조회 범위의 첫 그룹) 다른 거래의 거래후잔액이 아닌 직전 잔액이 하나뿐일 때 그것이 시작점.
-  if (anchor == null) {
-    const afters = new Set(group.map((t) => cents(t.balanceAfter)))
-    const starts = group.map(prev).filter((p) => !afters.has(p))
-    if (starts.length !== 1) return group
-    anchor = starts[0]
+  const follow = (start: number): T[] | null => {
+    const rest = [...group]
+    const chained: T[] = []
+    let cur = start
+    while (rest.length) {
+      const k = rest.findIndex((t) => prev(t) === cur)
+      if (k < 0) return null
+      const [next] = rest.splice(k, 1)
+      chained.push(next)
+      cur = cents(next.balanceAfter)
+    }
+    return chained
   }
-  const rest = [...group]
-  const chained: T[] = []
-  let cur = anchor
-  while (rest.length) {
-    const k = rest.findIndex((t) => prev(t) === cur)
-    if (k < 0) return group
-    const [next] = rest.splice(k, 1)
-    chained.push(next)
-    cur = cents(next.balanceAfter)
-  }
-  return chained
+  // 앞 거래 잔액에서 이어지지 않으면(앞 거래 없음·그 사이 내역 누락) 다른 거래의 거래후잔액이 아닌
+  // 직전 잔액이 하나뿐일 때 그것을 시작점으로 본다.
+  const fromAnchor = anchor == null ? null : follow(anchor)
+  if (fromAnchor) return fromAnchor
+  const afters = new Set(group.map((t) => cents(t.balanceAfter)))
+  const starts = group.map(prev).filter((p) => !afters.has(p))
+  return (starts.length === 1 && follow(starts[0])) || group
 }
 
 /**

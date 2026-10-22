@@ -105,6 +105,15 @@ describe('sortByBalanceChain — 같은 시각 거래는 잔액 체인 순서', 
     expect(ordered.map((x) => x.balanceAfter)).toEqual([5430000, 1680000])
   })
 
+  test('앞 잔액과 끊긴 그룹도 시작점이 하나면 체인 순서로 (prod 신한 새활용 2026-09-07, 그 사이 내역 누락)', () => {
+    const ordered = sortByBalanceChain([
+      t('2026-08-20T10:00:00', 'IN', 100, 13148825),
+      t('2026-09-07T09:45:00', 'OUT', 8800000, 7977120),
+      t('2026-09-07T09:45:00', 'IN', 6200000, 16777120),
+    ])
+    expect(ordered.map((x) => x.balanceAfter)).toEqual([13148825, 16777120, 7977120])
+  })
+
   test('체인이 안 이어지면 원래 순서 유지', () => {
     const ordered = sortByBalanceChain([
       t('2026-05-01T00:00:00', 'IN', 100, 100),
