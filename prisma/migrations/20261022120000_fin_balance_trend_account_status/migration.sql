@@ -25,6 +25,9 @@ CREATE INDEX "FinLiabilitySnapshot_spaceId_idx" ON "FinLiabilitySnapshot"("space
 -- CreateIndex
 CREATE UNIQUE INDEX "FinLiabilitySnapshot_spaceId_liabilityId_yearMonth_key" ON "FinLiabilitySnapshot"("spaceId", "liabilityId", "yearMonth");
 
+-- 신규 테이블은 RLS 를 켠다(앱은 서비스 롤로 접근 — Supabase 공개 API 노출 차단).
+ALTER TABLE "FinLiabilitySnapshot" ENABLE ROW LEVEL SECURITY;
+
 -- AddForeignKey
 ALTER TABLE "FinLiabilitySnapshot" ADD CONSTRAINT "FinLiabilitySnapshot_spaceId_fkey" FOREIGN KEY ("spaceId") REFERENCES "Space"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
