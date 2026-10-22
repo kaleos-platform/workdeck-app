@@ -780,8 +780,9 @@ async function verifyPeriodApplied(
  * 버튼 라벨은 날짜 prefix 가 가변이고 문구도 바뀐다 — "'06.05 (금)' 선택 완료" →
  * 2026-10-08 부터 "'10.07 (수) 선택". "MM.DD … 선택" 형태로 매칭한다(프리셋 "어제"·
  * "최근 7일"이나 다른 "…선택" 버튼과 겹치지 않도록 날짜 prefix 를 요구).
+ * 2026-10-21 부터 대상이 어제면 날짜 대신 "'어제' 선택" 으로 뜬다 — 따옴표 붙은 상대 토큰도 받는다.
  */
-export const PERIOD_CONFIRM_LABEL = /\d{1,2}\.\d{1,2}[^]*선택(\s*완료)?\s*$/
+export const PERIOD_CONFIRM_LABEL = /(\d{1,2}\.\d{1,2}|'(어제|오늘)')[^]*선택(\s*완료)?\s*$/
 
 async function clickPeriodConfirmIfPresent(page: Page): Promise<boolean> {
   const confirmBtn = page.locator('button').filter({ hasText: PERIOD_CONFIRM_LABEL }).first()
