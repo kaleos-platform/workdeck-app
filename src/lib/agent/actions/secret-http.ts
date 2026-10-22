@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { maskParams } from '@/lib/agent/audit'
 import { displayUrl, normalizePath } from '@/lib/agent/secrets/config'
 import { buildRequest, filterResponse } from '@/lib/agent/secrets/call'
 import { SecretHttpError, secretRequest } from '@/lib/agent/secrets/http-client'
@@ -34,6 +35,10 @@ const secretHttpRequest: ActionDefinition<Params> = {
   expiryHours: 24,
   validateCreate: async (ctx, p) => {
     normalizePath(p.path)
+    // 승인 화면·Slack은 maskParams 결과를 보여 준다. 가려지는 키·값이 있으면 OWNER가 보낼 내용을 확인할 수 없다.
+    const shown = { query: p.query, body: p.body }
+    if (JSON.stringify(maskParams(shown)) !== JSON.stringify(shown))
+      throw new ToolUserError('승인 화면에서 가려지는 키·값은 제안할 수 없습니다')
     const { id, revision, baseUrl } = await assertSecretUsable(ctx.spaceId, p.secretName, ctx.actor)
     if (id !== p.secretId || revision !== p.revision)
       throw new ToolUserError('비밀값이 바뀌었습니다. 다시 제안하세요')

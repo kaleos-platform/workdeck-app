@@ -135,3 +135,28 @@ it('승인 화면: maskParams를 거쳐도 snapshot·payload에 이름·method·
   })
   expect(params).toMatchObject({ secretId: 's1', revision: 3 })
 })
+
+describe('validateCreate: 승인 화면에서 가려지는 query·body는 제안할 수 없다', () => {
+  const HIDDEN = '승인 화면에서 가려지는 키·값은 제안할 수 없습니다'
+  beforeEach(() => {
+    ;(store.assertSecretUsable as jest.Mock).mockResolvedValue({
+      id: 's1',
+      revision: 3,
+      baseUrl: 'https://api.example.com',
+    })
+  })
+  it.each([
+    ['body 키가 비밀 키 패턴', { body: { api_key: 'x' } }],
+    ['중첩 body 키', { body: { a: { password: 'x' } } }],
+    ['body 값이 마스킹 패턴', { body: { note: 'token=abc' } }],
+    ['query 키가 비밀 키 패턴', { query: { access_token: 'x' } }],
+    ['query 값이 Bearer', { query: { q: 'Bearer abc' } }],
+  ])('%s → 거부', async (_n, extra) => {
+    await expect(def.validateCreate!(ctx(), { ...params, ...extra })).rejects.toThrow(HIDDEN)
+  })
+  it('가려지지 않는 query·body는 통과', async () => {
+    await expect(
+      def.validateCreate!(ctx(), { ...params, query: { page: '1' }, body: { a: 1, b: [true] } })
+    ).resolves.toBeUndefined()
+  })
+})
