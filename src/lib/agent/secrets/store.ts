@@ -9,6 +9,9 @@ export const SECRET_NAME_RE = /^[a-z0-9][a-z0-9-]{1,62}$/
 // 없음·종류 불일치·허용 밖 actor 모두 같은 메시지 — 존재 여부를 드러내지 않는다.
 const UNUSABLE = '사용할 수 없는 비밀값입니다'
 
+// 비밀값을 쓸 수 있는 행위자: 에이전트·연동 계정(spec §2). 둘 다 SpaceAgent 행이고 allowedAgentIds에 있어야 한다.
+const isSecretActor = (actor: Actor) => actor.type === 'agent' || actor.type === 'integration'
+
 /** API 키를 암호화해 저장한다(upsert). 교체하면 revision +1, lastError 초기화. 평문은 저장하지 않는다. */
 export async function saveApiKeySecret(
   spaceId: string,
@@ -60,7 +63,7 @@ async function findUsable(spaceId: string, name: string, actor: Actor) {
   if (
     !row ||
     row.kind !== 'API_KEY' ||
-    actor.type !== 'agent' ||
+    !isSecretActor(actor) ||
     !row.allowedAgentIds.includes(actor.id)
   ) {
     throw new ToolUserError(UNUSABLE)
@@ -68,7 +71,7 @@ async function findUsable(spaceId: string, name: string, actor: Actor) {
   return row
 }
 
-/** 허용된 agent만 복호화해 쓴다. 복호화한 비밀값 id를 audit 배열에 넣는다. */
+/** 허용된 agent·연동 계정만 복호화해 쓴다. 복호화한 비밀값 id를 audit 배열에 넣는다. */
 export async function loadSecretForUse(
   spaceId: string,
   name: string,
@@ -81,7 +84,25 @@ export async function loadSecretForUse(
   return { id: row.id, revision: row.revision, value, config: row.config as ApiKeyConfig }
 }
 
-/** 승인 실행용: 제안 때 본 행과 같은지(Space·종류·revision·원 행위자 허용) 다시 확인한 뒤 복호화한다. */
+/**
+ * 제안한 신원(SpaceAgent)이 아직 같은 Space에서 ACTIVE이고 secret:write scope를 가졌는지.
+ * 토큰 인증·OAuth 바인딩이 이 행의 status·scopes를 쓰므로 비활성화·scope 회수가 승인 실행에도 반영된다.
+ */
+async function proposerStillActive(spaceId: string, actor: Actor): Promise<boolean> {
+  const agent = await prisma.spaceAgent.findUnique({
+    where: { id: actor.id },
+    select: { spaceId: true, kind: true, status: true, scopes: true },
+  })
+  return (
+    !!agent &&
+    agent.spaceId === spaceId &&
+    agent.kind === actor.type &&
+    agent.status === 'ACTIVE' &&
+    agent.scopes.includes('secret:write')
+  )
+}
+
+/** 승인 실행용: 제안 때 본 행과 같은지(Space·종류·revision·원 행위자 허용·원 행위자 ACTIVE) 다시 확인한 뒤 복호화한다. */
 export async function loadSecretForApproval(
   spaceId: string,
   secretId: string,
@@ -107,8 +128,9 @@ export async function loadSecretForApproval(
     row.spaceId !== spaceId ||
     row.kind !== 'API_KEY' ||
     row.revision !== revision ||
-    actor.type !== 'agent' ||
-    !row.allowedAgentIds.includes(actor.id)
+    !isSecretActor(actor) ||
+    !row.allowedAgentIds.includes(actor.id) ||
+    !(await proposerStillActive(spaceId, actor))
   ) {
     throw new ToolUserError('비밀값이 바뀌어 실행하지 않았습니다. 다시 제안하세요')
   }
