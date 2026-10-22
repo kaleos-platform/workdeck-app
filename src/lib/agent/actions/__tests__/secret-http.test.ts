@@ -82,3 +82,16 @@ it('validateCreate: path 우회 거부, revision 불일치 거부', async () => 
   )
   await expect(def.validateCreate!(ctx(), params)).rejects.toThrow('비밀값이 바뀌었습니다')
 })
+
+it('업스트림 4xx·5xx는 본문 없는 오류로 끝나 FAILED가 된다', async () => {
+  ;(secretRequest as jest.Mock).mockResolvedValue({
+    status: 502,
+    headers: {},
+    json: { error: `bad key ${KEY}` },
+  })
+  const err = (await def.execute(ctx(), params).catch((e) => e)) as Error
+  expect(err).toBeInstanceOf(ToolUserError)
+  expect(err.message).toBe('외부 API 오류: HTTP 502')
+  expect(store.recordSecretError).toHaveBeenCalledWith('s1', 'HTTP 502')
+  expect(store.recordSecretUsed).not.toHaveBeenCalled()
+})

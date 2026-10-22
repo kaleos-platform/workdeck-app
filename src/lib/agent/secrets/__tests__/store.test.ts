@@ -8,7 +8,13 @@ jest.mock('@/lib/crypto/field-crypto', () => ({
 }))
 import { prisma } from '@/lib/prisma'
 import { decryptField } from '@/lib/crypto/field-crypto'
-import { assertSecretUsable, listSecretMeta, loadSecretForUse, saveApiKeySecret } from '../store'
+import {
+  assertSecretUsable,
+  listSecretMeta,
+  loadSecretForApproval,
+  loadSecretForUse,
+  saveApiKeySecret,
+} from '../store'
 
 const KEY = 'SK_TEST_0123456789abcdef'
 const CONFIG = {
@@ -98,4 +104,35 @@ it('listSecretMeta는 암호문·IV를 select하지 않고 결과에 키가 없�
   expect(select).not.toHaveProperty('encryptedPayload')
   expect(select).not.toHaveProperty('iv')
   expect(JSON.stringify(out)).not.toContain('SK_TEST')
+})
+
+describe('loadSecretForApproval — 승인 실행 시 재검증', () => {
+  const CHANGED = '비밀값이 바뀌어 실행하지 않았습니다'
+  const actor = { type: 'agent' as const, id: 'a1' }
+  const APPROVAL_ROW = { ...ROW, spaceId: 'sp1' }
+  const cases: Array<[string, Record<string, unknown> | null, string, number, unknown]> = [
+    ['행이 없다', null, 'sp1', 2, actor],
+    ['revision이 다르다', APPROVAL_ROW, 'sp1', 1, actor],
+    ['원 행위자가 허용 목록에 없다', APPROVAL_ROW, 'sp1', 2, { type: 'agent', id: 'a2' }],
+    ['spaceId가 다르다', APPROVAL_ROW, 'sp2', 2, actor],
+    ['종류가 API_KEY가 아니다', { ...APPROVAL_ROW, kind: 'ENV' }, 'sp1', 2, actor],
+    ['actor가 agent가 아니다', APPROVAL_ROW, 'sp1', 2, { type: 'user', id: 'a1' }],
+  ]
+  it.each(cases)('%s → 거부, 복호화·audit 없음', async (_n, row, spaceId, revision, who) => {
+    findUnique.mockResolvedValue(row)
+    const audit: string[] = []
+    await expect(
+      loadSecretForApproval(spaceId, 's1', revision, who as typeof actor, audit)
+    ).rejects.toThrow(CHANGED)
+    expect(decryptField).not.toHaveBeenCalled()
+    expect(audit).toEqual([])
+  })
+
+  it('모두 일치하면 복호화하고 audit에 secret:id를 남긴다', async () => {
+    findUnique.mockResolvedValue(APPROVAL_ROW)
+    const audit: string[] = []
+    const r = await loadSecretForApproval('sp1', 's1', 2, actor, audit)
+    expect(r).toEqual({ id: 's1', value: KEY, config: CONFIG })
+    expect(audit).toEqual(['secret:s1'])
+  })
 })

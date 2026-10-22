@@ -59,8 +59,12 @@ const secretHttpRequest: ActionDefinition<Params> = {
       await recordSecretError(sec.id, err.code)
       throw new ToolUserError(`외부 API 호출 실패: ${err.code}`)
     }
-    if (res.status >= 400) await recordSecretError(sec.id, `HTTP ${res.status}`)
-    else await recordSecretUsed(sec.id)
+    if (res.status >= 400) {
+      await recordSecretError(sec.id, `HTTP ${res.status}`)
+      // 본문은 싣지 않는다. 오류로 끝나야 승인 건이 FAILED가 된다.
+      throw new ToolUserError(`외부 API 오류: HTTP ${res.status}`)
+    }
+    await recordSecretUsed(sec.id)
     return filterResponse(null, res, sec.value)
   },
 }
