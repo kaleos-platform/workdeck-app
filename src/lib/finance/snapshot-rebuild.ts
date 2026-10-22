@@ -38,3 +38,28 @@ export async function rebuildDerivedSnapshots(
     }
   }
 }
+
+/**
+ * 부채 월말 잔액 기록 — 부채 생성·잔액 변경·삭제 시 같은 $transaction 안에서 호출.
+ * 현재 잔액이 최신 진실이므로 ym 이후 스냅샷은 지우고(이월로 ym 값이 이어짐) ym 을 upsert 한다.
+ * 늦게 반영한 과거 달 상환도 올바른 달부터 반영된다.
+ */
+export async function recordLiabilitySnapshot(
+  tx: Prisma.TransactionClient,
+  s: { spaceId: string; liabilityId: string; name: string; yearMonth: string; balance: number }
+) {
+  await tx.finLiabilitySnapshot.deleteMany({
+    where: { spaceId: s.spaceId, liabilityId: s.liabilityId, yearMonth: { gt: s.yearMonth } },
+  })
+  await tx.finLiabilitySnapshot.upsert({
+    where: {
+      spaceId_liabilityId_yearMonth: {
+        spaceId: s.spaceId,
+        liabilityId: s.liabilityId,
+        yearMonth: s.yearMonth,
+      },
+    },
+    create: s,
+    update: { name: s.name, balance: s.balance },
+  })
+}

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { toNumOrNull } from '@/lib/finance/serialize'
+import { toNum, toNumOrNull } from '@/lib/finance/serialize'
+import { accountBalanceAt } from '@/lib/finance/balance-trend'
 
 // 수정: 계좌 부분 업데이트
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -20,6 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     openingBalance,
     currentBalance,
     currentBalanceAsOf,
+    status,
   } = body as {
     name?: string
     holder?: string | null
@@ -29,14 +31,40 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     openingBalance?: number | null
     currentBalance?: number | null
     currentBalanceAsOf?: string | null
+    status?: string
+  }
+
+  if (status !== undefined && status !== 'ACTIVE' && status !== 'INACTIVE') {
+    return errorResponse('status는 ACTIVE 또는 INACTIVE여야 합니다', 400)
   }
 
   // spaceId 소유 검증
   const existing = await prisma.finAccount.findFirst({
     where: { id, spaceId },
-    select: { id: true, accountNumber: true },
+    select: { id: true, accountNumber: true, kind: true, status: true, openingBalance: true },
   })
   if (!existing) return errorResponse('계좌를 찾을 수 없습니다', 404)
+
+  // 미사용 전환 게이트 — 은행 계좌는 잔액 0일 때만. 잔액이 남은 채 빼면 현금·순자산이 조용히 틀어진다.
+  // 잔액 기준은 대시보드 현금 합계와 같은 accountBalanceAt(최신 월말 스냅샷 → openingBalance).
+  if (status === 'INACTIVE' && existing.status !== 'INACTIVE' && existing.kind === 'BANK') {
+    const snaps = await prisma.finBalanceSnapshot.findMany({
+      where: { spaceId, accountId: id },
+      select: { yearMonth: true, balance: true },
+      orderBy: { yearMonth: 'asc' },
+    })
+    const balance = accountBalanceAt(
+      snaps.map((s) => ({ ym: s.yearMonth, balance: toNum(s.balance) })),
+      '9999-12',
+      toNumOrNull(existing.openingBalance)
+    )
+    if (balance !== 0) {
+      return errorResponse(
+        `잔액이 ${balance.toLocaleString('ko-KR')}원 남아 있습니다. 최종 거래내역을 업로드해 잔액을 0원으로 만든 뒤 미사용으로 변경하세요.`,
+        409
+      )
+    }
+  }
 
   // 계좌번호 변경 시 중복 검증
   if (
@@ -66,6 +94,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(currentBalanceAsOf !== undefined && {
           currentBalanceAsOf: currentBalanceAsOf ? new Date(currentBalanceAsOf) : null,
         }),
+        ...(status !== undefined &&
+          status !== existing.status && { status, statusChangedAt: new Date() }),
       },
     })
 

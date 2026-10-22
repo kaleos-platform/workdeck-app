@@ -100,6 +100,8 @@ beforeEach(() => {
     finAccount: { findMany: jest.fn(async () => []) },
     finBalanceSnapshot: { findMany: jest.fn(async () => []) },
     finLiability: { findMany: jest.fn(async () => []) },
+    finLiabilitySnapshot: { findMany: jest.fn(async () => []) },
+    $queryRaw: jest.fn(async () => []) as never,
   }
 })
 
