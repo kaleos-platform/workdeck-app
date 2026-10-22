@@ -23,6 +23,7 @@ const secret = {
 const agents = [
   { id: 'ag1', name: '에이전트 A', status: 'ACTIVE' },
   { id: 'ag2', name: '에이전트 B', status: 'DISABLED' },
+  { id: 'ag3', name: '에이전트 C', status: 'PENDING' },
 ]
 let fetchMock: jest.Mock
 
@@ -88,6 +89,7 @@ it('비활성 에이전트는 허용 선택지에 없다', async () => {
   await openRegister()
   expect(await screen.findByLabelText('에이전트 A')).toBeInTheDocument()
   expect(screen.queryByLabelText('에이전트 B')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('에이전트 C')).not.toBeInTheDocument()
 })
 
 it('readOps JSON이 깨지면 요청 없이 오류를 보이고, 서버 오류 메시지는 그대로 보인다', async () => {
@@ -144,4 +146,16 @@ it('삭제는 확인 뒤 DELETE를 보낸다', async () => {
   await waitFor(() =>
     expect(fetchMock.mock.calls.some((c) => c[1]?.method === 'DELETE')).toBe(true)
   )
+})
+
+it('허용 목록의 비활성 에이전트도 배지에는 이름으로 보인다', async () => {
+  const base = fetchMock.getMockImplementation()!
+  fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+    url === '/api/spaces/sp-1/secrets'
+      ? res({ secrets: [{ ...secret, allowedAgentIds: ['ag2'] }] })
+      : base(url, init)
+  )
+  render(<SpaceSecretsCard />)
+  expect(await screen.findByText('에이전트 B')).toBeInTheDocument()
+  expect(screen.queryByText('ag2')).not.toBeInTheDocument()
 })

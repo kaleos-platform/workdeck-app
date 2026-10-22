@@ -71,8 +71,8 @@ export function SpaceSecretsCard() {
       if (!sr.ok) return setError(sb?.message ?? '비밀값 목록을 불러오지 못했습니다')
       setSecrets(sb.secrets)
       const ab = await ar.json().catch(() => null)
-      // PUT은 ACTIVE 에이전트만 받는다.
-      if (ar.ok) setAgents((ab.agents as AgentChoice[]).filter((a) => a.status !== 'DISABLED'))
+      // 이름 조회용 전체 목록 — PUT은 ACTIVE만 받으므로 대화상자 선택지만 거른다.
+      if (ar.ok) setAgents(ab.agents as AgentChoice[])
     } catch {
       setError(NET_ERR)
     }
@@ -208,7 +208,7 @@ export function SpaceSecretsCard() {
         <SecretDialog
           key={edit.name || 'create'}
           initialName={edit.name}
-          agents={agents}
+          agents={agents.filter((a) => a.status === 'ACTIVE')}
           pending={pending}
           onClose={() => setEdit(null)}
           onSave={save}
