@@ -470,6 +470,23 @@ export type EnumAgentActionStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
 }
 
+export type EnumSecretKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.SecretKind | Prisma.EnumSecretKindFieldRefInput<$PrismaModel>
+  in?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSecretKindFilter<$PrismaModel> | $Enums.SecretKind
+}
+
+export type EnumSecretKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SecretKind | Prisma.EnumSecretKindFieldRefInput<$PrismaModel>
+  in?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSecretKindWithAggregatesFilter<$PrismaModel> | $Enums.SecretKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSecretKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSecretKindFilter<$PrismaModel>
+}
+
 export type EnumCoupangDataSourceFilter<$PrismaModel = never> = {
   equals?: $Enums.CoupangDataSource | Prisma.EnumCoupangDataSourceFieldRefInput<$PrismaModel>
   in?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
@@ -2245,6 +2262,23 @@ export type NestedEnumAgentActionStatusWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumSecretKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.SecretKind | Prisma.EnumSecretKindFieldRefInput<$PrismaModel>
+  in?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSecretKindFilter<$PrismaModel> | $Enums.SecretKind
+}
+
+export type NestedEnumSecretKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SecretKind | Prisma.EnumSecretKindFieldRefInput<$PrismaModel>
+  in?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSecretKindWithAggregatesFilter<$PrismaModel> | $Enums.SecretKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSecretKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSecretKindFilter<$PrismaModel>
 }
 
 export type NestedEnumCoupangDataSourceFilter<$PrismaModel = never> = {
