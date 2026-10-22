@@ -106,11 +106,12 @@ function send(r: SecretRequest): Promise<SecretResponse> {
                 const ct = (headers['content-type'] ?? '').split(';')[0].trim().toLowerCase()
                 let json: unknown | null = null
                 if (ct === 'application/json' || ct.endsWith('+json')) {
+                  // 빈·깨진 JSON은 상태 코드만 돌려준다(spec §3.4). throw하면 이미 실행된 승인 쓰기가
+                  // FAILED로 남아 재제안·중복 쓰기로 이어진다.
                   try {
                     json = JSON.parse(buf.toString('utf8'))
                   } catch {
-                    reject(new SecretHttpError('NETWORK'))
-                    return
+                    json = null
                   }
                 }
                 resolve({ status, headers, json })

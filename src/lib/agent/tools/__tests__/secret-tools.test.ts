@@ -89,6 +89,15 @@ describe('secret_http_read', () => {
     expect(store.recordSecretUsed).toHaveBeenCalledWith('s1')
   })
 
+  it('JSON이 아니거나 처리할 수 없는 응답(json: null)은 본문 없이 status만', async () => {
+    ;(secretRequest as jest.Mock).mockResolvedValue({
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+      json: null,
+    })
+    await expect(runTool(read, ctx(['secret:read']), args)).resolves.toEqual({ status: 200 })
+  })
+
   it('업스트림 500 본문의 키는 결과·오류·감사에 나타나지 않는다', async () => {
     ;(secretRequest as jest.Mock).mockResolvedValue({
       status: 500,

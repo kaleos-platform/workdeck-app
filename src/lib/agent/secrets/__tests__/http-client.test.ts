@@ -121,12 +121,19 @@ describe('secretRequest', () => {
     expect(await secretRequest(req)).toMatchObject({ status: 200, json: { a: 1 } })
   })
 
-  it('깨진 JSON 본문은 NETWORK이고 본문이 오류에 실리지 않는다', async () => {
+  // 처리할 수 없는 본문은 상태 코드만(spec §3.4). throw하면 이미 실행된 승인 쓰기가 FAILED가 되어 재제안·중복 쓰기로 이어진다.
+  it('깨진 JSON 본문은 json: null(상태 코드 유지)이고 본문이 결과에 실리지 않는다', async () => {
     mockLookup.mockResolvedValue(PUBLIC)
-    wire(makeRes(200, { 'content-type': 'application/json' }, [Buffer.from('{SK_TEST_oops')]))
-    const e = await codeOf(secretRequest(req))
-    expect(e.code).toBe('NETWORK')
-    expect(e.message).not.toContain('SK_TEST')
+    wire(makeRes(201, { 'content-type': 'application/json' }, [Buffer.from('{SK_TEST_oops')]))
+    const r = await secretRequest(req)
+    expect(r).toMatchObject({ status: 201, json: null })
+    expect(JSON.stringify(r)).not.toContain('SK_TEST')
+  })
+
+  it('JSON content-type의 빈 본문은 json: null', async () => {
+    mockLookup.mockResolvedValue(PUBLIC)
+    wire(makeRes(204, { 'content-type': 'application/json' }, []))
+    expect(await secretRequest(req)).toMatchObject({ status: 204, json: null })
   })
 
   it('options.lookup은 secureLookup과 같은 참조, accept 고정, https만 허용', async () => {
