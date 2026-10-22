@@ -18,8 +18,15 @@ import {
 
 type Ctx = { params: Promise<{ spaceId: string; name: string }> }
 
+const VALUE_RULE = '값은 공백 없는 영문·숫자·기호(ASCII) 8~4096자여야 합니다'
+
 const bodySchema = z.object({
-  value: z.string().min(8).max(4096),
+  // 헤더·query에 그대로 실리므로 출력 가능한 ASCII만(공백·제어문자·비ASCII 거부). 메시지에 값을 싣지 않는다.
+  value: z
+    .string()
+    .min(8, VALUE_RULE)
+    .max(4096, VALUE_RULE)
+    .regex(/^[\x21-\x7e]+$/, VALUE_RULE),
   config: apiKeyConfigSchema,
   allowedAgentIds: z.array(z.string()).max(100),
 })

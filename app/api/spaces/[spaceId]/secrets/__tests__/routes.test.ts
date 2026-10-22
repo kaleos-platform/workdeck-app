@@ -170,3 +170,15 @@ it('MFA 비상 해제(requireAal2 통과)여도 실제 aal2가 없으면 reveal�
   expect(store.revealSecretValue).not.toHaveBeenCalled()
   expect(startToolAudit).not.toHaveBeenCalled()
 })
+
+it.each([
+  ['줄바꿈', 'SK_TEST_0123\r\nX-Evil: 1'],
+  ['공백', 'SK_TEST 0123456789'],
+  ['비ASCII', 'SK_TEST_키값0123456789'],
+  ['NUL', 'SK_TEST_\u00000123456789'],
+])('값에 %s이 있으면 400이고 저장하지 않으며 응답에 값이 없다', async (_l, value) => {
+  const res = await put({ ...BODY, value })
+  expect(res.status).toBe(400)
+  expect(await res.text()).not.toContain('SK_TEST')
+  expect(store.saveApiKeySecret).not.toHaveBeenCalled()
+})

@@ -141,6 +141,25 @@ describe('secretRequest', () => {
     expect(e.code).toBe('NETWORK')
   })
 
+  it('https.request가 동기 throw(ERR_INVALID_CHAR 등)면 NETWORK이고 남은 타이머가 터지지 않는다', async () => {
+    jest.useFakeTimers()
+    try {
+      mockLookup.mockResolvedValue(PUBLIC)
+      mockHttpsRequest.mockImplementationOnce(() => {
+        throw Object.assign(new TypeError('Invalid character in header content'), {
+          code: 'ERR_INVALID_CHAR',
+        })
+      })
+      const e = await codeOf(secretRequest({ ...req, headers: { 'x-key': 'SK_TEST\r\nX: 1' } }))
+      expect(e.code).toBe('NETWORK')
+      expect(e.message).not.toContain('SK_TEST')
+      expect(jest.getTimerCount()).toBe(0)
+      await expect(jest.advanceTimersByTimeAsync(15000)).resolves.not.toThrow()
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
   it('응답이 없으면 15초 뒤 TIMEOUT이고 req.destroy를 호출한다', async () => {
     jest.useFakeTimers()
     try {

@@ -59,6 +59,7 @@ async function readBody(res: import('node:http').IncomingMessage): Promise<Buffe
 function send(r: SecretRequest): Promise<SecretResponse> {
   return new Promise((resolve, reject) => {
     let res: import('node:http').IncomingMessage | undefined
+    let req: import('node:http').ClientRequest | undefined
     let settled = false
     const finish = (fn: () => void) => {
       if (settled) return
@@ -72,53 +73,60 @@ function send(r: SecretRequest): Promise<SecretResponse> {
       req?.destroy()
     }
 
-    // hop 전체(연결·헤더·본문)를 감싸는 타이머
-    const timer = setTimeout(() => fail('TIMEOUT'), TIMEOUT_MS)
-
-    const req: import('node:http').ClientRequest = https.request(
-      {
-        method: r.method,
-        hostname: r.url.hostname,
-        port: r.url.port ? Number(r.url.port) : 443,
-        path: `${r.url.pathname}${r.url.search}`,
-        agent: false, // 전역 keep-alive 풀 재사용 금지(풀 키는 lookup을 무시한다)
-        lookup: secureLookup,
-        servername: r.url.hostname,
-        // accept는 호출자 값보다 고정값이 우선한다
-        headers: { ...r.headers, accept: 'application/json' },
-      },
-      (incoming) => {
-        res = incoming
-        incoming.on('error', () => fail('NETWORK'))
-        const status = incoming.statusCode ?? 0
-        if (status >= 300 && status < 400) {
-          incoming.resume()
-          fail('REDIRECT')
-          return
-        }
-        readBody(incoming).then(
-          (buf) =>
-            finish(() => {
-              const headers: Record<string, string> = {}
-              for (const [k, v] of Object.entries(incoming.headers)) {
-                if (v !== undefined) headers[k] = Array.isArray(v) ? v.join(', ') : v
-              }
-              const ct = (headers['content-type'] ?? '').split(';')[0].trim().toLowerCase()
-              let json: unknown | null = null
-              if (ct === 'application/json' || ct.endsWith('+json')) {
-                try {
-                  json = JSON.parse(buf.toString('utf8'))
-                } catch {
-                  reject(new SecretHttpError('NETWORK'))
-                  return
+    // 헤더 값의 CR/LF·비ASCII 등은 https.request가 동기 throw한다(ERR_INVALID_CHAR) — 원문 오류 없이 코드만.
+    try {
+      req = https.request(
+        {
+          method: r.method,
+          hostname: r.url.hostname,
+          port: r.url.port ? Number(r.url.port) : 443,
+          path: `${r.url.pathname}${r.url.search}`,
+          agent: false, // 전역 keep-alive 풀 재사용 금지(풀 키는 lookup을 무시한다)
+          lookup: secureLookup,
+          servername: r.url.hostname,
+          // accept는 호출자 값보다 고정값이 우선한다
+          headers: { ...r.headers, accept: 'application/json' },
+        },
+        (incoming) => {
+          res = incoming
+          incoming.on('error', () => fail('NETWORK'))
+          const status = incoming.statusCode ?? 0
+          if (status >= 300 && status < 400) {
+            incoming.resume()
+            fail('REDIRECT')
+            return
+          }
+          readBody(incoming).then(
+            (buf) =>
+              finish(() => {
+                const headers: Record<string, string> = {}
+                for (const [k, v] of Object.entries(incoming.headers)) {
+                  if (v !== undefined) headers[k] = Array.isArray(v) ? v.join(', ') : v
                 }
-              }
-              resolve({ status, headers, json })
-            }),
-          (err: unknown) => fail(err instanceof SecretHttpError ? err.code : 'NETWORK')
-        )
-      }
-    )
+                const ct = (headers['content-type'] ?? '').split(';')[0].trim().toLowerCase()
+                let json: unknown | null = null
+                if (ct === 'application/json' || ct.endsWith('+json')) {
+                  try {
+                    json = JSON.parse(buf.toString('utf8'))
+                  } catch {
+                    reject(new SecretHttpError('NETWORK'))
+                    return
+                  }
+                }
+                resolve({ status, headers, json })
+              }),
+            (err: unknown) => fail(err instanceof SecretHttpError ? err.code : 'NETWORK')
+          )
+        }
+      )
+    } catch {
+      // 타이머를 걸기 전이라 finish를 거치지 않는다.
+      settled = true
+      reject(new SecretHttpError('NETWORK'))
+      return
+    }
+    // hop 전체(연결·헤더·본문)를 감싸는 타이머 — req를 만든 뒤에 건다(콜백·error는 비동기라 이보다 늦다).
+    const timer = setTimeout(() => fail('TIMEOUT'), TIMEOUT_MS)
     req.on('error', (err) =>
       fail((err as NodeJS.ErrnoException).code === 'EPRIVATEADDR' ? 'PRIVATE_ADDRESS' : 'NETWORK')
     )
