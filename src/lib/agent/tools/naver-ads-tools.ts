@@ -21,6 +21,13 @@ const brand = z
   .describe('브랜드 키(Space 네이버 검색광고 자격증명의 customers 키). 없으면 기본 브랜드')
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
+// 형식뿐 아니라 실제 달력 날짜인지 확인한다(2026-13-45 같은 값이 기간 상한 검사를 NaN 으로 통과하지 않게).
+const day = z
+  .string()
+  .regex(DAY)
+  .refine((s) => !Number.isNaN(Date.parse(s)) && new Date(s).toISOString().slice(0, 10) === s, {
+    message: '존재하지 않는 날짜입니다',
+  })
 const MAX_RANGE_DAYS = 92
 const STAT_FIELDS = [
   'impCnt',
@@ -62,11 +69,14 @@ const REPORT_TYPES = [
 const REPORT_PENDING = new Set(['REGIST', 'RUNNING', 'WAITING', 'AGGREGATING'])
 const REPORT_POLL_MS = 3000
 const REPORT_POLL_TRIES = 5
+// MCP maxDuration(60초) 안에 report_job_id 를 돌려주도록 보고서 도구 전체에 마감시간을 둔다.
+const REPORT_DEADLINE_MS = 45_000
+const REQUEST_TIMEOUT_MS = 20_000
 
 const listCustomers: ToolDefinition = {
   name: 'naver_ads_list_customers',
   description:
-    '이 Space 에 연결된 네이버 검색광고 광고 계정(브랜드 → CUSTOMER_ID)을 반환합니다. include_linked=true 면 API 키 계정이 관리하는 광고주 목록(/customer-links)도 함께 조회합니다.',
+    '이 Space 에 연결된 네이버 검색광고 광고 계정(브랜드 → CUSTOMER_ID)을 반환합니다. include_linked=true 면 API 키 계정이 관리하는 광고주 전체 목록(/customer-links, Space 에 연결되지 않은 계정 포함)도 함께 조회합니다 — 조회 대상 계정은 연결된 브랜드로만 고를 수 있습니다.',
   inputSchema: { include_linked: z.boolean().optional() },
   mode: 'read',
   scope: 'naver:read',
@@ -140,7 +150,7 @@ const getStats: ToolDefinition = {
       .min(1)
       .max(100),
     fields: z.array(z.enum(STAT_FIELDS)).min(1).optional(),
-    time_range: z.object({ since: z.string().regex(DAY), until: z.string().regex(DAY) }).optional(),
+    time_range: z.object({ since: day, until: day }).optional(),
     date_preset: z
       .enum([
         'today',
@@ -194,11 +204,7 @@ const getStatReport: ToolDefinition = {
   inputSchema: {
     brand,
     report_type: z.enum(REPORT_TYPES).optional(),
-    stat_date: z
-      .string()
-      .regex(DAY)
-      .optional()
-      .describe('YYYY-MM-DD(KST). report_job_id 가 없을 때 필수'),
+    stat_date: day.optional().describe('YYYY-MM-DD(KST). report_job_id 가 없을 때 필수'),
     report_job_id: z.union([z.string().regex(/^\d+$/), z.number().int().positive()]).optional(),
     limit: z.number().int().min(1).max(5000).optional().describe('돌려줄 최대 행 수(기본 1000)'),
   },
@@ -208,42 +214,59 @@ const getStatReport: ToolDefinition = {
     const cred = await loadNaverCred(ctx.spaceId, ctx.decryptedCredentialIds)
     const customerId = resolveCustomer(cred.config, p.brand as string | undefined)
     type Job = { reportJobId: number; status: string; downloadUrl?: string; reportTp?: string }
+    const startedAt = Date.now()
+    const remaining = () => REPORT_DEADLINE_MS - (Date.now() - startedAt)
+    const timeoutMs = () => Math.max(1000, Math.min(REQUEST_TIMEOUT_MS, remaining()))
+    const asJob = (v: unknown): Job => {
+      const j = v as Partial<Job> | null
+      if (!j || typeof j !== 'object' || !j.reportJobId || typeof j.status !== 'string') {
+        throw new ToolUserError('네이버 보고서 응답 형식이 올바르지 않습니다')
+      }
+      return j as Job
+    }
+    const getJob = async (id: string | number) =>
+      asJob(
+        await naverRequest(cred.secret, customerId, 'GET', `/stat-reports/${String(id)}`, {
+          timeoutMs: timeoutMs(),
+        })
+      )
 
     return withCredError(cred, async () => {
       let job: Job
       if (p.report_job_id !== undefined) {
-        job = (await naverRequest(
-          cred.secret,
-          customerId,
-          'GET',
-          `/stat-reports/${String(p.report_job_id)}`
-        )) as Job
+        job = await getJob(p.report_job_id as string | number)
       } else {
         if (!p.report_type || !p.stat_date) {
           throw new ToolUserError('report_job_id 가 없으면 report_type 과 stat_date 가 필요합니다')
         }
-        job = (await naverRequest(cred.secret, customerId, 'POST', '/stat-reports', {
-          body: { reportTp: p.report_type, statDt: (p.stat_date as string).replaceAll('-', '') },
-        })) as Job
+        job = asJob(
+          await naverRequest(cred.secret, customerId, 'POST', '/stat-reports', {
+            body: { reportTp: p.report_type, statDt: (p.stat_date as string).replaceAll('-', '') },
+            timeoutMs: timeoutMs(),
+          })
+        )
       }
-      for (let i = 0; i < REPORT_POLL_TRIES && REPORT_PENDING.has(job.status); i++) {
+      for (
+        let i = 0;
+        i < REPORT_POLL_TRIES &&
+        REPORT_PENDING.has(job.status) &&
+        remaining() > REPORT_POLL_MS + 5000;
+        i++
+      ) {
         await new Promise((r) => setTimeout(r, REPORT_POLL_MS))
-        job = (await naverRequest(
-          cred.secret,
-          customerId,
-          'GET',
-          `/stat-reports/${job.reportJobId}`
-        )) as Job
+        job = await getJob(job.reportJobId)
       }
       const meta = {
         report_job_id: String(job.reportJobId),
         report_type: job.reportTp,
         status: job.status,
       }
-      if (job.status !== 'BUILT' || !job.downloadUrl) return meta
+      // 다운로드할 시간이 없으면 받지 않고 report_job_id 로 다시 부르게 한다.
+      if (job.status !== 'BUILT' || !job.downloadUrl || remaining() < 5000) return meta
 
       const text = await naverRequest(cred.secret, customerId, 'GET', '/report-download', {
         url: assertDownloadUrl(job.downloadUrl),
+        timeoutMs: timeoutMs(),
       })
       const rows = parseTsv(typeof text === 'string' ? text : '')
       const limit = (p.limit as number | undefined) ?? 1000

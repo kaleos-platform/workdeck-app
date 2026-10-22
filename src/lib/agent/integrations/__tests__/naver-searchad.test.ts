@@ -7,8 +7,16 @@ jest.mock('@/lib/crypto/field-crypto', () => ({
 }))
 
 import crypto from 'node:crypto'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import { assertDownloadUrl, parseTsv, resolveCustomer, sign } from '../naver-searchad'
+import {
+  assertDownloadUrl,
+  naverRequest,
+  parseTsv,
+  resolveCustomer,
+  sign,
+  verifyNaverCred,
+} from '../naver-searchad'
 import { naverAdsTools } from '@/lib/agent/tools/naver-ads-tools'
 import { toolDefinitions } from '@/lib/agent/tools'
 import type { McpToolContext } from '@/lib/agent/tools/types'
@@ -198,4 +206,43 @@ it('모든 네이버 도구는 read·naver:read 이고 레지스트리에 등록
     expect(t.scope).toBe('naver:read')
     expect(toolDefinitions).toContain(t)
   }
+})
+
+describe('리뷰 보강', () => {
+  it('리다이렉트를 따라가지 않고 3xx 는 오류로 본다(서명 헤더 유출 방지)', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, { status: 302, headers: { location: 'https://evil.example/' } })
+    )
+    await expect(naverRequest(SECRET, '1', 'GET', '/ncc/campaigns')).rejects.toThrow('(302)')
+    expect(call().init.redirect).toBe('manual')
+  })
+
+  it('존재하지 않는 날짜는 입력 단계에서 거부된다', () => {
+    const shape = tool('naver_ads_get_stats').inputSchema.time_range as z.ZodType
+    expect(shape.safeParse({ since: '2026-13-45', until: '2026-10-01' }).success).toBe(false)
+    expect(shape.safeParse({ since: '2026-02-30', until: '2026-03-01' }).success).toBe(false)
+    expect(shape.safeParse({ since: '2026-10-01', until: '2026-10-02' }).success).toBe(true)
+  })
+
+  it('보고서 응답이 비정상이면 형식 오류로 알린다', async () => {
+    fetchMock.mockResolvedValueOnce(ok(''))
+    await expect(
+      tool('naver_ads_get_stat_report').execute(ctx(), {
+        report_type: 'AD',
+        stat_date: '2026-10-21',
+      })
+    ).rejects.toThrow('형식')
+  })
+
+  it('자격증명 확인은 키 계정과 매핑 계정을 중복 없이 1번씩 조회한다', async () => {
+    fetchMock.mockImplementation(async () => ok([]))
+    await verifyNaverCred(SECRET, { managerCustomerId: '2630153', customers: CONFIG.customers })
+    expect(fetchMock.mock.calls.map((_c, i) => call(i).h['X-Customer'])).toEqual([
+      '2630153',
+      '2526287',
+    ])
+    await expect(
+      verifyNaverCred(SECRET, { managerCustomerId: '1', customers: {} })
+    ).rejects.toThrow()
+  })
 })

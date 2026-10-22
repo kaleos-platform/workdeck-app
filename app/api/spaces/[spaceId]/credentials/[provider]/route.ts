@@ -54,11 +54,16 @@ const SCHEMAS = {
   }),
   'naver-searchad': z.object({
     secret: z.object({ apiKey: z.string().min(10), secretKey: z.string().min(10) }),
-    config: z.object({
-      defaultBrand: z.string().optional(),
-      managerCustomerId: z.string().regex(/^\d+$/),
-      customers: z.record(z.string(), z.string().regex(/^\d+$/)),
-    }),
+    config: z
+      .object({
+        defaultBrand: z.string().optional(),
+        managerCustomerId: z.string().regex(/^\d+$/),
+        // 저장 시 계정마다 직렬로 확인하므로 개수를 제한한다.
+        customers: z
+          .record(z.string(), z.string().regex(/^\d+$/))
+          .refine((o) => Object.keys(o).length >= 1 && Object.keys(o).length <= 20),
+      })
+      .refine((c) => !c.defaultBrand || Object.hasOwn(c.customers, c.defaultBrand)),
   }),
 } as const
 
