@@ -28,6 +28,7 @@ export type KeywordChangeLogMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   listingId: string | null
+  channelProductId: string | null
   productId: string | null
   beforeName: string | null
   afterName: string | null
@@ -43,6 +44,7 @@ export type KeywordChangeLogMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   listingId: string | null
+  channelProductId: string | null
   productId: string | null
   beforeName: string | null
   afterName: string | null
@@ -58,6 +60,7 @@ export type KeywordChangeLogCountAggregateOutputType = {
   id: number
   spaceId: number
   listingId: number
+  channelProductId: number
   productId: number
   beforeName: number
   afterName: number
@@ -77,6 +80,7 @@ export type KeywordChangeLogMinAggregateInputType = {
   id?: true
   spaceId?: true
   listingId?: true
+  channelProductId?: true
   productId?: true
   beforeName?: true
   afterName?: true
@@ -92,6 +96,7 @@ export type KeywordChangeLogMaxAggregateInputType = {
   id?: true
   spaceId?: true
   listingId?: true
+  channelProductId?: true
   productId?: true
   beforeName?: true
   afterName?: true
@@ -107,6 +112,7 @@ export type KeywordChangeLogCountAggregateInputType = {
   id?: true
   spaceId?: true
   listingId?: true
+  channelProductId?: true
   productId?: true
   beforeName?: true
   afterName?: true
@@ -197,12 +203,13 @@ export type KeywordChangeLogGroupByOutputType = {
   id: string
   spaceId: string
   listingId: string | null
+  channelProductId: string | null
   productId: string | null
   beforeName: string | null
   afterName: string | null
   beforeKeywords: runtime.JsonValue
   afterKeywords: runtime.JsonValue
-  reason: $Enums.KeywordChangeReason
+  reason: $Enums.KeywordChangeReason | null
   reasonNote: string | null
   observeMetric: string | null
   multiChange: boolean
@@ -235,12 +242,13 @@ export type KeywordChangeLogWhereInput = {
   id?: Prisma.StringFilter<"KeywordChangeLog"> | string
   spaceId?: Prisma.StringFilter<"KeywordChangeLog"> | string
   listingId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
+  channelProductId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   productId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   beforeName?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   afterName?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   beforeKeywords?: Prisma.JsonFilter<"KeywordChangeLog">
   afterKeywords?: Prisma.JsonFilter<"KeywordChangeLog">
-  reason?: Prisma.EnumKeywordChangeReasonFilter<"KeywordChangeLog"> | $Enums.KeywordChangeReason
+  reason?: Prisma.EnumKeywordChangeReasonNullableFilter<"KeywordChangeLog"> | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   observeMetric?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   multiChange?: Prisma.BoolFilter<"KeywordChangeLog"> | boolean
@@ -248,6 +256,7 @@ export type KeywordChangeLogWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"KeywordChangeLog"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   listing?: Prisma.XOR<Prisma.ProductListingNullableScalarRelationFilter, Prisma.ProductListingWhereInput> | null
+  channelProduct?: Prisma.XOR<Prisma.ChannelProductNullableScalarRelationFilter, Prisma.ChannelProductWhereInput> | null
   product?: Prisma.XOR<Prisma.InvProductNullableScalarRelationFilter, Prisma.InvProductWhereInput> | null
 }
 
@@ -255,12 +264,13 @@ export type KeywordChangeLogOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   listingId?: Prisma.SortOrderInput | Prisma.SortOrder
+  channelProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   productId?: Prisma.SortOrderInput | Prisma.SortOrder
   beforeName?: Prisma.SortOrderInput | Prisma.SortOrder
   afterName?: Prisma.SortOrderInput | Prisma.SortOrder
   beforeKeywords?: Prisma.SortOrder
   afterKeywords?: Prisma.SortOrder
-  reason?: Prisma.SortOrder
+  reason?: Prisma.SortOrderInput | Prisma.SortOrder
   reasonNote?: Prisma.SortOrderInput | Prisma.SortOrder
   observeMetric?: Prisma.SortOrderInput | Prisma.SortOrder
   multiChange?: Prisma.SortOrder
@@ -268,6 +278,7 @@ export type KeywordChangeLogOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   listing?: Prisma.ProductListingOrderByWithRelationInput
+  channelProduct?: Prisma.ChannelProductOrderByWithRelationInput
   product?: Prisma.InvProductOrderByWithRelationInput
 }
 
@@ -278,12 +289,13 @@ export type KeywordChangeLogWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.KeywordChangeLogWhereInput | Prisma.KeywordChangeLogWhereInput[]
   spaceId?: Prisma.StringFilter<"KeywordChangeLog"> | string
   listingId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
+  channelProductId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   productId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   beforeName?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   afterName?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   beforeKeywords?: Prisma.JsonFilter<"KeywordChangeLog">
   afterKeywords?: Prisma.JsonFilter<"KeywordChangeLog">
-  reason?: Prisma.EnumKeywordChangeReasonFilter<"KeywordChangeLog"> | $Enums.KeywordChangeReason
+  reason?: Prisma.EnumKeywordChangeReasonNullableFilter<"KeywordChangeLog"> | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   observeMetric?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   multiChange?: Prisma.BoolFilter<"KeywordChangeLog"> | boolean
@@ -291,6 +303,7 @@ export type KeywordChangeLogWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"KeywordChangeLog"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   listing?: Prisma.XOR<Prisma.ProductListingNullableScalarRelationFilter, Prisma.ProductListingWhereInput> | null
+  channelProduct?: Prisma.XOR<Prisma.ChannelProductNullableScalarRelationFilter, Prisma.ChannelProductWhereInput> | null
   product?: Prisma.XOR<Prisma.InvProductNullableScalarRelationFilter, Prisma.InvProductWhereInput> | null
 }, "id">
 
@@ -298,12 +311,13 @@ export type KeywordChangeLogOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   listingId?: Prisma.SortOrderInput | Prisma.SortOrder
+  channelProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   productId?: Prisma.SortOrderInput | Prisma.SortOrder
   beforeName?: Prisma.SortOrderInput | Prisma.SortOrder
   afterName?: Prisma.SortOrderInput | Prisma.SortOrder
   beforeKeywords?: Prisma.SortOrder
   afterKeywords?: Prisma.SortOrder
-  reason?: Prisma.SortOrder
+  reason?: Prisma.SortOrderInput | Prisma.SortOrder
   reasonNote?: Prisma.SortOrderInput | Prisma.SortOrder
   observeMetric?: Prisma.SortOrderInput | Prisma.SortOrder
   multiChange?: Prisma.SortOrder
@@ -321,12 +335,13 @@ export type KeywordChangeLogScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"KeywordChangeLog"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"KeywordChangeLog"> | string
   listingId?: Prisma.StringNullableWithAggregatesFilter<"KeywordChangeLog"> | string | null
+  channelProductId?: Prisma.StringNullableWithAggregatesFilter<"KeywordChangeLog"> | string | null
   productId?: Prisma.StringNullableWithAggregatesFilter<"KeywordChangeLog"> | string | null
   beforeName?: Prisma.StringNullableWithAggregatesFilter<"KeywordChangeLog"> | string | null
   afterName?: Prisma.StringNullableWithAggregatesFilter<"KeywordChangeLog"> | string | null
   beforeKeywords?: Prisma.JsonWithAggregatesFilter<"KeywordChangeLog">
   afterKeywords?: Prisma.JsonWithAggregatesFilter<"KeywordChangeLog">
-  reason?: Prisma.EnumKeywordChangeReasonWithAggregatesFilter<"KeywordChangeLog"> | $Enums.KeywordChangeReason
+  reason?: Prisma.EnumKeywordChangeReasonNullableWithAggregatesFilter<"KeywordChangeLog"> | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.StringNullableWithAggregatesFilter<"KeywordChangeLog"> | string | null
   observeMetric?: Prisma.StringNullableWithAggregatesFilter<"KeywordChangeLog"> | string | null
   multiChange?: Prisma.BoolWithAggregatesFilter<"KeywordChangeLog"> | boolean
@@ -340,7 +355,7 @@ export type KeywordChangeLogCreateInput = {
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -348,6 +363,7 @@ export type KeywordChangeLogCreateInput = {
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutKeywordChangeLogsInput
   listing?: Prisma.ProductListingCreateNestedOneWithoutKeywordChangesInput
+  channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutKeywordChangesInput
   product?: Prisma.InvProductCreateNestedOneWithoutKeywordChangesInput
 }
 
@@ -355,12 +371,13 @@ export type KeywordChangeLogUncheckedCreateInput = {
   id?: string
   spaceId: string
   listingId?: string | null
+  channelProductId?: string | null
   productId?: string | null
   beforeName?: string | null
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -374,7 +391,7 @@ export type KeywordChangeLogUpdateInput = {
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -382,6 +399,7 @@ export type KeywordChangeLogUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutKeywordChangeLogsNestedInput
   listing?: Prisma.ProductListingUpdateOneWithoutKeywordChangesNestedInput
+  channelProduct?: Prisma.ChannelProductUpdateOneWithoutKeywordChangesNestedInput
   product?: Prisma.InvProductUpdateOneWithoutKeywordChangesNestedInput
 }
 
@@ -389,12 +407,13 @@ export type KeywordChangeLogUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -406,12 +425,13 @@ export type KeywordChangeLogCreateManyInput = {
   id?: string
   spaceId: string
   listingId?: string | null
+  channelProductId?: string | null
   productId?: string | null
   beforeName?: string | null
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -425,7 +445,7 @@ export type KeywordChangeLogUpdateManyMutationInput = {
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -437,12 +457,13 @@ export type KeywordChangeLogUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -464,6 +485,7 @@ export type KeywordChangeLogCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   listingId?: Prisma.SortOrder
+  channelProductId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   beforeName?: Prisma.SortOrder
   afterName?: Prisma.SortOrder
@@ -481,6 +503,7 @@ export type KeywordChangeLogMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   listingId?: Prisma.SortOrder
+  channelProductId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   beforeName?: Prisma.SortOrder
   afterName?: Prisma.SortOrder
@@ -496,6 +519,7 @@ export type KeywordChangeLogMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   listingId?: Prisma.SortOrder
+  channelProductId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   beforeName?: Prisma.SortOrder
   afterName?: Prisma.SortOrder
@@ -633,8 +657,50 @@ export type KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput = {
   deleteMany?: Prisma.KeywordChangeLogScalarWhereInput | Prisma.KeywordChangeLogScalarWhereInput[]
 }
 
-export type EnumKeywordChangeReasonFieldUpdateOperationsInput = {
-  set?: $Enums.KeywordChangeReason
+export type KeywordChangeLogCreateNestedManyWithoutChannelProductInput = {
+  create?: Prisma.XOR<Prisma.KeywordChangeLogCreateWithoutChannelProductInput, Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput> | Prisma.KeywordChangeLogCreateWithoutChannelProductInput[] | Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput[]
+  connectOrCreate?: Prisma.KeywordChangeLogCreateOrConnectWithoutChannelProductInput | Prisma.KeywordChangeLogCreateOrConnectWithoutChannelProductInput[]
+  createMany?: Prisma.KeywordChangeLogCreateManyChannelProductInputEnvelope
+  connect?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+}
+
+export type KeywordChangeLogUncheckedCreateNestedManyWithoutChannelProductInput = {
+  create?: Prisma.XOR<Prisma.KeywordChangeLogCreateWithoutChannelProductInput, Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput> | Prisma.KeywordChangeLogCreateWithoutChannelProductInput[] | Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput[]
+  connectOrCreate?: Prisma.KeywordChangeLogCreateOrConnectWithoutChannelProductInput | Prisma.KeywordChangeLogCreateOrConnectWithoutChannelProductInput[]
+  createMany?: Prisma.KeywordChangeLogCreateManyChannelProductInputEnvelope
+  connect?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+}
+
+export type KeywordChangeLogUpdateManyWithoutChannelProductNestedInput = {
+  create?: Prisma.XOR<Prisma.KeywordChangeLogCreateWithoutChannelProductInput, Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput> | Prisma.KeywordChangeLogCreateWithoutChannelProductInput[] | Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput[]
+  connectOrCreate?: Prisma.KeywordChangeLogCreateOrConnectWithoutChannelProductInput | Prisma.KeywordChangeLogCreateOrConnectWithoutChannelProductInput[]
+  upsert?: Prisma.KeywordChangeLogUpsertWithWhereUniqueWithoutChannelProductInput | Prisma.KeywordChangeLogUpsertWithWhereUniqueWithoutChannelProductInput[]
+  createMany?: Prisma.KeywordChangeLogCreateManyChannelProductInputEnvelope
+  set?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+  disconnect?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+  delete?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+  connect?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+  update?: Prisma.KeywordChangeLogUpdateWithWhereUniqueWithoutChannelProductInput | Prisma.KeywordChangeLogUpdateWithWhereUniqueWithoutChannelProductInput[]
+  updateMany?: Prisma.KeywordChangeLogUpdateManyWithWhereWithoutChannelProductInput | Prisma.KeywordChangeLogUpdateManyWithWhereWithoutChannelProductInput[]
+  deleteMany?: Prisma.KeywordChangeLogScalarWhereInput | Prisma.KeywordChangeLogScalarWhereInput[]
+}
+
+export type KeywordChangeLogUncheckedUpdateManyWithoutChannelProductNestedInput = {
+  create?: Prisma.XOR<Prisma.KeywordChangeLogCreateWithoutChannelProductInput, Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput> | Prisma.KeywordChangeLogCreateWithoutChannelProductInput[] | Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput[]
+  connectOrCreate?: Prisma.KeywordChangeLogCreateOrConnectWithoutChannelProductInput | Prisma.KeywordChangeLogCreateOrConnectWithoutChannelProductInput[]
+  upsert?: Prisma.KeywordChangeLogUpsertWithWhereUniqueWithoutChannelProductInput | Prisma.KeywordChangeLogUpsertWithWhereUniqueWithoutChannelProductInput[]
+  createMany?: Prisma.KeywordChangeLogCreateManyChannelProductInputEnvelope
+  set?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+  disconnect?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+  delete?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+  connect?: Prisma.KeywordChangeLogWhereUniqueInput | Prisma.KeywordChangeLogWhereUniqueInput[]
+  update?: Prisma.KeywordChangeLogUpdateWithWhereUniqueWithoutChannelProductInput | Prisma.KeywordChangeLogUpdateWithWhereUniqueWithoutChannelProductInput[]
+  updateMany?: Prisma.KeywordChangeLogUpdateManyWithWhereWithoutChannelProductInput | Prisma.KeywordChangeLogUpdateManyWithWhereWithoutChannelProductInput[]
+  deleteMany?: Prisma.KeywordChangeLogScalarWhereInput | Prisma.KeywordChangeLogScalarWhereInput[]
+}
+
+export type NullableEnumKeywordChangeReasonFieldUpdateOperationsInput = {
+  set?: $Enums.KeywordChangeReason | null
 }
 
 export type KeywordChangeLogCreateWithoutSpaceInput = {
@@ -643,25 +709,27 @@ export type KeywordChangeLogCreateWithoutSpaceInput = {
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
   actorUserId?: string | null
   createdAt?: Date | string
   listing?: Prisma.ProductListingCreateNestedOneWithoutKeywordChangesInput
+  channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutKeywordChangesInput
   product?: Prisma.InvProductCreateNestedOneWithoutKeywordChangesInput
 }
 
 export type KeywordChangeLogUncheckedCreateWithoutSpaceInput = {
   id?: string
   listingId?: string | null
+  channelProductId?: string | null
   productId?: string | null
   beforeName?: string | null
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -702,12 +770,13 @@ export type KeywordChangeLogScalarWhereInput = {
   id?: Prisma.StringFilter<"KeywordChangeLog"> | string
   spaceId?: Prisma.StringFilter<"KeywordChangeLog"> | string
   listingId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
+  channelProductId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   productId?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   beforeName?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   afterName?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   beforeKeywords?: Prisma.JsonFilter<"KeywordChangeLog">
   afterKeywords?: Prisma.JsonFilter<"KeywordChangeLog">
-  reason?: Prisma.EnumKeywordChangeReasonFilter<"KeywordChangeLog"> | $Enums.KeywordChangeReason
+  reason?: Prisma.EnumKeywordChangeReasonNullableFilter<"KeywordChangeLog"> | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   observeMetric?: Prisma.StringNullableFilter<"KeywordChangeLog"> | string | null
   multiChange?: Prisma.BoolFilter<"KeywordChangeLog"> | boolean
@@ -721,7 +790,7 @@ export type KeywordChangeLogCreateWithoutProductInput = {
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -729,17 +798,19 @@ export type KeywordChangeLogCreateWithoutProductInput = {
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutKeywordChangeLogsInput
   listing?: Prisma.ProductListingCreateNestedOneWithoutKeywordChangesInput
+  channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutKeywordChangesInput
 }
 
 export type KeywordChangeLogUncheckedCreateWithoutProductInput = {
   id?: string
   spaceId: string
   listingId?: string | null
+  channelProductId?: string | null
   beforeName?: string | null
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -779,25 +850,27 @@ export type KeywordChangeLogCreateWithoutListingInput = {
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
   actorUserId?: string | null
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutKeywordChangeLogsInput
+  channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutKeywordChangesInput
   product?: Prisma.InvProductCreateNestedOneWithoutKeywordChangesInput
 }
 
 export type KeywordChangeLogUncheckedCreateWithoutListingInput = {
   id?: string
   spaceId: string
+  channelProductId?: string | null
   productId?: string | null
   beforeName?: string | null
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -831,15 +904,76 @@ export type KeywordChangeLogUpdateManyWithWhereWithoutListingInput = {
   data: Prisma.XOR<Prisma.KeywordChangeLogUpdateManyMutationInput, Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingInput>
 }
 
-export type KeywordChangeLogCreateManySpaceInput = {
+export type KeywordChangeLogCreateWithoutChannelProductInput = {
   id?: string
+  beforeName?: string | null
+  afterName?: string | null
+  beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reason?: $Enums.KeywordChangeReason | null
+  reasonNote?: string | null
+  observeMetric?: string | null
+  multiChange?: boolean
+  actorUserId?: string | null
+  createdAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutKeywordChangeLogsInput
+  listing?: Prisma.ProductListingCreateNestedOneWithoutKeywordChangesInput
+  product?: Prisma.InvProductCreateNestedOneWithoutKeywordChangesInput
+}
+
+export type KeywordChangeLogUncheckedCreateWithoutChannelProductInput = {
+  id?: string
+  spaceId: string
   listingId?: string | null
   productId?: string | null
   beforeName?: string | null
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
+  reasonNote?: string | null
+  observeMetric?: string | null
+  multiChange?: boolean
+  actorUserId?: string | null
+  createdAt?: Date | string
+}
+
+export type KeywordChangeLogCreateOrConnectWithoutChannelProductInput = {
+  where: Prisma.KeywordChangeLogWhereUniqueInput
+  create: Prisma.XOR<Prisma.KeywordChangeLogCreateWithoutChannelProductInput, Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput>
+}
+
+export type KeywordChangeLogCreateManyChannelProductInputEnvelope = {
+  data: Prisma.KeywordChangeLogCreateManyChannelProductInput | Prisma.KeywordChangeLogCreateManyChannelProductInput[]
+  skipDuplicates?: boolean
+}
+
+export type KeywordChangeLogUpsertWithWhereUniqueWithoutChannelProductInput = {
+  where: Prisma.KeywordChangeLogWhereUniqueInput
+  update: Prisma.XOR<Prisma.KeywordChangeLogUpdateWithoutChannelProductInput, Prisma.KeywordChangeLogUncheckedUpdateWithoutChannelProductInput>
+  create: Prisma.XOR<Prisma.KeywordChangeLogCreateWithoutChannelProductInput, Prisma.KeywordChangeLogUncheckedCreateWithoutChannelProductInput>
+}
+
+export type KeywordChangeLogUpdateWithWhereUniqueWithoutChannelProductInput = {
+  where: Prisma.KeywordChangeLogWhereUniqueInput
+  data: Prisma.XOR<Prisma.KeywordChangeLogUpdateWithoutChannelProductInput, Prisma.KeywordChangeLogUncheckedUpdateWithoutChannelProductInput>
+}
+
+export type KeywordChangeLogUpdateManyWithWhereWithoutChannelProductInput = {
+  where: Prisma.KeywordChangeLogScalarWhereInput
+  data: Prisma.XOR<Prisma.KeywordChangeLogUpdateManyMutationInput, Prisma.KeywordChangeLogUncheckedUpdateManyWithoutChannelProductInput>
+}
+
+export type KeywordChangeLogCreateManySpaceInput = {
+  id?: string
+  listingId?: string | null
+  channelProductId?: string | null
+  productId?: string | null
+  beforeName?: string | null
+  afterName?: string | null
+  beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -853,25 +987,27 @@ export type KeywordChangeLogUpdateWithoutSpaceInput = {
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   listing?: Prisma.ProductListingUpdateOneWithoutKeywordChangesNestedInput
+  channelProduct?: Prisma.ChannelProductUpdateOneWithoutKeywordChangesNestedInput
   product?: Prisma.InvProductUpdateOneWithoutKeywordChangesNestedInput
 }
 
 export type KeywordChangeLogUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -882,12 +1018,13 @@ export type KeywordChangeLogUncheckedUpdateWithoutSpaceInput = {
 export type KeywordChangeLogUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -899,11 +1036,12 @@ export type KeywordChangeLogCreateManyProductInput = {
   id?: string
   spaceId: string
   listingId?: string | null
+  channelProductId?: string | null
   beforeName?: string | null
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -917,7 +1055,7 @@ export type KeywordChangeLogUpdateWithoutProductInput = {
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -925,17 +1063,19 @@ export type KeywordChangeLogUpdateWithoutProductInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutKeywordChangeLogsNestedInput
   listing?: Prisma.ProductListingUpdateOneWithoutKeywordChangesNestedInput
+  channelProduct?: Prisma.ChannelProductUpdateOneWithoutKeywordChangesNestedInput
 }
 
 export type KeywordChangeLogUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -947,11 +1087,12 @@ export type KeywordChangeLogUncheckedUpdateManyWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -962,12 +1103,13 @@ export type KeywordChangeLogUncheckedUpdateManyWithoutProductInput = {
 export type KeywordChangeLogCreateManyListingInput = {
   id?: string
   spaceId: string
+  channelProductId?: string | null
   productId?: string | null
   beforeName?: string | null
   afterName?: string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason: $Enums.KeywordChangeReason
+  reason?: $Enums.KeywordChangeReason | null
   reasonNote?: string | null
   observeMetric?: string | null
   multiChange?: boolean
@@ -981,25 +1123,27 @@ export type KeywordChangeLogUpdateWithoutListingInput = {
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutKeywordChangeLogsNestedInput
+  channelProduct?: Prisma.ChannelProductUpdateOneWithoutKeywordChangesNestedInput
   product?: Prisma.InvProductUpdateOneWithoutKeywordChangesNestedInput
 }
 
 export type KeywordChangeLogUncheckedUpdateWithoutListingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1010,12 +1154,81 @@ export type KeywordChangeLogUncheckedUpdateWithoutListingInput = {
 export type KeywordChangeLogUncheckedUpdateManyWithoutListingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  reason?: Prisma.EnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
+  reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type KeywordChangeLogCreateManyChannelProductInput = {
+  id?: string
+  spaceId: string
+  listingId?: string | null
+  productId?: string | null
+  beforeName?: string | null
+  afterName?: string | null
+  beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reason?: $Enums.KeywordChangeReason | null
+  reasonNote?: string | null
+  observeMetric?: string | null
+  multiChange?: boolean
+  actorUserId?: string | null
+  createdAt?: Date | string
+}
+
+export type KeywordChangeLogUpdateWithoutChannelProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
+  reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutKeywordChangeLogsNestedInput
+  listing?: Prisma.ProductListingUpdateOneWithoutKeywordChangesNestedInput
+  product?: Prisma.InvProductUpdateOneWithoutKeywordChangesNestedInput
+}
+
+export type KeywordChangeLogUncheckedUpdateWithoutChannelProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
+  reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type KeywordChangeLogUncheckedUpdateManyWithoutChannelProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  beforeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  afterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  beforeKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  afterKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reason?: Prisma.NullableEnumKeywordChangeReasonFieldUpdateOperationsInput | $Enums.KeywordChangeReason | null
   reasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observeMetric?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   multiChange?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1029,6 +1242,7 @@ export type KeywordChangeLogSelect<ExtArgs extends runtime.Types.Extensions.Inte
   id?: boolean
   spaceId?: boolean
   listingId?: boolean
+  channelProductId?: boolean
   productId?: boolean
   beforeName?: boolean
   afterName?: boolean
@@ -1042,6 +1256,7 @@ export type KeywordChangeLogSelect<ExtArgs extends runtime.Types.Extensions.Inte
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   listing?: boolean | Prisma.KeywordChangeLog$listingArgs<ExtArgs>
+  channelProduct?: boolean | Prisma.KeywordChangeLog$channelProductArgs<ExtArgs>
   product?: boolean | Prisma.KeywordChangeLog$productArgs<ExtArgs>
 }, ExtArgs["result"]["keywordChangeLog"]>
 
@@ -1049,6 +1264,7 @@ export type KeywordChangeLogSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   id?: boolean
   spaceId?: boolean
   listingId?: boolean
+  channelProductId?: boolean
   productId?: boolean
   beforeName?: boolean
   afterName?: boolean
@@ -1062,6 +1278,7 @@ export type KeywordChangeLogSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   listing?: boolean | Prisma.KeywordChangeLog$listingArgs<ExtArgs>
+  channelProduct?: boolean | Prisma.KeywordChangeLog$channelProductArgs<ExtArgs>
   product?: boolean | Prisma.KeywordChangeLog$productArgs<ExtArgs>
 }, ExtArgs["result"]["keywordChangeLog"]>
 
@@ -1069,6 +1286,7 @@ export type KeywordChangeLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   id?: boolean
   spaceId?: boolean
   listingId?: boolean
+  channelProductId?: boolean
   productId?: boolean
   beforeName?: boolean
   afterName?: boolean
@@ -1082,6 +1300,7 @@ export type KeywordChangeLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   listing?: boolean | Prisma.KeywordChangeLog$listingArgs<ExtArgs>
+  channelProduct?: boolean | Prisma.KeywordChangeLog$channelProductArgs<ExtArgs>
   product?: boolean | Prisma.KeywordChangeLog$productArgs<ExtArgs>
 }, ExtArgs["result"]["keywordChangeLog"]>
 
@@ -1089,6 +1308,7 @@ export type KeywordChangeLogSelectScalar = {
   id?: boolean
   spaceId?: boolean
   listingId?: boolean
+  channelProductId?: boolean
   productId?: boolean
   beforeName?: boolean
   afterName?: boolean
@@ -1102,20 +1322,23 @@ export type KeywordChangeLogSelectScalar = {
   createdAt?: boolean
 }
 
-export type KeywordChangeLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "listingId" | "productId" | "beforeName" | "afterName" | "beforeKeywords" | "afterKeywords" | "reason" | "reasonNote" | "observeMetric" | "multiChange" | "actorUserId" | "createdAt", ExtArgs["result"]["keywordChangeLog"]>
+export type KeywordChangeLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "listingId" | "channelProductId" | "productId" | "beforeName" | "afterName" | "beforeKeywords" | "afterKeywords" | "reason" | "reasonNote" | "observeMetric" | "multiChange" | "actorUserId" | "createdAt", ExtArgs["result"]["keywordChangeLog"]>
 export type KeywordChangeLogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   listing?: boolean | Prisma.KeywordChangeLog$listingArgs<ExtArgs>
+  channelProduct?: boolean | Prisma.KeywordChangeLog$channelProductArgs<ExtArgs>
   product?: boolean | Prisma.KeywordChangeLog$productArgs<ExtArgs>
 }
 export type KeywordChangeLogIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   listing?: boolean | Prisma.KeywordChangeLog$listingArgs<ExtArgs>
+  channelProduct?: boolean | Prisma.KeywordChangeLog$channelProductArgs<ExtArgs>
   product?: boolean | Prisma.KeywordChangeLog$productArgs<ExtArgs>
 }
 export type KeywordChangeLogIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   listing?: boolean | Prisma.KeywordChangeLog$listingArgs<ExtArgs>
+  channelProduct?: boolean | Prisma.KeywordChangeLog$channelProductArgs<ExtArgs>
   product?: boolean | Prisma.KeywordChangeLog$productArgs<ExtArgs>
 }
 
@@ -1124,18 +1347,20 @@ export type $KeywordChangeLogPayload<ExtArgs extends runtime.Types.Extensions.In
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
     listing: Prisma.$ProductListingPayload<ExtArgs> | null
+    channelProduct: Prisma.$ChannelProductPayload<ExtArgs> | null
     product: Prisma.$InvProductPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     spaceId: string
     listingId: string | null
+    channelProductId: string | null
     productId: string | null
     beforeName: string | null
     afterName: string | null
     beforeKeywords: runtime.JsonValue
     afterKeywords: runtime.JsonValue
-    reason: $Enums.KeywordChangeReason
+    reason: $Enums.KeywordChangeReason | null
     reasonNote: string | null
     observeMetric: string | null
     multiChange: boolean
@@ -1537,6 +1762,7 @@ export interface Prisma__KeywordChangeLogClient<T, Null = never, ExtArgs extends
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   listing<T extends Prisma.KeywordChangeLog$listingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.KeywordChangeLog$listingArgs<ExtArgs>>): Prisma.Prisma__ProductListingClient<runtime.Types.Result.GetResult<Prisma.$ProductListingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  channelProduct<T extends Prisma.KeywordChangeLog$channelProductArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.KeywordChangeLog$channelProductArgs<ExtArgs>>): Prisma.Prisma__ChannelProductClient<runtime.Types.Result.GetResult<Prisma.$ChannelProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   product<T extends Prisma.KeywordChangeLog$productArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.KeywordChangeLog$productArgs<ExtArgs>>): Prisma.Prisma__InvProductClient<runtime.Types.Result.GetResult<Prisma.$InvProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1570,6 +1796,7 @@ export interface KeywordChangeLogFieldRefs {
   readonly id: Prisma.FieldRef<"KeywordChangeLog", 'String'>
   readonly spaceId: Prisma.FieldRef<"KeywordChangeLog", 'String'>
   readonly listingId: Prisma.FieldRef<"KeywordChangeLog", 'String'>
+  readonly channelProductId: Prisma.FieldRef<"KeywordChangeLog", 'String'>
   readonly productId: Prisma.FieldRef<"KeywordChangeLog", 'String'>
   readonly beforeName: Prisma.FieldRef<"KeywordChangeLog", 'String'>
   readonly afterName: Prisma.FieldRef<"KeywordChangeLog", 'String'>
@@ -1993,6 +2220,25 @@ export type KeywordChangeLog$listingArgs<ExtArgs extends runtime.Types.Extension
    */
   include?: Prisma.ProductListingInclude<ExtArgs> | null
   where?: Prisma.ProductListingWhereInput
+}
+
+/**
+ * KeywordChangeLog.channelProduct
+ */
+export type KeywordChangeLog$channelProductArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChannelProduct
+   */
+  select?: Prisma.ChannelProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChannelProduct
+   */
+  omit?: Prisma.ChannelProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelProductInclude<ExtArgs> | null
+  where?: Prisma.ChannelProductWhereInput
 }
 
 /**

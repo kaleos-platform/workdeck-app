@@ -537,7 +537,8 @@ export const ModelName = {
   BillingMethod: 'BillingMethod',
   BillingCharge: 'BillingCharge',
   AdminAuditLog: 'AdminAuditLog',
-  WorkerToken: 'WorkerToken'
+  WorkerToken: 'WorkerToken',
+  KeywordRankSnapshot: 'KeywordRankSnapshot'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -553,7 +554,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -11953,6 +11954,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    KeywordRankSnapshot: {
+      payload: Prisma.$KeywordRankSnapshotPayload<ExtArgs>
+      fields: Prisma.KeywordRankSnapshotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KeywordRankSnapshotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KeywordRankSnapshotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>
+        }
+        findFirst: {
+          args: Prisma.KeywordRankSnapshotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KeywordRankSnapshotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>
+        }
+        findMany: {
+          args: Prisma.KeywordRankSnapshotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>[]
+        }
+        create: {
+          args: Prisma.KeywordRankSnapshotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>
+        }
+        createMany: {
+          args: Prisma.KeywordRankSnapshotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KeywordRankSnapshotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>[]
+        }
+        delete: {
+          args: Prisma.KeywordRankSnapshotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>
+        }
+        update: {
+          args: Prisma.KeywordRankSnapshotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>
+        }
+        deleteMany: {
+          args: Prisma.KeywordRankSnapshotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KeywordRankSnapshotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KeywordRankSnapshotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>[]
+        }
+        upsert: {
+          args: Prisma.KeywordRankSnapshotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordRankSnapshotPayload>
+        }
+        aggregate: {
+          args: Prisma.KeywordRankSnapshotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKeywordRankSnapshot>
+        }
+        groupBy: {
+          args: Prisma.KeywordRankSnapshotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KeywordRankSnapshotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KeywordRankSnapshotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KeywordRankSnapshotCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -13174,6 +13249,7 @@ export const ChannelScalarFieldEnum = {
   isActive: 'isActive',
   useSimulation: 'useSimulation',
   adminUrl: 'adminUrl',
+  storeUrl: 'storeUrl',
   freeShipping: 'freeShipping',
   freeShippingThreshold: 'freeShippingThreshold',
   usesMarketingBudget: 'usesMarketingBudget',
@@ -13389,6 +13465,8 @@ export const ProductListingScalarFieldEnum = {
   displayName: 'displayName',
   managementName: 'managementName',
   keywords: 'keywords',
+  pageUrl: 'pageUrl',
+  rankTracking: 'rankTracking',
   retailPrice: 'retailPrice',
   channelStock: 'channelStock',
   status: 'status',
@@ -13444,6 +13522,8 @@ export const ChannelProductScalarFieldEnum = {
   baseInternalCode: 'baseInternalCode',
   memo: 'memo',
   keywords: 'keywords',
+  pageUrl: 'pageUrl',
+  rankTracking: 'rankTracking',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -13509,6 +13589,7 @@ export const KeywordChangeLogScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   listingId: 'listingId',
+  channelProductId: 'channelProductId',
   productId: 'productId',
   beforeName: 'beforeName',
   afterName: 'afterName',
@@ -14599,6 +14680,25 @@ export const WorkerTokenScalarFieldEnum = {
 } as const
 
 export type WorkerTokenScalarFieldEnum = (typeof WorkerTokenScalarFieldEnum)[keyof typeof WorkerTokenScalarFieldEnum]
+
+
+export const KeywordRankSnapshotScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  targetKey: 'targetKey',
+  channelProductId: 'channelProductId',
+  listingId: 'listingId',
+  source: 'source',
+  keyword: 'keyword',
+  date: 'date',
+  status: 'status',
+  rank: 'rank',
+  adShown: 'adShown',
+  errorCode: 'errorCode',
+  createdAt: 'createdAt'
+} as const
+
+export type KeywordRankSnapshotScalarFieldEnum = (typeof KeywordRankSnapshotScalarFieldEnum)[keyof typeof KeywordRankSnapshotScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -15893,6 +15993,34 @@ export type EnumBillingChargeStatusFieldRefInput<$PrismaModel> = FieldRefInputTy
 export type ListEnumBillingChargeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillingChargeStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'RankSource'
+ */
+export type EnumRankSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RankSource'>
+    
+
+
+/**
+ * Reference to a field of type 'RankSource[]'
+ */
+export type ListEnumRankSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RankSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RankStatus'
+ */
+export type EnumRankStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RankStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RankStatus[]'
+ */
+export type ListEnumRankStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RankStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -16142,6 +16270,7 @@ export type GlobalOmitConfig = {
   billingCharge?: Prisma.BillingChargeOmit
   adminAuditLog?: Prisma.AdminAuditLogOmit
   workerToken?: Prisma.WorkerTokenOmit
+  keywordRankSnapshot?: Prisma.KeywordRankSnapshotOmit
 }
 
 /* Types for Logging */

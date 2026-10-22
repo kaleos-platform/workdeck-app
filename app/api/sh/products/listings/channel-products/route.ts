@@ -10,6 +10,7 @@ import {
   computeListingAvailableStock,
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
+import { keywordListSchema, pageUrlSchema } from '@/lib/sh/schemas'
 
 /**
  * 채널상품 목록 (GET) + 신규 채널상품 생성 (POST).
@@ -45,7 +46,8 @@ const createChannelProductSchema = z.object({
   baseManagementName: z.string().max(400).optional(),
   baseInternalCode: z.string().max(100).optional(),
   memo: z.string().max(1000).optional(),
-  keywords: z.array(z.string()).default([]),
+  pageUrl: pageUrlSchema,
+  keywords: keywordListSchema.default([]),
   listings: z.array(listingInputSchema).min(1),
 })
 
