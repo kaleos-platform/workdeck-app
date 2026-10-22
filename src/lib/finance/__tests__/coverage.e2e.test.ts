@@ -18,6 +18,8 @@ const USER_ID = 'e2e00000-0000-4000-8000-0000000000c2'
 const RUN = !!(process.env.DATABASE_URL || process.env.DIRECT_URL)
 
 let mockUserId = ''
+// 라우트의 Space 해석이 cookies()(wd_space)를 읽는다 — 요청 스코프 밖이라 빈 쿠키로 대체(→ OWNER 멤버십).
+jest.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined }) }))
 jest.mock('@/hooks/use-user', () => ({
   getUser: async () => (mockUserId ? { id: mockUserId } : null),
 }))
