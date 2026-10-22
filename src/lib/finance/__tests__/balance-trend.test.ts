@@ -99,6 +99,16 @@ describe('buildBalanceTrend', () => {
     expect(gapSep.flowGap).toBe(-300)
   })
 
+  test('기초잔액이 있어도 첫 데이터 달은 체인 차이에서 제외', () => {
+    const [first] = buildBalanceTrend(
+      base({
+        bankAccounts: [{ id: 'a', name: '주거래', status: 'ACTIVE', openingBalance: 50 }],
+      })
+    )
+    expect(first.ym).toBe('2026-08')
+    expect(first.flowGap).toBe(0)
+  })
+
   test('잔액을 아는 계좌가 없는 앞쪽 달은 행 생략', () => {
     const rows = buildBalanceTrend(base({ months: ['2026-06', '2026-07', '2026-08'] }))
     expect(rows.map((r) => r.ym)).toEqual(['2026-08'])
