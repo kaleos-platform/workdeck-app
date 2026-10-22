@@ -318,7 +318,9 @@ export function ApprovalDetailSheet({
         <Separator />
         {canDecide && needsOwner && isPending && (
           <p className="px-4 text-sm text-amber-700">
-            OWNER 승인 필요 — 지출 한도를 넘는 액션은 회사 대표 계정(OWNER)만 승인할 수 있습니다.
+            {action.spendKrw != null
+              ? 'OWNER 승인 필요 — 지출 한도를 넘는 액션은 회사 대표 계정(OWNER)만 승인할 수 있습니다.'
+              : 'OWNER 승인 필요 — 이 요청은 회사 대표 계정(OWNER)만 승인할 수 있습니다.'}
           </p>
         )}
         <SheetFooter className="flex-row">

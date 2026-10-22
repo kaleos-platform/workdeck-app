@@ -69,3 +69,30 @@ it('제안의 Space 가 현재 Space 와 다르면 이름 없이 기본 문구�
   expect(screen.getByRole('button', { name: '승인' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Space B/ })).toBeNull()
 })
+
+it('지출이 아닌 OWNER 액션(비밀값)은 덱 이름과 일반 OWNER 안내를 보여준다', async () => {
+  mockCurrent(null, false)
+  render(
+    <ApprovalDetailSheet
+      action={
+        {
+          ...action,
+          deckKey: 'secrets',
+          actionType: 'secret.http.request',
+          spendKrw: null,
+          requiredRole: 'OWNER',
+        } as AgentPendingActionDTO
+      }
+      open
+      onOpenChange={() => {}}
+      canDecide
+      viewerRole="ADMIN"
+      onDecided={() => {}}
+    />
+  )
+  expect(await screen.findByText('비밀값')).toBeInTheDocument()
+  expect(
+    screen.getByText('OWNER 승인 필요 — 이 요청은 회사 대표 계정(OWNER)만 승인할 수 있습니다.')
+  ).toBeInTheDocument()
+  expect(screen.queryByText(/지출 한도/)).not.toBeInTheDocument()
+})
