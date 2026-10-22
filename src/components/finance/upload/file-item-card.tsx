@@ -39,6 +39,7 @@ import { AccountRegisterDialog } from './account-register-dialog'
 import {
   NONE_ACCOUNT,
   findMatchedAccount,
+  isUploadable,
   mappingWarnings,
   isMappingDirty,
   isMappingValid,
@@ -76,7 +77,7 @@ export function FileItemCard({
 
   const { preview } = item
   const isCard = item.kind === 'CARD'
-  const kindAccounts = accounts.filter((a) => a.kind === item.kind)
+  const kindAccounts = accounts.filter((a) => a.kind === item.kind && isUploadable(a))
   const selectedAccount = kindAccounts.find((a) => a.id === item.accountId)
   const matchedAccount = preview
     ? findMatchedAccount(accounts, preview.preview.preamble.accountNumber)
@@ -96,6 +97,11 @@ export function FileItemCard({
   const hintedAccountIds = kindAccounts.filter((a) => accountHints[a.id]).map((a) => a.id)
   // 선택한 계좌가 어느 근거에도 걸리지 않으면 경고. 근거 자체가 없으면(신규 계좌 첫 등록 등)
   // 비교 대상이 없다는 뜻이므로 침묵한다.
+  // 파일이 미사용 계좌 것으로 보이면 안내 — 후보에서 빠져 있어 이유 없이 비어 보이지 않게.
+  const inactiveMatch =
+    (matchedAccount && !isUploadable(matchedAccount) ? matchedAccount : null) ??
+    accounts.find((a) => !isUploadable(a) && accountHints[a.id] === 'exact') ??
+    null
   const accountMismatch =
     !!item.accountId &&
     item.accountId !== NONE_ACCOUNT &&
@@ -292,6 +298,15 @@ export function FileItemCard({
             </p>
           ))}
           {/* 계좌 불일치 — 매핑 경고와 같은 자리(접힘 상태)에 둔다. 펼쳐야 보이면 아무도 못 본다 */}
+          {inactiveMatch && (
+            <p className="mt-0.5 flex items-start gap-1 text-xs text-amber-700 dark:text-amber-400">
+              <AlertTriangle className="mt-0.5 size-3 shrink-0" />
+              <span>
+                <strong>{inactiveMatch.name}</strong>은(는) 미사용 계좌입니다 — 자산·부채 관리에서
+                사용으로 전환한 뒤 업로드하세요
+              </span>
+            </p>
+          )}
           {accountMismatch && (
             <p className="mt-0.5 flex items-start gap-1 text-xs text-amber-700 dark:text-amber-400">
               <AlertTriangle className="mt-0.5 size-3 shrink-0" />

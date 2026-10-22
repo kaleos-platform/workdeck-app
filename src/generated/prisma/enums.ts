@@ -681,6 +681,14 @@ export const FinSnapshotSource = {
 export type FinSnapshotSource = (typeof FinSnapshotSource)[keyof typeof FinSnapshotSource]
 
 
+export const FinAccountStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+} as const
+
+export type FinAccountStatus = (typeof FinAccountStatus)[keyof typeof FinAccountStatus]
+
+
 export const HiringPostingStatus = {
   DRAFT: 'DRAFT',
   ACTIVE: 'ACTIVE',

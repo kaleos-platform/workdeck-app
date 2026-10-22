@@ -49,10 +49,12 @@ jest.mock('@/lib/api-helpers', () => ({
 
 jest.mock('@/lib/prisma', () => ({
   get prisma() {
-    return {
+    const client = {
       finLiability: ensureMockFinLiability(),
       finAccount: ensureMockFinAccount(),
+      finLiabilitySnapshot: { deleteMany: jest.fn(), upsert: jest.fn(), updateMany: jest.fn() },
     }
+    return { ...client, $transaction: (fn: (tx: typeof client) => unknown) => fn(client) }
   },
 }))
 

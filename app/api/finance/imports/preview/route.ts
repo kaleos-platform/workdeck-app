@@ -87,6 +87,8 @@ export async function POST(req: NextRequest) {
       openingBalance: true,
       currentBalance: true,
       currentBalanceAsOf: true,
+      // 미사용 계좌도 내려준다 — 파일 계좌번호가 미사용 계좌와 일치할 때 안내하려면 필요(후보 필터는 클라이언트).
+      status: true,
     },
     orderBy: { createdAt: 'asc' },
   })
