@@ -5,7 +5,7 @@ jest.mock('@/lib/prisma', () => ({ prisma: { spaceAgent: { count: jest.fn() } } 
 jest.mock('@/lib/agent/identity/space-admin', () => ({
   requireSpaceAdmin: jest.fn(async () => ({ userId: 'u1' })),
 }))
-jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
+jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn(), requireFreshAal2: jest.fn() }))
 jest.mock('@/lib/agent/audit', () => ({
   AUDIT_UNAVAILABLE: '감사 기록을 남길 수 없어 실행하지 않았습니다',
   startToolAudit: jest.fn(async () => 'audit1'),
@@ -21,7 +21,7 @@ jest.mock('@/lib/agent/secrets/store', () => ({
 }))
 
 import { prisma } from '@/lib/prisma'
-import { requireAal2 } from '@/lib/auth/mfa'
+import { requireAal2, requireFreshAal2 } from '@/lib/auth/mfa'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { startToolAudit, finishToolAudit } from '@/lib/agent/audit'
 import * as store from '@/lib/agent/secrets/store'
@@ -47,12 +47,14 @@ const mfaFail = () => NextResponse.json({ code: 'MFA_REQUIRED' }, { status: 403 
 beforeEach(() => {
   jest.clearAllMocks()
   ;(requireAal2 as jest.Mock).mockResolvedValue(null)
+  ;(requireFreshAal2 as jest.Mock).mockResolvedValue(null)
   ;(prisma.spaceAgent.count as jest.Mock).mockResolvedValue(1)
   ;(store.findSecretKind as jest.Mock).mockResolvedValue(null)
 })
 
 it('aal2가 없으면 PUT·DELETE·reveal 모두 403이고 본문을 읽지 않는다', async () => {
   ;(requireAal2 as jest.Mock).mockResolvedValue(mfaFail())
+  ;(requireFreshAal2 as jest.Mock).mockResolvedValue(mfaFail())
   const req = new NextRequest('http://t/x', { method: 'PUT', body: JSON.stringify(BODY) })
   const json = jest.spyOn(req, 'json')
   expect((await PUT(req, ctx)).status).toBe(403)
@@ -158,4 +160,13 @@ it('allowedAgentIds는 ACTIVE 에이전트만 센다', async () => {
   expect(prisma.spaceAgent.count).toHaveBeenCalledWith({
     where: expect.objectContaining({ spaceId: 'sp1', status: 'ACTIVE' }),
   })
+})
+
+it('MFA 비상 해제(requireAal2 통과)여도 실제 aal2가 없으면 reveal은 403이고 값·감사 없음', async () => {
+  ;(requireFreshAal2 as jest.Mock).mockResolvedValue(mfaFail())
+  const res = await REVEAL(new NextRequest('http://t/x', { method: 'POST' }), ctx)
+  expect(res.status).toBe(403)
+  expect(await res.text()).not.toContain('SK_TEST')
+  expect(store.revealSecretValue).not.toHaveBeenCalled()
+  expect(startToolAudit).not.toHaveBeenCalled()
 })

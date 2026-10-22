@@ -1,10 +1,10 @@
 /**
- * POST — 비밀값 보기(ADMIN 이상 + MFA aal2). 평문이 서버 밖으로 나가는 유일한 경로라
+ * POST — 비밀값 보기(ADMIN 이상 + 실제 MFA aal2, 비상 해제 무시). 평문이 서버 밖으로 나가는 유일한 경로라
  * 감사 행을 먼저 남기고(실패하면 503, 값 없음) 복호화한 비밀값 id를 결과에 기록한다.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { errorResponse } from '@/lib/api-helpers'
-import { requireAal2 } from '@/lib/auth/mfa'
+import { requireFreshAal2 } from '@/lib/auth/mfa'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { startToolAudit, finishToolAudit, AUDIT_UNAVAILABLE } from '@/lib/agent/audit'
 import { newWorkId } from '@/lib/agent/work-id'
@@ -16,7 +16,8 @@ export async function POST(_req: NextRequest, { params }: Ctx) {
   const { spaceId, name } = await params
   const auth = await requireSpaceAdmin(spaceId)
   if ('error' in auth) return auth.error
-  const mfaError = await requireAal2()
+  // MFA 비상 해제가 켜져 있어도 열지 않는다(spec §2).
+  const mfaError = await requireFreshAal2()
   if (mfaError) return mfaError
 
   const startedAt = Date.now()
