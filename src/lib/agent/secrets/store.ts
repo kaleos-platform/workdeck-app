@@ -173,12 +173,12 @@ export async function listSecretMeta(spaceId: string) {
   })
 }
 
-export async function findSecretKind(spaceId: string, name: string) {
-  const row = await prisma.spaceSecret.findUnique({
+/** 등록·교체 전 기존 행 메타(종류 검사·변경 필드 감사용). 값·IV·암호문은 select하지 않는다. */
+export async function findSecretForUpdate(spaceId: string, name: string) {
+  return prisma.spaceSecret.findUnique({
     where: { spaceId_name: { spaceId, name } },
-    select: { kind: true },
+    select: { kind: true, config: true, allowedAgentIds: true },
   })
-  return row?.kind ?? null
 }
 
 /** 삭제. 없으면 false. */

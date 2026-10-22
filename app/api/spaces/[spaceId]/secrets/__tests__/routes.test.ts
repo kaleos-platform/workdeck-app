@@ -14,7 +14,7 @@ jest.mock('@/lib/agent/audit', () => ({
 jest.mock('@/lib/agent/secrets/store', () => ({
   SECRET_NAME_RE: /^[a-z0-9][a-z0-9-]{1,62}$/,
   listSecretMeta: jest.fn(),
-  findSecretKind: jest.fn(),
+  findSecretForUpdate: jest.fn(),
   saveApiKeySecret: jest.fn(async () => ({ id: 's1', revision: 1 })),
   deleteSecret: jest.fn(async () => true),
   revealSecretValue: jest.fn(async () => ({ id: 's1', value: 'SK_TEST_0123456789abcdef' })),
@@ -49,7 +49,7 @@ beforeEach(() => {
   ;(requireAal2 as jest.Mock).mockResolvedValue(null)
   ;(requireFreshAal2 as jest.Mock).mockResolvedValue(null)
   ;(prisma.spaceAgent.count as jest.Mock).mockResolvedValue(1)
-  ;(store.findSecretKind as jest.Mock).mockResolvedValue(null)
+  ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue(null)
 })
 
 it('aal2가 없으면 PUT·DELETE·reveal 모두 403이고 본문을 읽지 않는다', async () => {
@@ -113,7 +113,11 @@ it('다른 Space의 agent id는 400', async () => {
 
 it('kind가 API_KEY가 아니면 400, 기존 행 kind가 다르면 409', async () => {
   expect((await put({ ...BODY, kind: 'LOGIN' })).status).toBe(400)
-  ;(store.findSecretKind as jest.Mock).mockResolvedValue('LOGIN')
+  ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue({
+    kind: 'LOGIN',
+    config: {},
+    allowedAgentIds: [],
+  })
   const res = await put()
   expect(res.status).toBe(409)
   expect(store.saveApiKeySecret).not.toHaveBeenCalled()
@@ -181,4 +185,94 @@ it.each([
   expect(res.status).toBe(400)
   expect(await res.text()).not.toContain('SK_TEST')
   expect(store.saveApiKeySecret).not.toHaveBeenCalled()
+})
+
+describe('PUT·DELETE 감사(fail-closed)', () => {
+  const del = () => DELETE(new NextRequest('http://t/x', { method: 'DELETE' }), ctx)
+
+  it('신규 등록: secret.put 감사 시작·종료, args에 값 없음', async () => {
+    expect((await put()).status).toBe(200)
+    expect(startToolAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tool: 'secret.put',
+        actor: { type: 'user', id: 'u1' },
+        args: {
+          name: 'cafe24-admin',
+          created: true,
+          changed: ['value', 'config', 'allowedAgentIds'],
+        },
+      })
+    )
+    expect(JSON.stringify((startToolAudit as jest.Mock).mock.calls)).not.toContain('SK_TEST')
+    expect(finishToolAudit).toHaveBeenCalledWith(
+      'audit1',
+      expect.objectContaining({ outcome: 'ok' })
+    )
+  })
+
+  it('교체: 바뀐 필드만 changed에 남는다(키 순서·허용 목록 순서 무관)', async () => {
+    ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue({
+      kind: 'API_KEY',
+      // jsonb는 키 순서를 바꿔 돌려준다
+      config: {
+        readOps: [],
+        auth: { template: 'Bearer {value}', name: 'Authorization', in: 'header' },
+        baseUrl: 'https://api.example.com',
+      },
+      allowedAgentIds: ['a1'],
+    })
+    await put()
+    expect((startToolAudit as jest.Mock).mock.calls[0][0].args).toEqual({
+      name: 'cafe24-admin',
+      created: false,
+      changed: ['value'],
+    })
+    ;(startToolAudit as jest.Mock).mockClear()
+    ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue({
+      kind: 'API_KEY',
+      config: { ...BODY.config, baseUrl: 'https://old.example.com' },
+      allowedAgentIds: [],
+    })
+    await put()
+    expect((startToolAudit as jest.Mock).mock.calls[0][0].args.changed).toEqual([
+      'value',
+      'config',
+      'allowedAgentIds',
+    ])
+  })
+
+  it('감사 시작 실패면 PUT·DELETE 모두 503이고 쓰지 않는다', async () => {
+    ;(startToolAudit as jest.Mock).mockRejectedValue(new Error('db down'))
+    expect((await put()).status).toBe(503)
+    expect((await del()).status).toBe(503)
+    expect(store.saveApiKeySecret).not.toHaveBeenCalled()
+    expect(store.deleteSecret).not.toHaveBeenCalled()
+    ;(startToolAudit as jest.Mock).mockResolvedValue('audit1')
+  })
+
+  it('DELETE: secret.delete 감사, 없으면 404와 error=not_found', async () => {
+    expect((await del()).status).toBe(204)
+    expect(startToolAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ tool: 'secret.delete', args: { name: 'cafe24-admin' } })
+    )
+    expect(finishToolAudit).toHaveBeenCalledWith(
+      'audit1',
+      expect.objectContaining({ outcome: 'ok' })
+    )
+    ;(store.deleteSecret as jest.Mock).mockResolvedValueOnce(false)
+    expect((await del()).status).toBe(404)
+    expect(finishToolAudit).toHaveBeenLastCalledWith(
+      'audit1',
+      expect.objectContaining({ outcome: 'error', error: 'not_found' })
+    )
+  })
+
+  it('저장이 throw하면 500이고 감사는 error로 끝난다', async () => {
+    ;(store.saveApiKeySecret as jest.Mock).mockRejectedValueOnce(new Error('db'))
+    expect((await put()).status).toBe(500)
+    expect(finishToolAudit).toHaveBeenCalledWith(
+      'audit1',
+      expect.objectContaining({ outcome: 'error', error: 'write_failed' })
+    )
+  })
 })
