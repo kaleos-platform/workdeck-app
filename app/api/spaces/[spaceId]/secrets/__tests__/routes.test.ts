@@ -276,3 +276,19 @@ describe('PUT·DELETE 감사(fail-closed)', () => {
     )
   })
 })
+
+it('config 오류는 경로·메시지를 400 본문에 싣는다', async () => {
+  const res = await put({ ...BODY, config: { ...BODY.config, baseUrl: 'http://api.example.com' } })
+  expect(res.status).toBe(400)
+  const { message } = await res.json()
+  expect(message).toContain('config.baseUrl')
+  expect(message).toContain('baseUrl은 https 도메인만 허용합니다')
+  expect(message).not.toContain('SK_TEST')
+})
+
+it('value 오류는 고정 안내만 싣고 값을 되돌리지 않는다', async () => {
+  const res = await put({ ...BODY, value: 'SK_TEST_\n0123456789' })
+  const { message } = await res.json()
+  expect(message).toContain('값은 공백 없는 영문·숫자·기호(ASCII) 8~4096자여야 합니다')
+  expect(message).not.toContain('SK_TEST')
+})

@@ -88,7 +88,14 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     return errorResponse('이 단계에서는 API_KEY만 등록할 수 있습니다', 400)
   }
   const parsed = bodySchema.safeParse(raw)
-  if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
+  if (!parsed.success) {
+    // 경로·메시지만 싣는다(입력값 자체는 싣지 않는다). value 오류는 고정 문구.
+    const detail = parsed.error.issues
+      .slice(0, 3)
+      .map((i) => (i.path[0] === 'value' ? VALUE_RULE : `${i.path.join('.')}: ${i.message}`))
+      .join('; ')
+    return errorResponse(`입력값이 올바르지 않습니다 — ${detail}`, 400)
+  }
   const { value, config } = parsed.data
 
   const existing = await findSecretForUpdate(spaceId, name)
