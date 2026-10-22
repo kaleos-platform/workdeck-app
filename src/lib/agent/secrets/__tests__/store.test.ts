@@ -105,6 +105,8 @@ it('listSecretMeta는 암호문·IV를 select하지 않고 결과에 키가 없�
   expect(select).not.toHaveProperty('encryptedPayload')
   expect(select).not.toHaveProperty('iv')
   expect(JSON.stringify(out)).not.toContain('SK_TEST')
+  // 교체 대화상자가 미리 채울 수 있도록 비밀이 아닌 config는 돌려준다.
+  expect(out[0].config).toEqual(CONFIG)
 })
 
 describe('loadSecretForApproval — 승인 실행 시 재검증', () => {

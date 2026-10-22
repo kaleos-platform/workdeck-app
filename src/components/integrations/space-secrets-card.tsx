@@ -19,8 +19,15 @@ import {
 } from '@/components/ui/dialog'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
+type SecretConfig = {
+  baseUrl: string
+  auth: { in: 'header'; name: string; template: string } | { in: 'query'; name: string }
+  readOps: unknown[]
+}
 type SecretMeta = {
   name: string
+  // 비밀이 아닌 설정 — 교체 대화상자를 미리 채운다(값은 오지 않는다).
+  config: SecretConfig | null
   baseUrl: string | null
   readOpIds: string[]
   allowedAgentIds: string[]
@@ -42,8 +49,8 @@ export function SpaceSecretsCard() {
   const [agents, setAgents] = useState<AgentChoice[]>([])
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
-  // 등록(이름 없음)·교체(이름 지정) 대화상자
-  const [edit, setEdit] = useState<{ name: string } | null>(null)
+  // 등록(빈 이름)·교체(기존 메타) 대화상자
+  const [edit, setEdit] = useState<{ name: string; initial?: SecretMeta } | null>(null)
   // 보기로 연 평문 — 30초 뒤·언마운트 시 state에서 지운다.
   const [revealed, setRevealed] = useState<{ name: string; value: string } | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -167,7 +174,11 @@ export function SpaceSecretsCard() {
                 >
                   보기
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setEdit({ name: s.name })}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEdit({ name: s.name, initial: s })}
+                >
                   교체
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => remove(s.name)} disabled={pending}>
@@ -208,6 +219,7 @@ export function SpaceSecretsCard() {
         <SecretDialog
           key={edit.name || 'create'}
           initialName={edit.name}
+          initial={edit.initial}
           agents={agents.filter((a) => a.status === 'ACTIVE')}
           pending={pending}
           onClose={() => setEdit(null)}
@@ -222,12 +234,14 @@ const DEFAULT_READ_OPS = '[]'
 
 function SecretDialog({
   initialName,
+  initial,
   agents,
   pending,
   onClose,
   onSave,
 }: {
   initialName: string
+  initial?: SecretMeta
   agents: AgentChoice[]
   pending: boolean
   onClose: () => void
@@ -236,12 +250,21 @@ function SecretDialog({
   const replacing = initialName !== ''
   const [name, setName] = useState(initialName)
   const [value, setValue] = useState('')
-  const [baseUrl, setBaseUrl] = useState('')
-  const [authIn, setAuthIn] = useState<'header' | 'query'>('header')
-  const [authName, setAuthName] = useState('Authorization')
-  const [template, setTemplate] = useState('Bearer {value}')
-  const [readOps, setReadOps] = useState(DEFAULT_READ_OPS)
-  const [allowed, setAllowed] = useState<string[]>([])
+  // 교체면 기존 설정으로 미리 채운다. 값은 다시 입력해야 한다.
+  const cfg = initial?.config
+  const [baseUrl, setBaseUrl] = useState(cfg?.baseUrl ?? '')
+  const [authIn, setAuthIn] = useState<'header' | 'query'>(cfg?.auth.in ?? 'header')
+  const [authName, setAuthName] = useState(cfg?.auth.name ?? 'Authorization')
+  const [template, setTemplate] = useState(
+    cfg?.auth.in === 'header' ? cfg.auth.template : 'Bearer {value}'
+  )
+  const [readOps, setReadOps] = useState(
+    cfg ? JSON.stringify(cfg.readOps, null, 2) : DEFAULT_READ_OPS
+  )
+  // 선택지(ACTIVE)에 없는 id는 해제할 수 없고 PUT이 거부하므로 빼고 시작한다.
+  const [allowed, setAllowed] = useState<string[]>(
+    (initial?.allowedAgentIds ?? []).filter((id) => agents.some((a) => a.id === id))
+  )
   const [error, setError] = useState<string | null>(null)
 
   async function submit() {
@@ -271,7 +294,8 @@ function SecretDialog({
         <DialogHeader>
           <DialogTitle>{replacing ? `비밀값 교체 — ${initialName}` : '비밀값 등록'}</DialogTitle>
           <DialogDescription>
-            값은 저장 뒤 다시 보려면 MFA 인증이 필요합니다. 교체하면 설정 전체가 새로 저장됩니다.
+            값은 저장 뒤 다시 보려면 MFA 인증이 필요합니다.
+            {replacing && ' 교체할 때는 값을 다시 입력하세요. 설정은 기존 값으로 채워져 있습니다.'}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 text-sm">
@@ -280,7 +304,7 @@ function SecretDialog({
               id="secret-name"
               value={name}
               readOnly={replacing}
-              placeholder="MY_API_KEY"
+              placeholder="my-api-key"
               onChange={(e) => setName(e.target.value)}
             />
           </Field>

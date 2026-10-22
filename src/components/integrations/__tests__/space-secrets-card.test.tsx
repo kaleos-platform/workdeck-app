@@ -9,9 +9,15 @@ const res = (body: unknown, status = 200) => {
   const r = { ok: status < 400, status, json: async () => body, clone: () => r }
   return Promise.resolve(r)
 }
+const config = {
+  baseUrl: 'https://api.example.com',
+  auth: { in: 'header', name: 'X-Api-Key', template: 'Key {value}' },
+  readOps: [{ id: 'list_orders', method: 'GET', pathPattern: '/orders', query: {} }],
+}
 const secret = {
   name: 'COUPANG_KEY',
   kind: 'API_KEY',
+  config,
   baseUrl: 'https://api.example.com',
   readOpIds: ['list_orders', 'get_order'],
   allowedAgentIds: ['ag1'],
@@ -158,4 +164,32 @@ it('허용 목록의 비활성 에이전트도 배지에는 이름으로 보인�
   render(<SpaceSecretsCard />)
   expect(await screen.findByText('에이전트 B')).toBeInTheDocument()
   expect(screen.queryByText('ag2')).not.toBeInTheDocument()
+})
+
+it('교체 대화상자는 기존 설정·허용 에이전트를 미리 채우고 값은 비어 있다', async () => {
+  const base = fetchMock.getMockImplementation()!
+  fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+    url === '/api/spaces/sp-1/secrets'
+      ? res({ secrets: [{ ...secret, allowedAgentIds: ['ag1', 'ag2'] }] })
+      : base(url, init)
+  )
+  render(<SpaceSecretsCard />)
+  fireEvent.click(await screen.findByRole('button', { name: '교체' }))
+  expect(await screen.findByLabelText('baseUrl')).toHaveValue('https://api.example.com')
+  expect(screen.getByLabelText('인증 이름')).toHaveValue('X-Api-Key')
+  expect(screen.getByLabelText('template')).toHaveValue('Key {value}')
+  expect(JSON.parse((screen.getByLabelText('readOps(JSON)') as HTMLTextAreaElement).value)).toEqual(
+    config.readOps
+  )
+  expect(screen.getByLabelText('에이전트 A')).toBeChecked()
+  expect(screen.getByLabelText('값')).toHaveValue('')
+  expect(screen.getByRole('button', { name: '저장' })).toBeDisabled()
+
+  fireEvent.change(screen.getByLabelText('값'), { target: { value: KEY } })
+  fireEvent.click(screen.getByRole('button', { name: '저장' }))
+  await waitFor(() => expect(putCall()).toBeTruthy())
+  const body = JSON.parse(putCall()![1].body)
+  expect(body.config).toEqual(config)
+  // 비활성(ag2)은 PUT이 거부하므로 빠진다
+  expect(body.allowedAgentIds).toEqual(['ag1'])
 })

@@ -81,6 +81,7 @@ it('GET 응답에 값·암호문·IV가 없다', async () => {
     {
       name: 'cafe24-admin',
       kind: 'API_KEY',
+      config: BODY.config,
       baseUrl: 'https://api.example.com',
       readOpIds: [],
       allowedAgentIds: ['a1'],
@@ -94,6 +95,7 @@ it('GET 응답에 값·암호문·IV가 없다', async () => {
   const text = await res.text()
   expect(res.status).toBe(200)
   expect(text).not.toMatch(/SK_TEST|encryptedPayload|"iv"/)
+  expect(JSON.parse(text).secrets[0].config).toEqual(BODY.config)
 })
 
 it('PUT 성공: 응답에 값이 없고 no-store', async () => {

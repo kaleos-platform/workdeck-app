@@ -141,7 +141,7 @@ export async function recordSecretUsed(id: string): Promise<void> {
     .catch(() => undefined)
 }
 
-/** 목록용 메타. 값·IV·암호문은 select하지 않는다. */
+/** 목록용 메타 + 비밀이 아닌 config(교체 대화상자 미리 채우기, spec §1). 값·IV·암호문은 select하지 않는다. */
 export async function listSecretMeta(spaceId: string) {
   const rows = await prisma.spaceSecret.findMany({
     where: { spaceId },
@@ -162,6 +162,7 @@ export async function listSecretMeta(spaceId: string) {
     return {
       name: r.name,
       kind: r.kind,
+      config: cfg,
       baseUrl: cfg?.baseUrl ?? null,
       readOpIds: (cfg?.readOps ?? []).map((o) => o.id),
       allowedAgentIds: r.allowedAgentIds,
