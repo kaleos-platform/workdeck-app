@@ -43,6 +43,7 @@ import { InfoHint } from '@/components/finance/info-hint'
 import type { FinAccountKind, FinClassStatus } from '@/generated/prisma/enums'
 import { FinanceCashflowSankey } from '@/components/finance/cashflow-sankey'
 import { CashflowPeriodPicker } from '@/components/finance/cashflow-period-picker'
+import { CashflowTrendChart } from '@/components/finance/cashflow-trend-chart'
 import {
   buildCashflowGroups,
   type CashflowLeaf,
@@ -491,6 +492,12 @@ export function FinanceCashflowView() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
           <div className="min-w-0 flex-1 space-y-4 overflow-x-auto">
             <PnlSummaryCards pnlLeaves={data.pnlLeaves} buckets={data.buckets} grain={data.grain} />
+            <CashflowTrendChart
+              buckets={data.buckets}
+              grain={data.grain}
+              income={data.totals.income.values}
+              expense={data.totals.expense.values}
+            />
             <CashflowTable
               data={data}
               mode={displayMode}

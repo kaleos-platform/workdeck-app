@@ -6,18 +6,8 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { ChevronLeft, ChevronRight, Landmark, CreditCard, BarChart3 } from 'lucide-react'
-import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts'
+import { ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react'
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { Checkbox } from '@/components/ui/checkbox'
 import { InfoHint } from '@/components/finance/info-hint'
 import { Button } from '@/components/ui/button'
@@ -30,14 +20,11 @@ import {
   formatSignedWon,
   formatPercent,
   deltaPercent,
-  maskAccountNumber,
 } from '@/components/finance/format'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 import Link from 'next/link'
 import { Pencil, Trash2, Plus } from 'lucide-react'
 import { AccountDialog } from '@/components/finance/account-dialog'
-import { BalanceTrendCard } from '@/components/finance/balance-trend-card'
-import type { BalanceTrendRow } from '@/lib/finance/balance-trend'
 import {
   LiabilityFormDialog,
   type Liability as LiabilityFormData,
@@ -60,7 +47,6 @@ interface AccountSnapshot {
   accountNumber: string | null
   balance: number | null
   openingBalance: number | null
-  sparkline: (number | null)[] | null
 }
 
 interface LiabilityItem {
@@ -118,7 +104,6 @@ interface DashboardData {
   liabilities: LiabilityItem[]
   /** 현재 기간 수입·지출에서 빠진 분석 제외 거래 수(포함 토글 on 이면 0). */
   excludedCount: number
-  balanceTrend: BalanceTrendRow[]
 }
 
 // ─── 앵커 헬퍼 ────────────────────────────────────────────────────────────────
@@ -186,50 +171,6 @@ function DeltaBadge({
       {formatSignedWon(diff)}
       {delta !== null ? ` (${formatPercent(delta, { sign: true })})` : ''}
     </span>
-  )
-}
-
-// ─── 스파크라인 (SVG — 경량) ──────────────────────────────────────────────────
-
-function AccountSparkline({ data }: { data: (number | null)[] }) {
-  const values = data.filter((v): v is number => v !== null)
-  if (values.length < 2) return <span className="text-xs text-muted-foreground">—</span>
-
-  const w = 72
-  const h = 22
-  const pad = 2
-  const maxVal = Math.max(...values)
-  const minVal = Math.min(...values)
-  const range = maxVal - minVal || 1
-  const innerH = h - pad * 2
-
-  // null이 있을 수 있으므로 전체 배열의 인덱스 기준으로 좌표 계산
-  const step = (w - 2) / (data.length - 1)
-  const pts: string[] = []
-  data.forEach((v, i) => {
-    if (v === null) return
-    const x = (1 + i * step).toFixed(1)
-    const y = (pad + innerH - ((v - minVal) / range) * innerH).toFixed(1)
-    pts.push(`${x},${y}`)
-  })
-
-  return (
-    <svg
-      width={w}
-      height={h}
-      viewBox={`0 0 ${w} ${h}`}
-      aria-hidden="true"
-      className="shrink-0 overflow-visible text-primary/60"
-    >
-      <polyline
-        points={pts.join(' ')}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   )
 }
 
@@ -369,12 +310,6 @@ export function DashboardView() {
         content={`분석 제외 거래 ${data.excludedCount}건이 수입·지출에서 빠졌습니다. 총현금(잔액)은 실제 잔액이라 포함되므로 수입−지출과 잔액 변동이 다를 수 있습니다.`}
       />
     ) : null
-
-  // 은행 잔고 합계 (null 무시)
-  const bankTotal =
-    data?.accountSnapshots
-      .filter((a) => a.kind === 'BANK')
-      .reduce((sum, a) => sum + (a.balance ?? 0), 0) ?? 0
 
   return (
     <div className="space-y-6">
@@ -556,164 +491,53 @@ export function DashboardView() {
             </Card>
           </div>
 
-          {/* 현금흐름 추이 차트 */}
+          {/* 계정과목별 지출 Top */}
           <Card>
             <CardHeader>
-              <CardTitle>현금흐름 추이</CardTitle>
+              <CardTitle>지출 TOP</CardTitle>
             </CardHeader>
             <CardContent>
-              {data.trend.length === 0 ? (
-                <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
-                  데이터가 없습니다
-                </div>
+              {data.expenseTop.length === 0 ? (
+                <p className="text-sm text-muted-foreground">지출 내역이 없습니다</p>
               ) : (
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={data.trend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <ResponsiveContainer
+                  width="100%"
+                  height={Math.max(160, data.expenseTop.length * 36)}
+                >
+                  <BarChart
+                    layout="vertical"
+                    data={data.expenseTop}
+                    margin={{ top: 0, right: 48, left: 0, bottom: 0 }}
+                  >
                     <XAxis
-                      dataKey="ym"
-                      tick={{ fontSize: 11 }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(v: string) => {
-                        const [y, m] = v.split('-')
-                        return period === 'year' ? `${m}월` : `${y}-${m}`
-                      }}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 11 }}
+                      type="number"
+                      tick={{ fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={shortWon}
-                      width={52}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      tick={{ fontSize: 11 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={80}
                     />
                     <Tooltip
-                      formatter={
-                        ((value: number, name: string) => [formatWon(value), name]) as never
-                      }
-                      labelFormatter={((label: string) => label) as never}
-                      contentStyle={{
-                        fontSize: 12,
-                        borderRadius: 8,
-                      }}
+                      formatter={((value: number) => [formatWon(value), '지출']) as never}
+                      contentStyle={{ fontSize: 12, borderRadius: 8 }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Bar dataKey="income" name="수입" fill="var(--chart-2)" radius={[3, 3, 0, 0]} />
-                    <Bar
-                      dataKey="expense"
-                      name="지출"
-                      fill="var(--chart-1)"
-                      radius={[3, 3, 0, 0]}
-                    />
+                    <Bar dataKey="amount" name="지출" radius={[0, 3, 3, 0]}>
+                      {data.expenseTop.map((_, i) => (
+                        <Cell key={i} fill={`var(--chart-${(i % 5) + 1})`} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </CardContent>
           </Card>
-
-          <BalanceTrendCard rows={data.balanceTrend} />
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            {/* 계좌별 잔고 스냅샷 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>계좌별 잔고</CardTitle>
-                <CardAction>
-                  <Button variant="outline" size="sm" onClick={() => setAccountDialogOpen(true)}>
-                    관리
-                  </Button>
-                </CardAction>
-              </CardHeader>
-              <CardContent>
-                {data.accountSnapshots.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">등록된 계좌가 없습니다</p>
-                ) : (
-                  <div className="divide-y">
-                    {data.accountSnapshots.map((acct) => (
-                      <div key={acct.id} className="flex items-center gap-3 py-2.5">
-                        {acct.kind === 'BANK' ? (
-                          <Landmark className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
-                        ) : (
-                          <CreditCard className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{acct.name}</p>
-                          {acct.accountNumber && (
-                            <p className="font-mono text-xs text-muted-foreground">
-                              {maskAccountNumber(acct.accountNumber)}
-                            </p>
-                          )}
-                        </div>
-                        {acct.sparkline && acct.sparkline.some((v) => v !== null) && (
-                          <AccountSparkline data={acct.sparkline} />
-                        )}
-                        <span className="font-mono text-sm font-semibold tabular-nums">
-                          {acct.balance !== null ? formatWon(acct.balance) : '—'}
-                        </span>
-                      </div>
-                    ))}
-                    {/* 은행 합계 */}
-                    {data.accountSnapshots.some((a) => a.kind === 'BANK') && (
-                      <div className="flex items-center justify-between pt-2.5">
-                        <span className="text-xs text-muted-foreground">은행 합계</span>
-                        <span className="font-mono text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                          {formatWon(bankTotal)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* 계정과목별 지출 Top */}
-            <Card>
-              <CardHeader>
-                <CardTitle>지출 TOP</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {data.expenseTop.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">지출 내역이 없습니다</p>
-                ) : (
-                  <ResponsiveContainer
-                    width="100%"
-                    height={Math.max(160, data.expenseTop.length * 36)}
-                  >
-                    <BarChart
-                      layout="vertical"
-                      data={data.expenseTop}
-                      margin={{ top: 0, right: 48, left: 0, bottom: 0 }}
-                    >
-                      <XAxis
-                        type="number"
-                        tick={{ fontSize: 10 }}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={shortWon}
-                      />
-                      <YAxis
-                        type="category"
-                        dataKey="name"
-                        tick={{ fontSize: 11 }}
-                        tickLine={false}
-                        axisLine={false}
-                        width={80}
-                      />
-                      <Tooltip
-                        formatter={((value: number) => [formatWon(value), '지출']) as never}
-                        contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                      />
-                      <Bar dataKey="amount" name="지출" radius={[0, 3, 3, 0]}>
-                        {data.expenseTop.map((_, i) => (
-                          <Cell key={i} fill={`var(--chart-${(i % 5) + 1})`} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </CardContent>
-            </Card>
-          </div>
 
           {/* 부채 현황 */}
           <Card>
