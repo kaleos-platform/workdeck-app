@@ -88,6 +88,14 @@ export class SecretUnavailableError extends ToolUserError {
   }
 }
 
+/** 같은 envName을 가진 비밀값을 한 번에 요청함. envName은 비밀이 아니다. */
+export class EnvNameConflictError extends ToolUserError {
+  constructor(readonly envName: string) {
+    super(`ENV 이름이 겹치는 비밀값을 함께 받을 수 없습니다: ${envName}`)
+    this.name = 'EnvNameConflictError'
+  }
+}
+
 /**
  * wd run 발급용: 요청한 ENV 키 전부를 먼저 검사하고(복호화 전), 하나라도 실패하면
  * SecretUnavailableError. 모두 통과해야 복호화하고 audit에 남긴다. 요청 순서를 보존한다.
@@ -116,6 +124,12 @@ export async function loadEnvSecretsForIssue(
       throw new SecretUnavailableError(name)
     }
     rows.push({ row, name, envName: cfg.envName })
+  }
+  // envName이 겹치면 복호화 전에 거부한다(EnvNameConflictError).
+  const seen = new Set<string>()
+  for (const { envName } of rows) {
+    if (seen.has(envName)) throw new EnvNameConflictError(envName)
+    seen.add(envName)
   }
   return rows.map(({ row, name, envName }) => {
     const value = decryptField('space-secret', row.encryptedPayload, row.iv)

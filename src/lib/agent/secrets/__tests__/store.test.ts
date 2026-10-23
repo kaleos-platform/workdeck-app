@@ -15,6 +15,7 @@ import {
   assertSecretUsable,
   listSecretMeta,
   SecretUnavailableError,
+  EnvNameConflictError,
   saveEnvSecret,
   loadEnvSecretsForIssue,
   loadSecretForApproval,
@@ -278,6 +279,20 @@ describe('loadEnvSecretsForIssue', () => {
       loadEnvSecretsForIssue('sp1', ['a-key'], { type: 'integration', id: 'a1' } as never, [], NOW)
     ).rejects.toBeInstanceOf(SecretUnavailableError)
     expect(decryptField).not.toHaveBeenCalled()
+  })
+
+  it('envName이 겹치면 EnvNameConflictError(envName 포함, 값 없음), 복호화·audit 없음', async () => {
+    rows['a-key'] = envRow('s1', 'SAME_TOKEN')
+    rows['b-key'] = envRow('s2', 'SAME_TOKEN')
+    const audit: string[] = []
+    const err = await loadEnvSecretsForIssue('sp1', ['a-key', 'b-key'], agent, audit, NOW).catch(
+      (e) => e
+    )
+    expect(err).toBeInstanceOf(EnvNameConflictError)
+    expect(err.message).toContain('SAME_TOKEN')
+    expect(err.message).not.toContain(KEY)
+    expect(decryptField).not.toHaveBeenCalled()
+    expect(audit).toEqual([])
   })
 
   it('secret_http용 loadSecretForUse는 kind ENV 행을 거부', async () => {
