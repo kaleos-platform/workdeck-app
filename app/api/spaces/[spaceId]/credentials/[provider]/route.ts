@@ -6,6 +6,7 @@
  *   권장: analytics.readonly, analytics.edit, tagmanager.readonly, tagmanager.edit.containers,
  *   tagmanager.edit.containerversions. tagmanager.publish는 GTM 게시(OWNER 승인 흐름)를 쓸 때만 넣는다.
  *   계정도 이 Space 브랜드의 GA4 속성·GTM 컨테이너에만 권한이 있는 계정을 쓴다.
+ * 네이버 검색광고: 조회 전용. 매핑된 각 CUSTOMER_ID 로 캠페인 목록을 1번씩 조회해 키를 확인한다(실패 시 저장하지 않음).
  * 삭제(DELETE) 라우트는 두지 않는다. 만들 때도 같은 requireAal2 관문을 둔다.
  */
 import { NextRequest, NextResponse } from 'next/server'
@@ -16,6 +17,7 @@ import { maskSecrets } from '@/lib/agent/audit'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { saveSpaceCredential } from '@/lib/agent/integrations/space-credential'
 import { fetchAdAccountCurrencies } from '@/lib/agent/integrations/meta-ads'
+import { verifyNaverCred } from '@/lib/agent/integrations/naver-searchad'
 
 type Ctx = { params: Promise<{ spaceId: string; provider: string }> }
 
@@ -50,6 +52,19 @@ const SCHEMAS = {
       ),
     }),
   }),
+  'naver-searchad': z.object({
+    secret: z.object({ apiKey: z.string().min(10), secretKey: z.string().min(10) }),
+    config: z
+      .object({
+        defaultBrand: z.string().optional(),
+        managerCustomerId: z.string().regex(/^\d+$/),
+        // 저장 시 계정마다 직렬로 확인하므로 개수를 제한한다.
+        customers: z
+          .record(z.string(), z.string().regex(/^\d+$/))
+          .refine((o) => Object.keys(o).length >= 1 && Object.keys(o).length <= 20),
+      })
+      .refine((c) => !c.defaultBrand || Object.hasOwn(c.customers, c.defaultBrand)),
+  }),
 } as const
 
 export async function PUT(req: NextRequest, { params }: Ctx) {
@@ -77,6 +92,16 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     } catch (err) {
       const reason = err instanceof Error ? maskSecrets(err.message) : '알 수 없는 오류'
       return errorResponse(`메타 광고 계정 확인 실패: ${reason}`, 400)
+    }
+  }
+
+  if (provider === 'naver-searchad') {
+    const naver = parsed.data as z.infer<(typeof SCHEMAS)['naver-searchad']>
+    try {
+      await verifyNaverCred(naver.secret, naver.config)
+    } catch (err) {
+      const reason = err instanceof Error ? maskSecrets(err.message) : '알 수 없는 오류'
+      return errorResponse(`네이버 검색광고 계정 확인 실패: ${reason}`, 400)
     }
   }
 
