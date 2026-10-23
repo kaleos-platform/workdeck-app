@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * 재무 대시보드 — 월별 잔액 추이 카드.
+ * 재무 잔액 추이 페이지 — 월별 잔액 카드.
  * 월말 현금·부채·순자산 라인 + 월별 표(증감·버틸 개월수·잔액 체인 정합성). 행 클릭 시 계좌·부채별 분해.
- * 데이터: queryDashboard().balanceTrend (src/lib/finance/balance-trend.ts)
+ * 데이터: GET /api/finance/balance-trend (src/lib/finance/balance-trend.ts)
  */
 import { Fragment, useState } from 'react'
 import { AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react'
@@ -18,6 +18,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { InfoHint } from '@/components/finance/info-hint'
 import { formatWon, formatWonShort, formatSignedWon } from '@/components/finance/format'
@@ -42,16 +43,28 @@ function SignedDelta({ value }: { value: number | null }) {
   )
 }
 
+const TABLE_INITIAL = 6
+
 export function BalanceTrendCard({ rows }: { rows: BalanceTrendRow[] }) {
   const [openYm, setOpenYm] = useState<string | null>(null)
-  if (rows.length === 0) return null
-  const tableRows = [...rows].reverse() // 최신 달이 위
+  const [showAll, setShowAll] = useState(false)
+  const allRows = [...rows].reverse() // 최신 달이 위
+  const tableRows = showAll ? allRows : allRows.slice(0, TABLE_INITIAL)
+  const hiddenCount = allRows.length - tableRows.length
+  // 부채 스냅샷은 기록 시작 달부터만 있다 — 그 전 구간은 현금 선만 그려진다.
+  const liabilityFromYm = rows.find((r) => r.liability != null)?.ym ?? null
+  const liabilityNote =
+    liabilityFromYm == null
+      ? '부채 기록이 아직 없어 부채·순자산은 표시되지 않습니다.'
+      : rows[0] && rows[0].ym < liabilityFromYm
+        ? `부채·순자산은 ${liabilityFromYm}부터 기록되어 그 전 달은 현금만 표시됩니다.`
+        : null
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-1">
-          잔액 추이
+          월별 잔액
           <InfoHint
             content={
               <>
@@ -113,6 +126,7 @@ export function BalanceTrendCard({ rows }: { rows: BalanceTrendRow[] }) {
             />
           </LineChart>
         </ResponsiveContainer>
+        {liabilityNote && <p className="text-xs text-muted-foreground">{liabilityNote}</p>}
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
@@ -257,6 +271,16 @@ export function BalanceTrendCard({ rows }: { rows: BalanceTrendRow[] }) {
               })}
             </tbody>
           </table>
+          {hiddenCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-2 w-full text-xs text-muted-foreground"
+              onClick={() => setShowAll(true)}
+            >
+              이전 {hiddenCount}개월 더 보기
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

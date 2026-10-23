@@ -22,6 +22,7 @@ import {
   ClipboardList,
   Rocket,
   TrendingUp,
+  Wallet,
   ListChecks,
   History,
   FolderTree,
@@ -91,6 +92,7 @@ import {
   SALES_CONTENT_SETTINGS_PATH,
   FINANCE_DASHBOARD_PATH,
   FINANCE_CASHFLOW_PATH,
+  FINANCE_BALANCE_TREND_PATH,
   FINANCE_TRANSACTIONS_PATH,
   FINANCE_UPLOAD_PATH,
   FINANCE_IMPORTS_PATH,
@@ -181,6 +183,7 @@ const SALES_CONTENT_FLAT_ROUTES = [
 const FINANCE_FLAT_ROUTES = [
   { label: '요약 대시보드', icon: LayoutDashboard, href: FINANCE_DASHBOARD_PATH },
   { label: '현금흐름 상세', icon: TrendingUp, href: FINANCE_CASHFLOW_PATH },
+  { label: '잔액 추이', icon: Wallet, href: FINANCE_BALANCE_TREND_PATH },
   { label: '거래 내역', icon: ListChecks, href: FINANCE_TRANSACTIONS_PATH },
   { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
   { label: '등록 이력', icon: History, href: FINANCE_IMPORTS_PATH },
