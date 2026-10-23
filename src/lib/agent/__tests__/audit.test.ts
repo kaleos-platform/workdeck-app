@@ -3,7 +3,13 @@ jest.mock('@/lib/prisma', () => ({
   prisma: { toolAuditLog: { create: jest.fn(), update: jest.fn() } },
 }))
 import { prisma } from '@/lib/prisma'
-import { finishToolAudit, maskSecrets, startToolAudit, summarizeArgs } from '../audit'
+import {
+  finishToolAudit,
+  finishToolAuditOrThrow,
+  maskSecrets,
+  startToolAudit,
+  summarizeArgs,
+} from '../audit'
 
 const ENTRY = {
   spaceId: 'sp1',
@@ -118,5 +124,12 @@ describe('audit', () => {
     await expect(
       finishToolAudit('aud1', { outcome: 'ok', durationMs: 1, decryptedCredentialIds: [] })
     ).resolves.toBeUndefined()
+  })
+
+  it('finishToolAuditOrThrow는 갱신 실패를 던진다', async () => {
+    ;(prisma.toolAuditLog.update as jest.Mock).mockRejectedValueOnce(new Error('db down'))
+    await expect(
+      finishToolAuditOrThrow('aud1', { outcome: 'ok', durationMs: 1, decryptedCredentialIds: [] })
+    ).rejects.toThrow('db down')
   })
 })

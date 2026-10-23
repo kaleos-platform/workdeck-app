@@ -7,7 +7,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { AGENT_TOKEN_PREFIX, verifyAgentToken } from '@/lib/agent/identity/agent-token'
-import { startToolAudit, finishToolAudit, AUDIT_UNAVAILABLE } from '@/lib/agent/audit'
+import {
+  startToolAudit,
+  finishToolAudit,
+  finishToolAuditOrThrow,
+  AUDIT_UNAVAILABLE,
+} from '@/lib/agent/audit'
 import type { McpPrincipal } from '@/lib/agent/identity/principal'
 import { newWorkId } from '@/lib/agent/work-id'
 import { assertUnderRate, RateLimitedError } from '@/lib/agent/rate'
@@ -78,7 +83,8 @@ export async function POST(req: NextRequest) {
       actor: principal.actor,
       requesterUserId: null,
       tool: TOOL,
-      args: { secrets: names },
+      // 키를 secrets로 두면 summarizeArgs가 비밀 키로 보고 이름을 가린다.
+      args: { names },
     })
   } catch {
     return fail(AUDIT_UNAVAILABLE, 503)
@@ -94,12 +100,9 @@ export async function POST(req: NextRequest) {
       decryptedCredentialIds: decrypted,
     })
 
+  let rows: Awaited<ReturnType<typeof loadEnvSecretsForIssue>>
   try {
-    const rows = await loadEnvSecretsForIssue(principal.spaceId, names, principal.actor, decrypted)
-    const env = Object.fromEntries(rows.map((r) => [r.envName, r.value]))
-    await finish()
-    await Promise.all(rows.map((r) => recordSecretUsed(r.id)))
-    return NextResponse.json({ env }, { headers: NO_STORE })
+    rows = await loadEnvSecretsForIssue(principal.spaceId, names, principal.actor, decrypted)
   } catch (e) {
     if (e instanceof SecretUnavailableError) {
       await finish(`unavailable:${e.secretName}`)
@@ -113,4 +116,24 @@ export async function POST(req: NextRequest) {
     await finish('issue_failed')
     return fail('비밀값을 발급하지 못했습니다', 500)
   }
+
+  // 감사 종료(ok + 복호화 id)가 기록된 것을 확인한 뒤에만 값을 내보낸다.
+  try {
+    await finishToolAuditOrThrow(auditId, {
+      outcome: 'ok',
+      durationMs: Date.now() - startedAt,
+      decryptedCredentialIds: decrypted,
+    })
+  } catch {
+    await finish('audit_finish_failed')
+    return fail(AUDIT_UNAVAILABLE, 503)
+  }
+  try {
+    await Promise.all(rows.map((r) => recordSecretUsed(r.id)))
+  } catch {
+    // 사용 시각은 부가 정보 — 발급은 막지 않는다. 원문 오류는 싣지 않는다.
+    console.error('[secrets/env] 사용 시각 기록 실패')
+  }
+  const env = Object.fromEntries(rows.map((r) => [r.envName, r.value]))
+  return NextResponse.json({ env }, { headers: NO_STORE })
 }

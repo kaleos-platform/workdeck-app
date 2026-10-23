@@ -126,8 +126,7 @@ d('POST /api/secrets/env (실 DB)', () => {
     expect(audit.actorType).toBe('agent')
     expect(audit.actorId).toBe(agentId)
     expect(audit.decryptedCredentialIds).toEqual([`secret:${row.id}`])
-    // summarizeArgs가 "secrets" 키를 비밀 키로 보고 가린다 — 이름은 error 칸·decryptedCredentialIds로 추적한다.
-    expect(audit.argsSummary).toBe('{"secrets":"[redacted]"}')
+    expect(audit.argsSummary).toBe('{"names":["ok-key"]}')
     expect(JSON.stringify(audit)).not.toContain(KEY)
   })
 })

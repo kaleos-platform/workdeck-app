@@ -16,6 +16,7 @@ jest.mock('@/lib/agent/audit', () => ({
   AUDIT_UNAVAILABLE: '감사 기록을 남길 수 없어 실행하지 않았습니다',
   startToolAudit: jest.fn(async () => 'audit1'),
   finishToolAudit: jest.fn(async () => undefined),
+  finishToolAuditOrThrow: jest.fn(async () => undefined),
 }))
 jest.mock('@/lib/agent/secrets/store', () => ({
   ...jest.requireActual('@/lib/agent/secrets/store'),
@@ -25,7 +26,7 @@ jest.mock('@/lib/agent/secrets/store', () => ({
 
 import { prisma } from '@/lib/prisma'
 import { verifyAgentToken } from '@/lib/agent/identity/agent-token'
-import { startToolAudit, finishToolAudit } from '@/lib/agent/audit'
+import { startToolAudit, finishToolAudit, finishToolAuditOrThrow } from '@/lib/agent/audit'
 import {
   loadEnvSecretsForIssue,
   recordSecretUsed,
@@ -175,7 +176,7 @@ it('성공: env 맵, no-store, decryptedCredentialIds에 secret:<id>, recordSecr
     actor: { type: 'agent', id: 'ag1' },
     requesterUserId: null,
     tool: 'secret_env_issue',
-    args: { secrets: ['a-key', 'b-key'] },
+    args: { names: ['a-key', 'b-key'] },
   })
   expect(load).toHaveBeenCalledWith(
     'sp1',
@@ -183,7 +184,7 @@ it('성공: env 맵, no-store, decryptedCredentialIds에 secret:<id>, recordSecr
     { type: 'agent', id: 'ag1' },
     expect.any(Array)
   )
-  expect(finishToolAudit).toHaveBeenCalledWith(
+  expect(finishToolAuditOrThrow).toHaveBeenCalledWith(
     'audit1',
     expect.objectContaining({
       outcome: 'ok',
@@ -192,6 +193,43 @@ it('성공: env 맵, no-store, decryptedCredentialIds에 secret:<id>, recordSecr
   )
   expect(recordSecretUsed).toHaveBeenCalledWith('s1')
   expect(recordSecretUsed).toHaveBeenCalledWith('s2')
+})
+
+it('감사 args는 names — 실제 summarizeArgs로 요약해도 이름이 남는다', async () => {
+  await POST(req())
+  const { summarizeArgs } = jest.requireActual('@/lib/agent/audit')
+  const args = (startToolAudit as jest.Mock).mock.calls[0][0].args
+  expect(args).toEqual({ names: ['a-key', 'b-key'] })
+  const summary = summarizeArgs(args)
+  expect(summary).toContain('a-key')
+  expect(summary).toContain('b-key')
+  expect(summary).not.toContain('[redacted]')
+})
+
+it('성공 감사 종료 기록이 실패하면 503, env·값 없음', async () => {
+  ;(finishToolAuditOrThrow as jest.Mock).mockRejectedValueOnce(new Error('db down'))
+  const res = await POST(req())
+  expect(res.status).toBe(503)
+  expect(res.headers.get('Cache-Control')).toBe('no-store')
+  const text = await res.text()
+  expect(text).not.toContain(KEY)
+  expect(JSON.parse(text)).toEqual({ message: '감사 기록을 남길 수 없어 실행하지 않았습니다' })
+  expect(recordSecretUsed).not.toHaveBeenCalled()
+})
+
+it('recordSecretUsed 실패해도 200, 로그에 값 없음', async () => {
+  const err = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  try {
+    ;(recordSecretUsed as jest.Mock).mockRejectedValue(new Error(`boom ${KEY}`))
+    const res = await POST(req())
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ env: { A_TOKEN: KEY, B_TOKEN: KEY } })
+    expect(err).toHaveBeenCalled()
+    expect(JSON.stringify(err.mock.calls)).not.toContain(KEY)
+  } finally {
+    err.mockRestore()
+    ;(recordSecretUsed as jest.Mock).mockResolvedValue(undefined)
+  }
 })
 
 it('20/분 초과 시 429, 감사·복호화 없음', async () => {
@@ -240,6 +278,7 @@ it('응답 외 어디에도(console 포함) SK_TEST_0123456789abcdef 없음', as
       ...spies.flatMap((s) => s.mock.calls),
       (startToolAudit as jest.Mock).mock.calls,
       (finishToolAudit as jest.Mock).mock.calls,
+      (finishToolAuditOrThrow as jest.Mock).mock.calls,
       (recordSecretUsed as jest.Mock).mock.calls,
     ])
     expect(seen).not.toContain(KEY)
