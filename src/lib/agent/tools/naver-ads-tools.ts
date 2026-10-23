@@ -189,7 +189,10 @@ const getStats: ToolDefinition = {
     return withCredError(cred, () =>
       naverRequest(cred.secret, customerId, 'GET', '/stats', {
         query: {
-          ids: (p.ids as string[]).join(','),
+          // 일별(timeIncrement=1)은 단일 `id` 파라미터만 받는다 — `ids` 로 보내면 11002.
+          ...(p.time_increment === '1'
+            ? { id: (p.ids as string[])[0] }
+            : { ids: (p.ids as string[]).join(',') }),
           fields: JSON.stringify((p.fields as string[] | undefined) ?? DEFAULT_FIELDS),
           ...(range
             ? { timeRange: JSON.stringify(range) }
