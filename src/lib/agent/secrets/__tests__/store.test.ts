@@ -14,6 +14,9 @@ import { decryptField } from '@/lib/crypto/field-crypto'
 import {
   assertSecretUsable,
   listSecretMeta,
+  SecretUnavailableError,
+  saveEnvSecret,
+  loadEnvSecretsForIssue,
   loadSecretForApproval,
   loadSecretForUse,
   saveApiKeySecret,
@@ -186,5 +189,105 @@ describe('loadSecretForApproval — 승인 실행 시 재검증', () => {
     const r = await loadSecretForApproval('sp1', 's1', 2, actor, audit)
     expect(r).toEqual({ id: 's1', value: KEY, config: CONFIG })
     expect(audit).toEqual(['secret:s1'])
+  })
+})
+
+describe('loadEnvSecretsForIssue', () => {
+  const NOW = new Date('2026-10-23T00:00:00Z')
+  const agent = { type: 'agent', id: 'a1' } as never
+  const envRow = (id: string, envName: string, over: Record<string, unknown> = {}) => ({
+    id,
+    kind: 'ENV',
+    revision: 1,
+    config: { envName, expiresAt: '2026-12-01T00:00:00.000Z' },
+    allowedAgentIds: ['a1'],
+    encryptedPayload: 'OPAQUE_CIPHERTEXT',
+    iv: 'OPAQUE_IV',
+    ...over,
+  })
+  const rows: Record<string, unknown> = {}
+  beforeEach(() => {
+    for (const k of Object.keys(rows)) delete rows[k]
+    findUnique.mockImplementation(async ({ where }) => rows[where.spaceId_name.name] ?? null)
+  })
+
+  it('성공: 이름 순서대로 envName·value, audit에 secret:<id> 각각', async () => {
+    rows['b-key'] = envRow('s2', 'B_TOKEN')
+    rows['a-key'] = envRow('s1', 'A_TOKEN')
+    const audit: string[] = []
+    const r = await loadEnvSecretsForIssue('sp1', ['b-key', 'a-key'], agent, audit, NOW)
+    expect(r).toEqual([
+      { id: 's2', name: 'b-key', envName: 'B_TOKEN', value: KEY },
+      { id: 's1', name: 'a-key', envName: 'A_TOKEN', value: KEY },
+    ])
+    expect(audit).toEqual(['secret:s2', 'secret:s1'])
+  })
+
+  it('하나라도 허용 밖이면 SecretUnavailableError(이름 포함), 복호화·audit 없음', async () => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN')
+    rows['b-key'] = envRow('s2', 'B_TOKEN', { allowedAgentIds: ['other'] })
+    const audit: string[] = []
+    const err = await loadEnvSecretsForIssue('sp1', ['a-key', 'b-key'], agent, audit, NOW).catch(
+      (e) => e
+    )
+    expect(err).toBeInstanceOf(SecretUnavailableError)
+    expect(err.name).toBe('b-key')
+    expect(err.message).toBe('사용할 수 없는 비밀값: b-key')
+    expect(decryptField).not.toHaveBeenCalled()
+    expect(audit).toEqual([])
+  })
+
+  it('없는 이름은 SecretUnavailableError', async () => {
+    await expect(
+      loadEnvSecretsForIssue('sp1', ['nope-key'], agent, [], NOW)
+    ).rejects.toBeInstanceOf(SecretUnavailableError)
+  })
+
+  it('만료된 키는 SecretUnavailableError', async () => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN', {
+      config: { envName: 'A_TOKEN', expiresAt: '2026-10-22T00:00:00.000Z' },
+    })
+    await expect(loadEnvSecretsForIssue('sp1', ['a-key'], agent, [], NOW)).rejects.toBeInstanceOf(
+      SecretUnavailableError
+    )
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+
+  it('kind API_KEY 행은 SecretUnavailableError', async () => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN', { kind: 'API_KEY' })
+    await expect(loadEnvSecretsForIssue('sp1', ['a-key'], agent, [], NOW)).rejects.toBeInstanceOf(
+      SecretUnavailableError
+    )
+  })
+
+  it('integration actor는 SecretUnavailableError', async () => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN')
+    await expect(
+      loadEnvSecretsForIssue('sp1', ['a-key'], { type: 'integration', id: 'a1' } as never, [], NOW)
+    ).rejects.toBeInstanceOf(SecretUnavailableError)
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+
+  it('secret_http용 loadSecretForUse는 kind ENV 행을 거부', async () => {
+    findUnique.mockResolvedValue(envRow('s1', 'A_TOKEN'))
+    await expect(loadSecretForUse('sp1', 'a-key', agent, [])).rejects.toThrow(DENIED)
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+})
+
+describe('saveEnvSecret', () => {
+  it('kind ENV로 암호화 저장, 평문 없음', async () => {
+    upsert.mockResolvedValue({ id: 's1', revision: 1 })
+    const cfg = {
+      envName: 'A_TOKEN',
+      scopeNote: 'n',
+      expiresAt: '2026-12-01T00:00:00.000Z',
+      readOnlyConfirmedById: 'u1',
+      readOnlyConfirmedAt: '2026-10-23T00:00:00.000Z',
+    }
+    await saveEnvSecret('sp1', 'a-key', KEY, cfg, ['a1'], 'u1')
+    const args = upsert.mock.calls[0][0]
+    expect(args.create).toMatchObject({ kind: 'ENV', config: cfg })
+    expect(JSON.stringify(args)).not.toContain('SK_TEST')
   })
 })
