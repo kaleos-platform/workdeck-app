@@ -7,6 +7,7 @@ const ALLOWED_ACTIONS = new Set([
   'account.password.change',
   'account.mfa.enroll',
   'account.mfa.unenroll',
+  'account.mfa.replace',
 ])
 
 // POST /api/admin/account/audit — 클라이언트가 Supabase를 직접 호출하는 계정 설정 액션의 감사 로그.
