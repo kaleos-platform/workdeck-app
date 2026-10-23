@@ -219,7 +219,11 @@ describe('envConfigInputSchema', () => {
     const { readOnlyConfirmed: _, ...noFlag } = ok
     expect(envConfigInputSchema.safeParse(noFlag).success).toBe(false)
   })
-  it.each([inDays(-1), 'not-a-date', inDays(366)])('expiresAt %s 거부', (expiresAt) =>
+  it.each([
+    ['past', inDays(-1)],
+    ['invalid', 'not-a-date'],
+    ['366d', inDays(366)],
+  ])('expiresAt %s 거부', (_l, expiresAt) =>
     expect(envConfigInputSchema.safeParse({ ...ok, expiresAt }).success).toBe(false)
   )
   it('scopeNote 빈 값·501자 거부', () => {

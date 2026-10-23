@@ -80,11 +80,11 @@ export async function saveEnvSecret(
   })
 }
 
-/** 발급 불가 비밀값. name은 비밀값 이름(값 아님) — Error.name을 덮어쓴다. */
+/** 발급 불가 비밀값. secretName은 비밀값 이름(값 아님). */
 export class SecretUnavailableError extends ToolUserError {
-  constructor(secretName: string) {
+  constructor(readonly secretName: string) {
     super(`사용할 수 없는 비밀값: ${secretName}`)
-    this.name = secretName
+    this.name = 'SecretUnavailableError'
   }
 }
 
@@ -107,7 +107,12 @@ export async function loadEnvSecretsForIssue(
         ? await findUsable(spaceId, name, actor, 'ENV').catch(() => null)
         : null
     const cfg = row?.config as Partial<EnvConfig> | undefined
-    if (!row || !cfg?.envName || !cfg.expiresAt || new Date(cfg.expiresAt) <= now) {
+    if (
+      !row ||
+      !cfg?.envName ||
+      !cfg.expiresAt ||
+      !(new Date(cfg.expiresAt).getTime() > now.getTime())
+    ) {
       throw new SecretUnavailableError(name)
     }
     rows.push({ row, name, envName: cfg.envName })

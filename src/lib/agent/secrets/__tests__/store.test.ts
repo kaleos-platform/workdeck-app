@@ -231,7 +231,8 @@ describe('loadEnvSecretsForIssue', () => {
       (e) => e
     )
     expect(err).toBeInstanceOf(SecretUnavailableError)
-    expect(err.name).toBe('b-key')
+    expect(err.secretName).toBe('b-key')
+    expect(err.name).toBe('SecretUnavailableError')
     expect(err.message).toBe('사용할 수 없는 비밀값: b-key')
     expect(decryptField).not.toHaveBeenCalled()
     expect(audit).toEqual([])
@@ -247,6 +248,17 @@ describe('loadEnvSecretsForIssue', () => {
     rows['a-key'] = envRow('s1', 'A_TOKEN', {
       config: { envName: 'A_TOKEN', expiresAt: '2026-10-22T00:00:00.000Z' },
     })
+    await expect(loadEnvSecretsForIssue('sp1', ['a-key'], agent, [], NOW)).rejects.toBeInstanceOf(
+      SecretUnavailableError
+    )
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['파싱 불가', 'not-a-date'],
+    ['now와 동일', '2026-10-23T00:00:00.000Z'],
+  ])('만료 시각이 %s이면 SecretUnavailableError', async (_l, expiresAt) => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN', { config: { envName: 'A_TOKEN', expiresAt } })
     await expect(loadEnvSecretsForIssue('sp1', ['a-key'], agent, [], NOW)).rejects.toBeInstanceOf(
       SecretUnavailableError
     )
