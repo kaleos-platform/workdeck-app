@@ -609,6 +609,8 @@ model AgentPendingAction {
   requesterUserId      String?
   requesterSlackUserId String?
   workId               String?
+  // 제안에 쓰인 토큰 id (wd run 승인 흐름용). 없으면 null.
+  actorTokenId         String?
 
   status     AgentActionStatus @default(PENDING)
   expiresAt  DateTime // createPendingAction에서 now+72h로 설정 (앱 계산)
@@ -639,6 +641,8 @@ model SpaceAgentSetting {
   id       String  @id @default(cuid())
   spaceId  String  @unique
   isActive Boolean @default(true)
+  // 에이전트가 wd run으로 ENV 비밀값을 받을 수 있는지. 행이 없으면 false(isActive와 반대).
+  envSecretsEnabled Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -23,6 +23,7 @@ export const SCOPES = [
   'sc:write',
   'secret:read',
   'secret:write',
+  'secret:env',
 ] as const
 
 export type Scope = (typeof SCOPES)[number]

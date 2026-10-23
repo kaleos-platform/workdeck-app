@@ -12344,6 +12344,7 @@ export const AgentPendingActionScalarFieldEnum = {
   requesterUserId: 'requesterUserId',
   requesterSlackUserId: 'requesterSlackUserId',
   workId: 'workId',
+  actorTokenId: 'actorTokenId',
   status: 'status',
   expiresAt: 'expiresAt',
   decidedBy: 'decidedBy',
@@ -12365,6 +12366,7 @@ export const SpaceAgentSettingScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   isActive: 'isActive',
+  envSecretsEnabled: 'envSecretsEnabled',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
