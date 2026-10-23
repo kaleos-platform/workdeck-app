@@ -130,6 +130,11 @@ export type UsageEvent = Prisma.UsageEventModel
  */
 export type SpaceCredential = Prisma.SpaceCredentialModel
 /**
+ * Model SpaceSecret
+ * 
+ */
+export type SpaceSecret = Prisma.SpaceSecretModel
+/**
  * Model AgentToken
  * 
  */

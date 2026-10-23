@@ -125,6 +125,24 @@ describe('isBlockedAddress', () => {
     expect(isBlockedAddress('::ffff:127.0.0.1', 6)).toBe(true)
     expect(isBlockedAddress('::ffff:8.8.8.8', 6)).toBe(false)
   })
+
+  it('IPv4를 품은 IPv6 대역(NAT64·6to4·IPv4-compatible)은 안의 IPv4로 판정한다', () => {
+    expect(isBlockedAddress('64:ff9b::a9fe:a9fe', 6)).toBe(true) // 169.254.169.254
+    expect(isBlockedAddress('64:ff9b::808:808', 6)).toBe(false) // 8.8.8.8
+    expect(isBlockedAddress('2002:7f00:1::', 6)).toBe(true) // 127.0.0.1
+    expect(isBlockedAddress('2002:808:808::1', 6)).toBe(false)
+    expect(isBlockedAddress('::127.0.0.1', 6)).toBe(true)
+    expect(isBlockedAddress('::ffff:0:a00:1', 6)).toBe(true) // SIIT 10.0.0.1
+    expect(isBlockedAddress('fe80::1%eth0', 6)).toBe(true) // 스코프 표기는 파싱 불가 → 차단
+  })
+
+  it('NAT64 로컬·Teredo·폐기된 site-local·문서용·discard 대역을 차단한다', () => {
+    expect(isBlockedAddress('64:ff9b:1::a00:1', 6)).toBe(true)
+    expect(isBlockedAddress('2001:0:4136:e378::1', 6)).toBe(true)
+    expect(isBlockedAddress('fec0::1', 6)).toBe(true)
+    expect(isBlockedAddress('2001:db8::1', 6)).toBe(true)
+    expect(isBlockedAddress('100::1', 6)).toBe(true)
+  })
 })
 
 describe('safeFetchHtml', () => {
