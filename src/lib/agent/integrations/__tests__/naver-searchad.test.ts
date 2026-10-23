@@ -127,6 +127,7 @@ describe('naver_ads_get_stats', () => {
     await expect(
       run({ time_range: { since: '2026-10-01', until: '2026-10-02' }, date_preset: 'yesterday' })
     ).rejects.toThrow('함께 쓸 수 없습니다')
+    await expect(run({ ids: ['cmp-1', 'cmp-2'], time_increment: '1' })).rejects.toThrow('id 1개')
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
