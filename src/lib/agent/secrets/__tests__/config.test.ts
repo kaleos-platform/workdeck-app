@@ -153,6 +153,18 @@ describe('pickFields', () => {
   it('배열이 아닌 곳에 [] 경로는 무시', () => {
     expect(pickFields({ a: 'x' }, ['a[].b'])).toEqual({})
   })
+  it('최상위 배열 응답은 [].필드 경로로 고른다', () => {
+    const withTop = (f: string) => ({
+      ...cfg,
+      readOps: [{ ...cfg.readOps[0], responseFields: [f] }],
+    })
+    expect(apiKeyConfigSchema.safeParse(withTop('[].id')).success).toBe(true)
+    expect(apiKeyConfigSchema.safeParse(withTop('[]')).success).toBe(false)
+    expect(pickFields([{ id: 1, secret: 'x' }, { id: 2 }], ['[].id'])).toEqual([
+      { id: 1 },
+      { id: 2 },
+    ])
+  })
   it('원시 응답은 빈 객체', () => {
     expect(pickFields('SK_TEST_0123456789abcdef', ['a'])).toEqual({})
   })

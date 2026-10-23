@@ -33,7 +33,7 @@ const FORBIDDEN_AUTH_HEADERS = new Set([
 ])
 const SEGMENT_LITERAL = /^[A-Za-z0-9._~-]+$/
 const SEGMENT_PARAM = /^\{[A-Za-z][A-Za-z0-9_]*\}$/
-const FIELD_PATH = /^[A-Za-z0-9_-]+(\[\])?(\.[A-Za-z0-9_-]+(\[\])?)*$/
+const FIELD_PATH = /^(\[\]\.)?[A-Za-z0-9_-]+(\[\])?(\.[A-Za-z0-9_-]+(\[\])?)*$/
 
 const isValidRegex = (s: string) => {
   try {
@@ -195,7 +195,7 @@ function merge(a: Json, b: Json): Json {
   return b
 }
 
-// 경로 문법: `a.b`, 배열은 `items[].name`. 허용 목록에 없는 필드는 결과에서 빠지고 원본 구조는 유지한다.
+// 경로 문법: `a.b`, 배열은 `items[].name`, 최상위 배열은 `[].name`. 허용 목록에 없는 필드는 결과에서 빠지고 원본 구조는 유지한다.
 export function pickFields(json: unknown, paths: string[]): unknown {
   let out: Json = {}
   for (const p of paths) {
