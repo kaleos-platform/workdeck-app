@@ -171,6 +171,10 @@ function isBlockedIpv6(groups: number[]): boolean {
   if (groups.slice(0, 5).every((g) => g === 0) && (groups[5] === 0xffff || groups[5] === 0)) {
     return v4At(groups[6], groups[7])
   }
+  // SIIT ::ffff:0:a.b.c.d (::ffff:0:0:0/96)
+  if (groups.slice(0, 4).every((g) => g === 0) && groups[4] === 0xffff && groups[5] === 0) {
+    return v4At(groups[6], groups[7])
+  }
   // NAT64 64:ff9b::/96 — 게이트웨이가 안의 IPv4로 그대로 중계한다
   if (groups[0] === 0x64 && groups[1] === 0xff9b && groups.slice(2, 6).every((g) => g === 0)) {
     return v4At(groups[6], groups[7])

@@ -132,6 +132,8 @@ describe('isBlockedAddress', () => {
     expect(isBlockedAddress('2002:7f00:1::', 6)).toBe(true) // 127.0.0.1
     expect(isBlockedAddress('2002:808:808::1', 6)).toBe(false)
     expect(isBlockedAddress('::127.0.0.1', 6)).toBe(true)
+    expect(isBlockedAddress('::ffff:0:a00:1', 6)).toBe(true) // SIIT 10.0.0.1
+    expect(isBlockedAddress('fe80::1%eth0', 6)).toBe(true) // 스코프 표기는 파싱 불가 → 차단
   })
 
   it('NAT64 로컬·Teredo·폐기된 site-local·문서용·discard 대역을 차단한다', () => {
