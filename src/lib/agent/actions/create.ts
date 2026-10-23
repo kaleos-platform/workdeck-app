@@ -121,6 +121,7 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
         source: draft.source,
         actorType: draft.actor.type,
         actorId: draft.actor.id,
+        ...(draft.actorTokenId ? { actorTokenId: draft.actorTokenId } : {}),
         requesterUserId: draft.requesterUserId ?? null,
         requesterSlackUserId: draft.requesterSlackUserId ?? null,
         workId: draft.workId ?? null,

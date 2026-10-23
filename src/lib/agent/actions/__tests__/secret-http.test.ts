@@ -57,14 +57,15 @@ it('revision이 다르면 실행을 거부하고 secretRequest를 부르지 않�
 
 it('원 행위자(ctx.actor)로 재검증한다', async () => {
   ;(secretRequest as jest.Mock).mockResolvedValue({ status: 200, headers: {}, json: {} })
-  const c = ctx()
+  const c = { ...ctx(), actorTokenId: 'tk1' }
   await def.execute(c, params)
   expect(store.loadSecretForApproval).toHaveBeenCalledWith(
     'sp1',
     's1',
     3,
     { type: 'agent', id: 'ag1' },
-    c.decryptedCredentialIds
+    c.decryptedCredentialIds,
+    'tk1'
   )
 })
 

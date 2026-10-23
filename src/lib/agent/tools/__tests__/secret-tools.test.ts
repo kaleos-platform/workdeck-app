@@ -5,6 +5,10 @@ jest.mock('@/lib/agent/audit', () => ({
   finishToolAudit: jest.fn(),
   maskSecrets: (s: string) => s,
 }))
+jest.mock('@/lib/agent/rate', () => ({
+  ...jest.requireActual('@/lib/agent/rate'),
+  assertUnderRate: jest.fn(),
+}))
 jest.mock('@/lib/agent/secrets/store')
 jest.mock('@/lib/agent/secrets/http-client', () => ({
   ...jest.requireActual('@/lib/agent/secrets/http-client'),
@@ -12,6 +16,7 @@ jest.mock('@/lib/agent/secrets/http-client', () => ({
 }))
 jest.mock('@/lib/agent/actions/create', () => ({ createPendingAction: jest.fn() }))
 
+import { assertUnderRate, RateLimitedError } from '@/lib/agent/rate'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { finishToolAudit, startToolAudit } from '@/lib/agent/audit'
 import { SecretHttpError, secretRequest } from '@/lib/agent/secrets/http-client'
@@ -118,6 +123,68 @@ describe('secret_http_read', () => {
       '외부 API 호출 실패: REDIRECT (list-items)'
     )
     expect(store.recordSecretError).toHaveBeenCalledWith('s1', 'REDIRECT')
+  })
+})
+
+describe('호출 빈도 상한', () => {
+  const tooMany = '호출이 너무 많습니다. 잠시 후 다시 시도하세요'
+  it('secret_http_read가 상한 초과 시 ToolUserError(잠시 후 다시)', async () => {
+    ;(assertUnderRate as jest.Mock).mockRejectedValueOnce(new RateLimitedError())
+    await expect(runTool(read, ctx(['secret:read']), args)).rejects.toThrow(tooMany)
+    expect(store.loadSecretForUse).not.toHaveBeenCalled()
+  })
+  it('secret_http_propose가 상한 초과 시 제안을 만들지 않는다', async () => {
+    ;(assertUnderRate as jest.Mock).mockRejectedValueOnce(new RateLimitedError())
+    await expect(
+      runTool(propose, ctx(['secret:write']), {
+        secret: 'k',
+        method: 'GET',
+        path: '/x',
+        summary: 's',
+      })
+    ).rejects.toThrow(tooMany)
+    expect(createPendingAction).not.toHaveBeenCalled()
+  })
+  it('분당 N회까지 허용: 이번 호출의 감사 행이 이미 세어지므로 limit은 N+1', async () => {
+    ;(secretRequest as jest.Mock).mockResolvedValue({ status: 200, headers: {}, json: null })
+    await runTool(read, ctx(['secret:read']), args)
+    expect(assertUnderRate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: 'ag1',
+        tools: ['secret_http_read'],
+        limit: 61,
+        windowMs: 60000,
+      })
+    )
+    ;(store.assertSecretUsable as jest.Mock).mockResolvedValue({
+      id: 's1',
+      revision: 1,
+      baseUrl: 'https://a.com',
+    })
+    ;(createPendingAction as jest.Mock).mockResolvedValue({})
+    await runTool(propose, ctx(['secret:write']), {
+      secret: 'k',
+      method: 'GET',
+      path: '/x',
+      summary: 's',
+    })
+    expect(assertUnderRate).toHaveBeenLastCalledWith(
+      expect.objectContaining({ tools: ['secret_http_propose'], limit: 21 })
+    )
+  })
+  it('actorTokenId가 있으면 제안에 싣는다', async () => {
+    ;(store.assertSecretUsable as jest.Mock).mockResolvedValue({
+      id: 's1',
+      revision: 1,
+      baseUrl: 'https://a.com',
+    })
+    ;(createPendingAction as jest.Mock).mockResolvedValue({})
+    await runTool(
+      propose,
+      { ...ctx(['secret:write']), actorTokenId: 'tk1' },
+      { secret: 'k', method: 'GET', path: '/x', summary: 's' }
+    )
+    expect((createPendingAction as jest.Mock).mock.calls[0][0].actorTokenId).toBe('tk1')
   })
 })
 

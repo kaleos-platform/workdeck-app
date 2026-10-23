@@ -58,7 +58,8 @@ const secretHttpRequest: ActionDefinition<Params> = {
       p.secretId,
       p.revision,
       ctx.actor,
-      ctx.decryptedCredentialIds
+      ctx.decryptedCredentialIds,
+      ctx.actorTokenId
     )
     const req = buildRequest(sec.value, sec.config, {
       method: p.method,

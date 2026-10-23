@@ -3,6 +3,7 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     spaceSecret: { upsert: jest.fn(), findUnique: jest.fn(), findMany: jest.fn() },
     spaceAgent: { findUnique: jest.fn() },
+    agentToken: { findUnique: jest.fn() },
   },
 }))
 jest.mock('@/lib/crypto/field-crypto', () => ({
@@ -182,6 +183,34 @@ describe('loadSecretForApproval — 승인 실행 시 재검증', () => {
     agentFind.mockResolvedValue({ ...AGENT, kind: 'integration' })
     const r = await loadSecretForApproval('sp1', 's1', 2, { type: 'integration', id: 'i1' }, [])
     expect(r.value).toBe(KEY)
+  })
+
+  describe('actorTokenId', () => {
+    const tokFind = prisma.agentToken.findUnique as jest.Mock
+    const future = new Date(Date.now() + 3600_000)
+    const run = () => loadSecretForApproval('sp1', 's1', 2, actor, [], 'tk1')
+    beforeEach(() => findUnique.mockResolvedValue(APPROVAL_ROW))
+
+    it('actorTokenId가 없는 기존 제안은 종전처럼 에이전트 상태만 확인', async () => {
+      await expect(loadSecretForApproval('sp1', 's1', 2, actor, [])).resolves.toMatchObject({
+        value: KEY,
+      })
+      expect(tokFind).not.toHaveBeenCalled()
+    })
+    it('토큰이 유효하면 실행된다', async () => {
+      tokFind.mockResolvedValue({ agentId: 'a1', revokedAt: null, expiresAt: future })
+      await expect(run()).resolves.toMatchObject({ value: KEY })
+    })
+    it.each([
+      ['폐기됐다', { agentId: 'a1', revokedAt: new Date(), expiresAt: future }],
+      ['만료됐다', { agentId: 'a1', revokedAt: null, expiresAt: new Date(Date.now() - 1000) }],
+      ['삭제됐다', null],
+      ['다른 에이전트 것이다', { agentId: 'a2', revokedAt: null, expiresAt: future }],
+    ])('제안한 토큰이 %s → 거부(재제안 안내), 복호화 없음', async (_n, tok) => {
+      tokFind.mockResolvedValue(tok)
+      await expect(run()).rejects.toThrow(CHANGED)
+      expect(decryptField).not.toHaveBeenCalled()
+    })
   })
 
   it('모두 일치하면 복호화하고 audit에 secret:id를 남긴다', async () => {

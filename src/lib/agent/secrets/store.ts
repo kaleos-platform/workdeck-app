@@ -179,18 +179,39 @@ export async function loadSecretForUse(
 /**
  * 제안한 신원(SpaceAgent)이 아직 같은 Space에서 ACTIVE이고 secret:write scope를 가졌는지.
  * 토큰 인증·OAuth 바인딩이 이 행의 status·scopes를 쓰므로 비활성화·scope 회수가 승인 실행에도 반영된다.
+ * actorTokenId가 있으면 그 토큰의 폐기·만료도 확인한다.
  */
-async function proposerStillActive(spaceId: string, actor: Actor): Promise<boolean> {
+async function proposerStillActive(
+  spaceId: string,
+  actor: Actor,
+  actorTokenId?: string | null
+): Promise<boolean> {
   const agent = await prisma.spaceAgent.findUnique({
     where: { id: actor.id },
     select: { spaceId: true, kind: true, status: true, scopes: true },
   })
+  if (
+    !(
+      !!agent &&
+      agent.spaceId === spaceId &&
+      agent.kind === actor.type &&
+      agent.status === 'ACTIVE' &&
+      agent.scopes.includes('secret:write')
+    )
+  )
+    return false
+  if (!actorTokenId) return true
+  // 제안에 쓴 토큰이 폐기·만료됐으면 승인해도 실행하지 않는다.
+  const tok = await prisma.agentToken.findUnique({
+    where: { id: actorTokenId },
+    select: { agentId: true, revokedAt: true, expiresAt: true },
+  })
   return (
-    !!agent &&
-    agent.spaceId === spaceId &&
-    agent.kind === actor.type &&
-    agent.status === 'ACTIVE' &&
-    agent.scopes.includes('secret:write')
+    !!tok &&
+    tok.agentId === actor.id &&
+    !tok.revokedAt &&
+    !!tok.expiresAt &&
+    tok.expiresAt > new Date()
   )
 }
 
@@ -200,7 +221,8 @@ export async function loadSecretForApproval(
   secretId: string,
   revision: number,
   actor: Actor,
-  audit: string[]
+  audit: string[],
+  actorTokenId?: string | null
 ): Promise<{ id: string; value: string; config: ApiKeyConfig }> {
   const row = await prisma.spaceSecret.findUnique({
     where: { id: secretId },
@@ -222,7 +244,7 @@ export async function loadSecretForApproval(
     row.revision !== revision ||
     !isSecretActor(actor) ||
     !row.allowedAgentIds.includes(actor.id) ||
-    !(await proposerStillActive(spaceId, actor))
+    !(await proposerStillActive(spaceId, actor, actorTokenId))
   ) {
     throw new ToolUserError('비밀값이 바뀌어 실행하지 않았습니다. 다시 제안하세요')
   }
