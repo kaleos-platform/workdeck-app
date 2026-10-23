@@ -112,6 +112,8 @@ describe('naver_ads_get_stats', () => {
       until: '2026-10-21',
     })
     expect(url.searchParams.get('timeIncrement')).toBe('1')
+    expect(url.searchParams.get('id')).toBe('cmp-a001-01-000000000000001')
+    expect(url.searchParams.has('ids')).toBe(false)
     expect(url.searchParams.has('datePreset')).toBe(false)
     expect(h['X-Signature']).toBe(sign(SECRET.secretKey, h['X-Timestamp'], 'GET', '/stats'))
   })
@@ -137,6 +139,7 @@ describe('naver_ads_get_stats', () => {
       .mockResolvedValueOnce(ok({ data: [] }))
     await tool('naver_ads_get_stats').execute(ctx(), { ids: ['cmp-1'] })
     expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(call().url.searchParams.get('ids')).toBe('cmp-1')
 
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ title: 'Forbidden', detail: 'secret=abc 권한 없음' }), {
