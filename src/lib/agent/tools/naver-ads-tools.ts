@@ -142,7 +142,7 @@ const daysInclusive = (since: string, until: string) =>
 
 const getStats: ToolDefinition = {
   name: 'naver_ads_get_stats',
-  description: `캠페인·광고그룹·키워드·소재 id 의 네이버 검색광고 성과를 반환합니다. 기간은 date_preset 또는 time_range(since·until, KST, 최대 ${MAX_RANGE_DAYS}일), 일별은 time_increment='1', 분해는 breakdown(pcMblTp·dayw·hh24·regnNo 중 1개). salesAmt(광고비)는 VAT 포함입니다.`,
+  description: `캠페인·광고그룹·키워드·소재 id 의 네이버 검색광고 성과를 반환합니다. 기간은 date_preset 또는 time_range(since·until, KST, 최대 ${MAX_RANGE_DAYS}일), 일별은 time_increment='1'(id 1개일 때만 — 여러 id 는 기간 합계만), 분해는 breakdown(pcMblTp·dayw·hh24·regnNo 중 1개). salesAmt(광고비)는 VAT 포함입니다.`,
   inputSchema: {
     brand,
     ids: z
@@ -169,6 +169,11 @@ const getStats: ToolDefinition = {
   scope: 'naver:read',
   async execute(ctx, p) {
     const range = p.time_range as { since: string; until: string } | undefined
+    if (p.time_increment === '1' && (p.ids as string[]).length > 1) {
+      throw new ToolUserError(
+        "time_increment='1'(일별)은 id 1개일 때만 됩니다 — id 별로 나눠 호출하세요"
+      )
+    }
     if (range && p.date_preset) {
       throw new ToolUserError('time_range와 date_preset은 함께 쓸 수 없습니다')
     }
@@ -200,7 +205,7 @@ const getStats: ToolDefinition = {
 const getStatReport: ToolDefinition = {
   name: 'naver_ads_get_stat_report',
   description:
-    '하루치 네이버 검색광고 대용량 보고서를 받습니다(쇼핑검색어 성과는 SHOPPINGKEYWORD_DETAIL, 쇼핑검색어 전환은 SHOPPINGKEYWORD_CONVERSION_DETAIL). 보고서를 만들고 ~15초 기다려 완성되면 행(TSV, 헤더 없음 — 열 순서는 네이버 대용량 보고서 문서 기준)을 돌려줍니다. 아직이면 status·report_job_id 를 돌려주니 report_job_id 로 다시 호출하세요. 기간이 여러 날이면 날짜별로 호출합니다.',
+    '하루치 네이버 검색광고 대용량 보고서를 받습니다(쇼핑검색어 성과는 SHOPPINGKEYWORD_DETAIL, 쇼핑검색어 전환은 SHOPPINGKEYWORD_CONVERSION_DETAIL). 보고서를 만들고 ~15초 기다려 완성되면 행(TSV, 헤더 없음 — 열 순서는 네이버 대용량 보고서 문서 기준)을 돌려줍니다. 아직이면 status·report_job_id 를 돌려주니 report_job_id 로 다시 호출하세요. 기간이 여러 날이면 날짜별로 호출합니다. 최근 1년치만 조회되며, 범위 밖이거나 데이터가 없는 날은 오류 10004("지표가 확인되지 않습니다") 또는 status NONE 입니다. 열 순서 — AD: date, customerId, campaignId, adgroupId, keywordId, adId, bsnChannelId, mediaCode, pcMobile(M/P), imp, clk, cost, rankSum, viewCnt / AD_CONVERSION: date, customerId, campaignId, adgroupId, keywordId, adId, bsnChannelId, mediaCode, pcMobile, convMethod(1 직접·2 간접), convType, convCnt, convAmt. 주의: 2026-03-30 이전 날짜 보고서의 cost 는 VAT 별도(×1.1 해야 /stats salesAmt 와 맞음), 이후는 VAT 포함.',
   inputSchema: {
     brand,
     report_type: z.enum(REPORT_TYPES).optional(),
