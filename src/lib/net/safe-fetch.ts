@@ -164,17 +164,28 @@ function isBlockedIpv6(groups: number[]): boolean {
   if (isZero) return true // ::
   if (groups.slice(0, 7).every((g) => g === 0) && groups[7] === 1) return true // ::1
 
-  // IPv4-mapped ::ffff:a.b.c.d → 언맵 후 IPv4 규칙 재적용
-  if (groups.slice(0, 5).every((g) => g === 0) && groups[5] === 0xffff) {
-    const hi = groups[6]
-    const lo = groups[7]
-    const v4 = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`
-    return isBlockedIpv4(v4)
+  const v4At = (hi: number, lo: number) =>
+    isBlockedIpv4(`${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`)
+
+  // IPv4-mapped ::ffff:a.b.c.d·IPv4-compatible ::a.b.c.d(폐기) → 언맵 후 IPv4 규칙 재적용
+  if (groups.slice(0, 5).every((g) => g === 0) && (groups[5] === 0xffff || groups[5] === 0)) {
+    return v4At(groups[6], groups[7])
   }
+  // NAT64 64:ff9b::/96 — 게이트웨이가 안의 IPv4로 그대로 중계한다
+  if (groups[0] === 0x64 && groups[1] === 0xff9b && groups.slice(2, 6).every((g) => g === 0)) {
+    return v4At(groups[6], groups[7])
+  }
+  // 6to4 2002:AABB:CCDD::/48 — 앞 32bit 뒤에 IPv4가 들어 있다
+  if (groups[0] === 0x2002) return v4At(groups[1], groups[2])
 
   const first = groups[0]
+  if (first === 0x64 && groups[1] === 0xff9b && groups[2] === 1) return true // 64:ff9b:1::/48 (로컬 NAT64)
+  if (first === 0x2001 && groups[1] === 0) return true // 2001::/32 (Teredo — IPv4가 난독화돼 판정 불가)
+  if (first === 0x2001 && groups[1] === 0xdb8) return true // 2001:db8::/32 (문서용)
+  if (first === 0x100 && groups.slice(1, 4).every((g) => g === 0)) return true // 100::/64 (discard)
   if ((first & 0xfe00) === 0xfc00) return true // fc00::/7 (ULA)
   if ((first & 0xffc0) === 0xfe80) return true // fe80::/10 (link-local)
+  if ((first & 0xffc0) === 0xfec0) return true // fec0::/10 (site-local, 폐기)
   if ((first & 0xff00) === 0xff00) return true // ff00::/8 (multicast)
 
   return false
