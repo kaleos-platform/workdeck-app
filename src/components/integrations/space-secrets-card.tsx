@@ -172,8 +172,9 @@ export function SpaceSecretsCard() {
           {spaceName ? `「${spaceName}」 비밀값` : '비밀값'}
         </CardTitle>
         <CardDescription>
-          에이전트가 외부 API를 호출할 때 쓰는 키를 암호화해 보관합니다. 에이전트는 값을 보지 못하고
-          등록된 조회 operation만 호출합니다.
+          에이전트가 외부 API를 호출할 때 쓰는 키를 암호화해 보관합니다. API 키는 에이전트가 값을
+          보지 못하고 등록된 조회 operation만 호출합니다. 개발 키(wd run)는 허용된 에이전트의 명령
+          실행 환경에 값이 그대로 전달되므로 읽기 전용·대상 한정 키만 등록하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 text-sm">

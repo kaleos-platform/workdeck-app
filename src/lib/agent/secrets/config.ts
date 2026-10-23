@@ -133,7 +133,9 @@ export const envConfigInputSchema = z.object({
     const now = Date.now()
     return Number.isFinite(t) && t > now && t <= now + MAX_ENV_TTL_MS
   }, '만료일은 지금 이후, 365일 이내여야 합니다'),
-  readOnlyConfirmed: z.literal(true),
+  readOnlyConfirmed: z.literal(true, {
+    message: '읽기 전용·대상 한정 키임을 확인해야 등록할 수 있습니다',
+  }),
 })
 
 // 입력 그대로 반환한다(디코딩 안 함). 우회 가능성이 있는 형태는 모두 거부한다.

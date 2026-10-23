@@ -150,6 +150,7 @@ describe('호출 빈도 상한', () => {
     await runTool(read, ctx(['secret:read']), args)
     expect(assertUnderRate).toHaveBeenCalledWith(
       expect.objectContaining({
+        spaceId: 'sp1',
         actorId: 'ag1',
         tools: ['secret_http_read'],
         limit: 61,

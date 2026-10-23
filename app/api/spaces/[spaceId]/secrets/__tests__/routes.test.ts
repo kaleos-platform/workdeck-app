@@ -311,7 +311,11 @@ describe('ENV 등록', () => {
 
   it('ENV: readOnlyConfirmed 없이 API 직접 호출하면 400, 저장 안 함', async () => {
     const { readOnlyConfirmed: _r, ...config } = ENV_BODY.config
-    expect((await put({ ...ENV_BODY, config })).status).toBe(400)
+    const r = await put({ ...ENV_BODY, config })
+    expect(r.status).toBe(400)
+    expect((await r.json()).message).toContain(
+      '읽기 전용·대상 한정 키임을 확인해야 등록할 수 있습니다'
+    )
     expect(
       (await put({ ...ENV_BODY, config: { ...config, readOnlyConfirmed: false } })).status
     ).toBe(400)

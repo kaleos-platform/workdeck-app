@@ -238,7 +238,11 @@ it('20/분 초과 시 429, 감사·복호화 없음', async () => {
   expect(res.status).toBe(429)
   expect((await res.json()).message).toBe('잠시 후 다시 시도하세요')
   expect(count).toHaveBeenCalledWith({
-    where: expect.objectContaining({ actorId: 'ag1', tool: { in: ['secret_env_issue'] } }),
+    where: expect.objectContaining({
+      spaceId: 'sp1',
+      actorId: 'ag1',
+      tool: { in: ['secret_env_issue'] },
+    }),
   })
   expect(startToolAudit).not.toHaveBeenCalled()
   expect(load).not.toHaveBeenCalled()

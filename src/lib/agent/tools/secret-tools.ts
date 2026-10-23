@@ -19,9 +19,10 @@ const query = z.record(z.string(), z.string()).optional()
 
 const RATE_WINDOW_MS = 60_000
 // runTool이 감사 시작 행을 handler 전에 쓰므로 이번 호출도 세어진다 → limit+1로 "분당 N회 허용".
-async function underRate(actorId: string, tool: string, perMinute: number) {
+async function underRate(spaceId: string, actorId: string, tool: string, perMinute: number) {
   try {
     await assertUnderRate({
+      spaceId,
       actorId,
       tools: [tool],
       limit: perMinute + 1,
@@ -48,7 +49,7 @@ const httpRead: ToolDefinition = {
   mode: 'read',
   scope: 'secret:read',
   async execute(ctx, p) {
-    await underRate(ctx.actor.id, 'secret_http_read', 60)
+    await underRate(ctx.spaceId, ctx.actor.id, 'secret_http_read', 60)
     const sec = await loadSecretForUse(
       ctx.spaceId,
       p.secret as string,
@@ -103,7 +104,7 @@ const httpPropose: ToolDefinition = {
   mode: 'write',
   scope: 'secret:write',
   async execute(ctx, p) {
-    await underRate(ctx.actor.id, 'secret_http_propose', 20)
+    await underRate(ctx.spaceId, ctx.actor.id, 'secret_http_propose', 20)
     const { id, revision, baseUrl } = await assertSecretUsable(
       ctx.spaceId,
       p.secret as string,

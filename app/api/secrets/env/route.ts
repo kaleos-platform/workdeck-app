@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
     names = parsed.data.secrets
 
     await assertUnderRate({
+      spaceId: principal.spaceId,
       actorId: principal.actor.id,
       tools: [TOOL],
       limit: 20,
