@@ -98,39 +98,120 @@ test('로그아웃 링크로 단계 인증을 빠져나갈 수 있다', async ()
 })
 
 describe('mode=replace', () => {
-  const OLD = { id: 'f-old', factor_type: 'totp', status: 'verified' }
+  const OLD = { id: 'f-old', factor_type: 'totp', status: 'verified', created_at: '2026-01-01' }
+  const NEW_VERIFIED = { id: 'f-new', factor_type: 'totp', status: 'verified' }
+  const RECENT_AAL = {
+    ...FRESH_AAL,
+    currentAuthenticationMethods: [{ method: 'totp', timestamp: NOW - 60 }],
+  }
   beforeEach(() => {
     searchStr = 'mode=replace&next=/settings/account'
   })
 
-  async function enterCode() {
-    await screen.findByAltText('TOTP QR 코드')
-    fireEvent.change(screen.getByLabelText('인증 코드'), { target: { value: '123456' } })
+  // 마운트 때는 기존 factor 만, 해제 직전 재확인 때는 새 factor 가 verified 로 보인다.
+  function mockReplace(aal: object = RECENT_AAL) {
+    const mfa = mockAuth([OLD], aal)
+    mfa.listFactors
+      .mockResolvedValueOnce({ data: { all: [OLD] }, error: null })
+      .mockResolvedValue({ data: { all: [OLD, NEW_VERIFIED] }, error: null })
+    return mfa
+  }
+
+  async function submit(value = '123456') {
+    fireEvent.change(screen.getByLabelText('인증 코드'), { target: { value } })
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: '확인' }))
     })
   }
+  async function enterNewCode() {
+    await screen.findByAltText('TOTP QR 코드')
+    await submit()
+  }
 
-  test('새 factor 등록 → 검증 → 기존 factor 해제 순서, replace 감사 로그 후 next 로', async () => {
-    const mfa = mockAuth([OLD], FRESH_AAL)
+  test('최근 5분 내 TOTP 면 재확인 생략: 등록 → 검증 → 재확인 → 기존 해제 순서, replace 감사', async () => {
+    const mfa = mockReplace()
     render(<MfaStepUp />)
-    await enterCode()
+    await enterNewCode()
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/settings/account'))
+    expect(mfa.challengeAndVerify).toHaveBeenCalledTimes(1)
     expect(mfa.challengeAndVerify).toHaveBeenCalledWith({ factorId: 'f-new', code: '123456' })
     expect(mfa.unenroll).toHaveBeenCalledTimes(1)
     expect(mfa.unenroll).toHaveBeenCalledWith({ factorId: 'f-old' })
-    const order = (m: jest.Mock) => m.mock.invocationCallOrder[0]
+    const order = (m: jest.Mock, n = 0) => m.mock.invocationCallOrder[n]
     expect(order(mfa.enroll)).toBeLessThan(order(mfa.challengeAndVerify))
-    expect(order(mfa.challengeAndVerify)).toBeLessThan(order(mfa.unenroll))
+    expect(order(mfa.challengeAndVerify)).toBeLessThan(order(mfa.listFactors, 1))
+    expect(order(mfa.listFactors, 1)).toBeLessThan(order(mfa.unenroll))
     const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body)
     expect(body.action).toBe('account.mfa.replace')
   })
 
-  test('검증 실패면 기존 factor 를 해제하지 않고 머문다', async () => {
-    const mfa = mockAuth([OLD], FRESH_AAL)
+  test('5분 넘었으면 현재 코드 확인 전에는 등록하지 않는다', async () => {
+    const mfa = mockReplace(FRESH_AAL)
+    render(<MfaStepUp />)
+    expect(await screen.findByText(/현재 인증 앱 코드 확인/)).toBeTruthy()
+    expect(mfa.enroll).not.toHaveBeenCalled()
+    expect(screen.queryByAltText('TOTP QR 코드')).toBeNull()
+  })
+
+  test('현재 코드가 틀리면 등록하지 않고 머문다', async () => {
+    const mfa = mockReplace(FRESH_AAL)
+    mfa.challengeAndVerify.mockResolvedValueOnce({ data: null, error: { message: 'bad' } })
+    render(<MfaStepUp />)
+    await screen.findByText(/현재 인증 앱 코드 확인/)
+    await submit()
+    expect(mfa.challengeAndVerify).toHaveBeenCalledWith({ factorId: 'f-old', code: '123456' })
+    expect(mfa.enroll).not.toHaveBeenCalled()
+    expect(mfa.unenroll).not.toHaveBeenCalled()
+  })
+
+  test('현재 코드 확인 후 새 기기 등록·검증으로 진행한다', async () => {
+    const mfa = mockReplace(FRESH_AAL)
+    render(<MfaStepUp />)
+    await screen.findByText(/현재 인증 앱 코드 확인/)
+    await submit('111111')
+    expect(mfa.challengeAndVerify).toHaveBeenNthCalledWith(1, { factorId: 'f-old', code: '111111' })
+    await enterNewCode()
+    expect(mfa.challengeAndVerify).toHaveBeenNthCalledWith(2, { factorId: 'f-new', code: '123456' })
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/settings/account'))
+    expect(mfa.unenroll).toHaveBeenCalledWith({ factorId: 'f-old' })
+  })
+
+  test('현재 코드 확인 후 등록이 실패하면 재확인 단계에 머물고 기존 factor 를 지우지 않는다', async () => {
+    const mfa = mockReplace(FRESH_AAL)
+    mfa.enroll.mockResolvedValueOnce({ data: null, error: { message: 'x' } })
+    render(<MfaStepUp />)
+    await screen.findByText(/현재 인증 앱 코드 확인/)
+    await submit()
+    expect(await screen.findByRole('alert')).toHaveTextContent('등록을 시작하지 못했습니다')
+    await submit()
+    expect(mfa.enroll).toHaveBeenCalledTimes(2)
+    expect(mfa.unenroll).not.toHaveBeenCalled()
+    expect(replace).not.toHaveBeenCalled()
+  })
+
+  test('재확인에서 새 factor 가 verified 가 아니면 기존 factor 를 지우지 않는다', async () => {
+    const mfa = mockReplace()
+    mfa.listFactors
+      .mockReset()
+      .mockResolvedValueOnce({ data: { all: [OLD] }, error: null })
+      .mockResolvedValue({
+        data: { all: [OLD, { ...NEW_VERIFIED, status: 'unverified' }] },
+        error: null,
+      })
+    render(<MfaStepUp />)
+    await enterNewCode()
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '새 기기 확인에 실패했습니다. 다시 시도하세요.'
+    )
+    expect(mfa.unenroll).not.toHaveBeenCalled()
+    expect(replace).not.toHaveBeenCalled()
+  })
+
+  test('새 코드 검증 실패면 기존 factor 를 해제하지 않고 머문다', async () => {
+    const mfa = mockReplace()
     mfa.challengeAndVerify.mockResolvedValue({ data: null, error: { message: 'bad' } })
     render(<MfaStepUp />)
-    await enterCode()
+    await enterNewCode()
     expect(await screen.findByRole('alert')).toHaveTextContent('인증 코드가 올바르지 않습니다.')
     expect(mfa.unenroll).not.toHaveBeenCalled()
     expect(replace).not.toHaveBeenCalled()
@@ -138,7 +219,7 @@ describe('mode=replace', () => {
   })
 
   test('취소하면 새 factor 만 지우고 기존 factor 는 유지', async () => {
-    const mfa = mockAuth([OLD], FRESH_AAL)
+    const mfa = mockReplace()
     render(<MfaStepUp />)
     await screen.findByAltText('TOTP QR 코드')
     await act(async () => {
@@ -149,13 +230,31 @@ describe('mode=replace', () => {
     expect(replace).toHaveBeenCalledWith('/settings/account')
   })
 
+  test('재확인 단계에서 취소하면 아무 factor 도 지우지 않는다', async () => {
+    const mfa = mockReplace(FRESH_AAL)
+    render(<MfaStepUp />)
+    await screen.findByText(/현재 인증 앱 코드 확인/)
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /취소/ }))
+    })
+    expect(mfa.unenroll).not.toHaveBeenCalled()
+  })
+
   test('기존 factor 해제가 aal 부족으로 실패하면 안내하고 이동하지 않는다', async () => {
-    const mfa = mockAuth([OLD], FRESH_AAL)
+    const mfa = mockReplace()
     mfa.unenroll.mockResolvedValue({ data: null, error: { code: 'insufficient_aal' } })
     render(<MfaStepUp />)
-    await enterCode()
+    await enterNewCode()
     expect(await screen.findByRole('alert')).toHaveTextContent('2단계 인증이 필요합니다')
     expect(replace).not.toHaveBeenCalled()
+  })
+
+  test('기존 factor 가 이미 없으면(not found) 성공으로 보고 진행한다', async () => {
+    const mfa = mockReplace()
+    mfa.unenroll.mockResolvedValue({ data: null, error: { code: 'mfa_factor_not_found' } })
+    render(<MfaStepUp />)
+    await enterNewCode()
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/settings/account'))
   })
 
   test('aal2 가 오래됐으면 등록 없이 일반 단계 인증으로, 안내를 보여준다', async () => {
@@ -163,11 +262,20 @@ describe('mode=replace', () => {
     render(<MfaStepUp />)
     expect(await screen.findByText(/먼저 현재 기기로 인증하세요/)).toBeTruthy()
     expect(mfa.enroll).not.toHaveBeenCalled()
-    fireEvent.change(screen.getByLabelText('인증 코드'), { target: { value: '123456' } })
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: '확인' }))
-    })
+    await submit()
     expect(mfa.challengeAndVerify).toHaveBeenCalledWith({ factorId: 'f-old', code: '123456' })
     expect(mfa.unenroll).not.toHaveBeenCalled()
   })
+})
+
+test('마운트 정리: 10분 이내 unverified 는 남기고 오래된 unverified 만 지운다', async () => {
+  const recent = new Date(Date.now() - 60_000).toISOString()
+  const mfa = mockAuth([
+    { id: 'u-old', factor_type: 'totp', status: 'unverified', created_at: '2026-01-01T00:00:00Z' },
+    { id: 'u-new', factor_type: 'totp', status: 'unverified', created_at: recent },
+    { id: 'f1', factor_type: 'totp', status: 'verified', created_at: '2026-01-01T00:00:00Z' },
+  ] as never)
+  render(<MfaStepUp />)
+  await waitFor(() => expect(mfa.unenroll).toHaveBeenCalledWith({ factorId: 'u-old' }))
+  expect(mfa.unenroll).toHaveBeenCalledTimes(1)
 })

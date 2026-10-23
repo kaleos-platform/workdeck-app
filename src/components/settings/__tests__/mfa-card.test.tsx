@@ -47,7 +47,9 @@ test('등록됨·최근 인증이면 경과일과 30일 유지를 보여주고 �
   expect(screen.getByRole('link', { name: '지금 인증' })).toHaveAttribute('href', STEP_UP)
   expect(screen.queryByText('먼저 지금 인증하세요')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '인증 기기 변경' }))
-  expect(screen.getByText(/이전 인증 앱은 더 이상 쓸 수 없습니다/)).toBeTruthy()
+  expect(
+    screen.getByText(/현재 인증 앱 코드를 한 번 더 확인.*이전 인증 앱은 더 이상 쓸 수 없/)
+  ).toBeTruthy()
   expect(screen.getByRole('link', { name: '계속' })).toHaveAttribute(
     'href',
     `${STEP_UP}&mode=replace`

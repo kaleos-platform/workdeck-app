@@ -109,8 +109,8 @@ export function MfaCard() {
           <DialogHeader>
             <DialogTitle>인증 기기 변경</DialogTitle>
             <DialogDescription>
-              새 인증 앱을 등록하고 코드를 확인하면 이전 인증 앱은 더 이상 쓸 수 없습니다. 확인 전에
-              그만두면 이전 기기가 그대로 유지됩니다.
+              현재 인증 앱 코드를 한 번 더 확인한 뒤 새 인증 앱을 등록합니다. 새 코드를 확인하면
+              이전 인증 앱은 더 이상 쓸 수 없고, 그 전에 그만두면 이전 기기가 그대로 유지됩니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
