@@ -198,7 +198,21 @@ function AssetsPanel({ accounts, loading, linkedAccountIds, onReload }: AssetsPa
         <div className="flex items-start justify-between gap-3">
           <div>
             <CardTitle className="text-sm font-semibold">자산 (계좌)</CardTitle>
-            <CardDescription className="text-xs">은행 계좌를 관리합니다</CardDescription>
+            <CardDescription className="text-xs">
+              은행 계좌를 관리합니다
+              {accounts.some((a) => a.status === 'ACTIVE' && a.currentBalance !== null) && (
+                <>
+                  {' · '}잔액 합계{' '}
+                  <span className="font-mono font-semibold text-foreground tabular-nums">
+                    {formatWon(
+                      accounts
+                        .filter((a) => a.status === 'ACTIVE')
+                        .reduce((sum, a) => sum + (a.currentBalance ?? 0), 0)
+                    )}
+                  </span>
+                </>
+              )}
+            </CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={startAdd} className="shrink-0">
             <Plus className="mr-1 size-3.5" />

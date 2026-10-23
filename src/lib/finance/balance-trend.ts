@@ -1,6 +1,6 @@
 /**
  * 월별 잔액 추이 — 월말 현금·부채·순자산과 건전성 지표를 계산하는 순수 함수(단위 테스트 대상).
- * DB I/O는 호출부(queries.ts queryDashboard)에.
+ * DB I/O는 호출부(queries.ts queryBalanceTrend)에.
  *
  * 규약:
  *  - 현금 = BANK 계좌 월말 스냅샷 합. 그 달 스냅샷이 없으면 직전 스냅샷 이월, 그것도 없으면 openingBalance.

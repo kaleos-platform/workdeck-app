@@ -123,6 +123,7 @@ export const FINANCE_DECK_ID = 'finance'
 export const FINANCE_BASE_PATH = '/d/finance'
 export const FINANCE_DASHBOARD_PATH = `${FINANCE_BASE_PATH}/dashboard`
 export const FINANCE_CASHFLOW_PATH = `${FINANCE_BASE_PATH}/cashflow`
+export const FINANCE_BALANCE_TREND_PATH = `${FINANCE_BASE_PATH}/balance-trend`
 export const FINANCE_TRANSACTIONS_PATH = `${FINANCE_BASE_PATH}/transactions`
 export const FINANCE_UPLOAD_PATH = `${FINANCE_BASE_PATH}/upload`
 export const FINANCE_IMPORTS_PATH = `${FINANCE_BASE_PATH}/imports`
