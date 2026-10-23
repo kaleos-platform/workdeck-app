@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { mfaStepUpPath } from '@/lib/auth/mfa-policy'
 
 type Member = { id: string; role: string; user: { email: string; name: string | null } }
 type Invitation = { id: string; email: string; role: string; expiresAt: string }
@@ -26,6 +27,7 @@ export function MembersCard() {
   const [members, setMembers] = useState<Member[]>([])
   const [invites, setInvites] = useState<Invitation[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [mfaNeeded, setMfaNeeded] = useState(false)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'ADMIN' | 'MEMBER'>('ADMIN')
   const [created, setCreated] = useState<Created | null>(null)
@@ -37,6 +39,7 @@ export function MembersCard() {
 
   const load = useCallback(async () => {
     setError(null)
+    setMfaNeeded(false)
     try {
       const res = await fetch('/api/spaces/members')
       const body = await res.json().catch(() => null)
@@ -54,7 +57,10 @@ export function MembersCard() {
         // MFA(aal2)가 아니면 403 — 보기만 하는 화면이라 이동시키지 않고 메시지만(변경 동작에서 단계 인증으로 보낸다).
         const ib = await inv.json().catch(() => null)
         if (inv.ok) setInvites(ib.invitations)
-        else setError(ib?.message ?? '초대 목록을 불러오지 못했습니다')
+        else {
+          setError(ib?.message ?? '초대 목록을 불러오지 못했습니다')
+          setMfaNeeded(inv.status === 403 && ib?.code === 'MFA_REQUIRED')
+        }
       }
     } catch {
       setError(NET_ERR)
@@ -200,7 +206,22 @@ export function MembersCard() {
         <CardTitle>구성원</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <p className="text-sm text-destructive">
+            {error}
+            {mfaNeeded && (
+              <>
+                {' '}
+                <a
+                  className="underline"
+                  href={mfaStepUpPath(window.location.pathname + window.location.search)}
+                >
+                  인증하기
+                </a>
+              </>
+            )}
+          </p>
+        )}
         <ul className="divide-y text-sm">
           {members.map((m) => (
             <li key={m.id} className="flex items-center justify-between gap-2 py-2">
