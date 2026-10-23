@@ -1,6 +1,11 @@
 // 조회 스코프(productIds)를 좁혀도 옵션별 비용이 달라지면 안 된다.
 // 배송비 분모를 스코프 안쪽만으로 만들면 채널 전체 배송비가 한 상품에 얹힌다.
 
+import path from 'path'
+import { config } from 'dotenv'
+
+config({ path: path.resolve(process.cwd(), '.env.local') })
+
 import { prisma } from '@/lib/prisma'
 import { queryProductMargin } from '@/lib/sh/margin-query'
 import { lastClosedDateKst, addDaysYmd } from '@/lib/sh/sales-analytics'

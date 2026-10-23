@@ -11,8 +11,17 @@ import {
   loadGoogleCred,
   verifyGoogleCred,
 } from '@/lib/agent/integrations/google-marketing'
+import {
+  PROVIDER as NAVER,
+  loadNaverCred,
+  verifyNaverCred,
+} from '@/lib/agent/integrations/naver-searchad'
 
-const LABEL: Record<string, string> = { [META]: 'Meta 광고', [GOOGLE]: 'Google 마케팅' }
+const LABEL: Record<string, string> = {
+  [META]: 'Meta 광고',
+  [GOOGLE]: 'Google 마케팅',
+  [NAVER]: '네이버 검색광고',
+}
 const CONCURRENCY = 4
 
 // 공급자별 가벼운 점검 — 데이터는 읽지 않고 토큰이 살아 있는지만 본다. 복호화한 id는 audit 에 남긴다.
@@ -23,6 +32,10 @@ const PROBES: Record<string, (spaceId: string, audit: string[]) => Promise<void>
   },
   [GOOGLE]: async (spaceId, audit) => {
     await verifyGoogleCred(await loadGoogleCred(spaceId, audit))
+  },
+  [NAVER]: async (spaceId, audit) => {
+    const cred = await loadNaverCred(spaceId, audit)
+    await verifyNaverCred(cred.secret, cred.config)
   },
 }
 
@@ -48,7 +61,7 @@ export type HealthResult = {
 }
 
 /**
- * 매일 cron — 모든 Space 의 Meta·Google 자격증명을 점검한다.
+ * 매일 cron — 모든 Space 의 Meta·Google·네이버 자격증명을 점검한다.
  * 알림 전이는 점검 전용 상태(healthError·healthAlertedAt)로만 판단한다. lastError 는 다른 경로(실행·조회 오류)도 쓰는 진단용이라 쓰지 않는다.
  * - 실패: 아직 알리지 않았으면(healthAlertedAt 없음) 알리고, 보냈을 때만 healthAlertedAt 을 남긴다(채널이 생기면 다음 날 다시 시도).
  * - 성공: 장애를 알렸던 상태면 '복구'를 알린다. 이 점검이 남긴 lastError 만 지운다.

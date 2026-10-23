@@ -7,6 +7,7 @@ import { writeTools } from './write-tools'
 import { slackTools } from './slack-tools'
 import { metaAdsTools } from './meta-ads-tools'
 import { googleMarketingTools } from './google-marketing-tools'
+import { naverAdsTools } from './naver-ads-tools'
 import { salesContentTools } from './sales-content-tools'
 import { secretTools } from './secret-tools'
 
@@ -27,6 +28,7 @@ export const toolDefinitions: ToolDefinition[] = [
   ...slackTools,
   ...metaAdsTools,
   ...googleMarketingTools,
+  ...naverAdsTools,
   ...salesContentTools,
   ...secretTools,
 ]
