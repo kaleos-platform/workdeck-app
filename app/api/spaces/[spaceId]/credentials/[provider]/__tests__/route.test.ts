@@ -1,7 +1,16 @@
 /** @jest-environment node */
 import { NextRequest, NextResponse } from 'next/server'
 
-jest.mock('@/lib/prisma', () => ({ prisma: {} }))
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    invStorageLocation: { findFirst: jest.fn() },
+    channel: { count: jest.fn() },
+    spaceCredential: { findUnique: jest.fn() },
+  },
+}))
+jest.mock('@/lib/naver-commerce/nbaesong-channel', () => ({
+  ensureNbaesongChannel: jest.fn(async () => 'ch1'),
+}))
 jest.mock('@/lib/agent/identity/space-admin', () => ({
   requireSpaceAdmin: jest.fn(async () => ({ userId: 'u1' })),
 }))
@@ -15,6 +24,8 @@ jest.mock('@/lib/agent/integrations/space-credential', () => ({
 import { requireAal2 } from '@/lib/auth/mfa'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { saveSpaceCredential } from '@/lib/agent/integrations/space-credential'
+import { prisma } from '@/lib/prisma'
+import { ensureNbaesongChannel } from '@/lib/naver-commerce/nbaesong-channel'
 import { PUT } from '../route'
 
 const META_BODY = {
@@ -90,4 +101,75 @@ it('메타: 계정 확인 실패 → 400, 저장하지 않는다', async () => {
   const res = await call('meta-ads', META_BODY)
   expect(res.status).toBe(400)
   expect(saveSpaceCredential).not.toHaveBeenCalled()
+})
+
+describe('naver-commerce', () => {
+  const db = prisma as unknown as {
+    invStorageLocation: { findFirst: jest.Mock }
+    channel: { count: jest.Mock }
+    spaceCredential: { findUnique: jest.Mock }
+  }
+  const store = (over = {}) => ({
+    key: 'aml',
+    label: '아몰',
+    startDate: '2026-10-01',
+    representativeChannelId: null,
+    ...over,
+  })
+  const body = (over: Record<string, unknown> = {}) => ({
+    secret: { stores: { aml: { clientId: 'cid-0123456789', clientSecret: 'x'.repeat(24) } } },
+    config: { locationId: 'loc1', stores: [store()] },
+    ...over,
+  })
+  beforeEach(() => {
+    db.invStorageLocation.findFirst.mockResolvedValue({ id: 'loc1' })
+    db.channel.count.mockResolvedValue(1)
+    db.spaceCredential.findUnique.mockResolvedValue(null)
+  })
+
+  it('저장 + 스토어별 채널 보장, backfilledThrough 는 null 로 시작', async () => {
+    expect((await call('naver-commerce', body())).status).toBe(200)
+    const [, , , config] = (saveSpaceCredential as jest.Mock).mock.calls[0]
+    expect(config).toEqual({
+      locationId: 'loc1',
+      stores: [{ ...store(), backfilledThrough: null }],
+    })
+    expect(ensureNbaesongChannel).toHaveBeenCalledWith({
+      spaceId: 'sp1',
+      storeKey: 'aml',
+      label: '아몰',
+      representativeChannelId: null,
+    })
+  })
+  it('기존 backfilledThrough 보존', async () => {
+    db.spaceCredential.findUnique.mockResolvedValue({
+      config: { stores: [{ ...store(), backfilledThrough: '2026-10-10' }] },
+    })
+    await call('naver-commerce', body())
+    const config = (saveSpaceCredential as jest.Mock).mock.calls[0][3]
+    expect(config.stores[0].backfilledThrough).toBe('2026-10-10')
+  })
+  it('config/secret 스토어 키 불일치 → 400', async () => {
+    const res = await call(
+      'naver-commerce',
+      body({ config: { locationId: 'loc1', stores: [store({ key: 'other' })] } })
+    )
+    expect(res.status).toBe(400)
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+  })
+  it('다른 공간 위치 → 400', async () => {
+    db.invStorageLocation.findFirst.mockResolvedValue(null)
+    const res = await call('naver-commerce', body())
+    expect(res.status).toBe(400)
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+  })
+  it('대표 채널이 공간 소속이 아니면 → 400', async () => {
+    db.channel.count.mockResolvedValue(0)
+    const res = await call(
+      'naver-commerce',
+      body({ config: { locationId: 'loc1', stores: [store({ representativeChannelId: 'zz' })] } })
+    )
+    expect(res.status).toBe(400)
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+  })
 })
