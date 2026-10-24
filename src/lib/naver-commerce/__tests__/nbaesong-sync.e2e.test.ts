@@ -25,6 +25,7 @@ const BC_B = `88000${TAG}2`
 
 let spaceId = ''
 let productId = ''
+let productBId = ''
 let optA = ''
 let optB = ''
 let locationId = ''
@@ -87,7 +88,7 @@ async function reset() {
   await prisma.channelProductAlias.deleteMany({
     where: { spaceId, aliasName: { notIn: [`bc:${BC_A}`, `bc:${BC_B}`] } },
   })
-  await prisma.invProduct.updateMany({ where: { id: productId }, data: { status: 'ACTIVE' } })
+  await prisma.invProduct.updateMany({ where: { spaceId }, data: { status: 'ACTIVE' } })
   await prisma.invStockLevel.updateMany({ where: { spaceId }, data: { quantity: 100 } })
 }
 
@@ -107,7 +108,11 @@ d('N배송 일 단위 동기화 (dev DB)', () => {
     })
     productId = product.id
     optA = (await prisma.invProductOption.create({ data: { productId, name: 'A' } })).id
-    optB = (await prisma.invProductOption.create({ data: { productId, name: 'B' } })).id
+    const productB = await prisma.invProduct.create({
+      data: { spaceId, name: `E2E 상품B ${TAG}`, groupId: group.id, status: 'ACTIVE' },
+    })
+    productBId = productB.id
+    optB = (await prisma.invProductOption.create({ data: { productId: productBId, name: 'B' } })).id
     await prisma.invStockLevel.createMany({
       data: [optA, optB].map((optionId) => ({ spaceId, optionId, locationId, quantity: 100 })),
     })
@@ -199,10 +204,14 @@ d('N배송 일 단위 동기화 (dev DB)', () => {
   })
 
   it('inactive option does not abort day sync', async () => {
-    await prisma.invProduct.update({ where: { id: productId }, data: { status: 'INACTIVE' } })
+    await prisma.invProduct.update({ where: { id: productBId }, data: { status: 'INACTIVE' } })
     const r = await run([o1(), o2()])
     expect(r.outbound.skipped).toBeGreaterThanOrEqual(1)
     expect(await orderCount()).toBe(2)
+    expect((await outbound(optA)).map((m) => m.quantity)).toEqual([3])
+    expect(await stock(optA)).toBe(97)
+    expect(await outbound(optB)).toHaveLength(0)
+    expect(await stock(optB)).toBe(100)
   })
 
   it('name alias fallback via representative channel', async () => {
@@ -237,7 +246,27 @@ d('N배송 일 단위 동기화 (dev DB)', () => {
     const r = await run([o1(), o2()])
     expect(r.skippedExisting).toBe(1)
     expect(await orderCount()).toBe(1)
+    expect(
+      await prisma.delOrder.count({
+        where: { spaceId, orderNumber: o1().orderId, batch: { source: 'NAVER_API' } },
+      })
+    ).toBe(0)
     expect(await outbound(optA)).toHaveLength(0)
+    expect(await stock(optA)).toBe(100)
+    expect((await outbound(optB)).map((m) => m.quantity)).toEqual([2])
+  })
+
+  it('concurrent syncs of the same day create one batch', async () => {
+    await Promise.all([run([o1(), o2()]), run([o1(), o2()])])
+    expect(
+      await prisma.delBatch.count({
+        where: { spaceId, source: 'NAVER_API', label: `N배송 ${STORE} ${DAY}` },
+      })
+    ).toBe(1)
+    expect((await outbound(optA)).map((m) => m.quantity)).toEqual([3])
+    expect((await outbound(optB)).map((m) => m.quantity)).toEqual([2])
+    expect(await stock(optA)).toBe(97)
+    expect(await orderCount()).toBe(2)
   })
 
   it('match survives resync', async () => {
