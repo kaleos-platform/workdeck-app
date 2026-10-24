@@ -8,7 +8,16 @@ config({ path: path.resolve(process.cwd(), '.env.local') })
 // dev env 에 암호화 키가 없을 수 있다 — PII 는 더미값이라 테스트용 키로 충분
 process.env.ENCRYPTION_KEY_V1 ||= '11'.repeat(32)
 
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+
+jest.mock('@/lib/api-helpers', () => {
+  const actual = jest.requireActual('@/lib/api-helpers')
+  return { __esModule: true, ...actual, resolveDeckContext: jest.fn() }
+})
+
+import { resolveDeckContext } from '@/lib/api-helpers'
+import { PATCH as matchPatch } from '../../../../app/api/sh/shipping/orders/[orderId]/items/[itemId]/match/route'
 import { ensureNbaesongChannel } from '../nbaesong-channel'
 import { syncNbaesongDay } from '../nbaesong-sync'
 import type { NaverProductOrder } from '../client'
@@ -136,6 +145,16 @@ d('N배송 일 단위 동기화 (dev DB)', () => {
         { spaceId, channelId: nbChannelId, aliasName: `bc:${BC_B}`, optionId: optB },
       ],
     })
+    await prisma.spaceCredential.create({
+      data: {
+        spaceId,
+        provider: 'naver-commerce',
+        encryptedPayload: 'x',
+        iv: 'x',
+        config: { locationId, stores: [] },
+      },
+    })
+    ;(resolveDeckContext as jest.Mock).mockImplementation(async () => ({ space: { id: spaceId } }))
   })
 
   afterAll(async () => {
@@ -144,6 +163,7 @@ d('N배송 일 단위 동기화 (dev DB)', () => {
     await prisma.invStockLevel.deleteMany({ where: { spaceId } })
     await prisma.delBatch.deleteMany({ where: { spaceId } })
     await prisma.channelProductAlias.deleteMany({ where: { spaceId } })
+    await prisma.productListing.deleteMany({ where: { spaceId } })
     await prisma.invProductOption.deleteMany({ where: { product: { spaceId } } })
     await prisma.invProduct.deleteMany({ where: { spaceId } })
     await prisma.invProductGroup.deleteMany({ where: { spaceId } })
@@ -273,14 +293,95 @@ d('N배송 일 단위 동기화 (dev DB)', () => {
     const X = `88999${TAG}`
     const order = po({
       orderId: `mx-${TAG}`,
-      skuMappings: [{ nsBarcode: X, pickingQuantityPerOrder: 1 }],
+      skuMappings: [{ nsBarcode: X, pickingQuantityPerOrder: 3 }],
     })
     expect((await run([order])).unmatched).toBe(1)
     await prisma.channelProductAlias.create({
       data: { spaceId, channelId: nbChannelId, aliasName: `bc:${X}`, optionId: optA },
     })
     expect((await run([order])).unmatched).toBe(0)
-    expect((await outbound(optA)).map((m) => m.quantity)).toEqual([1])
+    expect((await outbound(optA)).map((m) => m.quantity)).toEqual([3])
+  })
+
+  it.each(['option', 'manual', 'listing'] as const)(
+    'match route (%s, picking 3) OUTBOUND == after resync, cursor reset',
+    async (mode) => {
+      const X = `88777${TAG}${mode.length}`
+      const order = po({
+        orderId: `mp-${mode}-${TAG}`,
+        productName: `매칭 ${mode} ${TAG}`,
+        remainQuantity: 2,
+        skuMappings: [{ nsBarcode: X, pickingQuantityPerOrder: 3 }],
+      })
+      await prisma.spaceCredential.update({
+        where: { spaceId_provider: { spaceId, provider: 'naver-commerce' } },
+        data: {
+          config: {
+            locationId,
+            stores: [{ key: STORE, label: 'x', startDate: DAY, backfilledThrough: '2026-10-22' }],
+          },
+        },
+      })
+      expect((await run([order])).unmatched).toBe(1)
+      const item = await prisma.delOrderItem.findFirstOrThrow({
+        where: { order: { spaceId, orderNumber: order.orderId } },
+        select: { id: true, orderId: true },
+      })
+      let body: Record<string, unknown> = { mode, optionId: optA }
+      if (mode === 'manual') body = { mode, fulfillments: [{ optionId: optA, quantity: 1 }] }
+      if (mode === 'listing') {
+        const listing = await prisma.productListing.create({
+          data: {
+            spaceId,
+            channelId: nbChannelId,
+            searchName: `L ${TAG}`,
+            displayName: `L ${TAG}`,
+            items: { create: [{ optionId: optA, quantity: 1 }] },
+          },
+        })
+        body = { mode, listingId: listing.id }
+      }
+      const res = await matchPatch(
+        new NextRequest('http://t/x', { method: 'PATCH', body: JSON.stringify(body) }),
+        { params: Promise.resolve({ orderId: item.orderId, itemId: item.id }) }
+      )
+      expect(res?.status).toBe(200)
+      expect((await outbound(optA)).map((m) => m.quantity)).toEqual([6])
+      const cfg = (
+        await prisma.spaceCredential.findUniqueOrThrow({
+          where: { spaceId_provider: { spaceId, provider: 'naver-commerce' } },
+        })
+      ).config as { stores: { backfilledThrough: string | null }[] }
+      expect(cfg.stores[0].backfilledThrough).toBeNull()
+
+      expect((await run([order])).unmatched).toBe(0)
+      expect((await outbound(optA)).map((m) => m.quantity)).toEqual([6])
+      expect(await stock(optA)).toBe(94)
+    }
+  )
+
+  it('same label of another store key does not steal its channel', async () => {
+    const other = await ensureNbaesongChannel({
+      spaceId,
+      storeKey: `${STORE}x`,
+      label: `E2E 스토어 ${TAG}`,
+      representativeChannelId: null,
+    })
+    expect(other).not.toBe(nbChannelId)
+    const [mine, theirs] = await Promise.all(
+      [nbChannelId, other].map((id) =>
+        prisma.channel.findUniqueOrThrow({
+          where: { id },
+          select: { externalSource: true, name: true },
+        })
+      )
+    )
+    expect(mine.externalSource).toBe(`naver_nbaesong:${STORE}`)
+    expect(theirs).toEqual({
+      externalSource: `naver_nbaesong:${STORE}x`,
+      name: `E2E 스토어 ${TAG} N배송 (${STORE}x)`,
+    })
+    await prisma.channel.delete({ where: { id: other } })
   })
 
   it('kstDay boundary', async () => {

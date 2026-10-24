@@ -6,7 +6,6 @@ import { nbaesongStoreKey } from '@/lib/inv/external-sources'
 import { kstDay } from '@/lib/naver-commerce/nbaesong'
 import { recomputeNbaesongOutbound } from '@/lib/naver-commerce/nbaesong-sync'
 import { NAVER_COMMERCE_PROVIDER, type NaverCommerceConfig } from '@/lib/naver-commerce/client'
-import { loadSpaceCredentialConfig } from '@/lib/agent/integrations/space-credential'
 
 type Params = { params: Promise<{ orderId: string; itemId: string }> }
 
@@ -70,17 +69,73 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
   const saveAlias = isNbaesong || rawSaveAlias
 
+  // N배송 단일 SKU 상품이 옵션 1개로 매칭되면: 바코드 alias(개당 → 그 옵션)를 남기고, 출고 수량을
+  // 재동기화와 같은 값(수량 × 피킹 수량)으로 맞춘다. 세트 크기는 API 피킹 수량을 기준으로 삼는다.
+  const sku =
+    isNbaesong && Array.isArray(item.skuMappings) && item.skuMappings.length === 1
+      ? (item.skuMappings[0] as { nsBarcode?: unknown; pickingQuantityPerOrder?: unknown })
+      : null
+  const applyNbaesongSingleOption = async (optionId: string) => {
+    const nsBarcode = sku?.nsBarcode
+    const picking = sku?.pickingQuantityPerOrder
+    if (!item.order.channelId || typeof nsBarcode !== 'string' || !nsBarcode) return
+    if (typeof picking !== 'number') return
+    // 리졸버가 조회 키를 normalizeAlias 로 정규화하므로 저장도 같은 형태로 맞춘다.
+    const bcAlias = normalizeAlias(`bc:${nsBarcode}`)
+    await prisma.$transaction(async (tx) => {
+      const alias = await tx.channelProductAlias.upsert({
+        where: {
+          channelId_aliasName: { channelId: item.order.channelId!, aliasName: bcAlias },
+        },
+        update: { optionId, listingId: null },
+        create: {
+          spaceId: resolved.space.id,
+          channelId: item.order.channelId!,
+          aliasName: bcAlias,
+          optionId,
+          listingId: null,
+        },
+      })
+      await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
+      await tx.delOrderItem.update({
+        where: { id: itemId },
+        data: { optionId: null, listingId: null },
+      })
+      await tx.delOrderItemFulfillment.deleteMany({ where: { orderItemId: itemId } })
+      await tx.delOrderItemFulfillment.createMany({
+        data: [{ orderItemId: itemId, optionId, quantity: item.quantity * picking }],
+      })
+    })
+  }
+
   // 매칭 변경 후 해당 일자 N배송 출고 재고를 다시 계산한다. 매칭은 이미 저장됐으므로 실패해도 요청은 성공 처리하고
   // (다음 시간별 동기화가 재계산) 로그만 남긴다.
+  // 새 alias 가 지난 일자의 미매칭도 풀도록 스토어 커서를 null 로 되돌려 워커가 전 기간을 다시 동기화하게 한다.
+  // ponytail: config read-modify-write — 동시 finish 가 커서를 덮어쓸 수 있음(다음 매칭 때 다시 초기화).
   const recomputeIfNbaesong = async () => {
     if (!isNbaesong || !item.order.channelId) return
     const storeKey = nbaesongStoreKey(item.order.channel?.externalSource ?? '')
     if (!storeKey) return
     try {
-      const config = await loadSpaceCredentialConfig<NaverCommerceConfig>(
-        resolved.space.id,
-        NAVER_COMMERCE_PROVIDER
-      )
+      const row = await prisma.spaceCredential.findUnique({
+        where: {
+          spaceId_provider: { spaceId: resolved.space.id, provider: NAVER_COMMERCE_PROVIDER },
+        },
+        select: { id: true, config: true },
+      })
+      const config = row?.config as NaverCommerceConfig | null | undefined
+      if (!row || !config) return
+      await prisma.spaceCredential.update({
+        where: { id: row.id },
+        data: {
+          config: {
+            ...config,
+            stores: (config.stores ?? []).map((s) =>
+              s.key === storeKey ? { ...s, backfilledThrough: null } : s
+            ),
+          },
+        },
+      })
       await recomputeNbaesongOutbound({
         spaceId: resolved.space.id,
         storeKey,
@@ -148,6 +203,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }
     }
 
+    if (listing.items.length === 1) await applyNbaesongSingleOption(listing.items[0].optionId)
     await recomputeIfNbaesong()
     return NextResponse.json({
       ok: true,
@@ -238,6 +294,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         }
       }
 
+      if (list.length === 1) await applyNbaesongSingleOption(list[0].optionId)
       await recomputeIfNbaesong()
       const totalQuantity = list.reduce((s, f) => s + f.perSetQuantity * orderQty, 0)
       return NextResponse.json({
@@ -297,32 +354,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }
     }
 
-    // N배송 단일 SKU 상품은 바코드로도 다음 동기화에서 자동 매칭되도록 alias 를 함께 남긴다.
-    const skuMappings = Array.isArray(item.skuMappings)
-      ? (item.skuMappings as { nsBarcode?: unknown }[])
-      : []
-    const nsBarcode = skuMappings.length === 1 ? skuMappings[0]?.nsBarcode : null
-    if (isNbaesong && item.order.channelId && typeof nsBarcode === 'string' && nsBarcode) {
-      // 리졸버가 조회 키를 normalizeAlias 로 정규화하므로 저장도 같은 형태로 맞춘다.
-      const bcAlias = normalizeAlias(`bc:${nsBarcode}`)
-      await prisma.$transaction(async (tx) => {
-        const alias = await tx.channelProductAlias.upsert({
-          where: {
-            channelId_aliasName: { channelId: item.order.channelId!, aliasName: bcAlias },
-          },
-          update: { optionId, listingId: null },
-          create: {
-            spaceId: resolved.space.id,
-            channelId: item.order.channelId!,
-            aliasName: bcAlias,
-            optionId,
-            listingId: null,
-          },
-        })
-        await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
-      })
-    }
-
+    await applyNbaesongSingleOption(optionId)
     await recomputeIfNbaesong()
     return NextResponse.json({
       ok: true,

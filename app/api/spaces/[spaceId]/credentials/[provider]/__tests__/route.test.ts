@@ -6,6 +6,7 @@ jest.mock('@/lib/prisma', () => ({
     invStorageLocation: { findFirst: jest.fn() },
     channel: { count: jest.fn() },
     spaceCredential: { findUnique: jest.fn() },
+    delBatch: { findFirst: jest.fn() },
   },
 }))
 jest.mock('@/lib/naver-commerce/nbaesong-channel', () => ({
@@ -108,6 +109,7 @@ describe('naver-commerce', () => {
     invStorageLocation: { findFirst: jest.Mock }
     channel: { count: jest.Mock }
     spaceCredential: { findUnique: jest.Mock }
+    delBatch: { findFirst: jest.Mock }
   }
   const store = (over = {}) => ({
     key: 'aml',
@@ -125,6 +127,7 @@ describe('naver-commerce', () => {
     db.invStorageLocation.findFirst.mockResolvedValue({ id: 'loc1' })
     db.channel.count.mockResolvedValue(1)
     db.spaceCredential.findUnique.mockResolvedValue(null)
+    db.delBatch.findFirst.mockResolvedValue(null)
   })
 
   it('저장 + 스토어별 채널 보장, backfilledThrough 는 null 로 시작', async () => {
@@ -155,7 +158,7 @@ describe('naver-commerce', () => {
   })
   it('기존 backfilledThrough 보존', async () => {
     db.spaceCredential.findUnique.mockResolvedValue({
-      config: { stores: [{ ...store(), backfilledThrough: '2026-10-10' }] },
+      config: { locationId: 'loc1', stores: [{ ...store(), backfilledThrough: '2026-10-10' }] },
     })
     await call('naver-commerce', body())
     const config = (saveSpaceCredential as jest.Mock).mock.calls[0][3]
@@ -183,5 +186,79 @@ describe('naver-commerce', () => {
     )
     expect(res.status).toBe(400)
     expect(saveSpaceCredential).not.toHaveBeenCalled()
+  })
+
+  const two = () =>
+    body({
+      secret: {
+        stores: {
+          aml: { clientId: 'cid-0123456789', clientSecret: 'x'.repeat(24) },
+          kreamd: { clientId: 'cid-9876543210', clientSecret: 'y'.repeat(24) },
+        },
+      },
+      config: { locationId: 'loc1', stores: [store(), store({ key: 'kreamd', label: '아몰' })] },
+    })
+  const errorOf = async (res: Response) => (await res.json()).message
+  it('스토어 이름 중복 → 400', async () => {
+    const res = await call('naver-commerce', two())
+    expect(res.status).toBe(400)
+    expect(await errorOf(res)).toBe('스토어 이름이 중복됩니다')
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+  })
+  it('수집 이력(커서)이 있는 스토어를 빼면 → 400', async () => {
+    db.spaceCredential.findUnique.mockResolvedValue({
+      config: {
+        locationId: 'loc1',
+        stores: [
+          { ...store(), backfilledThrough: null },
+          { ...store({ key: 'old', label: '옛' }), backfilledThrough: '2026-10-10' },
+        ],
+      },
+    })
+    const res = await call('naver-commerce', body())
+    expect(res.status).toBe(400)
+    expect(await errorOf(res)).toBe('수집 이력이 있는 스토어는 삭제할 수 없습니다')
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+  })
+  it('커서가 null 이어도 N배송 묶음이 있으면 수집 이력으로 본다', async () => {
+    db.spaceCredential.findUnique.mockResolvedValue({
+      config: {
+        locationId: 'loc1',
+        stores: [{ ...store({ key: 'old', label: '옛' }), backfilledThrough: null }],
+      },
+    })
+    db.delBatch.findFirst.mockResolvedValue({ id: 'b1' })
+    const res = await call('naver-commerce', body())
+    expect(res.status).toBe(400)
+    expect(await errorOf(res)).toBe('수집 이력이 있는 스토어는 삭제할 수 없습니다')
+    expect(db.delBatch.findFirst.mock.calls[0][0].where).toEqual({
+      spaceId: 'sp1',
+      source: 'NAVER_API',
+      label: { startsWith: 'N배송 old ' },
+    })
+  })
+  it('수집 이력 없는 스토어는 뺄 수 있다', async () => {
+    db.spaceCredential.findUnique.mockResolvedValue({
+      config: {
+        locationId: 'loc1',
+        stores: [{ ...store({ key: 'old', label: '옛' }), backfilledThrough: null }],
+      },
+    })
+    expect((await call('naver-commerce', body())).status).toBe(200)
+  })
+  it('수집 이력이 있으면 위치 변경 → 400', async () => {
+    db.spaceCredential.findUnique.mockResolvedValue({
+      config: { locationId: 'loc0', stores: [{ ...store(), backfilledThrough: '2026-10-10' }] },
+    })
+    const res = await call('naver-commerce', body())
+    expect(res.status).toBe(400)
+    expect(await errorOf(res)).toBe('위치 변경은 재고 대조 후 재등록이 필요합니다')
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+  })
+  it('수집 이력이 없으면 위치 변경 허용', async () => {
+    db.spaceCredential.findUnique.mockResolvedValue({
+      config: { locationId: 'loc0', stores: [{ ...store(), backfilledThrough: null }] },
+    })
+    expect((await call('naver-commerce', body())).status).toBe(200)
   })
 })

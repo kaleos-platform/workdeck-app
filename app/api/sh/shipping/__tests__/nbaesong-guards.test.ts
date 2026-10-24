@@ -20,15 +20,14 @@ jest.mock('@/lib/prisma', () => ({
     delOrderItem: { findFirst: jest.fn() },
     invProductOption: { findFirst: jest.fn() },
     channelProductAlias: { upsert: jest.fn().mockResolvedValue({ id: 'alias-1' }) },
-    channelProductAliasFulfillment: { deleteMany: jest.fn() },
+    channelProductAliasFulfillment: { deleteMany: jest.fn(), createMany: jest.fn() },
+    productListing: { findFirst: jest.fn() },
+    spaceCredential: { findUnique: jest.fn(), update: jest.fn() },
     $transaction: jest.fn(),
   },
 }))
 jest.mock('@/lib/sh/batch-delete', () => ({ deleteBatchWithMovements: jest.fn() }))
 jest.mock('@/lib/sh/batch-outbound', () => ({ applyBatchOutboundForBatch: jest.fn() }))
-jest.mock('@/lib/agent/integrations/space-credential', () => ({
-  loadSpaceCredentialConfig: jest.fn().mockResolvedValue({ locationId: 'loc-1', stores: [] }),
-}))
 jest.mock('@/lib/naver-commerce/nbaesong-sync', () => ({
   recomputeNbaesongOutbound: jest.fn().mockResolvedValue({}),
 }))
@@ -169,12 +168,92 @@ describe('N배송 매칭', () => {
       product: { id: 'p', name: 'p' },
     })
     db.delOrderItem.update = jest.fn()
-    db.delOrderItemFulfillment = { deleteMany: jest.fn() }
+    db.delOrderItemFulfillment = { deleteMany: jest.fn(), createMany: jest.fn() }
+    db.spaceCredential.findUnique.mockResolvedValue({
+      id: 'cred-1',
+      config: {
+        locationId: 'loc-1',
+        stores: [
+          { key: 'shop1', backfilledThrough: '2026-10-24' },
+          { key: 'shop2', backfilledThrough: '2026-10-24' },
+        ],
+      },
+    })
+  })
+  const bcNames = () =>
+    db.channelProductAlias.upsert.mock.calls
+      .map((a) => a[0].where.channelId_aliasName.aliasName)
+      .filter((n: string) => n.startsWith('bc:'))
+  const itemFulfillments = () => db.delOrderItemFulfillment.createMany.mock.calls.at(-1)?.[0].data
+
+  test('alias 저장 시 그 스토어 커서만 null 로 되돌린다', async () => {
+    db.delOrderItem.findFirst.mockResolvedValue(item(null))
+    await matchPatch(req({ mode: 'option', optionId: 'opt-1' }), c)
+    expect(db.spaceCredential.update).toHaveBeenCalledWith({
+      where: { id: 'cred-1' },
+      data: {
+        config: {
+          locationId: 'loc-1',
+          stores: [
+            { key: 'shop1', backfilledThrough: null },
+            { key: 'shop2', backfilledThrough: '2026-10-24' },
+          ],
+        },
+      },
+    })
+  })
+
+  test('manual 1개 → bc: alias + 수량 × 피킹', async () => {
+    db.delOrderItem.findFirst.mockResolvedValue({
+      ...item([{ nsBarcode: 'NS9', pickingQuantityPerOrder: 3 }]),
+      quantity: 2,
+    })
+    db.invProductOption.findMany = jest.fn().mockResolvedValue([{ id: 'opt-1' }])
+    const res = await matchPatch(
+      req({ mode: 'manual', fulfillments: [{ optionId: 'opt-1', quantity: 1 }] }),
+      c
+    )
+    expect(res.status).toBe(200)
+    expect(bcNames()).toEqual(['bc:ns9'])
+    expect(itemFulfillments()).toEqual([{ orderItemId: 'i', optionId: 'opt-1', quantity: 6 }])
+  })
+
+  test('manual 2개 → bc: alias 없음', async () => {
+    db.delOrderItem.findFirst.mockResolvedValue(
+      item([{ nsBarcode: 'NS9', pickingQuantityPerOrder: 3 }])
+    )
+    db.invProductOption.findMany = jest.fn().mockResolvedValue([{ id: 'a' }, { id: 'b' }])
+    await matchPatch(
+      req({
+        mode: 'manual',
+        fulfillments: [
+          { optionId: 'a', quantity: 1 },
+          { optionId: 'b', quantity: 1 },
+        ],
+      }),
+      c
+    )
+    expect(bcNames()).toEqual([])
+  })
+
+  test('listing 구성 1개 → bc: alias + 수량 × 피킹', async () => {
+    db.delOrderItem.findFirst.mockResolvedValue(
+      item([{ nsBarcode: 'NS7', pickingQuantityPerOrder: 3 }])
+    )
+    db.productListing.findFirst.mockResolvedValue({
+      id: 'l1',
+      searchName: 's',
+      displayName: 'd',
+      items: [{ optionId: 'opt-2', quantity: 1 }],
+    })
+    await matchPatch(req({ mode: 'listing', listingId: 'l1' }), c)
+    expect(bcNames()).toEqual(['bc:ns7'])
+    expect(itemFulfillments()).toEqual([{ orderItemId: 'i', optionId: 'opt-2', quantity: 3 }])
   })
 
   test('saveAlias:false 여도 alias 강제 + 단일 skuMapping 이면 bc: alias + 재계산', async () => {
     db.delOrderItem.findFirst.mockResolvedValue(
-      item([{ nsBarcode: 'NS123', pickingQuantityPerOrder: 1 }])
+      item([{ nsBarcode: 'NS123', pickingQuantityPerOrder: 3 }])
     )
     const res = await matchPatch(req({ mode: 'option', optionId: 'opt-1', saveAlias: false }), c)
     expect(res.status).toBe(200)
@@ -182,6 +261,7 @@ describe('N배송 매칭', () => {
       (a) => a[0].where.channelId_aliasName.aliasName
     )
     expect(names).toEqual(['상품', 'bc:ns123'])
+    expect(itemFulfillments()).toEqual([{ orderItemId: 'i', optionId: 'opt-1', quantity: 3 }])
     expect(recomputeNbaesongOutbound).toHaveBeenCalledWith({
       spaceId: 'space-1',
       storeKey: 'shop1',

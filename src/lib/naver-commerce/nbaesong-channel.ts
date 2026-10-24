@@ -19,14 +19,19 @@ export async function ensureNbaesongChannel(p: {
     select: { id: true },
   })
   let id = bySource?.id
+  // 같은 이름 채널은 외부 소스가 없을 때만 승격한다 — 다른 스토어 키의 N배송 채널을 빼앗지 않도록.
+  // 이름이 다른 스토어 채널에 쓰였으면 스토어 키를 붙여 새로 만든다(이름은 Space 내 unique).
+  let createName = name
   if (!id) {
     const byName = await prisma.channel.findFirst({
       where: { spaceId, name },
-      select: { id: true },
+      select: { id: true, externalSource: true },
     })
-    if (byName) {
+    if (byName && byName.externalSource === null) {
       id = byName.id
       await prisma.channel.update({ where: { id }, data: { externalSource } })
+    } else if (byName) {
+      createName = `${name} (${storeKey})`
     }
   }
   if (!id) {
@@ -41,7 +46,7 @@ export async function ensureNbaesongChannel(p: {
         select: { id: true },
       }))
     const created = await prisma.channel.create({
-      data: { spaceId, name, channelTypeDefId: typeDef.id, externalSource },
+      data: { spaceId, name: createName, channelTypeDefId: typeDef.id, externalSource },
       select: { id: true },
     })
     id = created.id

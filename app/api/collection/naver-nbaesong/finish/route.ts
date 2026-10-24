@@ -41,9 +41,15 @@ export async function POST(request: NextRequest) {
         ...config,
         stores: config.stores.map((s) => (s.key === storeKey ? { ...s, backfilledThrough } : s)),
       },
-      ...(error ? {} : { lastError: null }),
     },
   })
-  if (error) await recordCredentialError(credentialId, error)
+  // lastError 는 자격증명(스토어 공용) 1칸 — 스토어 접두어로 구분해 다른 스토어 성공이 지우지 않게 한다.
+  const prefix = `[${storeKey}] `
+  if (error) await recordCredentialError(credentialId, prefix + error)
+  else
+    await prisma.spaceCredential.updateMany({
+      where: { id: credentialId, lastError: { startsWith: prefix } },
+      data: { lastError: null },
+    })
   return NextResponse.json({ backfilledThrough })
 }
