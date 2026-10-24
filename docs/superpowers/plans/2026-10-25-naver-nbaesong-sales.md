@@ -258,3 +258,39 @@
 - [ ] **Step 3:** 미매칭 품목 1건을 배송 묶음 상세에서 매칭 → 해당일 OUTBOUND 증가 확인.
 - [ ] **Step 4:** memory `feedback_worktree_release_flow` 대로 develop → main 단계 릴리스. 배포 후 위킵 엑셀 대조 1회로 baseline 리셋 안내.
 - [ ] **Step 5:** memory `project_naver_nbaesong_sales_integration.md` 상태 갱신.
+
+## 실행 기록 (2026-10-25, Subagent-driven)
+
+완료: Task 0·1·1b·2·3·4·5a·5b·6 + 최종 리뷰 수정(커밋 `771440180..918f9a58`). 각 Task 리뷰 통과, 최종 리뷰 Important 5건 수정·재리뷰 통과. tsc·lint·build green, e2e 14+1 통과.
+
+### 컨트롤러 판단(Rulings)
+- Ruling: 개정 + Task 0 결과 sections override original Task 2/4/5/6 signatures — they are the later user decisions — cost if wrong: rework of signatures.
+- Ruling: barcode resolution reuses loadItemResolver with rawNames `bc:<nsBarcode>` (normalizeAlias keeps it) — avoids touching Task 3 — cost: none material.
+- Ruling: dedup (b) import-route guard owned by Task 6 — it already edits shipping routes — cost: none.
+- Ruling: recomputeNbaesongOutbound(spaceId, storeKey, channelId, locationId, dayKst); match route derives storeKey from channel.externalSource suffix — cost: small.
+- Ruling: Naver API calls run on the Mac mini worker (registered IP 112.152.74.59), not Vercel cron — app API form mandates per-app IP allowlist and Vercel has no static IP; user agreed "IP 강제면 워커" — cost if IP isn't enforced: extra worker code where a Vercel cron would have sufficed (worker already runs daily coupang jobs).
+- Ruling: worker package can't import src/ (rootDir isolation; field-crypto already duplicated there) → Naver client (sign/token/fetch/toProductOrder) lives in worker; app keeps types + nbaesong.ts helpers + zod ingest validation. Task 2's app-side issueToken/fetchPaidProductOrders get moved to worker in Task 5 — cost: one relocation commit.
+- Ruling: credential PUT for naver-commerce does NOT call Naver (would come from Vercel IP); validates shape + location ownership; failures surface via SpaceCredential.lastError from worker runs — cost: bad keys detected on first worker run, not at save.
+- Ruling: Final#4 — option (a): for NAVER_API items with exactly one skuMapping, ANY match mode that resolves to a single option (option; manual with 1 fulfillment; listing with 1 item) saves alias `bc:<barcode>`→that option and stores item fulfillments [{optionId, remainQty × picking}] so match-time stock equals resync — cost if wrong: a user who meant a different multiplier is overridden by the API's picking count (API is source of truth for set size).
+- Ruling: Final#5 — no code; N배송 channel fee rates go on the release checklist (N배송 fees differ from smartstore anyway, copying rep rates would be wrong too) — cost: margins overstated until user enters fees.
+- Ruling: Final#2 — on alias save for a NAVER_API item, reset that store's backfilledThrough to null so the worker rebuilds all days (7/hour, idempotent) — cost: extra API calls for a few hours after each matching session.
+- Final: parked — channel fallback name collision → 500 (rare setup) — Ruling: real, deferred
+- Final: parked — single lastError field can hide one store's failure after another's — Ruling: inherent to one-field design, deferred
+- Final: parked — finish/match config read-modify-write races (cursor overwrite) — Ruling: real, ms window, worker single-process; deferred with ponytail comment
+
+### 보류된 Minor
+- Task 1b: minor (deferred): channel-manager calls channelSourceLabel twice; N배송 label literal not a constant
+- Task 4: minor (deferred): location change leaves old-location deduction (guarded in Task 6 UI); INACTIVE option not zeroed on cancel (existing coupang behavior); barcode alias→listing falls back to name (plan-mandated)
+- Task 5a: minor (deferred): credential saved before ensureNbaesongChannel (partial success, self-heals on ingest); finish read-modify-write of config vs concurrent PUT (ms window); startDate moved earlier than cursor doesn't reopen backfill (brief-mandated cursor preservation)
+- Task 5a: minor (deferred): strict schema makes ingest all-or-nothing per day (one malformed order 400s the day; day retried next run)
+- Task 5b: minor (deferred): productName >500 chars would 400 whole day (truncate in worker str()); @types/bcryptjs caret; finish error lacks day; no overlap-guard test; ingest 2000/day cap unhandled
+- Task 6: minor (deferred): recompute failure in match route only logged — days >7 old stay uncorrected until next match/manual; prettier-only reformat noise in product-match-dialog; settings card not browser-verified (controller to check in final QA)
+- Task 6: minor (deferred): whitespace-only reformat noise in 3 unrelated files (lint-staged); card useEffect deps unverified
+
+### 릴리스 체크리스트 (Task 7)
+- N배송 채널 2개(에이엠엘·크림드)에 채널 수수료 입력 — 미입력 시 공헌이익 과대.
+- preview 에서 연동 설정 카드 브라우저 확인(저장·MFA·위치 잠금).
+- 운영 워커 체크아웃(`/Users/kaleos/projects/workdeck-worker`, main 전용)에 배포 후 kickstart — 워커 `npm install`(bcryptjs) 필요.
+- 첫 실행 후 대조: 스마트스토어센터 N배송 주문 수·금액 = 그날 N배송 채널 DelOrder.
+- 미매칭 품목 매칭(바코드 7종 등) → 전 기간 재구축 확인.
+- 배포 후 위킵 엑셀 대조 1회로 3PL baseline 리셋.
