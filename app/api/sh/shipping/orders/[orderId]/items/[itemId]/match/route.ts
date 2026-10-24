@@ -303,16 +303,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       : []
     const nsBarcode = skuMappings.length === 1 ? skuMappings[0]?.nsBarcode : null
     if (isNbaesong && item.order.channelId && typeof nsBarcode === 'string' && nsBarcode) {
+      // 리졸버가 조회 키를 normalizeAlias 로 정규화하므로 저장도 같은 형태로 맞춘다.
+      const bcAlias = normalizeAlias(`bc:${nsBarcode}`)
       await prisma.$transaction(async (tx) => {
         const alias = await tx.channelProductAlias.upsert({
           where: {
-            channelId_aliasName: { channelId: item.order.channelId!, aliasName: `bc:${nsBarcode}` },
+            channelId_aliasName: { channelId: item.order.channelId!, aliasName: bcAlias },
           },
           update: { optionId, listingId: null },
           create: {
             spaceId: resolved.space.id,
             channelId: item.order.channelId!,
-            aliasName: `bc:${nsBarcode}`,
+            aliasName: bcAlias,
             optionId,
             listingId: null,
           },

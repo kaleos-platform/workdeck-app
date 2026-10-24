@@ -17,7 +17,7 @@ import {
 import { useCurrentSpace } from '@/hooks/use-current-space'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
-type Option = { id: string; name: string }
+type Option = { id: string; name: string; externalSource?: string | null }
 
 type StoreRow = {
   key: string
@@ -76,7 +76,12 @@ export function NaverNbaesongCard() {
         ),
       ])
       setLocations(l?.locations ?? [])
-      setChannels(c?.channels ?? [])
+      // N배송 전용 채널은 대표 채널이 될 수 없다.
+      setChannels(
+        ((c?.channels ?? []) as Option[]).filter(
+          (ch) => !ch.externalSource?.startsWith('naver_nbaesong:')
+        )
+      )
       const settings = s as Settings | null
       if (settings) {
         setLocationId(settings.locationId ?? '')

@@ -595,25 +595,29 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                             <Eye className="h-3.5 w-3.5" />
                           )}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0"
-                          title="수정"
-                          onClick={() => openEditDialog(order)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0"
-                          title="배송 등록에 재등록"
-                          disabled={cloningId === order.id}
-                          onClick={() => handleReregister(order.id)}
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
+                        {batchSource !== 'NAVER_API' && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              title="수정"
+                              onClick={() => openEditDialog(order)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              title="배송 등록에 재등록"
+                              disabled={cloningId === order.id}
+                              onClick={() => handleReregister(order.id)}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

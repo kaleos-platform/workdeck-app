@@ -59,6 +59,7 @@ import {
   PATCH as _itemPatch,
   DELETE as _itemDelete,
 } from '../orders/[orderId]/items/[itemId]/route'
+import { POST as _itemsPost } from '../orders/[orderId]/items/route'
 import { PATCH as _matchPatch } from '../orders/[orderId]/items/[itemId]/match/route'
 import { POST as _importPost } from '../import/route'
 
@@ -76,6 +77,7 @@ const itemPatch = run(_itemPatch)
 const itemDelete = run(_itemDelete)
 const matchPatch = run(_matchPatch)
 const importPost = run(_importPost)
+const itemsPost = run(_itemsPost)
 
 const db = prisma as unknown as Record<string, Record<string, jest.Mock>> & {
   $transaction: jest.Mock
@@ -118,6 +120,17 @@ describe('N배송 묶음/주문 읽기전용', () => {
       expect(res.status).toBe(400)
       expect((await res.json()).error).toBe(NB_ORDER)
     }
+  })
+
+  test('item 추가 POST → 400', async () => {
+    db.delOrder.findFirst = jest.fn().mockResolvedValue({
+      id: 'o',
+      spaceId: 'space-1',
+      batch: { source: 'NAVER_API' },
+    })
+    const res = await itemsPost(req({ name: 'x', quantity: 1 }), ctx({ orderId: 'o' }))
+    expect(res.status).toBe(400)
+    expect((await res.json()).error).toBe(NB_ORDER)
   })
 
   test('item PATCH/DELETE → 400', async () => {
@@ -168,7 +181,7 @@ describe('N배송 매칭', () => {
     const names = db.channelProductAlias.upsert.mock.calls.map(
       (a) => a[0].where.channelId_aliasName.aliasName
     )
-    expect(names).toEqual(['상품', 'bc:NS123'])
+    expect(names).toEqual(['상품', 'bc:ns123'])
     expect(recomputeNbaesongOutbound).toHaveBeenCalledWith({
       spaceId: 'space-1',
       storeKey: 'shop1',
