@@ -118,6 +118,8 @@ export async function syncNbaesongDay(p: {
   const label = nbaesongBatchLabel(storeKey, dayKst)
   await prisma.$transaction(
     async (tx) => {
+      // 같은 스토어·일자 동시 실행 직렬화 — 라벨 중복 배치(이중 차감) 방지
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`nbaesong:${spaceId}:${label}`}))`
       const existing = await tx.delBatch.findFirst({
         where: { spaceId, source: 'NAVER_API', label },
         select: { id: true },
