@@ -52,19 +52,37 @@ jest.mock('@/lib/sh/xlsx-encryption', () => ({
 import { prisma } from '@/lib/prisma'
 import { recomputeNbaesongOutbound } from '@/lib/naver-commerce/nbaesong-sync'
 import { parseWithMapping } from '@/lib/del/channel-import-parser'
-import { PATCH as batchPatch, DELETE as batchDelete } from '../batches/[batchId]/route'
-import { PATCH as orderPatch, DELETE as orderDelete } from '../orders/[orderId]/route'
-import { POST as clonePost } from '../orders/[orderId]/clone/route'
-import { PATCH as itemPatch, DELETE as itemDelete } from '../orders/[orderId]/items/[itemId]/route'
-import { PATCH as matchPatch } from '../orders/[orderId]/items/[itemId]/match/route'
-import { POST as importPost } from '../import/route'
+import { PATCH as _batchPatch, DELETE as _batchDelete } from '../batches/[batchId]/route'
+import { PATCH as _orderPatch, DELETE as _orderDelete } from '../orders/[orderId]/route'
+import { POST as _clonePost } from '../orders/[orderId]/clone/route'
+import {
+  PATCH as _itemPatch,
+  DELETE as _itemDelete,
+} from '../orders/[orderId]/items/[itemId]/route'
+import { PATCH as _matchPatch } from '../orders/[orderId]/items/[itemId]/match/route'
+import { POST as _importPost } from '../import/route'
+
+// 핸들러는 Response | undefined 를 돌려주므로 테스트에서는 단언으로 좁힌다.
+const run =
+  <A extends unknown[]>(fn: (...a: A) => Promise<Response | undefined>) =>
+  async (...a: A) =>
+    (await fn(...a))!
+const batchPatch = run(_batchPatch)
+const batchDelete = run(_batchDelete)
+const orderPatch = run(_orderPatch)
+const orderDelete = run(_orderDelete)
+const clonePost = run(_clonePost)
+const itemPatch = run(_itemPatch)
+const itemDelete = run(_itemDelete)
+const matchPatch = run(_matchPatch)
+const importPost = run(_importPost)
 
 const db = prisma as unknown as Record<string, Record<string, jest.Mock>> & {
   $transaction: jest.Mock
 }
 
 const req = (body: unknown = {}) => ({ json: async () => body }) as never
-const ctx = (p: Record<string, string>) => ({ params: Promise.resolve(p) })
+const ctx = <T extends Record<string, string>>(p: T) => ({ params: Promise.resolve(p) })
 const NB_ORDER = 'N배송 자동 수집 주문은 변경할 수 없습니다'
 
 beforeEach(() => {
