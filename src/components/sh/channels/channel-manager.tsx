@@ -25,7 +25,7 @@ import {
 import { ChannelEditDialog } from './channel-edit-dialog'
 import { ChannelTypeManageDialog } from './channel-type-manage-dialog'
 import { ChannelFeeRatesInline } from './channel-fee-rates-inline'
-import { EXTERNAL_SOURCE_LABEL, isExternalSource } from '@/lib/inv/external-sources'
+import { channelSourceLabel } from '@/lib/inv/external-sources'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -444,9 +444,9 @@ export function ShChannelManager() {
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             {ch.name}
-                            {ch.externalSource && isExternalSource(ch.externalSource) && (
+                            {channelSourceLabel(ch.externalSource) && (
                               <Badge variant="secondary" className="text-xs">
-                                {EXTERNAL_SOURCE_LABEL[ch.externalSource]}
+                                {channelSourceLabel(ch.externalSource)}
                               </Badge>
                             )}
                           </div>
