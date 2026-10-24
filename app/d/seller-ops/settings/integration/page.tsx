@@ -3,6 +3,7 @@
 import { IntegrationCatalog } from '@/components/sh/settings/integration-catalog'
 import { CredentialForm } from '@/components/settings/credential-form'
 import { CoupangSourceCard } from '@/components/settings/coupang-source-card'
+import { NaverNbaesongCard } from '@/components/sh/settings/naver-nbaesong-card'
 import { SalesCollectionHistory } from '@/components/sh/settings/sales-collection-history'
 
 export default function SettingsIntegrationPage() {
@@ -20,6 +21,7 @@ export default function SettingsIntegrationPage() {
           여기서 먼저 설정하면 워크스페이스가 자동 생성되고 쿠팡 광고 관리에서도 사용된다. */}
       <CredentialForm />
       <CoupangSourceCard deckKey="seller-hub" />
+      <NaverNbaesongCard />
 
       <IntegrationCatalog />
 
