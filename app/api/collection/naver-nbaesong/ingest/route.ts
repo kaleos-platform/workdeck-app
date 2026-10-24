@@ -10,7 +10,7 @@ import { loadNbaesongStore, resolveNbaesongScope } from '@/lib/naver-commerce/wo
 const BodySchema = z.object({
   spaceId: z.string().min(1),
   storeKey: z.string().min(1),
-  dayKst: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  dayKst: z.iso.date(),
   orders: z.array(NaverProductOrderSchema).max(2000),
 })
 

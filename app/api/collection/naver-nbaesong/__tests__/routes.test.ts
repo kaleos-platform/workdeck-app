@@ -110,6 +110,23 @@ describe('plan', () => {
     expect(json.items[0].stores[0].days.length).toBeGreaterThan(0)
     expect(JSON.stringify(json)).not.toMatch(/clientSecret/)
   })
+  it('레거시 키는 spaceId 필터 없음', async () => {
+    await plan(new NextRequest('http://t/x'))
+    expect(db.findMany.mock.calls[0]![0].where).not.toHaveProperty('spaceId')
+  })
+  it('startDate 가 손상된 행은 건너뛰고 나머지를 돌려준다', async () => {
+    const bad = {
+      ...row,
+      id: 'bad',
+      spaceId: 'sp2',
+      config: { locationId: 'l', stores: [{ ...store, startDate: '2026-13-01' }] },
+    }
+    db.findMany.mockResolvedValue([bad, row])
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    const res = await plan(new NextRequest('http://t/x'))
+    expect(res.status).toBe(200)
+    expect((await res.json()).items.map((i: { spaceId: string }) => i.spaceId)).toEqual(['sp1'])
+  })
   it('space 토큰이면 그 space 만 조회', async () => {
     auth.mockResolvedValue({ scope: { kind: 'space', spaceId: 'sp1' } })
     await plan(new NextRequest('http://t/x'))
@@ -125,6 +142,17 @@ describe('ingest', () => {
     expect((await ingest(post(ingestBody({ orders: [{ orderId: 1 }] })))).status).toBe(400)
     expect((await ingest(post(ingestBody({ dayKst: 'x' })))).status).toBe(400)
     expect(syncNbaesongDay).not.toHaveBeenCalled()
+  })
+  it('pickingQuantityPerOrder 음수 → 400', async () => {
+    const bad = { ...order, skuMappings: [{ nsBarcode: 'b', pickingQuantityPerOrder: -1 }] }
+    expect((await ingest(post(ingestBody({ orders: [bad] })))).status).toBe(400)
+  })
+  it('존재하지 않는 날짜 → 400', async () => {
+    expect((await ingest(post(ingestBody({ dayKst: '2026-13-01' })))).status).toBe(400)
+  })
+  it('space 토큰으로 자기 space 는 적재 가능', async () => {
+    auth.mockResolvedValue({ scope: { kind: 'space', spaceId: 'sp1' } })
+    expect((await ingest(post(ingestBody()))).status).toBe(200)
   })
   it('없는 스토어 → 404', async () => {
     expect((await ingest(post(ingestBody({ storeKey: 'nope' })))).status).toBe(404)

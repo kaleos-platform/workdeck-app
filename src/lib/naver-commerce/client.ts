@@ -35,15 +35,17 @@ const text = z.string().max(500)
 export const NaverProductOrderSchema = z.object({
   orderId: text,
   productOrderId: text,
-  paymentDate: text,
+  paymentDate: z.iso.datetime({ offset: true }),
   productName: text,
-  quantity: z.number(),
-  remainQuantity: z.number(),
-  totalPaymentAmount: z.number(),
-  remainPaymentAmount: z.number(),
+  quantity: z.number().int().nonnegative(),
+  remainQuantity: z.number().int().nonnegative(),
+  totalPaymentAmount: z.number().nonnegative(),
+  remainPaymentAmount: z.number().nonnegative(),
   productOrderStatus: text,
   claimType: text.nullable(),
   deliveryAttributeType: text.nullable(),
   logisticsCompanyId: text.nullable(),
-  skuMappings: z.array(z.object({ nsBarcode: text, pickingQuantityPerOrder: z.number() })).max(100),
+  skuMappings: z
+    .array(z.object({ nsBarcode: text, pickingQuantityPerOrder: z.number().int().nonnegative() }))
+    .max(100),
 }) satisfies z.ZodType<NaverProductOrder>

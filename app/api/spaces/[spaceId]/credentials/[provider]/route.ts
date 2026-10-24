@@ -87,7 +87,7 @@ const SCHEMAS = {
           z.object({
             key: z.string().regex(STORE_KEY),
             label: z.string().min(1).max(30),
-            startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+            startDate: z.iso.date(),
             representativeChannelId: z.string().nullable(),
           })
         ),
