@@ -15,6 +15,17 @@
 - 결제일 기준. 출고 전 취소는 재조회로 제거. 반품은 판매로 유지(재입고는 대조가 보정).
 - Vercel cron. 워크스페이스(Space)별 키 입력, N배송 시작일부터 백필.
 
+## 2026-10-25 개정 — 스마트스토어 2개 (에이엠엘·크림드, 같은 Space)
+
+커머스API 앱은 **스토어별 발급** → 키 2쌍. 아래 규칙이 이후 모든 Task 의 서명보다 우선한다.
+- `storeKey`: 스토어 식별 slug(`aml`, `creamd` 등, 사용자 입력, `^[a-z0-9-]{2,20}$`).
+- SpaceCredential 은 Space 당 1행 유지(`@@unique([spaceId, provider])`). `NaverCommerceSecret = { stores: Record<storeKey, { clientId; clientSecret }> }`, `NaverCommerceConfig = { locationId: string; stores: Array<{ key: string; label: string; startDate: string; representativeChannelId: string | null; backfilledThrough: string | null }> }` (위킵 단일 풀 → 위치는 공용 1개).
+- N배송 채널은 **스토어당 1개**: externalSource `naver_nbaesong:<storeKey>`, 채널명 `<label> N배송`. 대표 채널=그 스토어 스마트스토어 채널.
+- DelBatch label `N배송 <storeKey> <YYYY-MM-DD>`, OUTBOUND referenceId `naver-nb:<storeKey>:<YYYY-MM-DD>:<optionId>`.
+- `syncNbaesongDay`/`recomputeNbaesongOutbound`/`daysToSync`/`advanceCursor` 는 스토어 단위로 동작(`storeKey` 인자 추가). cron 은 Space × store 순회, 스토어별 토큰.
+- **Task 1 정정(Task 1b)**: `EXTERNAL_SOURCES` 는 보관장소 연결 드롭다운(`location-manager.tsx:341`)도 쓰므로 `naver_nbaesong` 을 거기서 **제거**. 대신 `src/lib/inv/external-sources.ts` 에 `NBAESONG_SOURCE_PREFIX = 'naver_nbaesong:'`, `nbaesongExternalSource(storeKey)`, `isNbaesongSource(v)`, `channelSourceLabel(v): string | null`(로켓·N배송 라벨) 추가, `channel-manager.tsx:448` 배지를 `channelSourceLabel` 로 교체. 테스트: `isExternalSource('naver_nbaesong:aml') === false`, `channelSourceLabel('naver_nbaesong:aml') === '스마트스토어 N배송'`.
+- **API 호출 IP**: 커머스API센터가 앱별 호출 IP(최대 3) 등록을 요구 → Vercel(고정 IP 없음) 불가 가능성 높음. Task 0 에서 확정, 필요 시 Task 5 cron 을 맥미니 워커(`worker/`, launchd)로 이전.
+
 ## Global Constraints
 
 - 스키마 변경은 `npx prisma migrate dev --name <작업명>` 만. `db push`·prod 직접 SQL 금지. shadow DB 깨지면 memory `reference_migrate_shadow_bypass` 절차.
