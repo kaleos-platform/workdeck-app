@@ -94,7 +94,7 @@ it('OWNER+fresh aal2면 upsert 후 true', async () => {
   expect(startToolAudit).toHaveBeenCalledWith(
     expect.objectContaining({
       tool: 'space.env_secrets',
-      args: { envSecretsEnabled: true },
+      args: { enabled: true },
       actor: { type: 'user', id: 'u1' },
     })
   )

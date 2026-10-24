@@ -38,6 +38,13 @@ describe('audit', () => {
     expect(s).not.toContain('"x"')
     expect(s).toContain('[redacted]')
   })
+
+  it('비밀값 관련 감사 args는 secret이 들어가지 않은 키로 남겨야 값이 보존된다', () => {
+    // space.env_secrets·secret_env_issue가 enabled·names를 쓰는 이유.
+    expect(summarizeArgs({ enabled: true })).toBe('{"enabled":true}')
+    expect(summarizeArgs({ names: ['a'] })).toBe('{"names":["a"]}')
+    expect(summarizeArgs({ envSecretsEnabled: true })).toContain('[redacted]')
+  })
   it('wdk_agt_ 토큰 값은 키 이름과 무관하게 마스킹', () => {
     expect(summarizeArgs({ note: 'wdk_agt_abc.def' })).not.toContain('wdk_agt_abc')
   })

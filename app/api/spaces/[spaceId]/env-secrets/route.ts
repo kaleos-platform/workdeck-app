@@ -54,7 +54,8 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       actor: { type: 'user', id: auth.userId },
       requesterUserId: null,
       tool: 'space.env_secrets',
-      args: { envSecretsEnabled },
+      // 키 이름에 'secret'이 들어가면 감사 마스킹(SECRET_KEY_RE)에 가려진다 — on/off가 남도록 enabled로 기록한다.
+      args: { enabled: envSecretsEnabled },
     })
   } catch {
     return errorResponse(AUDIT_UNAVAILABLE, 503)

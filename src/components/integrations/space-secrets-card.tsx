@@ -189,6 +189,7 @@ export function SpaceSecretsCard() {
                 checked={envSetting.envSecretsEnabled}
                 onCheckedChange={toggleEnv}
                 disabled={pending}
+                aria-label="wd run 허용(개발 키 발급)"
               />
               wd run 허용(개발 키 발급)
             </label>
