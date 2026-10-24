@@ -23,20 +23,30 @@ export async function GET(request: NextRequest) {
   })
   const today = kstDay(new Date().toISOString())
   const items = rows.flatMap((r) => {
-    const stores = ((r.config as NaverCommerceConfig | null)?.stores ?? [])
-      .map((s) => ({ key: s.key, days: daysToSync(today, s) }))
-      .filter((s) => s.days.length > 0)
-    return stores.length === 0
-      ? []
-      : [
-          {
-            spaceId: r.spaceId,
-            credentialId: r.id,
-            encryptedPayload: r.encryptedPayload,
-            iv: r.iv,
-            stores,
-          },
-        ]
+    try {
+      const stores = ((r.config as NaverCommerceConfig | null)?.stores ?? [])
+        .map((s) => ({ key: s.key, days: daysToSync(today, s) }))
+        .filter((s) => s.days.length > 0)
+      return stores.length === 0
+        ? []
+        : [
+            {
+              spaceId: r.spaceId,
+              credentialId: r.id,
+              encryptedPayload: r.encryptedPayload,
+              iv: r.iv,
+              stores,
+            },
+          ]
+    } catch (err) {
+      // 한 행의 손상된 config 가 전체 응답을 막지 않게 건너뛴다.
+      console.error(
+        '[naver-nbaesong/plan] 일정 계산 실패',
+        r.spaceId,
+        err instanceof Error ? err.message : err
+      )
+      return []
+    }
   })
   return NextResponse.json({ items }, { headers: { 'Cache-Control': 'no-store' } })
 }

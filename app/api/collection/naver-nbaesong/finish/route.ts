@@ -7,7 +7,7 @@ import { recordCredentialError } from '@/lib/agent/integrations/space-credential
 import { advanceCursor } from '@/lib/naver-commerce/schedule'
 import { loadNbaesongStore, resolveNbaesongScope } from '@/lib/naver-commerce/worker-api'
 
-const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+const ymd = z.iso.date()
 const BodySchema = z.object({
   spaceId: z.string().min(1),
   storeKey: z.string().min(1),

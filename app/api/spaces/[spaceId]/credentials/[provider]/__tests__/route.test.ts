@@ -141,6 +141,18 @@ describe('naver-commerce', () => {
       representativeChannelId: null,
     })
   })
+  it('응답에 clientId/clientSecret 없음', async () => {
+    const res = await call('naver-commerce', body())
+    expect(JSON.stringify(await res.json())).not.toMatch(/clientSecret|clientId|cid-0123456789/)
+  })
+  it('존재하지 않는 startDate → 400', async () => {
+    const res = await call(
+      'naver-commerce',
+      body({ config: { locationId: 'loc1', stores: [store({ startDate: '2026-13-01' })] } })
+    )
+    expect(res.status).toBe(400)
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+  })
   it('기존 backfilledThrough 보존', async () => {
     db.spaceCredential.findUnique.mockResolvedValue({
       config: { stores: [{ ...store(), backfilledThrough: '2026-10-10' }] },
