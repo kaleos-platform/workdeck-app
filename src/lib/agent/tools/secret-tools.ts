@@ -9,12 +9,31 @@ import {
   recordSecretError,
   recordSecretUsed,
 } from '@/lib/agent/secrets/store'
+import { assertUnderRate, RateLimitedError } from '@/lib/agent/rate'
 import { ToolUserError } from './errors'
 import type { ToolDefinition } from './types'
 
 const secretName = z.string().min(1).max(63).describe('비밀값 이름(키 값이 아니라 이름만)')
 const path = z.string().min(1).max(500).describe('업스트림 경로. `/`로 시작')
 const query = z.record(z.string(), z.string()).optional()
+
+const RATE_WINDOW_MS = 60_000
+// runTool이 감사 시작 행을 handler 전에 쓰므로 이번 호출도 세어진다 → limit+1로 "분당 N회 허용".
+async function underRate(spaceId: string, actorId: string, tool: string, perMinute: number) {
+  try {
+    await assertUnderRate({
+      spaceId,
+      actorId,
+      tools: [tool],
+      limit: perMinute + 1,
+      windowMs: RATE_WINDOW_MS,
+    })
+  } catch (err) {
+    if (err instanceof RateLimitedError)
+      throw new ToolUserError('호출이 너무 많습니다. 잠시 후 다시 시도하세요')
+    throw err
+  }
+}
 
 const httpRead: ToolDefinition = {
   name: 'secret_http_read',
@@ -30,6 +49,7 @@ const httpRead: ToolDefinition = {
   mode: 'read',
   scope: 'secret:read',
   async execute(ctx, p) {
+    await underRate(ctx.spaceId, ctx.actor.id, 'secret_http_read', 60)
     const sec = await loadSecretForUse(
       ctx.spaceId,
       p.secret as string,
@@ -84,6 +104,7 @@ const httpPropose: ToolDefinition = {
   mode: 'write',
   scope: 'secret:write',
   async execute(ctx, p) {
+    await underRate(ctx.spaceId, ctx.actor.id, 'secret_http_propose', 20)
     const { id, revision, baseUrl } = await assertSecretUsable(
       ctx.spaceId,
       p.secret as string,
@@ -111,6 +132,7 @@ const httpPropose: ToolDefinition = {
       requesterUserId: ctx.requesterUserId,
       requesterSlackUserId: ctx.requesterSlackUserId,
       workId: ctx.workId,
+      actorTokenId: ctx.actorTokenId,
     })
   },
 }

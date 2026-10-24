@@ -108,6 +108,36 @@ export const apiKeyConfigSchema: z.ZodType<ApiKeyConfig> = z.object({
     ),
 })
 
+// ENV 비밀값 config — 에이전트 프로세스에 읽기 전용 ENV로 주입되는 키(wd run).
+export const RESERVED_ENV_NAME_RE =
+  /^(PATH|HOME|SHELL|USER|PWD|TMPDIR|NODE_OPTIONS|PYTHONPATH|PYTHONHOME|LD_.*|DYLD_.*|WORKDECK_.*)$/
+
+const MAX_ENV_TTL_MS = 365 * 86_400_000
+
+export type EnvConfig = {
+  envName: string
+  scopeNote: string
+  expiresAt: string
+  readOnlyConfirmedById: string
+  readOnlyConfirmedAt: string
+}
+
+export const envConfigInputSchema = z.object({
+  envName: z
+    .string()
+    .regex(/^[A-Z][A-Z0-9_]{0,63}$/, '대문자·숫자·밑줄만 쓸 수 있습니다')
+    .refine((n) => !RESERVED_ENV_NAME_RE.test(n), '예약된 환경 변수 이름입니다'),
+  scopeNote: z.string().min(1).max(500),
+  expiresAt: z.string().refine((s) => {
+    const t = Date.parse(s)
+    const now = Date.now()
+    return Number.isFinite(t) && t > now && t <= now + MAX_ENV_TTL_MS
+  }, '만료일은 지금 이후, 365일 이내여야 합니다'),
+  readOnlyConfirmed: z.literal(true, {
+    message: '읽기 전용·대상 한정 키임을 확인해야 등록할 수 있습니다',
+  }),
+})
+
 // 입력 그대로 반환한다(디코딩 안 함). 우회 가능성이 있는 형태는 모두 거부한다.
 export function normalizePath(path: string): string {
   const bad = () => new ToolUserError('허용되지 않는 path입니다')
