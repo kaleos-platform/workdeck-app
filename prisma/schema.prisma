@@ -1777,6 +1777,7 @@ enum DelBatchStatus {
 enum DelBatchSource {
   MANUAL
   IMPORT
+  NAVER_API
 }
 
 // 배송 방식 (택배사 + 파일 포맷)
