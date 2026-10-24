@@ -14,6 +14,7 @@ import { startWorkerHeartbeat } from './heartbeat.js'
 import { startBackfillPoller } from './backfill-poller.js'
 import { startCoupangWritePoller } from './coupang-write-poller.js'
 import { pruneScreenshots } from './screenshot-retention.js'
+import { runNaverNbaesongSync } from './naver-nbaesong-runner.js'
 
 // playwright-extra 의 puppeteer 호환 shim 은 브라우저/페이지가 먼저 닫히면
 // cdpSession.send 를 await 되지 않는 promise 에서 던진다. Node 기본 정책상 이 unhandled
@@ -80,5 +81,29 @@ startCoupangWritePoller()
 // 진단용 스크린샷 보존 정리 — 기동 시 1회 + 매일 04:00 KST(수집 09:00 과 겹치지 않게)
 pruneScreenshots()
 cron.schedule('0 4 * * *', pruneScreenshots, { timezone: 'Asia/Seoul' })
+
+// 스마트스토어 N배송 판매 수집 — 매시 20분. 네이버 호출은 IP 가 등록된 이 워커에서만 한다.
+let nbaesongRunning = false
+cron.schedule(
+  '20 * * * *',
+  async () => {
+    if (nbaesongRunning) return
+    nbaesongRunning = true
+    try {
+      const r = await runNaverNbaesongSync()
+      console.log(
+        `[${new Date().toISOString()}] N배송 수집 완료: stores=${r.stores} days=${r.days} failed=${r.failed}`
+      )
+    } catch (error) {
+      console.error(
+        `[${new Date().toISOString()}] N배송 수집 실패:`,
+        error instanceof Error ? error.message : error
+      )
+    } finally {
+      nbaesongRunning = false
+    }
+  },
+  { timezone: 'Asia/Seoul' }
+)
 
 console.log('크론 스케줄러 + 수동 수집 폴링 대기 중...\n')
