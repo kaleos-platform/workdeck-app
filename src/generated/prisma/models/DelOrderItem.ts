@@ -59,6 +59,7 @@ export type DelOrderItemCountAggregateOutputType = {
   quantity: number
   optionId: number
   listingId: number
+  skuMappings: number
   _all: number
 }
 
@@ -96,6 +97,7 @@ export type DelOrderItemCountAggregateInputType = {
   quantity?: true
   optionId?: true
   listingId?: true
+  skuMappings?: true
   _all?: true
 }
 
@@ -192,6 +194,7 @@ export type DelOrderItemGroupByOutputType = {
   quantity: number
   optionId: string | null
   listingId: string | null
+  skuMappings: runtime.JsonValue | null
   _count: DelOrderItemCountAggregateOutputType | null
   _avg: DelOrderItemAvgAggregateOutputType | null
   _sum: DelOrderItemSumAggregateOutputType | null
@@ -224,6 +227,7 @@ export type DelOrderItemWhereInput = {
   quantity?: Prisma.IntFilter<"DelOrderItem"> | number
   optionId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
   listingId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
+  skuMappings?: Prisma.JsonNullableFilter<"DelOrderItem">
   order?: Prisma.XOR<Prisma.DelOrderScalarRelationFilter, Prisma.DelOrderWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionNullableScalarRelationFilter, Prisma.InvProductOptionWhereInput> | null
   listing?: Prisma.XOR<Prisma.ProductListingNullableScalarRelationFilter, Prisma.ProductListingWhereInput> | null
@@ -237,6 +241,7 @@ export type DelOrderItemOrderByWithRelationInput = {
   quantity?: Prisma.SortOrder
   optionId?: Prisma.SortOrderInput | Prisma.SortOrder
   listingId?: Prisma.SortOrderInput | Prisma.SortOrder
+  skuMappings?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.DelOrderOrderByWithRelationInput
   option?: Prisma.InvProductOptionOrderByWithRelationInput
   listing?: Prisma.ProductListingOrderByWithRelationInput
@@ -253,6 +258,7 @@ export type DelOrderItemWhereUniqueInput = Prisma.AtLeast<{
   quantity?: Prisma.IntFilter<"DelOrderItem"> | number
   optionId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
   listingId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
+  skuMappings?: Prisma.JsonNullableFilter<"DelOrderItem">
   order?: Prisma.XOR<Prisma.DelOrderScalarRelationFilter, Prisma.DelOrderWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionNullableScalarRelationFilter, Prisma.InvProductOptionWhereInput> | null
   listing?: Prisma.XOR<Prisma.ProductListingNullableScalarRelationFilter, Prisma.ProductListingWhereInput> | null
@@ -266,6 +272,7 @@ export type DelOrderItemOrderByWithAggregationInput = {
   quantity?: Prisma.SortOrder
   optionId?: Prisma.SortOrderInput | Prisma.SortOrder
   listingId?: Prisma.SortOrderInput | Prisma.SortOrder
+  skuMappings?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DelOrderItemCountOrderByAggregateInput
   _avg?: Prisma.DelOrderItemAvgOrderByAggregateInput
   _max?: Prisma.DelOrderItemMaxOrderByAggregateInput
@@ -283,12 +290,14 @@ export type DelOrderItemScalarWhereWithAggregatesInput = {
   quantity?: Prisma.IntWithAggregatesFilter<"DelOrderItem"> | number
   optionId?: Prisma.StringNullableWithAggregatesFilter<"DelOrderItem"> | string | null
   listingId?: Prisma.StringNullableWithAggregatesFilter<"DelOrderItem"> | string | null
+  skuMappings?: Prisma.JsonNullableWithAggregatesFilter<"DelOrderItem">
 }
 
 export type DelOrderItemCreateInput = {
   id?: string
   name: string
   quantity: number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order: Prisma.DelOrderCreateNestedOneWithoutItemsInput
   option?: Prisma.InvProductOptionCreateNestedOneWithoutDelOrderItemsInput
   listing?: Prisma.ProductListingCreateNestedOneWithoutDelItemsInput
@@ -302,6 +311,7 @@ export type DelOrderItemUncheckedCreateInput = {
   quantity: number
   optionId?: string | null
   listingId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOrderItemInput
 }
 
@@ -309,6 +319,7 @@ export type DelOrderItemUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.DelOrderUpdateOneRequiredWithoutItemsNestedInput
   option?: Prisma.InvProductOptionUpdateOneWithoutDelOrderItemsNestedInput
   listing?: Prisma.ProductListingUpdateOneWithoutDelItemsNestedInput
@@ -322,6 +333,7 @@ export type DelOrderItemUncheckedUpdateInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOrderItemNestedInput
 }
 
@@ -332,12 +344,14 @@ export type DelOrderItemCreateManyInput = {
   quantity: number
   optionId?: string | null
   listingId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemUncheckedUpdateManyInput = {
@@ -347,6 +361,7 @@ export type DelOrderItemUncheckedUpdateManyInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemListRelationFilter = {
@@ -366,6 +381,7 @@ export type DelOrderItemCountOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   listingId?: Prisma.SortOrder
+  skuMappings?: Prisma.SortOrder
 }
 
 export type DelOrderItemAvgOrderByAggregateInput = {
@@ -543,6 +559,7 @@ export type DelOrderItemCreateWithoutOptionInput = {
   id?: string
   name: string
   quantity: number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order: Prisma.DelOrderCreateNestedOneWithoutItemsInput
   listing?: Prisma.ProductListingCreateNestedOneWithoutDelItemsInput
   fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOrderItemInput
@@ -554,6 +571,7 @@ export type DelOrderItemUncheckedCreateWithoutOptionInput = {
   name: string
   quantity: number
   listingId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOrderItemInput
 }
 
@@ -593,12 +611,14 @@ export type DelOrderItemScalarWhereInput = {
   quantity?: Prisma.IntFilter<"DelOrderItem"> | number
   optionId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
   listingId?: Prisma.StringNullableFilter<"DelOrderItem"> | string | null
+  skuMappings?: Prisma.JsonNullableFilter<"DelOrderItem">
 }
 
 export type DelOrderItemCreateWithoutOrderInput = {
   id?: string
   name: string
   quantity: number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   option?: Prisma.InvProductOptionCreateNestedOneWithoutDelOrderItemsInput
   listing?: Prisma.ProductListingCreateNestedOneWithoutDelItemsInput
   fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOrderItemInput
@@ -610,6 +630,7 @@ export type DelOrderItemUncheckedCreateWithoutOrderInput = {
   quantity: number
   optionId?: string | null
   listingId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOrderItemInput
 }
 
@@ -643,6 +664,7 @@ export type DelOrderItemCreateWithoutListingInput = {
   id?: string
   name: string
   quantity: number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order: Prisma.DelOrderCreateNestedOneWithoutItemsInput
   option?: Prisma.InvProductOptionCreateNestedOneWithoutDelOrderItemsInput
   fulfillments?: Prisma.DelOrderItemFulfillmentCreateNestedManyWithoutOrderItemInput
@@ -654,6 +676,7 @@ export type DelOrderItemUncheckedCreateWithoutListingInput = {
   name: string
   quantity: number
   optionId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedCreateNestedManyWithoutOrderItemInput
 }
 
@@ -687,6 +710,7 @@ export type DelOrderItemCreateWithoutFulfillmentsInput = {
   id?: string
   name: string
   quantity: number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order: Prisma.DelOrderCreateNestedOneWithoutItemsInput
   option?: Prisma.InvProductOptionCreateNestedOneWithoutDelOrderItemsInput
   listing?: Prisma.ProductListingCreateNestedOneWithoutDelItemsInput
@@ -699,6 +723,7 @@ export type DelOrderItemUncheckedCreateWithoutFulfillmentsInput = {
   quantity: number
   optionId?: string | null
   listingId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemCreateOrConnectWithoutFulfillmentsInput = {
@@ -721,6 +746,7 @@ export type DelOrderItemUpdateWithoutFulfillmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.DelOrderUpdateOneRequiredWithoutItemsNestedInput
   option?: Prisma.InvProductOptionUpdateOneWithoutDelOrderItemsNestedInput
   listing?: Prisma.ProductListingUpdateOneWithoutDelItemsNestedInput
@@ -733,6 +759,7 @@ export type DelOrderItemUncheckedUpdateWithoutFulfillmentsInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemCreateManyOptionInput = {
@@ -741,12 +768,14 @@ export type DelOrderItemCreateManyOptionInput = {
   name: string
   quantity: number
   listingId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemUpdateWithoutOptionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.DelOrderUpdateOneRequiredWithoutItemsNestedInput
   listing?: Prisma.ProductListingUpdateOneWithoutDelItemsNestedInput
   fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOrderItemNestedInput
@@ -758,6 +787,7 @@ export type DelOrderItemUncheckedUpdateWithoutOptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOrderItemNestedInput
 }
 
@@ -767,6 +797,7 @@ export type DelOrderItemUncheckedUpdateManyWithoutOptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemCreateManyOrderInput = {
@@ -775,12 +806,14 @@ export type DelOrderItemCreateManyOrderInput = {
   quantity: number
   optionId?: string | null
   listingId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   option?: Prisma.InvProductOptionUpdateOneWithoutDelOrderItemsNestedInput
   listing?: Prisma.ProductListingUpdateOneWithoutDelItemsNestedInput
   fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOrderItemNestedInput
@@ -792,6 +825,7 @@ export type DelOrderItemUncheckedUpdateWithoutOrderInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOrderItemNestedInput
 }
 
@@ -801,6 +835,7 @@ export type DelOrderItemUncheckedUpdateManyWithoutOrderInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemCreateManyListingInput = {
@@ -809,12 +844,14 @@ export type DelOrderItemCreateManyListingInput = {
   name: string
   quantity: number
   optionId?: string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DelOrderItemUpdateWithoutListingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.DelOrderUpdateOneRequiredWithoutItemsNestedInput
   option?: Prisma.InvProductOptionUpdateOneWithoutDelOrderItemsNestedInput
   fulfillments?: Prisma.DelOrderItemFulfillmentUpdateManyWithoutOrderItemNestedInput
@@ -826,6 +863,7 @@ export type DelOrderItemUncheckedUpdateWithoutListingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   fulfillments?: Prisma.DelOrderItemFulfillmentUncheckedUpdateManyWithoutOrderItemNestedInput
 }
 
@@ -835,6 +873,7 @@ export type DelOrderItemUncheckedUpdateManyWithoutListingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   optionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skuMappings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 
@@ -875,6 +914,7 @@ export type DelOrderItemSelect<ExtArgs extends runtime.Types.Extensions.Internal
   quantity?: boolean
   optionId?: boolean
   listingId?: boolean
+  skuMappings?: boolean
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
   listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
@@ -889,6 +929,7 @@ export type DelOrderItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   quantity?: boolean
   optionId?: boolean
   listingId?: boolean
+  skuMappings?: boolean
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
   listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
@@ -901,6 +942,7 @@ export type DelOrderItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   quantity?: boolean
   optionId?: boolean
   listingId?: boolean
+  skuMappings?: boolean
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
   listing?: boolean | Prisma.DelOrderItem$listingArgs<ExtArgs>
@@ -913,9 +955,10 @@ export type DelOrderItemSelectScalar = {
   quantity?: boolean
   optionId?: boolean
   listingId?: boolean
+  skuMappings?: boolean
 }
 
-export type DelOrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "name" | "quantity" | "optionId" | "listingId", ExtArgs["result"]["delOrderItem"]>
+export type DelOrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "name" | "quantity" | "optionId" | "listingId" | "skuMappings", ExtArgs["result"]["delOrderItem"]>
 export type DelOrderItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.DelOrderDefaultArgs<ExtArgs>
   option?: boolean | Prisma.DelOrderItem$optionArgs<ExtArgs>
@@ -949,6 +992,7 @@ export type $DelOrderItemPayload<ExtArgs extends runtime.Types.Extensions.Intern
     quantity: number
     optionId: string | null
     listingId: string | null
+    skuMappings: runtime.JsonValue | null
   }, ExtArgs["result"]["delOrderItem"]>
   composites: {}
 }
@@ -1382,6 +1426,7 @@ export interface DelOrderItemFieldRefs {
   readonly quantity: Prisma.FieldRef<"DelOrderItem", 'Int'>
   readonly optionId: Prisma.FieldRef<"DelOrderItem", 'String'>
   readonly listingId: Prisma.FieldRef<"DelOrderItem", 'String'>
+  readonly skuMappings: Prisma.FieldRef<"DelOrderItem", 'Json'>
 }
     
 
