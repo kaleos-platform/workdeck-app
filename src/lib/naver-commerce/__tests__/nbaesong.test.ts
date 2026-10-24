@@ -1,6 +1,32 @@
 import fixtures from './fixtures/product-orders.json'
-import { toProductOrder } from '../client'
+import type { NaverProductOrder } from '../client'
 import { EXCLUDED_STATUSES, isNbaesong, kstDay, nbaesongItemName } from '../nbaesong'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// 워커의 toProductOrder 와 같은 매핑(테스트용 축약)
+type Raw = { content: { order: Record<string, any>; productOrder: Record<string, any> } }
+const toProductOrder = (raw: unknown): NaverProductOrder => {
+  const { order: o, productOrder: p } = (raw as Raw).content
+  return {
+    orderId: o.orderId,
+    productOrderId: p.productOrderId,
+    paymentDate: o.paymentDate,
+    productName: p.productName ?? '',
+    quantity: p.quantity ?? 0,
+    remainQuantity: p.remainQuantity ?? 0,
+    totalPaymentAmount: p.totalPaymentAmount ?? 0,
+    remainPaymentAmount: p.remainPaymentAmount ?? 0,
+    productOrderStatus: p.productOrderStatus ?? '',
+    claimType: p.claimType ?? null,
+    deliveryAttributeType: p.deliveryAttributeType ?? null,
+    logisticsCompanyId: p.logisticsCompanyId ?? null,
+    skuMappings: (p.skuMappings ?? []).map((s: Record<string, any>) => ({
+      nsBarcode: s.nsBarcode ?? '',
+      pickingQuantityPerOrder: s.pickingQuantityPerOrder ?? 0,
+    })),
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 describe('isNbaesong', () => {
   it('aml 전부 true', () =>
