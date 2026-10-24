@@ -26,6 +26,27 @@
 - **Task 1 정정(Task 1b)**: `EXTERNAL_SOURCES` 는 보관장소 연결 드롭다운(`location-manager.tsx:341`)도 쓰므로 `naver_nbaesong` 을 거기서 **제거**. 대신 `src/lib/inv/external-sources.ts` 에 `NBAESONG_SOURCE_PREFIX = 'naver_nbaesong:'`, `nbaesongExternalSource(storeKey)`, `isNbaesongSource(v)`, `channelSourceLabel(v): string | null`(로켓·N배송 라벨) 추가, `channel-manager.tsx:448` 배지를 `channelSourceLabel` 로 교체. 테스트: `isExternalSource('naver_nbaesong:aml') === false`, `channelSourceLabel('naver_nbaesong:aml') === '스마트스토어 N배송'`.
 - **API 호출 IP**: 커머스API센터가 앱별 호출 IP(최대 3) 등록을 요구 → Vercel(고정 IP 없음) 불가 가능성 높음. Task 0 에서 확정, 필요 시 Task 5 cron 을 맥미니 워커(`worker/`, launchd)로 이전.
 
+## Task 0 결과 (2026-10-25 실측) — 아래가 이후 Task 서명보다 우선
+
+- **토큰**: `POST /external/v1/oauth2/token` bcrypt 서명 방식 그대로 동작, `expires_in` 10799초. 두 스토어(`AML`/`KREAMD`) 모두 200.
+- **조회 API**: `GET /external/v1/pay-order/seller/product-orders?from=<ISO+09:00>&to=<ISO+09:00>&rangeType=PAYED_DATETIME` 존재·동작. 응답 `data.contents[]`(각 `{productOrderId, content:{order, productOrder, currentClaim?, completedClaims?}}`), `data.pagination{page,size:300,hasNext}`. 1일 조회로 충분(최대 22건/일).
+- **Rate limit**: 연속 호출 시 `429 GW.RATE_LIMIT` → 호출 사이 **1.5초 대기** 필수(실측 OK).
+- **N배송 판별**: `productOrder.deliveryAttributeType === 'ARRIVAL_GUARANTEE'` + `logisticsCompanyId` 존재(실측 전건 일치). 일반배송은 `'NORMAL'`·물류사 없음.
+- **필드**: `productOption` **없음** — `productName` 에 옵션이 포함됨(`"… 누드, XL(105), 5장"`). `standardPurchaseOptions[]{optionId,optionName,valueName}`, **`skuMappings[]{nsId, nsBarcode, pickingQuantityPerOrder}`**(세트 = 같은 바코드 × pickingQuantityPerOrder). 금액 `totalPaymentAmount`, 부분취소 `remainQuantity`/`remainPaymentAmount`, 취소 `claimType:'CANCEL'`.
+- **N배송 시작일**: AML `2026-10-12`, KREAMD `2026-10-08` (이후 주문 100% N배송).
+- **prod 매핑**: Space `의식주의`, 대표 채널 AML=`N 에이엠엘 스마트스토어`, KREAMD=`크림드 스마트스토어`, 위치 `3PL`(배송 방식 `3PL`·`롯데택배` 가 이 위치에 연결).
+- **중복 실측**: `DelOrder.orderNumber` = API `order.orderId`. AML 10-12·10-13 N배송 26건이 이미 배송 엑셀(MANUAL·3PL·COMPLETED, 재고 차감됨)로 존재. 그 외 N배송은 엑셀 미적재.
+- **alias 실측**: 기존 스마트스토어 alias 는 API 상품명과 불일치(AML 엑셀 품목은 '에이엠엘 리플렛'뿐). 워크덱에 바코드 저장 컬럼 없음(`InvProductOption.sku` 는 `HLP-PNK-ML` 형식).
+- **미확정**: 호출 IP 강제 여부(api.commerce.naver.com 은 IPv6 없음 → 로컬에서 반증 불가). Task 5 Step 1 에서 preview(Vercel) 에서 토큰·조회 1회로 판정 → 실패면 cron 을 맥미니 워커로.
+- fixture: `src/lib/naver-commerce/__tests__/fixtures/product-orders.json` (`aml` 22건 N배송, `kreamdNormal` 10건 일반배송, `amlCancel` 1건; PII 제거·ID 가명화).
+
+### 결과에 따른 개정 (사용자 결정 2026-10-25)
+1. **매칭 = 바코드 우선 + 상품명 폴백.** 바코드 alias 는 기존 `ChannelProductAlias` 재사용, `aliasName = 'bc:<nsBarcode>'`(스키마 변경 없음), 대상은 옵션 1개(1단위). 품목의 모든 `skuMappings` 가 bc alias 로 해석되면 fulfillments = 각 `{optionId, quantity × pickingQuantityPerOrder}`; 하나라도 미해석이면 `productName` alias(N배송 채널 → 대표 채널) 폴백.
+   - `DelOrderItem.skuMappings Json?` 컬럼 추가(Task 1 에 이은 additive 마이그레이션, Task 4 소속) — 매칭 라우트가 바코드를 알 수 있게.
+   - Task 6 매칭 라우트: NAVER_API 품목이고 `skuMappings.length === 1` 이며 option 모드면 `bc:<barcode>` alias 도 upsert(1단위 옵션). 그 외는 기존 상품명 alias.
+   - `nbaesongItemName(po) = po.productName` (옵션 결합 없음).
+2. **중복 = 양방향 건너뛰기.** (a) `syncNbaesongDay`: 같은 Space 의 **대표 채널**에 `orderNumber = orderId` 인 non-NAVER_API DelOrder 가 있으면 그 주문 적재 생략(OUTBOUND 도 없음 — 이미 엑셀 경로가 차감). (b) 배송 엑셀 임포트(`app/api/sh/shipping/import/route.ts`): 대상 채널을 대표로 둔 N배송 채널의 NAVER_API 배치에 같은 `orderNumber` 가 있으면 그 주문 생략, 응답 `createErrors` 에 `'N배송 자동 수집 주문 — 건너뜀'`. 기존 AML 26건은 그대로 둔다. 테스트: Task 4 `skips order already imported via excel`, import route `skips NAVER_API orderNumber`.
+
 ## Global Constraints
 
 - 스키마 변경은 `npx prisma migrate dev --name <작업명>` 만. `db push`·prod 직접 SQL 금지. shadow DB 깨지면 memory `reference_migrate_shadow_bypass` 절차.
