@@ -256,4 +256,16 @@ describe('BatchList', () => {
     expect(getUrls[2].searchParams.get('from')).toBe('2026-08-25')
     expect(screen.queryByText('완료일 라벨')).not.toBeInTheDocument()
   })
+
+  test('N배송 자동 수집 묶음은 배지를 보이고 삭제 버튼을 숨긴다', async () => {
+    mockBatches([
+      { ...batch, id: 'nb', label: 'N배송 shop1 2026-10-25', source: 'NAVER_API' },
+      batch,
+    ])
+    renderBatchList()
+
+    await screen.findByText('N배송 shop1 2026-10-25')
+    expect(screen.getByText('N배송 자동')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: '배송 묶음 삭제' })).toHaveLength(1)
+  })
 })

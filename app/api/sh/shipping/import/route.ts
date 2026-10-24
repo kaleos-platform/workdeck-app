@@ -122,6 +122,25 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // N배송 자동 수집으로 이미 들어온 주문(대표 채널 = 이 채널)은 엑셀로 다시 넣지 않는다 — 재고 이중 차감 방지.
+  const orderNumbers = [...new Set(rows.map((r) => r.orderNumber).filter((n): n is string => !!n))]
+  const autoCollected =
+    orderNumbers.length > 0
+      ? new Set(
+          (
+            await prisma.delOrder.findMany({
+              where: {
+                spaceId: resolved.space.id,
+                orderNumber: { in: orderNumbers },
+                batch: { source: 'NAVER_API' },
+                channel: { representativeChannelId: channelId },
+              },
+              select: { orderNumber: true },
+            })
+          ).map((o) => o.orderNumber)
+        )
+      : new Set<string | null>()
+
   // 채널별 상품 별칭으로 자동 매칭 (별칭은 채널 스코프, 우선순위 fulfillments > listing > option)
   const resolveItem = await loadItemResolver(
     resolved.space.id,
@@ -137,6 +156,11 @@ export async function POST(req: NextRequest) {
   for (const group of groups.values()) {
     const first = group.rows[0]
     const rowNum = group.firstRowNum
+
+    if (first.orderNumber && autoCollected.has(first.orderNumber)) {
+      createErrors.push({ row: rowNum, message: 'N배송 자동 수집 주문 — 건너뜀' })
+      continue
+    }
 
     try {
       const encrypted = encryptOrderPii({

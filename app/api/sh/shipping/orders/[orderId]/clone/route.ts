@@ -21,6 +21,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     where: { id: orderId },
     select: {
       spaceId: true,
+      batch: { select: { source: true } },
       shippingMethodId: true,
       channelId: true,
       recipientNameEnc: true,
@@ -39,6 +40,8 @@ export async function POST(_req: NextRequest, { params }: Params) {
   if (!source || source.spaceId !== resolved.space.id) {
     return errorResponse('주문을 찾을 수 없습니다', 404)
   }
+  if (source.batch.source === 'NAVER_API')
+    return errorResponse('N배송 자동 수집 주문은 변경할 수 없습니다', 400)
 
   // 현재 DRAFT 묶음 확보 — 없으면 생성 (등록 화면 loadBaseData 패턴)
   let batch = await prisma.delBatch.findFirst({
