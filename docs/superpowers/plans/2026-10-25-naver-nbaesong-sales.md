@@ -18,7 +18,7 @@
 ## 2026-10-25 개정 — 스마트스토어 2개 (에이엠엘·크림드, 같은 Space)
 
 커머스API 앱은 **스토어별 발급** → 키 2쌍. 아래 규칙이 이후 모든 Task 의 서명보다 우선한다.
-- `storeKey`: 스토어 식별 slug(`aml`, `creamd` 등, 사용자 입력, `^[a-z0-9-]{2,20}$`).
+- `storeKey`: 스토어 식별 slug(`aml`, `kreamd` 등, 사용자 입력, `^[a-z0-9-]{2,20}$`).
 - SpaceCredential 은 Space 당 1행 유지(`@@unique([spaceId, provider])`). `NaverCommerceSecret = { stores: Record<storeKey, { clientId; clientSecret }> }`, `NaverCommerceConfig = { locationId: string; stores: Array<{ key: string; label: string; startDate: string; representativeChannelId: string | null; backfilledThrough: string | null }> }` (위킵 단일 풀 → 위치는 공용 1개).
 - N배송 채널은 **스토어당 1개**: externalSource `naver_nbaesong:<storeKey>`, 채널명 `<label> N배송`. 대표 채널=그 스토어 스마트스토어 채널.
 - DelBatch label `N배송 <storeKey> <YYYY-MM-DD>`, OUTBOUND referenceId `naver-nb:<storeKey>:<YYYY-MM-DD>:<optionId>`.
