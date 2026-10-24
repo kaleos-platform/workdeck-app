@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
   // N배송 자동 수집으로 이미 들어온 주문(대표 채널 = 이 채널)은 엑셀로 다시 넣지 않는다 — 재고 이중 차감 방지.
   const orderNumbers = [...new Set(rows.map((r) => r.orderNumber).filter((n): n is string => !!n))]
   const autoCollected =
-    orderNumbers.length > 0
+    channelId && orderNumbers.length > 0
       ? new Set(
           (
             await prisma.delOrder.findMany({

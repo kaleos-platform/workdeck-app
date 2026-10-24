@@ -2,7 +2,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 jest.mock('@/lib/prisma', () => ({
-  prisma: { spaceCredential: { findMany: jest.fn(), findUnique: jest.fn(), update: jest.fn() } },
+  prisma: {
+    spaceCredential: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+    },
+  },
 }))
 jest.mock('@/lib/worker-auth', () => ({ authenticateWorker: jest.fn() }))
 jest.mock('@/lib/naver-commerce/nbaesong-channel', () => ({
@@ -24,7 +31,7 @@ import { POST as ingest } from '../ingest/route'
 import { POST as finish } from '../finish/route'
 
 const db = prisma.spaceCredential as unknown as Record<
-  'findMany' | 'findUnique' | 'update',
+  'findMany' | 'findUnique' | 'update' | 'updateMany',
   jest.Mock
 >
 const auth = authenticateWorker as jest.Mock
@@ -180,16 +187,32 @@ describe('finish', () => {
     attempted: ['2026-10-01', '2026-10-02'],
     ok: ['2026-10-01'],
   }
-  it('커서 전진 + lastError 해소', async () => {
+  it('커서 전진 + 그 스토어 오류만 해소', async () => {
     const res = await finish(post(body))
     expect(await res.json()).toEqual({ backfilledThrough: '2026-10-01' })
     const data = db.update.mock.calls[0]![0].data
     expect(data.config.stores[0].backfilledThrough).toBe('2026-10-01')
-    expect(data.lastError).toBeNull()
+    expect(data).not.toHaveProperty('lastError')
+    expect(db.updateMany).toHaveBeenCalledWith({
+      where: { id: 'cred1', lastError: { startsWith: '[aml] ' } },
+      data: { lastError: null },
+    })
   })
-  it('error 면 기록하고 lastError 를 지우지 않는다', async () => {
+  it('error 면 스토어 접두어로 기록하고 해소하지 않는다', async () => {
     await finish(post({ ...body, error: 'boom' }))
-    expect(recordCredentialError).toHaveBeenCalledWith('cred1', 'boom')
+    expect(recordCredentialError).toHaveBeenCalledWith('cred1', '[aml] boom')
     expect(db.update.mock.calls[0]![0].data).not.toHaveProperty('lastError')
+    expect(db.updateMany).not.toHaveBeenCalled()
+  })
+  it('aml 실패 후 kreamd 성공 → aml 오류는 남는다', async () => {
+    db.findUnique.mockResolvedValue({
+      ...row,
+      config: { ...row.config, stores: [store, { ...store, key: 'kreamd' }] },
+    })
+    await finish(post({ ...body, error: 'boom' }))
+    await finish(post({ ...body, storeKey: 'kreamd' }))
+    expect(recordCredentialError).toHaveBeenCalledWith('cred1', '[aml] boom')
+    expect(db.updateMany).toHaveBeenCalledTimes(1)
+    expect(db.updateMany.mock.calls[0]![0].where.lastError).toEqual({ startsWith: '[kreamd] ' })
   })
 })

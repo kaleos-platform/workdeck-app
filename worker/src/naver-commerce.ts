@@ -68,7 +68,8 @@ export async function issueToken(secret: NaverCommerceStoreSecret): Promise<stri
   return token
 }
 
-const str = (v: unknown): string | null => (typeof v === 'string' && v ? v : null)
+// ingest 검증(문자열 500자)에 걸려 하루치가 통째로 거부되지 않도록 미리 자른다.
+const str = (v: unknown): string | null => (typeof v === 'string' && v ? v.slice(0, 500) : null)
 const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
 
 export function toProductOrder(raw: unknown): NaverProductOrder {

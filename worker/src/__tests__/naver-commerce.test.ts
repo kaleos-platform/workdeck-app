@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import bcrypt from 'bcryptjs'
-import { fetchPaidProductOrders, issueToken, signClientSecret } from '../naver-commerce.js'
+import {
+  fetchPaidProductOrders,
+  issueToken,
+  signClientSecret,
+  toProductOrder,
+} from '../naver-commerce.js'
 
 const fixtures = JSON.parse(
   readFileSync(
@@ -99,5 +104,19 @@ describe('fetchPaidProductOrders', () => {
     mockFetch.mockImplementation(async () => page([], true))
     await expect(run()).rejects.toThrow(/page/)
     expect(mockFetch).toHaveBeenCalledTimes(100)
+  })
+})
+
+describe('toProductOrder', () => {
+  it('문자열은 500자로 자른다(ingest 검증 한도)', () => {
+    const long = 'x'.repeat(600)
+    const o = toProductOrder({
+      content: {
+        order: { orderId: 'o1', paymentDate: '2026-10-22T01:00:00.000+09:00' },
+        productOrder: { productName: long, skuMappings: [{ nsBarcode: long }] },
+      },
+    })
+    expect(o.productName).toHaveLength(500)
+    expect(o.skuMappings[0].nsBarcode).toHaveLength(500)
   })
 })

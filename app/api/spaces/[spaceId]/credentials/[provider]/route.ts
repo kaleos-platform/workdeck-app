@@ -166,12 +166,28 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       where: { spaceId_provider: { spaceId, provider } },
       select: { config: true },
     })
-    const cursors = new Map(
-      ((prev?.config as NaverCommerceConfig | null)?.stores ?? []).map((st) => [
-        st.key,
-        st.backfilledThrough,
-      ])
-    )
+    const prevConfig = prev?.config as NaverCommerceConfig | null | undefined
+    const prevStores = prevConfig?.stores ?? []
+    if (new Set(nc.config.stores.map((st) => st.label)).size !== nc.config.stores.length)
+      return errorResponse('스토어 이름이 중복됩니다', 400)
+    // 수집 이력 = 커서 또는 N배송 묶음. 매칭 저장이 커서를 null 로 되돌리므로 묶음도 본다.
+    const collected = new Set<string>()
+    for (const st of prevStores) {
+      const has =
+        st.backfilledThrough != null ||
+        !!(await prisma.delBatch.findFirst({
+          where: { spaceId, source: 'NAVER_API', label: { startsWith: `N배송 ${st.key} ` } },
+          select: { id: true },
+        }))
+      if (has) collected.add(st.key)
+    }
+    const newKeys = new Set(nc.config.stores.map((st) => st.key))
+    if ([...collected].some((k) => !newKeys.has(k)))
+      return errorResponse('수집 이력이 있는 스토어는 삭제할 수 없습니다', 400)
+    // 기존 OUTBOUND 가 옛 위치에 남으므로 위치를 바꾸려면 재고 대조 후 새로 등록해야 한다.
+    if (collected.size > 0 && prevConfig?.locationId !== nc.config.locationId)
+      return errorResponse('위치 변경은 재고 대조 후 재등록이 필요합니다', 400)
+    const cursors = new Map(prevStores.map((st) => [st.key, st.backfilledThrough]))
     ncStores = nc.config.stores.map((st) => ({
       ...st,
       backfilledThrough: cursors.get(st.key) ?? null,
