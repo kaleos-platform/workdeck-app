@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { normalizeAlias } from '@/lib/sh/product-matching'
+import { nbaesongStoreKey } from '@/lib/inv/external-sources'
+import { kstDay } from '@/lib/naver-commerce/nbaesong'
+import { recomputeNbaesongOutbound } from '@/lib/naver-commerce/nbaesong-sync'
+import { NAVER_COMMERCE_PROVIDER, type NaverCommerceConfig } from '@/lib/naver-commerce/client'
+import { loadSpaceCredentialConfig } from '@/lib/agent/integrations/space-credential'
 
 type Params = { params: Promise<{ orderId: string; itemId: string }> }
 
@@ -32,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       : 'option'
   const rawOptionId = body?.optionId
   const rawListingId = body?.listingId
-  const saveAlias = body?.saveAlias !== false // default true
+  const rawSaveAlias = body?.saveAlias !== false // default true
 
   // 하위 호환: mode 없이 optionId만 온 경우
   if (!body?.mode) {
@@ -42,11 +47,50 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const item = await prisma.delOrderItem.findFirst({
     where: { id: itemId, orderId },
     include: {
-      order: { select: { id: true, spaceId: true, channelId: true } },
+      order: {
+        select: {
+          id: true,
+          spaceId: true,
+          channelId: true,
+          orderDate: true,
+          batch: { select: { source: true } },
+          channel: { select: { externalSource: true } },
+        },
+      },
     },
   })
   if (!item || item.order.spaceId !== resolved.space.id) {
     return errorResponse('주문 아이템을 찾을 수 없습니다', 404)
+  }
+
+  // N배송 자동 수집 주문: 시간별 재동기화가 DelOrder 를 지우고 다시 만들므로 매칭은 alias 로만 살아남는다.
+  const isNbaesong = item.order.batch.source === 'NAVER_API'
+  if (isNbaesong && mode === 'clear') {
+    return errorResponse('N배송 자동 수집 주문은 매칭 해제할 수 없습니다', 400)
+  }
+  const saveAlias = isNbaesong || rawSaveAlias
+
+  // 매칭 변경 후 해당 일자 N배송 출고 재고를 다시 계산한다. 매칭은 이미 저장됐으므로 실패해도 요청은 성공 처리하고
+  // (다음 시간별 동기화가 재계산) 로그만 남긴다.
+  const recomputeIfNbaesong = async () => {
+    if (!isNbaesong || !item.order.channelId) return
+    const storeKey = nbaesongStoreKey(item.order.channel?.externalSource ?? '')
+    if (!storeKey) return
+    try {
+      const config = await loadSpaceCredentialConfig<NaverCommerceConfig>(
+        resolved.space.id,
+        NAVER_COMMERCE_PROVIDER
+      )
+      await recomputeNbaesongOutbound({
+        spaceId: resolved.space.id,
+        storeKey,
+        channelId: item.order.channelId,
+        locationId: config.locationId,
+        dayKst: kstDay(item.order.orderDate.toISOString()),
+      })
+    } catch (err) {
+      console.error('[match] N배송 출고 재계산 실패', err)
+    }
   }
 
   if (mode === 'listing') {
@@ -104,6 +148,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }
     }
 
+    await recomputeIfNbaesong()
     return NextResponse.json({
       ok: true,
       mode: 'listing',
@@ -193,6 +238,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         }
       }
 
+      await recomputeIfNbaesong()
       const totalQuantity = list.reduce((s, f) => s + f.perSetQuantity * orderQty, 0)
       return NextResponse.json({
         ok: true,
@@ -251,6 +297,31 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }
     }
 
+    // N배송 단일 SKU 상품은 바코드로도 다음 동기화에서 자동 매칭되도록 alias 를 함께 남긴다.
+    const skuMappings = Array.isArray(item.skuMappings)
+      ? (item.skuMappings as { nsBarcode?: unknown }[])
+      : []
+    const nsBarcode = skuMappings.length === 1 ? skuMappings[0]?.nsBarcode : null
+    if (isNbaesong && item.order.channelId && typeof nsBarcode === 'string' && nsBarcode) {
+      await prisma.$transaction(async (tx) => {
+        const alias = await tx.channelProductAlias.upsert({
+          where: {
+            channelId_aliasName: { channelId: item.order.channelId!, aliasName: `bc:${nsBarcode}` },
+          },
+          update: { optionId, listingId: null },
+          create: {
+            spaceId: resolved.space.id,
+            channelId: item.order.channelId!,
+            aliasName: `bc:${nsBarcode}`,
+            optionId,
+            listingId: null,
+          },
+        })
+        await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
+      })
+    }
+
+    await recomputeIfNbaesong()
     return NextResponse.json({
       ok: true,
       mode: 'option',

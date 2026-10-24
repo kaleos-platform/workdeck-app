@@ -203,6 +203,14 @@ export function BatchList({
                           이전
                         </Badge>
                       )}
+                      {batch.source === 'NAVER_API' && (
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 border-green-300 bg-green-50 text-[10px] text-green-700"
+                        >
+                          N배송 자동
+                        </Badge>
+                      )}
                       <span className="block min-w-0 truncate" title={batch.label ?? undefined}>
                         {batch.label || <span className="text-muted-foreground">-</span>}
                       </span>
@@ -214,19 +222,21 @@ export function BatchList({
                     </Badge>
                   </TableCell>
                   <TableCell className="p-1 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setDeleteTarget(batch)
-                        setConfirmText('')
-                      }}
-                      aria-label="배송 묶음 삭제"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    {batch.source !== 'NAVER_API' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDeleteTarget(batch)
+                          setConfirmText('')
+                        }}
+                        aria-label="배송 묶음 삭제"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

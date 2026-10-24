@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   const { batchId } = await params
   const batch = await prisma.delBatch.findUnique({
     where: { id: batchId },
-    select: { spaceId: true, status: true },
+    select: { spaceId: true, status: true, source: true },
   })
   if (!batch || batch.spaceId !== resolved.space.id) {
     return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
@@ -234,6 +234,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   // 검색 시 전량 반환 — page 1 고정, pageSize는 전체 수
   return NextResponse.json({
     data,
+    batchSource: batch.source,
     total,
     page: q ? 1 : page,
     pageSize: q ? total : pageSize,

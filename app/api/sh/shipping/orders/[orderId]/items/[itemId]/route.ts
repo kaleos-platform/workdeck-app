@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const item = await prisma.delOrderItem.findFirst({
     where: { id: itemId, orderId },
     include: {
-      order: { select: { spaceId: true } },
+      order: { select: { spaceId: true, batch: { select: { source: true } } } },
       fulfillments: { select: { id: true, optionId: true, quantity: true } },
       listing: { include: { items: { select: { optionId: true, quantity: true } } } },
     },
@@ -37,6 +37,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!item || item.order.spaceId !== resolved.space.id) {
     return errorResponse('주문 아이템을 찾을 수 없습니다', 404)
   }
+  if (item.order.batch.source === 'NAVER_API')
+    return errorResponse('N배송 자동 수집 주문은 변경할 수 없습니다', 400)
 
   const oldQty = item.quantity
   let newQty = oldQty
@@ -154,11 +156,16 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const item = await prisma.delOrderItem.findFirst({
     where: { id: itemId, orderId },
-    select: { id: true, order: { select: { spaceId: true } } },
+    select: {
+      id: true,
+      order: { select: { spaceId: true, batch: { select: { source: true } } } },
+    },
   })
   if (!item || item.order.spaceId !== resolved.space.id) {
     return errorResponse('주문 아이템을 찾을 수 없습니다', 404)
   }
+  if (item.order.batch.source === 'NAVER_API')
+    return errorResponse('N배송 자동 수집 주문은 변경할 수 없습니다', 400)
 
   await prisma.delOrderItem.delete({ where: { id: itemId } })
 
