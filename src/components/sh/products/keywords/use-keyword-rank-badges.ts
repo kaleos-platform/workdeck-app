@@ -3,7 +3,13 @@
 import { useEffect, useState } from 'react'
 
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
-import { formatRank, sourceShortLabel, type RankSource, type RankStatus } from './rank-format'
+import {
+  formatRank,
+  RANK_TRACKING_ENABLED,
+  sourceShortLabel,
+  type RankSource,
+  type RankStatus,
+} from './rank-format'
 
 type LatestRank = { keyword: string; source: RankSource; status: RankStatus; rank: number | null }
 
@@ -15,7 +21,7 @@ export function useKeywordRankBadges(targetKey: string | null): Record<string, s
   const [badges, setBadges] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    if (!targetKey) {
+    if (!targetKey || !RANK_TRACKING_ENABLED) {
       setBadges({})
       return
     }

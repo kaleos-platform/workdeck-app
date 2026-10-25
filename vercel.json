@@ -31,9 +31,6 @@
     },
     "app/api/cron/hiring-upload-sweep/route.ts": {
       "maxDuration": 60
-    },
-    "app/api/cron/keyword-rank-naver/route.ts": {
-      "maxDuration": 60
     }
   },
   "crons": [
@@ -76,10 +73,6 @@
     {
       "path": "/api/cron/credential-health",
       "schedule": "0 23 * * *"
-    },
-    {
-      "path": "/api/cron/keyword-rank-naver",
-      "schedule": "0 19,20,21 * * *"
     }
   ]
 }
