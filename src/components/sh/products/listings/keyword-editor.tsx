@@ -92,6 +92,8 @@ type Props = {
   readOnly?: boolean
   /** normalizeKeyword(키워드) → 칩 뒤에 붙는 순위 문구(예: '네 12위'). 추적 중인 대상만 넘긴다. */
   rankBadges?: Record<string, string>
+  /** normalizeKeyword(키워드) → 칩 뒤에 붙는 광고 성과 문구(예: '노출 2.1천 · 주문 6'). */
+  adBadges?: Record<string, string>
 }
 
 export function KeywordEditor({
@@ -106,6 +108,7 @@ export function KeywordEditor({
   onCleanup,
   readOnly = false,
   rankBadges,
+  adBadges,
 }: Props) {
   const [draft, setDraft] = useState('')
 
@@ -405,6 +408,11 @@ export function KeywordEditor({
                   </Tooltip>
                 )}
                 <span>{v}</span>
+                {adBadges?.[normalizeKeyword(v)] && (
+                  <span className="text-xs font-normal text-muted-foreground">
+                    {adBadges[normalizeKeyword(v)]}
+                  </span>
+                )}
                 {rankBadges?.[normalizeKeyword(v)] && (
                   <span className="text-xs font-normal text-muted-foreground">
                     {rankBadges[normalizeKeyword(v)]}

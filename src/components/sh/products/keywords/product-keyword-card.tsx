@@ -21,6 +21,8 @@ import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 import { KeywordChangeTimeline } from '../listings/keyword-change-timeline'
 import { KeywordEditor } from '../listings/keyword-editor'
 import { useKeywordRankBadges } from './use-keyword-rank-badges'
+import { KeywordAdPanel } from './keyword-ad-panel'
+import { useKeywordAdPerformance } from './use-keyword-ad-performance'
 import { NameChangeCooldownNotice } from '../listings/name-change-cooldown-notice'
 import { NameCounter } from '../listings/name-counter'
 import { NameValidationPanel } from '../listings/name-validation-panel'
@@ -69,6 +71,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
   const [keywordDraftOpen, setKeywordDraftOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyKey, setHistoryKey] = useState(0)
+  const ad = useKeywordAdPerformance(`${card.kind === 'listing' ? 'ls' : 'cp'}:${card.id}`)
   const rankBadges = useKeywordRankBadges(
     card.rankTracking === false ? null : `${card.kind === 'listing' ? 'ls' : 'cp'}:${card.id}`
   )
@@ -336,6 +339,13 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             rules={rules}
             readOnly={readOnly}
             rankBadges={rankBadges}
+            adBadges={ad.adBadges}
+          />
+          <KeywordAdPanel
+            data={ad.data}
+            value={keywords}
+            onChange={setKeywords}
+            readOnly={readOnly}
           />
         </div>
 
