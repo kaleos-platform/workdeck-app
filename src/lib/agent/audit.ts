@@ -108,16 +108,21 @@ export async function startToolAudit(e: ToolAuditStart): Promise<string> {
  */
 export async function finishToolAudit(id: string, r: ToolAuditFinish): Promise<void> {
   try {
-    await prisma.toolAuditLog.update({
-      where: { id },
-      data: {
-        outcome: r.outcome,
-        error: auditError(r.error),
-        durationMs: r.durationMs,
-        decryptedCredentialIds: r.decryptedCredentialIds,
-      },
-    })
+    await finishToolAuditOrThrow(id, r)
   } catch (err) {
     console.error('[audit] ToolAuditLog 결과 갱신 실패 — 행은 started로 남는다', id, err)
   }
+}
+
+/** finishToolAudit과 같지만 갱신 실패를 던진다 — 기록이 확인돼야 값을 내보내는 경로(wd run ENV 발급) 전용. */
+export async function finishToolAuditOrThrow(id: string, r: ToolAuditFinish): Promise<void> {
+  await prisma.toolAuditLog.update({
+    where: { id },
+    data: {
+      outcome: r.outcome,
+      error: auditError(r.error),
+      durationMs: r.durationMs,
+      decryptedCredentialIds: r.decryptedCredentialIds,
+    },
+  })
 }

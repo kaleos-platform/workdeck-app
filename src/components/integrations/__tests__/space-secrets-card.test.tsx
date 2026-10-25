@@ -27,9 +27,10 @@ const secret = {
   updatedAt: '2026-10-01T00:00:00Z',
 }
 const agents = [
-  { id: 'ag1', name: '에이전트 A', status: 'ACTIVE' },
+  { id: 'ag1', name: '에이전트 A', status: 'ACTIVE', kind: 'agent' },
   { id: 'ag2', name: '에이전트 B', status: 'DISABLED' },
   { id: 'ag3', name: '에이전트 C', status: 'PENDING' },
+  { id: 'ag4', name: '연동 D', status: 'ACTIVE', kind: 'integration' },
 ]
 let fetchMock: jest.Mock
 
@@ -38,6 +39,10 @@ beforeEach(() => {
   fetchMock = jest.fn((url: string, init?: RequestInit) => {
     if (url.startsWith('/api/spaces/members')) return res({ spaceId: 'sp-1', spaceName: 'Space A' })
     if (url === '/api/spaces/sp-1/agents') return res({ agents })
+    if (url === '/api/spaces/sp-1/env-secrets')
+      return init?.method === 'PATCH'
+        ? res({ envSecretsEnabled: true, canManage: true })
+        : res({ envSecretsEnabled: false, canManage: true })
     if (url === '/api/spaces/sp-1/secrets') return res({ secrets: [secret] })
     if (url === '/api/spaces/sp-1/secrets/COUPANG_KEY/reveal' && init?.method === 'POST')
       return res({ value: KEY })
@@ -192,4 +197,94 @@ it('교체 대화상자는 기존 설정·허용 에이전트를 미리 채우�
   expect(body.config).toEqual(config)
   // 비활성(ag2)은 PUT이 거부하므로 빠진다
   expect(body.allowedAgentIds).toEqual(['ag1'])
+})
+
+const CONFIRM =
+  '이 키는 읽기 전용이고 대상이 한정돼 있음을 확인했습니다. Supabase service role, 운영 DB URL, ENCRYPTION_KEY, Vercel·GitHub 쓰기 토큰 같은 쓰기 키는 등록하지 마세요.'
+
+async function openEnv() {
+  await openRegister()
+  fireEvent.change(await screen.findByLabelText('종류'), { target: { value: 'ENV' } })
+}
+
+it('종류 ENV 선택 시 envName·용도·만료일·읽기 전용 확인 체크박스가 보이고, 체크 전에는 저장 비활성', async () => {
+  render(<SpaceSecretsCard />)
+  await openEnv()
+  fireEvent.change(screen.getByLabelText('이름'), { target: { value: 'VERCEL_READ' } })
+  fireEvent.change(screen.getByLabelText('값'), { target: { value: KEY } })
+  fireEvent.change(screen.getByLabelText('환경변수 이름'), {
+    target: { value: 'VERCEL_READ_TOKEN' },
+  })
+  fireEvent.change(screen.getByLabelText('용도'), { target: { value: '배포 조회' } })
+  fireEvent.change(screen.getByLabelText('만료일'), { target: { value: '2026-12-31' } })
+  expect(screen.queryByLabelText('baseUrl')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '저장' })).toBeDisabled()
+  fireEvent.click(screen.getByLabelText(CONFIRM))
+  expect(screen.getByRole('button', { name: '저장' })).toBeEnabled()
+  fireEvent.click(screen.getByRole('button', { name: '저장' }))
+  await waitFor(() => expect(putCall()).toBeTruthy())
+  const body = JSON.parse(putCall()![1].body)
+  expect(body).toEqual({
+    kind: 'ENV',
+    value: KEY,
+    config: {
+      envName: 'VERCEL_READ_TOKEN',
+      scopeNote: '배포 조회',
+      expiresAt: new Date('2026-12-31T23:59:59+09:00').toISOString(),
+      readOnlyConfirmed: true,
+    },
+    allowedAgentIds: [],
+  })
+})
+
+it('ENV 허용 에이전트 목록에 integration은 없다', async () => {
+  render(<SpaceSecretsCard />)
+  await openEnv()
+  expect(await screen.findByLabelText('에이전트 A')).toBeInTheDocument()
+  expect(screen.queryByLabelText('연동 D')).not.toBeInTheDocument()
+})
+
+it('ENV 행은 envName과 만료일을 보여 준다', async () => {
+  const base = fetchMock.getMockImplementation()!
+  const env = (name: string, expiresAt: string) => ({
+    ...secret,
+    name,
+    kind: 'ENV',
+    config: { envName: 'VERCEL_READ_TOKEN', scopeNote: 'x', expiresAt },
+    baseUrl: null,
+    readOpIds: [],
+  })
+  fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+    url === '/api/spaces/sp-1/secrets'
+      ? res({
+          secrets: [env('E1', '2099-12-31T14:59:59.000Z'), env('E2', '2020-01-01T14:59:59.000Z')],
+        })
+      : base(url, init)
+  )
+  render(<SpaceSecretsCard />)
+  expect(await screen.findByText('만료 2099-12-31')).toBeInTheDocument()
+  expect(screen.getAllByText(/VERCEL_READ_TOKEN/)).toHaveLength(2)
+  expect(screen.getByText('만료 2020-01-01')).toBeInTheDocument()
+  expect(screen.getAllByText('만료됨')).toHaveLength(1)
+})
+
+it('OWNER에게만 wd run 허용 스위치가 보이고 토글은 PATCH 결과를 반영한다', async () => {
+  const { unmount } = render(<SpaceSecretsCard />)
+  const sw = await screen.findByRole('switch', { name: 'wd run 허용(개발 키 발급)' })
+  expect(sw).not.toBeChecked()
+  fireEvent.click(sw)
+  await waitFor(() => expect(sw).toBeChecked())
+  const patch = fetchMock.mock.calls.find((c) => c[1]?.method === 'PATCH')!
+  expect(JSON.parse(patch[1].body)).toEqual({ envSecretsEnabled: true })
+  unmount()
+
+  const base = fetchMock.getMockImplementation()!
+  fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+    url === '/api/spaces/sp-1/env-secrets'
+      ? res({ envSecretsEnabled: false, canManage: false })
+      : base(url, init)
+  )
+  render(<SpaceSecretsCard />)
+  await screen.findByText('「Space A」 비밀값')
+  expect(screen.queryByRole('switch')).not.toBeInTheDocument()
 })

@@ -3,6 +3,7 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     spaceSecret: { upsert: jest.fn(), findUnique: jest.fn(), findMany: jest.fn() },
     spaceAgent: { findUnique: jest.fn() },
+    agentToken: { findUnique: jest.fn() },
   },
 }))
 jest.mock('@/lib/crypto/field-crypto', () => ({
@@ -14,6 +15,10 @@ import { decryptField } from '@/lib/crypto/field-crypto'
 import {
   assertSecretUsable,
   listSecretMeta,
+  SecretUnavailableError,
+  EnvNameConflictError,
+  saveEnvSecret,
+  loadEnvSecretsForIssue,
   loadSecretForApproval,
   loadSecretForUse,
   saveApiKeySecret,
@@ -180,11 +185,165 @@ describe('loadSecretForApproval — 승인 실행 시 재검증', () => {
     expect(r.value).toBe(KEY)
   })
 
+  describe('actorTokenId', () => {
+    const tokFind = prisma.agentToken.findUnique as jest.Mock
+    const future = new Date(Date.now() + 3600_000)
+    const run = () => loadSecretForApproval('sp1', 's1', 2, actor, [], 'tk1')
+    beforeEach(() => findUnique.mockResolvedValue(APPROVAL_ROW))
+
+    it('actorTokenId가 없는 기존 제안은 종전처럼 에이전트 상태만 확인', async () => {
+      await expect(loadSecretForApproval('sp1', 's1', 2, actor, [])).resolves.toMatchObject({
+        value: KEY,
+      })
+      expect(tokFind).not.toHaveBeenCalled()
+    })
+    it('토큰이 유효하면 실행된다', async () => {
+      tokFind.mockResolvedValue({ agentId: 'a1', revokedAt: null, expiresAt: future })
+      await expect(run()).resolves.toMatchObject({ value: KEY })
+    })
+    it.each([
+      ['폐기됐다', { agentId: 'a1', revokedAt: new Date(), expiresAt: future }],
+      ['만료됐다', { agentId: 'a1', revokedAt: null, expiresAt: new Date(Date.now() - 1000) }],
+      ['삭제됐다', null],
+      ['다른 에이전트 것이다', { agentId: 'a2', revokedAt: null, expiresAt: future }],
+    ])('제안한 토큰이 %s → 거부(재제안 안내), 복호화 없음', async (_n, tok) => {
+      tokFind.mockResolvedValue(tok)
+      await expect(run()).rejects.toThrow(CHANGED)
+      expect(decryptField).not.toHaveBeenCalled()
+    })
+  })
+
   it('모두 일치하면 복호화하고 audit에 secret:id를 남긴다', async () => {
     findUnique.mockResolvedValue(APPROVAL_ROW)
     const audit: string[] = []
     const r = await loadSecretForApproval('sp1', 's1', 2, actor, audit)
     expect(r).toEqual({ id: 's1', value: KEY, config: CONFIG })
     expect(audit).toEqual(['secret:s1'])
+  })
+})
+
+describe('loadEnvSecretsForIssue', () => {
+  const NOW = new Date('2026-10-23T00:00:00Z')
+  const agent = { type: 'agent', id: 'a1' } as never
+  const envRow = (id: string, envName: string, over: Record<string, unknown> = {}) => ({
+    id,
+    kind: 'ENV',
+    revision: 1,
+    config: { envName, expiresAt: '2026-12-01T00:00:00.000Z' },
+    allowedAgentIds: ['a1'],
+    encryptedPayload: 'OPAQUE_CIPHERTEXT',
+    iv: 'OPAQUE_IV',
+    ...over,
+  })
+  const rows: Record<string, unknown> = {}
+  beforeEach(() => {
+    for (const k of Object.keys(rows)) delete rows[k]
+    findUnique.mockImplementation(async ({ where }) => rows[where.spaceId_name.name] ?? null)
+  })
+
+  it('성공: 이름 순서대로 envName·value, audit에 secret:<id> 각각', async () => {
+    rows['b-key'] = envRow('s2', 'B_TOKEN')
+    rows['a-key'] = envRow('s1', 'A_TOKEN')
+    const audit: string[] = []
+    const r = await loadEnvSecretsForIssue('sp1', ['b-key', 'a-key'], agent, audit, NOW)
+    expect(r).toEqual([
+      { id: 's2', name: 'b-key', envName: 'B_TOKEN', value: KEY },
+      { id: 's1', name: 'a-key', envName: 'A_TOKEN', value: KEY },
+    ])
+    expect(audit).toEqual(['secret:s2', 'secret:s1'])
+  })
+
+  it('하나라도 허용 밖이면 SecretUnavailableError(이름 포함), 복호화·audit 없음', async () => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN')
+    rows['b-key'] = envRow('s2', 'B_TOKEN', { allowedAgentIds: ['other'] })
+    const audit: string[] = []
+    const err = await loadEnvSecretsForIssue('sp1', ['a-key', 'b-key'], agent, audit, NOW).catch(
+      (e) => e
+    )
+    expect(err).toBeInstanceOf(SecretUnavailableError)
+    expect(err.secretName).toBe('b-key')
+    expect(err.name).toBe('SecretUnavailableError')
+    expect(err.message).toBe('사용할 수 없는 비밀값: b-key')
+    expect(decryptField).not.toHaveBeenCalled()
+    expect(audit).toEqual([])
+  })
+
+  it('없는 이름은 SecretUnavailableError', async () => {
+    await expect(
+      loadEnvSecretsForIssue('sp1', ['nope-key'], agent, [], NOW)
+    ).rejects.toBeInstanceOf(SecretUnavailableError)
+  })
+
+  it('만료된 키는 SecretUnavailableError', async () => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN', {
+      config: { envName: 'A_TOKEN', expiresAt: '2026-10-22T00:00:00.000Z' },
+    })
+    await expect(loadEnvSecretsForIssue('sp1', ['a-key'], agent, [], NOW)).rejects.toBeInstanceOf(
+      SecretUnavailableError
+    )
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['파싱 불가', 'not-a-date'],
+    ['now와 동일', '2026-10-23T00:00:00.000Z'],
+  ])('만료 시각이 %s이면 SecretUnavailableError', async (_l, expiresAt) => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN', { config: { envName: 'A_TOKEN', expiresAt } })
+    await expect(loadEnvSecretsForIssue('sp1', ['a-key'], agent, [], NOW)).rejects.toBeInstanceOf(
+      SecretUnavailableError
+    )
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+
+  it('kind API_KEY 행은 SecretUnavailableError', async () => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN', { kind: 'API_KEY' })
+    await expect(loadEnvSecretsForIssue('sp1', ['a-key'], agent, [], NOW)).rejects.toBeInstanceOf(
+      SecretUnavailableError
+    )
+  })
+
+  it('integration actor는 SecretUnavailableError', async () => {
+    rows['a-key'] = envRow('s1', 'A_TOKEN')
+    await expect(
+      loadEnvSecretsForIssue('sp1', ['a-key'], { type: 'integration', id: 'a1' } as never, [], NOW)
+    ).rejects.toBeInstanceOf(SecretUnavailableError)
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+
+  it('envName이 겹치면 EnvNameConflictError(envName 포함, 값 없음), 복호화·audit 없음', async () => {
+    rows['a-key'] = envRow('s1', 'SAME_TOKEN')
+    rows['b-key'] = envRow('s2', 'SAME_TOKEN')
+    const audit: string[] = []
+    const err = await loadEnvSecretsForIssue('sp1', ['a-key', 'b-key'], agent, audit, NOW).catch(
+      (e) => e
+    )
+    expect(err).toBeInstanceOf(EnvNameConflictError)
+    expect(err.message).toContain('SAME_TOKEN')
+    expect(err.message).not.toContain(KEY)
+    expect(decryptField).not.toHaveBeenCalled()
+    expect(audit).toEqual([])
+  })
+
+  it('secret_http용 loadSecretForUse는 kind ENV 행을 거부', async () => {
+    findUnique.mockResolvedValue(envRow('s1', 'A_TOKEN'))
+    await expect(loadSecretForUse('sp1', 'a-key', agent, [])).rejects.toThrow(DENIED)
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+})
+
+describe('saveEnvSecret', () => {
+  it('kind ENV로 암호화 저장, 평문 없음', async () => {
+    upsert.mockResolvedValue({ id: 's1', revision: 1 })
+    const cfg = {
+      envName: 'A_TOKEN',
+      scopeNote: 'n',
+      expiresAt: '2026-12-01T00:00:00.000Z',
+      readOnlyConfirmedById: 'u1',
+      readOnlyConfirmedAt: '2026-10-23T00:00:00.000Z',
+    }
+    await saveEnvSecret('sp1', 'a-key', KEY, cfg, ['a1'], 'u1')
+    const args = upsert.mock.calls[0][0]
+    expect(args.create).toMatchObject({ kind: 'ENV', config: cfg })
+    expect(JSON.stringify(args)).not.toContain('SK_TEST')
   })
 })

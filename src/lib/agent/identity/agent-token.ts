@@ -91,5 +91,6 @@ export async function verifyAgentToken(
     spaceId: row.agent.spaceId,
     actor: { type: row.agent.kind as 'agent' | 'integration', id: row.agent.id },
     scopes: parseScopes(row.agent.scopes),
+    tokenId: row.id,
   }
 }

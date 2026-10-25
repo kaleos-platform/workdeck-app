@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { encryptField, decryptField } from '@/lib/crypto/field-crypto'
 import type { Actor } from '@/lib/agent/identity/principal'
 import { ToolUserError } from '@/lib/agent/tools/errors'
-import type { ApiKeyConfig } from './config'
+import type { ApiKeyConfig, EnvConfig } from './config'
 
 export const SECRET_NAME_RE = /^[a-z0-9][a-z0-9-]{1,62}$/
 
@@ -46,7 +46,99 @@ export async function saveApiKeySecret(
   })
 }
 
-async function findUsable(spaceId: string, name: string, actor: Actor) {
+/** ENV 키를 암호화해 저장한다(upsert). saveApiKeySecret과 같은 규칙. */
+export async function saveEnvSecret(
+  spaceId: string,
+  name: string,
+  value: string,
+  config: EnvConfig,
+  allowedAgentIds: string[],
+  userId: string
+): Promise<{ id: string; revision: number }> {
+  const { encrypted: encryptedPayload, iv } = encryptField('space-secret', value)
+  return prisma.spaceSecret.upsert({
+    where: { spaceId_name: { spaceId, name } },
+    create: {
+      spaceId,
+      name,
+      kind: 'ENV',
+      encryptedPayload,
+      iv,
+      config,
+      allowedAgentIds,
+      createdById: userId,
+    },
+    update: {
+      encryptedPayload,
+      iv,
+      config,
+      allowedAgentIds,
+      revision: { increment: 1 },
+      lastError: null,
+    },
+    select: { id: true, revision: true },
+  })
+}
+
+/** 발급 불가 비밀값. secretName은 비밀값 이름(값 아님). */
+export class SecretUnavailableError extends ToolUserError {
+  constructor(readonly secretName: string) {
+    super(`사용할 수 없는 비밀값: ${secretName}`)
+    this.name = 'SecretUnavailableError'
+  }
+}
+
+/** 같은 envName을 가진 비밀값을 한 번에 요청함. envName은 비밀이 아니다. */
+export class EnvNameConflictError extends ToolUserError {
+  constructor(readonly envName: string) {
+    super(`ENV 이름이 겹치는 비밀값을 함께 받을 수 없습니다: ${envName}`)
+    this.name = 'EnvNameConflictError'
+  }
+}
+
+/**
+ * wd run 발급용: 요청한 ENV 키 전부를 먼저 검사하고(복호화 전), 하나라도 실패하면
+ * SecretUnavailableError. 모두 통과해야 복호화하고 audit에 남긴다. 요청 순서를 보존한다.
+ */
+export async function loadEnvSecretsForIssue(
+  spaceId: string,
+  names: string[],
+  actor: Actor,
+  audit: string[],
+  now: Date = new Date()
+): Promise<Array<{ id: string; name: string; envName: string; value: string }>> {
+  const rows = []
+  for (const name of names) {
+    // ENV는 agent 전용(integration 불가).
+    const row =
+      actor.type === 'agent'
+        ? await findUsable(spaceId, name, actor, 'ENV').catch(() => null)
+        : null
+    const cfg = row?.config as Partial<EnvConfig> | undefined
+    if (
+      !row ||
+      !cfg?.envName ||
+      !cfg.expiresAt ||
+      !(new Date(cfg.expiresAt).getTime() > now.getTime())
+    ) {
+      throw new SecretUnavailableError(name)
+    }
+    rows.push({ row, name, envName: cfg.envName })
+  }
+  // envName이 겹치면 복호화 전에 거부한다(EnvNameConflictError).
+  const seen = new Set<string>()
+  for (const { envName } of rows) {
+    if (seen.has(envName)) throw new EnvNameConflictError(envName)
+    seen.add(envName)
+  }
+  return rows.map(({ row, name, envName }) => {
+    const value = decryptField('space-secret', row.encryptedPayload, row.iv)
+    audit.push('secret:' + row.id)
+    return { id: row.id, name, envName, value }
+  })
+}
+
+async function findUsable(spaceId: string, name: string, actor: Actor, kind: 'API_KEY' | 'ENV') {
   const row = await prisma.spaceSecret.findUnique({
     where: { spaceId_name: { spaceId, name } },
     select: {
@@ -62,7 +154,7 @@ async function findUsable(spaceId: string, name: string, actor: Actor) {
   // 복호화 전에 검사한다. 구성원 user·system actor는 허용 목록에 없으므로 거부된다.
   if (
     !row ||
-    row.kind !== 'API_KEY' ||
+    row.kind !== kind ||
     !isSecretActor(actor) ||
     !row.allowedAgentIds.includes(actor.id)
   ) {
@@ -78,7 +170,7 @@ export async function loadSecretForUse(
   actor: Actor,
   audit: string[]
 ): Promise<{ id: string; revision: number; value: string; config: ApiKeyConfig }> {
-  const row = await findUsable(spaceId, name, actor)
+  const row = await findUsable(spaceId, name, actor, 'API_KEY')
   const value = decryptField('space-secret', row.encryptedPayload, row.iv)
   audit.push('secret:' + row.id)
   return { id: row.id, revision: row.revision, value, config: row.config as ApiKeyConfig }
@@ -87,18 +179,39 @@ export async function loadSecretForUse(
 /**
  * 제안한 신원(SpaceAgent)이 아직 같은 Space에서 ACTIVE이고 secret:write scope를 가졌는지.
  * 토큰 인증·OAuth 바인딩이 이 행의 status·scopes를 쓰므로 비활성화·scope 회수가 승인 실행에도 반영된다.
+ * actorTokenId가 있으면 그 토큰의 폐기·만료도 확인한다.
  */
-async function proposerStillActive(spaceId: string, actor: Actor): Promise<boolean> {
+async function proposerStillActive(
+  spaceId: string,
+  actor: Actor,
+  actorTokenId?: string | null
+): Promise<boolean> {
   const agent = await prisma.spaceAgent.findUnique({
     where: { id: actor.id },
     select: { spaceId: true, kind: true, status: true, scopes: true },
   })
+  if (
+    !(
+      !!agent &&
+      agent.spaceId === spaceId &&
+      agent.kind === actor.type &&
+      agent.status === 'ACTIVE' &&
+      agent.scopes.includes('secret:write')
+    )
+  )
+    return false
+  if (!actorTokenId) return true
+  // 제안에 쓴 토큰이 폐기·만료됐으면 승인해도 실행하지 않는다.
+  const tok = await prisma.agentToken.findUnique({
+    where: { id: actorTokenId },
+    select: { agentId: true, revokedAt: true, expiresAt: true },
+  })
   return (
-    !!agent &&
-    agent.spaceId === spaceId &&
-    agent.kind === actor.type &&
-    agent.status === 'ACTIVE' &&
-    agent.scopes.includes('secret:write')
+    !!tok &&
+    tok.agentId === actor.id &&
+    !tok.revokedAt &&
+    !!tok.expiresAt &&
+    tok.expiresAt > new Date()
   )
 }
 
@@ -108,7 +221,8 @@ export async function loadSecretForApproval(
   secretId: string,
   revision: number,
   actor: Actor,
-  audit: string[]
+  audit: string[],
+  actorTokenId?: string | null
 ): Promise<{ id: string; value: string; config: ApiKeyConfig }> {
   const row = await prisma.spaceSecret.findUnique({
     where: { id: secretId },
@@ -130,7 +244,7 @@ export async function loadSecretForApproval(
     row.revision !== revision ||
     !isSecretActor(actor) ||
     !row.allowedAgentIds.includes(actor.id) ||
-    !(await proposerStillActive(spaceId, actor))
+    !(await proposerStillActive(spaceId, actor, actorTokenId))
   ) {
     throw new ToolUserError('비밀값이 바뀌어 실행하지 않았습니다. 다시 제안하세요')
   }
@@ -145,7 +259,7 @@ export async function assertSecretUsable(
   name: string,
   actor: Actor
 ): Promise<{ id: string; revision: number; baseUrl: string }> {
-  const { id, revision, config } = await findUsable(spaceId, name, actor)
+  const { id, revision, config } = await findUsable(spaceId, name, actor, 'API_KEY')
   return { id, revision, baseUrl: (config as ApiKeyConfig).baseUrl }
 }
 

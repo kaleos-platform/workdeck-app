@@ -28,6 +28,7 @@ export type SpaceAgentSettingMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   isActive: boolean | null
+  envSecretsEnabled: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -36,6 +37,7 @@ export type SpaceAgentSettingMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   isActive: boolean | null
+  envSecretsEnabled: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,7 @@ export type SpaceAgentSettingCountAggregateOutputType = {
   id: number
   spaceId: number
   isActive: number
+  envSecretsEnabled: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -54,6 +57,7 @@ export type SpaceAgentSettingMinAggregateInputType = {
   id?: true
   spaceId?: true
   isActive?: true
+  envSecretsEnabled?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -62,6 +66,7 @@ export type SpaceAgentSettingMaxAggregateInputType = {
   id?: true
   spaceId?: true
   isActive?: true
+  envSecretsEnabled?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -70,6 +75,7 @@ export type SpaceAgentSettingCountAggregateInputType = {
   id?: true
   spaceId?: true
   isActive?: true
+  envSecretsEnabled?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -151,6 +157,7 @@ export type SpaceAgentSettingGroupByOutputType = {
   id: string
   spaceId: string
   isActive: boolean
+  envSecretsEnabled: boolean
   createdAt: Date
   updatedAt: Date
   _count: SpaceAgentSettingCountAggregateOutputType | null
@@ -180,6 +187,7 @@ export type SpaceAgentSettingWhereInput = {
   id?: Prisma.StringFilter<"SpaceAgentSetting"> | string
   spaceId?: Prisma.StringFilter<"SpaceAgentSetting"> | string
   isActive?: Prisma.BoolFilter<"SpaceAgentSetting"> | boolean
+  envSecretsEnabled?: Prisma.BoolFilter<"SpaceAgentSetting"> | boolean
   createdAt?: Prisma.DateTimeFilter<"SpaceAgentSetting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgentSetting"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -189,6 +197,7 @@ export type SpaceAgentSettingOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  envSecretsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -201,6 +210,7 @@ export type SpaceAgentSettingWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.SpaceAgentSettingWhereInput[]
   NOT?: Prisma.SpaceAgentSettingWhereInput | Prisma.SpaceAgentSettingWhereInput[]
   isActive?: Prisma.BoolFilter<"SpaceAgentSetting"> | boolean
+  envSecretsEnabled?: Prisma.BoolFilter<"SpaceAgentSetting"> | boolean
   createdAt?: Prisma.DateTimeFilter<"SpaceAgentSetting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgentSetting"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -210,6 +220,7 @@ export type SpaceAgentSettingOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  envSecretsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SpaceAgentSettingCountOrderByAggregateInput
@@ -224,6 +235,7 @@ export type SpaceAgentSettingScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"SpaceAgentSetting"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"SpaceAgentSetting"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"SpaceAgentSetting"> | boolean
+  envSecretsEnabled?: Prisma.BoolWithAggregatesFilter<"SpaceAgentSetting"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceAgentSetting"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceAgentSetting"> | Date | string
 }
@@ -231,6 +243,7 @@ export type SpaceAgentSettingScalarWhereWithAggregatesInput = {
 export type SpaceAgentSettingCreateInput = {
   id?: string
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutAgentToggleInput
@@ -240,6 +253,7 @@ export type SpaceAgentSettingUncheckedCreateInput = {
   id?: string
   spaceId: string
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -247,6 +261,7 @@ export type SpaceAgentSettingUncheckedCreateInput = {
 export type SpaceAgentSettingUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  envSecretsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutAgentToggleNestedInput
@@ -256,6 +271,7 @@ export type SpaceAgentSettingUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  envSecretsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -264,6 +280,7 @@ export type SpaceAgentSettingCreateManyInput = {
   id?: string
   spaceId: string
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -271,6 +288,7 @@ export type SpaceAgentSettingCreateManyInput = {
 export type SpaceAgentSettingUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  envSecretsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -279,6 +297,7 @@ export type SpaceAgentSettingUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  envSecretsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -292,6 +311,7 @@ export type SpaceAgentSettingCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  envSecretsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -300,6 +320,7 @@ export type SpaceAgentSettingMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  envSecretsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -308,6 +329,7 @@ export type SpaceAgentSettingMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  envSecretsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -347,6 +369,7 @@ export type SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput = {
 export type SpaceAgentSettingCreateWithoutSpaceInput = {
   id?: string
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -354,6 +377,7 @@ export type SpaceAgentSettingCreateWithoutSpaceInput = {
 export type SpaceAgentSettingUncheckedCreateWithoutSpaceInput = {
   id?: string
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -377,6 +401,7 @@ export type SpaceAgentSettingUpdateToOneWithWhereWithoutSpaceInput = {
 export type SpaceAgentSettingUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  envSecretsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -384,6 +409,7 @@ export type SpaceAgentSettingUpdateWithoutSpaceInput = {
 export type SpaceAgentSettingUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  envSecretsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -394,6 +420,7 @@ export type SpaceAgentSettingSelect<ExtArgs extends runtime.Types.Extensions.Int
   id?: boolean
   spaceId?: boolean
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -403,6 +430,7 @@ export type SpaceAgentSettingSelectCreateManyAndReturn<ExtArgs extends runtime.T
   id?: boolean
   spaceId?: boolean
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -412,6 +440,7 @@ export type SpaceAgentSettingSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   id?: boolean
   spaceId?: boolean
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -421,11 +450,12 @@ export type SpaceAgentSettingSelectScalar = {
   id?: boolean
   spaceId?: boolean
   isActive?: boolean
+  envSecretsEnabled?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SpaceAgentSettingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceAgentSetting"]>
+export type SpaceAgentSettingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "isActive" | "envSecretsEnabled" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceAgentSetting"]>
 export type SpaceAgentSettingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -445,6 +475,7 @@ export type $SpaceAgentSettingPayload<ExtArgs extends runtime.Types.Extensions.I
     id: string
     spaceId: string
     isActive: boolean
+    envSecretsEnabled: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["spaceAgentSetting"]>
@@ -874,6 +905,7 @@ export interface SpaceAgentSettingFieldRefs {
   readonly id: Prisma.FieldRef<"SpaceAgentSetting", 'String'>
   readonly spaceId: Prisma.FieldRef<"SpaceAgentSetting", 'String'>
   readonly isActive: Prisma.FieldRef<"SpaceAgentSetting", 'Boolean'>
+  readonly envSecretsEnabled: Prisma.FieldRef<"SpaceAgentSetting", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"SpaceAgentSetting", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SpaceAgentSetting", 'DateTime'>
 }

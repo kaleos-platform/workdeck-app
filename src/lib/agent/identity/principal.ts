@@ -23,6 +23,7 @@ export const SCOPES = [
   'sc:write',
   'secret:read',
   'secret:write',
+  'secret:env',
 ] as const
 
 export type Scope = (typeof SCOPES)[number]
@@ -40,6 +41,8 @@ export interface McpPrincipal {
   scopes: Scope[]
   /** 연동 계정(integration)으로 들어온 구성원 세션의 실제 User.id — 감사 로그 requesterUserId. */
   requesterUserId?: string
+  /** 에이전트 토큰으로 들어온 경우 AgentToken.id — 제안(actorTokenId)에 남겨 승인 실행 때 폐기를 재확인한다. */
+  tokenId?: string
 }
 
 /** 저장·입력된 scope 배열을 검증한다. 모르는 값이 하나라도 있으면 throw. */

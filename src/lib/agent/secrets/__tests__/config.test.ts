@@ -1,6 +1,12 @@
 /** @jest-environment node */
 import { ToolUserError } from '@/lib/agent/tools/errors'
-import { apiKeyConfigSchema, matchReadOp, normalizePath, pickFields } from '../config'
+import {
+  apiKeyConfigSchema,
+  envConfigInputSchema,
+  matchReadOp,
+  normalizePath,
+  pickFields,
+} from '../config'
 
 const cfg = apiKeyConfigSchema.parse({
   baseUrl: 'https://api.example.com/v2',
@@ -183,4 +189,47 @@ it('query·body 값이 1000자를 넘으면 정규식이 허용해도 같은 메
   expect(() => matchReadOp(loose, { ...req, query: {}, body: { s: 'a'.repeat(1001) } })).toThrow(
     '등록된 조회 operation이 아닙니다'
   )
+})
+
+describe('envConfigInputSchema', () => {
+  const inDays = (d: number) => new Date(Date.now() + d * 86_400_000).toISOString()
+  const ok = {
+    envName: 'VERCEL_READ_TOKEN',
+    scopeNote: 'workdeck-app 배포 조회',
+    expiresAt: inDays(30),
+    readOnlyConfirmed: true,
+  }
+  it('ENV 입력 정상', () => expect(envConfigInputSchema.safeParse(ok).success).toBe(true))
+  it.each([
+    'PATH',
+    'HOME',
+    'SHELL',
+    'LD_PRELOAD',
+    'DYLD_INSERT_LIBRARIES',
+    'NODE_OPTIONS',
+    'PYTHONPATH',
+    'WORKDECK_AGENT_TOKEN',
+    'lower',
+    '1ABC',
+  ])('%s는 거부', (envName) =>
+    expect(envConfigInputSchema.safeParse({ ...ok, envName }).success).toBe(false)
+  )
+  it('읽기 전용 확인이 없으면 거부', () => {
+    expect(envConfigInputSchema.safeParse({ ...ok, readOnlyConfirmed: false }).success).toBe(false)
+    const { readOnlyConfirmed: _, ...noFlag } = ok
+    expect(envConfigInputSchema.safeParse(noFlag).success).toBe(false)
+  })
+  it.each([
+    ['past', inDays(-1)],
+    ['invalid', 'not-a-date'],
+    ['366d', inDays(366)],
+  ])('expiresAt %s 거부', (_l, expiresAt) =>
+    expect(envConfigInputSchema.safeParse({ ...ok, expiresAt }).success).toBe(false)
+  )
+  it('scopeNote 빈 값·501자 거부', () => {
+    expect(envConfigInputSchema.safeParse({ ...ok, scopeNote: '' }).success).toBe(false)
+    expect(envConfigInputSchema.safeParse({ ...ok, scopeNote: 'x'.repeat(501) }).success).toBe(
+      false
+    )
+  })
 })

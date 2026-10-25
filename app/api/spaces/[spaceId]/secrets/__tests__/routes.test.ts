@@ -16,6 +16,7 @@ jest.mock('@/lib/agent/secrets/store', () => ({
   listSecretMeta: jest.fn(),
   findSecretForUpdate: jest.fn(),
   saveApiKeySecret: jest.fn(async () => ({ id: 's1', revision: 1 })),
+  saveEnvSecret: jest.fn(async () => ({ id: 's1', revision: 1 })),
   deleteSecret: jest.fn(async () => true),
   revealSecretValue: jest.fn(async () => ({ id: 's1', value: 'SK_TEST_0123456789abcdef' })),
 }))
@@ -158,7 +159,7 @@ it('reveal: 감사 시작 실패면 503이고 값을 읽지도 내보내지도 �
 it('kind가 LOGIN이고 config가 {}여도 API_KEY 안내 메시지로 400', async () => {
   const res = await put({ kind: 'LOGIN', value: 'x', config: {}, allowedAgentIds: [] })
   expect(res.status).toBe(400)
-  expect(await res.text()).toContain('이 단계에서는 API_KEY만 등록할 수 있습니다')
+  expect(await res.text()).toContain('이 단계에서는 API_KEY·ENV만 등록할 수 있습니다')
 })
 
 it('allowedAgentIds는 ACTIVE 에이전트만 센다', async () => {
@@ -293,4 +294,117 @@ it('value 오류는 고정 안내만 싣고 값을 되돌리지 않는다', asyn
   const { message } = await res.json()
   expect(message).toContain('값은 공백 없는 영문·숫자·기호(ASCII) 8~4096자여야 합니다')
   expect(message).not.toContain('SK_TEST')
+})
+
+describe('ENV 등록', () => {
+  const ENV_BODY = {
+    kind: 'ENV',
+    value: 'SK_TEST_0123456789abcdef',
+    config: {
+      envName: 'CAFE24_TOKEN',
+      scopeNote: '읽기 전용 토큰',
+      expiresAt: new Date(Date.now() + 30 * 86_400_000).toISOString(),
+      readOnlyConfirmed: true,
+    },
+    allowedAgentIds: ['a1'],
+  }
+
+  it('ENV: readOnlyConfirmed 없이 API 직접 호출하면 400, 저장 안 함', async () => {
+    const { readOnlyConfirmed: _r, ...config } = ENV_BODY.config
+    const r = await put({ ...ENV_BODY, config })
+    expect(r.status).toBe(400)
+    expect((await r.json()).message).toContain(
+      '읽기 전용·대상 한정 키임을 확인해야 등록할 수 있습니다'
+    )
+    expect(
+      (await put({ ...ENV_BODY, config: { ...config, readOnlyConfirmed: false } })).status
+    ).toBe(400)
+    expect(store.saveEnvSecret).not.toHaveBeenCalled()
+    expect(startToolAudit).not.toHaveBeenCalled()
+  })
+
+  it('ENV: 본문에 readOnlyConfirmedById를 넣어도 무시하고 세션 userId로 저장', async () => {
+    const res = await put({
+      ...ENV_BODY,
+      config: { ...ENV_BODY.config, readOnlyConfirmedById: 'attacker' },
+    })
+    expect(res.status).toBe(200)
+    const cfg = (store.saveEnvSecret as jest.Mock).mock.calls[0][3]
+    expect(cfg).toEqual({
+      envName: 'CAFE24_TOKEN',
+      scopeNote: '읽기 전용 토큰',
+      expiresAt: ENV_BODY.config.expiresAt,
+      readOnlyConfirmedById: 'u1',
+      readOnlyConfirmedAt: expect.any(String),
+    })
+    expect(store.saveApiKeySecret).not.toHaveBeenCalled()
+  })
+
+  it('ENV: 허용 목록에 integration 에이전트가 있으면 400', async () => {
+    ;(prisma.spaceAgent.count as jest.Mock).mockResolvedValue(0)
+    const res = await put(ENV_BODY)
+    expect(res.status).toBe(400)
+    expect(prisma.spaceAgent.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({ spaceId: 'sp1', status: 'ACTIVE', kind: 'agent' }),
+    })
+    expect(store.saveEnvSecret).not.toHaveBeenCalled()
+  })
+
+  it('ENV 행을 API_KEY로 PUT하면 409, API_KEY 행을 ENV로 PUT하면 409', async () => {
+    ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue({
+      kind: 'ENV',
+      config: {},
+      allowedAgentIds: [],
+    })
+    expect((await put()).status).toBe(409)
+    ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue({
+      kind: 'API_KEY',
+      config: {},
+      allowedAgentIds: [],
+    })
+    expect((await put(ENV_BODY)).status).toBe(409)
+    expect(store.saveApiKeySecret).not.toHaveBeenCalled()
+    expect(store.saveEnvSecret).not.toHaveBeenCalled()
+  })
+
+  it('LOGIN은 여전히 400 안내', async () => {
+    const res = await put({ ...ENV_BODY, kind: 'LOGIN' })
+    expect(res.status).toBe(400)
+    expect(await res.text()).toContain('API_KEY·ENV만')
+  })
+
+  it('ENV 저장 성공 시 감사 args에 값·envName 외 비밀 없음', async () => {
+    await put(ENV_BODY)
+    expect(startToolAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tool: 'secret.put',
+        args: {
+          name: 'cafe24-admin',
+          created: true,
+          changed: ['value', 'config', 'allowedAgentIds'],
+        },
+      })
+    )
+    expect(JSON.stringify((startToolAudit as jest.Mock).mock.calls)).not.toContain('SK_TEST')
+  })
+
+  it('ENV: 교체 시 서버가 찍는 readOnlyConfirmedAt만 달라도 config 변경으로 보지 않는다', async () => {
+    ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue({
+      kind: 'ENV',
+      config: {
+        envName: 'CAFE24_TOKEN',
+        scopeNote: '읽기 전용 토큰',
+        expiresAt: ENV_BODY.config.expiresAt,
+        readOnlyConfirmedById: 'u1',
+        readOnlyConfirmedAt: '2020-01-01T00:00:00.000Z',
+      },
+      allowedAgentIds: ['a1'],
+    })
+    await put(ENV_BODY)
+    expect(startToolAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        args: { name: 'cafe24-admin', created: false, changed: ['value'] },
+      })
+    )
+  })
 })

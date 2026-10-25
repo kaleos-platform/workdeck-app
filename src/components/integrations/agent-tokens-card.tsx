@@ -53,6 +53,8 @@ const KIND_LABEL = { agent: '에이전트', integration: '연동 계정' } as co
 const SCOPE_GROUPS = [
   { label: '읽기', scopes: SCOPES.filter((s) => s.endsWith(':read')) },
   { label: '쓰기(제안)', scopes: SCOPES.filter((s) => s.endsWith(':write')) },
+  // 에이전트(kind=agent)에게만 노출 — 연동 계정에는 ENV 비밀값을 주지 않는다.
+  { label: '개발 키(wd run)', scopes: ['secret:env'], agentOnly: true },
 ]
 const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString('ko-KR') : '-')
 const tokenState = (t: Token) =>
@@ -308,6 +310,10 @@ function AgentDialog({
   const [name, setName] = useState('')
   const [kind, setKind] = useState<Agent['kind']>('agent')
   const [scopes, setScopes] = useState<string[]>(creating ? [] : target.agent.scopes)
+  const effKind = creating ? kind : target.agent.kind
+  const groups = SCOPE_GROUPS.filter((g) => !g.agentOnly || effKind === 'agent')
+  // 연동 계정으로 바꿨다면 숨겨진 secret:env를 보내지 않는다.
+  const saveScopes = effKind === 'agent' ? scopes : scopes.filter((s) => s !== 'secret:env')
   const flip = (s: string, on: boolean) =>
     setScopes((prev) => (on ? [...prev, s] : prev.filter((x) => x !== s)))
 
@@ -344,7 +350,7 @@ function AgentDialog({
               </Select>
             </div>
           )}
-          {SCOPE_GROUPS.map((g) => (
+          {groups.map((g) => (
             <div key={g.label} className="space-y-2">
               <p className="font-medium">{g.label}</p>
               <div className="grid grid-cols-2 gap-2">
@@ -366,7 +372,7 @@ function AgentDialog({
             취소
           </Button>
           <Button
-            onClick={() => onSave(name, kind, scopes)}
+            onClick={() => onSave(name, kind, saveScopes)}
             disabled={pending || (creating && !name.trim())}
           >
             저장
