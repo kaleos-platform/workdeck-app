@@ -218,7 +218,7 @@ export function RegistrationTable({
                   />
                 </TableHead>
               )}
-              <TableHead className="w-[92px]">배송방식</TableHead>
+              <TableHead className="w-[112px]">배송방식</TableHead>
               <TableHead className="w-[124px]">판매채널</TableHead>
               <TableHead
                 className={cn('w-[112px]', STICKY_RECIPIENT, 'z-30')}
@@ -307,7 +307,7 @@ export function RegistrationTable({
                         }}
                       >
                         <SelectTrigger
-                          className={cn('h-8 text-xs', missingShipping && REQUIRED_INVALID)}
+                          className={cn('h-8 w-full min-w-0 text-xs', missingShipping && REQUIRED_INVALID)}
                         >
                           <SelectValue placeholder="선택" />
                         </SelectTrigger>
@@ -333,7 +333,7 @@ export function RegistrationTable({
                         }}
                       >
                         <SelectTrigger
-                          className={cn('h-8 text-xs', missingChannel && REQUIRED_INVALID)}
+                          className={cn('h-8 w-full min-w-0 text-xs', missingChannel && REQUIRED_INVALID)}
                         >
                           <SelectValue placeholder="선택" />
                         </SelectTrigger>
