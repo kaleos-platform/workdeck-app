@@ -1,4 +1,8 @@
-import { computeAdKeywordPerformance, isWordCovered } from '../ad-keyword-performance'
+import {
+  computeAdKeywordPerformance,
+  isWordCovered,
+  PRUNE_MIN_IMPRESSIONS,
+} from '../ad-keyword-performance'
 
 const t = (term: string, imp: number, clk: number, ord: number) => ({
   term,
@@ -54,5 +58,20 @@ describe('computeAdKeywordPerformance', () => {
     const r2 = computeAdKeywordPerformance({ terms, name: '', keywords: ['여성 팬티'] })
     expect(r2.keywordStats['여성 팬티']).toEqual({ imp: 1500, clk: 30, ord: 6 })
     expect(r2.prune).toEqual([])
+  })
+  it('총 노출이 PRUNE_MIN_IMPRESSIONS 미만이면 정리 후보를 내지 않는다', () => {
+    const low = computeAdKeywordPerformance({
+      terms: [t('여성 팬티', PRUNE_MIN_IMPRESSIONS - 1, 3, 1)],
+      name: '',
+      keywords: ['쿨링'],
+    })
+    expect(low.prune).toEqual([])
+    expect(low.keywordStats['쿨링']).toEqual({ imp: 0, clk: 0, ord: 0 })
+    const ok = computeAdKeywordPerformance({
+      terms: [t('여성 팬티', PRUNE_MIN_IMPRESSIONS, 3, 1)],
+      name: '',
+      keywords: ['쿨링'],
+    })
+    expect(ok.prune).toEqual(['쿨링'])
   })
 })
