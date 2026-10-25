@@ -33,6 +33,8 @@ export type ChannelProductMinAggregateOutputType = {
   baseManagementName: string | null
   baseInternalCode: string | null
   memo: string | null
+  pageUrl: string | null
+  rankTracking: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -46,6 +48,8 @@ export type ChannelProductMaxAggregateOutputType = {
   baseManagementName: string | null
   baseInternalCode: string | null
   memo: string | null
+  pageUrl: string | null
+  rankTracking: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +64,8 @@ export type ChannelProductCountAggregateOutputType = {
   baseInternalCode: number
   memo: number
   keywords: number
+  pageUrl: number
+  rankTracking: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -75,6 +81,8 @@ export type ChannelProductMinAggregateInputType = {
   baseManagementName?: true
   baseInternalCode?: true
   memo?: true
+  pageUrl?: true
+  rankTracking?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,6 +96,8 @@ export type ChannelProductMaxAggregateInputType = {
   baseManagementName?: true
   baseInternalCode?: true
   memo?: true
+  pageUrl?: true
+  rankTracking?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -102,6 +112,8 @@ export type ChannelProductCountAggregateInputType = {
   baseInternalCode?: true
   memo?: true
   keywords?: true
+  pageUrl?: true
+  rankTracking?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -189,6 +201,8 @@ export type ChannelProductGroupByOutputType = {
   baseInternalCode: string | null
   memo: string | null
   keywords: runtime.JsonValue
+  pageUrl: string | null
+  rankTracking: boolean
   createdAt: Date
   updatedAt: Date
   _count: ChannelProductCountAggregateOutputType | null
@@ -224,11 +238,15 @@ export type ChannelProductWhereInput = {
   baseInternalCode?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   memo?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   keywords?: Prisma.JsonFilter<"ChannelProduct">
+  pageUrl?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
+  rankTracking?: Prisma.BoolFilter<"ChannelProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
   listings?: Prisma.ProductListingListRelationFilter
+  keywordChanges?: Prisma.KeywordChangeLogListRelationFilter
+  rankSnapshots?: Prisma.KeywordRankSnapshotListRelationFilter
 }
 
 export type ChannelProductOrderByWithRelationInput = {
@@ -241,11 +259,15 @@ export type ChannelProductOrderByWithRelationInput = {
   baseInternalCode?: Prisma.SortOrderInput | Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   keywords?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  rankTracking?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   channel?: Prisma.ChannelOrderByWithRelationInput
   listings?: Prisma.ProductListingOrderByRelationAggregateInput
+  keywordChanges?: Prisma.KeywordChangeLogOrderByRelationAggregateInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotOrderByRelationAggregateInput
 }
 
 export type ChannelProductWhereUniqueInput = Prisma.AtLeast<{
@@ -261,11 +283,15 @@ export type ChannelProductWhereUniqueInput = Prisma.AtLeast<{
   baseInternalCode?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   memo?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   keywords?: Prisma.JsonFilter<"ChannelProduct">
+  pageUrl?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
+  rankTracking?: Prisma.BoolFilter<"ChannelProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
   listings?: Prisma.ProductListingListRelationFilter
+  keywordChanges?: Prisma.KeywordChangeLogListRelationFilter
+  rankSnapshots?: Prisma.KeywordRankSnapshotListRelationFilter
 }, "id">
 
 export type ChannelProductOrderByWithAggregationInput = {
@@ -278,6 +304,8 @@ export type ChannelProductOrderByWithAggregationInput = {
   baseInternalCode?: Prisma.SortOrderInput | Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
   keywords?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  rankTracking?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ChannelProductCountOrderByAggregateInput
@@ -298,6 +326,8 @@ export type ChannelProductScalarWhereWithAggregatesInput = {
   baseInternalCode?: Prisma.StringNullableWithAggregatesFilter<"ChannelProduct"> | string | null
   memo?: Prisma.StringNullableWithAggregatesFilter<"ChannelProduct"> | string | null
   keywords?: Prisma.JsonWithAggregatesFilter<"ChannelProduct">
+  pageUrl?: Prisma.StringNullableWithAggregatesFilter<"ChannelProduct"> | string | null
+  rankTracking?: Prisma.BoolWithAggregatesFilter<"ChannelProduct"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ChannelProduct"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ChannelProduct"> | Date | string
 }
@@ -310,11 +340,15 @@ export type ChannelProductCreateInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
   channel: Prisma.ChannelCreateNestedOneWithoutChannelProductsInput
   listings?: Prisma.ProductListingCreateNestedManyWithoutChannelProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotCreateNestedManyWithoutChannelProductInput
 }
 
 export type ChannelProductUncheckedCreateInput = {
@@ -327,9 +361,13 @@ export type ChannelProductUncheckedCreateInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedCreateNestedManyWithoutChannelProductInput
 }
 
 export type ChannelProductUpdateInput = {
@@ -340,11 +378,15 @@ export type ChannelProductUpdateInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
   channel?: Prisma.ChannelUpdateOneRequiredWithoutChannelProductsNestedInput
   listings?: Prisma.ProductListingUpdateManyWithoutChannelProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUpdateManyWithoutChannelProductNestedInput
 }
 
 export type ChannelProductUncheckedUpdateInput = {
@@ -357,9 +399,13 @@ export type ChannelProductUncheckedUpdateInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedUpdateManyWithoutChannelProductNestedInput
 }
 
 export type ChannelProductCreateManyInput = {
@@ -372,6 +418,8 @@ export type ChannelProductCreateManyInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -384,6 +432,8 @@ export type ChannelProductUpdateManyMutationInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -398,6 +448,8 @@ export type ChannelProductUncheckedUpdateManyInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -427,6 +479,8 @@ export type ChannelProductCountOrderByAggregateInput = {
   baseInternalCode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
   keywords?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrder
+  rankTracking?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -440,6 +494,8 @@ export type ChannelProductMaxOrderByAggregateInput = {
   baseManagementName?: Prisma.SortOrder
   baseInternalCode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrder
+  rankTracking?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -453,6 +509,8 @@ export type ChannelProductMinOrderByAggregateInput = {
   baseManagementName?: Prisma.SortOrder
   baseInternalCode?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  pageUrl?: Prisma.SortOrder
+  rankTracking?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -557,6 +615,38 @@ export type ChannelProductUpdateOneWithoutListingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelProductUpdateToOneWithWhereWithoutListingsInput, Prisma.ChannelProductUpdateWithoutListingsInput>, Prisma.ChannelProductUncheckedUpdateWithoutListingsInput>
 }
 
+export type ChannelProductCreateNestedOneWithoutKeywordChangesInput = {
+  create?: Prisma.XOR<Prisma.ChannelProductCreateWithoutKeywordChangesInput, Prisma.ChannelProductUncheckedCreateWithoutKeywordChangesInput>
+  connectOrCreate?: Prisma.ChannelProductCreateOrConnectWithoutKeywordChangesInput
+  connect?: Prisma.ChannelProductWhereUniqueInput
+}
+
+export type ChannelProductUpdateOneWithoutKeywordChangesNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelProductCreateWithoutKeywordChangesInput, Prisma.ChannelProductUncheckedCreateWithoutKeywordChangesInput>
+  connectOrCreate?: Prisma.ChannelProductCreateOrConnectWithoutKeywordChangesInput
+  upsert?: Prisma.ChannelProductUpsertWithoutKeywordChangesInput
+  disconnect?: Prisma.ChannelProductWhereInput | boolean
+  delete?: Prisma.ChannelProductWhereInput | boolean
+  connect?: Prisma.ChannelProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelProductUpdateToOneWithWhereWithoutKeywordChangesInput, Prisma.ChannelProductUpdateWithoutKeywordChangesInput>, Prisma.ChannelProductUncheckedUpdateWithoutKeywordChangesInput>
+}
+
+export type ChannelProductCreateNestedOneWithoutRankSnapshotsInput = {
+  create?: Prisma.XOR<Prisma.ChannelProductCreateWithoutRankSnapshotsInput, Prisma.ChannelProductUncheckedCreateWithoutRankSnapshotsInput>
+  connectOrCreate?: Prisma.ChannelProductCreateOrConnectWithoutRankSnapshotsInput
+  connect?: Prisma.ChannelProductWhereUniqueInput
+}
+
+export type ChannelProductUpdateOneWithoutRankSnapshotsNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelProductCreateWithoutRankSnapshotsInput, Prisma.ChannelProductUncheckedCreateWithoutRankSnapshotsInput>
+  connectOrCreate?: Prisma.ChannelProductCreateOrConnectWithoutRankSnapshotsInput
+  upsert?: Prisma.ChannelProductUpsertWithoutRankSnapshotsInput
+  disconnect?: Prisma.ChannelProductWhereInput | boolean
+  delete?: Prisma.ChannelProductWhereInput | boolean
+  connect?: Prisma.ChannelProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelProductUpdateToOneWithWhereWithoutRankSnapshotsInput, Prisma.ChannelProductUpdateWithoutRankSnapshotsInput>, Prisma.ChannelProductUncheckedUpdateWithoutRankSnapshotsInput>
+}
+
 export type ChannelProductCreateWithoutSpaceInput = {
   id?: string
   baseSearchName: string
@@ -565,10 +655,14 @@ export type ChannelProductCreateWithoutSpaceInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   channel: Prisma.ChannelCreateNestedOneWithoutChannelProductsInput
   listings?: Prisma.ProductListingCreateNestedManyWithoutChannelProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotCreateNestedManyWithoutChannelProductInput
 }
 
 export type ChannelProductUncheckedCreateWithoutSpaceInput = {
@@ -580,9 +674,13 @@ export type ChannelProductUncheckedCreateWithoutSpaceInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedCreateNestedManyWithoutChannelProductInput
 }
 
 export type ChannelProductCreateOrConnectWithoutSpaceInput = {
@@ -624,6 +722,8 @@ export type ChannelProductScalarWhereInput = {
   baseInternalCode?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   memo?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
   keywords?: Prisma.JsonFilter<"ChannelProduct">
+  pageUrl?: Prisma.StringNullableFilter<"ChannelProduct"> | string | null
+  rankTracking?: Prisma.BoolFilter<"ChannelProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ChannelProduct"> | Date | string
 }
@@ -636,10 +736,14 @@ export type ChannelProductCreateWithoutChannelInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
   listings?: Prisma.ProductListingCreateNestedManyWithoutChannelProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotCreateNestedManyWithoutChannelProductInput
 }
 
 export type ChannelProductUncheckedCreateWithoutChannelInput = {
@@ -651,9 +755,13 @@ export type ChannelProductUncheckedCreateWithoutChannelInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedCreateNestedManyWithoutChannelProductInput
 }
 
 export type ChannelProductCreateOrConnectWithoutChannelInput = {
@@ -690,10 +798,14 @@ export type ChannelProductCreateWithoutListingsInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
   channel: Prisma.ChannelCreateNestedOneWithoutChannelProductsInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotCreateNestedManyWithoutChannelProductInput
 }
 
 export type ChannelProductUncheckedCreateWithoutListingsInput = {
@@ -706,8 +818,12 @@ export type ChannelProductUncheckedCreateWithoutListingsInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedCreateNestedManyWithoutChannelProductInput
 }
 
 export type ChannelProductCreateOrConnectWithoutListingsInput = {
@@ -734,10 +850,14 @@ export type ChannelProductUpdateWithoutListingsInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
   channel?: Prisma.ChannelUpdateOneRequiredWithoutChannelProductsNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUpdateManyWithoutChannelProductNestedInput
 }
 
 export type ChannelProductUncheckedUpdateWithoutListingsInput = {
@@ -750,8 +870,188 @@ export type ChannelProductUncheckedUpdateWithoutListingsInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedUpdateManyWithoutChannelProductNestedInput
+}
+
+export type ChannelProductCreateWithoutKeywordChangesInput = {
+  id?: string
+  baseSearchName: string
+  baseDisplayName?: string | null
+  baseManagementName?: string | null
+  baseInternalCode?: string | null
+  memo?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
+  channel: Prisma.ChannelCreateNestedOneWithoutChannelProductsInput
+  listings?: Prisma.ProductListingCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotCreateNestedManyWithoutChannelProductInput
+}
+
+export type ChannelProductUncheckedCreateWithoutKeywordChangesInput = {
+  id?: string
+  spaceId: string
+  channelId: string
+  baseSearchName: string
+  baseDisplayName?: string | null
+  baseManagementName?: string | null
+  baseInternalCode?: string | null
+  memo?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedCreateNestedManyWithoutChannelProductInput
+}
+
+export type ChannelProductCreateOrConnectWithoutKeywordChangesInput = {
+  where: Prisma.ChannelProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.ChannelProductCreateWithoutKeywordChangesInput, Prisma.ChannelProductUncheckedCreateWithoutKeywordChangesInput>
+}
+
+export type ChannelProductUpsertWithoutKeywordChangesInput = {
+  update: Prisma.XOR<Prisma.ChannelProductUpdateWithoutKeywordChangesInput, Prisma.ChannelProductUncheckedUpdateWithoutKeywordChangesInput>
+  create: Prisma.XOR<Prisma.ChannelProductCreateWithoutKeywordChangesInput, Prisma.ChannelProductUncheckedCreateWithoutKeywordChangesInput>
+  where?: Prisma.ChannelProductWhereInput
+}
+
+export type ChannelProductUpdateToOneWithWhereWithoutKeywordChangesInput = {
+  where?: Prisma.ChannelProductWhereInput
+  data: Prisma.XOR<Prisma.ChannelProductUpdateWithoutKeywordChangesInput, Prisma.ChannelProductUncheckedUpdateWithoutKeywordChangesInput>
+}
+
+export type ChannelProductUpdateWithoutKeywordChangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  baseSearchName?: Prisma.StringFieldUpdateOperationsInput | string
+  baseDisplayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseManagementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
+  channel?: Prisma.ChannelUpdateOneRequiredWithoutChannelProductsNestedInput
+  listings?: Prisma.ProductListingUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUpdateManyWithoutChannelProductNestedInput
+}
+
+export type ChannelProductUncheckedUpdateWithoutKeywordChangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  baseSearchName?: Prisma.StringFieldUpdateOperationsInput | string
+  baseDisplayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseManagementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedUpdateManyWithoutChannelProductNestedInput
+}
+
+export type ChannelProductCreateWithoutRankSnapshotsInput = {
+  id?: string
+  baseSearchName: string
+  baseDisplayName?: string | null
+  baseManagementName?: string | null
+  baseInternalCode?: string | null
+  memo?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutChannelProductsInput
+  channel: Prisma.ChannelCreateNestedOneWithoutChannelProductsInput
+  listings?: Prisma.ProductListingCreateNestedManyWithoutChannelProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutChannelProductInput
+}
+
+export type ChannelProductUncheckedCreateWithoutRankSnapshotsInput = {
+  id?: string
+  spaceId: string
+  channelId: string
+  baseSearchName: string
+  baseDisplayName?: string | null
+  baseManagementName?: string | null
+  baseInternalCode?: string | null
+  memo?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  listings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutChannelProductInput
+}
+
+export type ChannelProductCreateOrConnectWithoutRankSnapshotsInput = {
+  where: Prisma.ChannelProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.ChannelProductCreateWithoutRankSnapshotsInput, Prisma.ChannelProductUncheckedCreateWithoutRankSnapshotsInput>
+}
+
+export type ChannelProductUpsertWithoutRankSnapshotsInput = {
+  update: Prisma.XOR<Prisma.ChannelProductUpdateWithoutRankSnapshotsInput, Prisma.ChannelProductUncheckedUpdateWithoutRankSnapshotsInput>
+  create: Prisma.XOR<Prisma.ChannelProductCreateWithoutRankSnapshotsInput, Prisma.ChannelProductUncheckedCreateWithoutRankSnapshotsInput>
+  where?: Prisma.ChannelProductWhereInput
+}
+
+export type ChannelProductUpdateToOneWithWhereWithoutRankSnapshotsInput = {
+  where?: Prisma.ChannelProductWhereInput
+  data: Prisma.XOR<Prisma.ChannelProductUpdateWithoutRankSnapshotsInput, Prisma.ChannelProductUncheckedUpdateWithoutRankSnapshotsInput>
+}
+
+export type ChannelProductUpdateWithoutRankSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  baseSearchName?: Prisma.StringFieldUpdateOperationsInput | string
+  baseDisplayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseManagementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
+  channel?: Prisma.ChannelUpdateOneRequiredWithoutChannelProductsNestedInput
+  listings?: Prisma.ProductListingUpdateManyWithoutChannelProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutChannelProductNestedInput
+}
+
+export type ChannelProductUncheckedUpdateWithoutRankSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  baseSearchName?: Prisma.StringFieldUpdateOperationsInput | string
+  baseDisplayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseManagementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutChannelProductNestedInput
 }
 
 export type ChannelProductCreateManySpaceInput = {
@@ -763,6 +1063,8 @@ export type ChannelProductCreateManySpaceInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -775,10 +1077,14 @@ export type ChannelProductUpdateWithoutSpaceInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneRequiredWithoutChannelProductsNestedInput
   listings?: Prisma.ProductListingUpdateManyWithoutChannelProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUpdateManyWithoutChannelProductNestedInput
 }
 
 export type ChannelProductUncheckedUpdateWithoutSpaceInput = {
@@ -790,9 +1096,13 @@ export type ChannelProductUncheckedUpdateWithoutSpaceInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedUpdateManyWithoutChannelProductNestedInput
 }
 
 export type ChannelProductUncheckedUpdateManyWithoutSpaceInput = {
@@ -804,6 +1114,8 @@ export type ChannelProductUncheckedUpdateManyWithoutSpaceInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -817,6 +1129,8 @@ export type ChannelProductCreateManyChannelInput = {
   baseInternalCode?: string | null
   memo?: string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: string | null
+  rankTracking?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -829,10 +1143,14 @@ export type ChannelProductUpdateWithoutChannelInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutChannelProductsNestedInput
   listings?: Prisma.ProductListingUpdateManyWithoutChannelProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUpdateManyWithoutChannelProductNestedInput
 }
 
 export type ChannelProductUncheckedUpdateWithoutChannelInput = {
@@ -844,9 +1162,13 @@ export type ChannelProductUncheckedUpdateWithoutChannelInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   listings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutChannelProductNestedInput
+  rankSnapshots?: Prisma.KeywordRankSnapshotUncheckedUpdateManyWithoutChannelProductNestedInput
 }
 
 export type ChannelProductUncheckedUpdateManyWithoutChannelInput = {
@@ -858,6 +1180,8 @@ export type ChannelProductUncheckedUpdateManyWithoutChannelInput = {
   baseInternalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  pageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rankTracking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -869,10 +1193,14 @@ export type ChannelProductUncheckedUpdateManyWithoutChannelInput = {
 
 export type ChannelProductCountOutputType = {
   listings: number
+  keywordChanges: number
+  rankSnapshots: number
 }
 
 export type ChannelProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   listings?: boolean | ChannelProductCountOutputTypeCountListingsArgs
+  keywordChanges?: boolean | ChannelProductCountOutputTypeCountKeywordChangesArgs
+  rankSnapshots?: boolean | ChannelProductCountOutputTypeCountRankSnapshotsArgs
 }
 
 /**
@@ -892,6 +1220,20 @@ export type ChannelProductCountOutputTypeCountListingsArgs<ExtArgs extends runti
   where?: Prisma.ProductListingWhereInput
 }
 
+/**
+ * ChannelProductCountOutputType without action
+ */
+export type ChannelProductCountOutputTypeCountKeywordChangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.KeywordChangeLogWhereInput
+}
+
+/**
+ * ChannelProductCountOutputType without action
+ */
+export type ChannelProductCountOutputTypeCountRankSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.KeywordRankSnapshotWhereInput
+}
+
 
 export type ChannelProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -903,11 +1245,15 @@ export type ChannelProductSelect<ExtArgs extends runtime.Types.Extensions.Intern
   baseInternalCode?: boolean
   memo?: boolean
   keywords?: boolean
+  pageUrl?: boolean
+  rankTracking?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   listings?: boolean | Prisma.ChannelProduct$listingsArgs<ExtArgs>
+  keywordChanges?: boolean | Prisma.ChannelProduct$keywordChangesArgs<ExtArgs>
+  rankSnapshots?: boolean | Prisma.ChannelProduct$rankSnapshotsArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channelProduct"]>
 
@@ -921,6 +1267,8 @@ export type ChannelProductSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   baseInternalCode?: boolean
   memo?: boolean
   keywords?: boolean
+  pageUrl?: boolean
+  rankTracking?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -937,6 +1285,8 @@ export type ChannelProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   baseInternalCode?: boolean
   memo?: boolean
   keywords?: boolean
+  pageUrl?: boolean
+  rankTracking?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -953,15 +1303,19 @@ export type ChannelProductSelectScalar = {
   baseInternalCode?: boolean
   memo?: boolean
   keywords?: boolean
+  pageUrl?: boolean
+  rankTracking?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ChannelProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "baseSearchName" | "baseDisplayName" | "baseManagementName" | "baseInternalCode" | "memo" | "keywords" | "createdAt" | "updatedAt", ExtArgs["result"]["channelProduct"]>
+export type ChannelProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "baseSearchName" | "baseDisplayName" | "baseManagementName" | "baseInternalCode" | "memo" | "keywords" | "pageUrl" | "rankTracking" | "createdAt" | "updatedAt", ExtArgs["result"]["channelProduct"]>
 export type ChannelProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   listings?: boolean | Prisma.ChannelProduct$listingsArgs<ExtArgs>
+  keywordChanges?: boolean | Prisma.ChannelProduct$keywordChangesArgs<ExtArgs>
+  rankSnapshots?: boolean | Prisma.ChannelProduct$rankSnapshotsArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ChannelProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -979,6 +1333,8 @@ export type $ChannelProductPayload<ExtArgs extends runtime.Types.Extensions.Inte
     space: Prisma.$SpacePayload<ExtArgs>
     channel: Prisma.$ChannelPayload<ExtArgs>
     listings: Prisma.$ProductListingPayload<ExtArgs>[]
+    keywordChanges: Prisma.$KeywordChangeLogPayload<ExtArgs>[]
+    rankSnapshots: Prisma.$KeywordRankSnapshotPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -990,6 +1346,8 @@ export type $ChannelProductPayload<ExtArgs extends runtime.Types.Extensions.Inte
     baseInternalCode: string | null
     memo: string | null
     keywords: runtime.JsonValue
+    pageUrl: string | null
+    rankTracking: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["channelProduct"]>
@@ -1389,6 +1747,8 @@ export interface Prisma__ChannelProductClient<T, Null = never, ExtArgs extends r
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   channel<T extends Prisma.ChannelDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChannelDefaultArgs<ExtArgs>>): Prisma.Prisma__ChannelClient<runtime.Types.Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   listings<T extends Prisma.ChannelProduct$listingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChannelProduct$listingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductListingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  keywordChanges<T extends Prisma.ChannelProduct$keywordChangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChannelProduct$keywordChangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordChangeLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  rankSnapshots<T extends Prisma.ChannelProduct$rankSnapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChannelProduct$rankSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordRankSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1427,6 +1787,8 @@ export interface ChannelProductFieldRefs {
   readonly baseInternalCode: Prisma.FieldRef<"ChannelProduct", 'String'>
   readonly memo: Prisma.FieldRef<"ChannelProduct", 'String'>
   readonly keywords: Prisma.FieldRef<"ChannelProduct", 'Json'>
+  readonly pageUrl: Prisma.FieldRef<"ChannelProduct", 'String'>
+  readonly rankTracking: Prisma.FieldRef<"ChannelProduct", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"ChannelProduct", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ChannelProduct", 'DateTime'>
 }
@@ -1846,6 +2208,54 @@ export type ChannelProduct$listingsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.ProductListingScalarFieldEnum | Prisma.ProductListingScalarFieldEnum[]
+}
+
+/**
+ * ChannelProduct.keywordChanges
+ */
+export type ChannelProduct$keywordChangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the KeywordChangeLog
+   */
+  select?: Prisma.KeywordChangeLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the KeywordChangeLog
+   */
+  omit?: Prisma.KeywordChangeLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KeywordChangeLogInclude<ExtArgs> | null
+  where?: Prisma.KeywordChangeLogWhereInput
+  orderBy?: Prisma.KeywordChangeLogOrderByWithRelationInput | Prisma.KeywordChangeLogOrderByWithRelationInput[]
+  cursor?: Prisma.KeywordChangeLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.KeywordChangeLogScalarFieldEnum | Prisma.KeywordChangeLogScalarFieldEnum[]
+}
+
+/**
+ * ChannelProduct.rankSnapshots
+ */
+export type ChannelProduct$rankSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the KeywordRankSnapshot
+   */
+  select?: Prisma.KeywordRankSnapshotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the KeywordRankSnapshot
+   */
+  omit?: Prisma.KeywordRankSnapshotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KeywordRankSnapshotInclude<ExtArgs> | null
+  where?: Prisma.KeywordRankSnapshotWhereInput
+  orderBy?: Prisma.KeywordRankSnapshotOrderByWithRelationInput | Prisma.KeywordRankSnapshotOrderByWithRelationInput[]
+  cursor?: Prisma.KeywordRankSnapshotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.KeywordRankSnapshotScalarFieldEnum | Prisma.KeywordRankSnapshotScalarFieldEnum[]
 }
 
 /**

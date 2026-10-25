@@ -48,6 +48,7 @@ export type GroupListingRow = {
   items: Array<{
     optionId: string
     optionName: string
+    productId: string
     sku: string | null
     quantity: number
     attributeValues: Record<string, string>

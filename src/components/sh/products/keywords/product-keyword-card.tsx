@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Loader2, Lock, Sparkles } from 'lucide-react'
+import { ChevronDown, ChevronRight, History, Loader2, Lock, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -18,8 +18,10 @@ import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/l
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 
-import { KeywordChangeDialog, type KeywordChangeMeta } from '../listings/keyword-change-dialog'
+import { KeywordChangeTimeline } from '../listings/keyword-change-timeline'
 import { KeywordEditor } from '../listings/keyword-editor'
+import { useKeywordRankBadges } from './use-keyword-rank-badges'
+import { NameChangeCooldownNotice } from '../listings/name-change-cooldown-notice'
 import { NameCounter } from '../listings/name-counter'
 import { NameValidationPanel } from '../listings/name-validation-panel'
 import { NameDraftDialog } from './name-draft-dialog'
@@ -39,6 +41,8 @@ export type KeywordCard = {
   keywords: string[]
   listingCount: number
   nameEditable: boolean
+  /** 서버가 내려주면 꺼진 카드는 순위 조회를 건너뛴다. 없으면(undefined) 조회해 본다. */
+  rankTracking?: boolean
 }
 
 type Props = {
@@ -61,9 +65,13 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
   const [displayName, setDisplayName] = useState(card.displayName ?? '')
   const [keywords, setKeywords] = useState<string[]>(card.keywords)
   const [saving, setSaving] = useState(false)
-  const [gateOpen, setGateOpen] = useState(false)
   const [nameDraftOpen, setNameDraftOpen] = useState(false)
   const [keywordDraftOpen, setKeywordDraftOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyKey, setHistoryKey] = useState(0)
+  const rankBadges = useKeywordRankBadges(
+    card.rankTracking === false ? null : `${card.kind === 'listing' ? 'ls' : 'cp'}:${card.id}`
+  )
 
   // 상품명·키워드 두 다이얼로그가 이 훅 하나를 공유한다 — load() 는 멱등이라 두 버튼 중 먼저
   // 눌린 쪽에서만 실제 fetch 가 나가고, 나중에 다른 버튼을 눌러도 이미 받아온 결과를 재사용한다
@@ -105,11 +113,6 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
     searchName !== card.searchName ||
     displayName !== (card.displayName ?? '') ||
     diff.keywordsChanged
-  // 게이트는 서버의 기록 조건과 같은 함수(diffKeywordChange)로 판정한다 — searchName·keywords 만
-  // 본다. displayName(노출용 상품명)은 KeywordChangeLog 대상이 아니라서, 여기서만 사유를
-  // 요구하면 사용자가 고른 사유가 서버에서 조용히 버려진다. 노출용만 바꾼 저장은 dirty 는
-  // true 지만 게이트는 걸리지 않고 바로 PATCH 된다.
-  const gateRequired = diff.changed
 
   // KeywordEditor 와 같은 규칙: 이미 담긴 키워드(정규화 기준)는 다시 추가하지 않는다.
   // 상품명·키워드 두 다이얼로그가 공유한다.
@@ -121,8 +124,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
     })
   }
 
-  // 제거도 추가와 같다 — 로컬 폼 state 만 바꾸고 저장은 기존 저장 버튼 + 변경 사유 게이트가
-  // 맡는다. 여기서 자동 저장하면 게이트를 우회한다.
+  // 제거도 추가와 같다 — 로컬 폼 state 만 바꾸고 저장은 기존 저장 버튼이 맡는다.
   function handleRemoveKeyword(keyword: string) {
     const target = normalizeKeyword(keyword)
     setKeywords((prev) => prev.filter((k) => normalizeKeyword(k) !== target))
@@ -140,11 +142,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
     })
   }
 
-  async function handleSave(changeMeta?: KeywordChangeMeta) {
-    if (gateRequired && !changeMeta) {
-      setGateOpen(true)
-      return
-    }
+  async function handleSave() {
     setSaving(true)
     try {
       const normalizedSearchName = searchName.trim()
@@ -161,16 +159,12 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
       const body =
         card.kind === 'channelProduct'
           ? nameLocked
-            ? {
-                keywords,
-                ...(changeMeta ?? {}),
-              }
+            ? { keywords }
             : {
                 baseSearchName: normalizedSearchName,
                 baseDisplayName: normalizedDisplayName || null,
                 propagateNames: true,
                 keywords,
-                ...(changeMeta ?? {}),
               }
           : {
               // 바뀐 필드만 담는다.
@@ -186,7 +180,6 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
                 ? { displayName: normalizedDisplayName }
                 : {}),
               keywords,
-              ...(changeMeta ?? {}),
             }
       const res = await fetch(url, {
         method: 'PATCH',
@@ -196,7 +189,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
       toast.success('저장했습니다')
-      setGateOpen(false)
+      setHistoryKey((k) => k + 1)
       onSaved()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
@@ -285,6 +278,12 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             rules={rules}
             readOnly={nameLocked}
           />
+          <NameChangeCooldownNotice
+            listingId={card.kind === 'listing' ? card.id : null}
+            channelProductId={card.kind === 'channelProduct' ? card.id : null}
+            savedName={card.searchName}
+            editing={diff.nameChanged}
+          />
         </div>
 
         <div className="space-y-1.5">
@@ -336,6 +335,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             productName={searchName}
             rules={rules}
             readOnly={readOnly}
+            rankBadges={rankBadges}
           />
         </div>
 
@@ -343,24 +343,38 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
           <div className="flex justify-end">
             <Button onClick={() => handleSave()} disabled={!dirty || saving}>
               {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-hidden="true" />}
-              {gateRequired ? '변경 사유 입력 후 저장' : '저장'}
+              저장
             </Button>
           </div>
         )}
-      </CardContent>
 
-      {!readOnly && (
-        <KeywordChangeDialog
-          open={gateOpen}
-          onOpenChange={setGateOpen}
-          beforeName={card.searchName}
-          afterName={searchName.trim()}
-          beforeKeywords={card.keywords}
-          afterKeywords={keywords}
-          saving={saving}
-          onConfirm={(meta) => handleSave(meta)}
-        />
-      )}
+        {/* 변경 이력 — 펼칠 때만 마운트해 카드 수만큼 조회가 나가지 않게 한다. */}
+        <div className="space-y-3 border-t pt-3">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5"
+            aria-expanded={historyOpen}
+            onClick={() => setHistoryOpen((v) => !v)}
+          >
+            {historyOpen ? (
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            )}
+            <History className="h-4 w-4" aria-hidden="true" />
+            변경 이력
+          </Button>
+          {historyOpen && (
+            <KeywordChangeTimeline
+              listingId={card.kind === 'listing' ? card.id : null}
+              channelProductId={card.kind === 'channelProduct' ? card.id : null}
+              refreshKey={historyKey}
+            />
+          )}
+        </div>
+      </CardContent>
 
       {!readOnly && !nameLocked && (
         <>

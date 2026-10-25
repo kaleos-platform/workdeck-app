@@ -30,6 +30,7 @@ import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/l
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 import { deriveBaseValues, type OptionAttribute } from '@/lib/sh/listing-name-propagation'
 
+import { ChannelKeywordImportDialog } from './channel-keyword-import-dialog'
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { CompositionRowsTable, type CompositionRow } from './composition-rows-table'
 import { KeywordEditor } from './keyword-editor'
@@ -72,6 +73,14 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const [baseManagementName, setBaseManagementName] = useState('')
   const [internalCode, setInternalCode] = useState('')
   const [memo, setMemo] = useState('')
+  // 상품 페이지 URL — 직접 입력하거나 "불러오기"로 채널·상품명을 함께 추정한다.
+  const [pageUrl, setPageUrl] = useState('')
+  const [urlLoading, setUrlLoading] = useState(false)
+  const [urlHint, setUrlHint] = useState<{
+    candidates: Array<{ id: string; name: string }>
+    searchName: string | null
+    fetchError: string | null
+  } | null>(null)
   const [keywords, setKeywords] = useState<string[]>([])
 
   const [productCtx, setProductCtx] = useState<ProductContext | null>(null)
@@ -161,6 +170,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             items: [
               {
                 optionId: option.id,
+                productId: prefill.productId,
                 optionName: option.name,
                 sku: option.sku ?? null,
                 quantity: 1,
@@ -258,6 +268,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           suffixParts: [],
           items: validResults.map((r) => ({
             optionId: r.option.id,
+            productId: r.item.productId,
             optionName: r.option.name,
             sku: r.option.sku ?? null,
             quantity: r.item.quantity,
@@ -327,6 +338,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             channelStock: number | null
             items: Array<{
               optionId: string
+              productId: string
               optionName: string
               sku: string | null
               quantity: number
@@ -417,6 +429,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               suffixParts: [],
               items: l.items.map((it) => ({
                 optionId: it.optionId,
+                productId: it.productId,
                 optionName: it.optionName,
                 sku: it.sku,
                 quantity: it.quantity,
@@ -448,6 +461,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             suffixParts,
             items: l.items.map((it) => ({
               optionId: it.optionId,
+              productId: it.productId,
               optionName: it.optionName,
               sku: it.sku,
               quantity: it.quantity,
@@ -524,6 +538,12 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     }
   }, [productCtxId])
 
+  // 판매채널 키워드 불러오기 대상 — 혼합 세트면 구성 상품 전부.
+  const compositionProductIds = useMemo(
+    () => [...new Set(rows.flatMap((r) => r.items.map((it) => it.productId)))],
+    [rows]
+  )
+
   // 조회 시점 이후 사용자가 방금 추가한 키워드는 걸러낸다.
   const keywordSuggestions = useMemo(() => {
     if (suggestions.length === 0) return []
@@ -583,6 +603,42 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     }
   }
 
+  async function handleLoadFromUrl() {
+    const url = pageUrl.trim()
+    if (!url) {
+      toast.error('상품 페이지 URL 을 입력해 주세요')
+      return
+    }
+    setUrlLoading(true)
+    try {
+      const res = await fetch('/api/sh/products/listings/from-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data?.message ?? 'URL 을 불러오지 못했습니다')
+        return
+      }
+      setPageUrl(data.pageUrl)
+      // 이미 다른 채널을 골랐다면 조용히 덮어쓰지 않고 후보만 안내한다.
+      if (data.channelId && !channelId) setChannelId(data.channelId)
+      const autoPicked = data.channelId && !channelId
+      const fillName = data.searchName && !baseSearchName.trim()
+      if (fillName) setBaseSearchName(data.searchName)
+      setUrlHint({
+        candidates: autoPicked ? [] : (data.candidates ?? []),
+        searchName: data.searchName && !fillName ? data.searchName : null,
+        fetchError: data.fetchError ?? null,
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'URL 을 불러오지 못했습니다')
+    } finally {
+      setUrlLoading(false)
+    }
+  }
+
   const readyToSave =
     channelId.trim().length > 0 && baseSearchName.trim().length > 0 && rows.length > 0
 
@@ -600,6 +656,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       baseManagementName: baseManagementName.trim() || undefined,
       baseInternalCode: internalCode.trim() || undefined,
       memo: memo.trim() || undefined,
+      pageUrl: pageUrl.trim() || undefined,
       keywords,
       listings: rows.map((row) => ({
         // manual 모드(manualNames 있음): row 자체 이름 우선, suffix 없음
@@ -683,6 +740,66 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
+          <div className="space-y-1.5 rounded-md border bg-muted/30 p-3">
+            <Label htmlFor="listing-page-url">상품 페이지 URL로 불러오기</Label>
+            <div className="flex gap-2">
+              <Input
+                id="listing-page-url"
+                value={pageUrl}
+                onChange={(e) => setPageUrl(e.target.value)}
+                placeholder="https://… 판매채널에 올린 상품 페이지 주소"
+                maxLength={2000}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleLoadFromUrl}
+                disabled={urlLoading || !pageUrl.trim()}
+              >
+                {urlLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+                불러오기
+              </Button>
+            </div>
+            {urlHint?.candidates && urlHint.candidates.length > 0 && (
+              <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                판매채널을 선택하세요:
+                {urlHint.candidates.map((c) => (
+                  <Button
+                    key={c.id}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => setChannelId(c.id)}
+                  >
+                    {c.name}
+                  </Button>
+                ))}
+              </p>
+            )}
+            {urlHint?.searchName && (
+              <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                불러온 상품명: {urlHint.searchName}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => {
+                    setBaseSearchName(urlHint.searchName ?? '')
+                    setUrlHint({ ...urlHint, searchName: null })
+                  }}
+                >
+                  적용
+                </Button>
+              </p>
+            )}
+            {urlHint?.fetchError && (
+              <p className="text-xs text-amber-600">
+                상품명을 자동으로 가져오지 못했습니다 — URL만 저장됩니다 ({urlHint.fetchError})
+              </p>
+            )}
+          </div>
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="listing-channel">판매채널 *</Label>
@@ -793,13 +910,22 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                 . 최대 30개.
               </CardDescription>
             </div>
-            {/* 신규 등록에는 아직 리스팅 id 가 없으므로 인자 없이 연다(연습 모드). */}
-            <Button asChild variant="outline" size="sm" className="gap-1">
-              <Link href={getSellerHubNamingSopPath()}>
-                <ListChecks className="h-4 w-4" aria-hidden="true" />
-                상품명 작성 SOP
-              </Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <ChannelKeywordImportDialog
+                productIds={compositionProductIds}
+                currentChannelId={channelId || null}
+                value={keywords}
+                onChange={setKeywords}
+                disabled={saving}
+              />
+              {/* 신규 등록에는 아직 리스팅 id 가 없으므로 인자 없이 연다(연습 모드). */}
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link href={getSellerHubNamingSopPath()}>
+                  <ListChecks className="h-4 w-4" aria-hidden="true" />
+                  상품명 작성 SOP
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

@@ -811,3 +811,8 @@ export type AdminAuditLog = Prisma.AdminAuditLogModel
  * 
  */
 export type WorkerToken = Prisma.WorkerTokenModel
+/**
+ * Model KeywordRankSnapshot
+ * 
+ */
+export type KeywordRankSnapshot = Prisma.KeywordRankSnapshotModel

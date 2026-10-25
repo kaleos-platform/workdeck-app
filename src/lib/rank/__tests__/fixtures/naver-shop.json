@@ -1,0 +1,54 @@
+{
+  "_synthetic": "손으로 만든 합성 데이터 — 실제 네이버 응답이 아니다. 실제 키 확보 후 실응답으로 교체할 것.",
+  "items": [
+    {
+      "title": "<b>타월</b> A",
+      "link": "https://smartstore.naver.com/shopa/products/1000001",
+      "productId": "1000001",
+      "productType": "2",
+      "mallName": "샵A"
+    },
+    {
+      "title": "<b>타월</b> B",
+      "link": "https://smartstore.naver.com/shopb/products/1000002",
+      "productId": "1000002",
+      "productType": "2",
+      "mallName": "샵B"
+    },
+    {
+      "title": "<b>타월</b> C",
+      "link": "https://brand.naver.com/shopc/products/1000003",
+      "productId": "1000003",
+      "productType": "2",
+      "mallName": "샵C"
+    },
+    {
+      "title": "<b>타월</b> D",
+      "link": "https://smartstore.naver.com/shopd/products/1000004",
+      "productId": "1000004",
+      "productType": "2",
+      "mallName": "샵D"
+    },
+    {
+      "title": "<b>타월</b> E",
+      "link": "https://smartstore.naver.com/shope/products/1000005",
+      "productId": "1000005",
+      "productType": "2",
+      "mallName": "샵E"
+    },
+    {
+      "title": "<b>타월</b> F",
+      "link": "https://smartstore.naver.com/shopf/products/1000006",
+      "productId": "1000006",
+      "productType": "2",
+      "mallName": "샵F"
+    },
+    {
+      "title": "<b>타월</b> 우리",
+      "link": "https://smartstore.naver.com/ours/products/7777777",
+      "productId": "7777777",
+      "productType": "2",
+      "mallName": "우리"
+    }
+  ]
+}

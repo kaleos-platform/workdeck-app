@@ -70,6 +70,7 @@ import {
   SELLER_HUB_PRICING_SIM_PATH,
   SELLER_HUB_LISTINGS_PATH,
   SELLER_HUB_KEYWORDS_PATH,
+  SELLER_HUB_KEYWORD_RANKS_PATH,
   SELLER_HUB_PRODUCTION_PATH,
   SELLER_HUB_STOCK_STATUS_PATH,
   SELLER_HUB_MOVEMENTS_PATH,
@@ -113,6 +114,7 @@ import {
   SETTINGS_PAYMENTS_PATH,
   SETTINGS_MEMBERS_PATH,
 } from '@/lib/deck-routes'
+import { RANK_TRACKING_ENABLED } from '@/components/sh/products/keywords/rank-format'
 import { SpaceSwitcher } from './space-switcher'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -141,6 +143,7 @@ const SELLER_HUB_PRODUCTS_ITEMS: SidebarItem[] = [
   { label: '가격 시뮬레이션', href: SELLER_HUB_PRICING_SIM_PATH },
   { label: '판매채널 상품', href: SELLER_HUB_LISTINGS_PATH },
   { label: '키워드 관리', href: SELLER_HUB_KEYWORDS_PATH },
+  ...(RANK_TRACKING_ENABLED ? [{ label: '키워드 순위', href: SELLER_HUB_KEYWORD_RANKS_PATH }] : []),
   { label: '생산 관리', href: SELLER_HUB_PRODUCTION_PATH },
 ]
 

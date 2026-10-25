@@ -81,6 +81,7 @@ export async function PATCH(
     isActive,
     useSimulation,
     adminUrl,
+    storeUrl,
     freeShipping,
     freeShippingThreshold,
     usesMarketingBudget,
@@ -133,6 +134,7 @@ export async function PATCH(
           ...(isActive !== undefined && { isActive }),
           ...(useSimulation !== undefined && { useSimulation }),
           ...(adminUrl !== undefined && { adminUrl: adminUrl ?? null }),
+          ...(storeUrl !== undefined && { storeUrl }),
           ...(freeShipping !== undefined && { freeShipping }),
           ...(freeShippingThreshold !== undefined && {
             freeShippingThreshold: freeShippingThreshold ?? null,

@@ -32,6 +32,7 @@ export const SELLER_HUB_LISTINGS_PATH = `${SELLER_HUB_BASE_PATH}/products/listin
 export const SELLER_HUB_LISTING_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/new`
 export const SELLER_HUB_COUPANG_MATCHING_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/coupang-matching`
 export const SELLER_HUB_KEYWORDS_PATH = `${SELLER_HUB_BASE_PATH}/products/keywords`
+export const SELLER_HUB_KEYWORD_RANKS_PATH = `${SELLER_HUB_BASE_PATH}/products/keyword-ranks`
 /** 상품명 작성 SOP 위저드 (가이드 §22) */
 export const SELLER_HUB_NAMING_SOP_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/naming-sop`
 /** listingId 를 주면 해당 판매채널 상품의 상품명·검색어를 이어서 편집한다. */

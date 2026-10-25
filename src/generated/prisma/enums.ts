@@ -805,3 +805,21 @@ export const BillingChargeStatus = {
 } as const
 
 export type BillingChargeStatus = (typeof BillingChargeStatus)[keyof typeof BillingChargeStatus]
+
+
+export const RankSource = {
+  COUPANG: 'COUPANG',
+  NAVER_SHOPPING: 'NAVER_SHOPPING'
+} as const
+
+export type RankSource = (typeof RankSource)[keyof typeof RankSource]
+
+
+export const RankStatus = {
+  RANKED: 'RANKED',
+  NOT_IN_TOP100: 'NOT_IN_TOP100',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+} as const
+
+export type RankStatus = (typeof RankStatus)[keyof typeof RankStatus]
