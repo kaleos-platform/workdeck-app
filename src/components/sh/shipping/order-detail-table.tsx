@@ -178,6 +178,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
   const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [total, setTotal] = useState(0)
+  const [batchSource, setBatchSource] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
 
@@ -239,6 +240,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
       const json = await res.json()
       setOrders(json.data)
       setTotal(json.total)
+      setBatchSource(json.batchSource ?? null)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '주문 목록 조회 실패')
     } finally {
@@ -406,7 +408,9 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
         <h2 className="text-sm font-semibold">
           주문 목록 <span className="font-normal text-muted-foreground">({total}건)</span>
         </h2>
-        <DeliveryFileDialog batchId={batchId} disabled={total === 0} />
+        {batchSource !== 'NAVER_API' && (
+          <DeliveryFileDialog batchId={batchId} disabled={total === 0} />
+        )}
       </div>
 
       {/* 필터 */}
@@ -591,25 +595,29 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                             <Eye className="h-3.5 w-3.5" />
                           )}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0"
-                          title="수정"
-                          onClick={() => openEditDialog(order)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0"
-                          title="배송 등록에 재등록"
-                          disabled={cloningId === order.id}
-                          onClick={() => handleReregister(order.id)}
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
+                        {batchSource !== 'NAVER_API' && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              title="수정"
+                              onClick={() => openEditDialog(order)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              title="배송 등록에 재등록"
+                              disabled={cloningId === order.id}
+                              onClick={() => handleReregister(order.id)}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -685,6 +693,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
           channelId={matchTarget.channelId}
           channelName={orders.find((o) => o.id === matchTarget.orderId)?.channel?.name ?? null}
           channelSet={!!matchTarget.channelId}
+          forceAlias={batchSource === 'NAVER_API'}
           onMatched={() => {
             setMatchTarget(null)
             // 매칭 결과로 fulfillments가 완전히 교체되므로 전체 재조회가 가장 안전

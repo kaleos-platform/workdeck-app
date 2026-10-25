@@ -20,10 +20,13 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const order = await prisma.delOrder.findFirst({
     where: { id: orderId },
-    select: { id: true, spaceId: true },
+    select: { id: true, spaceId: true, batch: { select: { source: true } } },
   })
   if (!order || order.spaceId !== resolved.space.id) {
     return errorResponse('주문을 찾을 수 없습니다', 404)
+  }
+  if (order.batch.source === 'NAVER_API') {
+    return errorResponse('N배송 자동 수집 주문은 변경할 수 없습니다', 400)
   }
 
   const body = await req.json().catch(() => ({}))

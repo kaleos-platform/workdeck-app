@@ -999,7 +999,10 @@ export function PricingQuickFlow({
         channelName: api.name,
         listingChannelId: api.representativeChannelId ?? api.id,
         externalSource: api.externalSource ?? null,
-        rows: confirmedRows.map((r) => ({ optionIds: r.optionIds, quantity: Math.max(1, r.quantity) })),
+        rows: confirmedRows.map((r) => ({
+          optionIds: r.optionIds,
+          quantity: Math.max(1, r.quantity),
+        })),
         salePrice: info.salePriceBeforeDiscount,
         minMarginPrice: info.recommendedMin,
         includeVat: live.includeVat,

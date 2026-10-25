@@ -600,7 +600,9 @@ export function PricingChannelBoardCard({
                 </span>
               </TooltipTrigger>
               {!canApplyCoupang && (
-                <TooltipContent>기존 상품 모드에서 상품을 설정해야 반영할 수 있습니다</TooltipContent>
+                <TooltipContent>
+                  기존 상품 모드에서 상품을 설정해야 반영할 수 있습니다
+                </TooltipContent>
               )}
             </Tooltip>
           </TooltipProvider>

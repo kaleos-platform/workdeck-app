@@ -3,7 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { parseWithMapping, type ColumnMapping } from '@/lib/del/channel-import-parser'
 import { encryptOrderPii } from '@/lib/del/encryption'
-import { buildAliasLookup, normalizeAlias } from '@/lib/sh/product-matching'
+import { loadItemResolver } from '@/lib/del/resolve-order-items'
 import { decryptXlsxBuffer, isEncryptedXlsx, WrongPasswordError } from '@/lib/sh/xlsx-encryption'
 
 /**
@@ -122,59 +122,31 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 채널별 상품 별칭 사전을 한 번에 조회해 자동 매칭에 사용한다.
-  // channelId가 없으면 매칭 skip (별칭은 채널 스코프).
-  // 별칭은 listingId 또는 optionId 중 하나를 가리키며, listing이 우선.
-  let aliasLookup = new Map<string, import('@/lib/sh/product-matching').MatchTarget>()
-  const listingItemsMap = new Map<string, Array<{ optionId: string; quantity: number }>>()
-  if (channelId) {
-    const uniqueNames = new Set<string>()
-    for (const group of groups.values()) {
-      for (const r of group.rows) {
-        if (r.productName) uniqueNames.add(normalizeAlias(r.productName as string))
-      }
-    }
-    if (uniqueNames.size > 0) {
-      const aliasRows = await prisma.channelProductAlias.findMany({
-        where: { channelId, aliasName: { in: Array.from(uniqueNames) } },
-        select: {
-          aliasName: true,
-          optionId: true,
-          listingId: true,
-          fulfillments: { select: { optionId: true, quantity: true } },
-        },
-      })
-      aliasLookup = buildAliasLookup(
-        aliasRows.map((r) => ({
-          aliasName: r.aliasName,
-          optionId: r.optionId,
-          listingId: r.listingId,
-          fulfillments:
-            r.fulfillments.length > 0
-              ? r.fulfillments.map((f) => ({ optionId: f.optionId, quantity: f.quantity }))
-              : null,
-        }))
-      )
-
-      // listing 매칭에 필요한 item 구성 정보 로드
-      const listingIds = Array.from(
-        new Set(
-          Array.from(aliasLookup.values())
-            .map((t) => t.listingId)
-            .filter((v): v is string => !!v)
+  // N배송 자동 수집으로 이미 들어온 주문(대표 채널 = 이 채널)은 엑셀로 다시 넣지 않는다 — 재고 이중 차감 방지.
+  const orderNumbers = [...new Set(rows.map((r) => r.orderNumber).filter((n): n is string => !!n))]
+  const autoCollected =
+    channelId && orderNumbers.length > 0
+      ? new Set(
+          (
+            await prisma.delOrder.findMany({
+              where: {
+                spaceId: resolved.space.id,
+                orderNumber: { in: orderNumbers },
+                batch: { source: 'NAVER_API' },
+                channel: { representativeChannelId: channelId },
+              },
+              select: { orderNumber: true },
+            })
+          ).map((o) => o.orderNumber)
         )
-      )
-      if (listingIds.length > 0) {
-        const listings = await prisma.productListing.findMany({
-          where: { id: { in: listingIds }, spaceId: resolved.space.id },
-          include: { items: { select: { optionId: true, quantity: true } } },
-        })
-        for (const l of listings) {
-          listingItemsMap.set(l.id, l.items)
-        }
-      }
-    }
-  }
+      : new Set<string | null>()
+
+  // 채널별 상품 별칭으로 자동 매칭 (별칭은 채널 스코프, 우선순위 fulfillments > listing > option)
+  const resolveItem = await loadItemResolver(
+    resolved.space.id,
+    [channelId],
+    Array.from(groups.values()).flatMap((g) => g.rows.map((r) => r.productName as string))
+  )
 
   // 주문 생성
   let created = 0
@@ -185,6 +157,11 @@ export async function POST(req: NextRequest) {
     const first = group.rows[0]
     const rowNum = group.firstRowNum
 
+    if (first.orderNumber && autoCollected.has(first.orderNumber)) {
+      createErrors.push({ row: rowNum, message: 'N배송 자동 수집 주문 — 건너뜀' })
+      continue
+    }
+
     try {
       const encrypted = encryptOrderPii({
         recipientName: first.recipientName,
@@ -192,70 +169,12 @@ export async function POST(req: NextRequest) {
         address: first.address,
       })
 
-      // items 구성:
-      //  - listing 매칭 → DelOrderItem.listingId + 자식 fulfillments (listingItem.qty × orderItem.qty)
-      //  - option 매칭  → DelOrderItem.optionId
-      //  - 미매칭       → 둘 다 null
-      type ItemCreate = {
-        name: string
-        quantity: number
-        optionId: string | null
-        listingId: string | null
-        fulfillments: Array<{ optionId: string; quantity: number }>
-      }
-      const items: ItemCreate[] = group.rows
+      const items = group.rows
         .filter((r) => r.productName)
-        .map((r) => {
-          const rawName = r.productName as string
-          const qty = r.productQuantity ?? 1
-          const target = aliasLookup.get(normalizeAlias(rawName))
-          // 우선순위: fulfillments(다중 수동) > listing > option
-          if (target?.fulfillments && target.fulfillments.length > 0) {
-            matchedItemCount++
-            return {
-              name: rawName,
-              quantity: qty,
-              optionId: null,
-              listingId: null,
-              // alias.quantity는 "1 주문당 perSet" → orderItem.quantity(qty)만큼 곱함
-              fulfillments: target.fulfillments.map((f) => ({
-                optionId: f.optionId,
-                quantity: f.quantity * qty,
-              })),
-            }
-          }
-          if (target?.listingId) {
-            matchedItemCount++
-            const listingItems = listingItemsMap.get(target.listingId) ?? []
-            return {
-              name: rawName,
-              quantity: qty,
-              optionId: null,
-              listingId: target.listingId,
-              fulfillments: listingItems.map((li) => ({
-                optionId: li.optionId,
-                quantity: li.quantity * qty,
-              })),
-            }
-          }
-          if (target?.optionId) {
-            matchedItemCount++
-            return {
-              name: rawName,
-              quantity: qty,
-              optionId: target.optionId,
-              listingId: null,
-              fulfillments: [],
-            }
-          }
-          return {
-            name: rawName,
-            quantity: qty,
-            optionId: null,
-            listingId: null,
-            fulfillments: [],
-          }
-        })
+        .map((r) => resolveItem(r.productName as string, r.productQuantity ?? 1))
+      matchedItemCount += items.filter(
+        (it) => it.optionId || it.listingId || it.fulfillments.length > 0
+      ).length
 
       const hasPayment = group.rows.some((r) => r.paymentAmount != null)
       // paymentIsOrderTotal: 각 행에 동일한 "주문 총액"이 반복되는 채널 → 1회만 사용(max는 일부 행 공백에 강건).

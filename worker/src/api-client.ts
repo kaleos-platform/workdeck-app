@@ -461,3 +461,47 @@ export async function uploadInventoryRows(params: {
 
   return response.json()
 }
+
+// ─── 스마트스토어 N배송 판매 수집 ────────────────────────────────────────────────
+
+export type NaverNbaesongPlanItem = {
+  spaceId: string
+  credentialId: string
+  /** 이번 일정에 든 스토어의 키만. null = 앱에서 복호화 실패 */
+  secrets: Record<string, { clientId: string; clientSecret: string }> | null
+  stores: { key: string; days: string[] }[]
+}
+
+/** GET /api/collection/naver-nbaesong/plan */
+export async function getNaverNbaesongPlan(): Promise<{ items: NaverNbaesongPlanItem[] }> {
+  const response = await workerFetch('/api/collection/naver-nbaesong/plan')
+  const data = await response.json()
+  return { items: data?.items ?? [] }
+}
+
+/** POST /api/collection/naver-nbaesong/ingest — orders 는 NaverProductOrder[] (paymentDate 원문 그대로) */
+export async function postNaverNbaesongIngest(body: {
+  spaceId: string
+  storeKey: string
+  dayKst: string
+  orders: unknown[]
+}): Promise<void> {
+  await workerFetch('/api/collection/naver-nbaesong/ingest', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+/** POST /api/collection/naver-nbaesong/finish */
+export async function postNaverNbaesongFinish(body: {
+  spaceId: string
+  storeKey: string
+  attempted: string[]
+  ok: string[]
+  error?: string
+}): Promise<void> {
+  await workerFetch('/api/collection/naver-nbaesong/finish', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}

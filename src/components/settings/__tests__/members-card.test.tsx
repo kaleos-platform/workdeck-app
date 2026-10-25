@@ -116,6 +116,33 @@ it('403이면 API 메시지를 그대로 보여준다', async () => {
   expect(await screen.findByText('2단계 인증이 필요합니다')).toBeInTheDocument()
 })
 
+it('초대 목록이 MFA_REQUIRED 면 메시지 옆에 [인증하기] 링크(현재 경로로 복귀)를 보여준다', async () => {
+  window.history.pushState({}, '', '/settings/members')
+  fetchMock.mockImplementation((url: string) => {
+    if (url.startsWith('/api/spaces/members')) return json(owner)
+    if (url === '/api/spaces/sp-1/invitations')
+      return json({ message: '2단계 인증이 필요합니다', code: 'MFA_REQUIRED' }, 403)
+    return json({}, 404)
+  })
+  render(<MembersCard />)
+  expect(await screen.findByText(/2단계 인증이 필요합니다/)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: '인증하기' })).toHaveAttribute(
+    'href',
+    '/auth/mfa?next=%2Fsettings%2Fmembers'
+  )
+})
+
+it('초대 목록 403이 MFA 가 아니면 링크가 없다', async () => {
+  fetchMock.mockImplementation((url: string) => {
+    if (url.startsWith('/api/spaces/members')) return json(owner)
+    if (url === '/api/spaces/sp-1/invitations') return json({ message: '권한 없음' }, 403)
+    return json({}, 404)
+  })
+  render(<MembersCard />)
+  expect(await screen.findByText('권한 없음')).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: '인증하기' })).toBeNull()
+})
+
 it('링크 복사 버튼은 클립보드에 쓴다', async () => {
   const writeText = jest.fn().mockResolvedValue(undefined)
   Object.assign(navigator, { clipboard: { writeText } })

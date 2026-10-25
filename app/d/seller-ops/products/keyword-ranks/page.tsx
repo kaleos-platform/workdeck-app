@@ -1,7 +1,11 @@
+import { notFound } from 'next/navigation'
+
 import { KeywordRankBoard } from '@/components/sh/products/keywords/keyword-rank-board'
+import { RANK_TRACKING_ENABLED } from '@/components/sh/products/keywords/rank-format'
 
 // deck 컨텍스트는 app/d/seller-ops/layout.tsx 에서 이미 해석·리다이렉트한다.
 export default function KeywordRanksPage() {
+  if (!RANK_TRACKING_ENABLED) notFound()
   return (
     <div className="space-y-4">
       <div>

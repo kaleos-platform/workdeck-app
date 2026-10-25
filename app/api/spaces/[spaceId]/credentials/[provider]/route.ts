@@ -18,8 +18,13 @@ import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { saveSpaceCredential } from '@/lib/agent/integrations/space-credential'
 import { fetchAdAccountCurrencies } from '@/lib/agent/integrations/meta-ads'
 import { verifyNaverCred } from '@/lib/agent/integrations/naver-searchad'
+import { prisma } from '@/lib/prisma'
+import { ensureNbaesongChannel } from '@/lib/naver-commerce/nbaesong-channel'
+import type { NaverCommerceConfig } from '@/lib/naver-commerce/client'
 
 type Ctx = { params: Promise<{ spaceId: string; provider: string }> }
+
+const STORE_KEY = /^[a-z0-9-]{2,20}$/
 
 const SCHEMAS = {
   'meta-ads': z.object({
@@ -65,6 +70,38 @@ const SCHEMAS = {
       })
       .refine((c) => !c.defaultBrand || Object.hasOwn(c.customers, c.defaultBrand)),
   }),
+  // 스마트스토어 N배송 판매 수집 — Naver 호출은 워커가 한다(IP 등록). 여기선 저장·검증만.
+  'naver-commerce': z
+    .object({
+      secret: z.object({
+        stores: z
+          .record(
+            z.string().regex(STORE_KEY),
+            z.object({ clientId: z.string().min(10), clientSecret: z.string().min(20) })
+          )
+          .refine((o) => Object.keys(o).length >= 1 && Object.keys(o).length <= 5),
+      }),
+      config: z.object({
+        locationId: z.string().min(1),
+        stores: z.array(
+          z.object({
+            key: z.string().regex(STORE_KEY),
+            label: z.string().min(1).max(30),
+            startDate: z.iso.date(),
+            representativeChannelId: z.string().nullable(),
+          })
+        ),
+      }),
+    })
+    .refine((v) => {
+      const keys = new Set(v.config.stores.map((s) => s.key))
+      const secretKeys = Object.keys(v.secret.stores)
+      return (
+        keys.size === v.config.stores.length &&
+        keys.size === secretKeys.length &&
+        secretKeys.every((k) => keys.has(k))
+      )
+    }),
 } as const
 
 export async function PUT(req: NextRequest, { params }: Ctx) {
@@ -105,7 +142,68 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     }
   }
 
+  let ncStores: NaverCommerceConfig['stores'] = []
+  if (provider === 'naver-commerce') {
+    const nc = parsed.data as z.infer<(typeof SCHEMAS)['naver-commerce']>
+    const location = await prisma.invStorageLocation.findFirst({
+      where: { id: nc.config.locationId, spaceId },
+      select: { id: true },
+    })
+    if (!location) return errorResponse('출고 위치를 찾을 수 없습니다', 400)
+    const repIds = [
+      ...new Set(
+        nc.config.stores.flatMap((st) =>
+          st.representativeChannelId ? [st.representativeChannelId] : []
+        )
+      ),
+    ]
+    if (repIds.length > 0) {
+      const found = await prisma.channel.count({ where: { id: { in: repIds }, spaceId } })
+      if (found !== repIds.length) return errorResponse('대표 채널을 찾을 수 없습니다', 400)
+    }
+    // 재저장해도 백필 진행도는 유지한다.
+    const prev = await prisma.spaceCredential.findUnique({
+      where: { spaceId_provider: { spaceId, provider } },
+      select: { config: true },
+    })
+    const prevConfig = prev?.config as NaverCommerceConfig | null | undefined
+    const prevStores = prevConfig?.stores ?? []
+    if (new Set(nc.config.stores.map((st) => st.label)).size !== nc.config.stores.length)
+      return errorResponse('스토어 이름이 중복됩니다', 400)
+    // 수집 이력 = 커서 또는 N배송 묶음. 매칭 저장이 커서를 null 로 되돌리므로 묶음도 본다.
+    const collected = new Set<string>()
+    for (const st of prevStores) {
+      const has =
+        st.backfilledThrough != null ||
+        !!(await prisma.delBatch.findFirst({
+          where: { spaceId, source: 'NAVER_API', label: { startsWith: `N배송 ${st.key} ` } },
+          select: { id: true },
+        }))
+      if (has) collected.add(st.key)
+    }
+    const newKeys = new Set(nc.config.stores.map((st) => st.key))
+    if ([...collected].some((k) => !newKeys.has(k)))
+      return errorResponse('수집 이력이 있는 스토어는 삭제할 수 없습니다', 400)
+    // 기존 OUTBOUND 가 옛 위치에 남으므로 위치를 바꾸려면 재고 대조 후 새로 등록해야 한다.
+    if (collected.size > 0 && prevConfig?.locationId !== nc.config.locationId)
+      return errorResponse('위치 변경은 재고 대조 후 재등록이 필요합니다', 400)
+    const cursors = new Map(prevStores.map((st) => [st.key, st.backfilledThrough]))
+    ncStores = nc.config.stores.map((st) => ({
+      ...st,
+      backfilledThrough: cursors.get(st.key) ?? null,
+    }))
+    config = { locationId: nc.config.locationId, stores: ncStores }
+  }
+
   const { id } = await saveSpaceCredential(spaceId, provider, parsed.data.secret, config)
+  for (const st of ncStores) {
+    await ensureNbaesongChannel({
+      spaceId,
+      storeKey: st.key,
+      label: st.label,
+      representativeChannelId: st.representativeChannelId,
+    })
+  }
   return NextResponse.json(
     {
       id,
