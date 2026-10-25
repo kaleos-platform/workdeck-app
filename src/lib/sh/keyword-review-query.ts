@@ -99,6 +99,9 @@ export async function loadKeywordReview(
     spIds: Set<string>
   }
   const targets = new Map<string, T>()
+  // sellerProductId → 연결 리스팅이 속한 대상들. 미연결 아이템도 같은 sellerProductId 면 그 대상에 귀속한다
+  // (loadAdKeywordPerformance 와 같은 귀속).
+  const targetsOfSp = new Map<string, T[]>()
   for (const it of items) {
     const l = it.listing
     if (!l) continue
@@ -117,9 +120,16 @@ export async function loadKeywordReview(
       }
       targets.set(key, t)
     }
-    // 같은 sellerProductId 가 여러 리스팅에 걸려도 옵션은 한 번만 센다.
-    for (const o of [it.rgVendorItemId, it.mpVendorItemId]) if (o) t.optionIds.add(o)
     t.spIds.add(it.sellerProductId)
+    const list = targetsOfSp.get(it.sellerProductId) ?? []
+    if (!list.includes(t)) list.push(t)
+    targetsOfSp.set(it.sellerProductId, list)
+  }
+  // 같은 옵션은 Set 이라 한 번만 센다.
+  for (const it of items) {
+    for (const t of targetsOfSp.get(it.sellerProductId) ?? []) {
+      for (const o of [it.rgVendorItemId, it.mpVendorItemId]) if (o) t.optionIds.add(o)
+    }
   }
 
   const sums = [...targets.values()]

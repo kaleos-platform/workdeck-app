@@ -17,6 +17,8 @@ export type AdKeywordPerformance = {
 }
 
 const DISCOVER_LIMIT = 20
+/** 노출 합계가 이보다 적으면 0 노출 키워드가 표본 부족일 뿐이라 정리 후보를 내지 않는다. */
+export const PRUNE_MIN_IMPRESSIONS = 1000
 const EXAMPLE_LIMIT = 3
 
 /** 한 글자 조각은 영숫자·% 만 허용 — '선크림' 이 '선' + '크림' 으로 덮이는 오탐을 막는다. */
@@ -80,9 +82,13 @@ export function computeAdKeywordPerformance(input: {
     .sort((a, b) => b.orders - a.orders || b.clicks - a.clicks)
     .slice(0, DISCOVER_LIMIT)
 
-  const prune = Object.entries(keywordStats)
-    .filter(([, s]) => s.imp === 0)
-    .map(([kw]) => kw)
+  const totalImp = input.terms.reduce((sum, t) => sum + t.imp, 0)
+  const prune =
+    totalImp < PRUNE_MIN_IMPRESSIONS
+      ? []
+      : Object.entries(keywordStats)
+          .filter(([, s]) => s.imp === 0)
+          .map(([kw]) => kw)
 
   return { keywordStats, discover, prune }
 }
