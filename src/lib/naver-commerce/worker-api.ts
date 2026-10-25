@@ -6,13 +6,18 @@ import { errorResponse } from '@/lib/api-helpers'
 import { authenticateWorker } from '@/lib/worker-auth'
 import { NAVER_COMMERCE_PROVIDER, type NaverCommerceConfig } from './client'
 
-/** legacy 키 = 전체(spaceId 없음), space 토큰 = 그 space 만. */
+/**
+ * space 토큰만 받는다. plan 이 커머스API 키를 평문으로 내려주므로 legacy 키(전 space)를 받으면
+ * 그 키 하나로 모든 space 의 키가 열린다(#1203).
+ */
 export async function resolveNbaesongScope(
   headers: Headers
-): Promise<{ scope: { spaceId?: string } } | { error: NextResponse }> {
+): Promise<{ scope: { spaceId: string } } | { error: NextResponse }> {
   const auth = await authenticateWorker(headers)
   if ('error' in auth) return { error: auth.error }
-  return { scope: auth.scope.kind === 'space' ? { spaceId: auth.scope.spaceId } : {} }
+  if (auth.scope.kind !== 'space')
+    return { error: errorResponse('N배송 수집은 Space 워커 토큰이 필요합니다', 403) }
+  return { scope: { spaceId: auth.scope.spaceId } }
 }
 
 /** 범위·자격증명·스토어를 확인한다. 실패 시 응답을 돌려준다. */
