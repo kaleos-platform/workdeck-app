@@ -31,6 +31,9 @@
     },
     "app/api/cron/hiring-upload-sweep/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/collection/naver-nbaesong/ingest/route.ts": {
+      "maxDuration": 60
     }
   },
   "crons": [

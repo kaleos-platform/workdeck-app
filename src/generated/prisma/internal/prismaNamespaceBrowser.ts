@@ -1310,7 +1310,8 @@ export const DelOrderItemScalarFieldEnum = {
   name: 'name',
   quantity: 'quantity',
   optionId: 'optionId',
-  listingId: 'listingId'
+  listingId: 'listingId',
+  skuMappings: 'skuMappings'
 } as const
 
 export type DelOrderItemScalarFieldEnum = (typeof DelOrderItemScalarFieldEnum)[keyof typeof DelOrderItemScalarFieldEnum]

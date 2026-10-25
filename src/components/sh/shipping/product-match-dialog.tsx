@@ -103,6 +103,8 @@ type Props = {
   channelId?: string | null
   channelName?: string | null
   channelSet: boolean
+  // N배송 자동 수집 주문 — alias 저장이 유일한 영속 경로라 항상 저장
+  forceAlias?: boolean
   onMatched: (result: MatchResult) => void | Promise<void>
 }
 
@@ -116,13 +118,15 @@ export function ProductMatchDialog({
   channelId,
   channelName,
   channelSet,
+  forceAlias = false,
   onMatched,
 }: Props) {
   const defaultTab = channelSet ? 'listing' : 'manual'
   const [tab, setTab] = useState<'listing' | 'manual'>(defaultTab)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [saveAlias, setSaveAlias] = useState(true)
+  const [aliasChecked, setSaveAlias] = useState(true)
+  const saveAlias = forceAlias || aliasChecked
   const [submitting, setSubmitting] = useState(false)
 
   // 다이얼로그 오픈 시 input을 비우면서도 debouncedSearch는 rawName으로 시드한다.
@@ -583,9 +587,7 @@ export function ProductMatchDialog({
                               variant="ghost"
                               size="icon"
                               className="h-8 w-7 rounded-r-none"
-                              onClick={() =>
-                                updateManualQty(m.optionId, m.quantity - 1)
-                              }
+                              onClick={() => updateManualQty(m.optionId, m.quantity - 1)}
                               disabled={submitting || m.quantity <= 1}
                               title="수량 감소"
                               aria-label="수량 감소"
@@ -599,7 +601,7 @@ export function ProductMatchDialog({
                               onChange={(e) =>
                                 updateManualQty(m.optionId, Number(e.target.value) || 1)
                               }
-                              className="h-8 w-10 rounded-none border-0 text-center text-xs shadow-none focus-visible:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                              className="h-8 w-10 [appearance:textfield] rounded-none border-0 text-center text-xs shadow-none focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                               title="1 주문당 수량"
                               aria-label="1 주문당 수량"
                             />
@@ -608,9 +610,7 @@ export function ProductMatchDialog({
                               variant="ghost"
                               size="icon"
                               className="h-8 w-7 rounded-l-none"
-                              onClick={() =>
-                                updateManualQty(m.optionId, m.quantity + 1)
-                              }
+                              onClick={() => updateManualQty(m.optionId, m.quantity + 1)}
                               disabled={submitting}
                               title="수량 증가"
                               aria-label="수량 증가"
@@ -651,16 +651,18 @@ export function ProductMatchDialog({
             </TabsContent>
           </Tabs>
 
-          <label className="flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={saveAlias}
-              onCheckedChange={(v) => setSaveAlias(v === true)}
-              disabled={!channelSet}
-            />
-            <span className={channelSet ? undefined : 'text-muted-foreground'}>
-              이 채널의 매칭 상품으로 저장하고 다음부터 자동 매칭
-            </span>
-          </label>
+          {!forceAlias && (
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={saveAlias}
+                onCheckedChange={(v) => setSaveAlias(v === true)}
+                disabled={!channelSet}
+              />
+              <span className={channelSet ? undefined : 'text-muted-foreground'}>
+                이 채널의 매칭 상품으로 저장하고 다음부터 자동 매칭
+              </span>
+            </label>
+          )}
           {!channelSet && (
             <p className="text-xs text-muted-foreground">
               주문에 판매 채널이 지정되어 있지 않아 별칭을 저장할 수 없습니다

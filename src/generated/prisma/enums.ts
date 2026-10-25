@@ -284,7 +284,8 @@ export type DelBatchStatus = (typeof DelBatchStatus)[keyof typeof DelBatchStatus
 
 export const DelBatchSource = {
   MANUAL: 'MANUAL',
-  IMPORT: 'IMPORT'
+  IMPORT: 'IMPORT',
+  NAVER_API: 'NAVER_API'
 } as const
 
 export type DelBatchSource = (typeof DelBatchSource)[keyof typeof DelBatchSource]
