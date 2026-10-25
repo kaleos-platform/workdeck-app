@@ -36,6 +36,7 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     coupangCredential: { upsert: jest.fn(), findUnique: jest.fn() },
     collectionRun: { findFirst: jest.fn(), create: jest.fn() },
+    workspace: { findUnique: jest.fn() },
   },
 }))
 
@@ -211,18 +212,44 @@ describe('PUT /api/collection/credentials — 역할·MFA 게이트', () => {
     })
   })
 
-  it('해석 실패(409)면 ADMIN 은 그 오류, OWNER 는 ensure', async () => {
-    const conflict = Response.json({ message: '못 찾음' }, { status: 409 })
-    ;(resolveCollectionAuth as jest.Mock).mockResolvedValue({ error: conflict })
+  const conflict409 = (noWorkspace: boolean) => ({
+    error: Response.json({ message: '못 찾음' }, { status: 409 }),
+    noWorkspace,
+  })
+  const wsFindUnique = prisma.workspace.findUnique as jest.Mock
+
+  it('해석 실패(409)면 ADMIN 은 그 오류, 연결 워크스페이스 없는 OWNER 는 ensure', async () => {
+    ;(resolveCollectionAuth as jest.Mock).mockResolvedValue(conflict409(true))
     member('ADMIN')
     expect((await sessionPut())?.status).toBe(409)
     expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
     member('OWNER')
-    ;(resolveCollectionAuth as jest.Mock).mockResolvedValue({
-      error: Response.json({ message: '못 찾음' }, { status: 409 }),
-    })
+    wsFindUnique.mockResolvedValue({ spaceId: null })
     expect((await sessionPut())?.status).toBe(200)
     expect(ensureWorkspaceForUser).toHaveBeenCalled()
+  })
+
+  it('OWNER 라도 모호한 409(noWorkspace=false)는 그대로 반환하고 ensure·저장하지 않는다', async () => {
+    member('OWNER')
+    ;(resolveCollectionAuth as jest.Mock).mockResolvedValue(conflict409(false))
+    expect((await sessionPut())?.status).toBe(409)
+    expect(ensureWorkspaceForUser).not.toHaveBeenCalled()
+    expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+  })
+
+  it('OWNER 의 ensure 워크스페이스가 다른 Space 에 연결돼 있으면 409 로 막고 저장하지 않는다', async () => {
+    member('OWNER')
+    ;(resolveCollectionAuth as jest.Mock).mockResolvedValue(conflict409(true))
+    wsFindUnique.mockResolvedValue({ spaceId: 'sp-other' })
+    expect((await sessionPut())?.status).toBe(409)
+    expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+  })
+
+  it('ensure 워크스페이스가 현재 Space 에 이미 연결돼 있으면 저장한다', async () => {
+    member('OWNER')
+    ;(resolveCollectionAuth as jest.Mock).mockResolvedValue(conflict409(true))
+    wsFindUnique.mockResolvedValue({ spaceId: 'sp-1' })
+    expect((await sessionPut())?.status).toBe(200)
   })
 
   it('워커 PUT(x-worker-api-key)은 MFA·역할 검사를 하지 않는다', async () => {
