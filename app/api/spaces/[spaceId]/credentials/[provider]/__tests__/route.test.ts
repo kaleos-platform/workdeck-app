@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    invStorageLocation: { findFirst: jest.fn() },
+    invStorageLocation: { count: jest.fn() },
     channel: { count: jest.fn() },
     spaceCredential: { findUnique: jest.fn() },
     delBatch: { findFirst: jest.fn() },
@@ -16,6 +16,13 @@ jest.mock('@/lib/agent/identity/space-admin', () => ({
   requireSpaceAdmin: jest.fn(async () => ({ userId: 'u1' })),
 }))
 jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
+jest.mock('@/lib/crypto/field-crypto', () => ({
+  decryptField: jest.fn(() =>
+    JSON.stringify({
+      stores: { aml: { clientId: 'old-cid-0123456', clientSecret: 'o'.repeat(24) } },
+    })
+  ),
+}))
 jest.mock('@/lib/agent/integrations/space-credential', () => ({
   saveSpaceCredential: jest.fn(async () => ({ id: 'cred1' })),
   loadSpaceCredential: jest.fn(),
@@ -106,7 +113,7 @@ it('메타: 계정 확인 실패 → 400, 저장하지 않는다', async () => {
 
 describe('naver-commerce', () => {
   const db = prisma as unknown as {
-    invStorageLocation: { findFirst: jest.Mock }
+    invStorageLocation: { count: jest.Mock }
     channel: { count: jest.Mock }
     spaceCredential: { findUnique: jest.Mock }
     delBatch: { findFirst: jest.Mock }
@@ -124,7 +131,7 @@ describe('naver-commerce', () => {
     ...over,
   })
   beforeEach(() => {
-    db.invStorageLocation.findFirst.mockResolvedValue({ id: 'loc1' })
+    db.invStorageLocation.count.mockImplementation(async ({ where }) => where.id.in.length)
     db.channel.count.mockResolvedValue(1)
     db.spaceCredential.findUnique.mockResolvedValue(null)
     db.delBatch.findFirst.mockResolvedValue(null)
@@ -173,7 +180,7 @@ describe('naver-commerce', () => {
     expect(saveSpaceCredential).not.toHaveBeenCalled()
   })
   it('다른 공간 위치 → 400', async () => {
-    db.invStorageLocation.findFirst.mockResolvedValue(null)
+    db.invStorageLocation.count.mockResolvedValue(0)
     const res = await call('naver-commerce', body())
     expect(res.status).toBe(400)
     expect(saveSpaceCredential).not.toHaveBeenCalled()
@@ -246,14 +253,65 @@ describe('naver-commerce', () => {
     })
     expect((await call('naver-commerce', body())).status).toBe(200)
   })
-  it('수집 이력이 있으면 위치 변경 → 400', async () => {
+  it('수집 이력이 있어도 위치 변경 허용 — 그 스토어 커서만 처음으로', async () => {
     db.spaceCredential.findUnique.mockResolvedValue({
-      config: { locationId: 'loc0', stores: [{ ...store(), backfilledThrough: '2026-10-10' }] },
+      encryptedPayload: 'ENC',
+      iv: 'v1',
+      config: {
+        locationId: 'loc1',
+        stores: [
+          { ...store(), backfilledThrough: '2026-10-10' },
+          { ...store({ key: 'kreamd', label: '크림' }), backfilledThrough: '2026-10-11' },
+        ],
+      },
     })
-    const res = await call('naver-commerce', body())
+    const res = await call('naver-commerce', {
+      secret: { stores: { kreamd: { clientId: 'cid-kreamd-0001', clientSecret: 'k'.repeat(24) } } },
+      config: {
+        locationId: 'loc1',
+        stores: [store({ locationId: 'loc2' }), store({ key: 'kreamd', label: '크림' })],
+      },
+    })
+    expect(res.status).toBe(200)
+    const [, , secret, config] = (saveSpaceCredential as jest.Mock).mock.calls[0]
+    expect(
+      config.stores.map((s: { locationId?: string; backfilledThrough: string | null }) => [
+        s.locationId,
+        s.backfilledThrough,
+      ])
+    ).toEqual([
+      ['loc2', null],
+      [undefined, '2026-10-11'],
+    ])
+    expect(secret.stores.aml.clientId).toBe('old-cid-0123456')
+  })
+  it('키를 비워 두면 기존 키 유지, 새 스토어는 키 필수', async () => {
+    db.spaceCredential.findUnique.mockResolvedValue({
+      config: { locationId: 'loc1', stores: [{ ...store(), backfilledThrough: null }] },
+      encryptedPayload: 'ENC',
+      iv: 'v1',
+    })
+    expect((await call('naver-commerce', body({ secret: { stores: {} } }))).status).toBe(200)
+    expect((saveSpaceCredential as jest.Mock).mock.calls[0][2]).toEqual({
+      stores: { aml: { clientId: 'old-cid-0123456', clientSecret: 'o'.repeat(24) } },
+    })
+    const res = await call(
+      'naver-commerce',
+      body({
+        secret: { stores: {} },
+        config: { locationId: 'loc1', stores: [store(), store({ key: 'new1', label: '새' })] },
+      })
+    )
     expect(res.status).toBe(400)
-    expect(await errorOf(res)).toBe('위치 변경은 재고 대조 후 재등록이 필요합니다')
-    expect(saveSpaceCredential).not.toHaveBeenCalled()
+    expect(await errorOf(res)).toBe('새 스토어는 애플리케이션 ID와 시크릿을 입력해 주세요')
+  })
+  it('스토어별 위치가 다른 공간 소속이면 → 400', async () => {
+    db.invStorageLocation.count.mockResolvedValue(1)
+    const res = await call(
+      'naver-commerce',
+      body({ config: { locationId: 'loc1', stores: [store({ locationId: 'zz' })] } })
+    )
+    expect(res.status).toBe(400)
   })
   it('수집 이력이 없으면 위치 변경 허용', async () => {
     db.spaceCredential.findUnique.mockResolvedValue({

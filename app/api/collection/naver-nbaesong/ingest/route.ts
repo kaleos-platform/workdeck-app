@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { errorResponse } from '@/lib/api-helpers'
-import { NaverProductOrderSchema } from '@/lib/naver-commerce/client'
+import { NaverProductOrderSchema, nbaesongStoreLocationId } from '@/lib/naver-commerce/client'
 import { ensureNbaesongChannel } from '@/lib/naver-commerce/nbaesong-channel'
 import { syncNbaesongDay } from '@/lib/naver-commerce/nbaesong-sync'
 import { loadNbaesongStore, resolveNbaesongScope } from '@/lib/naver-commerce/worker-api'
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     spaceId,
     storeKey,
     channelId,
-    locationId: config.locationId,
+    locationId: nbaesongStoreLocationId(config, store),
     representativeChannelId: store.representativeChannelId,
     dayKst,
     orders,

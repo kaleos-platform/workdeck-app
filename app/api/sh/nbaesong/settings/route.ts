@@ -37,6 +37,7 @@ export async function GET() {
         label: s.label,
         startDate: s.startDate,
         representativeChannelId: s.representativeChannelId,
+        locationId: s.locationId ?? null,
         backfilledThrough: s.backfilledThrough,
         channelId: channelByKey.get(nbaesongExternalSource(s.key)) ?? null,
       })),

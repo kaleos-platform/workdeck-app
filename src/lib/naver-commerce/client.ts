@@ -10,8 +10,15 @@ export type NaverCommerceStoreConfig = {
   startDate: string
   representativeChannelId: string | null
   backfilledThrough: string | null
+  /** 이 스토어만 다른 출고 위치(예: 브랜드별 3PL 계정). 없으면 config.locationId */
+  locationId?: string | null
 }
 export type NaverCommerceConfig = { locationId: string; stores: NaverCommerceStoreConfig[] }
+
+export const nbaesongStoreLocationId = (
+  config: Pick<NaverCommerceConfig, 'locationId'>,
+  store: Pick<NaverCommerceStoreConfig, 'locationId'>
+): string => store.locationId || config.locationId
 
 export type NaverSkuMapping = { nsBarcode: string; pickingQuantityPerOrder: number }
 export type NaverProductOrder = {

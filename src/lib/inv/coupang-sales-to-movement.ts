@@ -256,14 +256,24 @@ export async function upsertOutboundMovement(input: {
     const existing = await tx.invMovement.findFirst({
       where: { referenceId, type: 'OUTBOUND' },
     })
-    if (existing && existing.quantity === quantity) return 'skipped'
+    const moved = !!existing && existing.locationId !== locationId
+    if (existing && !moved && existing.quantity === quantity) return 'skipped'
     // 신규인데 0 이면 만들 OUTBOUND 가 없음(전체취소 정정 대상도 없음).
     if (!existing && quantity <= 0) return 'skipped'
+
+    // 출고 위치가 바뀌었으면(N배송 스토어 위치 변경) 옛 위치 차감분을 먼저 되돌리고 새 위치에 전량 차감한다.
+    if (existing && moved) {
+      await lockStockLevel(tx, optionId, existing.locationId)
+      await tx.invStockLevel.updateMany({
+        where: { optionId, locationId: existing.locationId },
+        data: { quantity: { increment: existing.quantity } },
+      })
+    }
 
     // delta 만큼 재고 차감: 신규 OUTBOUND = quantity 차감, 정정 = (quantity − 기존) 차감.
     // (기존이 이미 차감했으므로 차분만 추가 적용 = 역산+재적용을 한 번에.)
     // 전체취소(quantity 0)면 delta = −기존수량 → 기존 차감분이 전부 복원된다.
-    const delta = quantity - (existing?.quantity ?? 0)
+    const delta = quantity - (moved ? 0 : (existing?.quantity ?? 0))
 
     await lockStockLevel(tx, optionId, locationId)
     const stock = await tx.invStockLevel.findUnique({

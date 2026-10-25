@@ -134,6 +134,31 @@ d('upsertOutboundMovement — 멱등·정정·advisory lock 동시성 (dev DB)',
     expect(stock?.quantity).toBe(-5)
   })
 
+  test('위치 이동: 같은 referenceId 를 다른 위치로 → 옛 위치 복원·새 위치 전량 차감, 이동 1건', async () => {
+    const refId = 'e2e-test:2026-07-01:opt-move'
+    const loc2 = await prisma.invStorageLocation.create({
+      data: { spaceId: SPACE_ID, name: 'E2E 창고2', type: 'OWN', isActive: true },
+    })
+    const base = { spaceId: SPACE_ID, optionId, channelId, movementDate: MOVE_DATE, referenceId: refId }
+    await upsertOutboundMovement({ ...base, locationId, quantity: 5 })
+    expect(await upsertOutboundMovement({ ...base, locationId: loc2.id, quantity: 6 })).toBe('updated')
+
+    const level = (loc: string) =>
+      prisma.invStockLevel
+        .findUnique({ where: { optionId_locationId: { optionId, locationId: loc } } })
+        .then((r) => r?.quantity)
+    expect(await level(locationId)).toBe(0)
+    expect(await level(loc2.id)).toBe(-6)
+    const mv = await prisma.invMovement.findMany({ where: { referenceId: refId } })
+    expect(mv.map((m) => [m.locationId, m.quantity])).toEqual([[loc2.id, 6]])
+
+    // 이동 + 전체취소(0) → 옛 위치는 복원된 채, 새 위치 차감 없음, 이동 삭제
+    await upsertOutboundMovement({ ...base, locationId, quantity: 0 })
+    expect(await level(locationId)).toBe(0)
+    expect(await level(loc2.id)).toBe(0)
+    expect(await prisma.invMovement.count({ where: { referenceId: refId } })).toBe(0)
+  })
+
   test('테스트 2 — 정정: 수량 5→8 재호출 → updated, 이동 1건에 quantity 8, 재고 -8', async () => {
     const refId = 'e2e-test:2026-07-01:opt-b'
 

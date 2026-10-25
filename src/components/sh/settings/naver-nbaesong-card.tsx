@@ -25,6 +25,8 @@ type StoreRow = {
   label: string
   startDate: string
   representativeChannelId: string | null
+  /** null = 기본 출고 위치 */
+  locationId: string | null
   clientId: string
   clientSecret: string
   // 서버에 이미 있는 스토어는 key 를 바꿀 수 없다(N배송 채널·alias 가 key 에 묶임).
@@ -39,6 +41,7 @@ type Settings = {
     label: string
     startDate: string
     representativeChannelId: string | null
+    locationId: string | null
     backfilledThrough: string | null
   }[]
   lastError: string | null
@@ -51,6 +54,7 @@ const emptyRow = (): StoreRow => ({
   label: '',
   startDate: '',
   representativeChannelId: null,
+  locationId: null,
   clientId: '',
   clientSecret: '',
   saved: false,
@@ -64,7 +68,6 @@ export function NaverNbaesongCard() {
   const [channels, setChannels] = useState<Option[]>([])
   const [locationId, setLocationId] = useState('')
   const [rows, setRows] = useState<StoreRow[]>([])
-  const [locked, setLocked] = useState(false)
   const [lastError, setLastError] = useState<string | null>(null)
 
   async function load() {
@@ -87,13 +90,13 @@ export function NaverNbaesongCard() {
       if (settings) {
         setLocationId(settings.locationId ?? '')
         setLastError(settings.lastError)
-        setLocked(settings.stores.some((st) => st.backfilledThrough))
         setRows(
           settings.stores.map((st) => ({
             key: st.key,
             label: st.label,
             startDate: st.startDate,
             representativeChannelId: st.representativeChannelId,
+            locationId: st.locationId,
             clientId: '',
             clientSecret: '',
             saved: true,
@@ -123,8 +126,12 @@ export function NaverNbaesongCard() {
       if (!STORE_KEY.test(r.key))
         return toast.error('스토어 키는 영문 소문자·숫자·하이픈 2~20자여야 합니다')
       if (!r.label.trim() || !r.startDate) return toast.error('이름과 N배송 시작일을 입력해 주세요')
-      if (r.clientId.trim().length < 10 || r.clientSecret.trim().length < 20)
-        return toast.error('애플리케이션 ID와 시크릿을 모두 입력해 주세요 (저장 시 매번 다시 입력)')
+      const keyEntered = r.clientId.trim() || r.clientSecret.trim()
+      if (
+        (!r.saved || keyEntered) &&
+        (r.clientId.trim().length < 10 || r.clientSecret.trim().length < 20)
+      )
+        return toast.error('애플리케이션 ID와 시크릿을 모두 입력해 주세요')
     }
     if (new Set(rows.map((r) => r.key)).size !== rows.length)
       return toast.error('스토어 키가 중복되었습니다')
@@ -136,11 +143,14 @@ export function NaverNbaesongCard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           secret: {
+            // 저장된 스토어에서 비워 둔 키는 서버가 기존 값을 유지한다.
             stores: Object.fromEntries(
-              rows.map((r) => [
-                r.key,
-                { clientId: r.clientId.trim(), clientSecret: r.clientSecret.trim() },
-              ])
+              rows
+                .filter((r) => r.clientId.trim() || r.clientSecret.trim())
+                .map((r) => [
+                  r.key,
+                  { clientId: r.clientId.trim(), clientSecret: r.clientSecret.trim() },
+                ])
             ),
           },
           config: {
@@ -150,6 +160,7 @@ export function NaverNbaesongCard() {
               label: r.label.trim(),
               startDate: r.startDate,
               representativeChannelId: r.representativeChannelId,
+              locationId: r.locationId,
             })),
           },
         }),
@@ -187,8 +198,8 @@ export function NaverNbaesongCard() {
             )}
 
             <div className="max-w-xs space-y-1.5">
-              <Label>출고 위치</Label>
-              <Select value={locationId} onValueChange={setLocationId} disabled={locked}>
+              <Label>기본 출고 위치</Label>
+              <Select value={locationId} onValueChange={setLocationId}>
                 <SelectTrigger>
                   <SelectValue placeholder="위치 선택" />
                 </SelectTrigger>
@@ -209,11 +220,9 @@ export function NaverNbaesongCard() {
                   에서 3PL 위치를 먼저 추가해 주세요
                 </p>
               )}
-              {locked && (
-                <p className="text-xs text-muted-foreground">
-                  위치 변경은 재고 대조 후 재등록이 필요합니다
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                위치를 바꾸면 그 스토어의 지난 N배송 출고가 새 위치로 옮겨집니다
+              </p>
             </div>
 
             <div className="space-y-3">
@@ -265,10 +274,30 @@ export function NaverNbaesongCard() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-1 sm:col-span-2">
+                    <Label>출고 위치</Label>
+                    <Select
+                      value={r.locationId ?? NONE}
+                      onValueChange={(v) => patchRow(i, { locationId: v === NONE ? null : v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NONE}>기본 출고 위치</SelectItem>
+                        {locations.map((l) => (
+                          <SelectItem key={l.id} value={l.id}>
+                            {l.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="space-y-1">
                     <Label>애플리케이션 ID</Label>
                     <Input
                       value={r.clientId}
+                      placeholder={r.saved ? '변경할 때만 입력' : undefined}
                       autoComplete="off"
                       onChange={(e) => patchRow(i, { clientId: e.target.value })}
                     />
@@ -278,6 +307,7 @@ export function NaverNbaesongCard() {
                     <Input
                       type="password"
                       value={r.clientSecret}
+                      placeholder={r.saved ? '변경할 때만 입력' : undefined}
                       autoComplete="new-password"
                       onChange={(e) => patchRow(i, { clientSecret: e.target.value })}
                     />

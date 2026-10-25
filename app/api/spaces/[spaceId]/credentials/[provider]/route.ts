@@ -20,7 +20,12 @@ import { fetchAdAccountCurrencies } from '@/lib/agent/integrations/meta-ads'
 import { verifyNaverCred } from '@/lib/agent/integrations/naver-searchad'
 import { prisma } from '@/lib/prisma'
 import { ensureNbaesongChannel } from '@/lib/naver-commerce/nbaesong-channel'
-import type { NaverCommerceConfig } from '@/lib/naver-commerce/client'
+import { decryptField } from '@/lib/crypto/field-crypto'
+import {
+  nbaesongStoreLocationId,
+  type NaverCommerceConfig,
+  type NaverCommerceSecret,
+} from '@/lib/naver-commerce/client'
 
 type Ctx = { params: Promise<{ spaceId: string; provider: string }> }
 
@@ -79,7 +84,8 @@ const SCHEMAS = {
             z.string().regex(STORE_KEY),
             z.object({ clientId: z.string().min(10), clientSecret: z.string().min(20) })
           )
-          .refine((o) => Object.keys(o).length >= 1 && Object.keys(o).length <= 5),
+          // 이미 저장된 스토어는 비워 두면 기존 키를 유지한다(서버에서 병합).
+          .refine((o) => Object.keys(o).length <= 5),
       }),
       config: z.object({
         locationId: z.string().min(1),
@@ -89,17 +95,18 @@ const SCHEMAS = {
             label: z.string().min(1).max(30),
             startDate: z.iso.date(),
             representativeChannelId: z.string().nullable(),
+            locationId: z.string().min(1).nullable().optional(),
           })
         ),
       }),
     })
     .refine((v) => {
       const keys = new Set(v.config.stores.map((s) => s.key))
-      const secretKeys = Object.keys(v.secret.stores)
       return (
         keys.size === v.config.stores.length &&
-        keys.size === secretKeys.length &&
-        secretKeys.every((k) => keys.has(k))
+        keys.size >= 1 &&
+        keys.size <= 5 &&
+        Object.keys(v.secret.stores).every((k) => keys.has(k))
       )
     }),
 } as const
@@ -118,6 +125,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
 
   let config: Record<string, unknown> = parsed.data.config
+  let secret: object = parsed.data.secret
   if (provider === 'meta-ads') {
     const meta = parsed.data as z.infer<(typeof SCHEMAS)['meta-ads']>
     try {
@@ -145,11 +153,16 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   let ncStores: NaverCommerceConfig['stores'] = []
   if (provider === 'naver-commerce') {
     const nc = parsed.data as z.infer<(typeof SCHEMAS)['naver-commerce']>
-    const location = await prisma.invStorageLocation.findFirst({
-      where: { id: nc.config.locationId, spaceId },
-      select: { id: true },
+    const locIds = [
+      ...new Set([
+        nc.config.locationId,
+        ...nc.config.stores.flatMap((st) => (st.locationId ? [st.locationId] : [])),
+      ]),
+    ]
+    const locFound = await prisma.invStorageLocation.count({
+      where: { id: { in: locIds }, spaceId },
     })
-    if (!location) return errorResponse('출고 위치를 찾을 수 없습니다', 400)
+    if (locFound !== locIds.length) return errorResponse('출고 위치를 찾을 수 없습니다', 400)
     const repIds = [
       ...new Set(
         nc.config.stores.flatMap((st) =>
@@ -164,7 +177,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     // 재저장해도 백필 진행도는 유지한다.
     const prev = await prisma.spaceCredential.findUnique({
       where: { spaceId_provider: { spaceId, provider } },
-      select: { config: true },
+      select: { config: true, encryptedPayload: true, iv: true },
     })
     const prevConfig = prev?.config as NaverCommerceConfig | null | undefined
     const prevStores = prevConfig?.stores ?? []
@@ -184,18 +197,48 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     const newKeys = new Set(nc.config.stores.map((st) => st.key))
     if ([...collected].some((k) => !newKeys.has(k)))
       return errorResponse('수집 이력이 있는 스토어는 삭제할 수 없습니다', 400)
-    // 기존 OUTBOUND 가 옛 위치에 남으므로 위치를 바꾸려면 재고 대조 후 새로 등록해야 한다.
-    if (collected.size > 0 && prevConfig?.locationId !== nc.config.locationId)
-      return errorResponse('위치 변경은 재고 대조 후 재등록이 필요합니다', 400)
+    // 비워 둔 스토어 키는 기존 값으로 채운다.
+    let prevSecrets: NaverCommerceSecret['stores'] = {}
+    const missing = nc.config.stores.filter((st) => !nc.secret.stores[st.key])
+    if (missing.length > 0 && prev) {
+      try {
+        prevSecrets = (
+          JSON.parse(
+            decryptField('space-credential', prev.encryptedPayload, prev.iv)
+          ) as NaverCommerceSecret
+        ).stores
+      } catch {
+        return errorResponse('기존 자격증명을 읽지 못했습니다. 키를 다시 입력해 주세요', 400)
+      }
+    }
+    if (missing.some((st) => !prevSecrets?.[st.key]))
+      return errorResponse('새 스토어는 애플리케이션 ID와 시크릿을 입력해 주세요', 400)
+    secret = {
+      stores: Object.fromEntries(
+        nc.config.stores.map((st) => [st.key, nc.secret.stores[st.key] ?? prevSecrets[st.key]])
+      ),
+    }
+    // 출고 위치가 바뀐 스토어는 커서를 처음으로 되돌린다 — 워커가 전 기간을 다시 동기화하며
+    // 기존 OUTBOUND 를 새 위치로 옮긴다(upsertOutboundMovement 가 옛 위치 차감분을 복원).
+    const prevLoc = new Map(
+      prevStores.map((st) => [st.key, prevConfig ? nbaesongStoreLocationId(prevConfig, st) : null])
+    )
     const cursors = new Map(prevStores.map((st) => [st.key, st.backfilledThrough]))
-    ncStores = nc.config.stores.map((st) => ({
-      ...st,
-      backfilledThrough: cursors.get(st.key) ?? null,
-    }))
+    ncStores = nc.config.stores.map((st) => {
+      const moved = prevLoc.has(st.key) && prevLoc.get(st.key) !== nbaesongStoreLocationId(nc.config, st)
+      return {
+        key: st.key,
+        label: st.label,
+        startDate: st.startDate,
+        representativeChannelId: st.representativeChannelId,
+        ...(st.locationId ? { locationId: st.locationId } : {}),
+        backfilledThrough: moved ? null : (cursors.get(st.key) ?? null),
+      }
+    })
     config = { locationId: nc.config.locationId, stores: ncStores }
   }
 
-  const { id } = await saveSpaceCredential(spaceId, provider, parsed.data.secret, config)
+  const { id } = await saveSpaceCredential(spaceId, provider, secret, config)
   for (const st of ncStores) {
     await ensureNbaesongChannel({
       spaceId,

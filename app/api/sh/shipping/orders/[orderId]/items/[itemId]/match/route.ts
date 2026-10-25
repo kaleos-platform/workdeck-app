@@ -5,7 +5,11 @@ import { normalizeAlias } from '@/lib/sh/product-matching'
 import { nbaesongStoreKey } from '@/lib/inv/external-sources'
 import { kstDay } from '@/lib/naver-commerce/nbaesong'
 import { recomputeNbaesongOutbound } from '@/lib/naver-commerce/nbaesong-sync'
-import { NAVER_COMMERCE_PROVIDER, type NaverCommerceConfig } from '@/lib/naver-commerce/client'
+import {
+  NAVER_COMMERCE_PROVIDER,
+  nbaesongStoreLocationId,
+  type NaverCommerceConfig,
+} from '@/lib/naver-commerce/client'
 
 type Params = { params: Promise<{ orderId: string; itemId: string }> }
 
@@ -125,6 +129,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       })
       const config = row?.config as NaverCommerceConfig | null | undefined
       if (!row || !config) return
+      const store = (config.stores ?? []).find((s) => s.key === storeKey)
+      if (!store) return
       await prisma.spaceCredential.update({
         where: { id: row.id },
         data: {
@@ -140,7 +146,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         spaceId: resolved.space.id,
         storeKey,
         channelId: item.order.channelId,
-        locationId: config.locationId,
+        locationId: nbaesongStoreLocationId(config, store),
         dayKst: kstDay(item.order.orderDate.toISOString()),
       })
     } catch (err) {
