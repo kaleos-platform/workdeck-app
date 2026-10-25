@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const rows = await prisma.spaceCredential.findMany({
     where: {
       provider: NAVER_COMMERCE_PROVIDER,
-      ...(scope.spaceId ? { spaceId: scope.spaceId } : {}),
+      spaceId: scope.spaceId,
     },
     select: { id: true, spaceId: true, encryptedPayload: true, iv: true, config: true },
   })
@@ -43,11 +43,23 @@ export async function GET(request: NextRequest) {
             decryptField('space-credential', r.encryptedPayload, r.iv)
           ) as NaverCommerceSecret
         ).stores
+        // 형태가 깨진 스토어는 빼서 워커가 "스토어 자격증명이 없습니다"로 보고하게 한다.
         secrets = Object.fromEntries(
-          stores.filter((s) => all?.[s.key]).map((s) => [s.key, all[s.key]])
+          stores
+            .filter(
+              (s) =>
+                typeof all?.[s.key]?.clientId === 'string' &&
+                typeof all[s.key].clientSecret === 'string'
+            )
+            .map((s) => [s.key, all[s.key]])
         )
-      } catch {
-        console.error('[naver-nbaesong/plan] 자격증명 복호화 실패', r.spaceId)
+      } catch (err) {
+        // field-crypto 메시지(키 누락·kid 형식)엔 비밀값이 없다. JSON 파싱 오류는 평문 조각을 담을 수 있어 뺀다.
+        console.error(
+          '[naver-nbaesong/plan] 자격증명 복호화 실패',
+          r.spaceId,
+          err instanceof SyntaxError ? 'JSON 파싱 실패' : err instanceof Error ? err.message : err
+        )
       }
       return [{ spaceId: r.spaceId, credentialId: r.id, secrets, stores }]
     } catch (err) {

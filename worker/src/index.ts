@@ -92,7 +92,7 @@ cron.schedule(
     try {
       const r = await runNaverNbaesongSync()
       console.log(
-        `[${new Date().toISOString()}] N배송 수집 완료: stores=${r.stores} days=${r.days} failed=${r.failed}`
+        `[${new Date().toISOString()}] N배송 수집 완료: stores=${r.stores} days=${r.days} failed=${r.failed} planFailed=${r.planFailed}`
       )
     } catch (error) {
       console.error(
