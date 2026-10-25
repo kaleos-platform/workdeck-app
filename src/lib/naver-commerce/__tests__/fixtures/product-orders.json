@@ -1,0 +1,1461 @@
+{
+  "_note": "Task 0 spike 2026-10-25. PII 제거·ID 가명화. aml=2026-10-22 N배송, kreamdNormal=2026-10-06 일반배송, amlCancel=2026-10-23 취소건",
+  "aml": [
+    {
+      "productOrderId": "2026000000000001",
+      "content": {
+        "order": {
+          "orderId": "2026000000000002",
+          "paymentDate": "2026-10-22T06:58:01.796+09:00",
+          "orderDate": "2026-10-22T06:57:57.596+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000001",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 85200,
+          "remainPaymentAmount": 85200,
+          "productOrderStatus": "DELIVERING",
+          "productId": "13784343774",
+          "originalProductId": "13723292927",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, XL(105), 5장",
+          "unitPrice": 124500,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKoHtJG8ro",
+              "nsBarcode": "8809903550276",
+              "pickingQuantityPerOrder": 5
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "XL(105)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "5장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-26T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000003",
+      "content": {
+        "order": {
+          "orderId": "2026000000000004",
+          "paymentDate": "2026-10-22T10:12:04.340+09:00",
+          "orderDate": "2026-10-22T10:11:50.637+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000003",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000005",
+      "content": {
+        "order": {
+          "orderId": "2026000000000006",
+          "paymentDate": "2026-10-22T10:32:08.148+09:00",
+          "orderDate": "2026-10-22T10:31:58.663+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000005",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13784343766",
+          "originalProductId": "13723292918",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, M(95), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKpaEKOA5U",
+              "nsBarcode": "8809903550252",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "M(95)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000007",
+      "content": {
+        "order": {
+          "orderId": "2026000000000008",
+          "paymentDate": "2026-10-22T10:46:12.700+09:00",
+          "orderDate": "2026-10-22T10:45:51.720+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000007",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13784343786",
+          "originalProductId": "13723292940",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 블랙, L(100), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKjNt7thgv",
+              "nsBarcode": "8809903550221",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "블랙"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "L(100)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000009",
+      "content": {
+        "order": {
+          "orderId": "2026000000000010",
+          "paymentDate": "2026-10-22T10:46:52.808+09:00",
+          "orderDate": "2026-10-22T10:46:46.214+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000009",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13784343780",
+          "originalProductId": "13723292932",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 블랙, 2XL(110), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKhGKGjI9t",
+              "nsBarcode": "8809903550566",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "블랙"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "2XL(110)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000011",
+      "content": {
+        "order": {
+          "orderId": "2026000000000012",
+          "paymentDate": "2026-10-22T10:50:50.728+09:00",
+          "orderDate": "2026-10-22T10:50:42.048+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000011",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-26T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000013",
+      "content": {
+        "order": {
+          "orderId": "2026000000000014",
+          "paymentDate": "2026-10-22T10:57:25.075+09:00",
+          "orderDate": "2026-10-22T10:57:19.589+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000013",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000015",
+      "content": {
+        "order": {
+          "orderId": "2026000000000016",
+          "paymentDate": "2026-10-22T10:59:33.113+09:00",
+          "orderDate": "2026-10-22T10:59:27.228+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000015",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13784343766",
+          "originalProductId": "13723292918",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, M(95), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKpaEKOA5U",
+              "nsBarcode": "8809903550252",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "M(95)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000017",
+      "content": {
+        "order": {
+          "orderId": "2026000000000018",
+          "paymentDate": "2026-10-22T10:59:57.001+09:00",
+          "orderDate": "2026-10-22T10:59:50.823+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000017",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13784343776",
+          "originalProductId": "13723292929",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 블랙, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKkpsvhyNX",
+              "nsBarcode": "8809903550207",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "블랙"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-26T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000019",
+      "content": {
+        "order": {
+          "orderId": "2026000000000020",
+          "paymentDate": "2026-10-22T11:39:37.597+09:00",
+          "orderDate": "2026-10-22T11:39:25.850+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000019",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13784343766",
+          "originalProductId": "13723292918",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, M(95), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKpaEKOA5U",
+              "nsBarcode": "8809903550252",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "M(95)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000021",
+      "content": {
+        "order": {
+          "orderId": "2026000000000022",
+          "paymentDate": "2026-10-22T11:47:46.206+09:00",
+          "orderDate": "2026-10-22T11:46:14.694+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000021",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000023",
+      "content": {
+        "order": {
+          "orderId": "2026000000000024",
+          "paymentDate": "2026-10-22T11:52:20.480+09:00",
+          "orderDate": "2026-10-22T11:52:15.032+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000023",
+          "quantity": 1,
+          "remainQuantity": 0,
+          "totalPaymentAmount": 55400,
+          "remainPaymentAmount": 0,
+          "productOrderStatus": "CANCELED",
+          "productId": "13784343769",
+          "originalProductId": "13723292921",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, L(100), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKovtrvpCv",
+              "nsBarcode": "8809903550269",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "L(100)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "claimType": "CANCEL",
+          "claimStatus": "CANCEL_DONE",
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000025",
+      "content": {
+        "order": {
+          "orderId": "2026000000000026",
+          "paymentDate": "2026-10-22T11:52:55.935+09:00",
+          "orderDate": "2026-10-22T11:52:38.916+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000025",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13784343776",
+          "originalProductId": "13723292929",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 블랙, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKkpsvhyNX",
+              "nsBarcode": "8809903550207",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "블랙"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000027",
+      "content": {
+        "order": {
+          "orderId": "2026000000000028",
+          "paymentDate": "2026-10-22T11:53:41.786+09:00",
+          "orderDate": "2026-10-22T11:53:35.968+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000027",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000029",
+      "content": {
+        "order": {
+          "orderId": "2026000000000030",
+          "paymentDate": "2026-10-22T12:00:04.241+09:00",
+          "orderDate": "2026-10-22T12:00:01.208+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000029",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13784343769",
+          "originalProductId": "13723292921",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, L(100), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKovtrvpCv",
+              "nsBarcode": "8809903550269",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "L(100)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000031",
+      "content": {
+        "order": {
+          "orderId": "2026000000000032",
+          "paymentDate": "2026-10-22T12:01:37.491+09:00",
+          "orderDate": "2026-10-22T12:01:21.738+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000031",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-24T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000033",
+      "content": {
+        "order": {
+          "orderId": "2026000000000034",
+          "paymentDate": "2026-10-22T12:11:11.667+09:00",
+          "orderDate": "2026-10-22T12:11:03.280+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000033",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000035",
+      "content": {
+        "order": {
+          "orderId": "2026000000000036",
+          "paymentDate": "2026-10-22T13:05:03.799+09:00",
+          "orderDate": "2026-10-22T13:04:29.691+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000035",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-26T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000037",
+      "content": {
+        "order": {
+          "orderId": "2026000000000038",
+          "paymentDate": "2026-10-22T13:22:44.674+09:00",
+          "orderDate": "2026-10-22T13:22:27.477+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000037",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERING",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-24T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000039",
+      "content": {
+        "order": {
+          "orderId": "2026000000000040",
+          "paymentDate": "2026-10-22T13:37:48.132+09:00",
+          "orderDate": "2026-10-22T13:37:28.198+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000039",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000041",
+      "content": {
+        "order": {
+          "orderId": "2026000000000042",
+          "paymentDate": "2026-10-22T13:44:49.678+09:00",
+          "orderDate": "2026-10-22T13:43:42.111+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000041",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 55900,
+          "productOrderStatus": "DELIVERED",
+          "productId": "13755448699",
+          "originalProductId": "13694679993",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, S(90), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKqDzpWLhy",
+              "nsBarcode": "8809903550245",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "S(90)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000043",
+      "content": {
+        "order": {
+          "orderId": "2026000000000044",
+          "paymentDate": "2026-10-22T20:35:21.052+09:00",
+          "orderDate": "2026-10-22T20:35:17.606+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000043",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 85200,
+          "remainPaymentAmount": 85200,
+          "productOrderStatus": "DELIVERING",
+          "productId": "13784343787",
+          "originalProductId": "13723292941",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 블랙, L(100), 5장",
+          "unitPrice": 124500,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKjNt7thgv",
+              "nsBarcode": "8809903550221",
+              "pickingQuantityPerOrder": 5
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "블랙"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "L(100)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "5장"
+            }
+          ],
+          "arrivalGuaranteeDate": "2026-10-23T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    }
+  ],
+  "kreamdNormal": [
+    {
+      "productOrderId": "2026000000000045",
+      "content": {
+        "order": {
+          "orderId": "2026000000000046",
+          "paymentDate": "2026-10-06T10:46:49.026+09:00",
+          "orderDate": "2026-10-06T10:46:42.768+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000045",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 28000,
+          "remainPaymentAmount": 28000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000047",
+      "content": {
+        "order": {
+          "orderId": "2026000000000048",
+          "paymentDate": "2026-10-06T10:52:44.670+09:00",
+          "orderDate": "2026-10-06T10:52:25.031+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000047",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 28000,
+          "remainPaymentAmount": 28000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000049",
+      "content": {
+        "order": {
+          "orderId": "2026000000000050",
+          "paymentDate": "2026-10-06T10:53:23.091+09:00",
+          "orderDate": "2026-10-06T10:53:18.165+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000049",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 28000,
+          "remainPaymentAmount": 28000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000051",
+      "content": {
+        "order": {
+          "orderId": "2026000000000052",
+          "paymentDate": "2026-10-06T11:00:23.396+09:00",
+          "orderDate": "2026-10-06T11:00:06.370+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000051",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 28000,
+          "remainPaymentAmount": 28000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000053",
+      "content": {
+        "order": {
+          "orderId": "2026000000000054",
+          "paymentDate": "2026-10-06T12:32:40.951+09:00",
+          "orderDate": "2026-10-06T12:32:36.376+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000053",
+          "quantity": 1,
+          "remainQuantity": 0,
+          "totalPaymentAmount": 26000,
+          "remainPaymentAmount": 0,
+          "productOrderStatus": "CANCELED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "claimType": "CANCEL",
+          "claimStatus": "CANCEL_DONE",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000055",
+      "content": {
+        "order": {
+          "orderId": "2026000000000056",
+          "paymentDate": "2026-10-06T12:33:51.364+09:00",
+          "orderDate": "2026-10-06T12:33:44.859+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000055",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 28000,
+          "remainPaymentAmount": 28000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000057",
+      "content": {
+        "order": {
+          "orderId": "2026000000000058",
+          "paymentDate": "2026-10-06T13:21:25.449+09:00",
+          "orderDate": "2026-10-06T13:21:19.142+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000057",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 28000,
+          "remainPaymentAmount": 28000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000059",
+      "content": {
+        "order": {
+          "orderId": "2026000000000060",
+          "paymentDate": "2026-10-06T13:32:31.854+09:00",
+          "orderDate": "2026-10-06T13:32:28.465+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000059",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 28000,
+          "remainPaymentAmount": 28000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000061",
+      "content": {
+        "order": {
+          "orderId": "2026000000000062",
+          "paymentDate": "2026-10-06T13:36:36.784+09:00",
+          "orderDate": "2026-10-06T13:36:32.241+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000061",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 28000,
+          "remainPaymentAmount": 28000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    },
+    {
+      "productOrderId": "2026000000000063",
+      "content": {
+        "order": {
+          "orderId": "2026000000000064",
+          "paymentDate": "2026-10-06T13:56:38.387+09:00",
+          "orderDate": "2026-10-06T13:56:26.624+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000063",
+          "quantity": 1,
+          "remainQuantity": 1,
+          "totalPaymentAmount": 26000,
+          "remainPaymentAmount": 26000,
+          "productOrderStatus": "PURCHASE_DECIDED",
+          "productId": "13630683699",
+          "originalProductId": "13571036924",
+          "productName": "크림드 영유아 키즈 선크림 로션 스틱 저자극 클렌징 패드 티슈 대용량 60매입 벌크",
+          "unitPrice": 35000,
+          "optionPrice": 0,
+          "deliveryAttributeType": "NORMAL",
+          "merchantChannelId": "102693195"
+        }
+      }
+    }
+  ],
+  "amlCancel": [
+    {
+      "productOrderId": "2026000000000065",
+      "content": {
+        "order": {
+          "orderId": "2026000000000066",
+          "paymentDate": "2026-10-23T15:25:43.613+09:00",
+          "orderDate": "2026-10-23T15:25:38.979+09:00"
+        },
+        "productOrder": {
+          "productOrderId": "2026000000000065",
+          "quantity": 1,
+          "remainQuantity": 0,
+          "totalPaymentAmount": 55900,
+          "remainPaymentAmount": 0,
+          "productOrderStatus": "CANCELED",
+          "productId": "13784343766",
+          "originalProductId": "13723292918",
+          "productName": "세트할인 에이엠엘 여성 모달 질염 팬티 냄새 제거 향균 위생 속옷 누드, M(95), 3장",
+          "unitPrice": 74700,
+          "optionPrice": 0,
+          "deliveryAttributeType": "ARRIVAL_GUARANTEE",
+          "logisticsCompanyId": "WK",
+          "logisticsCenterId": "9F7AF0F93D5M9E",
+          "skuMappings": [
+            {
+              "nsId": "NS1xEKpaEKOA5U",
+              "nsBarcode": "8809903550252",
+              "pickingQuantityPerOrder": 3
+            }
+          ],
+          "standardPurchaseOptions": [
+            {
+              "optionId": "5621",
+              "optionName": "색상",
+              "valueName": "누드"
+            },
+            {
+              "optionId": "5791",
+              "optionName": "사이즈",
+              "valueName": "M(95)"
+            },
+            {
+              "optionId": "9541",
+              "optionName": "수량",
+              "valueName": "3장"
+            }
+          ],
+          "claimType": "CANCEL",
+          "claimStatus": "CANCEL_DONE",
+          "arrivalGuaranteeDate": "2026-10-24T23:59:00.000+09:00",
+          "merchantChannelId": "1100227121"
+        }
+      }
+    }
+  ]
+}

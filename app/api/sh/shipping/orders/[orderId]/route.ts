@@ -13,11 +13,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { orderId } = await params
   const order = await prisma.delOrder.findUnique({
     where: { id: orderId },
-    include: { batch: { select: { status: true } } },
+    include: { batch: { select: { status: true, source: true } } },
   })
   if (!order || order.spaceId !== resolved.space.id) {
     return errorResponse('주문을 찾을 수 없습니다', 404)
   }
+  if (order.batch.source === 'NAVER_API')
+    return errorResponse('N배송 자동 수집 주문은 변경할 수 없습니다', 400)
   const body = await req.json().catch(() => ({}))
   const data: Record<string, unknown> = {}
 
@@ -86,11 +88,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const { orderId } = await params
   const order = await prisma.delOrder.findUnique({
     where: { id: orderId },
-    include: { batch: { select: { status: true } } },
+    include: { batch: { select: { status: true, source: true } } },
   })
   if (!order || order.spaceId !== resolved.space.id) {
     return errorResponse('주문을 찾을 수 없습니다', 404)
   }
+  if (order.batch.source === 'NAVER_API')
+    return errorResponse('N배송 자동 수집 주문은 변경할 수 없습니다', 400)
 
   await prisma.delOrder.delete({ where: { id: orderId } })
 

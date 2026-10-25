@@ -45,6 +45,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!batch || batch.spaceId !== resolved.space.id) {
     return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
   }
+  if (batch.source === 'NAVER_API')
+    return errorResponse('N배송 자동 수집 묶음은 변경할 수 없습니다', 400)
 
   const body = await req.json().catch(() => ({}))
 
@@ -162,11 +164,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const { batchId } = await params
   const batch = await prisma.delBatch.findUnique({
     where: { id: batchId },
-    select: { spaceId: true },
+    select: { spaceId: true, source: true },
   })
   if (!batch || batch.spaceId !== resolved.space.id) {
     return errorResponse('배송 묶음을 찾을 수 없습니다', 404)
   }
+  if (batch.source === 'NAVER_API')
+    return errorResponse('N배송 자동 수집 묶음은 변경할 수 없습니다', 400)
 
   try {
     const { deletedMovements } = await deleteBatchWithMovements(resolved.space.id, batchId)

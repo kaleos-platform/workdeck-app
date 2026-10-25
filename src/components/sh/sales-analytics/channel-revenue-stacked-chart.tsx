@@ -79,7 +79,11 @@ function ChannelTooltip({
     { revenue: 0, orderCount: 0 }
   )
   const visibleRows = rows.filter((r) =>
-    metric === '매출' ? r.revenue !== 0 : metric === '주문' ? r.orderCount !== 0 : r.revenue !== 0 || r.orderCount !== 0
+    metric === '매출'
+      ? r.revenue !== 0
+      : metric === '주문'
+        ? r.orderCount !== 0
+        : r.revenue !== 0 || r.orderCount !== 0
   )
 
   const valueText = (v: { revenue: number; orderCount: number }) =>
