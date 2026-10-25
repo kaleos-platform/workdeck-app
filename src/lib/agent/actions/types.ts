@@ -18,6 +18,8 @@ export interface ActionExecContext {
   actionId?: string
   // 실행 중 복호화한 자격증명 id를 push한다 → 실행 감사 행.
   decryptedCredentialIds: string[]
+  // 제안에 쓰인 AgentToken.id(없으면 토큰 없이 만든 제안) — execute 시점에만 채워진다.
+  actorTokenId?: string | null
 }
 
 /**
@@ -70,6 +72,7 @@ export interface PendingActionDraft {
   requesterUserId?: string | null
   requesterSlackUserId?: string | null
   workId?: string | null
+  actorTokenId?: string | null
   idempotencyKey?: string
 }
 

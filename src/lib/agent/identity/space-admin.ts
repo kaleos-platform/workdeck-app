@@ -12,7 +12,7 @@ import { hasRole, type Role } from '@/lib/auth/roles'
 async function requireSpaceRole(
   spaceId: string,
   required: Role
-): Promise<{ userId: string } | { error: NextResponse }> {
+): Promise<{ userId: string; role: Role } | { error: NextResponse }> {
   const user = await getUser()
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
   const member = await prisma.spaceMember.findUnique({
@@ -22,7 +22,7 @@ async function requireSpaceRole(
   if (!member || !hasRole(member.role as Role, required)) {
     return { error: errorResponse('권한이 없습니다', 403) }
   }
-  return { userId: user.id }
+  return { userId: user.id, role: member.role as Role }
 }
 
 /** ADMIN 이상(OWNER·ADMIN). */

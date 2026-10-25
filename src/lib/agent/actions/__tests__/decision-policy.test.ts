@@ -89,6 +89,14 @@ describe('deciderDenial', () => {
     )
   })
 
+  test('지출이 아닌 OWNER 액션(비밀값 요청)은 지출 문구 대신 일반 OWNER 안내', async () => {
+    getDef.mockReturnValue({ requiredRole: 'OWNER', paramsSchema: z.object({}) })
+    findMember.mockResolvedValue({ role: 'ADMIN' })
+    const msg = await deciderDenial(action({}), 'u', 'approve')
+    expect(msg).toContain('OWNER(회사 대표 계정)만 승인')
+    expect(msg).not.toContain('지출')
+  })
+
   test('OWNER 는 지출 제안 승인 가능, ADMIN 은 일반 액션 승인 가능', async () => {
     getDef.mockReturnValue(budgetDef)
     findSpace.mockResolvedValue({ approvalLimitKrw: 0 })

@@ -37,6 +37,7 @@ test('모델별 purpose 고정', () => {
     HiringMigrationRecord: 'pii',
     HiringBlacklist: 'pii',
     SpaceCredential: 'space-credential',
+    SpaceSecret: 'space-secret',
   })
 })
 

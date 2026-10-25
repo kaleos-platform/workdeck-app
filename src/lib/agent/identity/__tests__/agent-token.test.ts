@@ -91,6 +91,7 @@ describe('agent-token', () => {
       spaceId: 'sp1',
       actor: { type: 'agent', id: 'ag1' },
       scopes: ['ads:read'],
+      tokenId: TID,
     })
   })
 

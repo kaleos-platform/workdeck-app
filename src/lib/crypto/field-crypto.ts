@@ -25,6 +25,7 @@ export type CryptoPurpose =
   | 'billing-key'
   | 'ai-key'
   | 'space-credential'
+  | 'space-secret'
 
 export type StoredField = { encrypted: string; iv: string }
 
@@ -83,7 +84,7 @@ export function fieldWriteVersion(purpose?: CryptoPurpose): 'v0' | 'v1' {
     process.env.ENCRYPTION_WRITE_VERSION || (process.env.VERCEL_ENV === 'production' ? 'v0' : 'v1')
   if (v !== 'v0' && v !== 'v1')
     throw new Error('ENCRYPTION_WRITE_VERSION 은 v0 또는 v1 이어야 합니다')
-  if (purpose === 'space-credential') return 'v1' // 이 용도를 읽는 구버전 코드가 없다
+  if (purpose === 'space-credential' || purpose === 'space-secret') return 'v1' // 이 용도를 읽는 구버전 코드가 없다
   return v
 }
 

@@ -16,6 +16,8 @@ export interface McpToolContext {
   requesterUserId: string | null
   requesterSlackUserId: string | null
   decryptedCredentialIds: string[]
+  // 에이전트 토큰 호출이면 AgentToken.id. 제안에 저장해 승인 실행 때 토큰 폐기를 재확인한다.
+  actorTokenId?: string
 }
 
 /**
