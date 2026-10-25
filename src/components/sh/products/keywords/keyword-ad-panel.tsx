@@ -19,10 +19,8 @@ export function KeywordAdPanel({
   onChange: (next: string[]) => void
   readOnly?: boolean
 }) {
-  if (!data) return null
-  if (!data.attributed) {
-    return <p className="mt-2 text-xs text-muted-foreground">광고 데이터 연결 없음</p>
-  }
+  // 쿠팡 외 채널·광고 미연결 상품이 대부분이라 연결 없음은 표시하지 않는다.
+  if (!data?.attributed) return null
   const have = new Set(value.map(despaceKeyword))
   const discover = data.discover.filter((d) => !have.has(d.word))
   const atMax = value.length >= MAX_KEYWORDS
