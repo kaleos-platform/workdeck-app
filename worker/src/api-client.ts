@@ -467,8 +467,8 @@ export async function uploadInventoryRows(params: {
 export type NaverNbaesongPlanItem = {
   spaceId: string
   credentialId: string
-  encryptedPayload: string
-  iv: string
+  /** 이번 일정에 든 스토어의 키만. null = 앱에서 복호화 실패 */
+  secrets: Record<string, { clientId: string; clientSecret: string }> | null
   stores: { key: string; days: string[] }[]
 }
 
