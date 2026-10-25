@@ -85,8 +85,12 @@ async function loadForListings(
     .filter(Boolean) as string[]
   if (optionIds.length === 0) return EMPTY
 
+  // 구간 끝은 워크스페이스 최신 적재일 — 상품별 최신일을 쓰면 광고를 멈춘 상품의 옛 데이터가 「최근 30일」로 보인다.
+  const latest = await prisma.adRecord.aggregate({
+    where: { workspaceId: workspace.id, keyword: { not: null } },
+    _max: { date: true },
+  })
   const base = { workspaceId: workspace.id, optionId: { in: optionIds }, keyword: { not: null } }
-  const latest = await prisma.adRecord.aggregate({ where: base, _max: { date: true } })
   const to = latest._max.date
   if (!to) return EMPTY
   const from = new Date(to.getTime() - (WINDOW_DAYS - 1) * DAY_MS)
