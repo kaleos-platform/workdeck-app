@@ -13,12 +13,16 @@ export async function isAal2Fresh(): Promise<boolean> {
   return !error && !!data && isMfaFresh(data)
 }
 
+const mfaRequired = () =>
+  NextResponse.json({ message: '2단계 인증이 필요합니다', code: 'MFA_REQUIRED' }, { status: 403 })
+
 export async function requireAal2(): Promise<NextResponse | null> {
   // 비상 해제 스위치 — 운영자 게이트(requireOperator)와 같은 변수 하나로 같이 푼다(Task 10 Step 6).
   if (process.env.ADMIN_REQUIRE_MFA === 'false') return null
-  if (await isAal2Fresh()) return null
-  return NextResponse.json(
-    { message: '2단계 인증이 필요합니다', code: 'MFA_REQUIRED' },
-    { status: 403 }
-  )
+  return (await isAal2Fresh()) ? null : mfaRequired()
+}
+
+/** 비상 해제와 무관하게 실제 aal2를 요구한다 — 비밀값 "보기"처럼 평문이 나가는 경로용. */
+export async function requireFreshAal2(): Promise<NextResponse | null> {
+  return (await isAal2Fresh()) ? null : mfaRequired()
 }

@@ -9,6 +9,7 @@ import { metaAdsTools } from './meta-ads-tools'
 import { googleMarketingTools } from './google-marketing-tools'
 import { naverAdsTools } from './naver-ads-tools'
 import { salesContentTools } from './sales-content-tools'
+import { secretTools } from './secret-tools'
 
 export type { ToolMode, McpToolContext, ToolDefinition } from './types'
 
@@ -29,4 +30,5 @@ export const toolDefinitions: ToolDefinition[] = [
   ...googleMarketingTools,
   ...naverAdsTools,
   ...salesContentTools,
+  ...secretTools,
 ]

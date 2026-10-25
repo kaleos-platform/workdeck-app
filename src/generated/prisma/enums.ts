@@ -185,6 +185,15 @@ export const InvProductStatus = {
 export type InvProductStatus = (typeof InvProductStatus)[keyof typeof InvProductStatus]
 
 
+export const SecretKind = {
+  API_KEY: 'API_KEY',
+  LOGIN: 'LOGIN',
+  ENV: 'ENV'
+} as const
+
+export type SecretKind = (typeof SecretKind)[keyof typeof SecretKind]
+
+
 export const CoupangDataSource = {
   CRAWL: 'CRAWL',
   API: 'API'

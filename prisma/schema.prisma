@@ -471,6 +471,7 @@ model Space {
   toolAuditLogs    ToolAuditLog[]
   usageEvents      UsageEvent[]
   spaceCredentials SpaceCredential[]
+  spaceSecrets     SpaceSecret[]
 
   // 온보딩 카드 닫힘 시각 (사용자가 명시적으로 X 클릭 시 기록)
   onboardingDismissedAt DateTime?
@@ -608,6 +609,8 @@ model AgentPendingAction {
   requesterUserId      String?
   requesterSlackUserId String?
   workId               String?
+  // 제안에 쓰인 토큰 id (wd run 승인 흐름용). 없으면 null.
+  actorTokenId         String?
 
   status     AgentActionStatus @default(PENDING)
   expiresAt  DateTime // createPendingAction에서 now+72h로 설정 (앱 계산)
@@ -638,6 +641,8 @@ model SpaceAgentSetting {
   id       String  @id @default(cuid())
   spaceId  String  @unique
   isActive Boolean @default(true)
+  // 에이전트가 wd run으로 ENV 비밀값을 받을 수 있는지. 행이 없으면 false(isActive와 반대).
+  envSecretsEnabled Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -740,6 +745,35 @@ model SpaceCredential {
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
   @@unique([spaceId, provider])
+}
+
+enum SecretKind {
+  API_KEY // secret_http 전용
+  LOGIN // runner 재로그인 전용
+  ENV // wd run 전용
+}
+
+// Space 단위 범용 비밀값. 에이전트는 name으로만 참조하고 값은 서버가 주입한다.
+// encryptedPayload·iv는 `encryptField('space-secret', …)`의 StoredField(encrypted, iv)에 대응한다.
+model SpaceSecret {
+  id               String     @id @default(cuid())
+  spaceId          String
+  name             String // 에이전트가 참조하는 이름. 예: cafe24-admin
+  kind             SecretKind // 생성 뒤 변경 불가
+  encryptedPayload String // StoredField.encrypted
+  iv               String // StoredField.iv
+  config           Json // kind별 비밀 아닌 설정(zod로 검증)
+  allowedAgentIds  String[] // 비면 아무 에이전트도 못 쓴다(기본 거부)
+  revision         Int        @default(1) // 값·config가 바뀔 때마다 +1. 제안 결속에 쓴다
+  lastUsedAt       DateTime?
+  lastError        String? // maskSecrets를 거친 값만
+  createdById      String
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, name])
 }
 
 // 에이전트 토큰. 평문은 발급할 때 한 번만 보여 주고, DB에는 sha256(secret) hex만 둔다.

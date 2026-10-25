@@ -32,7 +32,7 @@ describe('requireSpaceAdmin', () => {
   it.each(['OWNER', 'ADMIN'])('%s 는 통과하고 경로 spaceId로 멤버십을 조회한다', async (role) => {
     user.mockResolvedValue({ id: 'u1' })
     findMember.mockResolvedValue({ role })
-    await expect(requireSpaceAdmin('sp2')).resolves.toEqual({ userId: 'u1' })
+    await expect(requireSpaceAdmin('sp2')).resolves.toEqual({ userId: 'u1', role })
     expect(findMember.mock.calls[0][0].where).toEqual({
       spaceId_userId: { spaceId: 'sp2', userId: 'u1' },
     })
@@ -55,6 +55,9 @@ describe('requireSpaceOwner', () => {
   it('OWNER는 통과한다', async () => {
     user.mockResolvedValue({ id: 'u1' })
     findMember.mockResolvedValue({ role: 'OWNER' })
-    await expect(requireSpaceOwner('sp1')).resolves.toEqual({ userId: 'u1' })
+    await expect(requireSpaceOwner('sp1')).resolves.toEqual({
+      userId: 'u1',
+      role: 'OWNER',
+    })
   })
 })

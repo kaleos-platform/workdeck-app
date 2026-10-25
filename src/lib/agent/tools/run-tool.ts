@@ -37,6 +37,7 @@ export function readAuthExtra(
   try {
     const principal: McpPrincipal = { spaceId: e.spaceId, actor, scopes: parseScopes(e.scopes) }
     if (typeof e.requesterUserId === 'string') principal.requesterUserId = e.requesterUserId
+    if (typeof e.tokenId === 'string') principal.tokenId = e.tokenId
     return { ok: true, principal }
   } catch {
     return { ok: false, reason: '인증 정보가 없습니다' }
@@ -54,6 +55,7 @@ export function buildToolContext(
     workId: meta.workId ?? newWorkId(),
     requesterUserId: principal.requesterUserId ?? null,
     requesterSlackUserId: null,
+    ...(principal.tokenId ? { actorTokenId: principal.tokenId } : {}),
     decryptedCredentialIds: [],
   }
 }

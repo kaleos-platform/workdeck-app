@@ -25,6 +25,11 @@ export const REENCRYPT_TARGETS: ReadonlyArray<{
     purpose: 'channel-credential',
     pairs: [['encryptedPayload', 'iv']],
   },
+  {
+    model: 'SpaceSecret',
+    purpose: 'space-secret',
+    pairs: [['encryptedPayload', 'iv']],
+  },
   { model: 'SlackInstallation', purpose: 'slack-token', pairs: [['botToken', 'botTokenIv']] },
   { model: 'BillingMethod', purpose: 'billing-key', pairs: [['billingKey', 'billingKeyIv']] },
   { model: 'SpaceAiSetting', purpose: 'ai-key', pairs: [['encryptedApiKey', 'apiKeyIv']] },

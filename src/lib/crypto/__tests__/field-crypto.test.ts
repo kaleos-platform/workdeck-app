@@ -24,6 +24,7 @@ const PURPOSES: CryptoPurpose[] = [
   'billing-key',
   'ai-key',
   'space-credential',
+  'space-secret',
 ]
 
 // 기존 CBC 구현(src/lib/del/encryption.ts)과 동일한 방식으로 v0 픽스처를 만든다.
@@ -314,5 +315,14 @@ describe('검토 반영(1차)', () => {
     const parts = encryptField('pii', 'x').encrypted.split(':')
     parts[part] = crypto.randomBytes(len).toString('base64')
     expect(() => decryptField('pii', parts.join(':'), 'v1')).toThrow('v1 암호문 형식')
+  })
+})
+
+describe('space-secret 용도', () => {
+  it('space-secret은 ENCRYPTION_WRITE_VERSION=v0이어도 v1으로 쓴다', () => {
+    process.env.ENCRYPTION_WRITE_VERSION = 'v0'
+    const { encrypted, iv } = encryptField('space-secret', 'SK_TEST_0123456789abcdef')
+    expect(iv).toBe(V1_IV_MARKER)
+    expect(decryptField('space-secret', encrypted, iv)).toBe('SK_TEST_0123456789abcdef')
   })
 })

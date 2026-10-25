@@ -61,7 +61,8 @@ export async function deciderDenial(
   if (!member) return '이 공간의 구성원만 결정할 수 있습니다.'
   const required = await requiredDecisionRole(action, decision)
   if (hasRole(member.role as Role, required)) return null
-  return required === 'OWNER'
+  if (required !== 'OWNER') return '승인 권한이 없습니다(ADMIN 이상 필요).'
+  return getActionDefinition(action.actionType)?.spendKrw
     ? '지출 제안은 OWNER(회사 대표 계정)만 승인할 수 있습니다. 워크덱 승인 화면에서 승인하세요.'
-    : '승인 권한이 없습니다(ADMIN 이상 필요).'
+    : '이 요청은 OWNER(회사 대표 계정)만 승인할 수 있습니다. 워크덱 승인 화면에서 승인하세요.'
 }

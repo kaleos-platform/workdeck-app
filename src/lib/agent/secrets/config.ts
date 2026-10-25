@@ -1,0 +1,237 @@
+import { isIP } from 'node:net'
+import { z } from 'zod'
+import { ToolUserError } from '@/lib/agent/tools/errors'
+
+// API 키 config — 에이전트가 어떤 업스트림 경로·파라미터를 호출할 수 있는지 정하는 보안 경계.
+
+export type ReadOp = {
+  id: string
+  method: 'GET' | 'POST'
+  pathPattern: string
+  // 키 → 값 정규식 문자열(전체 일치). 목록에 없는 키는 거부한다.
+  query: Record<string, string>
+  // body는 최상위 원시값만 받는다.
+  body?: Record<string, string>
+  responseFields: string[]
+  responseHeaders: string[]
+}
+
+export type ApiKeyConfig = {
+  baseUrl: string
+  auth: { in: 'header'; name: string; template: string } | { in: 'query'; name: string }
+  readOps: ReadOp[]
+}
+
+const NOT_READ_OP = '등록된 조회 operation이 아닙니다'
+// 에이전트가 넣는 query·body 값 상한 — 정규식 평가 비용·업스트림 남용을 막는다.
+const MAX_VALUE_LEN = 1000
+const FORBIDDEN_AUTH_HEADERS = new Set([
+  'host',
+  'cookie',
+  'x-http-method-override',
+  'x-method-override',
+])
+const SEGMENT_LITERAL = /^[A-Za-z0-9._~-]+$/
+const SEGMENT_PARAM = /^\{[A-Za-z][A-Za-z0-9_]*\}$/
+const FIELD_PATH = /^(\[\]\.)?[A-Za-z0-9_-]+(\[\])?(\.[A-Za-z0-9_-]+(\[\])?)*$/
+
+const isValidRegex = (s: string) => {
+  try {
+    new RegExp(s)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const isValidBaseUrl = (s: string) => {
+  if (/[?#]/.test(s)) return false
+  let u: URL
+  try {
+    u = new URL(s)
+  } catch {
+    return false
+  }
+  if (u.protocol !== 'https:' || u.username || u.password || u.search || u.hash) return false
+  if (u.port !== '' && u.port !== '443') return false
+  // IPv6 literal은 hostname이 [..]로 오고, IPv4 literal(축약형 포함)은 URL이 점-십진수로 정규화한다.
+  return !u.hostname.startsWith('[') && isIP(u.hostname) === 0
+}
+
+const isValidPathPattern = (p: string) => {
+  if (!p.startsWith('/')) return false
+  const segs = p.slice(1).split('/')
+  return segs.every(
+    (s) => s !== '.' && s !== '..' && (SEGMENT_LITERAL.test(s) || SEGMENT_PARAM.test(s))
+  )
+}
+
+const regexMap = z.record(z.string(), z.string().refine(isValidRegex, '잘못된 정규식'))
+
+const readOpSchema = z.object({
+  id: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/),
+  method: z.enum(['GET', 'POST']),
+  pathPattern: z.string().refine(isValidPathPattern, '잘못된 pathPattern'),
+  query: regexMap,
+  body: regexMap.optional(),
+  responseFields: z.array(z.string().regex(FIELD_PATH)),
+  responseHeaders: z.array(z.string().regex(/^[A-Za-z0-9-]+$/)),
+})
+
+const authName = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/)
+
+export const apiKeyConfigSchema: z.ZodType<ApiKeyConfig> = z.object({
+  baseUrl: z.string().refine(isValidBaseUrl, 'baseUrl은 https 도메인만 허용합니다'),
+  auth: z.discriminatedUnion('in', [
+    z.object({
+      in: z.literal('header'),
+      name: authName.refine(
+        (n) => !FORBIDDEN_AUTH_HEADERS.has(n.toLowerCase()),
+        '허용되지 않는 헤더'
+      ),
+      template: z
+        .string()
+        .max(256)
+        .refine(
+          (t) => t.split('{value}').length === 2 && !/[\r\n]/.test(t),
+          'template에는 {value}가 한 번 필요합니다'
+        ),
+    }),
+    z.object({ in: z.literal('query'), name: authName }),
+  ]),
+  readOps: z
+    .array(readOpSchema)
+    .max(50)
+    .refine(
+      (ops) => new Set(ops.map((o) => o.id)).size === ops.length,
+      'operation id가 중복됩니다'
+    ),
+})
+
+// ENV 비밀값 config — 에이전트 프로세스에 읽기 전용 ENV로 주입되는 키(wd run).
+export const RESERVED_ENV_NAME_RE =
+  /^(PATH|HOME|SHELL|USER|PWD|TMPDIR|NODE_OPTIONS|PYTHONPATH|PYTHONHOME|LD_.*|DYLD_.*|WORKDECK_.*)$/
+
+const MAX_ENV_TTL_MS = 365 * 86_400_000
+
+export type EnvConfig = {
+  envName: string
+  scopeNote: string
+  expiresAt: string
+  readOnlyConfirmedById: string
+  readOnlyConfirmedAt: string
+}
+
+export const envConfigInputSchema = z.object({
+  envName: z
+    .string()
+    .regex(/^[A-Z][A-Z0-9_]{0,63}$/, '대문자·숫자·밑줄만 쓸 수 있습니다')
+    .refine((n) => !RESERVED_ENV_NAME_RE.test(n), '예약된 환경 변수 이름입니다'),
+  scopeNote: z.string().min(1).max(500),
+  expiresAt: z.string().refine((s) => {
+    const t = Date.parse(s)
+    const now = Date.now()
+    return Number.isFinite(t) && t > now && t <= now + MAX_ENV_TTL_MS
+  }, '만료일은 지금 이후, 365일 이내여야 합니다'),
+  readOnlyConfirmed: z.literal(true, {
+    message: '읽기 전용·대상 한정 키임을 확인해야 등록할 수 있습니다',
+  }),
+})
+
+// 입력 그대로 반환한다(디코딩 안 함). 우회 가능성이 있는 형태는 모두 거부한다.
+export function normalizePath(path: string): string {
+  const bad = () => new ToolUserError('허용되지 않는 path입니다')
+  if (typeof path !== 'string' || !path.startsWith('/')) throw bad()
+  // %·?·#·\ 와 공백·제어문자 등은 문자 집합 밖이므로 함께 걸러진다.
+  if (!/^[A-Za-z0-9._~/-]*$/.test(path) || path.includes('//')) throw bad()
+  if (path.split('/').some((s) => s === '.' || s === '..')) throw bad()
+  return path
+}
+
+/** 승인 화면에 보일 요청 URL(baseUrl + 정규화 path). 인증 query는 넣지 않는다. */
+export const displayUrl = (baseUrl: string, path: string) => baseUrl.replace(/\/+$/, '') + path
+
+const fullMatch = (re: string, v: string) => new RegExp(`^(?:${re})$`).test(v)
+
+const patternToRegex = (p: string) =>
+  new RegExp(
+    '^' +
+      p
+        .slice(1)
+        .split('/')
+        .map((s) => (SEGMENT_PARAM.test(s) ? '/[A-Za-z0-9_-]+' : '/' + s.replace(/[.]/g, '\\.')))
+        .join('') +
+      '$'
+  )
+
+const keysAllowed = (
+  vals: Record<string, unknown>,
+  allow: Record<string, string>,
+  str: (v: unknown) => string | null
+) =>
+  Object.keys(vals).every((k) => {
+    if (!Object.hasOwn(allow, k)) return false
+    const s = str(vals[k])
+    return s !== null && s.length <= MAX_VALUE_LEN && fullMatch(allow[k], s)
+  })
+
+export function matchReadOp(
+  cfg: ApiKeyConfig,
+  req: {
+    op: string
+    method: string
+    path: string
+    query: Record<string, string>
+    body?: Record<string, unknown>
+  }
+): ReadOp {
+  const op = cfg.readOps.find((o) => o.id === req.op)
+  if (!op || op.method !== req.method) throw new ToolUserError(NOT_READ_OP)
+  let path: string
+  try {
+    path = normalizePath(req.path)
+  } catch {
+    throw new ToolUserError(NOT_READ_OP)
+  }
+  const okQuery = keysAllowed(req.query, op.query, (v) => (typeof v === 'string' ? v : null))
+  const okBody = keysAllowed(req.body ?? {}, op.body ?? {}, (v) =>
+    typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean' ? String(v) : null
+  )
+  if (!patternToRegex(op.pathPattern).test(path) || !okQuery || !okBody)
+    throw new ToolUserError(NOT_READ_OP)
+  return op
+}
+
+type Json = unknown
+const isObj = (v: Json): v is Record<string, Json> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+
+function pick(src: Json, segs: string[]): Json {
+  if (segs.length === 0) return src
+  const [head, ...rest] = segs
+  if (head === '[]') return Array.isArray(src) ? src.map((e) => pick(e, rest) ?? {}) : undefined
+  if (!isObj(src) || head === '__proto__' || !Object.hasOwn(src, head)) return undefined
+  const v = pick(src[head], rest)
+  return v === undefined ? undefined : { [head]: v }
+}
+
+function merge(a: Json, b: Json): Json {
+  if (Array.isArray(a) && Array.isArray(b)) return a.map((e, i) => merge(e, b[i]))
+  if (isObj(a) && isObj(b)) {
+    const out: Record<string, Json> = { ...a }
+    for (const k of Object.keys(b)) out[k] = k in out ? merge(out[k], b[k]) : b[k]
+    return out
+  }
+  return b
+}
+
+// 경로 문법: `a.b`, 배열은 `items[].name`, 최상위 배열은 `[].name`. 허용 목록에 없는 필드는 결과에서 빠지고 원본 구조는 유지한다.
+export function pickFields(json: unknown, paths: string[]): unknown {
+  let out: Json = {}
+  for (const p of paths) {
+    const segs = p.replace(/\[\]/g, '.[]').split('.').filter(Boolean)
+    const v = pick(json, segs)
+    if (v !== undefined) out = merge(out, v)
+  }
+  return out
+}
