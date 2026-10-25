@@ -98,18 +98,38 @@ export async function PUT(request: NextRequest) {
     // 구성원이면 형제 수집 라우트와 같은 해석기(resolveCollectionAuth)로 Space의 워크스페이스에 저장한다.
     // ensure 로 저장자 소유 워크스페이스를 만들면, 초대받은 ADMIN 은 워커가 보지 않는 빈 워크스페이스에
     // 저장하는 무음 실패가 된다. ensure 는 멤버십이 없는 첫 사용자와, 워크스페이스가 없는 OWNER 만.
+    let guardSpaceId: string | null = null
     if ('space' in spaceCtx && spaceCtx.space) {
       const auth = await resolveCollectionAuth(request)
       if (!('error' in auth)) workspace = { id: auth.workspaceId }
-      else if (auth.error.status !== 409 || spaceCtx.role !== 'OWNER') return auth.error
+      // ensure 폴백은 "이 Space 에 연결된 워크스페이스가 없음"(모호하지 않은 409)일 때만.
+      else if (auth.error.status !== 409 || !auth.noWorkspace || spaceCtx.role !== 'OWNER')
+        return auth.error
+      else guardSpaceId = spaceCtx.space.id
     }
-    workspace ??= (
-      await ensureWorkspaceForUser({
-        id: user.id,
-        email: user.email,
-        name: user.user_metadata?.name ?? null,
-      })
-    ).workspace
+    if (!workspace) {
+      const ensured = (
+        await ensureWorkspaceForUser({
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.name ?? null,
+        })
+      ).workspace
+      // ensure 는 ownerId 로 단일 워크스페이스를 돌려준다 — 다른 Space 에 연결된 것이면 덮어쓰지 않는다.
+      if (guardSpaceId) {
+        const linked = await prisma.workspace.findUnique({
+          where: { id: ensured.id },
+          select: { spaceId: true },
+        })
+        if (linked?.spaceId && linked.spaceId !== guardSpaceId) {
+          return errorResponse(
+            '이 Space 에 연결할 수 있는 쿠팡 워크스페이스가 없습니다. 다른 Space 에 이미 연결된 워크스페이스가 있습니다.',
+            409
+          )
+        }
+      }
+      workspace = ensured
+    }
   }
 
   let body: {

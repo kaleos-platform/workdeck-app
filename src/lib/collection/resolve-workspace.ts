@@ -24,6 +24,8 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { errorResponse, resolveSpaceContext, type SpaceMemberRole } from '@/lib/api-helpers'
+import { prisma } from '@/lib/prisma'
+import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 import { authenticateWorker, resolveWorkerWorkspaceId } from '@/lib/worker-auth'
 
@@ -33,7 +35,7 @@ export type CollectionAuthContext =
 
 export async function resolveCollectionAuth(
   request: NextRequest
-): Promise<{ error: NextResponse } | CollectionAuthContext> {
+): Promise<{ error: NextResponse; noWorkspace?: boolean } | CollectionAuthContext> {
   if (request.headers.get('x-worker-api-key')) {
     const auth = await authenticateWorker(request.headers)
     if ('error' in auth) return { error: auth.error }
@@ -53,7 +55,18 @@ export async function resolveCollectionAuth(
   const workspaceId = await resolveSpaceCoupangWorkspaceId(spaceCtx.space.id, spaceCtx.user.id)
   if (workspaceId) return { kind: 'session', workspaceId, role: spaceCtx.role }
 
+  // noWorkspace: 로켓그로스 위치 키가 없어 모호성 없이 "연결된 워크스페이스가 없음"인 경우만 true.
+  // (키가 있는데 해석 불가 = 모호 → fail closed. 호출자가 ensure 로 우회하면 안 된다.)
+  const keyed = await prisma.invStorageLocation.count({
+    where: {
+      spaceId: spaceCtx.space.id,
+      externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
+      isActive: true,
+      externalIntegrationKey: { not: null },
+    },
+  })
   return {
+    noWorkspace: keyed === 0,
     error: errorResponse(
       '이 계정에 연결된 쿠팡 워크스페이스를 찾지 못했습니다. ' +
         '쿠팡 계정 연동(로그인 자격)을 먼저 완료했는지, 그리고 쿠팡 데이터가 있는 공간으로 로그인했는지 확인해 주세요.',
