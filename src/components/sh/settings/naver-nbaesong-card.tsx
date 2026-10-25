@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -199,6 +200,15 @@ export function NaverNbaesongCard() {
                   ))}
                 </SelectContent>
               </Select>
+              {locations.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  등록된 위치가 없습니다.{' '}
+                  <Link href="/d/seller-ops/inventory/locations" className="underline">
+                    보관 위치 관리
+                  </Link>
+                  에서 3PL 위치를 먼저 추가해 주세요
+                </p>
+              )}
               {locked && (
                 <p className="text-xs text-muted-foreground">
                   위치 변경은 재고 대조 후 재등록이 필요합니다
