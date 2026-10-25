@@ -18,11 +18,22 @@ jest.mock('@/lib/naver-commerce/nbaesong-channel', () => ({
 jest.mock('@/lib/naver-commerce/nbaesong-sync', () => ({
   syncNbaesongDay: jest.fn(async () => ({ orders: 1, items: 1 })),
 }))
+jest.mock('@/lib/crypto/field-crypto', () => ({
+  decryptField: jest.fn(() =>
+    JSON.stringify({
+      stores: {
+        aml: { clientId: 'CID', clientSecret: 'SEC' },
+        other: { clientId: 'X', clientSecret: 'OTHER-SEC' },
+      },
+    })
+  ),
+}))
 jest.mock('@/lib/agent/integrations/space-credential', () => ({
   recordCredentialError: jest.fn(),
 }))
 
 import { prisma } from '@/lib/prisma'
+import { decryptField } from '@/lib/crypto/field-crypto'
 import { authenticateWorker } from '@/lib/worker-auth'
 import { syncNbaesongDay } from '@/lib/naver-commerce/nbaesong-sync'
 import { recordCredentialError } from '@/lib/agent/integrations/space-credential'
@@ -104,18 +115,27 @@ describe('인증', () => {
 })
 
 describe('plan', () => {
-  it('암호문만 내려가고 평문 없음, 일정 포함', async () => {
+  it('일정에 든 스토어 키만 복호화해 내려가고 암호문은 안 내려감', async () => {
     const res = await plan(new NextRequest('http://t/x'))
     const json = await res.json()
     expect(json.items[0]).toMatchObject({
       spaceId: 'sp1',
       credentialId: 'cred1',
-      encryptedPayload: 'ENC',
-      iv: 'IV',
+      secrets: { aml: { clientId: 'CID', clientSecret: 'SEC' } },
     })
+    expect(decryptField).toHaveBeenCalledWith('space-credential', 'ENC', 'IV')
     expect(json.items[0].stores[0].key).toBe('aml')
     expect(json.items[0].stores[0].days.length).toBeGreaterThan(0)
-    expect(JSON.stringify(json)).not.toMatch(/clientSecret/)
+    expect(JSON.stringify(json)).not.toMatch(/OTHER-SEC|ENC/)
+  })
+  it('복호화 실패면 secrets=null, 일정은 유지', async () => {
+    ;(decryptField as jest.Mock).mockImplementationOnce(() => {
+      throw new Error('bad key')
+    })
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    const json = await (await plan(new NextRequest('http://t/x'))).json()
+    expect(json.items[0].secrets).toBeNull()
+    expect(json.items[0].stores[0].key).toBe('aml')
   })
   it('레거시 키는 spaceId 필터 없음', async () => {
     await plan(new NextRequest('http://t/x'))
