@@ -9,6 +9,7 @@ import {
 import { queryProductOptions } from '@/lib/sh/product-options-query'
 import { queryOptionSalesVelocity } from '@/lib/sh/option-velocity-query'
 import { queryProductMargin } from '@/lib/sh/margin-query'
+import { loadKeywordReview } from '@/lib/sh/keyword-review-query'
 import type { ToolDefinition } from './types'
 
 const DECK = 'seller-hub'
@@ -199,7 +200,28 @@ const sellerHubGetOptionSalesVelocityTool: ToolDefinition = {
   },
 }
 
+/** 주간 키워드 리뷰 — 광고 검색어 성과 기반 발굴·정리 후보(거절 이력 억제 반영). */
+const sellerHubGetKeywordReviewTool: ToolDefinition = {
+  name: 'sellerhub_get_keyword_review',
+  description:
+    '쿠팡 광고 검색어 데이터가 있는 상품(채널상품 또는 단독 리스팅)별 키워드 리뷰를 반환합니다. 워크스페이스 최신 적재일까지 30일 기준으로 상품마다 광고 합계(노출·주문·광고비), 현재 키워드 수와 한도(30), 발굴 후보(discover, 상위 10: 주문·클릭 근거), 정리 후보(prune: 노출 0 키워드), 승인 대기 제안 id(pendingProposal), 최근 90일 내 거절되어 제외된 단어(suppressed)를 담습니다. 주문 많은 순, 최대 50개. 제안은 sellerhub_propose_keyword_update 로 상품 단위 묶음으로 올리세요.',
+  inputSchema: {
+    limit: z.number().optional(),
+    targetId: z.string().optional(),
+  },
+  mode: 'read',
+  scope: 'sellerhub:read',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    return loadKeywordReview(ctx.spaceId, {
+      limit: params.limit as number | undefined,
+      targetId: params.targetId as string | undefined,
+    })
+  },
+}
+
 export const sellerHubTools: ToolDefinition[] = [
+  sellerHubGetKeywordReviewTool,
   sellerHubGetSalesSummaryTool,
   sellerHubGetStockStatusTool,
   sellerHubGetReorderStatusTool,

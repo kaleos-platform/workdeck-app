@@ -1,5 +1,5 @@
 /** @jest-environment node */
-// 쓰기 도구 5개가 모두 행위자·요청자·workId를 승인 큐 제안에 그대로 싣는지.
+// 쓰기 도구가 모두 행위자·요청자·workId를 승인 큐 제안에 그대로 싣는지.
 // 구성원이 아닌 Slack 발신자(요청자 null)도 member 취급 없이 pending_approval로만 남는다.
 jest.mock('@/lib/mcp/context', () => ({
   requireDeck: jest.fn(async () => undefined),
@@ -7,6 +7,9 @@ jest.mock('@/lib/mcp/context', () => ({
 }))
 jest.mock('@/lib/agent/actions/create', () => ({
   createPendingAction: jest.fn(async () => ({ status: 'pending_approval', actionId: 'a1' })),
+}))
+jest.mock('@/lib/sh/keyword-apply', () => ({
+  readTargetKeywords: jest.fn(async () => ({ name: '상품', keywords: [] })),
 }))
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { writeTools } from '../write-tools'
@@ -26,6 +29,7 @@ const ARGS: Record<string, Record<string, unknown>> = {
   finance_classify_transactions: { transactionId: 't1', categoryId: 'c1' },
   finance_create_class_rule: { matchKey: 'k', categoryId: 'c1', matchType: 'EXACT' },
   sellerhub_create_reorder_plan: { productId: 'p1' },
+  sellerhub_propose_keyword_update: { target: { listingId: 'l1' }, add: ['a'], remove: [] },
   ads_trigger_analysis: { from: '2026-10-01', to: '2026-10-02' },
   ads_approve_execution_task: { taskId: 'task1' },
 }
