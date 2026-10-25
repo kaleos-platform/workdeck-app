@@ -57,6 +57,15 @@ npx tsx scripts/security/worker-token.ts list --space <spaceId>
 토큰이 유출됐다고 의심되면 1~5 를 즉시 진행하되, 4 를 기다리지 말고 옛 토큰을 먼저 폐기해도 된다
 (워커는 새 토큰을 넣을 때까지 멈춘다).
 
+## N배송 토큰(`NAVER_NBAESONG_WORKER_TOKENS`)
+
+N배송 수집 API(`/api/collection/naver-nbaesong/*`)는 커머스API 키를 평문으로 내려주므로 **레거시 키를 받지 않고 Space 토큰만 받는다**(#1203).
+워커는 다른 수집과 달리 `worker/.env` 의 `NAVER_NBAESONG_WORKER_TOKENS` 로 N배송만 호출한다 — N배송 연동 Space 당 토큰 1개, 쉼표 구분.
+
+- 비어 있으면 `WORKER_API_KEY`(레거시)로 호출 → 매시 `plan 실패 … [403]` 로그, `planFailed` 가 0 이 아니게 된다.
+- 토큰 하나가 만료·폐기되면 그 Space 만 빠지고 나머지는 계속 돈다(`planFailed` 로 드러남).
+- 교체는 위 절차와 같되 2 에서 `WORKER_API_KEY` 대신 이 변수의 해당 토큰만 바꾼다. N배송 Space 가 늘면 그 Space 토큰을 발급해 뒤에 덧붙인다.
+
 ## 레거시 단일 키(`WORKER_LEGACY_KEY_ENABLED`)
 
 - 전환 기간에만 서버 env `WORKER_LEGACY_KEY_ENABLED=1` 로 기존 단일 키(`WORKER_API_KEY`)를 허용한다.

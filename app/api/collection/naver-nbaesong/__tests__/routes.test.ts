@@ -88,7 +88,7 @@ const ingestBody = (over = {}) => ({
 
 beforeEach(() => {
   jest.clearAllMocks()
-  auth.mockResolvedValue({ scope: { kind: 'legacy' } })
+  auth.mockResolvedValue({ scope: { kind: 'space', spaceId: 'sp1' } })
   db.findUnique.mockResolvedValue(row)
   db.findMany.mockResolvedValue([row])
 })
@@ -102,6 +102,17 @@ describe('인증', () => {
     auth.mockResolvedValue({ error: NextResponse.json({}, { status: 401 }) })
     expect((await run()).status).toBe(401)
     expect(db.findMany).not.toHaveBeenCalled()
+    expect(syncNbaesongDay).not.toHaveBeenCalled()
+  })
+  it.each<[string, () => Promise<Response>]>([
+    ['plan', () => plan(new NextRequest('http://t/x'))],
+    ['ingest', () => ingest(post(ingestBody()))],
+    ['finish', () => finish(post({ spaceId: 'sp1', storeKey: 'aml', attempted: [], ok: [] }))],
+  ])('%s: legacy 키는 403 — 키 하나로 전 space 비밀값이 열리지 않게', async (_n, run) => {
+    auth.mockResolvedValue({ scope: { kind: 'legacy' } })
+    expect((await run()).status).toBe(403)
+    expect(db.findMany).not.toHaveBeenCalled()
+    expect(decryptField).not.toHaveBeenCalled()
     expect(syncNbaesongDay).not.toHaveBeenCalled()
   })
   it('space 토큰은 다른 space 로 ingest/finish 불가 → 403', async () => {
@@ -137,9 +148,24 @@ describe('plan', () => {
     expect(json.items[0].secrets).toBeNull()
     expect(json.items[0].stores[0].key).toBe('aml')
   })
-  it('레거시 키는 spaceId 필터 없음', async () => {
+  it('clientSecret 이 빠진 스토어 비밀값은 내려가지 않는다', async () => {
+    ;(decryptField as jest.Mock).mockReturnValueOnce(
+      JSON.stringify({ stores: { aml: { clientId: 'CID' } } })
+    )
+    const json = await (await plan(new NextRequest('http://t/x'))).json()
+    expect(json.items[0].secrets).toEqual({})
+  })
+  it('복호화 실패 로그: field-crypto 사유는 남기고 JSON 파싱 오류의 평문 조각은 남기지 않는다', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    ;(decryptField as jest.Mock).mockImplementationOnce(() => {
+      throw new Error('ENCRYPTION_KEY_V1 누락')
+    })
     await plan(new NextRequest('http://t/x'))
-    expect(db.findMany.mock.calls[0]![0].where).not.toHaveProperty('spaceId')
+    expect(spy.mock.calls[0]).toContain('ENCRYPTION_KEY_V1 누락')
+    ;(decryptField as jest.Mock).mockReturnValueOnce('{"stores":{"aml":PLAIN-SECRET')
+    await plan(new NextRequest('http://t/x'))
+    expect(JSON.stringify(spy.mock.calls[1])).not.toContain('PLAIN-SECRET')
+    spy.mockRestore()
   })
   it('startDate 가 손상된 행은 건너뛰고 나머지를 돌려준다', async () => {
     const bad = {

@@ -3,6 +3,7 @@
  * 워커에서 메인 Next.js 앱 API를 호출하기 위한 래퍼
  */
 import type { ApiOptionIdentity } from './coupang-api/product-map.js'
+import type { NaverCommerceStoreSecret } from './naver-commerce.js'
 
 // ─── 타입 정의 ─────────────────────────────────────────────────────────────────
 
@@ -468,39 +469,53 @@ export type NaverNbaesongPlanItem = {
   spaceId: string
   credentialId: string
   /** 이번 일정에 든 스토어의 키만. null = 앱에서 복호화 실패 */
-  secrets: Record<string, { clientId: string; clientSecret: string }> | null
+  secrets: Record<string, NaverCommerceStoreSecret> | null
   stores: { key: string; days: string[] }[]
 }
 
+/** N배송 API 는 space 워커 토큰만 받는다 — 토큰을 주면 WORKER_API_KEY 대신 쓴다. */
+const withKey = (apiKey?: string): RequestInit =>
+  apiKey ? { headers: { 'x-worker-api-key': apiKey } } : {}
+
 /** GET /api/collection/naver-nbaesong/plan */
-export async function getNaverNbaesongPlan(): Promise<{ items: NaverNbaesongPlanItem[] }> {
-  const response = await workerFetch('/api/collection/naver-nbaesong/plan')
+export async function getNaverNbaesongPlan(
+  apiKey?: string
+): Promise<{ items: NaverNbaesongPlanItem[] }> {
+  const response = await workerFetch('/api/collection/naver-nbaesong/plan', withKey(apiKey))
   const data = await response.json()
   return { items: data?.items ?? [] }
 }
 
 /** POST /api/collection/naver-nbaesong/ingest — orders 는 NaverProductOrder[] (paymentDate 원문 그대로) */
-export async function postNaverNbaesongIngest(body: {
-  spaceId: string
-  storeKey: string
-  dayKst: string
-  orders: unknown[]
-}): Promise<void> {
+export async function postNaverNbaesongIngest(
+  body: {
+    spaceId: string
+    storeKey: string
+    dayKst: string
+    orders: unknown[]
+  },
+  apiKey?: string
+): Promise<void> {
   await workerFetch('/api/collection/naver-nbaesong/ingest', {
+    ...withKey(apiKey),
     method: 'POST',
     body: JSON.stringify(body),
   })
 }
 
 /** POST /api/collection/naver-nbaesong/finish */
-export async function postNaverNbaesongFinish(body: {
-  spaceId: string
-  storeKey: string
-  attempted: string[]
-  ok: string[]
-  error?: string
-}): Promise<void> {
+export async function postNaverNbaesongFinish(
+  body: {
+    spaceId: string
+    storeKey: string
+    attempted: string[]
+    ok: string[]
+    error?: string
+  },
+  apiKey?: string
+): Promise<void> {
   await workerFetch('/api/collection/naver-nbaesong/finish', {
+    ...withKey(apiKey),
     method: 'POST',
     body: JSON.stringify(body),
   })
