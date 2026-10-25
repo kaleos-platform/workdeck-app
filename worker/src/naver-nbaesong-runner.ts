@@ -1,6 +1,6 @@
 /**
  * 스마트스토어 N배송 판매 수집 — 앱의 plan 을 받아 스토어별로 커머스API 를 조회하고 ingest/finish 로 보고한다.
- * 비밀값(clientSecret·토큰·암호문)은 로그·에러 메시지에 남기지 않는다.
+ * 키는 앱이 복호화해 plan 으로 내려준다. 비밀값(clientSecret·토큰)은 로그·에러 메시지에 남기지 않는다.
  */
 import {
   getNaverNbaesongPlan,
@@ -8,7 +8,6 @@ import {
   postNaverNbaesongIngest,
   type NaverNbaesongPlanItem,
 } from './api-client.js'
-import { decryptField } from './field-crypto.js'
 import {
   fetchPaidProductOrders,
   issueToken,
@@ -20,7 +19,6 @@ import {
 
 export type NbaesongDeps = {
   getPlan: () => Promise<{ items: NaverNbaesongPlanItem[] }>
-  decrypt: (encrypted: string, iv: string) => string
   issueToken: (secret: NaverCommerceStoreSecret) => Promise<string>
   fetchOrders: (token: string, dayKst: string) => Promise<NaverProductOrder[]>
   ingest: (body: {
@@ -36,7 +34,6 @@ export type NbaesongDeps = {
 
 const defaultDeps: NbaesongDeps = {
   getPlan: getNaverNbaesongPlan,
-  decrypt: (enc, iv) => decryptField('space-credential', enc, iv),
   issueToken,
   fetchOrders: (token, day) => fetchPaidProductOrders(token, day),
   ingest: postNaverNbaesongIngest,
@@ -55,16 +52,8 @@ export async function runNaverNbaesongSync(
   let first = true
 
   for (const item of (await d.getPlan()).items) {
-    let secrets: Record<string, NaverCommerceStoreSecret> | null = null
-    let decryptError = ''
-    try {
-      secrets =
-        (JSON.parse(d.decrypt(item.encryptedPayload, item.iv)) as { stores?: typeof secrets })
-          .stores ?? {}
-    } catch {
-      // 복호화 오류 원문에는 암호문 조각이 섞일 수 있어 고정 문구만 쓴다.
-      decryptError = '자격증명 복호화 실패'
-    }
+    const secrets: Record<string, NaverCommerceStoreSecret> | null = item.secrets
+    const decryptError = secrets ? '' : '자격증명 복호화 실패'
 
     for (const store of item.stores) {
       // 호출 한도는 앱 단위라 스토어 사이에도 간격을 둔다.

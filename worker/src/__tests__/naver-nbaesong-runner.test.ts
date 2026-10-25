@@ -7,7 +7,7 @@ const secret = {
   },
 }
 const plan = (stores: { key: string; days: string[] }[]) => ({
-  items: [{ spaceId: 'sp', credentialId: 'c', encryptedPayload: 'ENCPAYLOAD', iv: 'iv', stores }],
+  items: [{ spaceId: 'sp', credentialId: 'c', secrets: secret.stores, stores }],
 })
 
 function makeDeps(over: Partial<NbaesongDeps> = {}) {
@@ -16,7 +16,6 @@ function makeDeps(over: Partial<NbaesongDeps> = {}) {
     getPlan: jest.fn(async () =>
       plan([{ key: 's1', days: ['2026-10-20', '2026-10-21', '2026-10-22'] }])
     ),
-    decrypt: jest.fn(() => JSON.stringify(secret)),
     issueToken: jest.fn(async () => 'TOKEN-XYZ'),
     fetchOrders: jest.fn(async () => [{ orderId: 'o' }] as never),
     ingest: jest.fn(async () => undefined),
@@ -40,6 +39,26 @@ describe('runNaverNbaesongSync', () => {
       attempted: ['2026-10-20', '2026-10-21', '2026-10-22'],
       ok: ['2026-10-20', '2026-10-21', '2026-10-22'],
     })
+  })
+
+  it('secrets=null(앱 복호화 실패): 호출 없이 실패로 finish', async () => {
+    const { deps } = makeDeps({
+      getPlan: jest.fn(async () => ({
+        items: [
+          {
+            spaceId: 'sp',
+            credentialId: 'c',
+            secrets: null,
+            stores: [{ key: 's1', days: ['2026-10-20'] }],
+          },
+        ],
+      })),
+    })
+    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({ stores: 1, days: 1, failed: 1 })
+    expect(deps.issueToken).not.toHaveBeenCalled()
+    expect(deps.finish).toHaveBeenCalledWith(
+      expect.objectContaining({ ok: [], error: '자격증명 복호화 실패' })
+    )
   })
 
   it('토큰 실패: 전 일자 실패로 finish', async () => {
@@ -95,8 +114,7 @@ describe('runNaverNbaesongSync', () => {
     })
     await runNaverNbaesongSync(deps)
     const all = logs.join('\n')
-    for (const s of ['SECRET-ONE', 'SECRET-TWO', 'TOKEN-XYZ', 'CID1', 'ENCPAYLOAD'])
-      expect(all).not.toContain(s)
+    for (const s of ['SECRET-ONE', 'SECRET-TWO', 'TOKEN-XYZ', 'CID1']) expect(all).not.toContain(s)
     expect(logs.length).toBe(1)
   })
 
