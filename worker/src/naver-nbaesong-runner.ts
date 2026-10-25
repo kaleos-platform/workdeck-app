@@ -59,9 +59,9 @@ const msg = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
 export async function runNaverNbaesongSync(
   overrides?: Partial<NbaesongDeps>
-): Promise<{ stores: number; days: number; failed: number }> {
+): Promise<{ stores: number; days: number; failed: number; planFailed: number }> {
   const d = { ...defaultDeps, ...overrides }
-  const total = { stores: 0, days: 0, failed: 0 }
+  const total = { stores: 0, days: 0, failed: 0, planFailed: 0 }
   let first = true
 
   for (const key of d.keys()) {
@@ -70,6 +70,8 @@ export async function runNaverNbaesongSync(
       items = (await d.getPlan(key)).items
     } catch (e) {
       // 토큰 하나가 만료·폐기돼도 다른 space 는 계속 돈다.
+      // 실패한 space 는 stores·days 에 안 잡히므로 따로 센다 — 0 이 아니면 수집이 빠진 space 가 있다.
+      total.planFailed++
       d.log(`[naver-nbaesong] plan 실패: ${msg(e)}`)
       continue
     }

@@ -31,7 +31,12 @@ function makeDeps(over: Partial<NbaesongDeps> = {}) {
 describe('runNaverNbaesongSync', () => {
   it('정상: 모든 날 ingest 후 finish', async () => {
     const { deps } = makeDeps()
-    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({ stores: 1, days: 3, failed: 0 })
+    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({
+      stores: 1,
+      days: 3,
+      failed: 0,
+      planFailed: 0,
+    })
     expect(deps.issueToken).toHaveBeenCalledTimes(1)
     expect(deps.ingest).toHaveBeenCalledTimes(3)
     expect(deps.finish).toHaveBeenCalledWith(
@@ -58,7 +63,12 @@ describe('runNaverNbaesongSync', () => {
         ],
       })),
     })
-    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({ stores: 1, days: 1, failed: 1 })
+    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({
+      stores: 1,
+      days: 1,
+      failed: 1,
+      planFailed: 0,
+    })
     expect(deps.issueToken).not.toHaveBeenCalled()
     expect(deps.finish).toHaveBeenCalledWith(
       expect.objectContaining({ ok: [], error: '자격증명 복호화 실패' }),
@@ -72,7 +82,12 @@ describe('runNaverNbaesongSync', () => {
         throw new Error('naver-commerce token 401: bad')
       }),
     })
-    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({ stores: 1, days: 3, failed: 3 })
+    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({
+      stores: 1,
+      days: 3,
+      failed: 3,
+      planFailed: 0,
+    })
     expect(deps.fetchOrders).not.toHaveBeenCalled()
     expect(deps.finish).toHaveBeenCalledWith(
       {
@@ -94,7 +109,12 @@ describe('runNaverNbaesongSync', () => {
         return [] as never
       }),
     })
-    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({ stores: 1, days: 3, failed: 1 })
+    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({
+      stores: 1,
+      days: 3,
+      failed: 1,
+      planFailed: 0,
+    })
     expect(deps.ingest).toHaveBeenCalledTimes(2)
     expect(deps.finish).toHaveBeenCalledWith(
       {
@@ -114,7 +134,12 @@ describe('runNaverNbaesongSync', () => {
         if (a.dayKst === '2026-10-20') throw new Error('ingest 500')
       }),
     })
-    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({ stores: 1, days: 3, failed: 1 })
+    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({
+      stores: 1,
+      days: 3,
+      failed: 1,
+      planFailed: 0,
+    })
   })
 
   it('로그에 비밀값 없음', async () => {
@@ -139,7 +164,7 @@ describe('runNaverNbaesongSync', () => {
       ),
     })
     const r = await runNaverNbaesongSync(deps)
-    expect(r).toEqual({ stores: 2, days: 3, failed: 1 })
+    expect(r).toEqual({ stores: 2, days: 3, failed: 1, planFailed: 0 })
     expect(deps.delay).toHaveBeenCalled()
     expect(deps.finish).toHaveBeenLastCalledWith(
       expect.objectContaining({ storeKey: 'nope', ok: [], error: expect.any(String) }),
@@ -159,7 +184,12 @@ describe('runNaverNbaesongSync', () => {
       ],
     }))
     const { deps } = makeDeps({ keys: () => ['wdw_A', 'wdw_B'], getPlan })
-    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({ stores: 2, days: 2, failed: 0 })
+    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({
+      stores: 2,
+      days: 2,
+      failed: 0,
+      planFailed: 0,
+    })
     expect(getPlan.mock.calls).toEqual([['wdw_A'], ['wdw_B']])
     expect(deps.ingest).toHaveBeenCalledWith(expect.objectContaining({ spaceId: 'spA' }), 'wdw_A')
     expect(deps.finish).toHaveBeenCalledWith(expect.objectContaining({ spaceId: 'spB' }), 'wdw_B')
@@ -174,7 +204,12 @@ describe('runNaverNbaesongSync', () => {
         return plan([{ key: 's1', days: ['2026-10-20'] }])
       }),
     })
-    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({ stores: 1, days: 1, failed: 0 })
+    await expect(runNaverNbaesongSync(deps)).resolves.toEqual({
+      stores: 1,
+      days: 1,
+      failed: 0,
+      planFailed: 1,
+    })
     expect(logs[0]).toContain('plan 실패')
     expect(logs.join('\n')).not.toContain('wdw_')
   })
