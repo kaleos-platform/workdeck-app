@@ -270,6 +270,7 @@ const keywordUpdate: ActionDefinition<KeywordUpdateParams> = {
         spaceId: ctx.spaceId,
         actionType: 'seller-hub.keywords.update',
         status: 'PENDING',
+        expiresAt: { gt: new Date() }, // 만료됐지만 아직 EXPIRED 전환 전인 제안은 중복으로 보지 않는다
         payload: { path: ['target', key], equals: id },
       },
       select: { id: true },

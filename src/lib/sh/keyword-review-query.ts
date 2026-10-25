@@ -157,7 +157,7 @@ export async function loadKeywordReview(
       spaceId,
       actionType: KEYWORD_ACTION_TYPE,
       OR: [
-        { status: 'PENDING' },
+        { status: 'PENDING', expiresAt: { gt: new Date() } },
         { status: 'REJECTED', decidedAt: { gte: new Date(Date.now() - SUPPRESS_DAYS * DAY_MS) } },
       ],
     },
