@@ -64,6 +64,8 @@ import { ChannelKeywordImportDialog } from './channel-keyword-import-dialog'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
 import { RankTrackingToggle } from '../keywords/rank-tracking-toggle'
 import { useKeywordRankBadges } from '../keywords/use-keyword-rank-badges'
+import { KeywordAdPanel } from '../keywords/keyword-ad-panel'
+import { useKeywordAdPerformance } from '../keywords/use-keyword-ad-performance'
 import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
 import { GroupBulkEditBar, type BulkPatch } from './group-bulk-edit-bar'
@@ -157,6 +159,7 @@ export function GroupDetailView({ channelProductId }: Props) {
   const [memo, setMemo] = useState('')
   const [pageUrl, setPageUrl] = useState('')
   const [rankTracking, setRankTracking] = useState(false)
+  const ad = useKeywordAdPerformance(`cp:${channelProductId}`)
   const rankBadges = useKeywordRankBadges(rankTracking ? `cp:${channelProductId}` : null)
 
   // 옵션 CRUD state
@@ -1518,6 +1521,13 @@ export function GroupDetailView({ channelProductId }: Props) {
             rules={rules}
             readOnly={readOnly}
             rankBadges={rankBadges}
+            adBadges={ad.adBadges}
+          />
+          <KeywordAdPanel
+            data={ad.data}
+            value={keywords}
+            onChange={handleKeywordsChange}
+            readOnly={readOnly}
           />
           {/* 채널상품 그룹은 리스팅이 여럿이라 귀속 상품을 하나로 특정할 수 없다.
               링크 없이 키워드만 마스터로 올린다(연결은 키워드 관리에서 붙인다). */}

@@ -7,6 +7,9 @@ import { computeBiasAdjust } from '@/lib/inv/forecast/bias-adjust'
 import { roundUp } from '@/lib/inv/round'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
+import { readTargetKeywords, applyKeywordsToTarget } from '@/lib/sh/keyword-apply'
+import { applyKeywordOps } from '@/lib/sh/keyword-review'
+import { keywordListSchema } from '@/lib/sh/schemas'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
@@ -218,5 +221,88 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
   },
 }
 
+// ─── seller-hub.keywords.update ─────────────────────────────────────────────
+// 상품(채널상품/단독 리스팅) 단위 키워드 추가·삭제 묶음. 상품명은 건드리지 않는다.
+// 멱등: 같은 대상에 PENDING 제안이 있으면 새 제안을 거부한다(승인 큐 중복 방지).
+const keywordUpdateParams = z
+  .object({
+    target: z
+      .object({ channelProductId: z.string().optional(), listingId: z.string().optional() })
+      .refine((t) => Boolean(t.channelProductId) !== Boolean(t.listingId), {
+        message: 'target 은 channelProductId 또는 listingId 중 정확히 하나여야 합니다',
+      }),
+    add: z.array(z.string()).max(10),
+    remove: z.array(z.string()).max(30),
+    evidence: z.record(z.string(), z.object({ orders: z.number(), clicks: z.number() })).optional(),
+    note: z.string().max(500).optional(),
+  })
+  .refine((p) => p.add.length + p.remove.length > 0, {
+    message: '추가 또는 삭제할 키워드가 필요합니다',
+  })
+
+type KeywordUpdateParams = z.infer<typeof keywordUpdateParams>
+
+const keywordUpdate: ActionDefinition<KeywordUpdateParams> = {
+  actionType: 'seller-hub.keywords.update',
+  deckKey: 'seller-hub',
+  title: '키워드 묶음 반영',
+  paramsSchema: keywordUpdateParams,
+  requiredRole: 'ADMIN',
+  retryableAfterFailure: true, // 실패 시 단일 트랜잭션이라 변경이 남지 않는다
+  validateCreate: async (ctx, params) => {
+    const cur = await readTargetKeywords(ctx.spaceId, params.target)
+    if (!cur) throw new ToolUserError('이 Space 에서 대상을 찾을 수 없습니다')
+    // 그룹 소속 리스팅의 키워드는 채널상품 단위로 관리한다.
+    if ('channelProductId' in cur && cur.channelProductId) {
+      throw new ToolUserError(
+        `그룹 소속 리스팅입니다. channelProductId(${cur.channelProductId})로 제안하세요`
+      )
+    }
+    const r = applyKeywordOps(cur.keywords, params.add, params.remove)
+    if (!r.ok) throw new ToolUserError(r.message)
+    const valid = keywordListSchema.safeParse(r.keywords)
+    if (!valid.success)
+      throw new ToolUserError(valid.error.issues[0]?.message ?? '키워드 형식 오류')
+    const id = params.target.channelProductId ?? params.target.listingId
+    const key = params.target.channelProductId ? 'channelProductId' : 'listingId'
+    const dup = await prisma.agentPendingAction.findFirst({
+      where: {
+        spaceId: ctx.spaceId,
+        actionType: 'seller-hub.keywords.update',
+        status: 'PENDING',
+        expiresAt: { gt: new Date() }, // 만료됐지만 아직 EXPIRED 전환 전인 제안은 중복으로 보지 않는다
+        payload: { path: ['target', key], equals: id },
+      },
+      select: { id: true },
+    })
+    if (dup) throw new ToolUserError(`이미 승인 대기 중인 키워드 제안이 있습니다: ${dup.id}`)
+  },
+  snapshot: async (ctx, params) => {
+    const cur = await readTargetKeywords(ctx.spaceId, params.target)
+    return cur
+      ? { name: cur.name, keywordCount: cur.keywords.length, keywords: cur.keywords.join(', ') }
+      : null
+  },
+  execute: async (ctx, params) => {
+    const cur = await readTargetKeywords(ctx.spaceId, params.target)
+    if (!cur) throw new Error('대상을 찾을 수 없습니다')
+    const r = applyKeywordOps(cur.keywords, params.add, params.remove)
+    if (!r.ok) throw new Error(r.message)
+    const valid = keywordListSchema.safeParse(r.keywords)
+    if (!valid.success) throw new Error(valid.error.issues[0]?.message ?? '키워드 형식 오류')
+    await applyKeywordsToTarget({
+      spaceId: ctx.spaceId,
+      target: params.target,
+      before: cur.keywords,
+      after: r.keywords,
+      name: cur.name,
+      productId: cur.productId,
+      channelProductId: 'channelProductId' in cur ? cur.channelProductId : null,
+      actorUserId: ctx.deciderId ?? null,
+    })
+    return { before: cur.keywords, after: r.keywords }
+  },
+}
+
 // seller-hub deck 승인 큐 액션.
-export const sellerHubActions: ActionDefinition[] = [def(reorderPlanCreate)]
+export const sellerHubActions: ActionDefinition[] = [def(reorderPlanCreate), def(keywordUpdate)]

@@ -50,6 +50,8 @@ import { KeywordEditor } from './keyword-editor'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
 import { RankTrackingToggle } from '../keywords/rank-tracking-toggle'
 import { useKeywordRankBadges } from '../keywords/use-keyword-rank-badges'
+import { KeywordAdPanel } from '../keywords/keyword-ad-panel'
+import { useKeywordAdPerformance } from '../keywords/use-keyword-ad-performance'
 import { NameChangeCooldownNotice } from './name-change-cooldown-notice'
 import { NameCounter } from './name-counter'
 import { NameValidationPanel } from './name-validation-panel'
@@ -129,6 +131,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [historyKey, setHistoryKey] = useState(0)
   const [rankTracking, setRankTracking] = useState(initial?.rankTracking ?? false)
+  const ad = useKeywordAdPerformance(mode === 'edit' && initial?.id ? `ls:${initial.id}` : null)
   const rankBadges = useKeywordRankBadges(
     mode === 'edit' && initial?.id && rankTracking ? `ls:${initial.id}` : null
   )
@@ -715,7 +718,9 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             optionNames={optionNames}
             rules={rules}
             rankBadges={rankBadges}
+            adBadges={ad.adBadges}
           />
+          <KeywordAdPanel data={ad.data} value={keywords} onChange={setKeywords} />
           {/* 채널 검색어 → 키워드 마스터 단방향 등록. 두 저장소는 동기화하지 않으므로
               사용자가 명시적으로 누를 때만 올라간다. */}
           <div className="flex justify-end">

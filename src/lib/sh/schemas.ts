@@ -332,9 +332,10 @@ export type ProductListingItemInput = z.infer<typeof productListingItemSchema>
 export const pageUrlSchema = nullableHttpUrl(2000)
 
 // 리스팅·채널상품이 함께 쓰는 등록 키워드 규칙 — 항목 trim 후 1~50자, 최대 30개.
+export const MAX_KEYWORDS = 30
 export const keywordListSchema = z
   .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
-  .max(30)
+  .max(MAX_KEYWORDS)
 
 export const productListingSchema = z
   .object({

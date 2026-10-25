@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import { requireDeck, resolveMcpWorkspace } from '@/lib/mcp/context'
 // requireDeck: finance/seller-hub(Space 스코프) 게이트. resolveMcpWorkspace: coupang-ads(Space에 연결된 Workspace).
+import { readTargetKeywords } from '@/lib/sh/keyword-apply'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import type { ToolDefinition } from './types'
 
@@ -141,6 +142,48 @@ const sellerhubCreateReorderPlanTool: ToolDefinition = {
   },
 }
 
+const sellerhubProposeKeywordUpdateTool: ToolDefinition = {
+  name: 'sellerhub_propose_keyword_update',
+  description:
+    '상품(채널상품 또는 단독 리스팅) 1개의 키워드 추가·삭제 묶음을 제안합니다. target 은 channelProductId 또는 listingId 중 정확히 하나, add ≤10, remove ≤30, evidence(단어별 {orders, clicks})와 note 는 선택입니다. 상품명은 바꾸지 않습니다. 같은 상품에 승인 대기 제안이 있으면 거부됩니다. 즉시 반영되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN) 승인 시 반영되고 변경 이력이 자동 기록됩니다.',
+  inputSchema: {
+    target: z.object({ channelProductId: z.string().optional(), listingId: z.string().optional() }),
+    add: z.array(z.string()).max(10),
+    remove: z.array(z.string()).max(30),
+    evidence: z.record(z.string(), z.object({ orders: z.number(), clicks: z.number() })).optional(),
+    note: z.string().optional(),
+  },
+  mode: 'write',
+  scope: 'sellerhub:write',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, 'seller-hub')
+    const actionParams = {
+      target: params.target as { channelProductId?: string; listingId?: string },
+      add: params.add as string[],
+      remove: params.remove as string[],
+      evidence: params.evidence as Record<string, { orders: number; clicks: number }> | undefined,
+      note: params.note as string | undefined,
+    }
+    const name = await readTargetKeywords(ctx.spaceId, actionParams.target ?? {})
+    const summary = `키워드 묶음 — ${name?.name ?? '(대상 미확인)'}: ${[
+      ...actionParams.add.map((w) => `+${w}`),
+      ...actionParams.remove.map((w) => `−${w}`),
+    ].join(' ')}`
+    return createPendingAction({
+      spaceId: ctx.spaceId,
+      actionType: 'seller-hub.keywords.update',
+      params: actionParams,
+      summary,
+      source: 'MCP',
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
+      idempotencyKey: idempotencyKeyFor('seller-hub.keywords.update', ctx.spaceId, actionParams),
+    })
+  },
+}
+
 // ─── coupang-ads (Workspace 스코프) ──────────────────────────────────────────────
 
 const adsTriggerAnalysisTool: ToolDefinition = {
@@ -217,6 +260,7 @@ export const writeTools: ToolDefinition[] = [
   financeClassifyTransactionsTool,
   financeCreateClassRuleTool,
   sellerhubCreateReorderPlanTool,
+  sellerhubProposeKeywordUpdateTool,
   adsTriggerAnalysisTool,
   adsApproveExecutionTaskTool,
 ]
