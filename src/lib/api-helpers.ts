@@ -7,6 +7,7 @@ import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { authenticateWorker, resolveWorkerWorkspaceId } from '@/lib/worker-auth'
 import { resolveCurrentMembership } from '@/lib/spaces/current-space'
+import { SPACE_HEADER } from '@/lib/spaces/current-space-cookie'
 import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 
 // 에러 응답 생성 헬퍼 — extra 필드를 병합해 추가 정보를 포함할 수 있음
@@ -76,6 +77,21 @@ export async function resolveWorkspace(opts?: DeckContextOptions) {
 
 export type SpaceMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER'
 
+/**
+ * 화면이 열릴 때의 Space(x-wd-space 헤더)와 쿠키로 해석한 Space 가 다르면 다른 탭에서 전환된 것 —
+ * 엉뚱한 Space 에 쓰지 않도록 409 로 거부한다. 헤더 없음(워커·cron·MCP)은 기존 동작.
+ */
+async function spaceMismatch(spaceId: string): Promise<NextResponse | null> {
+  let sent: string | null = null
+  try {
+    sent = (await headers()).get(SPACE_HEADER)
+  } catch {
+    // 요청 컨텍스트 밖 — 헤더 없음 취급
+  }
+  if (!sent || sent === spaceId) return null
+  return errorResponse('다른 탭에서 Space가 바뀌었습니다. 새로고침 후 다시 시도하세요', 409)
+}
+
 // 인증 + 현재 Space 멤버십(쿠키 → OWNER 최고참 → 최고참) — Deck 활성화와 무관
 export const resolveSpaceContext = cache(async function resolveSpaceContext() {
   const user = await measureCoupangAds('auth_user', getUser)
@@ -86,6 +102,9 @@ export const resolveSpaceContext = cache(async function resolveSpaceContext() {
   )
   if (!membership || 'forbidden' in membership)
     return { error: errorResponse('공간이 없습니다', 404) }
+
+  const mismatch = await spaceMismatch(membership.space.id)
+  if (mismatch) return { error: mismatch }
 
   return {
     user,
@@ -113,6 +132,11 @@ export async function resolveRequestedSpaceContext(requestedSpaceId: string | nu
   if (!membership) return { error: errorResponse('공간이 없습니다', 404) }
   if ('forbidden' in membership)
     return { error: errorResponse('이 Space의 구성원이 아닙니다', 403) }
+  // 명시 requested 는 호출자가 직접 고른 Space 라 헤더와 비교하지 않는다
+  if (!requestedSpaceId) {
+    const mismatch = await spaceMismatch(membership.space.id)
+    if (mismatch) return { error: mismatch }
+  }
   return { user, space: membership.space, role: membership.role as SpaceMemberRole }
 }
 
