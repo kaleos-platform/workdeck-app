@@ -118,7 +118,7 @@ export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 z-10 bg-muted/40">기간</TableHead>
+                  <TableHead className="sticky left-0 z-10 border-r bg-muted">기간</TableHead>
                   <TableHead className="bg-muted/40 text-right font-semibold">합계</TableHead>
                   <TableHead className="border-r bg-muted/40 text-right">증감</TableHead>
                   {displayChannels.map((dc) => (
@@ -140,7 +140,7 @@ export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
                   const ordPct = prev ? pctChange(cur.orderCount, prev.orderCount) : null
                   return (
                     <TableRow key={bucket.key}>
-                      <TableCell className="sticky left-0 z-10 bg-muted/40 font-medium">
+                      <TableCell className="sticky left-0 z-10 border-r bg-muted font-medium">
                         {bucket.label}
                       </TableCell>
                       <TableCell className="bg-muted/40 text-right font-semibold tabular-nums">
@@ -172,7 +172,7 @@ export function SalesPivotTable({ buckets, visibleChannels, loading }: Props) {
               {/* 합계 행 (증감 없음) */}
               <TableBody>
                 <TableRow className="border-t-2 font-semibold">
-                  <TableCell className="sticky left-0 z-10 bg-muted/60">합계</TableCell>
+                  <TableCell className="sticky left-0 z-10 border-r bg-muted">합계</TableCell>
                   <TableCell className="bg-muted/60 text-right tabular-nums">
                     <div>{formatKRW(grandTotal.revenue)}</div>
                     <div className="font-normal">
