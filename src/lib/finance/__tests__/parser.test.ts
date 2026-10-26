@@ -323,6 +323,18 @@ describe('적요/내용 다중 컬럼 결합', () => {
     expect(rows[0].description).toBe('대체')
   })
 
+  test('상대/의뢰인·메모도 여러 컬럼 → " / " 로 결합', () => {
+    const map: FinColumnMapping = {
+      ...MULTI_MAP,
+      description: 3,
+      counterparty: [6, 3],
+      memo: [3, 6],
+    }
+    const { rows } = parseFinanceWithMapping(toBuf(SHINHAN), map, 'BANK', 'acc-shinhan')
+    expect(rows[0].counterparty).toBe('김OO / 대체')
+    expect(rows[0].memo).toBe('대체 / 김OO')
+  })
+
   test('단일 컬럼 매핑은 결합 구분자 영향 없음', () => {
     const { rows } = parseFinanceWithMapping(toBuf(SHINHAN), SHINHAN_MAP, 'BANK', 'acc-shinhan')
     expect(rows[0].description).toBe('대체')

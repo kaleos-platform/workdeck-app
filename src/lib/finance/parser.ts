@@ -462,7 +462,7 @@ export function parseFinanceWithMapping(
       continue
     }
     const description = getCell(mapping.description, row, ' / ') || undefined
-    const counterparty = getCell(mapping.counterparty, row) || undefined
+    const counterparty = getCell(mapping.counterparty, row, ' / ') || undefined
     // 매핑된 메모(추가메모/비고) 컬럼. identityKey·contentHash에는 포함하지 않는다 —
     // 포함하면 메모 컬럼이 추가/변경된 재업로드분이 전건 DUP_CHANGED로 뒤집힌다.
     const memo = getCell(mapping.memo, row, ' / ') || undefined
