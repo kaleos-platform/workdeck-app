@@ -30,10 +30,10 @@ export async function loadNbaesongStore(
     return { error: errorResponse('다른 공간의 자원에 접근할 수 없습니다', 403) }
   const row = await prisma.spaceCredential.findUnique({
     where: { spaceId_provider: { spaceId, provider: NAVER_COMMERCE_PROVIDER } },
-    select: { id: true, config: true },
+    select: { id: true, config: true, lastError: true, healthError: true, healthAlertedAt: true },
   })
   const config = row?.config as NaverCommerceConfig | null | undefined
   const store = config?.stores?.find((s) => s.key === storeKey)
   if (!row || !config || !store) return { error: errorResponse('스토어 자격증명이 없습니다', 404) }
-  return { credentialId: row.id, config, store }
+  return { credentialId: row.id, config, store, alert: row }
 }

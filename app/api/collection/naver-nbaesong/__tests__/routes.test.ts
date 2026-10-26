@@ -31,12 +31,16 @@ jest.mock('@/lib/crypto/field-crypto', () => ({
 jest.mock('@/lib/agent/integrations/space-credential', () => ({
   recordCredentialError: jest.fn(),
 }))
+jest.mock('@/lib/slack/send-notification', () => ({
+  sendSpaceNotification: jest.fn(async () => true),
+}))
 
 import { prisma } from '@/lib/prisma'
 import { decryptField } from '@/lib/crypto/field-crypto'
 import { authenticateWorker } from '@/lib/worker-auth'
 import { syncNbaesongDay } from '@/lib/naver-commerce/nbaesong-sync'
 import { recordCredentialError } from '@/lib/agent/integrations/space-credential'
+import { sendSpaceNotification } from '@/lib/slack/send-notification'
 import { GET as plan } from '../plan/route'
 import { POST as ingest } from '../ingest/route'
 import { POST as finish } from '../finish/route'
@@ -260,5 +264,48 @@ describe('finish', () => {
     expect(recordCredentialError).toHaveBeenCalledWith('cred1', '[aml] boom')
     expect(db.updateMany).toHaveBeenCalledTimes(1)
     expect(db.updateMany.mock.calls[0]![0].where.lastError).toEqual({ startsWith: '[kreamd] ' })
+  })
+
+  describe('실패 알림', () => {
+    const notify = sendSpaceNotification as jest.Mock
+    const withState = (state: object) => db.findUnique.mockResolvedValue({ ...row, ...state })
+
+    it('첫 실패(직전 오류 없음)는 알리지 않는다', async () => {
+      withState({ lastError: null, healthError: null, healthAlertedAt: null })
+      await finish(post({ ...body, error: 'boom' }))
+      expect(notify).not.toHaveBeenCalled()
+    })
+    it('연속 실패면 1회 알리고 알림 상태를 남긴다', async () => {
+      withState({ lastError: '[kreamd] x', healthError: null, healthAlertedAt: null })
+      await finish(post({ ...body, error: '<!channel> boom' }))
+      expect(notify).toHaveBeenCalledTimes(1)
+      expect(notify.mock.calls[0]![0].spaceId).toBe('sp1')
+      expect(notify.mock.calls[0]![0].text).toContain('&lt;!channel&gt; boom')
+      const alertUpdate = db.update.mock.calls.at(-1)![0].data
+      expect(alertUpdate.healthError).toBe('[aml] <!channel> boom')
+      expect(alertUpdate.healthAlertedAt).toBeInstanceOf(Date)
+    })
+    it('이미 알렸으면 다시 알리지 않는다', async () => {
+      withState({ lastError: '[aml] x', healthError: '[aml] x', healthAlertedAt: new Date() })
+      await finish(post({ ...body, error: 'boom' }))
+      expect(notify).not.toHaveBeenCalled()
+    })
+    it('발송 실패면 알림 상태를 남기지 않는다(다음 실행에 재시도)', async () => {
+      withState({ lastError: '[aml] x', healthError: null, healthAlertedAt: null })
+      notify.mockResolvedValueOnce(false)
+      await finish(post({ ...body, error: 'boom' }))
+      expect(db.update).toHaveBeenCalledTimes(1) // 커서 갱신만
+    })
+    it('알린 스토어가 성공하면 복구를 알리고 상태를 지운다', async () => {
+      withState({ lastError: '[aml] x', healthError: '[aml] x', healthAlertedAt: new Date() })
+      await finish(post(body))
+      expect(notify.mock.calls[0]![0].text).toContain('복구')
+      expect(db.update.mock.calls.at(-1)![0].data).toEqual({ healthError: null, healthAlertedAt: null })
+    })
+    it('다른 스토어 성공은 복구로 보지 않는다', async () => {
+      withState({ lastError: '[kreamd] x', healthError: '[kreamd] x', healthAlertedAt: new Date() })
+      await finish(post(body))
+      expect(notify).not.toHaveBeenCalled()
+    })
   })
 })
