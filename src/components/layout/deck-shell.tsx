@@ -1,5 +1,7 @@
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
+import { SpaceFetchGuard } from '@/components/layout/space-fetch-guard'
+import { resolveSpaceContext } from '@/lib/api-helpers'
 import type { DeckVariant } from '@/lib/deck-meta'
 import type { Role } from '@/lib/auth/roles'
 
@@ -24,7 +26,7 @@ type DeckShellProps = {
  * 전체 높이 사이드바(로고 상단) + 우측 컬럼(헤더 + 본문) 구조.
  * 향후 새 deck은 layout에서 이 컴포넌트만 사용하면 동일한 UI가 적용된다.
  */
-export function DeckShell({
+export async function DeckShell({
   workspaceName,
   variant,
   mode,
@@ -35,8 +37,10 @@ export function DeckShell({
   readOnlyNotice,
   children,
 }: DeckShellProps) {
+  const ctx = await resolveSpaceContext()
   return (
     <div className="flex h-screen" data-deck={dataDeck}>
+      <SpaceFetchGuard spaceId={'error' in ctx ? null : ctx.space.id} />
       <Sidebar
         workspaceName={workspaceName}
         variant={variant}
