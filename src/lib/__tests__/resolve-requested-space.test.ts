@@ -1,6 +1,8 @@
 /** @jest-environment node */
 jest.mock('@/hooks/use-user', () => ({ getUser: jest.fn() }))
 jest.mock('@/lib/spaces/current-space', () => ({ resolveCurrentMembership: jest.fn() }))
+const headerGet = jest.fn()
+jest.mock('next/headers', () => ({ headers: async () => ({ get: headerGet }) }))
 import { getUser } from '@/hooks/use-user'
 import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveRequestedSpaceContext, resolveSpaceContext } from '@/lib/api-helpers'
@@ -36,4 +38,34 @@ it('resolveSpaceContext 도 현재 Space', async () => {
   current.mockResolvedValue({ role: 'OWNER', space: { id: 'sp-a', name: 'Space A' } })
   expect(await resolveSpaceContext()).toMatchObject({ space: { id: 'sp-a' }, role: 'OWNER' })
   expect(current).toHaveBeenCalledWith('u-1')
+})
+
+describe('x-wd-space 헤더 대조(다른 탭 Space 전환 방지)', () => {
+  beforeEach(() => {
+    current.mockResolvedValue({ role: 'OWNER', space: { id: 'sp-y', name: 'Space Y' } })
+  })
+
+  it('불일치 → 409', async () => {
+    headerGet.mockReturnValue('sp-x')
+    for (const r of [await resolveSpaceContext(), await resolveRequestedSpaceContext(null)]) {
+      if (!('error' in r)) throw new Error('error 기대')
+      expect(r.error.status).toBe(409)
+    }
+  })
+
+  it('일치 → 통과', async () => {
+    headerGet.mockReturnValue('sp-y')
+    expect(await resolveSpaceContext()).toMatchObject({ space: { id: 'sp-y' } })
+    expect(await resolveRequestedSpaceContext(null)).toMatchObject({ space: { id: 'sp-y' } })
+  })
+
+  it('헤더 없음 → 쿠키 기준 기존 동작', async () => {
+    headerGet.mockReturnValue(null)
+    expect(await resolveRequestedSpaceContext(null)).toMatchObject({ space: { id: 'sp-y' } })
+  })
+
+  it('명시 requested 가 있으면 헤더 무시', async () => {
+    headerGet.mockReturnValue('sp-x')
+    expect(await resolveRequestedSpaceContext('sp-y')).toMatchObject({ space: { id: 'sp-y' } })
+  })
 })
