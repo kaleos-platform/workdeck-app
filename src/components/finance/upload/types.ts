@@ -130,7 +130,7 @@ export const NONE_COLUMN = '__none__'
 export const NONE_ACCOUNT = '__none__'
 
 /** 다중 컬럼 결합 허용 필드 — 텍스트 필드만(숫자/날짜는 단일 컬럼). */
-export const MULTI_COLUMN_FIELDS = new Set<string>(['description'])
+export const MULTI_COLUMN_FIELDS = new Set<string>(['description', 'counterparty', 'memo'])
 
 // ─── 순수 헬퍼 ────────────────────────────────────────────────────────────────
 
