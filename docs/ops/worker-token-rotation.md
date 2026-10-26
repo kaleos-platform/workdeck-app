@@ -64,6 +64,7 @@ N배송 수집 API(`/api/collection/naver-nbaesong/*`)는 커머스API 키를 �
 
 - 비어 있으면 `WORKER_API_KEY`(레거시)로 호출 → 매시 `plan 실패 … [403]` 로그, `planFailed` 가 0 이 아니게 된다.
 - 토큰 하나가 만료·폐기되면 그 Space 만 빠지고 나머지는 계속 돈다(`planFailed` 로 드러남).
+- 만료 알림: 매일 `/api/cron/inventory-stale-check`(10:00 KST)가 최근 7일 안에 쓰인 미폐기 토큰 중 만료 30일 이내(이미 만료 포함)를 시스템 Slack 채널에 알린다. 교체 후 옛 토큰을 폐기하면 알림이 멈춘다. 최대 TTL 이 365일이라 1년마다 교체가 필요하다.
 - 교체는 위 절차와 같되 2 에서 `WORKER_API_KEY` 대신 이 변수의 해당 토큰만 바꾼다. N배송 Space 가 늘면 그 Space 토큰을 발급해 뒤에 덧붙인다.
 
 ## 레거시 단일 키(`WORKER_LEGACY_KEY_ENABLED`)
