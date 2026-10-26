@@ -418,8 +418,8 @@ export function FileItemCard({
               </p>
             </div>
 
-            {/* 계좌 선택 */}
-            <div className="space-y-1.5">
+            {/* 계좌 선택 — min-w-0: 긴 계좌명이 grid 칸을 밀어 카드 밖으로 넘치지 않게 */}
+            <div className="min-w-0 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
                 <Label className="text-xs text-muted-foreground">
                   {isCard ? '연결 카드' : '적재 계좌'} <span className="text-destructive">*</span>
@@ -451,7 +451,7 @@ export function FileItemCard({
                   >
                     <SelectTrigger
                       className={cn(
-                        'h-8 flex-1 text-sm',
+                        'h-8 min-w-0 flex-1 text-sm',
                         matchedAccount &&
                           item.accountId === matchedAccount.id &&
                           'border-emerald-400 ring-1 ring-emerald-400/40'
