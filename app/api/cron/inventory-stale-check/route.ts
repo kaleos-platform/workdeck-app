@@ -1,5 +1,9 @@
 import { prisma } from '@/lib/prisma'
-import { notifyInventoryStaleData, notifyWorkerDown } from '@/lib/slack-inventory-notifier'
+import {
+  notifyInventoryStaleData,
+  notifyWorkerDown,
+  notifyWorkerTokenExpiring,
+} from '@/lib/slack-inventory-notifier'
 import { withCronRun } from '@/lib/cron/with-cron-run'
 
 export const runtime = 'nodejs'
@@ -10,6 +14,10 @@ const WORKER_HEARTBEAT_THRESHOLD_MIN = 10 // 10분 이상 ping 없으면 다운�
 const STALE_RENOTIFY_WINDOW_MS = 20 * 60 * 60 * 1000
 // 쿠팡 수집 워커 + 세일즈 콘텐츠 발행 워커(worker/src/heartbeat.ts 의 service 값).
 const WORKER_SERVICES = ['inventory-collector', 'sales-content-worker']
+/** 워커 토큰 만료 알림 시작 시점 — cron 이 하루 1회라 갱신할 때까지 매일 알린다. */
+const TOKEN_EXPIRY_WARN_DAYS = 30
+/** 이 기간 안에 쓰인 토큰만 대상 — 안 쓰는 토큰·만료 후 방치된 토큰은 조용히 둔다. */
+const TOKEN_IN_USE_DAYS = 7
 
 function kstMidnight(d: Date): Date {
   const kst = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
@@ -194,5 +202,29 @@ export const GET = withCronRun('/api/cron/inventory-stale-check', async () => {
     workers.push(workerCheck)
   }
 
-  return { workspaces: checked, workers }
+  // 워커 Space 토큰 만료 임박 — 만료되면 해당 수집이 401 로 조용히 멈추므로 미리 알린다.
+  const DAY_MS = 86_400_000
+  let expiringTokens: Array<{ id: string; expiresAt: string }> = []
+  try {
+    const now = Date.now()
+    const rows = await prisma.workerToken.findMany({
+      where: {
+        revokedAt: null,
+        expiresAt: { lte: new Date(now + TOKEN_EXPIRY_WARN_DAYS * DAY_MS) },
+        lastUsedAt: { gte: new Date(now - TOKEN_IN_USE_DAYS * DAY_MS) },
+      },
+      select: { id: true, name: true, expiresAt: true, space: { select: { name: true } } },
+      orderBy: { expiresAt: 'asc' },
+    })
+    expiringTokens = rows.map((r) => ({ id: r.id, expiresAt: r.expiresAt.toISOString() }))
+    if (rows.length > 0) {
+      await notifyWorkerTokenExpiring(
+        rows.map((r) => ({ name: r.name, spaceName: r.space.name, expiresAt: r.expiresAt }))
+      )
+    }
+  } catch (err) {
+    console.error('[cron/inventory-stale-check] 워커 토큰 만료 체크 실패:', err)
+  }
+
+  return { workspaces: checked, workers, expiringTokens }
 })

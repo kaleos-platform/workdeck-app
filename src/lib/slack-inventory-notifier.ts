@@ -315,3 +315,26 @@ export async function notifyWorkerDown(params: {
 
   return sendSystemNotification({ blocks, text: `워커 다운 의심: ${params.service}` })
 }
+
+/** 사용 중인 워커 Space 토큰의 만료 임박(또는 만료) 알림 — 갱신은 런북 docs/ops/worker-token-rotation.md */
+export async function notifyWorkerTokenExpiring(
+  tokens: Array<{ name: string; spaceName: string; expiresAt: Date }>
+): Promise<boolean> {
+  const lines = tokens.map((t) => {
+    const days = Math.floor((t.expiresAt.getTime() - Date.now()) / 86_400_000)
+    const left = days < 0 ? '*만료됨*' : `${days}일 남음`
+    return `• \`${t.name}\` (${t.spaceName}) — ${formatDate(t.expiresAt)} 만료, ${left}`
+  })
+
+  const blocks: Block[] = [
+    header(':key: 워커 토큰 만료 임박'),
+    divider(),
+    section(lines.join('\n')),
+    section(
+      '만료되면 이 토큰을 쓰는 수집(N배송 등)이 401 로 멈추고, 그 실패는 따로 알림이 오지 않습니다.\n' +
+        '새 토큰 발급 → `worker/.env` 교체 → 워커 재시작 → 옛 토큰 폐기: `docs/ops/worker-token-rotation.md`'
+    ),
+  ]
+
+  return sendSystemNotification({ blocks, text: `워커 토큰 만료 임박 ${tokens.length}건` })
+}
