@@ -158,6 +158,12 @@ describe('isMappingValid', () => {
     )
     expect(isMappingValid(mapping, 'BANK').ok).toBe(false)
   })
+
+  it('적요·상대·메모는 여러 컬럼 허용, 그 외 필드는 하나만', () => {
+    const base = { txnDate: [0], description: [1, 2], deposit: [3] }
+    expect(isMappingValid({ ...base, counterparty: [4, 5], memo: [6, 7] }, 'BANK').ok).toBe(true)
+    expect(isMappingValid({ ...base, deposit: [3, 4] }, 'BANK').ok).toBe(false)
+  })
 })
 
 describe('state ↔ entries 왕복', () => {
