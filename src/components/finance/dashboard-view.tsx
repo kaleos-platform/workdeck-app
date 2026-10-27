@@ -97,6 +97,10 @@ interface DashboardData {
     prevNet: number
     netWorth: number
     totalLiability: number
+    /** 직전 완결 3개월 평균 지출 */
+    monthlyBurn: number
+    /** 순자산 ÷ 월평균 지출. 지출 데이터 없으면 null */
+    runwayMonths: number | null
   }
   trend: TrendPoint[]
   accountSnapshots: AccountSnapshot[]
@@ -466,7 +470,7 @@ export function DashboardView() {
           </div>
 
           {/* 순자산 보조 카드 */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <Card className="bg-muted/30">
               <CardContent className="flex items-center justify-between py-4">
                 <span className="text-sm text-muted-foreground">순자산 (현금 − 부채)</span>
@@ -486,6 +490,19 @@ export function DashboardView() {
                 <span className="text-sm text-muted-foreground">총 부채</span>
                 <span className="font-mono text-sm font-semibold text-red-600 dark:text-red-400">
                   {formatWon(data.kpi.totalLiability)}
+                </span>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted/30">
+              <CardContent className="flex items-center justify-between gap-2 py-4">
+                <span className="text-sm text-muted-foreground">
+                  런웨이 (순자산 기준)
+                  <span className="block text-xs">
+                    월평균 지출 {formatWon(data.kpi.monthlyBurn)} · 직전 3개월
+                  </span>
+                </span>
+                <span className="font-mono text-sm font-semibold">
+                  {data.kpi.runwayMonths == null ? '—' : `${data.kpi.runwayMonths}개월`}
                 </span>
               </CardContent>
             </Card>

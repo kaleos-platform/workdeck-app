@@ -183,8 +183,8 @@ const SALES_CONTENT_FLAT_ROUTES = [
 // ─── 재무 관리 평탄 메뉴 데이터 (5섹션 + 도메인 탭 금지) ───────────────────────
 const FINANCE_FLAT_ROUTES = [
   { label: '요약 대시보드', icon: LayoutDashboard, href: FINANCE_DASHBOARD_PATH },
-  { label: '현금흐름 상세', icon: TrendingUp, href: FINANCE_CASHFLOW_PATH },
   { label: '잔액 추이', icon: Wallet, href: FINANCE_BALANCE_TREND_PATH },
+  { label: '현금흐름 상세', icon: TrendingUp, href: FINANCE_CASHFLOW_PATH },
   { label: '거래 내역', icon: ListChecks, href: FINANCE_TRANSACTIONS_PATH },
   { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
   { label: '등록 이력', icon: History, href: FINANCE_IMPORTS_PATH },
