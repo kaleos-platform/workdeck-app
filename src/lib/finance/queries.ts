@@ -886,6 +886,16 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
     }
   })
   const totalLiability = round2(liabilityList.reduce((acc, l) => acc + l.balance, 0))
+  const netWorth = round2(totalCash - totalLiability)
+
+  // ── 런웨이(순자산 기준) ── 잔액 추이의 버틸 개월수와 같은 규칙: 진행 중인 달은 지출이 덜
+  // 쌓여 부풀므로 직전 완결 3개월 평균 지출. 거래 없는 달(데이터 시작 전)은 평균에서 뺀다.
+  const burnEnd = curEndYm >= nowYm ? addMonths(nowYm, -1) : curEndYm
+  const burnMonths = [0, -1, -2].map((d) => addMonths(burnEnd, d)).filter((m) => monthAgg.has(m))
+  const monthlyBurn =
+    burnMonths.length > 0 ? round2(sumMonths(burnMonths, 'expense') / burnMonths.length) : 0
+  const runwayMonths =
+    monthlyBurn > 0 ? Math.max(0, Math.round((netWorth / monthlyBurn) * 10) / 10) : null
 
   return {
     period,
@@ -899,8 +909,10 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
       prevExpense,
       net: round2(income - expense),
       prevNet: round2(prevIncome - prevExpense),
-      netWorth: round2(totalCash - totalLiability),
+      netWorth,
       totalLiability,
+      monthlyBurn,
+      runwayMonths,
     },
     trend,
     accountSnapshots,
