@@ -99,6 +99,8 @@ interface DashboardData {
     totalLiability: number
     /** 직전 완결 3개월 평균 지출 */
     monthlyBurn: number
+    /** 총 현금 ÷ 월평균 지출. 지출 데이터 없으면 null */
+    cashRunwayMonths: number | null
     /** 순자산 ÷ 월평균 지출. 지출 데이터 없으면 null */
     runwayMonths: number | null
   }
@@ -496,13 +498,25 @@ export function DashboardView() {
             <Card className="bg-muted/30">
               <CardContent className="flex items-center justify-between gap-2 py-4">
                 <span className="text-sm text-muted-foreground">
-                  런웨이 (순자산 기준)
+                  런웨이
                   <span className="block text-xs">
                     월평균 지출 {formatWon(data.kpi.monthlyBurn)} · 직전 3개월
                   </span>
                 </span>
-                <span className="font-mono text-sm font-semibold">
-                  {data.kpi.runwayMonths == null ? '—' : `${data.kpi.runwayMonths}개월`}
+                <span className="shrink-0 space-y-0.5 text-right text-xs whitespace-nowrap text-muted-foreground">
+                  {(
+                    [
+                      ['현금', data.kpi.cashRunwayMonths],
+                      ['순자산', data.kpi.runwayMonths],
+                    ] as const
+                  ).map(([label, v]) => (
+                    <span key={label} className="block">
+                      {label}{' '}
+                      <span className="font-mono text-sm font-semibold text-foreground">
+                        {v == null ? '—' : `${v}개월`}
+                      </span>
+                    </span>
+                  ))}
                 </span>
               </CardContent>
             </Card>
