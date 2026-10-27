@@ -29,7 +29,12 @@ import {
   type Grain,
 } from '@/lib/finance/periods'
 import { computeLiabilityPending } from '@/lib/finance/liability'
-import { accountBalanceAt, buildBalanceTrend } from '@/lib/finance/balance-trend'
+import {
+  accountBalanceAt,
+  avgMonthlyBurn,
+  buildBalanceTrend,
+  runwayMonthsOf,
+} from '@/lib/finance/balance-trend'
 import { computePnlMetrics, type PnlTxnFact } from '@/lib/finance/pnl-metrics'
 import { cashSection, fixedSectionOf, type CashSection } from '@/lib/finance/contra'
 import type { Prisma } from '@/generated/prisma/client'
@@ -888,14 +893,13 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
   const totalLiability = round2(liabilityList.reduce((acc, l) => acc + l.balance, 0))
   const netWorth = round2(totalCash - totalLiability)
 
-  // ── 런웨이(순자산 기준) ── 잔액 추이의 버틸 개월수와 같은 규칙: 진행 중인 달은 지출이 덜
-  // 쌓여 부풀므로 직전 완결 3개월 평균 지출. 거래 없는 달(데이터 시작 전)은 평균에서 뺀다.
-  const burnEnd = curEndYm >= nowYm ? addMonths(nowYm, -1) : curEndYm
-  const burnMonths = [0, -1, -2].map((d) => addMonths(burnEnd, d)).filter((m) => monthAgg.has(m))
-  const monthlyBurn =
-    burnMonths.length > 0 ? round2(sumMonths(burnMonths, 'expense') / burnMonths.length) : 0
-  const runwayMonths =
-    monthlyBurn > 0 ? Math.max(0, Math.round((netWorth / monthlyBurn) * 10) / 10) : null
+  // ── 런웨이 ── 잔액 추이 버틸 개월수와 같은 기준(avgMonthlyBurn). 진행 중인 달이면 직전 완결 월까지.
+  const monthlyBurn = avgMonthlyBurn(
+    new Map([...monthAgg].map(([m, a]) => [m, a.expense])),
+    curEndYm >= nowYm ? addMonths(nowYm, -1) : curEndYm
+  )
+  const cashRunwayMonths = runwayMonthsOf(totalCash, monthlyBurn)
+  const runwayMonths = runwayMonthsOf(netWorth, monthlyBurn)
 
   return {
     period,
@@ -912,6 +916,7 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
       netWorth,
       totalLiability,
       monthlyBurn,
+      cashRunwayMonths,
       runwayMonths,
     },
     trend,
