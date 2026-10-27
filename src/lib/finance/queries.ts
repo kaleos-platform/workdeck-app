@@ -31,6 +31,7 @@ import {
 import { computeLiabilityPending } from '@/lib/finance/liability'
 import {
   accountBalanceAt,
+  avgCashBurn,
   avgMonthlyBurn,
   buildBalanceTrend,
   runwayMonthsOf,
@@ -893,13 +894,20 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
   const totalLiability = round2(liabilityList.reduce((acc, l) => acc + l.balance, 0))
   const netWorth = round2(totalCash - totalLiability)
 
-  // ── 런웨이 ── 잔액 추이 버틸 개월수와 같은 기준(avgMonthlyBurn). 진행 중인 달이면 직전 완결 월까지.
+  // ── 런웨이 ── 잔액 추이 버틸 개월수와 같은 기준(avgCashBurn: 실제 현금 증감 6개월 평균).
+  // 진행 중인 달은 월말 잔액이 아니므로 직전 완결 월까지.
+  const burnEndYm = curEndYm >= nowYm ? addMonths(nowYm, -1) : curEndYm
+  const bankIds = new Set(bankAccounts.map((a) => a.id))
+  const dataStartYm = snapshots.find((s) => bankIds.has(s.accountId))?.yearMonth ?? null
+  const cashBurn = avgCashBurn(cashAt, burnEndYm, dataStartYm)
+  const cashRunwayMonths = runwayMonthsOf(totalCash, cashBurn)
+  const runwayMonths = runwayMonthsOf(netWorth, cashBurn)
+  // 「매출 0 가정」 — 수입이 끊기면 총지출만큼 줄어든다(가장 보수적).
   const monthlyBurn = avgMonthlyBurn(
     new Map([...monthAgg].map(([m, a]) => [m, a.expense])),
-    curEndYm >= nowYm ? addMonths(nowYm, -1) : curEndYm
+    burnEndYm
   )
-  const cashRunwayMonths = runwayMonthsOf(totalCash, monthlyBurn)
-  const runwayMonths = runwayMonthsOf(netWorth, monthlyBurn)
+  const grossRunwayMonths = runwayMonthsOf(totalCash, monthlyBurn)
 
   return {
     period,
@@ -915,9 +923,11 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
       prevNet: round2(prevIncome - prevExpense),
       netWorth,
       totalLiability,
-      monthlyBurn,
+      cashBurn,
       cashRunwayMonths,
       runwayMonths,
+      monthlyBurn,
+      grossRunwayMonths,
     },
     trend,
     accountSnapshots,
@@ -961,23 +971,9 @@ export async function queryBalanceTrend(spaceId: string, range: BalanceTrendRang
           .sort()[0]
       : addMonths(nowYm, -(range - 1))
   const months = monthList(firstYm, nowYm)
-  // 버틸 개월수가 첫 달 기준 직전 3개월 지출까지 본다.
-  const { gte, lt } = rangeBounds(addMonths(firstYm, -3), nowYm)
   const flowRange = rangeBounds(firstYm, nowYm)
 
-  const [txns, contra, bankFlows] = await Promise.all([
-    prisma.finTransaction.findMany({
-      where: { spaceId, txnDate: { gte, lt }, excludeFromAnalysis: false },
-      select: {
-        txnDate: true,
-        direction: true,
-        amount: true,
-        isTransfer: true,
-        cancelFlag: true,
-        categoryId: true,
-      },
-    }),
-    loadFixedSections(spaceId),
+  const [bankFlows] = await Promise.all([
     // 잔액 체인 정합성 — BANK 계좌 전체 거래 월별 순액(이체·분석 제외 포함, 취소 상계).
     prisma.$queryRaw<{ accountId: string; month: string; net: unknown }[]>`
         SELECT t."accountId", to_char(t."txnDate", 'YYYY-MM') AS month,
@@ -992,18 +988,6 @@ export async function queryBalanceTrend(spaceId: string, range: BalanceTrendRang
         GROUP BY 1, 2
       `,
   ])
-
-  const monthAgg = aggregateByMonth(
-    txns.map((t) => ({
-      txnDate: t.txnDate,
-      direction: t.direction,
-      amount: toNum(t.amount),
-      isTransfer: t.isTransfer,
-      cancelFlag: t.cancelFlag,
-      categoryId: t.categoryId,
-      contraSection: t.categoryId ? contra.get(t.categoryId) : null,
-    }))
-  )
 
   const accountSnaps = new Map<string, { ym: string; balance: number }[]>()
   for (const s of snapshots) {
@@ -1029,7 +1013,6 @@ export async function queryBalanceTrend(spaceId: string, range: BalanceTrendRang
         ym: s.yearMonth,
         balance: toNum(s.balance),
       })),
-      expenseByMonth: new Map([...monthAgg].map(([m, a]) => [m, a.expense])),
       bankFlows: bankFlows.reduce((acc, r) => {
         const m = acc.get(r.accountId) ?? new Map<string, number>()
         m.set(r.month, toNum(r.net as never))
