@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/admin/users', label: '사용자' },
   { href: '/admin/billing', label: '결제' },
   { href: '/admin/templates', label: '템플릿' },
+  { href: '/admin/recovery', label: '복구 관리' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -26,10 +27,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <div className="flex items-center gap-6">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-4">
           <span className="text-sm font-semibold">워크덱 운영 어드민</span>
-          <nav className="flex items-center gap-4">
+          <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
