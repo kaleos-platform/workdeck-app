@@ -25,6 +25,21 @@ export function accountBalanceAt(
   return lastAtOrBefore(snaps, ym)?.balance ?? openingBalance ?? 0
 }
 
+/**
+ * 런웨이용 월평균 지출 — 잔액 추이·요약 대시보드가 공유하는 단일 기준.
+ * endYm 포함 3개월 평균. 지출 기록이 없는 달(데이터 시작 전·업로드 누락)은 평균에서 뺀다 — 0으로 넣으면 지출이 묽어진다.
+ * endYm 은 호출부가 완결 월로 넘긴다(진행 중인 달은 지출이 덜 쌓여 런웨이가 부푼다).
+ */
+export function avgMonthlyBurn(expenseByMonth: ReadonlyMap<string, number>, endYm: string): number {
+  const ms = [0, -1, -2].map((d) => addMonths(endYm, d)).filter((m) => expenseByMonth.has(m))
+  return ms.length ? round2(ms.reduce((acc, m) => acc + expenseByMonth.get(m)!, 0) / ms.length) : 0
+}
+
+/** 잔액 ÷ 월평균 지출(소수 1자리). 음수 잔액은 0, 지출 없으면 null. */
+export function runwayMonthsOf(balance: number, burn: number): number | null {
+  return burn > 0 ? Math.max(0, Math.round((balance / burn) * 10) / 10) : null
+}
+
 function lastAtOrBefore(snaps: readonly YmBalance[] | undefined, ym: string): YmBalance | null {
   let found: YmBalance | null = null
   for (const s of snaps ?? []) {
@@ -131,13 +146,10 @@ export function buildBalanceTrend(input: BalanceTrendInput): BalanceTrendRow[] {
         : round2(netWorth - (cashAt(prevYm) - prevLiability))
 
     // 진행 중인 달은 지출이 덜 쌓여 버틸 개월수가 부풀므로 직전 완결 3개월을 쓴다.
-    // 데이터 시작 전 달은 평균에서 빼야 지출이 묽어지지 않는다.
-    const windowEnd = inProgress ? prevYm : ym
-    const burnMonths = [0, -1, -2].map((d) => addMonths(windowEnd, d)).filter((m) => m >= months[0])
-    const burn =
-      burnMonths.reduce((acc, m) => acc + (input.expenseByMonth.get(m) ?? 0), 0) /
-      (burnMonths.length || 1)
-    const runwayMonths = burn > 0 ? Math.round((cash / burn) * 10) / 10 : null
+    const runwayMonths = runwayMonthsOf(
+      cash,
+      avgMonthlyBurn(input.expenseByMonth, inProgress ? prevYm : ym)
+    )
 
     // 계좌별로 (잔액 증감 − 거래 순액). 직전 달까지 스냅샷이 없는 계좌(첫 데이터 달)는 제외 —
     // openingBalance 는 "첫 거래 직전 잔액"이 보장되지 않아(prod 에선 임의 시점 잔액) 시작 잔액이 차이로 잡힌다.

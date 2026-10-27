@@ -1,5 +1,11 @@
 /** @jest-environment node */
-import { accountBalanceAt, buildBalanceTrend, type BalanceTrendInput } from '../balance-trend'
+import {
+  accountBalanceAt,
+  avgMonthlyBurn,
+  buildBalanceTrend,
+  runwayMonthsOf,
+  type BalanceTrendInput,
+} from '../balance-trend'
 
 const base = (over: Partial<BalanceTrendInput> = {}): BalanceTrendInput => ({
   months: ['2026-08', '2026-09', '2026-10'],
@@ -56,6 +62,22 @@ describe('accountBalanceAt', () => {
     expect(accountBalanceAt(snaps, '2026-09', 99)).toBe(10)
     expect(accountBalanceAt(snaps, '2026-07', 99)).toBe(99)
     expect(accountBalanceAt(undefined, '2026-07', null)).toBe(0)
+  })
+})
+
+describe('avgMonthlyBurn / runwayMonthsOf', () => {
+  test('지출 기록 없는 달은 평균에서 제외(0으로 묽히지 않음)', () => {
+    const m = new Map([
+      ['2026-07', 300],
+      ['2026-08', 100],
+    ])
+    expect(avgMonthlyBurn(m, '2026-09')).toBe(200)
+    expect(avgMonthlyBurn(m, '2026-12')).toBe(0)
+  })
+  test('음수 잔액은 0개월, 지출 0이면 null', () => {
+    expect(runwayMonthsOf(-50, 100)).toBe(0)
+    expect(runwayMonthsOf(250, 100)).toBe(2.5)
+    expect(runwayMonthsOf(250, 0)).toBeNull()
   })
 })
 
