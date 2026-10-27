@@ -25,6 +25,7 @@ import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 import Link from 'next/link'
 import { Pencil, Trash2, Plus } from 'lucide-react'
 import { AccountDialog } from '@/components/finance/account-dialog'
+import { runwayLabel } from '@/lib/finance/balance-trend'
 import {
   LiabilityFormDialog,
   type Liability as LiabilityFormData,
@@ -97,12 +98,16 @@ interface DashboardData {
     prevNet: number
     netWorth: number
     totalLiability: number
-    /** 직전 완결 3개월 평균 지출 */
-    monthlyBurn: number
-    /** 총 현금 ÷ 월평균 지출. 지출 데이터 없으면 null */
+    /** 직전 6개월 월평균 현금 감소액(실제 잔액 변화). 0 이하=현금 증가, null=비교 불가 */
+    cashBurn: number | null
+    /** 총 현금 ÷ cashBurn */
     cashRunwayMonths: number | null
-    /** 순자산 ÷ 월평균 지출. 지출 데이터 없으면 null */
+    /** 순자산 ÷ cashBurn */
     runwayMonths: number | null
+    /** 직전 6개월 월평균 총지출(매출 0 가정용) */
+    monthlyBurn: number
+    /** 총 현금 ÷ monthlyBurn */
+    grossRunwayMonths: number | null
   }
   trend: TrendPoint[]
   accountSnapshots: AccountSnapshot[]
@@ -500,23 +505,32 @@ export function DashboardView() {
                 <span className="text-sm text-muted-foreground">
                   런웨이
                   <span className="block text-xs">
-                    월평균 지출 {formatWon(data.kpi.monthlyBurn)} · 직전 3개월
+                    {data.kpi.cashBurn == null
+                      ? '현금 증감 비교 불가'
+                      : data.kpi.cashBurn > 0
+                        ? `월평균 현금 감소 ${formatWon(data.kpi.cashBurn)}`
+                        : `월평균 현금 증가 ${formatWon(-data.kpi.cashBurn)}`}{' '}
+                    · 직전 6개월
                   </span>
                 </span>
                 <span className="shrink-0 space-y-0.5 text-right text-xs whitespace-nowrap text-muted-foreground">
                   {(
                     [
-                      ['현금', data.kpi.cashRunwayMonths],
-                      ['순자산', data.kpi.runwayMonths],
+                      ['현금', runwayLabel(data.kpi.cashRunwayMonths, data.kpi.cashBurn)],
+                      ['순자산', runwayLabel(data.kpi.runwayMonths, data.kpi.cashBurn)],
                     ] as const
                   ).map(([label, v]) => (
                     <span key={label} className="block">
                       {label}{' '}
-                      <span className="font-mono text-sm font-semibold text-foreground">
-                        {v == null ? '—' : `${v}개월`}
-                      </span>
+                      <span className="font-mono text-sm font-semibold text-foreground">{v}</span>
                     </span>
                   ))}
+                  <span
+                    className="block"
+                    title={`월평균 총지출 ${formatWon(data.kpi.monthlyBurn)} — 수입이 끊긴다고 가정`}
+                  >
+                    매출 0 가정 {runwayLabel(data.kpi.grossRunwayMonths, null)}
+                  </span>
                 </span>
               </CardContent>
             </Card>
