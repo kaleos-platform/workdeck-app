@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { InfoHint } from '@/components/finance/info-hint'
 import { formatWon, formatWonShort, formatSignedWon } from '@/components/finance/format'
 import { cn } from '@/lib/utils'
-import type { BalanceTrendRow } from '@/lib/finance/balance-trend'
+import { runwayLabel, type BalanceTrendRow } from '@/lib/finance/balance-trend'
 
 function SignedDelta({ value }: { value: number | null }) {
   if (value == null) return null
@@ -139,7 +139,7 @@ export function BalanceTrendCard({ rows }: { rows: BalanceTrendRow[] }) {
                 <th className="py-2 text-right font-medium">
                   <span className="inline-flex items-center gap-1">
                     버틸 개월
-                    <InfoHint content="월말 현금 ÷ 최근 3개월 평균 지출. 진행 중인 달은 직전 완결 3개월 기준입니다." />
+                    <InfoHint content="월말 현금 ÷ 직전 6개월 월평균 현금 감소액(실제 잔액 변화). 현금이 늘었으면 '소진 없음'. 진행 중인 달은 직전 완결 월까지 기준입니다." />
                   </span>
                 </th>
                 <th className="py-2 text-right font-medium">
@@ -198,7 +198,7 @@ export function BalanceTrendCard({ rows }: { rows: BalanceTrendRow[] }) {
                         <SignedDelta value={r.netWorthDelta} />
                       </td>
                       <td className="py-2 text-right font-mono tabular-nums">
-                        {r.runwayMonths == null ? '—' : `${r.runwayMonths}개월`}
+                        {runwayLabel(r.runwayMonths, r.cashBurn)}
                       </td>
                       <td
                         className={cn(

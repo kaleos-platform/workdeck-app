@@ -1,8 +1,10 @@
 /** @jest-environment node */
 import {
   accountBalanceAt,
+  avgCashBurn,
   avgMonthlyBurn,
   buildBalanceTrend,
+  runwayLabel,
   runwayMonthsOf,
   type BalanceTrendInput,
 } from '../balance-trend'
@@ -31,12 +33,6 @@ const base = (over: Partial<BalanceTrendInput> = {}): BalanceTrendInput => ({
     ],
   ]),
   liabilitySnaps: [{ liabilityId: 'L', name: '대출', ym: '2026-09', balance: 500 }],
-  expenseByMonth: new Map([
-    ['2026-07', 300],
-    ['2026-08', 300],
-    ['2026-09', 300],
-    ['2026-10', 30],
-  ]),
   bankFlows: new Map([
     [
       'a',
@@ -72,7 +68,21 @@ describe('avgMonthlyBurn / runwayMonthsOf', () => {
       ['2026-08', 100],
     ])
     expect(avgMonthlyBurn(m, '2026-09')).toBe(200)
-    expect(avgMonthlyBurn(m, '2026-12')).toBe(0)
+    expect(avgMonthlyBurn(m, '2026-12')).toBe(200) // 6개월 창
+    expect(avgMonthlyBurn(m, '2027-03')).toBe(0)
+  })
+  test('avgCashBurn — 6개월 창, 데이터 시작 전으로 넘어가지 않음, 증가는 음수', () => {
+    const cash: Record<string, number> = { '2026-01': 900, '2026-03': 1000, '2026-09': 400 }
+    const cashAt = (ym: string) => cash[ym] ?? NaN
+    expect(avgCashBurn(cashAt, '2026-09', '2026-01')).toBe(100) // 03→09, 6개월
+    expect(avgCashBurn(cashAt, '2026-03', '2026-01')).toBe(-50) // 데이터 시작(01)부터 2개월
+    expect(avgCashBurn(cashAt, '2026-01', '2026-01')).toBeNull()
+    expect(avgCashBurn(cashAt, '2026-09', null)).toBeNull()
+  })
+  test('runwayLabel — 현금 증가면 소진 없음', () => {
+    expect(runwayLabel(null, -10)).toBe('소진 없음')
+    expect(runwayLabel(2.5, 100)).toBe('2.5개월')
+    expect(runwayLabel(null, null)).toBe('—')
   })
   test('음수 잔액은 0개월, 지출 0이면 null', () => {
     expect(runwayMonthsOf(-50, 100)).toBe(0)
@@ -106,7 +116,9 @@ describe('buildBalanceTrend', () => {
     expect(sep.accounts.map((a) => a.id)).toEqual(['a'])
   })
 
-  test('버틸 개월수 — 진행 중 달은 직전 완결 3개월 지출', () => {
+  test('버틸 개월수 — 실제 현금 감소 기준, 진행 중 달은 직전 완결 월까지', () => {
+    expect(aug.runwayMonths).toBeNull() // 데이터 첫 달 — 비교할 이전 달 없음
+    expect(sep.cashBurn).toBe(300) // 1300 → 1000
     expect(sep.runwayMonths).toBeCloseTo(1000 / 300, 1)
     expect(oct.inProgress).toBe(true)
     expect(oct.runwayMonths).toBeCloseTo(1600 / 300, 1)
