@@ -60,7 +60,7 @@
 4. **D4 재고가치** — row 에 `stockValue`(전사 가용 재고 × 단위원가 VAT 제외). 원가 규칙은 `sellerhub_get_product_options` 와 동일 함수 재사용.
 5. **정렬 옵션** — `sortBy: 'urgency'(기본) | 'production' | 'stockValue'` 추가(과잉 재고 부록용). 불필요하면 생략하고 에밀리가 페이지 전체를 받아 정렬 — 135 SKU 라 1~2페이지.
 
-테스트: D1 비판매 채널 제외, D2 직배송 전용 SKU 가 `PRODUCE_NOW` 로 뜨는 케이스, D3 config/default 분기, 기존 로켓 상태 회귀.
+테스트: 순수 함수(`judgeProductionStatus` — 직배송 전용 SKU PRODUCE_NOW, 재고 음수 CHECK_STOCK, SOON 경계=권장량>0). D1 채널 필터·D3 config/default 분기는 DB 쿼리 경로라 단위 테스트 대신 prod 데이터 직접 실행으로 검증(§8).
 
 ## 5. 에밀리 cron
 
@@ -108,7 +108,7 @@ job: `inventory-weekly`, `40 0 * * 1`, deliver `slack:C0A9CKY5NBG`. **비활성�
 ## 7. 미결·리스크
 
 - 생산 리드타임: 활성 상품 35개 중 33개 미설정 → 기본 20일 적용. 실제 값은 상품별 발주 설정에 입력 권장.
-- 재고 음수 SKU 30개(교육몰 DIY 키트 부품 등) — 재고 기록 없이 출고. PRODUCE_NOW 상위를 차지하므로 리포트에서 별도 묶음으로 분리.
+- 재고 음수 SKU 30개(교육몰 DIY 키트 부품 등) — 재고 기록 없이 출고. `CHECK_STOCK` 으로 분리했고 리포트엔 "재고 확인 필요" 묶음으로 표시. 주문제작 부품인지(생산 대상 아님) 여부는 사용자 확인 필요.
 - 판매량 GROSS — 반품 많은 SKU(예: 반품등급 재고 큰 머드팬티)는 수요 과대. 툴 한계로 명시만.
 - 에밀리 모델은 `gpt-5.6-terra` — 표 형식·수치 인용 정확도는 수동 1회 실행에서 확인.
 - 비판매 채널 분류가 prod 데이터에서 틀려 있으면 D1 수정만으로 해결 안 됨(데이터 정정 선행).
@@ -118,5 +118,5 @@ job: `inventory-weekly`, `40 0 * * 1`, deliver `slack:C0A9CKY5NBG`. **비활성�
 - **D1 정정**: 이동 채널(`로켓그로스 이동`·`3PL 이동`)은 주문 0건 — 이중계산 아님. 실제 비판매 수요는 `배송 송장 발급` 210·`협찬` 88·`기부` 1개/60일(prod). 채널 유형 분류는 이미 정확(데이터 정정 불필요), 타입 없는 활성 채널 0건.
 - **필터 범위 확대(사용자 결정)**: 판매채널 필터를 velocity 툴뿐 아니라 수요를 읽는 5곳 공통으로 — 발주 화면(`reorder/route.ts`)·발주 계획 생성(`reorder/plan/route.ts`)·에이전트 발주 액션(`agent/actions/seller-hub.ts`)·예측 정확도(`forecast/accuracy.ts`). 헬퍼 `loadSalesDemandChannels`(`option-demand.ts`). accuracy 포함 근거: prod `ReorderPlan` 0건이라 진행 중 계획 편향 없음.
 - **리드타임 기본 20일 공통(사용자 결정)**: `DEFAULT_PRODUCTION_LEAD_TIME_DAYS = 20`(`reorder-calculator.ts`) 하나로 발주 3곳 + 발주 설정 API 기본값 + 재고현황 등급 기본값(`stock-grade-settings.ts`, 의식주의는 저장값 없음 → 등급 이동). 로켓 이동 리드타임(7일)은 별개로 유지. 스키마 `@default(7)` 은 upsert 가 항상 값을 명시해 미사용 → 마이그레이션 없음.
-- **추가 필드**: `negativeStockSkuCount`(summary), PRODUCE_NOW 사유에 재고 음수 표시, `sortBy`·`onlyNeedsProduction`.
-- **prod 사전 검증(새 코드 직접 실행)**: 판매채널 21개, PRODUCE_NOW 29·SOON 4·OK 46·NO_SALES 55, CHK-M=PRODUCE_NOW(7.3일<20일), 재고가치 상위 선 클렌징 패드 벌크(소진 944일), 로켓 기본 모드 상태 수 변화 없음. 응답이 50KB 예산으로 ~54행에서 잘림 → 에밀리는 `nextCursor` 로 페이지 이어 받기.
+- **추가 필드**: `negativeStockSkuCount`(summary), `sortBy`·`onlyNeedsProduction`. 재고 음수 + 판매 있음 SKU 는 `CHECK_STOCK` 생산 상태로 분리 — 생산 필요 집계·`onlyNeedsProduction`·`totalSuggestedProductionQty` 에서 제외, production 정렬 후순위.
+- **prod 사전 검증(새 코드 직접 실행)**: 판매채널 21개. CHECK_STOCK 분리 전엔 PRODUCE_NOW 29 중 26이 재고 음수(교육몰 키트 부품) → 분리 후 **PRODUCE_NOW 3·SOON 4, 권장 생산 709개**(분리 전 2,501). CHK-M=PRODUCE_NOW(7.3일<20일), 재고가치 상위 선 클렌징 패드 벌크(소진 944일), 로켓 기본 모드 상태 수 변화 없음. 응답이 50KB 예산으로 ~54행에서 잘림 → 에밀리는 `nextCursor` 로 페이지 이어 받기.
