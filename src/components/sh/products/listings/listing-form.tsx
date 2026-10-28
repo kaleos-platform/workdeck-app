@@ -41,6 +41,7 @@ import {
 import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
+import { keywordLimitForChannel } from '@/lib/sh/schemas'
 import { countNamingViolations, type ListingNamingResult } from '@/lib/sh/keyword-validate'
 
 import { OptionPickerDialog, type PickedOption } from './option-picker-dialog'
@@ -164,6 +165,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   // initial 을 폴백으로 둔다 — 없으면 상한이 기본값 120 이었다가 뒤늦게 30 으로 튄다.
   const channelName = currentChannel?.name ?? initial?.channel.name ?? null
   const channelExternalSource = currentChannel?.externalSource ?? null
+  const maxKeywords = keywordLimitForChannel(channelName)
 
   // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
   // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다 — 규칙 편집 UI 를 붙일 때 여기서 연결한다.
@@ -687,7 +689,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <CardTitle className="text-lg">키워드</CardTitle>
-              <CardDescription>검색 노출을 위한 키워드. 최대 30개</CardDescription>
+              <CardDescription>검색 노출을 위한 키워드. 최대 {maxKeywords}개</CardDescription>
             </div>
             {mode === 'edit' && initial?.id && (
               <div className="flex flex-wrap gap-2">
@@ -697,6 +699,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
                   value={keywords}
                   onChange={setKeywords}
                   excludeCard={{ kind: 'listing', id: initial.id }}
+                  maxKeywords={maxKeywords}
                   disabled={saving}
                 />
                 <Button asChild variant="outline" size="sm" className="gap-1">
@@ -719,8 +722,14 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             rules={rules}
             rankBadges={rankBadges}
             adBadges={ad.adBadges}
+            maxKeywords={maxKeywords}
           />
-          <KeywordAdPanel data={ad.data} value={keywords} onChange={setKeywords} />
+          <KeywordAdPanel
+            data={ad.data}
+            value={keywords}
+            onChange={setKeywords}
+            maxKeywords={maxKeywords}
+          />
           {/* 채널 검색어 → 키워드 마스터 단방향 등록. 두 저장소는 동기화하지 않으므로
               사용자가 명시적으로 누를 때만 올라간다. */}
           <div className="flex justify-end">

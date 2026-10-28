@@ -47,6 +47,7 @@ import { computeDiscount, computeEffectiveStatus } from '@/lib/sh/listing-calc'
 import { resolveKeywordRules, withChannelDefaults } from '@/lib/sh/keyword-rules'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
+import { keywordLimitForChannel } from '@/lib/sh/schemas'
 import { normalizeHttpUrl } from '@/lib/sh/product-page-url'
 import {
   type OptionAttribute,
@@ -260,6 +261,7 @@ export function GroupDetailView({ channelProductId }: Props) {
   // 만들어 props 로 내려보낸다.
   const channelName = data?.channel.name ?? null
   const channelExternalSource = data?.channel.externalSource ?? null
+  const maxKeywords = keywordLimitForChannel(channelName)
   const rules = useMemo(
     () =>
       withChannelDefaults(
@@ -1457,7 +1459,8 @@ export function GroupDetailView({ channelProductId }: Props) {
               {readOnly && <Lock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
             </CardTitle>
             <CardDescription>
-              {data.channel.name} 상의 이 상품에 공통 적용되는 검색 키워드입니다. 최대 30개.
+              {data.channel.name} 상의 이 상품에 공통 적용되는 검색 키워드입니다. 최대 {maxKeywords}
+              개.
               {readOnly && ' 연동 채널이라 이 화면에서 수정할 수 없습니다.'}
             </CardDescription>
           </div>
@@ -1470,6 +1473,7 @@ export function GroupDetailView({ channelProductId }: Props) {
                 value={keywords}
                 onChange={handleKeywordsChange}
                 excludeCard={{ kind: 'channelProduct', id: channelProductId }}
+                maxKeywords={maxKeywords}
                 disabled={saving || mutating}
               />
             )}
@@ -1522,12 +1526,14 @@ export function GroupDetailView({ channelProductId }: Props) {
             readOnly={readOnly}
             rankBadges={rankBadges}
             adBadges={ad.adBadges}
+            maxKeywords={maxKeywords}
           />
           <KeywordAdPanel
             data={ad.data}
             value={keywords}
             onChange={handleKeywordsChange}
             readOnly={readOnly}
+            maxKeywords={maxKeywords}
           />
           {/* 채널상품 그룹은 리스팅이 여럿이라 귀속 상품을 하나로 특정할 수 없다.
               링크 없이 키워드만 마스터로 올린다(연결은 키워드 관리에서 붙인다). */}

@@ -259,7 +259,7 @@ const keywordUpdate: ActionDefinition<KeywordUpdateParams> = {
         `그룹 소속 리스팅입니다. channelProductId(${cur.channelProductId})로 제안하세요`
       )
     }
-    const r = applyKeywordOps(cur.keywords, params.add, params.remove)
+    const r = applyKeywordOps(cur.keywords, params.add, params.remove, cur.limit)
     if (!r.ok) throw new ToolUserError(r.message)
     const valid = keywordListSchema.safeParse(r.keywords)
     if (!valid.success)
@@ -296,7 +296,7 @@ const keywordUpdate: ActionDefinition<KeywordUpdateParams> = {
   execute: async (ctx, params) => {
     const cur = await readTargetKeywords(ctx.spaceId, params.target)
     if (!cur) throw new Error('대상을 찾을 수 없습니다')
-    const r = applyKeywordOps(cur.keywords, params.add, params.remove)
+    const r = applyKeywordOps(cur.keywords, params.add, params.remove, cur.limit)
     if (!r.ok) throw new Error(r.message)
     const valid = keywordListSchema.safeParse(r.keywords)
     if (!valid.success) throw new Error(valid.error.issues[0]?.message ?? '키워드 형식 오류')

@@ -28,6 +28,7 @@ import {
 import { SELLER_HUB_LISTINGS_PATH, getSellerHubNamingSopPath } from '@/lib/deck-routes'
 import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
+import { keywordLimitForChannel } from '@/lib/sh/schemas'
 import { deriveBaseValues, type OptionAttribute } from '@/lib/sh/listing-name-propagation'
 
 import { ChannelKeywordImportDialog } from './channel-keyword-import-dialog'
@@ -488,6 +489,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const currentChannel = channels.find((c) => c.id === channelId) ?? null
   const channelName = currentChannel?.name ?? null
   const channelExternalSource = currentChannel?.externalSource ?? null
+  const maxKeywords = keywordLimitForChannel(channelName)
 
   // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
   // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다 — 규칙 편집 UI 를 붙일 때 여기서 연결한다.
@@ -907,7 +909,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                 {currentChannel
                   ? `${currentChannel.name} 상의 이 상품에 공통 적용되는 검색 키워드`
                   : '채널을 선택하면 이 상품의 검색 키워드가 저장됩니다'}
-                . 최대 30개.
+                . 최대 {maxKeywords}개.
               </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -917,6 +919,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                 value={keywords}
                 onChange={setKeywords}
                 disabled={saving}
+                maxKeywords={maxKeywords}
               />
               {/* 신규 등록에는 아직 리스팅 id 가 없으므로 인자 없이 연다(연습 모드). */}
               <Button asChild variant="outline" size="sm" className="gap-1">
@@ -936,6 +939,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             productName={baseSearchName}
             optionNames={optionNames}
             rules={rules}
+            maxKeywords={maxKeywords}
           />
         </CardContent>
       </Card>

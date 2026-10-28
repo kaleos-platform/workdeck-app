@@ -48,6 +48,8 @@ type Props = {
   disabled?: boolean
   /** 편집 중인 자기 자신의 카드 — 자기 키워드를 자기에게 붙이는 일을 막으려 목록에서 뺀다. */
   excludeCard?: { kind: 'channelProduct' | 'listing'; id: string }
+  /** 현재 채널의 키워드 한도. 기본 30. */
+  maxKeywords?: number
 }
 
 export function ChannelKeywordImportDialog({
@@ -57,6 +59,7 @@ export function ChannelKeywordImportDialog({
   onChange,
   disabled,
   excludeCard,
+  maxKeywords = MAX_KEYWORDS,
 }: Props) {
   // 어떤 구성(productKey)에 대한 결과인지 함께 둔다 — 구성이 바뀌면 응답 도착 전까지 로딩으로 본다.
   const [fetched, setFetched] = useState<{ key: string; groups: ProductCards[] }>({
@@ -99,7 +102,7 @@ export function ChannelKeywordImportDialog({
   const groups = productKey && !loading ? fetched.groups : []
 
   const existing = useMemo(() => new Set(value.map(normalizeKeyword)), [value])
-  const remaining = Math.max(0, MAX_KEYWORDS - value.length)
+  const remaining = Math.max(0, maxKeywords - value.length)
   const full = picked.size >= remaining
 
   function toggle(kw: string) {

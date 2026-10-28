@@ -333,6 +333,10 @@ export const pageUrlSchema = nullableHttpUrl(2000)
 
 // 리스팅·채널상품이 함께 쓰는 등록 키워드 규칙 — 항목 trim 후 1~50자, 최대 30개.
 export const MAX_KEYWORDS = 30
+// 쿠팡 상품 검색어는 최대 20개 — 채널명에 「쿠팡」이 들어가면 쿠팡(쿠팡, 쿠팡 로켓그로스).
+export const COUPANG_MAX_KEYWORDS = 20
+export const keywordLimitForChannel = (channelName?: string | null) =>
+  channelName?.includes('쿠팡') ? COUPANG_MAX_KEYWORDS : MAX_KEYWORDS
 export const keywordListSchema = z
   .array(z.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().min(1).max(50)))
   .max(MAX_KEYWORDS)

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { toKeywordList } from '@/lib/sh/keyword-change'
 import { loadAdKeywordPerformance } from '@/lib/sh/ad-keyword-performance-query'
 import { suppressRejected } from '@/lib/sh/keyword-review'
-import { MAX_KEYWORDS } from '@/lib/sh/schemas'
+import { keywordLimitForChannel } from '@/lib/sh/schemas'
 
 export const KEYWORD_ACTION_TYPE = 'seller-hub.keywords.update'
 const DAY_MS = 86_400_000
@@ -227,7 +227,7 @@ export async function loadKeywordReview(
       target: { kind: t.kind, id: t.id, name: t.name, channel: t.channel },
       ad,
       keywordCount: t.keywordCount,
-      keywordLimit: MAX_KEYWORDS,
+      keywordLimit: keywordLimitForChannel(t.channel),
       discover: d.kept.slice(0, DISCOVER_TOP),
       prune: p.kept,
       suppressed: [...d.suppressed, ...p.suppressed],
