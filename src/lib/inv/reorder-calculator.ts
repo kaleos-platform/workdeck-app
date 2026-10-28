@@ -9,6 +9,9 @@
 //                            : null
 //   isUrgent = estimatedDepletionDays !== null && estimatedDepletionDays < 7
 
+/** 상품별 InvReorderConfig 가 없을 때 쓰는 생산 리드타임(일) — 발주·재고현황·MCP 공통. */
+export const DEFAULT_PRODUCTION_LEAD_TIME_DAYS = 20
+
 export type ReorderInput = {
   totalOutbound: number // 분석 기간 내 총 출고 수량
   windowDays: number
@@ -46,8 +49,7 @@ export function calculateReorder(input: ReorderInput): ReorderOutput {
     estimatedDepletionDays = Math.round((input.currentStock / rawDailyAvg) * 10) / 10
   }
 
-  const isUrgent =
-    estimatedDepletionDays !== null && estimatedDepletionDays < 7
+  const isUrgent = estimatedDepletionDays !== null && estimatedDepletionDays < 7
 
   return {
     dailyAvgOutbound,

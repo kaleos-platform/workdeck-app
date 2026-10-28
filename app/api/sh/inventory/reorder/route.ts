@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { calculateReorder } from '@/lib/inv/reorder-calculator'
-import { loadOptionDemand } from '@/lib/inv/option-demand'
+import {
+  calculateReorder,
+  DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS,
+} from '@/lib/inv/reorder-calculator'
+import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
 import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { formatDateToYmdKst } from '@/lib/date-range'
@@ -12,7 +15,6 @@ import { formatDateToYmdKst } from '@/lib/date-range'
 const toDateStr = formatDateToYmdKst
 
 const DEFAULT_WINDOW_DAYS = 90
-const DEFAULT_LEAD_TIME_DAYS = 7
 
 /**
  * 발주 예측 — 옵션 단위 행.
@@ -127,10 +129,7 @@ export async function GET(req: NextRequest) {
     const since = new Date(now.getTime() - maxWindowDays * 24 * 60 * 60 * 1000)
     const optionIdSet = new Set(optionIds)
 
-    const activeChannels = await prisma.channel.findMany({
-      where: { spaceId, isActive: true },
-      select: { id: true, name: true, externalSource: true },
-    })
+    const activeChannels = await loadSalesDemandChannels(spaceId)
 
     const demandRows = await loadOptionDemand(spaceId, since, now, activeChannels)
 

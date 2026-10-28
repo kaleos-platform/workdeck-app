@@ -154,7 +154,11 @@ const sellerHubGetProductMarginTool: ToolDefinition = {
 const sellerHubGetOptionSalesVelocityTool: ToolDefinition = {
   name: 'sellerhub_get_option_sales_velocity',
   description:
-    'SKU/옵션 단위 판매속도와 로켓그로스 보충·생산 판단 지표를 반환합니다. 옵션별로 기간 판매수량(salesQty, GROSS — 기간별 취소/반품 데이터가 없어 미차감이며 missingFields 로 명시)·일평균 판매속도·직전 동일 기간 대비 증감%(velocityChangePct), 재고 분해(rocketGrowthQty=로켓그로스 가용에서 반품등급 차감, returnGradeQty, thirdPartyQty=3PL, officeQty=사무실, incomingQty=입고예정), 소진예상일(daysOfCoverRocketGrowth/daysOfCoverTotal, 판매 0이면 null), 로켓그로스 이동 권장수량(suggestedReplenishQty=목표재고일수 기준, cappedReplenishQty=3PL+사무실 출고 가능 내), 생산 발주 권장수량(suggestedProductionQty=전사 재고+입고예정 기준), 상태(OUT_OF_STOCK_RISK/REPLENISH/WATCH/OK/NO_SALES + statusReason)를 포함합니다. 권장수량은 단순 이동평균 기반 추정치로 발주 플랜(예측모델)과 다를 수 있습니다 — 발주 확정은 sellerhub_create_reorder_plan 을 쓰세요. 기간은 마감일(어제, KST) 앵커이며 periodDays(기본 30)·targetCoverDays(기본 30)·leadTimeDays(기본 7)·statusThresholds(기본 7/21/30일)를 조정할 수 있습니다. channel 미지정=로켓그로스 연동 채널, "all"=전체 채널(로켓 지표는 항상 분리 제공). 정렬은 급한 순(소진예상일 오름차순), summary 에 상태별 SKU 수·권장수량 합계·보충 불가 SKU 수가 있습니다.',
+    'SKU/옵션 단위 판매속도와 로켓그로스 보충·생산 판단 지표를 반환합니다. 옵션별로 기간 판매수량(salesQty, GROSS — 기간별 취소/반품 데이터가 없어 미차감이며 missingFields 로 명시)·일평균 판매속도·직전 동일 기간 대비 증감%(velocityChangePct), 재고 분해(rocketGrowthQty=로켓그로스 가용에서 반품등급 차감, returnGradeQty, thirdPartyQty=3PL, officeQty=사무실, incomingQty=입고예정), 재고가치(stockValue=전사 가용×단위원가 VAT 제외, 원가 미입력 시 0), 소진예상일(daysOfCoverRocketGrowth/daysOfCoverTotal, 판매 0이면 null)을 포함합니다. ' +
+    '[로켓 이동 판단] suggestedReplenishQty=목표재고일수 기준 이동 권장, cappedReplenishQty=3PL+사무실 출고 가능 내, replenishmentStatus(OUT_OF_STOCK_RISK/REPLENISH/WATCH/OK/NO_SALES)+statusReason 은 로켓그로스 판매·재고만 봅니다. leadTimeDays(기본 7)는 로켓 이동 리드타임입니다. ' +
+    '[생산 판단] 선택 채널 전체 판매·전사 재고 기준입니다. productionLeadTimeDays 는 상품별 발주 설정 값이고 없으면 defaultProductionLeadTimeDays(기본 20, 발주 화면과 동일)이며 leadTimeSource(config/default)로 구분합니다. daysOfCoverWithIncoming=(전사 가용+입고예정−안전재고)/일평균, productionStatus(PRODUCE_NOW=리드타임 내 소진, PRODUCE_SOON=리드타임+목표재고일 미달, OK, NO_SALES)+productionStatusReason, suggestedProductionQty=생산 권장량. ' +
+    '권장수량은 단순 이동평균 기반 추정치로 발주 플랜(예측모델)과 다를 수 있습니다 — 발주 확정은 sellerhub_create_reorder_plan 을 쓰세요. 기간은 마감일(어제, KST) 앵커이며 periodDays(기본 30)·targetCoverDays(기본 30)·statusThresholds(기본 7/21/30일)를 조정할 수 있습니다. channel 미지정=로켓그로스 연동 채널, "all"=활성 판매채널 전체(협찬·송장 발급·재고 이동 등 비판매 채널 제외, 발주 예측과 같은 수요 정의), 채널 이름/id 지정 시 그 채널만. 생산 판단에는 channel="all" 을 쓰세요. ' +
+    'sortBy: rocket(기본, 로켓 소진 급한 순)/production(전사 소진 급한 순)/stockValue(재고가치 큰 순). onlyNeedsReplenishment·onlyNeedsProduction 으로 필터합니다. summary 에 로켓·생산 상태별 SKU 수, 권장수량 합계, 보충 불가 SKU 수, 총 재고가치, 생산 리드타임 기본값 적용 SKU 수, 재고 음수 SKU 수(negativeStockSkuCount — 재고 기록 없이 출고된 SKU, 생산 판단 전 확인 필요)가 있습니다.',
   inputSchema: {
     periodDays: z.number().optional(),
     productIds: z.array(z.string()).optional(),
@@ -163,6 +167,7 @@ const sellerHubGetOptionSalesVelocityTool: ToolDefinition = {
     channel: z.string().optional(),
     targetCoverDays: z.number().optional(),
     leadTimeDays: z.number().optional(),
+    defaultProductionLeadTimeDays: z.number().optional(),
     statusThresholds: z
       .object({
         outOfStockRiskDays: z.number().optional(),
@@ -171,6 +176,8 @@ const sellerHubGetOptionSalesVelocityTool: ToolDefinition = {
       })
       .optional(),
     onlyNeedsReplenishment: z.boolean().optional(),
+    onlyNeedsProduction: z.boolean().optional(),
+    sortBy: z.enum(['rocket', 'production', 'stockValue']).optional(),
     includeInactive: z.boolean().optional(),
     page: z.number().optional(),
     pageSize: z.number().optional(),
@@ -188,10 +195,13 @@ const sellerHubGetOptionSalesVelocityTool: ToolDefinition = {
       channel: params.channel as string | undefined,
       targetCoverDays: params.targetCoverDays as number | undefined,
       leadTimeDays: params.leadTimeDays as number | undefined,
+      defaultProductionLeadTimeDays: params.defaultProductionLeadTimeDays as number | undefined,
       statusThresholds: params.statusThresholds as
         | { outOfStockRiskDays?: number; replenishDays?: number; watchDays?: number }
         | undefined,
       onlyNeedsReplenishment: params.onlyNeedsReplenishment as boolean | undefined,
+      onlyNeedsProduction: params.onlyNeedsProduction as boolean | undefined,
+      sortBy: params.sortBy as 'rocket' | 'production' | 'stockValue' | undefined,
       includeInactive: params.includeInactive as boolean | undefined,
       page: params.page as number | undefined,
       pageSize: params.pageSize as number | undefined,

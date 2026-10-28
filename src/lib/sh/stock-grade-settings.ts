@@ -4,6 +4,8 @@
  * 발주 계획·MCP 의 계산에는 반영되지 않는다(문구로도 명시한다).
  */
 
+import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
+
 /** 일평균 출고를 구할 때 우선 볼 기간. 해당 기간 출고가 0이면 더 긴 기간으로 폴백한다. */
 export type StockAvgWindow = 'auto' | 30 | 90
 
@@ -22,7 +24,7 @@ export type StockGradeSettings = {
 export const DEFAULT_STOCK_GRADE_SETTINGS: StockGradeSettings = {
   riskMultiplier: 1,
   reorderMultiplier: 2,
-  defaultLeadTimeDays: 7,
+  defaultLeadTimeDays: DEFAULT_PRODUCTION_LEAD_TIME_DAYS,
   avgWindow: 'auto',
   applySafetyStock: false,
 }

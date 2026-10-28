@@ -1,5 +1,6 @@
 import {
   DEFAULT_STATUS_THRESHOLDS,
+  judgeProductionStatus,
   judgeReplenishmentStatus,
   suggestProductionQty,
   suggestReplenishQty,
@@ -111,5 +112,81 @@ describe('judgeReplenishmentStatus', () => {
         thresholds: { outOfStockRiskDays: 14, replenishDays: 28, watchDays: 45 },
       }).status
     ).toBe('OUT_OF_STOCK_RISK')
+  })
+})
+
+describe('judgeProductionStatus', () => {
+  const base = {
+    totalAvailableQty: 0,
+    incomingQty: 0,
+    safetyStockQty: 0,
+    productionLeadTimeDays: 20,
+    targetCoverDays: 30,
+    suggestedProductionQty: 0,
+  }
+
+  it('판매 0 → NO_SALES, 소진일 null', () => {
+    const r = judgeProductionStatus({ ...base, totalDailyVelocityRaw: 0, totalAvailableQty: 100 })
+    expect(r.status).toBe('NO_SALES')
+    expect(r.daysOfCoverWithIncoming).toBeNull()
+  })
+
+  it('로켓 판매가 없어도 전사 소진일 < 생산 리드타임이면 PRODUCE_NOW (직배송 전용 SKU)', () => {
+    // CHK-M 실측 형태: 30일 76개(2.53/일), 재고 16 → 6.3일 < 20일
+    const r = judgeProductionStatus({
+      ...base,
+      totalDailyVelocityRaw: 76 / 30,
+      totalAvailableQty: 16,
+      suggestedProductionQty: 111,
+    })
+    expect(r.status).toBe('PRODUCE_NOW')
+    expect(r.daysOfCoverWithIncoming).toBe(6.3)
+  })
+
+  it('재고 음수면 사유에 재고 기록 확인을 붙인다', () => {
+    const r = judgeProductionStatus({ ...base, totalDailyVelocityRaw: 3, totalAvailableQty: -96 })
+    expect(r.status).toBe('PRODUCE_NOW')
+    expect(r.reason).toContain('재고 음수 -96')
+  })
+
+  it('입고예정·안전재고를 소진일에 반영한다', () => {
+    // (10 + 50 − 10) / 2 = 25일 ≥ 20 → NOW 아님, 권장량>0 이면 SOON
+    const r = judgeProductionStatus({
+      ...base,
+      totalDailyVelocityRaw: 2,
+      totalAvailableQty: 10,
+      incomingQty: 50,
+      safetyStockQty: 10,
+      suggestedProductionQty: 60,
+    })
+    expect(r.status).toBe('PRODUCE_SOON')
+    expect(r.daysOfCoverWithIncoming).toBe(25)
+  })
+
+  it('권장 생산량 0 이면 OK', () => {
+    expect(
+      judgeProductionStatus({ ...base, totalDailyVelocityRaw: 1, totalAvailableQty: 100 }).status
+    ).toBe('OK')
+  })
+
+  it('PRODUCE_SOON 은 suggestProductionQty>0 과 같은 경계를 쓴다', () => {
+    const input = {
+      totalDailyVelocityRaw: 2,
+      targetCoverDays: 30,
+      leadTimeDays: 20,
+      safetyStockQty: 0,
+      totalAvailableQty: 90,
+      incomingQty: 0,
+    }
+    const qty = suggestProductionQty(input) // 2×50 − 90 = 10
+    expect(qty).toBe(10)
+    expect(
+      judgeProductionStatus({
+        ...base,
+        totalDailyVelocityRaw: 2,
+        totalAvailableQty: 90,
+        suggestedProductionQty: qty,
+      }).status
+    ).toBe('PRODUCE_SOON')
   })
 })

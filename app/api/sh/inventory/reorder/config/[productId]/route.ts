@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
 
 const DEFAULTS = {
-  leadTimeDays: 7,
+  leadTimeDays: DEFAULT_PRODUCTION_LEAD_TIME_DAYS,
   analysisWindowDays: 90,
 }
 

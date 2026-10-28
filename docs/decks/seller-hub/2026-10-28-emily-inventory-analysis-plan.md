@@ -2,7 +2,7 @@
 
 - 작성: 2026-10-28
 - 대상: 의식주의 Space, 에밀리(Hermes, `/Users/kaleos/aml`) + workdeck MCP `sellerhub_get_option_sales_velocity`
-- 상태: 계획 확정(grill 세션), 구현 전
+- 상태: 계획 확정(grill 세션) → §4 구현 완료(2026-10-29, 아래 §8 변경 이력)
 
 ## 1. 목표
 
@@ -39,7 +39,7 @@
 | Q2 | 실행 에이전트 | 정기 실행 + Slack 대화형 둘 다, **에밀리**가 담당 |
 | Q3 | 정기 실행 주체 | 에밀리 cron 하나로 통일(Claude 루틴 별도 없음) |
 | Q4 | 툴 결함 처리 | 툴 수정 후 cron 투입 |
-| Q5 | 생산 리드타임 출처 | 상품별 `InvReorderConfig.leadTimeDays`, 미설정 시 기본 **30일**(가정, 조정 가능) + `leadTimeSource` 표시 |
+| Q5 | 생산 리드타임 출처 | 상품별 `InvReorderConfig.leadTimeDays`, 미설정 시 기본 **20일 — 발주 화면·발주 계획·에이전트 발주·재고현황 등급과 공통**(§8) + `leadTimeSource` 표시 |
 | Q6 | 에밀리 행동 범위 | 리포트만. 발주 계획은 스레드에서 사람이 요청할 때만 `sellerhub_create_reorder_plan`. 2~3주 운영 후 자동 제안 재검토 |
 | Q7 | 주기·채널 | 주 1회 월 09:40 KST(cron `40 0 * * 1` UTC), Slack `C0A9CKY5NBG` |
 | Q8 | 리포트 구성 | §5 형식. 과잉 기준 = 전사 소진 180일↑ 또는 판매 0 + 재고 보유 |
@@ -107,7 +107,16 @@ job: `inventory-weekly`, `40 0 * * 1`, deliver `slack:C0A9CKY5NBG`. **비활성�
 
 ## 7. 미결·리스크
 
-- 생산 리드타임 기본 30일은 가정. 주력 상품 실제 리드타임 확인 후 `InvReorderConfig` 입력 권장.
+- 생산 리드타임: 활성 상품 35개 중 33개 미설정 → 기본 20일 적용. 실제 값은 상품별 발주 설정에 입력 권장.
+- 재고 음수 SKU 30개(교육몰 DIY 키트 부품 등) — 재고 기록 없이 출고. PRODUCE_NOW 상위를 차지하므로 리포트에서 별도 묶음으로 분리.
 - 판매량 GROSS — 반품 많은 SKU(예: 반품등급 재고 큰 머드팬티)는 수요 과대. 툴 한계로 명시만.
 - 에밀리 모델은 `gpt-5.6-terra` — 표 형식·수치 인용 정확도는 수동 1회 실행에서 확인.
 - 비판매 채널 분류가 prod 데이터에서 틀려 있으면 D1 수정만으로 해결 안 됨(데이터 정정 선행).
+
+## 8. 변경 이력 (구현 중 확정, 2026-10-29)
+
+- **D1 정정**: 이동 채널(`로켓그로스 이동`·`3PL 이동`)은 주문 0건 — 이중계산 아님. 실제 비판매 수요는 `배송 송장 발급` 210·`협찬` 88·`기부` 1개/60일(prod). 채널 유형 분류는 이미 정확(데이터 정정 불필요), 타입 없는 활성 채널 0건.
+- **필터 범위 확대(사용자 결정)**: 판매채널 필터를 velocity 툴뿐 아니라 수요를 읽는 5곳 공통으로 — 발주 화면(`reorder/route.ts`)·발주 계획 생성(`reorder/plan/route.ts`)·에이전트 발주 액션(`agent/actions/seller-hub.ts`)·예측 정확도(`forecast/accuracy.ts`). 헬퍼 `loadSalesDemandChannels`(`option-demand.ts`). accuracy 포함 근거: prod `ReorderPlan` 0건이라 진행 중 계획 편향 없음.
+- **리드타임 기본 20일 공통(사용자 결정)**: `DEFAULT_PRODUCTION_LEAD_TIME_DAYS = 20`(`reorder-calculator.ts`) 하나로 발주 3곳 + 발주 설정 API 기본값 + 재고현황 등급 기본값(`stock-grade-settings.ts`, 의식주의는 저장값 없음 → 등급 이동). 로켓 이동 리드타임(7일)은 별개로 유지. 스키마 `@default(7)` 은 upsert 가 항상 값을 명시해 미사용 → 마이그레이션 없음.
+- **추가 필드**: `negativeStockSkuCount`(summary), PRODUCE_NOW 사유에 재고 음수 표시, `sortBy`·`onlyNeedsProduction`.
+- **prod 사전 검증(새 코드 직접 실행)**: 판매채널 21개, PRODUCE_NOW 29·SOON 4·OK 46·NO_SALES 55, CHK-M=PRODUCE_NOW(7.3일<20일), 재고가치 상위 선 클렌징 패드 벌크(소진 944일), 로켓 기본 모드 상태 수 변화 없음. 응답이 50KB 예산으로 ~54행에서 잘림 → 에밀리는 `nextCursor` 로 페이지 이어 받기.
