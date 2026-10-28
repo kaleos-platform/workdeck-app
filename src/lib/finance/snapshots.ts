@@ -93,3 +93,16 @@ export function deriveMonthEndSnapshots<B>(
   }
   return out
 }
+
+/**
+ * 첫 거래 직전 잔액 — 첫 스냅샷 이전 달의 잔액. txns 는 계좌의 가장 이른 시각 거래들(동률 포함).
+ * FinAccount.openingBalance 는 "첫 거래 직전"이 보장되지 않아(prod 새활용: 4월 개설인데 1,315만) 대신 쓴다.
+ * balanceAfter 가 없으면 null(호출부가 openingBalance 로 폴백).
+ */
+export function balanceBeforeFirst(txns: ChainTxn<unknown>[]): number | null {
+  const first = sortByBalanceChain(txns)[0]
+  if (!first || first.balanceAfter == null || first.direction == null || first.amount == null)
+    return null
+  const sign = first.direction === 'IN' ? 1 : -1
+  return (cents(first.balanceAfter) - sign * cents(first.amount)) / 100
+}

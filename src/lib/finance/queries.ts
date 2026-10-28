@@ -36,6 +36,7 @@ import {
   buildBalanceTrend,
   runwayMonthsOf,
 } from '@/lib/finance/balance-trend'
+import { balanceBeforeFirst } from '@/lib/finance/snapshots'
 import { computePnlMetrics, type PnlTxnFact } from '@/lib/finance/pnl-metrics'
 import { cashSection, fixedSectionOf, type CashSection } from '@/lib/finance/contra'
 import type { Prisma } from '@/generated/prisma/client'
@@ -626,6 +627,39 @@ export interface QueryDashboardOptions {
   includeExcluded?: boolean
 }
 
+/**
+ * 계좌별 첫 거래 직전 잔액 — 첫 스냅샷 이전 달의 현금. openingBalance 는 임의 시점 값일 수 있어
+ * 런웨이 창 시작 잔액이 부풀려진다(prod 새활용 1,315만). 거래후잔액 없는 계좌는 맵에 없음 → openingBalance 폴백.
+ */
+async function loadOpeningBalances(spaceId: string): Promise<Map<string, number>> {
+  const firsts = await prisma.$queryRaw<
+    {
+      accountId: string
+      txnDate: Date
+      direction: 'IN' | 'OUT'
+      amount: unknown
+      balanceAfter: unknown
+    }[]
+  >`
+    SELECT t."accountId", t."txnDate", t.direction, t.amount, t."balanceAfter"
+    FROM "FinTransaction" t
+    JOIN (
+      SELECT "accountId", min("txnDate") AS d FROM "FinTransaction"
+      WHERE "spaceId" = ${spaceId} AND "balanceAfter" IS NOT NULL
+      GROUP BY 1
+    ) f ON f."accountId" = t."accountId" AND f.d = t."txnDate"
+    WHERE t."spaceId" = ${spaceId} AND t."balanceAfter" IS NOT NULL
+  `
+  const byAccount = new Map<string, typeof firsts>()
+  for (const t of firsts) byAccount.set(t.accountId, [...(byAccount.get(t.accountId) ?? []), t])
+  const out = new Map<string, number>()
+  for (const [id, txns] of byAccount) {
+    const b = balanceBeforeFirst(txns)
+    if (b != null) out.set(id, b)
+  }
+  return out
+}
+
 export async function queryDashboard(spaceId: string, opts: QueryDashboardOptions) {
   const period = opts.period
   const now = new Date()
@@ -683,7 +717,7 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
   // ── 데이터 로드 ──
   // 현재 기간에서 빠진 분석 제외 건수(이체 제외) — 잔액 변동과 수입−지출 불일치 안내용.
   const curRange = rangeBounds(curMonths[0], curEndYm)
-  const [txns, accounts, snapshots, liabilities, repaymentTxns, contra, excludedCount] =
+  const [txns, accounts, snapshots, liabilities, repaymentTxns, contra, excludedCount, opening] =
     await Promise.all([
       prisma.finTransaction.findMany({
         where: {
@@ -752,6 +786,7 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
               txnDate: { gte: curRange.gte, lt: curRange.lt },
             },
           }),
+      loadOpeningBalances(spaceId),
     ])
 
   const rows: AggRow[] = txns.map((t) => ({
@@ -792,12 +827,17 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
   }
 
   const bankAccounts = accounts.filter((a) => a.kind === 'BANK')
-  // 해당 월까지 스냅샷이 없으면(거래 없음/계좌 신규) openingBalance를 잔액으로 사용.
+  // 해당 월까지 스냅샷이 없으면(거래 없음/계좌 신규) 첫 거래 직전 잔액, 거래도 없으면 openingBalance.
   const cashAt = (ym: string) =>
     round2(
       bankAccounts.reduce(
         (acc, a) =>
-          acc + accountBalanceAt(snapByAccount.get(a.id), ym, toNumOrNull(a.openingBalance)),
+          acc +
+          accountBalanceAt(
+            snapByAccount.get(a.id),
+            ym,
+            opening.get(a.id) ?? toNumOrNull(a.openingBalance)
+          ),
         0
       )
     )
@@ -946,7 +986,7 @@ export type BalanceTrendRange = 6 | 12 | 'all'
 /** 월말 현금·부채·순자산 추이 — 이번 달(진행 중)까지. 'all'은 첫 스냅샷 달부터. */
 export async function queryBalanceTrend(spaceId: string, range: BalanceTrendRange) {
   const nowYm = nowYmKst()
-  const [accounts, snapshots, liabilitySnaps] = await Promise.all([
+  const [accounts, snapshots, liabilitySnaps, opening] = await Promise.all([
     prisma.finAccount.findMany({
       where: { spaceId, kind: 'BANK' },
       select: { id: true, name: true, status: true, openingBalance: true },
@@ -962,6 +1002,7 @@ export async function queryBalanceTrend(spaceId: string, range: BalanceTrendRang
       select: { liabilityId: true, name: true, yearMonth: true, balance: true },
       orderBy: { yearMonth: 'asc' },
     }),
+    loadOpeningBalances(spaceId),
   ])
 
   const firstYm =
@@ -1004,7 +1045,7 @@ export async function queryBalanceTrend(spaceId: string, range: BalanceTrendRang
         id: a.id,
         name: a.name,
         status: a.status,
-        openingBalance: toNumOrNull(a.openingBalance),
+        openingBalance: opening.get(a.id) ?? toNumOrNull(a.openingBalance),
       })),
       accountSnaps,
       liabilitySnaps: liabilitySnaps.map((s) => ({

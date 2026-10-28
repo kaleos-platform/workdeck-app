@@ -1,5 +1,10 @@
 /** @jest-environment node */
-import { deriveMonthEndSnapshots, sortByBalanceChain, yearMonth } from '../snapshots'
+import {
+  balanceBeforeFirst,
+  deriveMonthEndSnapshots,
+  sortByBalanceChain,
+  yearMonth,
+} from '../snapshots'
 
 /**
  * txnDate는 "KST 벽시계 자릿수를 UTC로 저장"하는 규약이라 Prisma가 돌려주는 값은 항상
@@ -121,5 +126,35 @@ describe('sortByBalanceChain — 같은 시각 거래는 잔액 체인 순서', 
       t('2026-05-02T00:00:00', 'OUT', 7, 888),
     ])
     expect(ordered.map((x) => x.balanceAfter)).toEqual([100, 999, 888])
+  })
+})
+
+describe('balanceBeforeFirst — 첫 거래 직전 잔액', () => {
+  const at = '2026-04-09T16:41:00'
+  test('같은 초 입금→출금이 뒤집혀 와도 체인 시작 거래 기준 (통과성 입출금)', () => {
+    expect(
+      balanceBeforeFirst([
+        { txnDate: d(at), direction: 'OUT', amount: 1500, balanceAfter: 0 },
+        { txnDate: d(at), direction: 'IN', amount: 500, balanceAfter: 1500 },
+      ])
+    ).toBe(1000)
+  })
+  test('prod 새활용 — 4월 첫 입금 잔액 = 입금액 → 개설 전 0', () => {
+    expect(
+      balanceBeforeFirst([
+        { txnDate: d(at), direction: 'IN', amount: 249850, balanceAfter: 249850 },
+      ])
+    ).toBe(0)
+  })
+  test('출금이면 거래후잔액 + 금액, 소수 금액 보존', () => {
+    expect(
+      balanceBeforeFirst([{ txnDate: d(at), direction: 'OUT', amount: 0.5, balanceAfter: 99.25 }])
+    ).toBe(99.75)
+  })
+  test('거래 없음·거래후잔액 없음 → null', () => {
+    expect(balanceBeforeFirst([])).toBeNull()
+    expect(
+      balanceBeforeFirst([{ txnDate: d(at), direction: 'IN', amount: 1, balanceAfter: null }])
+    ).toBeNull()
   })
 })
