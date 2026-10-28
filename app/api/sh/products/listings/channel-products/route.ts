@@ -10,7 +10,7 @@ import {
   computeListingAvailableStock,
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
-import { keywordListSchema, pageUrlSchema } from '@/lib/sh/schemas'
+import { keywordLimitForChannel, keywordListSchema, pageUrlSchema } from '@/lib/sh/schemas'
 
 /**
  * 채널상품 목록 (GET) + 신규 채널상품 생성 (POST).
@@ -310,11 +310,17 @@ export async function POST(req: NextRequest) {
   // channel 소속 + 판매채널 검증
   const channel = await prisma.channel.findFirst({
     where: { id: channelId, spaceId: resolved.space.id },
-    select: { id: true, channelTypeDef: { select: { isSalesChannel: true } } },
+    select: { id: true, name: true, channelTypeDef: { select: { isSalesChannel: true } } },
   })
   if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
   if (channel.channelTypeDef?.isSalesChannel !== true) {
     return errorResponse('판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다', 400)
+  }
+  if (cpFields.keywords.length > keywordLimitForChannel(channel.name)) {
+    return errorResponse(
+      `${channel.name} 검색어는 최대 ${keywordLimitForChannel(channel.name)}개입니다`,
+      422
+    )
   }
 
   // 모든 listing의 optionId 수집 → 한 번에 소속·ACTIVE 검증

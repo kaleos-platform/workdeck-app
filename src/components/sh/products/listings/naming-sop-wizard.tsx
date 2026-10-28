@@ -19,6 +19,7 @@ import {
   rulesForNameField,
   type KeywordRuleSet,
 } from '@/lib/sh/keyword-rules'
+import { keywordLimitForChannel } from '@/lib/sh/schemas'
 import type { KeywordTypeKey } from '@/lib/sh/keyword-score'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { cn } from '@/lib/utils'
@@ -583,6 +584,7 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
               optionNames={optionNames}
               rules={rules}
               typeOf={typeOf}
+              maxKeywords={keywordLimitForChannel(listing?.channelName)}
             />
           )}
         </CardContent>

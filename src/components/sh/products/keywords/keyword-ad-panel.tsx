@@ -13,17 +13,19 @@ export function KeywordAdPanel({
   value,
   onChange,
   readOnly = false,
+  maxKeywords = MAX_KEYWORDS,
 }: {
   data: AdPerformanceData | null
   value: string[]
   onChange: (next: string[]) => void
   readOnly?: boolean
+  maxKeywords?: number
 }) {
   // 쿠팡 외 채널·광고 미연결 상품이 대부분이라 연결 없음은 표시하지 않는다.
   if (!data?.attributed) return null
   const have = new Set(value.map(despaceKeyword))
   const discover = data.discover.filter((d) => !have.has(d.word))
-  const atMax = value.length >= MAX_KEYWORDS
+  const atMax = value.length >= maxKeywords
 
   return (
     <div className="mt-3 space-y-2 rounded-md border bg-muted/30 p-3 text-xs">

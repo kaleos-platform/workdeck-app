@@ -3,7 +3,7 @@ import { Prisma } from '@/generated/prisma/client'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { productListingSchema } from '@/lib/sh/schemas'
+import { keywordLimitForChannel, productListingSchema } from '@/lib/sh/schemas'
 import {
   computeDiscount,
   computeEffectiveStatus,
@@ -252,12 +252,16 @@ export async function POST(req: NextRequest) {
     select: {
       id: true,
       channelId: true,
-      channel: { select: { channelTypeDef: { select: { isSalesChannel: true } } } },
+      channel: { select: { name: true, channelTypeDef: { select: { isSalesChannel: true } } } },
     },
   })
   if (!channelProduct) return errorResponse('채널상품을 찾을 수 없습니다', 404)
   if (channelProduct.channel.channelTypeDef?.isSalesChannel !== true) {
     return errorResponse(SALES_CHANNEL_ONLY_MESSAGE, 400)
+  }
+  const kwLimit = keywordLimitForChannel(channelProduct.channel.name)
+  if (input.keywords && input.keywords.length > kwLimit) {
+    return errorResponse(`${channelProduct.channel.name} 검색어는 최대 ${kwLimit}개입니다`, 422)
   }
 
   // 옵션 소속 검증 (같은 Space의 상품 옵션이어야 함)

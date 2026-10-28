@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { productListingPatchSchema } from '@/lib/sh/schemas'
+import { keywordLimitForChannel, productListingPatchSchema } from '@/lib/sh/schemas'
 import {
   computeDiscount,
   computeEffectiveStatus,
@@ -170,7 +170,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         select: { option: { select: { productId: true } } },
       },
       channel: {
-        select: { externalSource: true, channelTypeDef: { select: { isSalesChannel: true } } },
+        select: {
+          name: true,
+          externalSource: true,
+          channelTypeDef: { select: { isSalesChannel: true } },
+        },
       },
     },
   })
@@ -186,6 +190,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
   const input = parsed.data
+  const kwLimit = keywordLimitForChannel(existing.channel.name)
+  if (input.keywords && input.keywords.length > kwLimit) {
+    return errorResponse(`${existing.channel.name} 검색어는 최대 ${kwLimit}개입니다`, 422)
+  }
 
   // 채널 자체 배송(연동) 채널은 채널 재고를 수동 수정할 수 없다 (연동 데이터로 자동 처리).
   if (input.channelStock !== undefined && existing.channel.externalSource != null) {

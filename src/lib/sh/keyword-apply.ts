@@ -4,6 +4,7 @@
 import { prisma } from '@/lib/prisma'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
 import { absorbKeywords } from '@/lib/sh/keyword-absorb'
+import { keywordLimitForChannel } from '@/lib/sh/schemas'
 
 export type KeywordTarget = { channelProductId?: string; listingId?: string }
 
@@ -14,6 +15,7 @@ export async function readTargetKeywords(spaceId: string, target: KeywordTarget)
       select: {
         baseSearchName: true,
         keywords: true,
+        channel: { select: { name: true } },
         listings: {
           select: {
             items: {
@@ -29,6 +31,7 @@ export async function readTargetKeywords(spaceId: string, target: KeywordTarget)
     return {
       name: cp.baseSearchName,
       keywords: toKeywordList(cp.keywords),
+      limit: keywordLimitForChannel(cp.channel.name),
       productId: ids.size === 1 ? [...ids][0] : null,
     }
   }
@@ -39,6 +42,7 @@ export async function readTargetKeywords(spaceId: string, target: KeywordTarget)
         searchName: true,
         keywords: true,
         channelProductId: true,
+        channel: { select: { name: true } },
         items: {
           where: { option: { deletedAt: null } },
           select: { option: { select: { productId: true } } },
@@ -50,6 +54,7 @@ export async function readTargetKeywords(spaceId: string, target: KeywordTarget)
     return {
       name: l.searchName,
       keywords: toKeywordList(l.keywords),
+      limit: keywordLimitForChannel(l.channel.name),
       productId: ids.size === 1 ? [...ids][0] : null,
       channelProductId: l.channelProductId,
     }
