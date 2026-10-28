@@ -166,3 +166,14 @@ export async function loadOptionDemand(
     (a, b) => a.date.localeCompare(b.date) || b.quantity - a.quantity
   )
 }
+
+/**
+ * 수요 집계 대상 채널 — 활성 + 판매채널 유형(isSalesChannel)만.
+ * 협찬·송장 발급·재고 이동 같은 비판매 채널 출고는 수요가 아니다.
+ */
+export async function loadSalesDemandChannels(spaceId: string): Promise<DemandChannel[]> {
+  return prisma.channel.findMany({
+    where: { spaceId, isActive: true, channelTypeDef: { isSalesChannel: true } },
+    select: { id: true, name: true, externalSource: true },
+  })
+}

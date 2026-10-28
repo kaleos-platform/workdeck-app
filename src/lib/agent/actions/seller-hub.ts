@@ -6,7 +6,8 @@ import { forecastOption, buildDailySeries } from '@/lib/inv/forecast'
 import { computeBiasAdjust } from '@/lib/inv/forecast/bias-adjust'
 import { roundUp } from '@/lib/inv/round'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
-import { loadOptionDemand } from '@/lib/inv/option-demand'
+import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
+import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
 import { readTargetKeywords, applyKeywordsToTarget } from '@/lib/sh/keyword-apply'
 import { applyKeywordOps } from '@/lib/sh/keyword-review'
 import { lastChangeAt, isMeasuring, MEASURE_DAYS } from '@/lib/sh/keyword-review-query'
@@ -19,7 +20,6 @@ function def<T>(d: ActionDefinition<T>): ActionDefinition {
 }
 
 const DEFAULT_WINDOW_DAYS = 90
-const DEFAULT_LEAD_TIME_DAYS = 7
 
 // ─── 3) seller-hub.reorder.plan.create (최소 구현) ──────────────────────────
 // ⚠️ 원본 app/api/sh/inventory/reorder/plan/route.ts POST는 730줄 인라인 모놀리스로
@@ -115,10 +115,7 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
     const since = new Date(
       now.getTime() - Math.max(DEFAULT_WINDOW_DAYS, windowDays) * 24 * 60 * 60 * 1000
     )
-    const activeChannels = await prisma.channel.findMany({
-      where: { spaceId, isActive: true },
-      select: { id: true, name: true, externalSource: true },
-    })
+    const activeChannels = await loadSalesDemandChannels(spaceId)
     const demandRows = await loadOptionDemand(spaceId, since, now, activeChannels)
     const dailyByOption = new Map<string, Record<string, number>>()
     for (const id of optionIds) dailyByOption.set(id, {})

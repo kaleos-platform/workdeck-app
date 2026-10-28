@@ -22,7 +22,7 @@
 //   (기준: 안전재고 + 1 리드타임 분 수요량 초과 시 과잉재고)
 
 import { prisma } from '@/lib/prisma'
-import { loadOptionDemand } from '@/lib/inv/option-demand'
+import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
 
 export type AccuracyInput = {
   spaceId: string // 주문수요 baseline 로드용 (loadOptionDemand)
@@ -62,10 +62,7 @@ export async function computeAccuracy(input: AccuracyInput): Promise<AccuracyRes
 
   // ── baseline 1) 주문수요 (WAPE/bias 용) ──────────────────────────────────────
   // 예측 입력(reorder plan)과 동일한 loadOptionDemand → forecast 와 같은 척도.
-  const activeChannels = await prisma.channel.findMany({
-    where: { spaceId, isActive: true },
-    select: { id: true, name: true, externalSource: true },
-  })
+  const activeChannels = await loadSalesDemandChannels(spaceId)
   const demandRows = await loadOptionDemand(spaceId, periodStart, periodEnd, activeChannels)
   const dailyDemandMap = new Map<string, number>()
   for (const row of demandRows) {

@@ -18,14 +18,14 @@ import { roundUp } from '@/lib/inv/round'
 import { mapWithConcurrency } from '@/lib/concurrency'
 import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
-import { loadOptionDemand } from '@/lib/inv/option-demand'
+import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
+import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
 import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { computeSetAvailable, computeLayeredRoundedSplit } from '@/lib/sh/set-plan-calc'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 
 const DEFAULT_WINDOW_DAYS = 90
-const DEFAULT_LEAD_TIME_DAYS = 7
 
 // planNo 생성은 @/lib/inv/reorder-seq 의 generatePlanNo 공유 (revert/generate-run 과 동일)
 
@@ -440,10 +440,7 @@ export async function POST(req: NextRequest) {
   const since = new Date(now.getTime() - maxWindowDays * 24 * 60 * 60 * 1000)
   const optionIdSet = new Set(optionIds)
 
-  const activeChannels = await prisma.channel.findMany({
-    where: { spaceId, isActive: true },
-    select: { id: true, name: true, externalSource: true },
-  })
+  const activeChannels = await loadSalesDemandChannels(spaceId)
 
   const demandRows = await loadOptionDemand(spaceId, since, now, activeChannels)
 
