@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTooltipWheelScroll } from '@/hooks/use-tooltip-wheel-scroll'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
@@ -78,13 +79,16 @@ function ChannelTooltip({
     (acc, r) => ({ revenue: acc.revenue + r.revenue, orderCount: acc.orderCount + r.orderCount }),
     { revenue: 0, orderCount: 0 }
   )
-  const visibleRows = rows.filter((r) =>
-    metric === '매출'
-      ? r.revenue !== 0
-      : metric === '주문'
-        ? r.orderCount !== 0
-        : r.revenue !== 0 || r.orderCount !== 0
-  )
+  const visibleRows = rows
+    .filter((r) =>
+      metric === '매출'
+        ? r.revenue !== 0
+        : metric === '주문'
+          ? r.orderCount !== 0
+          : r.revenue !== 0 || r.orderCount !== 0
+    )
+    // 큰 값부터 — 주문 모드는 주문건수, 그 외는 매출 기준
+    .sort((a, b) => (metric === '주문' ? b.orderCount - a.orderCount : b.revenue - a.revenue))
 
   const valueText = (v: { revenue: number; orderCount: number }) =>
     showRev && showOrd
@@ -97,7 +101,7 @@ function ChannelTooltip({
     <div className="min-w-[180px] space-y-1 rounded-md border bg-popover px-3 py-2 text-xs shadow-md">
       <p className="font-medium text-muted-foreground">{label}</p>
       {/* 채널 행만 스크롤 — 합계는 항상 보이도록 스크롤 영역 밖에 둔다 */}
-      <div className="max-h-[168px] space-y-0.5 overflow-y-auto tabular-nums">
+      <div className="max-h-[168px] space-y-0.5 overflow-y-auto tabular-nums" data-tooltip-scroll>
         {visibleRows.map((r) => (
           <p key={r.dc.id} className="flex justify-between gap-3">
             <span className="flex items-center gap-1.5">
@@ -128,6 +132,7 @@ export function ChannelRevenueStackedChart({
   loading,
 }: Props) {
   const [metric, setMetric] = useState<Metric>('매출')
+  const tooltipWheelRef = useTooltipWheelScroll()
 
   // 정렬·색상 — 유형 통과 전체 채널 기준 (체크박스 표시용)
   const displayChannels = useMemo(
@@ -217,54 +222,56 @@ export function ChannelRevenueStackedChart({
               : '해당 기간에 매출 데이터가 없습니다'}
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={320}>
-            <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-              {/* 좌축: 매출 */}
-              <YAxis
-                yAxisId="left"
-                tick={{ fontSize: 11 }}
-                tickFormatter={(v) =>
-                  v >= 1000000
-                    ? `${(v / 1000000).toFixed(1)}M`
-                    : v >= 1000
-                      ? `${(v / 1000).toFixed(0)}K`
-                      : String(v)
-                }
-              />
-              {/* 우축: 주문건수 */}
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                tick={{ fontSize: 11 }}
-                tickFormatter={(v) => v.toLocaleString('ko-KR')}
-              />
-              <Tooltip
-                allowEscapeViewBox={{ x: false, y: false }}
-                wrapperStyle={{ zIndex: 50 }}
-                content={
-                  (<ChannelTooltip visibleChannels={visibleChannels} metric={metric} />) as never
-                }
-              />
-              {showBars &&
-                visibleChannels.map((dc) => (
-                  <Bar key={dc.id} yAxisId="left" dataKey={dc.id} stackId="rev" fill={dc.color} />
-                ))}
-              {showLines &&
-                visibleChannels.map((dc) => (
-                  <Line
-                    key={ordKey(dc.id)}
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey={ordKey(dc.id)}
-                    stroke={dc.color}
-                    strokeWidth={2}
-                    dot={{ r: 2 }}
-                  />
-                ))}
-            </ComposedChart>
-          </ResponsiveContainer>
+          <div ref={tooltipWheelRef}>
+            <ResponsiveContainer width="100%" height={320}>
+              <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                {/* 좌축: 매출 */}
+                <YAxis
+                  yAxisId="left"
+                  tick={{ fontSize: 11 }}
+                  tickFormatter={(v) =>
+                    v >= 1000000
+                      ? `${(v / 1000000).toFixed(1)}M`
+                      : v >= 1000
+                        ? `${(v / 1000).toFixed(0)}K`
+                        : String(v)
+                  }
+                />
+                {/* 우축: 주문건수 */}
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 11 }}
+                  tickFormatter={(v) => v.toLocaleString('ko-KR')}
+                />
+                <Tooltip
+                  allowEscapeViewBox={{ x: false, y: false }}
+                  wrapperStyle={{ zIndex: 50 }}
+                  content={
+                    (<ChannelTooltip visibleChannels={visibleChannels} metric={metric} />) as never
+                  }
+                />
+                {showBars &&
+                  visibleChannels.map((dc) => (
+                    <Bar key={dc.id} yAxisId="left" dataKey={dc.id} stackId="rev" fill={dc.color} />
+                  ))}
+                {showLines &&
+                  visibleChannels.map((dc) => (
+                    <Line
+                      key={ordKey(dc.id)}
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey={ordKey(dc.id)}
+                      stroke={dc.color}
+                      strokeWidth={2}
+                      dot={{ r: 2 }}
+                    />
+                  ))}
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>
