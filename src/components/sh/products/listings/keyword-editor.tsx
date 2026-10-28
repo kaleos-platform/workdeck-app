@@ -94,6 +94,8 @@ type Props = {
   rankBadges?: Record<string, string>
   /** normalizeKeyword(키워드) → 칩 뒤에 붙는 광고 성과 문구(예: '노출 2.1천 · 주문 6'). */
   adBadges?: Record<string, string>
+  /** 입력 상한. 채널별 한도(keywordLimitForChannel)를 넘긴다. 기본 30. */
+  maxKeywords?: number
 }
 
 export function KeywordEditor({
@@ -109,6 +111,7 @@ export function KeywordEditor({
   readOnly = false,
   rankBadges,
   adBadges,
+  maxKeywords = MAX_KEYWORDS,
 }: Props) {
   const [draft, setDraft] = useState('')
 
@@ -168,7 +171,7 @@ export function KeywordEditor({
 
     for (const keyword of incoming) {
       if (seen.has(keyword.toLowerCase())) continue
-      if (next.length >= MAX_KEYWORDS) break
+      if (next.length >= maxKeywords) break
       next.push(keyword)
       seen.add(keyword.toLowerCase())
     }
@@ -233,7 +236,7 @@ export function KeywordEditor({
   }
 
   const freshSuggestions = suggestions.filter((s) => !normalized.has(s.toLowerCase())).slice(0, 8)
-  const atMax = value.length >= MAX_KEYWORDS
+  const atMax = value.length >= maxKeywords
   const filledCount = value.filter((v) => v.trim().length > 0).length
   const overRuleLimit = filledCount > activeRules.maxKeywords
   const violationCount = validation.violations.length
@@ -440,7 +443,7 @@ export function KeywordEditor({
               onKeyDown={onInputKeyDown}
               onPaste={onInputPaste}
               placeholder={
-                atMax ? `최대 ${MAX_KEYWORDS}개` : (placeholder ?? '키워드 입력 후 Enter')
+                atMax ? `최대 ${maxKeywords}개` : (placeholder ?? '키워드 입력 후 Enter')
               }
               disabled={atMax}
               className="h-7 min-w-[140px] flex-1 border-0 px-1 shadow-none focus-visible:ring-0"
@@ -448,7 +451,7 @@ export function KeywordEditor({
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          {value.length} / {MAX_KEYWORDS}
+          {value.length} / {maxKeywords}
           {!readOnly && ' · Enter 또는 ,(쉼표)로 추가, Backspace로 마지막 삭제'}
         </p>
 

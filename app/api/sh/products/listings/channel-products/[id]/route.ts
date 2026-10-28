@@ -13,7 +13,7 @@ import {
 } from '@/lib/sh/listing-calc'
 import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
-import { keywordListSchema, pageUrlSchema } from '@/lib/sh/schemas'
+import { keywordLimitForChannel, keywordListSchema, pageUrlSchema } from '@/lib/sh/schemas'
 import { absorbKeywords } from '@/lib/sh/keyword-absorb'
 import { countRankSlots, getRankSlotLimit } from '@/lib/rank/slots'
 import {
@@ -302,6 +302,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     select: {
       id: true,
       channelId: true, // 키워드 규칙 조회용
+      channel: { select: { name: true } }, // 채널별 키워드 한도
       // §26 이력의 "기존" 값 — 변경 여부를 판정하려면 패치 전 값이 필요하다.
       // baseDisplayName 은 여기서 안 읽는다: 전파의 old base 는 컬럼이 아니라
       // deriveBaseValues 로 자식 리스팅에서 역산한 값을 쓴다.
@@ -332,6 +333,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   // propagateNames는 ChannelProduct 컬럼이 아니다 — 남은 필드만 update data 로 넘긴다.
   const { propagateNames, ...updateData } = parsed.data
 
+  const kwLimit = keywordLimitForChannel(cp.channel.name)
+  if (updateData.keywords && updateData.keywords.length > kwLimit) {
+    return errorResponse(`${cp.channel.name} 검색어는 최대 ${kwLimit}개입니다`, 422)
+  }
   const nextSearchName = updateData.baseSearchName ?? cp.baseSearchName
   const nextKeywords = updateData.keywords ?? cp.keywords
 

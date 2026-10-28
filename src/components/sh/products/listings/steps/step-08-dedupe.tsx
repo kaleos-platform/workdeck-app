@@ -30,6 +30,8 @@ type Props = {
   rules: KeywordRuleSet
   /** STEP 07 에서 배정한 유형 — §18 우선순위 절삭에 쓴다. */
   typeOf: (keyword: string) => KeywordTypeKey
+  /** 채널별 입력 상한(keywordLimitForChannel). 미지정 시 편집기 기본. */
+  maxKeywords?: number
 }
 
 export function StepDedupe({
@@ -40,6 +42,7 @@ export function StepDedupe({
   optionNames,
   rules,
   typeOf,
+  maxKeywords,
 }: Props) {
   const filled = keywords.filter((k) => k.trim().length > 0)
   const overLimit = filled.length > rules.maxKeywords
@@ -114,6 +117,7 @@ export function StepDedupe({
           categoryNames={categoryNames}
           optionNames={optionNames}
           rules={rules}
+          maxKeywords={maxKeywords}
         />
         <p className="text-xs text-muted-foreground">우선순위 기준: {PRIORITY_HINT}</p>
       </div>

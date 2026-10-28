@@ -17,6 +17,7 @@ import { getSellerHubChannelProductPath } from '@/lib/deck-routes'
 import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
+import { keywordLimitForChannel } from '@/lib/sh/schemas'
 
 import { KeywordChangeTimeline } from '../listings/keyword-change-timeline'
 import { KeywordEditor } from '../listings/keyword-editor'
@@ -91,6 +92,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
       }),
     [card.channelName, card.externalSource]
   )
+  const maxKeywords = keywordLimitForChannel(card.channelName)
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
 
@@ -340,12 +342,14 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             readOnly={readOnly}
             rankBadges={rankBadges}
             adBadges={ad.adBadges}
+            maxKeywords={maxKeywords}
           />
           <KeywordAdPanel
             data={ad.data}
             value={keywords}
             onChange={setKeywords}
             readOnly={readOnly}
+            maxKeywords={maxKeywords}
           />
         </div>
 
