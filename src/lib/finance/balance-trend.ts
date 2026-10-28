@@ -32,7 +32,7 @@ export const RUNWAY_WINDOW = 6
  * 실제 현금 증감 기준 월평균 소진액 — (창 시작 월말 현금 − endYm 월말 현금) ÷ 개월수. 양수=소진, 0 이하=현금 증가.
  * 수입−지출과 달리 분석 제외·카드대금 시차·대출 상환까지 반영된다. 대출 실행처럼 일회성 큰 입금이 창에 있으면 과소평가.
  * 창은 dataStartYm(첫 스냅샷 달) 이전으로 넘어가지 않는다. 비교할 이전 달이 없으면 null.
- * ponytail: 계좌별 데이터 시작 달이 다르면 늦게 붙은 계좌의 openingBalance 가 섞인다 — 문제 되면 계좌별 창으로.
+ * 늦게 붙은 계좌의 창 시작 잔액은 호출부가 넘기는 첫 거래 직전 잔액(loadOpeningBalances).
  */
 export function avgCashBurn(
   cashAt: (ym: string) => number,
