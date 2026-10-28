@@ -2,7 +2,7 @@
  * seller-hub.keywords.update 승인 액션 + 주간 키워드 리뷰 e2e — 실 dev DB, 전용 Space 픽스처.
  */
 import { prisma } from '@/lib/prisma'
-import { loadKeywordReview } from '@/lib/sh/keyword-review-query'
+import { isMeasuring, lastChangeAt, loadKeywordReview } from '@/lib/sh/keyword-review-query'
 import { createPendingAction } from '../create'
 import { approveAndExecute, rejectAction } from '../execute'
 
@@ -211,7 +211,19 @@ d('seller-hub.keywords.update', () => {
     })
     expect(logs[0].beforeKeywords).toEqual(['기존', '삭제대상'])
     expect(logs[0].afterKeywords).toEqual(['기존', '신규'])
-    // 승인 후에는 같은 대상에 새 제안 가능
+    // 반영 직후는 효과 측정 중 — 새 제안은 거부된다
+    const at = (await lastChangeAt(SPACE_ID, [{ kind: 'channelProduct', id: cpId }])).get(cpId)
+    expect(at?.toISOString()).toBe(logs[0].createdAt.toISOString())
+    expect(isMeasuring(at)).toBe(true)
+    await expect(
+      propose({ target: { channelProductId: cpId }, add: ['세번째'], remove: [] })
+    ).rejects.toThrow(/효과 측정/)
+
+    // 14일이 지나면 다시 제안 가능
+    await prisma.keywordChangeLog.update({
+      where: { id: logs[0].id },
+      data: { createdAt: new Date(Date.now() - 15 * 86_400_000) },
+    })
     const again = await propose({ target: { channelProductId: cpId }, add: ['세번째'], remove: [] })
     await rejectAction(again.actionId, USER_ID)
   })
@@ -229,6 +241,7 @@ d('seller-hub.keywords.update', () => {
     expect(t!.prune).toEqual(['무노출어'])
     expect(t!.discover.map((w) => w.word)).toContain('냉감')
     expect(t!.pendingProposal).toBe(pend.actionId)
+    expect(t).toMatchObject({ lastChangeAt: null, measuring: false })
 
     // 거절 → 제안 단어가 발굴·정리에서 억제된다
     await rejectAction(pend.actionId, USER_ID)

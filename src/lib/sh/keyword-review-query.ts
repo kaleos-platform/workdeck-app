@@ -11,6 +11,8 @@ const DAY_MS = 86_400_000
 const WINDOW_DAYS = 30
 const SUPPRESS_DAYS = 90
 const DISCOVER_TOP = 10
+// 변경 후 14일은 효과 측정 구간 — 그 사이 또 바꾸면 전후 비교가 무너진다.
+export const MEASURE_DAYS = 14
 // date 컬럼은 KST 자정(= 전날 15:00 UTC)으로 저장된다 — ad-keyword-performance-query 와 동일.
 const kstDate = (d: Date) => new Date(d.getTime() + 9 * 3_600_000).toISOString().slice(0, 10)
 
@@ -20,6 +22,40 @@ type Payload = {
   remove?: string[]
 }
 export const targetIdOf = (p: Payload) => p.target?.channelProductId ?? p.target?.listingId ?? null
+
+/** 대상별 마지막 상품명·키워드 변경 시각. 채널상품은 channelProductId, 단독 리스팅은 listingId 로 기록된다. */
+export async function lastChangeAt(
+  spaceId: string,
+  targets: { kind: 'channelProduct' | 'listing'; id: string }[]
+): Promise<Map<string, Date>> {
+  const cpIds = targets.filter((t) => t.kind === 'channelProduct').map((t) => t.id)
+  const lIds = targets.filter((t) => t.kind === 'listing').map((t) => t.id)
+  const [byCp, byListing] = await Promise.all([
+    cpIds.length
+      ? prisma.keywordChangeLog.groupBy({
+          by: ['channelProductId'],
+          where: { spaceId, channelProductId: { in: cpIds } },
+          _max: { createdAt: true },
+        })
+      : [],
+    lIds.length
+      ? prisma.keywordChangeLog.groupBy({
+          by: ['listingId'],
+          where: { spaceId, listingId: { in: lIds } },
+          _max: { createdAt: true },
+        })
+      : [],
+  ])
+  const out = new Map<string, Date>()
+  for (const g of byCp)
+    if (g.channelProductId && g._max.createdAt) out.set(g.channelProductId, g._max.createdAt)
+  for (const g of byListing)
+    if (g.listingId && g._max.createdAt) out.set(g.listingId, g._max.createdAt)
+  return out
+}
+
+export const isMeasuring = (at: Date | undefined, now = Date.now()) =>
+  Boolean(at && now - at.getTime() < MEASURE_DAYS * DAY_MS)
 
 export async function loadKeywordReview(
   spaceId: string,
@@ -164,6 +200,10 @@ export async function loadKeywordReview(
     select: { id: true, status: true, payload: true },
   })
 
+  const changed = await lastChangeAt(
+    spaceId,
+    sums.map(({ t }) => t)
+  )
   const out = []
   for (const { t, ad } of sums) {
     const perf = await loadAdKeywordPerformance(
@@ -192,6 +232,9 @@ export async function loadKeywordReview(
       prune: p.kept,
       suppressed: [...d.suppressed, ...p.suppressed],
       pendingProposal: mine.find((h) => h.status === 'PENDING')?.id ?? null,
+      lastChangeAt: changed.get(t.id)?.toISOString() ?? null,
+      // true 면 효과 측정 중 — 제안하지 않는다(액션도 거부한다).
+      measuring: isMeasuring(changed.get(t.id)),
     })
   }
   return { window: { from: kstDate(from), to: kstDate(to) }, targets: out }
