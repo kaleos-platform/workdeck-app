@@ -9,6 +9,7 @@ import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
 import { readTargetKeywords, applyKeywordsToTarget } from '@/lib/sh/keyword-apply'
 import { applyKeywordOps } from '@/lib/sh/keyword-review'
+import { lastChangeAt, isMeasuring, MEASURE_DAYS } from '@/lib/sh/keyword-review-query'
 import { keywordListSchema } from '@/lib/sh/schemas'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 
@@ -276,6 +277,15 @@ const keywordUpdate: ActionDefinition<KeywordUpdateParams> = {
       select: { id: true },
     })
     if (dup) throw new ToolUserError(`이미 승인 대기 중인 키워드 제안이 있습니다: ${dup.id}`)
+    const at = (
+      await lastChangeAt(ctx.spaceId, [
+        { kind: params.target.channelProductId ? 'channelProduct' : 'listing', id: id! },
+      ])
+    ).get(id!)
+    if (isMeasuring(at))
+      throw new ToolUserError(
+        `최근 ${MEASURE_DAYS}일 안에 상품명·키워드가 바뀐 상품입니다(${at!.toISOString().slice(0, 10)}). 효과 측정이 끝난 뒤 제안하세요`
+      )
   },
   snapshot: async (ctx, params) => {
     const cur = await readTargetKeywords(ctx.spaceId, params.target)
