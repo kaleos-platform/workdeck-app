@@ -143,10 +143,11 @@ describe('judgeProductionStatus', () => {
     expect(r.daysOfCoverWithIncoming).toBe(6.3)
   })
 
-  it('재고 음수면 사유에 재고 기록 확인을 붙인다', () => {
+  it('재고 음수 + 판매 있음 → CHECK_STOCK (PRODUCE_NOW 로 섞지 않음)', () => {
     const r = judgeProductionStatus({ ...base, totalDailyVelocityRaw: 3, totalAvailableQty: -96 })
-    expect(r.status).toBe('PRODUCE_NOW')
+    expect(r.status).toBe('CHECK_STOCK')
     expect(r.reason).toContain('재고 음수 -96')
+    expect(r.daysOfCoverWithIncoming).toBeNull()
   })
 
   it('입고예정·안전재고를 소진일에 반영한다', () => {

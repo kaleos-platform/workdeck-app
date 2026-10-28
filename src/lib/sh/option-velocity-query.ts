@@ -42,7 +42,7 @@ export const DEFAULT_STATUS_THRESHOLDS: StatusThresholds = {
 }
 
 export type ReplenishmentStatus = 'OUT_OF_STOCK_RISK' | 'REPLENISH' | 'WATCH' | 'OK' | 'NO_SALES'
-export type ProductionStatus = 'PRODUCE_NOW' | 'PRODUCE_SOON' | 'OK' | 'NO_SALES'
+export type ProductionStatus = 'PRODUCE_NOW' | 'PRODUCE_SOON' | 'OK' | 'NO_SALES' | 'CHECK_STOCK'
 export type VelocitySortBy = 'rocket' | 'production' | 'stockValue'
 
 /**
@@ -149,6 +149,7 @@ export function suggestProductionQty(input: {
 /**
  * 전사(재고+입고예정−안전재고) 소진일 vs 생산 리드타임 판정.
  * PRODUCE_SOON 은 suggestedProductionQty>0 과 같은 조건(리드타임+목표재고일 미달)이다.
+ * 재고 음수(기록 없이 출고)는 생산 필요인지 재고 미관리인지 알 수 없어 CHECK_STOCK 으로 분리한다.
  */
 export function judgeProductionStatus(input: {
   totalDailyVelocityRaw: number
@@ -162,18 +163,20 @@ export function judgeProductionStatus(input: {
   if (input.totalDailyVelocityRaw <= 0) {
     return { status: 'NO_SALES', reason: '기간 내 판매 0', daysOfCoverWithIncoming: null }
   }
+  if (input.totalAvailableQty < 0) {
+    return {
+      status: 'CHECK_STOCK',
+      reason: `재고 음수 ${input.totalAvailableQty} — 재고 기록 없이 출고됨, 생산 판단 전 재고 확인 필요`,
+      daysOfCoverWithIncoming: null,
+    }
+  }
   const usable = Math.max(0, input.totalAvailableQty + input.incomingQty - input.safetyStockQty)
   const cover = Math.round((usable / input.totalDailyVelocityRaw) * 10) / 10
   const lt = input.productionLeadTimeDays
   if (cover < lt) {
-    // 재고 기록 없이 출고된 SKU 는 음수 — 생산 필요인지 재고 미관리인지 확인 대상.
-    const negative =
-      input.totalAvailableQty < 0
-        ? ` (재고 음수 ${input.totalAvailableQty} — 재고 기록 확인 필요)`
-        : ''
     return {
       status: 'PRODUCE_NOW',
-      reason: `재고+입고예정 ${cover}일분 < 생산 리드타임 ${lt}일 — 지금 생산해도 결품 구간 발생${negative}`,
+      reason: `재고+입고예정 ${cover}일분 < 생산 리드타임 ${lt}일 — 지금 생산해도 결품 구간 발생`,
       daysOfCoverWithIncoming: cover,
     }
   }
@@ -520,9 +523,11 @@ export async function queryOptionSalesVelocity(
   if (sortBy === 'stockValue') {
     filtered.sort((a, b) => b.stockValue - a.stockValue)
   } else if (sortBy === 'production') {
-    // 전사 소진일(입고예정 포함) 오름차순, 판매 0 은 뒤.
+    // 전사 소진일(입고예정 포함) 오름차순, 재고 확인 대상(CHECK_STOCK)·판매 0 은 뒤.
     const key = (r: (typeof filtered)[number]) =>
-      r.daysOfCoverWithIncoming ?? Number.POSITIVE_INFINITY
+      r.productionStatus === 'CHECK_STOCK'
+        ? Number.MAX_SAFE_INTEGER
+        : (r.daysOfCoverWithIncoming ?? Number.POSITIVE_INFINITY)
     filtered.sort((a, b) => key(a) - key(b) || b.salesQty - a.salesQty)
   } else {
     // 급한 순: 재고 0인데 팔리는 옵션(cover null + OUT_OF_STOCK_RISK) 최상단, 이후 cover asc, 판매 0 은 뒤.
@@ -547,6 +552,7 @@ export async function queryOptionSalesVelocity(
     PRODUCE_SOON: 0,
     OK: 0,
     NO_SALES: 0,
+    CHECK_STOCK: 0,
   }
   for (const r of filtered) productionStatusCounts[r.productionStatus] += 1
   const negativeStockSkuCount = filtered.filter((r) => r.totalAvailableQty < 0).length
@@ -583,7 +589,10 @@ export async function queryOptionSalesVelocity(
     negativeStockSkuCount,
     totalStockValue: filtered.reduce((s, r) => s + r.stockValue, 0),
     totalSuggestedReplenishQty: filtered.reduce((s, r) => s + r.suggestedReplenishQty, 0),
-    totalSuggestedProductionQty: filtered.reduce((s, r) => s + r.suggestedProductionQty, 0),
+    // 재고 음수(CHECK_STOCK) 행은 권장량이 음수 재고를 메우는 몫까지 포함해 합계에서 제외한다.
+    totalSuggestedProductionQty: filtered
+      .filter((r) => r.productionStatus !== 'CHECK_STOCK')
+      .reduce((s, r) => s + r.suggestedProductionQty, 0),
     // 3PL+사무실 재고로 권장 보충을 다 못 채우는 SKU 수 — 생산/입고 없이는 이동 불가.
     replenishShortfallSkuCount: filtered.filter(
       (r) => r.cappedReplenishQty < r.suggestedReplenishQty
@@ -623,7 +632,13 @@ function emptyResult(input: {
       channels: [] as string[],
       total: 0,
       statusCounts: { OUT_OF_STOCK_RISK: 0, REPLENISH: 0, WATCH: 0, OK: 0, NO_SALES: 0 },
-      productionStatusCounts: { PRODUCE_NOW: 0, PRODUCE_SOON: 0, OK: 0, NO_SALES: 0 },
+      productionStatusCounts: {
+        PRODUCE_NOW: 0,
+        PRODUCE_SOON: 0,
+        OK: 0,
+        NO_SALES: 0,
+        CHECK_STOCK: 0,
+      },
       truncatedForSize: false,
       returned: 0,
       reason: input.reason,
