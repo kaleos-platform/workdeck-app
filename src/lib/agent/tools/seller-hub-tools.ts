@@ -204,7 +204,7 @@ const sellerHubGetOptionSalesVelocityTool: ToolDefinition = {
 const sellerHubGetKeywordReviewTool: ToolDefinition = {
   name: 'sellerhub_get_keyword_review',
   description:
-    '쿠팡 광고 검색어 데이터가 있는 상품(채널상품 또는 단독 리스팅)별 키워드 리뷰를 반환합니다. 워크스페이스 최신 적재일까지 30일 기준으로 상품마다 광고 합계(노출·주문·광고비), 현재 키워드 수와 한도(30), 발굴 후보(discover, 상위 10: 주문·클릭 근거), 정리 후보(prune: 노출 0 키워드), 승인 대기 제안 id(pendingProposal), 최근 90일 내 거절되어 제외된 단어(suppressed)를 담습니다. 주문 많은 순, 최대 50개. 제안은 sellerhub_propose_keyword_update 로 상품 단위 묶음으로 올리세요.',
+    '쿠팡 광고 검색어 데이터가 있는 상품(채널상품 또는 단독 리스팅)별 키워드 리뷰를 반환합니다. 워크스페이스 최신 적재일까지 30일 기준으로 상품마다 광고 합계(노출·주문·광고비), 현재 키워드 수와 한도(30), 발굴 후보(discover, 상위 10: 주문·클릭 근거), 정리 후보(prune: 노출 0 키워드), 승인 대기 제안 id(pendingProposal), 최근 90일 내 거절되어 제외된 단어(suppressed), 마지막 상품명·키워드 변경 시각(lastChangeAt)과 측정 중 여부(measuring: 변경 후 14일)를 담습니다. measuring=true 상품은 제안하지 마세요(거부됩니다). 주문 많은 순, 최대 50개. 제안은 sellerhub_propose_keyword_update 로 상품 단위 묶음으로 올리세요.',
   inputSchema: {
     limit: z.number().optional(),
     targetId: z.string().optional(),
