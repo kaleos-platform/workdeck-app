@@ -470,6 +470,7 @@ export function ImageBlock({
   const uploadRef = useRef(false)
   const [uploading, setUploading] = useState(false)
   const [failedFile, setFailedFile] = useState<File | null>(null)
+  const [versionConflict, setVersionConflict] = useState(false)
 
   async function upload(file: File) {
     if (uploadRef.current) return
@@ -478,8 +479,13 @@ export function ImageBlock({
     try {
       await onSelect(file)
       setFailedFile(null)
+      setVersionConflict(false)
     } catch (error) {
       setFailedFile(file)
+      setVersionConflict(
+        error instanceof Error &&
+          (error.message.includes('다른 창에서') || error.message.includes('카드 버전이 없습니다'))
+      )
       toast.error(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다')
     } finally {
       uploadRef.current = false
@@ -527,15 +533,21 @@ export function ImageBlock({
       </div>
       {failedFile && (
         <div role="alert" className="space-y-2 text-sm">
-          <p>이미지를 저장하지 못했습니다. 다시 업로드하거나 다른 파일을 선택하세요.</p>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={uploading}
-            onClick={() => void upload(failedFile)}
-          >
-            이미지 다시 업로드
-          </Button>
+          <p>
+            {versionConflict
+              ? '카드가 변경되었습니다. 이미지 파일을 보관한 뒤 새로고침하고 다시 업로드하세요.'
+              : '이미지를 저장하지 못했습니다. 다시 업로드하거나 다른 파일을 선택하세요.'}
+          </p>
+          {!versionConflict && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={uploading}
+              onClick={() => void upload(failedFile)}
+            >
+              이미지 다시 업로드
+            </Button>
+          )}
         </div>
       )}
       <BlockLinkEditor ref={ref} value={link} onSave={onLinkSave} />

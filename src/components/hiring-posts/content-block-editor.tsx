@@ -154,7 +154,9 @@ export function ContentBlockEditor({
       (id, data) => patchContent(id, { data }),
       (error) =>
         toast.error(
-          error instanceof Error && error.message.includes('다른 창에서')
+          error instanceof Error &&
+            (error.message.includes('다른 창에서') ||
+              error.message.includes('카드 버전이 없습니다'))
             ? error.message
             : '본문 저장에 실패했습니다. 편집 완료를 눌러 다시 저장하세요.'
         )
@@ -202,7 +204,14 @@ export function ContentBlockEditor({
         mediaErrorsRef.current.delete(contentId)
       })
       .catch((error: unknown) => {
-        mediaErrorsRef.current.set(contentId, retryMessage)
+        mediaErrorsRef.current.set(
+          contentId,
+          error instanceof Error &&
+            (error.message.includes('다른 창에서') ||
+              error.message.includes('카드 버전이 없습니다'))
+            ? error.message
+            : retryMessage
+        )
         throw error
       })
       .finally(() => {
