@@ -18,6 +18,7 @@ jest.mock('@/lib/prisma', () => ({
 }))
 it('템플릿 변경과 반환용 조회를 같은 트랜잭션 안에서 처리한다', async () => {
   const tx = {
+    $executeRaw: jest.fn(),
     hiringContent: { deleteMany: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
     hiringPosting: { update: jest.fn() },
   }
@@ -25,11 +26,15 @@ it('템플릿 변경과 반환용 조회를 같은 트랜잭션 안에서 처리
     .mocked(prisma.$transaction)
     .mockImplementation(async (work: unknown) => (work as (arg: typeof tx) => unknown)(tx))
   const req = {
-    json: async () => ({ templateId: 'cmuhr69ry00000kjvnadsqti1', mode: 'replace' }),
+    json: async () => ({
+      templateId: 'cmuhr69ry00000kjvnadsqti1',
+      mode: 'replace',
+      expectedContents: [],
+    }),
   } as NextRequest
   const res = await POST(req, { params: Promise.resolve({ id: 'qa' }) })
   expect(res?.status).toBe(200)
   expect(await res?.json()).toEqual({ contents: [] })
-  expect(tx.hiringContent.findMany).toHaveBeenCalledTimes(1)
+  expect(tx.hiringContent.findMany).toHaveBeenCalledTimes(2)
   expect(prisma.hiringContent.findMany).not.toHaveBeenCalled()
 })
