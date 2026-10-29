@@ -11,6 +11,9 @@
 //                                                                  # deck 과금 모드 전환
 //                                                                  # (SUBSCRIPTION 전환 시 paidActivatedAt 기록 → 유예 14일 시작)
 //   node scripts/billing-admin.mjs price <deckId> <월가(공급가)>    # deck 가격 변경
+//   node scripts/billing-admin.mjs migrate-grant <spaceId> <무료종료일 YYYY-MM-DD> [보장공급가=12273]
+//                                                                  # Opening 이전 고객: 종료일(KST)까지 무료(trialEndsAt)
+//                                                                  # + 모집 관리 보장가(lockedPrice, 실제 해지 시 소멸)
 import 'dotenv/config'
 import { config } from 'dotenv'
 import pg from 'pg'
@@ -32,6 +35,7 @@ const [cmd, ...args] = process.argv.slice(2)
 
 async function main() {
   await client.connect()
+  await client.query("SET TIME ZONE 'UTC'") // now() → timestamp(무tz) 캐스팅을 Prisma 기준(UTC)에 맞춤
 
   switch (cmd) {
     case 'status': {
@@ -130,8 +134,49 @@ async function main() {
       break
     }
 
+    case 'migrate-grant': {
+      const [spaceId, until, price = '12273'] = args
+      const p = Number(price)
+      if (!spaceId || !/^\d{4}-\d{2}-\d{2}$/.test(until ?? '') || !Number.isInteger(p) || p <= 0) {
+        throw new Error('사용법: migrate-grant <spaceId> <무료종료일 YYYY-MM-DD> [보장공급가]')
+      }
+      await client.query('BEGIN')
+      try {
+        // 종료일 다음날 00:00 KST 까지 무료 (판정 4단계 TRIAL — 청구 대상 아님)
+        const sub = await client.query(
+          `INSERT INTO "SpaceSubscription" (id, "spaceId", status, "trialEndsAt", "createdAt", "updatedAt")
+           VALUES (gen_random_uuid()::text, $1, 'TRIALING', (($2::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'UTC', now(), now())
+           ON CONFLICT ("spaceId") DO UPDATE SET "trialEndsAt" = GREATEST(COALESCE("SpaceSubscription"."trialEndsAt", EXCLUDED."trialEndsAt"), EXCLUDED."trialEndsAt"), "updatedAt" = now()
+           RETURNING id, status, "trialEndsAt"::text AS "trialEndsAtUtc"`,
+          [spaceId, until]
+        )
+        const { id: subscriptionId } = sub.rows[0]
+        // ENDED item 에 보장가를 심는다 → startSubscription/addDeck 이 재활성화하며 사용
+        const item = await client.query(
+          `INSERT INTO "SubscriptionItem" (id, "subscriptionId", type, "deckAppId", "priceSnapshot", "lockedPrice", status, "endedAt")
+           VALUES (gen_random_uuid()::text, $1, 'DECK', 'recruiting', $2, $2, 'ENDED', now())
+           ON CONFLICT ("subscriptionId", type, "deckAppId") DO UPDATE SET "lockedPrice" = $2
+           RETURNING status, "priceSnapshot", "lockedPrice"`,
+          [subscriptionId, p]
+        )
+        if (item.rows[0].status !== 'ENDED') {
+          // 이미 구독 중: 다음 정기청구는 priceSnapshot 기준이라 보장가만 심으면 반영 안 됨
+          throw new Error(`모집 관리가 이미 ${item.rows[0].status} — 수동 처리 필요 (변경 없음)`)
+        }
+        await client.query('COMMIT')
+        console.log(`✔ Space ${spaceId} 이전 혜택 부여`)
+        console.table([{ ...sub.rows[0], ...item.rows[0] }])
+      } catch (e) {
+        await client.query('ROLLBACK')
+        throw e
+      }
+      break
+    }
+
     default:
-      console.error('알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price')
+      console.error(
+        '알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price|migrate-grant'
+      )
       process.exit(1)
   }
 }

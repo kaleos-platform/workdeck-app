@@ -209,12 +209,20 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
     throw new BillingError('이미 활성 구독이 있습니다 — 업무 추가를 사용하세요', 409)
   }
 
+  // 이전 고객 보장가: item 에 lockedPrice 가 있으면 사용 (정가가 더 낮아지면 정가)
+  const priceOf = (p: { id: string; monthlyPrice: number }) =>
+    Math.min(
+      subscription.items.find((i) => i.type === 'DECK' && i.deckAppId === p.id)?.lockedPrice ??
+        p.monthlyPrice,
+      p.monthlyPrice
+    )
+
   const now = new Date()
   const periodEnd = addMonthClamped(now)
   const lines: ChargeLine[] = products.map((p) => ({
     deckAppId: p.id,
     type: 'DECK',
-    price: p.monthlyPrice,
+    price: priceOf(p),
   }))
   const amounts = sumLines(lines)
   const orderId = startOrderId(subscription.id, now)
@@ -261,9 +269,22 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
       where: { id: subscription.id },
       data: { status: 'ACTIVE', currentPeriodEnd: periodEnd, retryCount: 0 },
     }),
-    // 이전 아이템(만료 재시작 케이스) 정리 후 이번 선택으로 upsert
+    // 이전 아이템(만료 재시작 케이스) 정리 후 이번 선택으로 upsert.
+    // 재시작에서 고르지 않은 업무는 해지로 보고 보장가도 소멸
     prisma.subscriptionItem.updateMany({
-      where: { subscriptionId: subscription.id, status: { not: 'ENDED' } },
+      where: {
+        subscriptionId: subscription.id,
+        status: { not: 'ENDED' },
+        deckAppId: { notIn: deckIds },
+      },
+      data: { status: 'ENDED', endedAt: now, lockedPrice: null },
+    }),
+    prisma.subscriptionItem.updateMany({
+      where: {
+        subscriptionId: subscription.id,
+        status: { not: 'ENDED' },
+        deckAppId: { in: deckIds },
+      },
       data: { status: 'ENDED', endedAt: now },
     }),
     ...products.map((p) =>
@@ -279,9 +300,9 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
           subscriptionId: subscription.id,
           type: 'DECK',
           deckAppId: p.id,
-          priceSnapshot: p.monthlyPrice,
+          priceSnapshot: priceOf(p),
         },
-        update: { status: 'ACTIVE', priceSnapshot: p.monthlyPrice, endedAt: null, addedAt: now },
+        update: { status: 'ACTIVE', priceSnapshot: priceOf(p), endedAt: null, addedAt: now },
       })
     ),
   ])
@@ -326,7 +347,13 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     Math.round((subscription.currentPeriodEnd.getTime() - prevPeriodStart.getTime()) / 86400000)
   )
   const remaining = remainingDaysBetween(now, subscription.currentPeriodEnd)
-  const supply = prorate(product.monthlyPrice, remaining, cycleDays)
+  // 이전 고객 보장가 (ENDED item 에 남아 있음). 정가가 더 낮아지면 정가
+  const price = Math.min(
+    subscription.items.find((i) => i.type === 'DECK' && i.deckAppId === deckAppId)?.lockedPrice ??
+      product.monthlyPrice,
+    product.monthlyPrice
+  )
+  const supply = prorate(price, remaining, cycleDays)
   const amounts = calcAmounts(supply)
 
   // ENDED 이력이 있으면 재활성 (유니크 제약: subscriptionId+type+deckAppId)
@@ -342,12 +369,12 @@ export async function addDeck(spaceId: string, deckAppId: string) {
       subscriptionId: subscription.id,
       type: 'DECK',
       deckAppId,
-      priceSnapshot: product.monthlyPrice,
+      priceSnapshot: price,
       status: 'ACTIVE',
     },
     update: {
       status: 'ACTIVE',
-      priceSnapshot: product.monthlyPrice,
+      priceSnapshot: price,
       endedAt: null,
       addedAt: now,
     },
@@ -472,7 +499,7 @@ export async function runDueCharges(now = new Date()) {
         await prisma.$transaction([
           prisma.subscriptionItem.updateMany({
             where: { id: { in: cancelIds } },
-            data: { status: 'ENDED', endedAt: now },
+            data: { status: 'ENDED', endedAt: now, lockedPrice: null }, // 실제 해지 → 보장가 소멸
           }),
           prisma.spaceSubscription.update({
             where: { id: sub.id },
@@ -567,7 +594,7 @@ export async function runDueCharges(now = new Date()) {
           }),
           prisma.subscriptionItem.updateMany({
             where: { id: { in: cancelIds } },
-            data: { status: 'ENDED', endedAt: now },
+            data: { status: 'ENDED', endedAt: now, lockedPrice: null }, // 실제 해지 → 보장가 소멸
           }),
           prisma.spaceSubscription.update({
             where: { id: sub.id },
