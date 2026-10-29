@@ -54,6 +54,20 @@ describe('issueToken', () => {
     expect((err as Error).message).toMatch(/^naver-commerce token 401/)
     expect((err as Error).message.length).toBeLessThan(360)
   })
+  it('IP 미허용 → 현재 공인 IP 를 메시지 앞쪽에', async () => {
+    mockFetch
+      .mockResolvedValueOnce(json(403, { code: 'GW.IP_NOT_ALLOWED', message: 'x'.repeat(500) }))
+      .mockResolvedValueOnce({ text: async () => '112.152.29.225\n' } as Response)
+    const err = await issueToken(secret).catch((e: Error) => e)
+    expect((err as Error).message).toMatch(/^naver-commerce 호출 IP 미등록 \(현재 IP 112\.152\.29\.225\)/)
+  })
+  it('IP 조회 실패해도 IP 미등록 에러는 유지', async () => {
+    mockFetch
+      .mockResolvedValueOnce(json(403, { code: 'GW.IP_NOT_ALLOWED' }))
+      .mockRejectedValueOnce(new Error('offline'))
+    const err = await issueToken(secret).catch((e: Error) => e)
+    expect((err as Error).message).toContain('현재 IP 확인 실패')
+  })
 })
 
 describe('fetchPaidProductOrders', () => {
