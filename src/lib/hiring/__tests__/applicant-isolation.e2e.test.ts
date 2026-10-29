@@ -9,6 +9,8 @@ import { buildApplicantSearchToken } from '@/lib/hiring/application-search'
 import { GET as exportApplications } from '../../../../app/api/hiring-applicants/applications/export/route'
 import { PATCH as updateApplication } from '../../../../app/api/hiring-applicants/applications/[id]/route'
 import { PATCH as bulkUpdate } from '../../../../app/api/hiring-applicants/applications/bulk/route'
+import { POST as addComment } from '../../../../app/api/hiring-applicants/applications/[id]/comments/route'
+import { PATCH as editComment } from '../../../../app/api/hiring-applicants/applications/[id]/comments/[commentId]/route'
 
 jest.mock('@/lib/api-helpers', () => {
   const actual = jest.requireActual('@/lib/api-helpers')
@@ -17,12 +19,15 @@ jest.mock('@/lib/api-helpers', () => {
     resolveDeckContext: async () => ({
       space: { id: process.env.QA_APPLICANT_SPACE },
       role: process.env.QA_APPLICANT_ROLE ?? 'ADMIN',
+      user: { id: process.env.QA_APPLICANT_USER },
     }),
   }
 })
 const runId = randomUUID()
 const spaces = [`qa-applicant-a-${runId}`, `qa-applicant-b-${runId}`]
+const users = [`qa-applicant-user-a-${runId}`, `qa-applicant-user-b-${runId}`]
 const created: string[] = []
+const createdUsers: string[] = []
 let ownId = ''
 let otherId = ''
 
@@ -50,6 +55,13 @@ beforeAll(async () => {
   process.env.ENCRYPTION_WRITE_VERSION = 'v1'
   process.env.ENCRYPTION_KEY_V1_ACTIVE_KID = 'k1'
   process.env.QA_APPLICANT_SPACE = spaces[0]
+  process.env.QA_APPLICANT_USER = users[0]
+  for (const [index, userId] of users.entries()) {
+    await prisma.user.create({
+      data: { id: userId, email: `qa-comment-${runId}-${index}@example.invalid` },
+    })
+    createdUsers.push(userId)
+  }
   for (const [index, spaceId] of spaces.entries()) {
     await prisma.space.create({ data: { id: spaceId, name: `[QA] 합성 고객 ${index}` } })
     created.push(spaceId)
@@ -98,7 +110,53 @@ afterAll(async () => {
     if (id.startsWith('qa-applicant-') && spaces.includes(id))
       await prisma.space.deleteMany({ where: { id } })
   expect(await prisma.space.count({ where: { id: { in: created } } })).toBe(0)
+  for (const id of createdUsers)
+    if (users.includes(id) && id.startsWith('qa-applicant-user-'))
+      await prisma.user.deleteMany({ where: { id } })
+  expect(await prisma.user.count({ where: { id: { in: createdUsers } } })).toBe(0)
   await prisma.$disconnect()
+})
+
+it('지원자 메모와 코멘트는 고객과 작성자 범위를 지킨다', async () => {
+  const request = (method: string, body: unknown) =>
+    new NextRequest('http://localhost/application', { method, body: JSON.stringify(body) })
+  expect(
+    (
+      await updateApplication(request('PATCH', { memo: '합성 내부 메모' }), {
+        params: Promise.resolve({ id: ownId }),
+      })
+    )?.status
+  ).toBe(200)
+  expect((await prisma.hiringApplication.findUniqueOrThrow({ where: { id: ownId } })).memo).toBe(
+    '합성 내부 메모'
+  )
+  expect(
+    (
+      await addComment(request('POST', { content: '합성 코멘트' }), {
+        params: Promise.resolve({ id: otherId }),
+      })
+    )?.status
+  ).toBe(404)
+  const response = await addComment(request('POST', { content: '합성 코멘트' }), {
+    params: Promise.resolve({ id: ownId }),
+  })
+  expect(response?.status).toBe(201)
+  const comment = (await response!.json()).comment
+  process.env.QA_APPLICANT_USER = users[1]
+  try {
+    expect(
+      (
+        await editComment(request('PATCH', { content: '다른 작성자 수정' }), {
+          params: Promise.resolve({ id: ownId, commentId: comment.id }),
+        })
+      )?.status
+    ).toBe(403)
+  } finally {
+    process.env.QA_APPLICANT_USER = users[0]
+  }
+  expect(
+    (await prisma.hiringComment.findUniqueOrThrow({ where: { id: comment.id } })).content
+  ).toBe('합성 코멘트')
 })
 
 it('목록과 Excel은 같은 고객의 기간 내 미삭제 지원서만 반환한다', async () => {
