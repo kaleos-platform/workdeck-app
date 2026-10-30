@@ -21,6 +21,9 @@ export async function GET(req: NextRequest) {
       onlyLow,
       // 화면만 반품 보조표기를 켠다 — MCP 툴 경로에는 조인 비용을 얹지 않는다
       includeReturnStock: true,
+      includeDiscontinued:
+        searchParams.get('includeDiscontinued') === '1' ||
+        searchParams.get('includeDiscontinued') === 'true',
     })
   )
 }

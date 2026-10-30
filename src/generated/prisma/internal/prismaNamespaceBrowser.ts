@@ -1132,6 +1132,7 @@ export const InvProductOptionScalarFieldEnum = {
   setSizeLabel: 'setSizeLabel',
   attributeValues: 'attributeValues',
   safetyStockQty: 'safetyStockQty',
+  status: 'status',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

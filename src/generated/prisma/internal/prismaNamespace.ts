@@ -13197,6 +13197,7 @@ export const InvProductOptionScalarFieldEnum = {
   setSizeLabel: 'setSizeLabel',
   attributeValues: 'attributeValues',
   safetyStockQty: 'safetyStockQty',
+  status: 'status',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -15379,6 +15380,20 @@ export type EnumProductExtractionSourceKindFieldRefInput<$PrismaModel> = FieldRe
  * Reference to a field of type 'ProductExtractionSourceKind[]'
  */
 export type ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductExtractionSourceKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'InvOptionStatus'
+ */
+export type EnumInvOptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvOptionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'InvOptionStatus[]'
+ */
+export type ListEnumInvOptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvOptionStatus[]'>
     
 
 

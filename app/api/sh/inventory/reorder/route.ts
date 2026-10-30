@@ -52,7 +52,8 @@ export async function GET(req: NextRequest) {
       reorderRoundUnit: true,
       brand: { select: { id: true, name: true } },
       options: {
-        where: { deletedAt: null },
+        // 단종 옵션은 생산·발주 대상이 아니다
+        where: { deletedAt: null, status: 'ACTIVE' },
         select: { id: true, name: true, sku: true, safetyStockQty: true },
       },
       reorderConfig: true,

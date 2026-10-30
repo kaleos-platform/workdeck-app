@@ -49,6 +49,8 @@ type OptionRow = {
   retailPrice: number | string | null
   attributeValues: Record<string, string> | null
   totalStock: number
+  /** 단종(DISCONTINUED)이면 생산·발주에서 제외된다 */
+  status?: 'ACTIVE' | 'DISCONTINUED'
 }
 
 type ProductResp = {
@@ -486,6 +488,31 @@ export function ProductOptionsTable({
     }
   }
 
+  async function setOptionStatus(ids: string[], status: 'ACTIVE' | 'DISCONTINUED') {
+    if (ids.length === 0) return
+    setBulkSaving(true)
+    try {
+      const res = await fetch('/api/sh/inventory/option-status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ optionIds: ids, status }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.message ?? '상태 변경 실패')
+      toast.success(
+        status === 'DISCONTINUED'
+          ? `${data.updated}개 옵션 단종 — 생산·발주에서 제외됩니다`
+          : `${data.updated}개 옵션 판매중으로 변경`
+      )
+      await load()
+      onChanged?.()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '상태 변경 실패')
+    } finally {
+      setBulkSaving(false)
+    }
+  }
+
   async function bulkDelete() {
     if (selected.size === 0) return
     setBulkDeleteConfirmOpen(false)
@@ -553,7 +580,7 @@ export function ProductOptionsTable({
 
   const allChecked = options.length > 0 && selected.size === options.length
   const attrNames = attributes.map((a) => a.name)
-  const colSpan = 1 + attrNames.length + 6 // 체크박스 + 속성 + sku/공급원가/소비자가/마진율/재고/액션
+  const colSpan = 1 + attrNames.length + 7 // 체크박스 + 속성 + sku/공급원가/소비자가/마진율/재고/상태/액션
 
   return (
     <div className="space-y-3">
@@ -614,6 +641,27 @@ export function ProductOptionsTable({
               type="button"
               size="sm"
               variant="ghost"
+              className={floatingActionButtonClass}
+              onClick={() => setOptionStatus(Array.from(selected), 'DISCONTINUED')}
+              disabled={bulkSaving}
+              title="생산·발주 대상에서 제외합니다. 남은 재고는 계속 판매·출고됩니다"
+            >
+              단종 처리
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              onClick={() => setOptionStatus(Array.from(selected), 'ACTIVE')}
+              disabled={bulkSaving}
+            >
+              판매중으로
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
               className={floatingActionButtonDestructiveClass}
               onClick={() => setBulkDeleteConfirmOpen(true)}
               disabled={bulkSaving}
@@ -666,6 +714,7 @@ export function ProductOptionsTable({
               <TableHead className="min-w-[90px]">소비자가</TableHead>
               <TableHead className="min-w-[80px] text-right">마진율</TableHead>
               <TableHead className="w-16 text-right">재고</TableHead>
+              <TableHead className="w-20">상태</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -819,6 +868,36 @@ export function ProductOptionsTable({
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {(opt.totalStock ?? 0).toLocaleString('ko-KR')}
+                    </TableCell>
+                    <TableCell>
+                      <button
+                        type="button"
+                        disabled={bulkSaving}
+                        onClick={() =>
+                          setOptionStatus(
+                            [opt.id],
+                            opt.status === 'DISCONTINUED' ? 'ACTIVE' : 'DISCONTINUED'
+                          )
+                        }
+                        title={
+                          opt.status === 'DISCONTINUED'
+                            ? '클릭하면 판매중으로 바꿉니다'
+                            : '클릭하면 단종 처리합니다 — 생산·발주에서 제외'
+                        }
+                      >
+                        {opt.status === 'DISCONTINUED' ? (
+                          <Badge variant="outline" className="border-zinc-300 text-zinc-500">
+                            단종
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="border-emerald-200 bg-emerald-50 text-emerald-700"
+                          >
+                            판매중
+                          </Badge>
+                        )}
+                      </button>
                     </TableCell>
                     <TableCell>
                       <Button
