@@ -14875,6 +14875,7 @@ export const SubscriptionItemScalarFieldEnum = {
   type: 'type',
   deckAppId: 'deckAppId',
   priceSnapshot: 'priceSnapshot',
+  lockedPrice: 'lockedPrice',
   status: 'status',
   addedAt: 'addedAt',
   endedAt: 'endedAt'

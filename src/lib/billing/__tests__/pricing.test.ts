@@ -5,9 +5,19 @@ import {
   remainingDaysBetween,
   cycleOrderId,
   prorateOrderId,
+  effectivePrice,
 } from '../pricing'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { DECK_CATALOG_DEFAULTS } from '../catalog-defaults'
+
+describe('effectivePrice', () => {
+  test('보장가 없으면 정가, 있으면 보장가, 정가가 더 낮으면 정가', () => {
+    expect(effectivePrice(null, 20000)).toBe(20000)
+    expect(effectivePrice(undefined, 20000)).toBe(20000)
+    expect(effectivePrice(12273, 20000)).toBe(12273)
+    expect(effectivePrice(12273, 10000)).toBe(10000)
+  })
+})
 
 describe('calcAmounts / sumLines', () => {
   test('VAT 별도: 공급가 × 1.1', () => {

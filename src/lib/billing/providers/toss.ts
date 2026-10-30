@@ -11,6 +11,10 @@ import type {
 } from './types'
 
 const API_BASE = 'https://api.tosspayments.com'
+// 승인 응답 최대 60초 + 여유. 호출 라우트 maxDuration(90초) 안에서 끝나야 한다.
+const FETCH_TIMEOUT_MS = 75_000
+// 이 코드들은 "이 주문이 이미 처리됐을 수 있다"는 뜻 — 거절이 아니라 조회로 확정해야 한다
+const DUPLICATE_ORDER_CODES = new Set(['DUPLICATED_ORDER_ID', 'ALREADY_PROCESSED_PAYMENT'])
 
 function authHeader(): string {
   const secretKey = process.env.TOSS_SECRET_KEY
@@ -35,6 +39,7 @@ async function tossFetch(
       'Content-Type': 'application/json',
     },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })
 }
 
@@ -96,6 +101,7 @@ export const tossProvider: BillingProvider = {
         ok: false,
         paymentKey: null,
         failReason: `${err.code ?? res.status}: ${err.message ?? '결제 승인 실패'}`,
+        unknown: res.status >= 500 || DUPLICATE_ORDER_CODES.has(err.code ?? ''),
       }
     }
     const data = (await res.json()) as TossPaymentResponse
@@ -122,6 +128,18 @@ export const tossProvider: BillingProvider = {
       orderId: b?.data?.orderId ?? null,
       paymentKey: b?.data?.paymentKey ?? null,
     }
+  },
+
+  // GET /v1/payments/orders/{orderId} — 없으면 404 NOT_FOUND_PAYMENT
+  async fetchPaymentByOrderId(orderId: string) {
+    const res = await tossFetch(`/v1/payments/orders/${encodeURIComponent(orderId)}`)
+    if (res.status === 404) return null
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as TossErrorBody
+      throw new Error(`토스 주문 조회 실패: ${err.code ?? res.status} ${err.message ?? ''}`)
+    }
+    const data = (await res.json()) as TossPaymentResponse
+    return { paymentKey: data.paymentKey, orderId: data.orderId, status: data.status }
   },
 
   async fetchPaymentStatus(paymentKey: string) {

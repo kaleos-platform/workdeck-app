@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { MyDeckClient } from '@/components/my-deck/my-deck-client'
 import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
+import { effectivePrice } from '@/lib/billing/pricing'
 
 function findMembership(where: { userId: string; spaceId?: string }) {
   return prisma.spaceMember.findFirst({
@@ -62,12 +63,14 @@ export default async function MyDeckPage({
     select: {
       status: true,
       items: {
-        where: { type: 'DECK', status: 'ACTIVE' },
-        select: { deckAppId: true },
+        where: { type: 'DECK' },
+        select: { deckAppId: true, status: true, lockedPrice: true },
       },
     },
   })
-  const subscribedDeckIds = subscription?.items.map((item) => item.deckAppId) ?? []
+  const subscribedDeckIds =
+    subscription?.items.filter((item) => item.status === 'ACTIVE').map((item) => item.deckAppId) ??
+    []
 
   // 유료 업무를 추가하려면 구독이 선행되어야 한다. 클라이언트가 추가 전에
   // 구독 확인 모달을 띄울지 판단할 수 있도록 가격·결제수단·접근권한을 함께 내린다.
@@ -107,7 +110,12 @@ export default async function MyDeckPage({
       billing={billingProducts.map((product) => ({
         id: product.id,
         pricingMode: product.pricingMode,
-        monthlyPrice: product.monthlyPrice,
+        // 이전 고객 보장가가 있으면 확인 모달에 실제 청구액을 보여준다 (ENDED 아이템에 남아 있음)
+        monthlyPrice: effectivePrice(
+          subscription?.items.find((i) => i.deckAppId === product.id)?.lockedPrice,
+          product.monthlyPrice
+        ),
+        listPrice: product.monthlyPrice,
         allowed: entitlement.decks[product.id]?.allowed ?? false,
       }))}
     />
