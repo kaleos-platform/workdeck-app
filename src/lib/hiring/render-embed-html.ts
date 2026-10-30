@@ -195,6 +195,7 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
       for (const p of posting.positions) {
         const rows: string[] = []
         rows.push(renderRow('급여', formatPay(p.payFrequency, p.payAmount)))
+        if (p.headcount != null) rows.push(renderRow('모집 인원', `${p.headcount}명`))
         const workDays = formatWorkDays(p.workDays)
         if (workDays) rows.push(renderRow('근무 요일', workDays))
         const workTime = formatWorkTime(p.workStartAt, p.workEndAt)
