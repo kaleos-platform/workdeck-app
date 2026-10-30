@@ -9,6 +9,7 @@ import {
   refreshMatchedQuantities,
   resolveFileOnlyEntries,
 } from '@/lib/inv/reconciliation-resolve'
+import { applyExclusions } from '@/lib/inv/reconciliation-exclusion'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -36,7 +37,11 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   // 현재 시스템 재고를 기준으로 matched-equal/matched-diff로 가상 변환 (N entries 분리)
   // 스냅샷 DB는 수정하지 않음. entry.locationId 우선, 없으면 recon.locationId fallback.
   const rawEntries = (recon.matchResults ?? []) as MatchEntry[]
-  const resolved2 = await resolveFileOnlyEntries(rawEntries, recon.locationId)
+  // 그 뒤 대조 제외/해제를 반영한다 — 매핑이 제외보다 우선이라 순서가 중요하다.
+  const resolved2 = await applyExclusions(
+    await resolveFileOnlyEntries(rawEntries, recon.locationId),
+    recon.locationId
+  )
 
   // matched-* 의 systemQuantity/delta 를 현재 재고로 갱신 — 저장된 값은 매칭 시점 값이라
   // 오래된 대조를 열면 확정 결과와 다른 숫자를 보여준다. 확정 경로도 같은 규칙을 쓴다.

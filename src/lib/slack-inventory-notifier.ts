@@ -207,6 +207,7 @@ export type AutoReconciliationIssue =
   | { kind: 'skip:incomplete-snapshot'; rowCount: number; baseline: number }
   | { kind: 'skip:large-delta'; changedRatio: number; systemOnlyRatio: number }
   | { kind: 'file-only'; count: number }
+  | { kind: 'excluded-with-stock'; count: number }
   | { kind: 'system-only-unmapped'; count: number }
   | { kind: 'failed'; count: number; firstReason: string }
 
@@ -249,6 +250,11 @@ export async function notifyAutoReconciliation(params: {
           `• *미매핑 외부 SKU ${issue.count}건*\n` +
           `  매핑이 없어 자동 반영하지 못했습니다. 매핑하면 다음 회차부터 자동 반영됩니다.\n` +
           `  _미매핑이 남아 있는 동안 '스냅샷에 없는 재고 0 처리'는 비활성입니다._`
+        )
+      case 'excluded-with-stock':
+        return (
+          `• *대조 제외한 SKU 에 재고 발생 ${issue.count}건* (위 미매핑에 포함)\n` +
+          `  판매중지 등으로 제외했던 SKU 에 수량이 잡혔습니다. 매핑하거나 확인 후 다시 제외하세요.`
         )
       case 'system-only-unmapped':
         return (
