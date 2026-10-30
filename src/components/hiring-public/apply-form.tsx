@@ -242,7 +242,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
       {positions.length > 1 && (
         <div className="space-y-1.5">
           <Label className="text-sm">지원 부문</Label>
-          <Select value={positionId} onValueChange={setPositionId}>
+          <Select value={positionId} onValueChange={setPositionId} disabled={submitting}>
             <SelectTrigger>
               <SelectValue placeholder="지원할 부문을 선택하세요" />
             </SelectTrigger>
@@ -265,6 +265,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
             {stores.map((s) => (
               <label key={s.id} className="flex items-center gap-2 text-sm">
                 <Checkbox
+                  disabled={submitting}
                   checked={storeIds.has(s.id)}
                   onCheckedChange={(v) =>
                     setStoreIds((prev) => {
@@ -298,6 +299,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
                 placeholder={f.placeholder}
                 rows={4}
                 {...register(f.key)}
+                disabled={submitting}
               />
             ) : f.type === 'select' ? (
               <Controller
@@ -307,6 +309,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
                   <Select
                     value={typeof field.value === 'string' ? field.value : ''}
                     onValueChange={field.onChange}
+                    disabled={submitting}
                   >
                     <SelectTrigger id={`field-${f.key}`}>
                       <SelectValue placeholder="선택하세요" />
@@ -332,6 +335,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
                       {(f.options ?? []).map((opt) => (
                         <label key={opt} className="flex items-center gap-2 text-sm">
                           <Checkbox
+                            disabled={submitting}
                             checked={selected.includes(opt)}
                             onCheckedChange={(v) => {
                               const next =
@@ -354,6 +358,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
                 inputMode={f.type === 'phone' ? 'tel' : undefined}
                 placeholder={f.placeholder}
                 {...register(f.key)}
+                disabled={submitting}
               />
             )}
 
@@ -451,6 +456,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
           <div className="space-y-1.5">
             <label className="flex items-start gap-2 text-sm">
               <Checkbox
+                disabled={submitting}
                 className="mt-0.5"
                 checked={field.value === true}
                 onCheckedChange={(v) => field.onChange(v === true)}
@@ -471,6 +477,16 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
         )}
       />
 
+      {uploadBatch.current?.lastAttemptedPayload && !submitting && (
+        <p
+          role="status"
+          className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-400/30 dark:bg-amber-900/40 dark:text-amber-200"
+        >
+          다시 제출하면 이전에 제출한 내용으로 결과를 확인합니다. 이후 수정한 내용은 반영되지 않을
+          수 있습니다.
+        </p>
+      )}
+
       {submitError && (
         <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
           {submitError}
@@ -479,7 +495,9 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
 
       <Button type="submit" className="w-full" disabled={submitting || preview}>
         {submitting && <Loader2 className="mr-1 size-4 animate-spin" />}
-        지원서 제출
+        {uploadBatch.current?.lastAttemptedPayload && !submitting
+          ? '이전 제출 결과 확인'
+          : '지원서 제출'}
       </Button>
       {preview && (
         <p className="text-center text-xs text-muted-foreground">
