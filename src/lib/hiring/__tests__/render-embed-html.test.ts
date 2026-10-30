@@ -170,6 +170,8 @@ it('대표 블록 조합을 누락 없이 렌더하고 지원서 연결을 표�
       '지원하기'
     )
     expect(root.textContent).toContain('매장 직원')
+    expect(root.textContent).toContain('모집 인원')
+    expect(root.textContent).toContain('1명')
   } finally {
     if (previous === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
     else process.env.NEXT_PUBLIC_SUPABASE_URL = previous
