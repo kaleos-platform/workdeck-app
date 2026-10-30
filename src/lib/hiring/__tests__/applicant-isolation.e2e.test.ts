@@ -11,6 +11,13 @@ import { PATCH as updateApplication } from '../../../../app/api/hiring-applicant
 import { PATCH as bulkUpdate } from '../../../../app/api/hiring-applicants/applications/bulk/route'
 import { POST as addComment } from '../../../../app/api/hiring-applicants/applications/[id]/comments/route'
 import { PATCH as editComment } from '../../../../app/api/hiring-applicants/applications/[id]/comments/[commentId]/route'
+import { GET as getFile } from '../../../../app/api/hiring-applicants/applications/[id]/files/[fileId]/route'
+import { getApplicantFileSignedUrl } from '@/lib/hiring/storage'
+
+jest.mock('@/lib/hiring/storage', () => ({
+  ...jest.requireActual('@/lib/hiring/storage'),
+  getApplicantFileSignedUrl: jest.fn(async () => 'https://storage.invalid/qa'),
+}))
 
 jest.mock('@/lib/api-helpers', () => {
   const actual = jest.requireActual('@/lib/api-helpers')
@@ -30,6 +37,7 @@ const created: string[] = []
 const createdUsers: string[] = []
 let ownId = ''
 let otherId = ''
+let deletedId = ''
 
 beforeAll(async () => {
   const ref = 'tumkfkfgzkmisguyaghn'
@@ -91,7 +99,7 @@ beforeAll(async () => {
     if (index) otherId = application.id
     else {
       ownId = application.id
-      await prisma.hiringApplication.create({
+      const deleted = await prisma.hiringApplication.create({
         data: {
           spaceId,
           postingId: posting.id,
@@ -102,8 +110,33 @@ beforeAll(async () => {
           ],
         },
       })
+      deletedId = deleted.id
     }
   }
+})
+
+it('첨부 링크는 같은 고객의 삭제되지 않은 지원서에만 발급한다', async () => {
+  const files = await Promise.all(
+    [ownId, otherId, deletedId].map((applicationId, index) =>
+      prisma.hiringApplicationFile.create({
+        data: {
+          spaceId: index === 1 ? spaces[1] : spaces[0],
+          applicationId,
+          fileName: 'qa.pdf',
+          filePath: `qa/${runId}/${index}.pdf`,
+          mimeType: 'application/pdf',
+          sizeBytes: 10,
+        },
+      })
+    )
+  )
+  const request = new NextRequest('http://localhost/file')
+  const get = (id: string, fileId: string) =>
+    getFile(request, { params: Promise.resolve({ id, fileId }) })
+  expect((await get(ownId, files[0].id))?.status).toBe(200)
+  expect((await get(otherId, files[1].id))?.status).toBe(404)
+  expect((await get(deletedId, files[2].id))?.status).toBe(404)
+  expect(getApplicantFileSignedUrl).toHaveBeenCalledTimes(1)
 })
 afterAll(async () => {
   for (const id of created)
