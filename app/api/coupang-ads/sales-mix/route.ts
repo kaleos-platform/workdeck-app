@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
       return errorResponse('startDate, endDate 파라미터가 필요합니다 (YYYY-MM-DD)', 400)
     }
 
+    if (startDate > endDate) return errorResponse('startDate 가 endDate 보다 늦습니다', 400)
+
     return NextResponse.json(
       await measureCoupangAds<unknown>('data', () =>
         productId

@@ -15,8 +15,8 @@ const num = (v: unknown) => Number(v ?? 0)
 const ymd = (ms: number) => new Date(ms).toISOString().slice(0, 10)
 const kstStart = (d: string) => new Date(d + 'T00:00:00+09:00')
 const kstEnd = (d: string) => new Date(d + 'T23:59:59+09:00')
-const SNAP_DAY = Prisma.sql`to_char(("snapshotDate" AT TIME ZONE 'Asia/Seoul')::date, 'YYYY-MM-DD')`
-const AD_DAY = Prisma.sql`to_char(("date" AT TIME ZONE 'Asia/Seoul')::date, 'YYYY-MM-DD')`
+const SNAP_DAY = Prisma.sql`to_char((("snapshotDate" AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Seoul')::date, 'YYYY-MM-DD')`
+const AD_DAY = Prisma.sql`to_char((("date" AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Seoul')::date, 'YYYY-MM-DD')`
 
 function ranges(startDate: string, endDate: string) {
   const days = Math.round((Date.parse(endDate) - Date.parse(startDate)) / DAY_MS) + 1

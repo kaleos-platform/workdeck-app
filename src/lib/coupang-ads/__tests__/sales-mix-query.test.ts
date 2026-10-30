@@ -7,7 +7,7 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 
-import { querySalesMix } from '@/lib/coupang-ads/sales-mix-query'
+import { querySalesMix, querySalesMixProductDetail } from '@/lib/coupang-ads/sales-mix-query'
 
 const { prisma } = jest.requireMock('@/lib/prisma') as {
   prisma: { $queryRaw: jest.Mock; coupangCredential: { findUnique: jest.Mock } }
@@ -60,5 +60,24 @@ describe('querySalesMix', () => {
     mockRows([])
     await expect(querySalesMix('w1', opts)).resolves.toEqual({ empty: 'no-data' })
     expect(prisma.$queryRaw).toHaveBeenCalled()
+  })
+})
+
+describe('querySalesMixProductDetail', () => {
+  beforeEach(() => prisma.$queryRaw.mockReset())
+
+  it('기간 전 일자를 0으로 채우고 옵션이 없으면 광고 쿼리를 건너뜀', async () => {
+    prisma.$queryRaw
+      .mockResolvedValueOnce([{ optionId: 'o9', productId: 'other' }]) // 매핑
+      .mockResolvedValueOnce([{ date: '2026-06-02', revenue: '500.00' }]) // 벤더 일별
+      .mockResolvedValueOnce([
+        { optionId: 'o1', optionName: 'x', revenue: '500.00', salesQty: '2' },
+      ]) // 옵션별
+    const d = await querySalesMixProductDetail('w1', { ...opts, productId: 'p1' })
+    expect(prisma.$queryRaw).toHaveBeenCalledTimes(3)
+    expect(d.daily).toHaveLength(7)
+    expect(d.daily[0]).toEqual({ date: '2026-06-01', revenue: 0, adCost: 0 })
+    expect(d.daily[1].revenue).toBe(500)
+    expect(d.options[0]).toEqual({ optionId: 'o1', optionName: 'x', revenue: 500, salesQty: 2 })
   })
 })
