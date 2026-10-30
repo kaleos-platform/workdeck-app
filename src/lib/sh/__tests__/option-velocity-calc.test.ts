@@ -125,6 +125,17 @@ describe('judgeProductionStatus', () => {
     suggestedProductionQty: 0,
   }
 
+  it('단종 옵션은 판매·재고와 무관하게 DISCONTINUED', () => {
+    const r = judgeProductionStatus({
+      ...base,
+      discontinued: true,
+      totalDailyVelocityRaw: 5,
+      totalAvailableQty: 0,
+      suggestedProductionQty: 100,
+    })
+    expect(r.status).toBe('DISCONTINUED')
+  })
+
   it('판매 0 → NO_SALES, 소진일 null', () => {
     const r = judgeProductionStatus({ ...base, totalDailyVelocityRaw: 0, totalAvailableQty: 100 })
     expect(r.status).toBe('NO_SALES')

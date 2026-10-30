@@ -185,6 +185,14 @@ export const InvProductStatus = {
 export type InvProductStatus = (typeof InvProductStatus)[keyof typeof InvProductStatus]
 
 
+export const InvOptionStatus = {
+  ACTIVE: 'ACTIVE',
+  DISCONTINUED: 'DISCONTINUED'
+} as const
+
+export type InvOptionStatus = (typeof InvOptionStatus)[keyof typeof InvOptionStatus]
+
+
 export const SecretKind = {
   API_KEY: 'API_KEY',
   LOGIN: 'LOGIN',

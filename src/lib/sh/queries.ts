@@ -286,6 +286,8 @@ export interface QueryStockStatusOptions {
    * 이 값은 "그중 얼마가 반품인가"를 보조 표기하기 위한 파생값이다.
    */
   includeReturnStock?: boolean
+  /** 재고·입고예정이 모두 0 인 단종 옵션도 포함할지. 기본 false(숨김) */
+  includeDiscontinued?: boolean
 }
 
 /**
@@ -426,6 +428,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
               costPrice: true,
               retailPrice: true,
               safetyStockQty: true,
+              status: true,
               stockLevels: {
                 select: { locationId: true, quantity: true },
               },
@@ -499,6 +502,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     returnQtyByLocation?: Record<string, number>
     externalCodeByLocation: Record<string, string>
     status: StatusLabel
+    optionStatus: 'ACTIVE' | 'DISCONTINUED'
   }
 
   // 반품 등급 보유량(파생) — 원장이 아니라 최신 쿠팡 스냅샷 기준이다.
@@ -519,6 +523,16 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
         const returnQtyByLocation =
           returnQty > 0 && returnStock ? { [returnStock.locationId]: returnQty } : undefined
         const incomingQty = incomingByOption.get(o.id) ?? 0
+        // 단종 + 남은 재고·입고예정 없음 → 관리 대상이 아니다(KPI·품절 집계에서도 빠진다).
+        // 재고 음수는 정리가 필요하므로 계속 보인다.
+        if (
+          o.status === 'DISCONTINUED' &&
+          currentQty === 0 &&
+          incomingQty === 0 &&
+          !opts.includeDiscontinued
+        ) {
+          continue
+        }
         const totalQty = plannedStockQty({ onHandQty: currentQty, incomingQty })
         const costPrice = decimalToNumber(o.costPrice)
         const totalValue = costPrice !== null ? Math.round(costPrice * totalQty) : 0
@@ -555,6 +569,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           ...(returnQtyByLocation ? { returnQtyByLocation } : {}),
           externalCodeByLocation,
           status: statusForSku(totalQty, out30d, out90d),
+          optionStatus: o.status,
         })
       }
     }

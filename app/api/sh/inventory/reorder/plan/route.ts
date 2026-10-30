@@ -166,7 +166,12 @@ export async function POST(req: NextRequest) {
         brandId: true,
         reorderRoundUnit: true,
         options: {
-          ...(selectedOptionIds ? { where: { id: { in: selectedOptionIds } } } : {}),
+          // 삭제·단종 옵션은 생산·발주 대상이 아니다
+          where: {
+            deletedAt: null,
+            status: 'ACTIVE',
+            ...(selectedOptionIds ? { id: { in: selectedOptionIds } } : {}),
+          },
           select: { id: true, safetyStockQty: true },
         },
         reorderConfig: { select: { leadTimeDays: true, analysisWindowDays: true } },
@@ -176,8 +181,9 @@ export async function POST(req: NextRequest) {
     if (products.length === 0) {
       return errorResponse('선택한 상품을 찾을 수 없습니다 (활성 상태가 아니거나 권한 없음)', 422)
     }
-    if (selectedOptionIds && products.every((p) => p.options.length === 0)) {
-      return errorResponse('선택된 옵션이 없습니다', 422)
+    // 옵션이 전부 삭제·단종이면 빈 계획이 만들어진다 — 선택 여부와 무관하게 막는다
+    if (products.every((p) => p.options.length === 0)) {
+      return errorResponse('발주할 옵션이 없습니다 (선택 옵션이 없거나 모두 단종)', 422)
     }
 
     // ── 레이어드 탐지 — 자동 감지 + 사용자가 고른 다수 연동 위치 직접 탐색 ──
@@ -305,7 +311,8 @@ export async function POST(req: NextRequest) {
       new Set(setSpecs.flatMap((s) => s.items.map((i) => i.optionId)))
     )
     const options = await prisma.invProductOption.findMany({
-      where: { id: { in: compOptionIds }, product: { spaceId } },
+      // 세트 구성 중 삭제·단종 옵션은 생산 대상에서 뺀다
+      where: { id: { in: compOptionIds }, product: { spaceId }, deletedAt: null, status: 'ACTIVE' },
       select: {
         id: true,
         safetyStockQty: true,
