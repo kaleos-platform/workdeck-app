@@ -42,7 +42,13 @@ export const DEFAULT_STATUS_THRESHOLDS: StatusThresholds = {
 }
 
 export type ReplenishmentStatus = 'OUT_OF_STOCK_RISK' | 'REPLENISH' | 'WATCH' | 'OK' | 'NO_SALES'
-export type ProductionStatus = 'PRODUCE_NOW' | 'PRODUCE_SOON' | 'OK' | 'NO_SALES' | 'CHECK_STOCK'
+export type ProductionStatus =
+  | 'PRODUCE_NOW'
+  | 'PRODUCE_SOON'
+  | 'OK'
+  | 'NO_SALES'
+  | 'CHECK_STOCK'
+  | 'DISCONTINUED'
 export type VelocitySortBy = 'rocket' | 'production' | 'stockValue'
 
 /**
@@ -150,8 +156,10 @@ export function suggestProductionQty(input: {
  * 전사(재고+입고예정−안전재고) 소진일 vs 생산 리드타임 판정.
  * PRODUCE_SOON 은 suggestedProductionQty>0 과 같은 조건(리드타임+목표재고일 미달)이다.
  * 재고 음수(기록 없이 출고)는 생산 필요인지 재고 미관리인지 알 수 없어 CHECK_STOCK 으로 분리한다.
+ * 단종 옵션은 판매·재고와 무관하게 DISCONTINUED — 생산하지 않는다(남은 재고 판매·로켓 이동은 별개).
  */
 export function judgeProductionStatus(input: {
+  discontinued?: boolean
   totalDailyVelocityRaw: number
   totalAvailableQty: number
   incomingQty: number
@@ -160,6 +168,13 @@ export function judgeProductionStatus(input: {
   targetCoverDays: number
   suggestedProductionQty: number
 }): { status: ProductionStatus; reason: string; daysOfCoverWithIncoming: number | null } {
+  if (input.discontinued) {
+    return {
+      status: 'DISCONTINUED',
+      reason: '단종 옵션 — 생산하지 않음',
+      daysOfCoverWithIncoming: null,
+    }
+  }
   if (input.totalDailyVelocityRaw <= 0) {
     return { status: 'NO_SALES', reason: '기간 내 판매 0', daysOfCoverWithIncoming: null }
   }
@@ -306,6 +321,7 @@ export async function queryOptionSalesVelocity(
         safetyStockQty: true,
         costPrice: true,
         costVatIncluded: true,
+        status: true,
         product: {
           select: {
             id: true,
@@ -431,15 +447,19 @@ export async function queryOptionSalesVelocity(
     const configLeadTime = o.product.reorderConfig?.leadTimeDays
     const productionLeadTimeDays = configLeadTime ?? defaultProductionLeadTimeDays
     const leadTimeSource: 'config' | 'default' = configLeadTime != null ? 'config' : 'default'
-    const suggestedProductionQty = suggestProductionQty({
-      totalDailyVelocityRaw: salesQty / periodDays,
-      targetCoverDays,
-      leadTimeDays: productionLeadTimeDays,
-      safetyStockQty,
-      totalAvailableQty,
-      incomingQty,
-    })
+    const discontinued = o.status === 'DISCONTINUED'
+    const suggestedProductionQty = discontinued
+      ? 0
+      : suggestProductionQty({
+          totalDailyVelocityRaw: salesQty / periodDays,
+          targetCoverDays,
+          leadTimeDays: productionLeadTimeDays,
+          safetyStockQty,
+          totalAvailableQty,
+          incomingQty,
+        })
     const production = judgeProductionStatus({
+      discontinued,
       totalDailyVelocityRaw: salesQty / periodDays,
       totalAvailableQty,
       incomingQty,
@@ -501,6 +521,7 @@ export async function queryOptionSalesVelocity(
       leadTimeSource,
       productionStatus: production.status,
       productionStatusReason: production.reason,
+      optionStatus: o.status,
     }
   })
 
@@ -553,6 +574,7 @@ export async function queryOptionSalesVelocity(
     OK: 0,
     NO_SALES: 0,
     CHECK_STOCK: 0,
+    DISCONTINUED: 0,
   }
   for (const r of filtered) productionStatusCounts[r.productionStatus] += 1
   const negativeStockSkuCount = filtered.filter((r) => r.totalAvailableQty < 0).length
@@ -638,6 +660,7 @@ function emptyResult(input: {
         OK: 0,
         NO_SALES: 0,
         CHECK_STOCK: 0,
+        DISCONTINUED: 0,
       },
       truncatedForSize: false,
       returned: 0,

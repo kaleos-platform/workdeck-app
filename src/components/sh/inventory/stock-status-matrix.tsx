@@ -1,7 +1,10 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Info } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
@@ -26,6 +29,8 @@ type Props = {
   locationPicker?: ReactNode
   /** 등급 기준 안내·편집 팝오버 */
   gradeInfo?: ReactNode
+  /** 옵션 상태 일괄 변경 — 넘기면 행 선택 체크박스가 생긴다 */
+  onSetOptionStatus?: (optionIds: string[], status: 'ACTIVE' | 'DISCONTINUED') => Promise<void>
 }
 
 const KRW = new Intl.NumberFormat('ko-KR')
@@ -42,7 +47,24 @@ export function StockStatusMatrix({
   toolbar,
   locationPicker,
   gradeInfo,
+  onSetOptionStatus,
 }: Props) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [savingStatus, setSavingStatus] = useState(false)
+  // 상품을 바꾸면 행이 바뀐다 — 화면에 없는 옵션이 선택에 남지 않게 교집합만 쓴다.
+  const pickedIds = rows.filter((r) => selectedIds.has(r.optionId)).map((r) => r.optionId)
+
+  async function applyStatus(status: 'ACTIVE' | 'DISCONTINUED') {
+    if (!onSetOptionStatus || pickedIds.length === 0) return
+    setSavingStatus(true)
+    try {
+      await onSetOptionStatus(pickedIds, status)
+      setSelectedIds(new Set())
+    } finally {
+      setSavingStatus(false)
+    }
+  }
+
   const capped = rows.length > ROW_CAP
   const displayRows = capped ? rows.slice(0, ROW_CAP) : rows
   const visibleLocations = resolveVisibleLocations(
@@ -65,6 +87,38 @@ export function StockStatusMatrix({
               </span>
             )}
         </CardTitle>
+        {onSetOptionStatus && pickedIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-1.5 text-xs">
+            <span className="font-medium">{pickedIds.length}개 옵션 선택</span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7"
+              disabled={savingStatus}
+              onClick={() => applyStatus('DISCONTINUED')}
+              title="생산·발주 대상에서 제외합니다. 남은 재고는 계속 판매·출고되고, 재고가 0이 되면 이 화면에서 숨겨집니다"
+            >
+              단종 처리
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7"
+              disabled={savingStatus}
+              onClick={() => applyStatus('ACTIVE')}
+            >
+              판매중으로
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              선택 해제
+            </Button>
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
             {toolbar}
@@ -145,12 +199,42 @@ export function StockStatusMatrix({
                       <td className="sticky left-0 z-10 border-r bg-card px-3 py-2">
                         {/* 매트릭스는 항상 한 상품만 보여주고 상품명은 카드 제목에 있다 —
                             행마다 상품명을 반복하면 옵션 컬럼만 넓어지고 정보는 늘지 않는다. */}
-                        <div className="truncate text-sm font-medium">{row.optionName}</div>
-                        {row.sku && (
-                          <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                            {row.sku}
+                        <div className="flex min-w-0 items-start gap-2">
+                          {onSetOptionStatus && (
+                            <Checkbox
+                              className="mt-0.5"
+                              checked={selectedIds.has(row.optionId)}
+                              onCheckedChange={(v) =>
+                                setSelectedIds((prev) => {
+                                  const next = new Set(prev)
+                                  if (v) next.add(row.optionId)
+                                  else next.delete(row.optionId)
+                                  return next
+                                })
+                              }
+                              aria-label={`${row.optionName} 선택`}
+                            />
+                          )}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="truncate text-sm font-medium">{row.optionName}</span>
+                              {row.optionStatus === 'DISCONTINUED' && (
+                                <Badge
+                                  variant="outline"
+                                  className="shrink-0 border-zinc-300 px-1 py-0 text-[10px] font-normal text-zinc-500"
+                                  title="단종 — 생산·발주에서 제외. 재고가 0이 되면 숨겨집니다"
+                                >
+                                  단종
+                                </Badge>
+                              )}
+                            </div>
+                            {row.sku && (
+                              <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                                {row.sku}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </td>
                       <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
                         {row.out30d > 0 || row.out90d > 0 ? (

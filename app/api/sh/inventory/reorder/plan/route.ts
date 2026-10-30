@@ -166,7 +166,12 @@ export async function POST(req: NextRequest) {
         brandId: true,
         reorderRoundUnit: true,
         options: {
-          ...(selectedOptionIds ? { where: { id: { in: selectedOptionIds } } } : {}),
+          // 삭제·단종 옵션은 생산·발주 대상이 아니다
+          where: {
+            deletedAt: null,
+            status: 'ACTIVE',
+            ...(selectedOptionIds ? { id: { in: selectedOptionIds } } : {}),
+          },
           select: { id: true, safetyStockQty: true },
         },
         reorderConfig: { select: { leadTimeDays: true, analysisWindowDays: true } },
@@ -305,7 +310,8 @@ export async function POST(req: NextRequest) {
       new Set(setSpecs.flatMap((s) => s.items.map((i) => i.optionId)))
     )
     const options = await prisma.invProductOption.findMany({
-      where: { id: { in: compOptionIds }, product: { spaceId } },
+      // 세트 구성 중 삭제·단종 옵션은 생산 대상에서 뺀다
+      where: { id: { in: compOptionIds }, product: { spaceId }, deletedAt: null, status: 'ACTIVE' },
       select: {
         id: true,
         safetyStockQty: true,

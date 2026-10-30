@@ -98,6 +98,8 @@ export type StockMatrixRow = {
   out30d: number
   out90d: number
   status: SkuStatus
+  /** 옵션 상태 — 단종이면 생산·발주에서 빠진다. 재고 0 단종은 응답에서 빠져 있다(단종 포함 제외) */
+  optionStatus?: 'ACTIVE' | 'DISCONTINUED'
 }
 
 export type StockStatusResponse = {

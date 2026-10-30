@@ -72,7 +72,12 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
         id: true,
         reorderRoundUnit: true,
         options: {
-          ...(selectedOptionIds ? { where: { id: { in: selectedOptionIds } } } : {}),
+          // 삭제·단종 옵션은 생산·발주 대상이 아니다
+          where: {
+            deletedAt: null,
+            status: 'ACTIVE',
+            ...(selectedOptionIds ? { id: { in: selectedOptionIds } } : {}),
+          },
           select: { id: true, safetyStockQty: true },
         },
         reorderConfig: { select: { leadTimeDays: true, analysisWindowDays: true } },

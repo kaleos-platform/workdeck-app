@@ -8,6 +8,9 @@ import { Input } from '@/components/ui/input'
 type Props = {
   q: string
   onlyLow: boolean
+  /** 재고 0 단종 옵션까지 보기 */
+  withDiscontinued?: boolean
+  onWithDiscontinuedChange?: (v: boolean) => void
   onSearchChange: (q: string) => void
   onOnlyLowChange: (v: boolean) => void
   onClearFilters: () => void
@@ -16,6 +19,8 @@ type Props = {
 export function StockStatusToolbar({
   q,
   onlyLow,
+  withDiscontinued = false,
+  onWithDiscontinuedChange,
   onSearchChange,
   onOnlyLowChange,
   onClearFilters,
@@ -58,6 +63,16 @@ export function StockStatusToolbar({
         >
           조치 필요만
         </Button>
+        {onWithDiscontinuedChange && (
+          <Button
+            size="sm"
+            variant={withDiscontinued ? 'default' : 'outline'}
+            onClick={() => onWithDiscontinuedChange(!withDiscontinued)}
+            title="재고가 0인 단종 옵션은 기본으로 숨깁니다"
+          >
+            단종 포함
+          </Button>
+        )}
         {hasFilters && (
           <Button size="sm" variant="ghost" onClick={onClearFilters}>
             <X className="mr-1 h-3.5 w-3.5" />
