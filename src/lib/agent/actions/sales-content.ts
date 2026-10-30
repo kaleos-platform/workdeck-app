@@ -140,13 +140,13 @@ async function requireSpaceBrand(spaceId: string, brandId: string) {
 
 /**
  * 브랜드 1개의 세일즈 콘텐츠 기초 데이터(채널·브랜드 프로필·상품)를 승인 1회로 등록한다.
- * 채널은 같은 slug 가 있으면 그대로 두고, 상품은 같은 브랜드에 같은 이름이 있으면 건너뛴다(재제안 안전).
- * 프로필은 넘긴 필드만 덮어쓴다 — 실행 전 프로필을 snapshot 으로 남긴다.
+ * 채널은 같은 slug 가 있으면 그대로 둔다. 상품은 같은 브랜드에 같은 이름이 있으면 새로 만들지 않고
+ * 넘긴 설명(oneLinerPitch·customFields)만 보충한다. 프로필도 넘긴 필드만 덮어쓴다 — 실행 전 값을 snapshot 으로 남긴다.
  */
 const setupApply: ActionDefinition<SetupApplyParams> = {
   actionType: 'sales-content.setup.apply',
   deckKey: 'sales-content',
-  title: '세일즈 콘텐츠 채널·브랜드 프로필·상품 등록',
+  title: '세일즈 콘텐츠 채널·브랜드 프로필·상품 등록·보충',
   paramsSchema: setupApplyParams,
   requiredRole: 'ADMIN',
   retryableAfterFailure: true,
@@ -159,6 +159,16 @@ const setupApply: ActionDefinition<SetupApplyParams> = {
       where: { spaceId: ctx.spaceId, brandId: params.brandId },
       select: { companyName: true, shortDescription: true, toneOfVoice: true, customFields: true },
     }),
+    products: params.products?.length
+      ? await prisma.product.findMany({
+          where: {
+            spaceId: ctx.spaceId,
+            brandId: params.brandId,
+            name: { in: params.products.map((p) => p.name) },
+          },
+          select: { name: true, oneLinerPitch: true, customFields: true },
+        })
+      : [],
   }),
   execute: async (ctx, params) => {
     const { spaceId } = ctx
@@ -194,6 +204,16 @@ const setupApply: ActionDefinition<SetupApplyParams> = {
           select: { name: true },
         })
         const taken = new Set(existing.map((p) => p.name))
+        // 이미 있는 상품은 넘긴 설명만 보충한다(빠진 필드 = 기존 값 유지).
+        let updated = 0
+        for (const p of products) {
+          if (!taken.has(p.name) || (p.oneLinerPitch === undefined && !p.customFields)) continue
+          const r = await tx.product.updateMany({
+            where: { spaceId, brandId, name: p.name },
+            data: { oneLinerPitch: p.oneLinerPitch, customFields: p.customFields as never },
+          })
+          updated += r.count
+        }
         // 목록 안의 중복 이름도 한 번만 만든다.
         const fresh = products.filter((p) => !taken.has(p.name) && taken.add(p.name))
         await tx.product.createMany({
@@ -205,7 +225,7 @@ const setupApply: ActionDefinition<SetupApplyParams> = {
             customFields: (p.customFields ?? []) as never,
           })),
         })
-        result.products = { created: fresh.length, skipped: products.length - fresh.length }
+        result.products = { created: fresh.length, updated }
       }
       return result
     })
