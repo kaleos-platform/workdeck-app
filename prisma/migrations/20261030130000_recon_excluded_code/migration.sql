@@ -23,3 +23,6 @@ ALTER TABLE "InvReconExcludedCode" ADD CONSTRAINT "InvReconExcludedCode_spaceId_
 -- AddForeignKey
 ALTER TABLE "InvReconExcludedCode" ADD CONSTRAINT "InvReconExcludedCode_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "InvStorageLocation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+
+-- Data API 잠금: 신규 public 테이블은 RLS 를 켠다
+ALTER TABLE "InvReconExcludedCode" ENABLE ROW LEVEL SECURITY;
