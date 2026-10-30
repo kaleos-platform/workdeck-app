@@ -401,7 +401,8 @@ const proposeSetup: ToolDefinition = {
     const newNames = new Set(p.products?.map((x) => x.name).filter((n) => !existingNames.has(n)))
     const fillCount =
       p.products?.filter(
-        (x) => existingNames.has(x.name) && (x.oneLinerPitch !== undefined || x.customFields)
+        (x) =>
+          existingNames.has(x.name) && (x.oneLinerPitch !== undefined || x.customFields?.length)
       ).length ?? 0
     const parts = [
       p.channel && `채널 「${p.channel.name}」`,

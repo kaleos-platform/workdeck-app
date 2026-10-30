@@ -204,13 +204,15 @@ const setupApply: ActionDefinition<SetupApplyParams> = {
           select: { name: true },
         })
         const taken = new Set(existing.map((p) => p.name))
-        // 이미 있는 상품은 넘긴 설명만 보충한다(빠진 필드 = 기존 값 유지).
+        // 이미 있는 상품은 넘긴 설명만 보충한다(빠진 필드·빈 customFields = 기존 값 유지).
+        // 같은 이름 행이 여럿이면 같은 상품으로 보고 함께 갱신한다.
         let updated = 0
         for (const p of products) {
-          if (!taken.has(p.name) || (p.oneLinerPitch === undefined && !p.customFields)) continue
+          const customFields = p.customFields?.length ? p.customFields : undefined
+          if (!taken.has(p.name) || (p.oneLinerPitch === undefined && !customFields)) continue
           const r = await tx.product.updateMany({
             where: { spaceId, brandId, name: p.name },
-            data: { oneLinerPitch: p.oneLinerPitch, customFields: p.customFields as never },
+            data: { oneLinerPitch: p.oneLinerPitch, customFields: customFields as never },
           })
           updated += r.count
         }
