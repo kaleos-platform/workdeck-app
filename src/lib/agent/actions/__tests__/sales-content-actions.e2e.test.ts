@@ -151,6 +151,111 @@ d('sales-content.post.publish', () => {
   })
 })
 
+d('sales-content.setup.apply', () => {
+  const setup = salesContentTools.find((t) => t.name === 'sc_propose_setup')!
+  const BRAND_ID = 'e2e00000-0000-4000-8000-0000000000d5'
+  const input = {
+    brand: 'E2E 셋업 브랜드',
+    channel: {
+      name: 'E2E 셋업 블로그',
+      platformSlug: 'e2e-setup-blog',
+      platform: 'BLOG_NAVER',
+      kind: 'BLOG',
+    },
+    profile: { companyName: 'E2E 셋업', toneOfVoice: ['친근한'] },
+    products: [{ name: '펠트 수납박스' }, { name: '펠트 수납박스' }, { name: 'DIY 키트' }],
+  }
+
+  // 위 describe 의 afterAll 이 Space·구성원을 지우므로 다시 만든다.
+  beforeAll(async () => {
+    await prisma.user.upsert({
+      where: { id: USER_ID },
+      update: {},
+      create: { id: USER_ID, email: 'e2e-scpost@throwaway.test', name: 'E2E ScPost' },
+    })
+    await prisma.space.upsert({
+      where: { id: SPACE_ID },
+      update: {},
+      create: { id: SPACE_ID, name: 'E2E ScPost Throwaway', type: 'PERSONAL' },
+    })
+    await prisma.spaceMember.upsert({
+      where: { spaceId_userId: { spaceId: SPACE_ID, userId: USER_ID } },
+      update: {},
+      create: { spaceId: SPACE_ID, userId: USER_ID, role: 'OWNER' },
+    })
+    await prisma.deckInstance.upsert({
+      where: { spaceId_deckAppId: { spaceId: SPACE_ID, deckAppId: 'sales-content' } },
+      update: { isActive: true },
+      create: { spaceId: SPACE_ID, deckAppId: 'sales-content' },
+    })
+    await prisma.brand.upsert({
+      where: { id: BRAND_ID },
+      update: {},
+      create: { id: BRAND_ID, spaceId: SPACE_ID, name: 'E2E 셋업 브랜드' },
+    })
+  })
+
+  afterAll(async () => {
+    await prisma.agentPendingAction.deleteMany({ where: { spaceId: SPACE_ID } })
+    await prisma.product.deleteMany({ where: { spaceId: SPACE_ID } })
+    await prisma.salesContentChannel.deleteMany({ where: { spaceId: SPACE_ID } })
+    await prisma.space.deleteMany({ where: { id: SPACE_ID } })
+    await prisma.user.deleteMany({ where: { id: USER_ID } })
+    await prisma.$disconnect()
+  })
+
+  test('승인 1회로 채널·프로필·상품이 등록되고, 다시 승인해도 중복되지 않는다', async () => {
+    const a = (await setup.execute(ctx, input)) as { actionId: string }
+    expect(await prisma.product.count({ where: { spaceId: SPACE_ID } })).toBe(0)
+    expect((await approveAndExecute(a.actionId, USER_ID)).status).toBe('EXECUTED')
+
+    const channel = await prisma.salesContentChannel.findFirstOrThrow({
+      where: { spaceId: SPACE_ID, platformSlug: 'e2e-setup-blog' },
+    })
+    expect(channel.publisherMode).toBe('MANUAL')
+    const profile = await prisma.brandProfile.findFirstOrThrow({
+      where: { spaceId: SPACE_ID, brandId: BRAND_ID },
+    })
+    expect(profile.companyName).toBe('E2E 셋업')
+    expect(
+      (
+        await prisma.product.findMany({ where: { brandId: BRAND_ID }, orderBy: { name: 'asc' } })
+      ).map((p) => p.name)
+    ).toEqual(['DIY 키트', '펠트 수납박스'])
+
+    // 프로필만 바꾼 재제안 — 채널·상품은 그대로, 프로필만 덮어쓴다.
+    const b = (await setup.execute(ctx, {
+      ...input,
+      profile: { companyName: 'E2E 셋업 2' },
+    })) as { actionId: string }
+    expect((await approveAndExecute(b.actionId, USER_ID)).status).toBe('EXECUTED')
+    expect(await prisma.product.count({ where: { brandId: BRAND_ID } })).toBe(2)
+    expect(await prisma.salesContentChannel.count({ where: { spaceId: SPACE_ID } })).toBe(1)
+    expect(
+      (
+        await prisma.brandProfile.findFirstOrThrow({
+          where: { spaceId: SPACE_ID, brandId: BRAND_ID },
+        })
+      ).companyName
+    ).toBe('E2E 셋업 2')
+    // 넘기지 않은 필드는 유지된다.
+    expect(
+      (
+        await prisma.brandProfile.findFirstOrThrow({
+          where: { spaceId: SPACE_ID, brandId: BRAND_ID },
+        })
+      ).toneOfVoice
+    ).toEqual(['친근한'])
+  })
+
+  test('모르는 브랜드·빈 제안은 거부된다', async () => {
+    await expect(setup.execute(ctx, { ...input, brand: '없는 브랜드' })).rejects.toThrow(
+      '알 수 없는 브랜드'
+    )
+    await expect(setup.execute(ctx, { brand: 'E2E 셋업 브랜드' })).rejects.toThrow('하나 이상')
+  })
+})
+
 d('sales-content.post.publish 입력 검증', () => {
   test('targetUrl 은 http(s) 만 받는다', () => {
     const { postPublishParams } = jest.requireActual('../sales-content')
