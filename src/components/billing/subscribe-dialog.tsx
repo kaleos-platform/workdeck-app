@@ -14,11 +14,12 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { buildMarketingUrl } from '@/lib/domain'
-import { formatWon, loadTossSdk } from './billing-shared'
+import { discountNote, formatWon, loadTossSdk } from './billing-shared'
 
 export type SubscribeTarget = {
   /** 구독할 업무 목록 — 구독 시작은 여러 건, 업무 추가는 1건 */
-  decks: Array<{ id: string; name: string; monthlyPrice: number }>
+  /** monthlyPrice = 이 Space 에 청구될 공급가(보장가 반영), listPrice = 정가 공급가 */
+  decks: Array<{ id: string; name: string; monthlyPrice: number; listPrice: number }>
   /** true = 기존 구독에 업무 추가(일할 청구), false = 신규 구독 시작(전액) */
   isAddition: boolean
 }
@@ -85,6 +86,10 @@ export function SubscribeDialog({
 
   const supply = target.decks.reduce((sum, d) => sum + d.monthlyPrice, 0)
   const total = Math.round(supply * 1.1)
+  const note = discountNote(
+    target.decks.reduce((sum, d) => sum + d.listPrice, 0),
+    supply
+  )
   const names = target.decks.map((d) => d.name).join(', ')
   const needsCard = !cardSummary
 
@@ -111,6 +116,7 @@ export function SubscribeDialog({
             <p className="text-xs text-muted-foreground">
               부가세 포함 / 공급가 {formatWon(supply)}
             </p>
+            {note && <p className="text-xs text-primary">{note}</p>}
             {target.decks.length > 1 && (
               <>
                 <Separator className="my-2" />
@@ -118,7 +124,14 @@ export function SubscribeDialog({
                   {target.decks.map((deck) => (
                     <li key={deck.id} className="flex justify-between">
                       <span>{deck.name}</span>
-                      <span>{formatWon(Math.round(deck.monthlyPrice * 1.1))}</span>
+                      <span>
+                        {formatWon(Math.round(deck.monthlyPrice * 1.1))}
+                        {deck.monthlyPrice < deck.listPrice && (
+                          <span className="ml-1 line-through">
+                            {formatWon(Math.round(deck.listPrice * 1.1))}
+                          </span>
+                        )}
+                      </span>
                     </li>
                   ))}
                 </ul>

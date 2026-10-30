@@ -4533,6 +4533,7 @@ model SubscriptionItem {
   type           SubscriptionItemType   @default(DECK)
   deckAppId      String
   priceSnapshot  Int // 구독 시점 공급가 스냅샷
+  lockedPrice    Int? // 보장 공급가(Opening 이전 고객). 있으면 정가 대신 청구, 실제 해지 시 null
   status         SubscriptionItemStatus @default(ACTIVE)
   addedAt        DateTime               @default(now())
   endedAt        DateTime?

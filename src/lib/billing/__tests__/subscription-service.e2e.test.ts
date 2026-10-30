@@ -24,6 +24,7 @@ jest.mock('@/lib/billing/providers/toss', () => ({
     cancel: jest.fn(),
     parseWebhook: jest.fn(),
     fetchPaymentStatus: jest.fn(),
+    fetchPaymentByOrderId: jest.fn().mockResolvedValue(null), // 예외 후 주문 조회: 승인 내역 없음
   }),
   tossProvider: {},
 }))
@@ -239,7 +240,7 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
     expect(mockCharge).toHaveBeenCalledTimes(1)
   })
 
-  it('provider 예외(throw) 시 deck 추가 롤백 — 결제 없이 활성화 금지', async () => {
+  it('provider 예외(throw) + 주문 조회상 미승인이면 deck 추가 롤백 — 결제 없이 활성화 금지', async () => {
     // 구독 복구 (이전 테스트에서 PAST_DUE/EXPIRED 상태)
     await prisma.spaceSubscription.update({
       where: { spaceId: SPACE_ID },

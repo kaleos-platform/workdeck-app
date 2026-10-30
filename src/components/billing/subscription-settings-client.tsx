@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { SubscribeDialog, type SubscribeTarget } from './subscribe-dialog'
 import {
   REASON_BADGE,
+  discountNote,
   endsAtPeriodEnd,
   nextCycleSupplyTotal,
   daysUntil,
@@ -139,7 +140,12 @@ export function SubscriptionSettingsClient() {
     (deckIds: string[], isAddition: boolean) => {
       const decks = (data?.products ?? [])
         .filter((p) => deckIds.includes(p.id))
-        .map((p) => ({ id: p.id, name: p.name, monthlyPrice: p.monthlyPrice }))
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          monthlyPrice: p.effectivePrice,
+          listPrice: p.monthlyPrice,
+        }))
       if (decks.length === 0) return
       setPending({ decks, isAddition })
     },
@@ -169,7 +175,12 @@ export function SubscriptionSettingsClient() {
     const isAddition = data.subscription?.status === 'ACTIVE'
     const decks = data.products
       .filter((p) => target.includes(p.id) && p.pricingMode === 'SUBSCRIPTION')
-      .map((p) => ({ id: p.id, name: p.name, monthlyPrice: p.monthlyPrice }))
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        monthlyPrice: p.effectivePrice,
+        listPrice: p.monthlyPrice,
+      }))
     if (decks.length === 0) return
     setSelectedDecks(decks.map((d) => d.id))
     setPending({ decks, isAddition })
@@ -185,7 +196,7 @@ export function SubscriptionSettingsClient() {
   const selectionTotal = useMemo(() => {
     const supply = subscribableProducts
       .filter((p) => selectedDecks.includes(p.id))
-      .reduce((sum, p) => sum + p.monthlyPrice, 0)
+      .reduce((sum, p) => sum + p.effectivePrice, 0)
     return { supply, withVat: Math.round(supply * 1.1) }
   }, [subscribableProducts, selectedDecks])
 
@@ -342,11 +353,16 @@ export function SubscriptionSettingsClient() {
                           {meta?.name ?? product.name}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          월 {formatWon(Math.round(product.monthlyPrice * 1.1))}
+                          월 {formatWon(Math.round(product.effectivePrice * 1.1))}
                           <span className="ml-1">
-                            (VAT 포함 / 공급가 {formatWon(product.monthlyPrice)})
+                            (VAT 포함 / 공급가 {formatWon(product.effectivePrice)})
                           </span>
                         </div>
+                        {discountNote(product.monthlyPrice, product.effectivePrice) && (
+                          <div className="text-xs text-primary">
+                            {discountNote(product.monthlyPrice, product.effectivePrice)}
+                          </div>
+                        )}
                       </div>
                     </div>
 
