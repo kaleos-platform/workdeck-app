@@ -206,7 +206,8 @@ export const ModelName = {
   BillingCharge: 'BillingCharge',
   AdminAuditLog: 'AdminAuditLog',
   WorkerToken: 'WorkerToken',
-  KeywordRankSnapshot: 'KeywordRankSnapshot'
+  KeywordRankSnapshot: 'KeywordRankSnapshot',
+  MarketingLead: 'MarketingLead'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -2880,6 +2881,28 @@ export const KeywordRankSnapshotScalarFieldEnum = {
 } as const
 
 export type KeywordRankSnapshotScalarFieldEnum = (typeof KeywordRankSnapshotScalarFieldEnum)[keyof typeof KeywordRankSnapshotScalarFieldEnum]
+
+
+export const MarketingLeadScalarFieldEnum = {
+  id: 'id',
+  deck: 'deck',
+  name: 'name',
+  phoneEnc: 'phoneEnc',
+  phoneIv: 'phoneIv',
+  email: 'email',
+  companyName: 'companyName',
+  position: 'position',
+  employeeCount: 'employeeCount',
+  consentAt: 'consentAt',
+  utm: 'utm',
+  referrer: 'referrer',
+  status: 'status',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketingLeadScalarFieldEnum = (typeof MarketingLeadScalarFieldEnum)[keyof typeof MarketingLeadScalarFieldEnum]
 
 
 export const SortOrder = {

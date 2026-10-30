@@ -96,6 +96,13 @@ const nextConfig: NextConfig = {
       { source: '/d/blog-ops', destination: '/my-deck', permanent: true },
       { source: '/d/blog-ops/:path*', destination: '/my-deck', permanent: true },
       { source: '/blog-ops', destination: '/sales-content', permanent: true },
+      // 오프닝워크 소개 사이트(Webflow) 이전 (2026-11) — 모든 경로를 모집 관리 랜딩으로
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'welcome.opening.work' }],
+        destination: 'https://workdeck.work/recruiting?utm_source=opening&utm_medium=redirect',
+        permanent: true,
+      },
     ]
   },
 }

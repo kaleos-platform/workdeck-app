@@ -56,6 +56,11 @@ export interface DeckLandingFinalCta {
   subcopy?: string
 }
 
+export interface DeckLandingLeadForm {
+  headline: string
+  subcopy: string
+}
+
 export interface DeckLandingContent {
   slug: MarketingDeckSlug
   seo: DeckLandingSeo
@@ -66,5 +71,7 @@ export interface DeckLandingContent {
   workflow?: DeckLandingWorkflowStep[]
   faq: DeckLandingFaqItem[]
   finalCta: DeckLandingFinalCta
+  /** 있으면 '도입 신청' 폼 섹션(#apply)을 렌더하고 주 CTA 를 폼으로 연결한다 */
+  leadForm?: DeckLandingLeadForm
   relatedDecks?: MarketingDeckSlug[]
 }

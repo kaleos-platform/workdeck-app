@@ -832,3 +832,13 @@ export const RankStatus = {
 } as const
 
 export type RankStatus = (typeof RankStatus)[keyof typeof RankStatus]
+
+
+export const MarketingLeadStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  CONVERTED: 'CONVERTED',
+  DROPPED: 'DROPPED'
+} as const
+
+export type MarketingLeadStatus = (typeof MarketingLeadStatus)[keyof typeof MarketingLeadStatus]

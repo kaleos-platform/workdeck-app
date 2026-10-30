@@ -42,6 +42,7 @@ export const REENCRYPT_TARGETS: ReadonlyArray<{
       ['addressEnc', 'addressIv'],
     ],
   },
+  { model: 'MarketingLead', purpose: 'pii', pairs: [['phoneEnc', 'phoneIv']] },
   {
     model: 'HiringPosting',
     purpose: 'pii',

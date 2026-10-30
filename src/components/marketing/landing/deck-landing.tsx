@@ -7,6 +7,7 @@ import { WorkflowSection } from './workflow-section'
 import { ScreenshotShowcase } from './screenshot-showcase'
 import { FaqSection } from './faq-section'
 import { CtaSection } from './cta-section'
+import { LeadFormSection } from './lead-form-section'
 import { DeckCrossLinks } from './deck-cross-links'
 
 /**
@@ -19,12 +20,17 @@ export function DeckLanding({ content }: { content: DeckLandingContent }) {
   // [시작하기]는 이 업무를 보고 온 사람을 위한 CTA다. 가입 후 곧장 해당 업무의
   // 구독 확인 단계로 이어지도록 목적지를 실어 보낸다 (로그인 상태면 바로 도착).
   const startHref = `/signup?redirectTo=${encodeURIComponent(`/my-deck?subscribe=${content.slug}`)}`
-  const primaryCta = { ...content.hero.primaryCta, href: startHref }
+  const startCta = { ...content.hero.primaryCta, href: startHref }
+  // 도입 신청 폼이 있으면 주 CTA 는 폼으로, 기존 [시작하기]는 보조 CTA 로 내린다
+  const primaryCta = content.leadForm ? { label: '무료 이용 신청', href: '#apply' } : startCta
+  const heroSecondaryCta = content.leadForm
+    ? { label: '바로 시작하기', href: startHref }
+    : content.hero.secondaryCta
 
   return (
     <div className="w-full">
       <HeroSection
-        hero={{ ...content.hero, primaryCta }}
+        hero={{ ...content.hero, primaryCta, secondaryCta: heroSecondaryCta }}
         deckName={meta.name}
         gradient={meta.gradient}
         icon={meta.icon}
@@ -42,6 +48,10 @@ export function DeckLanding({ content }: { content: DeckLandingContent }) {
 
       {content.screenshots && content.screenshots.length > 0 ? (
         <ScreenshotShowcase screenshots={content.screenshots} />
+      ) : null}
+
+      {content.leadForm ? (
+        <LeadFormSection leadForm={content.leadForm} deck={content.slug} />
       ) : null}
 
       <FaqSection faq={content.faq} />

@@ -4631,3 +4631,33 @@ model KeywordRankSnapshot {
   @@index([channelProductId, date])
   @@index([listingId, date])
 }
+
+// 마케팅 랜딩 도입 신청(리드) — 무인증 공개 폼. 연락처는 'pii' 용도로 암호화한다.
+enum MarketingLeadStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  DROPPED
+}
+
+model MarketingLead {
+  id            String              @id @default(cuid())
+  deck          String
+  name          String
+  phoneEnc      String
+  phoneIv       String
+  email         String
+  companyName   String
+  position      String
+  employeeCount String
+  consentAt     DateTime
+  utm           Json?
+  referrer      String?
+  status        MarketingLeadStatus @default(NEW)
+  memo          String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([createdAt])
+  @@index([email])
+}
