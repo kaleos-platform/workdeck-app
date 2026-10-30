@@ -11,9 +11,9 @@
 //                                                                  # deck 과금 모드 전환
 //                                                                  # (SUBSCRIPTION 전환 시 paidActivatedAt 기록 → 유예 14일 시작)
 //   node scripts/billing-admin.mjs price <deckId> <월가(공급가)>    # deck 가격 변경
-//   node scripts/billing-admin.mjs migrate-grant <spaceId> <무료종료일 YYYY-MM-DD> [보장공급가=12273]
-//                                                                  # Opening 이전 고객: 종료일(KST)까지 무료(trialEndsAt)
-//                                                                  # + 모집 관리 보장가(lockedPrice, 실제 해지 시 소멸)
+//   node scripts/billing-admin.mjs migrate-grant <spaceId> [보장공급가=12273]
+//                                                                  # Opening 이전 고객: 모집 관리 보장가(lockedPrice, 실제 해지 시 소멸)
+//                                                                  # 무료는 일반 고객과 같은 7일 체험뿐 — 이력이 있으면 연장하지 않음
 import 'dotenv/config'
 import { config } from 'dotenv'
 import pg from 'pg'
@@ -135,20 +135,24 @@ async function main() {
     }
 
     case 'migrate-grant': {
-      const [spaceId, until, price = '12273'] = args
+      const [spaceId, price = '12273'] = args
       const p = Number(price)
-      if (!spaceId || !/^\d{4}-\d{2}-\d{2}$/.test(until ?? '') || !Number.isInteger(p) || p <= 0) {
-        throw new Error('사용법: migrate-grant <spaceId> <무료종료일 YYYY-MM-DD> [보장공급가]')
+      if (!spaceId || !Number.isInteger(p) || p <= 0) {
+        throw new Error('사용법: migrate-grant <spaceId> [보장공급가]')
       }
       await client.query('BEGIN')
       try {
-        // 종료일 다음날 00:00 KST 까지 무료 (판정 4단계 TRIAL — 청구 대상 아님)
+        // 이전 고객도 무료는 일반 고객과 같은 7일 체험(TRIAL_DAYS)뿐 — 보장가가 곧 프로모션.
+        // 체험 이력(trialEndsAt)이 없을 때만 지금부터 7일을 부여하고, 있으면 그대로 둔다(평생 1회).
         const sub = await client.query(
           `INSERT INTO "SpaceSubscription" (id, "spaceId", status, "trialEndsAt", "createdAt", "updatedAt")
-           VALUES (gen_random_uuid()::text, $1, 'TRIALING', (($2::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'UTC', now(), now())
-           ON CONFLICT ("spaceId") DO UPDATE SET "trialEndsAt" = GREATEST(COALESCE("SpaceSubscription"."trialEndsAt", EXCLUDED."trialEndsAt"), EXCLUDED."trialEndsAt"), "updatedAt" = now()
+           VALUES (gen_random_uuid()::text, $1, 'TRIALING', now() + interval '7 days', now(), now())
+           ON CONFLICT ("spaceId") DO UPDATE SET
+             "trialEndsAt" = CASE WHEN "SpaceSubscription"."trialEndsAt" IS NULL AND "SpaceSubscription".status = 'TRIALING'
+                                  THEN EXCLUDED."trialEndsAt" ELSE "SpaceSubscription"."trialEndsAt" END,
+             "updatedAt" = now()
            RETURNING id, status, "trialEndsAt"::text AS "trialEndsAtUtc"`,
-          [spaceId, until]
+          [spaceId]
         )
         const { id: subscriptionId } = sub.rows[0]
         // ENDED item 에 보장가를 심는다 → startSubscription/addDeck 이 재활성화하며 사용
