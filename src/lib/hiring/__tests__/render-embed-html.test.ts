@@ -208,3 +208,72 @@ it('본문 내부의 잘못된 링크도 출력 전에 검출한다', () => {
   expect(result.issues[0]).toMatchObject({ blockNumber: 1, severity: 'error' })
   expect(result.html).not.toContain('javascript:')
 })
+
+it.each(['text', 'button', 'image'])(
+  '직접 입력한 %s 지원서 링크도 접수 안내 대상으로 인식한다',
+  (type) => {
+    const previous = process.env.NEXT_PUBLIC_SUPABASE_URL
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://assets.workdeck.test'
+    try {
+      const url = 'https://workdeck.test/p/qa/apply?source=job'
+      const data =
+        type === 'text'
+          ? {
+              type: 'doc',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [
+                    {
+                      type: 'text',
+                      text: '지원하기',
+                      marks: [{ type: 'link', attrs: { href: url } }],
+                    },
+                  ],
+                },
+              ],
+            }
+          : type === 'button'
+            ? { title: '지원하기', linkType: 'url', url }
+            : { link: { linkType: 'url', url } }
+      const result = renderPostingEmbed({
+        origin: 'https://workdeck.test',
+        posting: {
+          uuid: 'qa',
+          positions: [],
+          contents: [
+            {
+              contentType: type as 'text' | 'button' | 'image',
+              imagePath: type === 'image' ? 'qa/photo.png' : null,
+              data,
+            },
+          ],
+        },
+      })
+      expect(result.issues).toEqual([])
+      expect(result.usesFormLink).toBe(true)
+    } finally {
+      if (previous === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+      else process.env.NEXT_PUBLIC_SUPABASE_URL = previous
+    }
+  }
+)
+
+it.each([
+  'https://example.com/p/qa/apply',
+  'https://workdeck.test/p/other/apply',
+  'https://workdeck.test/p/qa/apply-other',
+])('다른 지원서 또는 외부 주소 %s는 현재 공고 지원서로 취급하지 않는다', (url) => {
+  const result = renderPostingEmbed({
+    origin: 'https://workdeck.test',
+    posting: {
+      uuid: 'qa',
+      positions: [],
+      contents: [
+        { contentType: 'button', imagePath: null, data: { title: '링크', linkType: 'url', url } },
+      ],
+    },
+  })
+  expect(result.issues).toEqual([])
+  expect(result.usesFormLink).toBe(false)
+})

@@ -60,6 +60,36 @@ function validUrl(value: unknown, protocols = ['http:', 'https:']): boolean {
   }
 }
 
+function isPostingApplyUrl(value: unknown, origin: string, uuid: string): boolean {
+  if (typeof value !== 'string') return false
+  try {
+    const url = new URL(value)
+    return (
+      url.origin === new URL(origin).origin &&
+      url.pathname.replace(/\/$/, '') === `/p/${uuid}/apply`
+    )
+  } catch {
+    return false
+  }
+}
+
+function hasPostingApplyLink(value: unknown, origin: string, uuid: string): boolean {
+  if (!value || typeof value !== 'object') return false
+  const node = value as {
+    type?: string
+    attrs?: { href?: unknown }
+    content?: unknown[]
+    marks?: unknown[]
+  }
+  return (
+    (node.type === 'link' && isPostingApplyUrl(node.attrs?.href, origin, uuid)) ||
+    (Array.isArray(node.content) &&
+      node.content.some((child) => hasPostingApplyLink(child, origin, uuid))) ||
+    (Array.isArray(node.marks) &&
+      node.marks.some((mark) => hasPostingApplyLink(mark, origin, uuid)))
+  )
+}
+
 // 레거시 문서의 링크도 출력 시 검사한다. 외부 사이트에서는 상대 URL을 사용할 수 없다.
 function hasInvalidTextUrl(value: unknown): boolean {
   if (!value || typeof value !== 'object') return false
@@ -103,8 +133,10 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
         continue
       }
       const html = renderTiptapHtml(content.data, true)
-      if (html) parts.push(`<div style="margin:16px 0">${html}</div>`)
-      else
+      if (html) {
+        if (hasPostingApplyLink(content.data, origin, posting.uuid)) usesFormLink = true
+        parts.push(`<div style="margin:16px 0">${html}</div>`)
+      } else
         issue('텍스트를 HTML로 변환하지 못했습니다. 내용을 다시 편집하거나 이 카드를 삭제하세요.')
       continue
     }
@@ -131,7 +163,11 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
         continue
       }
       const link = parsed.data
-      if (link.linkType === 'form') usesFormLink = true
+      if (
+        link.linkType === 'form' ||
+        (link.linkType === 'url' && isPostingApplyUrl(link.url, origin, posting.uuid))
+      )
+        usesFormLink = true
       const href =
         link.linkType === 'form'
           ? `${origin}/p/${posting.uuid}/apply`
@@ -191,7 +227,11 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
         continue
       }
       const btn = parsed.data
-      if (btn.linkType === 'form') usesFormLink = true
+      if (
+        btn.linkType === 'form' ||
+        (btn.linkType === 'url' && isPostingApplyUrl(btn.url, origin, posting.uuid))
+      )
+        usesFormLink = true
       const href = btn.linkType === 'url' ? btn.url! : `${origin}/p/${posting.uuid}/apply`
       const style = buttonBlockStyle(btn.color)
       parts.push(
