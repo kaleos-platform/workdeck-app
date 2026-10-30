@@ -16,6 +16,8 @@ export interface BillingProduct {
   name: string
   pricingMode: PricingMode
   monthlyPrice: number
+  /** 이 Space 에 청구될 월 공급가 — 이전 고객 보장가가 있으면 정가보다 낮다 */
+  effectivePrice: number
   paidActivatedAt: string | null
   isActive: boolean
 }
@@ -99,6 +101,12 @@ const TOSS_SDK_URL = 'https://js.tosspayments.com/v2/standard'
 
 export function formatWon(amount: number): string {
   return `${amount.toLocaleString('ko-KR')}원`
+}
+
+/** 보장가 적용 시 정가 병기 문구 (VAT 포함). 할인이 없으면 null */
+export function discountNote(listSupply: number, effectiveSupply: number): string | null {
+  if (effectiveSupply >= listSupply) return null
+  return `이전 고객 할인가 (정가 월 ${formatWon(Math.round(listSupply * 1.1))})`
 }
 
 export function formatDate(value: string | null): string {

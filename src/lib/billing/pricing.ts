@@ -23,6 +23,14 @@ export function sumLines(lines: ChargeLine[]): ChargeAmounts {
   return calcAmounts(lines.reduce((acc, l) => acc + l.price, 0))
 }
 
+// 이전 고객 보장가(lockedPrice) 적용 월가(공급가). 정가가 더 낮아지면 정가.
+export function effectivePrice(
+  lockedPrice: number | null | undefined,
+  monthlyPrice: number
+): number {
+  return Math.min(lockedPrice ?? monthlyPrice, monthlyPrice)
+}
+
 // 일할계산: (남은 일수 ÷ 주기 일수) × 월가. 공급가 기준 반올림 후 VAT 적용.
 // remainingDays는 최소 1일 보장(당일 추가도 1일 청구), cycleDays 이상이면 전액.
 export function prorate(monthlyPrice: number, remainingDays: number, cycleDays: number): number {

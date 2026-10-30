@@ -45,7 +45,9 @@ type MyDeckClientProps = {
   billing: Array<{
     id: string
     pricingMode: 'FREE_BETA' | 'SUBSCRIPTION'
+    /** 이 Space 에 청구될 공급가(보장가 반영) */
     monthlyPrice: number
+    listPrice: number
     allowed: boolean
   }>
 }
@@ -158,7 +160,14 @@ export function MyDeckClient({
       }
       const info = billingById.get(deck.id)
       setPending({
-        decks: [{ id: deck.id, name: deck.name, monthlyPrice: info?.monthlyPrice ?? 0 }],
+        decks: [
+          {
+            id: deck.id,
+            name: deck.name,
+            monthlyPrice: info?.monthlyPrice ?? 0,
+            listPrice: info?.listPrice ?? 0,
+          },
+        ],
         isAddition: hasActiveSubscription,
       })
     },

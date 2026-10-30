@@ -14,6 +14,7 @@ import {
   cycleOrderId,
   startOrderId,
   prorateOrderId,
+  effectivePrice,
   type ChargeLine,
 } from './pricing'
 import { DECK_CATALOG_DEFAULTS } from './catalog-defaults'
@@ -63,8 +64,125 @@ async function safeCharge(
   try {
     return await provider.charge(params)
   } catch (e) {
-    return { ok: false as const, paymentKey: null, failReason: (e as Error).message }
+    // 예외 = 승인 여부 불명 (응답 유실·타임아웃). 거절로 단정하면 이중 결제가 난다 → unknown
+    return {
+      ok: false as const,
+      paymentKey: null,
+      failReason: (e as Error).message,
+      unknown: true as const,
+    }
   }
+}
+
+type SettleOutcome =
+  | { kind: 'paid'; paymentKey: string | null }
+  | { kind: 'failed'; reason: string }
+  | { kind: 'pending' }
+
+// 주문 조회로 결제를 확정한다. DONE = 승인, 그 밖의 상태·내역 없음 = 미승인, 조회 실패 = null(불명)
+async function lookupOrder(
+  provider: ReturnType<typeof getBillingProvider>,
+  orderId: string
+): Promise<{ paymentKey: string | null } | { failed: string } | null> {
+  try {
+    const found = await provider.fetchPaymentByOrderId(orderId)
+    if (!found) return { failed: '결제 내역 없음' }
+    return found.status === 'DONE' ? { paymentKey: found.paymentKey } : { failed: found.status }
+  } catch {
+    return null
+  }
+}
+
+// 승인 요청 + 결과 확정. 거절은 즉시 failed, 결과 불명(예외·5xx·중복 주문 오류)은 주문 조회로 확정하고
+// 조회도 실패하면 pending(청구 PENDING 유지 — 새 orderId 로 재청구하지 않는다).
+async function settleCharge(
+  provider: ReturnType<typeof getBillingProvider>,
+  params: Parameters<ReturnType<typeof getBillingProvider>['charge']>[0]
+): Promise<SettleOutcome> {
+  const result = await safeCharge(provider, params)
+  if (result.ok) return { kind: 'paid', paymentKey: result.paymentKey }
+  if (!result.unknown) return { kind: 'failed', reason: result.failReason ?? '결제 실패' }
+  const found = await lookupOrder(provider, params.orderId)
+  if (!found) return { kind: 'pending' }
+  if ('failed' in found) return { kind: 'failed', reason: result.failReason ?? found.failed }
+  return { kind: 'paid', paymentKey: found.paymentKey }
+}
+
+const CHECKING_MESSAGE = '이전 결제 결과를 확인 중입니다 — 잠시 후 다시 시도하세요'
+// 요청 한 건은 maxDuration(90초) 안에 끝난다 → 그보다 오래 PENDING 이면 요청이 죽은 것
+const STALE_PENDING_MS = 5 * 60 * 1000
+
+// 시작·일할추가 청구 중 PENDING 이 남아 있으면 새 결제를 막는다 (날짜별 orderId 가 달라도 이중 결제 방지).
+// 5분 이내면 진행 중으로 보고 409, 그보다 오래됐으면 주문 조회로 확정한다.
+// opPrefix 와 같은 작업의 승인 건이면 새로 청구하지 않고 그 청구를 이어받아 반환한다.
+async function reconcilePending(
+  provider: ReturnType<typeof getBillingProvider>,
+  spaceId: string,
+  opPrefix: string
+) {
+  const pendings = await prisma.billingCharge.findMany({
+    where: {
+      spaceId,
+      status: 'PENDING',
+      OR: [{ orderId: { startsWith: 'substart_' } }, { orderId: { startsWith: 'prorate_' } }],
+    },
+  })
+  let adopted: { charge: (typeof pendings)[number]; paymentKey: string | null } | null = null
+  for (const p of pendings) {
+    if (Date.now() - p.updatedAt.getTime() < STALE_PENDING_MS) {
+      throw new BillingError(CHECKING_MESSAGE, 409)
+    }
+    const found = await lookupOrder(provider, p.orderId)
+    if (!found) throw new BillingError(CHECKING_MESSAGE, 409)
+    if ('failed' in found) {
+      await prisma.billingCharge.updateMany({
+        where: { id: p.id, status: 'PENDING' },
+        data: { status: 'FAILED', failReason: `결제 미승인: ${found.failed}` },
+      })
+    } else if (p.orderId.startsWith(opPrefix)) {
+      adopted = { charge: p, paymentKey: found.paymentKey }
+    } else {
+      // 다른 작업의 승인 건 — 이 요청이 활성화할 수 없으므로 PAID 로만 기록하고 운영 확인에 맡긴다
+      await prisma.billingCharge.updateMany({
+        where: { id: p.id, status: 'PENDING' },
+        data: { status: 'PAID', paymentKey: found.paymentKey },
+      })
+      console.error(
+        '[billing] 승인 확인된 PENDING 청구가 활성화되지 않음 — 운영 확인 필요',
+        p.orderId
+      )
+    }
+  }
+  return adopted
+}
+
+// 멱등 게이트: orderId 유니크 제약. 같은 orderId 의 직전 시도가 FAILED 면 그 행을 재사용한다
+// (토스는 승인된 orderId 만 재사용을 막는다 — 정기결제 재시도와 같은 방식. 새 orderId 로 재시도하면
+// 응답 유실 후 실제로는 승인된 건과 이중 결제될 수 있다). PENDING·PAID 면 null → 호출부가 409.
+async function createOrReclaimCharge(data: Prisma.BillingChargeUncheckedCreateInput) {
+  const created = await prisma.billingCharge.create({ data }).catch((e) => {
+    if ((e as { code?: string }).code === 'P2002') return null // orderId 중복만 흡수
+    throw e
+  })
+  if (created) return created
+  const existing = await prisma.billingCharge.findUnique({ where: { orderId: data.orderId } })
+  if (existing?.status !== 'FAILED') return null
+  const claimed = await prisma.billingCharge.updateMany({
+    where: { id: existing.id, status: 'FAILED', updatedAt: existing.updatedAt },
+    data: {
+      status: 'PENDING',
+      failReason: null,
+      supplyAmount: data.supplyAmount,
+      vatAmount: data.vatAmount,
+      amount: data.amount,
+      periodStart: data.periodStart,
+      periodEnd: data.periodEnd,
+      breakdown: data.breakdown,
+    },
+  })
+  return claimed.count === 1
+    ? prisma.billingCharge.findUnique({ where: { id: existing.id } })
+    : null
 }
 
 async function loadProducts(deckIds: string[]) {
@@ -211,9 +329,8 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
 
   // 이전 고객 보장가: item 에 lockedPrice 가 있으면 사용 (정가가 더 낮아지면 정가)
   const priceOf = (p: { id: string; monthlyPrice: number }) =>
-    Math.min(
-      subscription.items.find((i) => i.type === 'DECK' && i.deckAppId === p.id)?.lockedPrice ??
-        p.monthlyPrice,
+    effectivePrice(
+      subscription.items.find((i) => i.type === 'DECK' && i.deckAppId === p.id)?.lockedPrice,
       p.monthlyPrice
     )
 
@@ -227,43 +344,49 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
   const amounts = sumLines(lines)
   const orderId = startOrderId(subscription.id, now)
 
-  // 멱등 게이트: orderId 유니크 — 이미 청구 레코드가 있으면 중복 시작 시도
-  const charge = await prisma.billingCharge
-    .create({
-      data: {
-        spaceId,
-        orderId,
-        ...amounts,
-        status: 'PENDING',
-        provider: provider.id,
-        periodStart: now,
-        periodEnd,
-        breakdown: lines as unknown as Prisma.InputJsonValue,
-      },
+  // 결과 불명 PENDING 이 남아 있으면 먼저 확정한다 (승인됐으면 그 청구를 이어받아 활성화)
+  const adopted = await reconcilePending(provider, spaceId, `substart_${subscription.id}_`)
+  let charge
+  let paymentKey: string | null
+  if (adopted) {
+    charge = adopted.charge
+    paymentKey = adopted.paymentKey
+  } else {
+    // 멱등 게이트: 같은 날 PENDING·PAID 청구가 있으면 중복 시작 시도 (FAILED 는 재시도 허용)
+    charge = await createOrReclaimCharge({
+      spaceId,
+      orderId,
+      ...amounts,
+      status: 'PENDING',
+      provider: provider.id,
+      periodStart: now,
+      periodEnd,
+      breakdown: lines as unknown as Prisma.InputJsonValue,
     })
-    .catch(() => null)
-  if (!charge) throw new BillingError('이미 처리 중인 결제가 있습니다', 409)
+    if (!charge) throw new BillingError('이미 처리 중인 결제가 있습니다', 409)
 
-  const result = await safeCharge(provider, {
-    billingKey: method.decryptedBillingKey,
-    customerKey: subscription.customerKey!,
-    orderId,
-    orderName: orderName(lines),
-    amount: amounts.amount,
-  })
-
-  if (!result.ok) {
-    await prisma.billingCharge.update({
-      where: { id: charge.id },
-      data: { status: 'FAILED', failReason: result.failReason },
+    const outcome = await settleCharge(provider, {
+      billingKey: method.decryptedBillingKey,
+      customerKey: subscription.customerKey!,
+      orderId,
+      orderName: orderName(lines),
+      amount: amounts.amount,
     })
-    throw new BillingError(`결제 실패: ${result.failReason}`, 402)
+    if (outcome.kind === 'pending') throw new BillingError(CHECKING_MESSAGE, 409)
+    if (outcome.kind === 'failed') {
+      await prisma.billingCharge.update({
+        where: { id: charge.id },
+        data: { status: 'FAILED', failReason: outcome.reason },
+      })
+      throw new BillingError(`결제 실패: ${outcome.reason}`, 402)
+    }
+    paymentKey = outcome.paymentKey
   }
 
   await prisma.$transaction([
     prisma.billingCharge.update({
       where: { id: charge.id },
-      data: { status: 'PAID', paymentKey: result.paymentKey },
+      data: { status: 'PAID', paymentKey },
     }),
     prisma.spaceSubscription.update({
       where: { id: subscription.id },
@@ -307,7 +430,7 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
     ),
   ])
 
-  return { periodEnd, amount: amounts.amount }
+  return { periodEnd, amount: charge.amount }
 }
 
 // deck 중도 추가: 일할 즉시결제 → 즉시 활성
@@ -348,15 +471,16 @@ export async function addDeck(spaceId: string, deckAppId: string) {
   )
   const remaining = remainingDaysBetween(now, subscription.currentPeriodEnd)
   // 이전 고객 보장가 (ENDED item 에 남아 있음). 정가가 더 낮아지면 정가
-  const price = Math.min(
-    subscription.items.find((i) => i.type === 'DECK' && i.deckAppId === deckAppId)?.lockedPrice ??
-      product.monthlyPrice,
+  const price = effectivePrice(
+    subscription.items.find((i) => i.type === 'DECK' && i.deckAppId === deckAppId)?.lockedPrice,
     product.monthlyPrice
   )
   const supply = prorate(price, remaining, cycleDays)
   const amounts = calcAmounts(supply)
 
-  // ENDED 이력이 있으면 재활성 (유니크 제약: subscriptionId+type+deckAppId)
+  // 결제 성공 전에는 ACTIVE 로 만들지 않는다 (실패·중복 요청이 결제 없는 활성 상태를 남기지 않도록).
+  // orderId 에 item.id 가 필요해 없으면 ENDED 로 먼저 만들고, 있으면(ENDED 이력) 그대로 둔다.
+  // 유니크 제약: subscriptionId+type+deckAppId. 보장가(lockedPrice)는 건드리지 않는다.
   const item = await prisma.subscriptionItem.upsert({
     where: {
       subscriptionId_type_deckAppId: {
@@ -370,19 +494,21 @@ export async function addDeck(spaceId: string, deckAppId: string) {
       type: 'DECK',
       deckAppId,
       priceSnapshot: price,
-      status: 'ACTIVE',
+      status: 'ENDED',
+      endedAt: now,
     },
-    update: {
-      status: 'ACTIVE',
-      priceSnapshot: price,
-      endedAt: null,
-      addedAt: now,
-    },
+    update: {},
   })
 
   const orderId = prorateOrderId(item.id, now)
-  const charge = await prisma.billingCharge.create({
-    data: {
+  const adopted = await reconcilePending(provider, spaceId, `prorate_${item.id}_`)
+  let charge
+  let paymentKey: string | null
+  if (adopted) {
+    charge = adopted.charge
+    paymentKey = adopted.paymentKey
+  } else {
+    charge = await createOrReclaimCharge({
       spaceId,
       orderId,
       ...amounts,
@@ -391,38 +517,39 @@ export async function addDeck(spaceId: string, deckAppId: string) {
       periodStart: now,
       periodEnd: subscription.currentPeriodEnd,
       breakdown: [{ deckAppId, type: 'DECK', price: supply, prorated: true }],
-    },
-  })
+    })
+    if (!charge) throw new BillingError('이미 처리 중인 결제가 있습니다', 409)
 
-  const result = await safeCharge(provider, {
-    billingKey: method.decryptedBillingKey,
-    customerKey: subscription.customerKey!,
-    orderId,
-    orderName: `워크덱 ${deckLabel(deckAppId)} (일할)`,
-    amount: amounts.amount,
-  })
-
-  if (!result.ok) {
-    // 일할 결제 실패 → 아이템 롤백 (활성화 안 됨)
-    await prisma.$transaction([
-      prisma.billingCharge.update({
+    const outcome = await settleCharge(provider, {
+      billingKey: method.decryptedBillingKey,
+      customerKey: subscription.customerKey!,
+      orderId,
+      orderName: `워크덱 ${deckLabel(deckAppId)} (일할)`,
+      amount: amounts.amount,
+    })
+    if (outcome.kind === 'pending') throw new BillingError(CHECKING_MESSAGE, 409)
+    if (outcome.kind === 'failed') {
+      await prisma.billingCharge.update({
         where: { id: charge.id },
-        data: { status: 'FAILED', failReason: result.failReason },
-      }),
-      prisma.subscriptionItem.update({
-        where: { id: item.id },
-        data: { status: 'ENDED', endedAt: now },
-      }),
-    ])
-    throw new BillingError(`결제 실패: ${result.failReason}`, 402)
+        data: { status: 'FAILED', failReason: outcome.reason },
+      })
+      throw new BillingError(`결제 실패: ${outcome.reason}`, 402)
+    }
+    paymentKey = outcome.paymentKey
   }
 
-  await prisma.billingCharge.update({
-    where: { id: charge.id },
-    data: { status: 'PAID', paymentKey: result.paymentKey },
-  })
+  await prisma.$transaction([
+    prisma.billingCharge.update({
+      where: { id: charge.id },
+      data: { status: 'PAID', paymentKey },
+    }),
+    prisma.subscriptionItem.update({
+      where: { id: item.id },
+      data: { status: 'ACTIVE', priceSnapshot: price, endedAt: null, addedAt: now },
+    }),
+  ])
 
-  return { prorated: true, amount: amounts.amount }
+  return { prorated: true, amount: charge.amount }
 }
 
 // deck 해제 예약: 기간말까지 사용, 다음 주기 미청구

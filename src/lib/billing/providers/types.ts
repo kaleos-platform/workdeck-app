@@ -19,6 +19,14 @@ export interface ChargeResult {
   ok: boolean
   paymentKey: string | null
   failReason: string | null
+  /** true = 승인 여부를 알 수 없음(타임아웃·5xx·중복 주문 오류) — orderId 로 조회해 확정해야 한다 */
+  unknown?: boolean
+}
+
+export interface PaymentByOrder {
+  paymentKey: string
+  orderId: string
+  status: string // 토스 기준 (DONE = 승인 완료)
 }
 
 export interface CancelParams {
@@ -40,5 +48,7 @@ export interface BillingProvider {
     orderId: string | null
     paymentKey: string | null
   }
+  /** orderId 로 결제 조회. 해당 주문의 결제가 없으면 null, 조회 자체가 실패하면 throw */
+  fetchPaymentByOrderId(orderId: string): Promise<PaymentByOrder | null>
   fetchPaymentStatus(paymentKey: string): Promise<{ orderId: string; status: string }>
 }
