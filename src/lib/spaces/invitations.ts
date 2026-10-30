@@ -201,7 +201,12 @@ export async function acceptInvitation(input: {
     if (claimed.count !== 1) throw new InvitationError(410, 'accepted')
     await tx.user.upsert({
       where: { id: input.user.id },
-      create: { id: input.user.id, email: inv.email, name: input.user.name },
+      create: {
+        id: input.user.id,
+        email: inv.email,
+        name: input.user.name,
+        signupSource: { utm_source: 'invite' },
+      },
       update: {},
     })
     const existing = await tx.spaceMember.findUnique({

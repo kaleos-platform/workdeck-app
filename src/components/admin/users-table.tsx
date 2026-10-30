@@ -19,6 +19,7 @@ type AdminUserListItem = {
   email: string
   name: string | null
   createdAt: string
+  signupSource: { utm_source?: string; utm_medium?: string } | null
   isOperator: boolean
   spaceMemberships: { spaceId: string; spaceName: string; role: string }[]
 }
@@ -27,21 +28,27 @@ export function UsersTable() {
   const router = useRouter()
   const [q, setQ] = useState('')
   const [debouncedQ, setDebouncedQ] = useState('')
+  const [source, setSource] = useState('')
+  const [debouncedSource, setDebouncedSource] = useState('')
   const [users, setUsers] = useState<AdminUserListItem[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q.trim()), 300)
+    const t = setTimeout(() => {
+      setDebouncedQ(q.trim())
+      setDebouncedSource(source.trim())
+    }, 300)
     return () => clearTimeout(t)
-  }, [q])
+  }, [q, source])
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     const params = new URLSearchParams()
     if (debouncedQ) params.set('q', debouncedQ)
+    if (debouncedSource) params.set('source', debouncedSource)
     fetch(`/api/admin/users?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
@@ -55,13 +62,14 @@ export function UsersTable() {
     return () => {
       cancelled = true
     }
-  }, [debouncedQ])
+  }, [debouncedQ, debouncedSource])
 
   async function loadMore() {
     if (!cursor) return
     setLoadingMore(true)
     const params = new URLSearchParams()
     if (debouncedQ) params.set('q', debouncedQ)
+    if (debouncedSource) params.set('source', debouncedSource)
     params.set('cursor', cursor)
     try {
       const res = await fetch(`/api/admin/users?${params.toString()}`)
@@ -75,12 +83,20 @@ export function UsersTable() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Input
-        placeholder="이메일 또는 이름으로 검색"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        className="max-w-sm"
-      />
+      <div className="flex flex-wrap gap-2">
+        <Input
+          placeholder="이메일 또는 이름으로 검색"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="max-w-sm"
+        />
+        <Input
+          placeholder="가입 경로 (utm_source, 예: opening)"
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          className="max-w-xs"
+        />
+      </div>
 
       <div className="rounded-md border">
         <Table>
@@ -89,6 +105,7 @@ export function UsersTable() {
               <TableHead>이메일</TableHead>
               <TableHead>이름</TableHead>
               <TableHead>소속 Space</TableHead>
+              <TableHead>가입 경로</TableHead>
               <TableHead>가입일</TableHead>
               <TableHead>상태</TableHead>
             </TableRow>
@@ -96,7 +113,7 @@ export function UsersTable() {
           <TableBody>
             {users.length === 0 && !loading && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   결과가 없습니다
                 </TableCell>
               </TableRow>
@@ -110,6 +127,13 @@ export function UsersTable() {
                 <TableCell className="font-medium">{u.email}</TableCell>
                 <TableCell>{u.name ?? '-'}</TableCell>
                 <TableCell>{u.spaceMemberships.length}개</TableCell>
+                <TableCell>
+                  {u.signupSource?.utm_source
+                    ? [u.signupSource.utm_source, u.signupSource.utm_medium]
+                        .filter(Boolean)
+                        .join(' / ')
+                    : '-'}
+                </TableCell>
                 <TableCell>{new Date(u.createdAt).toLocaleDateString('ko-KR')}</TableCell>
                 <TableCell>
                   {u.isOperator ? <Badge variant="secondary">운영자</Badge> : null}

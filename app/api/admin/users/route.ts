@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 const PAGE_SIZE = 50
 
-// GET /api/admin/users — 검색(email·name 부분일치) + 커서 페이지네이션
+// GET /api/admin/users — 검색(email·name 부분일치) + 가입 경로(source) 필터 + 커서 페이지네이션
 export async function GET(request: NextRequest) {
   const auth = await requireOperator()
   if (!auth.ok) return auth.response
@@ -12,15 +12,20 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const q = url.searchParams.get('q')?.trim()
   const cursor = url.searchParams.get('cursor')
+  const source = url.searchParams.get('source')?.trim()
 
-  const where = q
-    ? {
-        OR: [
-          { email: { contains: q, mode: 'insensitive' as const } },
-          { name: { contains: q, mode: 'insensitive' as const } },
-        ],
-      }
-    : undefined
+  const where = {
+    ...(q
+      ? {
+          OR: [
+            { email: { contains: q, mode: 'insensitive' as const } },
+            { name: { contains: q, mode: 'insensitive' as const } },
+          ],
+        }
+      : {}),
+    // 가입 경로(utm_source) 필터
+    ...(source ? { signupSource: { path: ['utm_source'], equals: source } } : {}),
+  }
 
   const users = await prisma.user.findMany({
     where,
@@ -33,6 +38,7 @@ export async function GET(request: NextRequest) {
       name: true,
       createdAt: true,
       platformRole: true,
+      signupSource: true,
       spaceMemberships: {
         select: {
           role: true,
@@ -51,6 +57,7 @@ export async function GET(request: NextRequest) {
       email: u.email,
       name: u.name,
       createdAt: u.createdAt,
+      signupSource: u.signupSource,
       isOperator: u.platformRole === 'OPERATOR',
       spaceMemberships: u.spaceMemberships.map((m) => ({
         spaceId: m.space.id,
