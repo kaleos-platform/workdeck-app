@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   const session = await prisma.hiringUploadSession.findFirst({
     where: { id: body.uploadSessionId, tokenHash },
   })
-  if (!session) return errorResponse('첨부 업로드가 만료되었습니다. 파일을 다시 선택해 주세요', 410)
+  if (!session) return errorResponse('지원서 제출 준비가 만료되었습니다. 다시 제출해 주세요', 410)
   const requestHash = submissionHash(body)
   if (session.completedAt) {
     if (session.requestHash !== requestHash || !session.applicationId)
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       : errorResponse('제출 결과를 확인할 수 없습니다', 409)
   }
   if (session.expiresAt <= new Date() || !session.postingId)
-    return errorResponse('첨부 업로드가 만료되었습니다. 다시 제출해 주세요', 410)
+    return errorResponse('지원서 제출 준비가 만료되었습니다. 다시 제출해 주세요', 410)
   const posting = await prisma.hiringPosting.findUnique({
     where: { id: session.postingId },
     include: { positions: { select: { id: true } }, stores: { select: { storeId: true } } },
