@@ -156,6 +156,8 @@ it('제출 중에는 첨부 추가와 제거를 잠근다', async () => {
   const { input, submit } = setup()
   await submit()
   expect(input).toBeDisabled()
+  expect(screen.getByLabelText('메모')).toBeDisabled()
+  expect(screen.getByRole('checkbox')).toBeDisabled()
   const remove = screen.getByRole('button', { name: '자료 resume.pdf 첨부 제거' })
   expect(remove).toBeDisabled()
   fireEvent.click(remove)
@@ -163,6 +165,24 @@ it('제출 중에는 첨부 추가와 제거를 잠근다', async () => {
   await act(async () => finish(response(500, { message: '준비 실패' })))
   expect(input).not.toBeDisabled()
   expect(remove).not.toBeDisabled()
+  expect(screen.getByLabelText('메모')).not.toBeDisabled()
+})
+
+it('제출 결과가 불확실하면 이전 입력으로 재확인됨을 안내한다', async () => {
+  global.fetch = jest
+    .fn()
+    .mockResolvedValueOnce(session())
+    .mockResolvedValueOnce(response())
+    .mockRejectedValueOnce(new Error('연결 오류'))
+    .mockResolvedValueOnce(response(400, { message: '입력을 확인하세요' }))
+  const { submit } = setup()
+  await submit()
+  expect(screen.getByText(/이전에 제출한 내용으로 결과를 확인/)).toBeInTheDocument()
+  expect(screen.getByText(/수정한 내용은 반영되지 않을 수 있습니다/)).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '이전 제출 결과 확인' })).toBeEnabled()
+  await submit()
+  expect(screen.queryByText(/이전에 제출한 내용으로 결과를 확인/)).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '지원서 제출' })).toBeEnabled()
 })
 
 it('업로드 응답 유실 뒤 세션이 만료되면 완료 API로 상태를 확인한다', async () => {
