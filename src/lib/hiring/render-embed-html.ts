@@ -73,7 +73,21 @@ function isPostingApplyUrl(value: unknown, origin: string, uuid: string): boolea
   }
 }
 
-function hasPostingApplyLink(value: unknown, origin: string, uuid: string): boolean {
+function isOtherPostingApplyUrl(value: unknown, origin: string, uuid: string): boolean {
+  if (typeof value !== 'string') return false
+  try {
+    const url = new URL(value)
+    return (
+      url.origin === new URL(origin).origin &&
+      /^\/p\/[^/]+\/apply\/?$/.test(url.pathname) &&
+      !isPostingApplyUrl(value, origin, uuid)
+    )
+  } catch {
+    return false
+  }
+}
+
+function hasTextLink(value: unknown, matches: (url: unknown) => boolean): boolean {
   if (!value || typeof value !== 'object') return false
   const node = value as {
     type?: string
@@ -82,11 +96,9 @@ function hasPostingApplyLink(value: unknown, origin: string, uuid: string): bool
     marks?: unknown[]
   }
   return (
-    (node.type === 'link' && isPostingApplyUrl(node.attrs?.href, origin, uuid)) ||
-    (Array.isArray(node.content) &&
-      node.content.some((child) => hasPostingApplyLink(child, origin, uuid))) ||
-    (Array.isArray(node.marks) &&
-      node.marks.some((mark) => hasPostingApplyLink(mark, origin, uuid)))
+    (node.type === 'link' && matches(node.attrs?.href)) ||
+    (Array.isArray(node.content) && node.content.some((child) => hasTextLink(child, matches))) ||
+    (Array.isArray(node.marks) && node.marks.some((mark) => hasTextLink(mark, matches)))
   )
 }
 
@@ -121,6 +133,11 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
     const issue = (message: string, severity: PostingEmbedIssue['severity'] = 'error') => {
       issues.push({ blockNumber: index + 1, severity, message })
     }
+    const warnOtherLink = () =>
+      issue(
+        '다른 공고의 지원서 링크가 있습니다. 현재 공고의 지원서 주소인지 확인하세요.',
+        'warning'
+      )
     if (content.contentType === 'text') {
       if (!content.data) {
         issue('텍스트가 비어 있어 출력에서 제외됩니다.', 'warning')
@@ -134,7 +151,10 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
       }
       const html = renderTiptapHtml(content.data, true)
       if (html) {
-        if (hasPostingApplyLink(content.data, origin, posting.uuid)) usesFormLink = true
+        if (hasTextLink(content.data, (url) => isPostingApplyUrl(url, origin, posting.uuid)))
+          usesFormLink = true
+        if (hasTextLink(content.data, (url) => isOtherPostingApplyUrl(url, origin, posting.uuid)))
+          warnOtherLink()
         parts.push(`<div style="margin:16px 0">${html}</div>`)
       } else
         issue('텍스트를 HTML로 변환하지 못했습니다. 내용을 다시 편집하거나 이 카드를 삭제하세요.')
@@ -163,6 +183,8 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
         continue
       }
       const link = parsed.data
+      if (link.linkType === 'url' && isOtherPostingApplyUrl(link.url, origin, posting.uuid))
+        warnOtherLink()
       if (
         link.linkType === 'form' ||
         (link.linkType === 'url' && isPostingApplyUrl(link.url, origin, posting.uuid))
@@ -228,6 +250,8 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
         continue
       }
       const btn = parsed.data
+      if (btn.linkType === 'url' && isOtherPostingApplyUrl(btn.url, origin, posting.uuid))
+        warnOtherLink()
       if (
         btn.linkType === 'form' ||
         (btn.linkType === 'url' && isPostingApplyUrl(btn.url, origin, posting.uuid))
