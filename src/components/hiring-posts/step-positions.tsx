@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog'
 import type { SaveHandle } from './use-queued-save'
 import { cn } from '@/lib/utils'
+import { formatPay, formatWorkDays, formatWorkTime } from '@/components/hiring-public/posting-labels'
 import {
   JOB_TYPE_LABELS,
   PAY_FREQUENCY_LABELS,
@@ -222,16 +223,12 @@ export function StepPositions({ ref, postingId, positions, spacePositions, onCha
             <div className="min-w-0 space-y-1">
               <div className="font-medium">{p.name}</div>
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                {p.jobType && <span>{JOB_TYPE_LABELS[p.jobType]}</span>}
-                {p.payFrequency && (
-                  <span>
-                    {PAY_FREQUENCY_LABELS[p.payFrequency]}
-                    {p.payAmount != null && ` ${p.payAmount.toLocaleString('ko-KR')}원`}
-                  </span>
-                )}
+                {p.jobType && <span>{JOB_TYPE_LABELS[p.jobType] ?? p.jobType}</span>}
+                <span>{formatPay(p.payFrequency, p.payAmount)}</span>
                 {p.headcount != null && <span>{p.headcount}명</span>}
-                {p.workDays && p.workDays.length > 0 && (
-                  <span>{p.workDays.map((d) => WEEKDAYS[d]).join('·')}</span>
+                {formatWorkDays(p.workDays) && <span>{formatWorkDays(p.workDays)}</span>}
+                {formatWorkTime(p.workStartAt, p.workEndAt) && (
+                  <span>{formatWorkTime(p.workStartAt, p.workEndAt)}</span>
                 )}
               </div>
             </div>
