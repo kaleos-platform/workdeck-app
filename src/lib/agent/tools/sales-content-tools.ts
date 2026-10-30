@@ -365,7 +365,7 @@ const setupInput = setupApplyFields.omit({ brandId: true }).extend({
 const proposeSetup: ToolDefinition = {
   name: 'sc_propose_setup',
   description:
-    '브랜드 1개의 세일즈 콘텐츠 기초 데이터(발행 채널·브랜드 프로필·상품)를 한 번에 등록하도록 제안합니다. 즉시 반영되지 않고 승인 대기 큐에 올라가며, 관리자(ADMIN)가 한 번 승인하면 등록됩니다. sc_list_channels·sc_list_brands·sc_list_products 가 비어 있어 게시물을 만들 수 없을 때 쓰세요. channel 은 수동 발행 채널로 만들어집니다(예: 네이버 블로그 = platform BLOG_NAVER, kind BLOG, platformSlug naver-blog). 같은 platformSlug 채널이 이미 있으면 그대로 두고, 같은 브랜드에 같은 이름 상품이 있으면 건너뜁니다. profile 은 해당 브랜드 프로필을 덮어씁니다(companyName 필수, toneOfVoice 최대 10개, customFields 는 {key,value} 목록). 상품 이름·구성·특징은 seller-hub 상품 정보(sellerhub_get_product_options 등)나 브랜드 공식 사이트처럼 확인한 자료에서만 가져오고 지어내지 마세요. 확인하지 못한 항목은 비워 두세요. 대화에는 무엇을 승인 대기에 올렸는지만 짧게 알리세요.',
+    '브랜드 1개의 세일즈 콘텐츠 기초 데이터(발행 채널·브랜드 프로필·상품)를 한 번에 등록하도록 제안합니다. 즉시 반영되지 않고 승인 대기 큐에 올라가며, 관리자(ADMIN)가 한 번 승인하면 등록됩니다. sc_list_channels·sc_list_brands·sc_list_products 가 비어 있어 게시물을 만들 수 없을 때 쓰세요. channel 은 수동 발행 채널로 만들어집니다(예: 네이버 블로그 = platform BLOG_NAVER, kind BLOG, platformSlug naver-blog). 같은 platformSlug 채널이 이미 있으면 그대로 두고, 같은 브랜드에 같은 이름 상품이 있으면 건너뜁니다. profile 은 해당 브랜드 프로필에서 넘긴 필드만 덮어씁니다(companyName 필수, toneOfVoice 최대 10개, customFields 는 {key,value} 목록). 상품 이름·구성·특징은 seller-hub 상품 정보(sellerhub_get_product_options 등)나 브랜드 공식 사이트처럼 확인한 자료에서만 가져오고 지어내지 마세요. 확인하지 못한 항목은 비워 두세요. 대화에는 무엇을 승인 대기에 올렸는지만 짧게 알리세요.',
   inputSchema: setupInput.shape,
   mode: 'write',
   scope: 'sc:write',

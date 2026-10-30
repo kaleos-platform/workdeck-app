@@ -238,6 +238,14 @@ d('sales-content.setup.apply', () => {
         })
       ).companyName
     ).toBe('E2E 셋업 2')
+    // 넘기지 않은 필드는 유지된다.
+    expect(
+      (
+        await prisma.brandProfile.findFirstOrThrow({
+          where: { spaceId: SPACE_ID, brandId: BRAND_ID },
+        })
+      ).toneOfVoice
+    ).toEqual(['친근한'])
   })
 
   test('모르는 브랜드·빈 제안은 거부된다', async () => {

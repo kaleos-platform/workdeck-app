@@ -141,7 +141,7 @@ async function requireSpaceBrand(spaceId: string, brandId: string) {
 /**
  * 브랜드 1개의 세일즈 콘텐츠 기초 데이터(채널·브랜드 프로필·상품)를 승인 1회로 등록한다.
  * 채널은 같은 slug 가 있으면 그대로 두고, 상품은 같은 브랜드에 같은 이름이 있으면 건너뛴다(재제안 안전).
- * 프로필은 덮어쓴다 — 실행 전 프로필을 snapshot 으로 남긴다.
+ * 프로필은 넘긴 필드만 덮어쓴다 — 실행 전 프로필을 snapshot 으로 남긴다.
  */
 const setupApply: ActionDefinition<SetupApplyParams> = {
   actionType: 'sales-content.setup.apply',
@@ -179,13 +179,16 @@ const setupApply: ActionDefinition<SetupApplyParams> = {
       if (profile) {
         await saveBrandProfile(tx, spaceId, brandId, {
           companyName: profile.companyName,
-          shortDescription: profile.shortDescription ?? null,
-          toneOfVoice: profile.toneOfVoice ?? undefined,
-          customFields: (profile.customFields ?? []) as never,
+          // 빠진 필드는 기존 값을 유지한다(undefined = Prisma 미변경).
+          shortDescription: profile.shortDescription,
+          toneOfVoice: profile.toneOfVoice,
+          customFields: profile.customFields as never,
         })
         result.profile = 'saved'
       }
       if (products?.length) {
+        // Product 에 (brandId, name) unique 가 없다 — 같은 브랜드 제안 동시 승인이 같은 상품을 두 번 만들지 않게.
+        await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtext(${`sc-setup-products:${brandId}`}))`
         const existing = await tx.product.findMany({
           where: { spaceId, brandId, name: { in: products.map((p) => p.name) } },
           select: { name: true },
