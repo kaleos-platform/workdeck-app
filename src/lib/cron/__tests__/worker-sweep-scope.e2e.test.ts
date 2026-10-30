@@ -208,7 +208,7 @@ d('스윕 Space 격리 (로컬 Supabase)', () => {
     await cleanup()
     await prisma.deckApp.upsert({
       where: { id: 'coupang-ads' },
-      create: { id: 'coupang-ads', name: '쿠팡 광고 관리' },
+      create: { id: 'coupang-ads', name: '쿠팡 채널 관리' },
       update: {},
     })
     await seed(A, { processable: true })

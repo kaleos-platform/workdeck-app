@@ -39,12 +39,12 @@ export type DeckMeta = {
  */
 export const DECK_META: Record<DeckVariant, DeckMeta> = {
   'coupang-ads': {
-    name: '쿠팡 광고 관리',
+    name: '쿠팡 채널 관리',
     href: COUPANG_ADS_BASE_PATH,
     icon: BarChart2,
     gradient: 'from-orange-500 to-red-600',
     description:
-      '쿠팡 광고 리포트를 업로드하면 캠페인별 ROAS·광고비·키워드 분석이 자동으로 정리됩니다.',
+      '쿠팡 광고 성과 분석과 함께 전체 매출 중 광고비 비중·광고 없이 팔리는 상품을 한눈에 봅니다.',
   },
   'seller-hub': {
     name: '브랜드 운영',

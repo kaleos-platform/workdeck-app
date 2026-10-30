@@ -39,7 +39,7 @@ export type AgentPendingActionDTO = {
 export const DECK_LABELS: Record<string, string> = {
   finance: '재무 관리',
   'seller-hub': '브랜드 운영',
-  'coupang-ads': '쿠팡 광고 관리',
+  'coupang-ads': '쿠팡 채널 관리',
   'meta-ads': '메타 광고',
   'google-marketing': '구글 마케팅',
   'sales-content': '세일즈 콘텐츠',

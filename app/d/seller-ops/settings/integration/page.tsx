@@ -17,8 +17,8 @@ export default function SettingsIntegrationPage() {
       </div>
 
       {/* ── 연동 관리 (상단) ── */}
-      {/* 쿠팡 계정 연동 — 계정에 존속(1계정 1워크스페이스)되며 쿠팡 광고 관리와 공유된다.
-          여기서 먼저 설정하면 워크스페이스가 자동 생성되고 쿠팡 광고 관리에서도 사용된다. */}
+      {/* 쿠팡 계정 연동 — 계정에 존속(1계정 1워크스페이스)되며 쿠팡 채널 관리와 공유된다.
+          여기서 먼저 설정하면 워크스페이스가 자동 생성되고 쿠팡 채널 관리에서도 사용된다. */}
       <CredentialForm />
       <CoupangSourceCard deckKey="seller-hub" />
       <NaverNbaesongCard />

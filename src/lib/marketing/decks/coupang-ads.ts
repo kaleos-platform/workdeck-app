@@ -3,9 +3,9 @@ import type { DeckLandingContent } from '../types'
 export const coupangAdsLanding: DeckLandingContent = {
   slug: 'coupang-ads',
   seo: {
-    title: '쿠팡 광고 관리 — Excel 리포트 업로드로 ROAS·키워드 분석',
+    title: '쿠팡 채널 관리 — 광고 ROAS·키워드 분석과 매출 구성 확인',
     description:
-      '쿠팡 광고 리포트 Excel을 업로드하면 캠페인별 ROAS·광고비 추이와 비효율 키워드를 자동으로 분석합니다. 매일 수기 정리하던 광고 리포트를 Workdeck 쿠팡 광고 관리로 자동화하세요.',
+      '쿠팡 광고 리포트 Excel을 업로드하면 캠페인별 ROAS·광고비 추이와 비효율 키워드를 자동으로 분석합니다. 전체 매출 중 광고비 비중과 광고 없이 팔리는 상품도 함께 확인할 수 있습니다. 매일 수기 정리하던 광고 리포트를 Workdeck 쿠팡 채널 관리로 자동화하세요.',
     keywords: [
       '쿠팡 광고 분석',
       '쿠팡 광고 리포트',
@@ -72,7 +72,7 @@ export const coupangAdsLanding: DeckLandingContent = {
   screenshots: [
     {
       src: '/marketing/coupang-ads/dashboard.png',
-      alt: '쿠팡 광고 관리 캠페인 대시보드 화면',
+      alt: '쿠팡 채널 관리 캠페인 대시보드 화면',
       caption: '캠페인별 광고비·ROAS·매출 추이를 한눈에 확인',
     },
   ],
@@ -112,7 +112,7 @@ export const coupangAdsLanding: DeckLandingContent = {
     {
       question: '이용 요금은 어떻게 되나요?',
       answer:
-        '쿠팡 광고 관리은 월 33,000원(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
+        '쿠팡 채널 관리는 월 33,000원(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
     },
   ],
   finalCta: {

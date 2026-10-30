@@ -67,7 +67,7 @@ async function renderHomePage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">쿠팡 광고 관리</h1>
+          <h1 className="text-3xl font-bold tracking-tight">쿠팡 채널 관리</h1>
           <p className="text-sm text-muted-foreground">
             {workspace.name} 계정의 광고 성과를 분석합니다.
           </p>

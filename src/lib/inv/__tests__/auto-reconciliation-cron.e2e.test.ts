@@ -93,7 +93,7 @@ d('자동 재고 대조 cron 멱등성 (dev DB)', () => {
     // 쿠팡 Deck 활성화 (DeckApp 은 공용 시드 — 없으면 생성)
     await prisma.deckApp.upsert({
       where: { id: 'coupang-ads' },
-      create: { id: 'coupang-ads', name: '쿠팡 광고 관리' },
+      create: { id: 'coupang-ads', name: '쿠팡 채널 관리' },
       update: {},
     })
     await prisma.deckInstance.create({
