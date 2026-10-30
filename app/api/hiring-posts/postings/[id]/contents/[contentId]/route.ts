@@ -10,6 +10,7 @@ import {
   MAX_CONTENT_DATA_CHARS,
 } from '@/lib/validations/hiring-posts'
 import { uploadContentImage } from '@/lib/hiring/postings'
+import { deletePostingAsset } from '@/lib/hiring/storage'
 
 type Params = { params: Promise<{ id: string; contentId: string }> }
 
@@ -24,7 +25,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const existing = await prisma.hiringContent.findFirst({
     where: { id: contentId, postingId: id, spaceId: resolved.space.id },
-    select: { id: true, contentType: true },
+    select: { id: true, contentType: true, updatedAt: true },
   })
   if (!existing) return errorResponse('콘텐츠를 찾을 수 없습니다', 404)
 
@@ -37,6 +38,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const parsed = updateContentSchema.safeParse(body)
   if (!parsed.success) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
+  }
+
+  if (!parsed.data.expectedUpdatedAt) {
+    return errorResponse('카드 버전이 없습니다. 입력을 복사한 뒤 새로고침해 주세요.', 428)
+  }
+  const expectedUpdatedAt = parsed.data.expectedUpdatedAt
+    ? new Date(parsed.data.expectedUpdatedAt)
+    : undefined
+  const conflictMessage = '다른 창에서 카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 주세요.'
+  if (expectedUpdatedAt && existing.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+    return errorResponse(conflictMessage, 409)
   }
 
   // image 블록 data 는 링크 설정만 허용 — { link?: BlockLink }
@@ -97,23 +109,42 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
   }
 
-  const content = await prisma.hiringContent.update({
-    where: { id: contentId },
-    data: {
-      // title 은 모든 블록 타입 공통 필드 — null 이면 리스트에서 "카드 N" 폴백으로 표시.
-      ...(parsed.data.title !== undefined && { title: parsed.data.title }),
-      ...(parsed.data.data !== undefined && {
-        data: parsed.data.data as Prisma.InputJsonValue,
-      }),
-      ...(parsed.data.sortOrder !== undefined && { sortOrder: parsed.data.sortOrder }),
-      ...(imagePath !== undefined && { imagePath }),
-    },
-  })
-  return NextResponse.json({ content })
+  try {
+    const content = await prisma.hiringContent.update({
+      where: { id: contentId, ...(expectedUpdatedAt ? { updatedAt: expectedUpdatedAt } : {}) },
+      data: {
+        // 빠른 연속 저장에서도 이전 카드 버전과 같지 않도록 단조 증가시킨다.
+        updatedAt: new Date(Math.max(Date.now(), existing.updatedAt.getTime() + 1)),
+        // title 은 모든 블록 타입 공통 필드 — null 이면 리스트에서 "카드 N" 폴백으로 표시.
+        ...(parsed.data.title !== undefined && { title: parsed.data.title }),
+        ...(parsed.data.data !== undefined && {
+          data: parsed.data.data as Prisma.InputJsonValue,
+        }),
+        ...(parsed.data.sortOrder !== undefined && { sortOrder: parsed.data.sortOrder }),
+        ...(imagePath !== undefined && { imagePath }),
+      },
+    })
+    return NextResponse.json({ content })
+  } catch (error) {
+    const isConflict =
+      error && typeof error === 'object' && 'code' in error && error.code === 'P2025'
+    // 커밋 결과가 불확실한 오류에서는 저장된 이미지일 수 있으므로 삭제하지 않는다.
+    if (imagePath && isConflict) {
+      try {
+        await deletePostingAsset(imagePath)
+      } catch {
+        console.error('[hiring-posts content PATCH] 미참조 이미지 정리 실패')
+      }
+    }
+    if (isConflict) {
+      return errorResponse(conflictMessage, 409)
+    }
+    throw error
+  }
 }
 
 // 콘텐츠 블록 삭제
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id, contentId } = await params
@@ -124,6 +155,17 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   })
   if (!existing) return errorResponse('콘텐츠를 찾을 수 없습니다', 404)
 
-  await prisma.hiringContent.delete({ where: { id: contentId } })
+  const version = req.headers.get('x-content-version')
+  if (!version) return errorResponse('카드 버전이 없습니다. 새로고침해 주세요.', 428)
+  const parsedVersion = z.string().datetime().safeParse(version)
+  if (!parsedVersion.success) return errorResponse('카드 버전이 올바르지 않습니다', 400)
+  try {
+    await prisma.hiringContent.delete({ where: { id: contentId, updatedAt: new Date(version) } })
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return errorResponse('다른 창에서 카드가 변경되었습니다. 새로고침해 주세요.', 409)
+    }
+    throw error
+  }
   return NextResponse.json({ ok: true })
 }

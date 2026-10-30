@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ContentBlockEditor } from '../content-block-editor'
+import { toast } from 'sonner'
 import type { WizardContentData } from '../build-types'
 
 jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh: jest.fn() }) }))
@@ -49,11 +50,21 @@ jest.mock('../block-edit-overlay', () => ({
 
 function Form({
   appliedTemplate = null,
+  initialVersion,
 }: {
   appliedTemplate?: { id: string | null; name: string; at: string | null } | null
+  initialVersion?: string
 }) {
   const [contents, setContents] = useState<WizardContentData[]>([
-    { id: 'text', contentType: 'text', title: null, data: null, imagePath: null, sortOrder: 0 },
+    {
+      id: 'text',
+      contentType: 'text',
+      title: null,
+      data: null,
+      imagePath: null,
+      sortOrder: 0,
+      updatedAt: initialVersion,
+    },
   ])
   return (
     <ContentBlockEditor
@@ -288,3 +299,35 @@ it('템플릿 조회가 응답하지 않아도 5초 후 새 저장을 제공한�
   expect(screen.queryByRole('radio', { name: /기존 템플릿 덮어쓰기/ })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: /^저장$/ })).toBeEnabled()
 }, 10000)
+
+it('본문 저장은 편집 시작 시점의 카드 버전을 전송한다', async () => {
+  const version = '2026-10-29T12:00:00.000Z'
+  global.fetch = jest
+    .fn()
+    .mockResolvedValue({
+      ok: true,
+      json: async () => ({ content: { updatedAt: '2026-10-29T12:00:01.000Z' } }),
+    }) as jest.Mock
+  render(<Form initialVersion={version} />)
+  fireEvent.click(screen.getByRole('button', { name: '편집' }))
+  fireEvent.click(screen.getByRole('button', { name: '본문 변경' }))
+  fireEvent.click(screen.getByRole('button', { name: '편집 완료' }))
+  await waitFor(() => expect(fetch).toHaveBeenCalled())
+  const body = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body)
+  expect(body.expectedUpdatedAt).toBe(version)
+})
+
+it('다른 창의 저장과 충돌하면 입력을 유지하고 충돌 해결 방법을 알린다', async () => {
+  const message = '다른 창에서 카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 주세요.'
+  global.fetch = jest
+    .fn()
+    .mockResolvedValue({ ok: false, status: 409, json: async () => ({ message }) }) as jest.Mock
+  render(<Form initialVersion="2026-10-29T12:00:00.000Z" />)
+  fireEvent.click(screen.getByRole('button', { name: '편집' }))
+  fireEvent.click(screen.getByRole('button', { name: '본문 변경' }))
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: '편집 완료' }))
+  })
+  expect(screen.getByTestId('text-editor')).toBeInTheDocument()
+  expect(toast.error).toHaveBeenCalledWith(message)
+})

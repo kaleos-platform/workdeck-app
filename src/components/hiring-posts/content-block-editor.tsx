@@ -137,13 +137,29 @@ export function ContentBlockEditor({
   const [closingOverlay, setClosingOverlay] = useState(false)
   const overlayRef = useRef<SaveHandle>(null)
   const closingRef = useRef(false)
+  // 카드별 서버 버전과 진행 중인 요청을 관리해 같은 창의 저장도 순서대로 보낸다.
+  const contentVersionsRef = useRef(
+    new Map(
+      contents.flatMap((content) =>
+        content.updatedAt ? [[content.id, content.updatedAt] as const] : []
+      )
+    )
+  )
+  const contentWritesRef = useRef(new Map<string, Promise<void>>())
   const mediaSavesRef = useRef(new Set<Promise<void>>())
   const mediaErrorsRef = useRef(new Map<string, string>())
   const textQueueRef = useRef<ReturnType<typeof createTextSaveQueue> | null>(null)
   if (!textQueueRef.current) {
     textQueueRef.current = createTextSaveQueue(
       (id, data) => patchContent(id, { data }),
-      () => toast.error('본문 저장에 실패했습니다. 편집 완료를 눌러 다시 저장하세요.')
+      (error) =>
+        toast.error(
+          error instanceof Error &&
+            (error.message.includes('다른 창에서') ||
+              error.message.includes('카드 버전이 없습니다'))
+            ? error.message
+            : '본문 저장에 실패했습니다. 편집 완료를 눌러 다시 저장하세요.'
+        )
     )
   }
   const textQueue = textQueueRef.current
@@ -188,7 +204,14 @@ export function ContentBlockEditor({
         mediaErrorsRef.current.delete(contentId)
       })
       .catch((error: unknown) => {
-        mediaErrorsRef.current.set(contentId, retryMessage)
+        mediaErrorsRef.current.set(
+          contentId,
+          error instanceof Error &&
+            (error.message.includes('다른 창에서') ||
+              error.message.includes('카드 버전이 없습니다'))
+            ? error.message
+            : retryMessage
+        )
         throw error
       })
       .finally(() => {
@@ -235,13 +258,41 @@ export function ContentBlockEditor({
   contentsRef.current = contents
 
   async function patchContent(contentId: string, body: Record<string, unknown>) {
-    const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    if (!res.ok) throw new Error('저장에 실패했습니다')
-    return (await res.json()).content as WizardContentData
+    const previous = contentWritesRef.current.get(contentId)
+    const save = async () => {
+      const version =
+        contentVersionsRef.current.get(contentId) ??
+        contentsRef.current.find((content) => content.id === contentId)?.updatedAt
+      const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, ...(version ? { expectedUpdatedAt: version } : {}) }),
+      })
+      if (!res.ok) {
+        if (res.status === 409 || res.status === 428) {
+          const error = await res.json().catch(() => ({}))
+          throw new Error(
+            error.message ?? '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 주세요.'
+          )
+        }
+        throw new Error('저장에 실패했습니다')
+      }
+      const updated = (await res.json()).content as WizardContentData
+      if (updated.updatedAt) contentVersionsRef.current.set(contentId, updated.updatedAt)
+      return updated
+    }
+    const request = previous ? previous.then(save) : save()
+    const settled = request.then(
+      () => undefined,
+      () => undefined
+    )
+    contentWritesRef.current.set(contentId, settled)
+    try {
+      return await request
+    } finally {
+      if (contentWritesRef.current.get(contentId) === settled)
+        contentWritesRef.current.delete(contentId)
+    }
   }
 
   async function handleAdd(contentType: ContentType) {
@@ -268,10 +319,17 @@ export function ContentBlockEditor({
     try {
       await runMutation(async () => {
         await flushEdits()
+        const version =
+          contentVersionsRef.current.get(contentId) ??
+          contentsRef.current.find((content) => content.id === contentId)?.updatedAt
         const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
           method: 'DELETE',
+          ...(version ? { headers: { 'x-content-version': version } } : {}),
         })
-        if (!res.ok) throw new Error('삭제에 실패했습니다')
+        if (!res.ok) {
+          const error = await res.json().catch(() => ({}))
+          throw new Error(error.message ?? '삭제에 실패했습니다')
+        }
         textQueue.cancel(contentId)
         mediaErrorsRef.current.delete(contentId)
         onChange(contentsRef.current.filter((c) => c.id !== contentId))
@@ -295,11 +353,32 @@ export function ContentBlockEditor({
         const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contentIds: next.map((c) => c.id) }),
+          body: JSON.stringify({
+            contentIds: next.map((c) => c.id),
+            expectedContents: next.map((content) => ({
+              id: content.id,
+              updatedAt: contentVersionsRef.current.get(content.id) ?? content.updatedAt,
+            })),
+          }),
         })
         if (!res.ok) {
           const error = await res.json().catch(() => ({}))
           throw new Error(error.message ?? '순서 변경 저장에 실패했습니다')
+        }
+        // 정렬 직전 버전이 내가 본 버전과 같을 때만 새 버전으로 갱신한다.
+        const result = typeof res.json === 'function' ? await res.json().catch(() => null) : null
+        if (Array.isArray(result?.versions)) {
+          for (const item of result.versions) {
+            if (
+              typeof item.id === 'string' &&
+              typeof item.updatedAt === 'string' &&
+              (contentVersionsRef.current.get(item.id) ??
+                contentsRef.current.find((content) => content.id === item.id)?.updatedAt) ===
+                item.previousUpdatedAt
+            ) {
+              contentVersionsRef.current.set(item.id, item.updatedAt)
+            }
+          }
         }
         onChange(next.map((c, sortOrder) => ({ ...c, sortOrder })))
         router.refresh()
@@ -341,8 +420,12 @@ export function ContentBlockEditor({
     }
   }
   function saveTitle(contentId: string) {
-    void commitTitle(contentId).catch(() =>
-      toast.error('카드 제목 저장에 실패했습니다. 입력은 유지됩니다. 다시 저장하세요.')
+    void commitTitle(contentId).catch((error: unknown) =>
+      toast.error(
+        error instanceof Error && error.message.includes('다른 창에서')
+          ? error.message
+          : '카드 제목 저장에 실패했습니다. 입력은 유지됩니다. 다시 저장하세요.'
+      )
     )
   }
 
@@ -582,12 +665,23 @@ export function ContentBlockEditor({
     try {
       await runMutation(async () => {
         await flushEdits()
+        const expectedContents = contentsRef.current.map((content) => ({
+          id: content.id,
+          updatedAt: contentVersionsRef.current.get(content.id) ?? content.updatedAt,
+        }))
         const res = await fetch(`/api/hiring-posts/postings/${postingId}/apply-template`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ templateId: selectedTemplateId, mode: applyMode }),
+          body: JSON.stringify({
+            templateId: selectedTemplateId,
+            mode: applyMode,
+            ...(applyMode === 'replace' ? { expectedContents } : {}),
+          }),
         })
-        if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
+        if (!res.ok) {
+          const error = await res.json().catch(() => ({}))
+          throw new Error(error.message ?? '템플릿 적용에 실패했습니다')
+        }
         const { contents: next } = await res.json()
         for (const content of contentsRef.current) textQueue.cancel(content.id)
         mediaErrorsRef.current.clear()

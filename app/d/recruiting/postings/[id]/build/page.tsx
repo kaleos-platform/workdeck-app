@@ -68,6 +68,7 @@ export default async function BuildPage({ params }: PageProps) {
         data: c.data,
         imagePath: c.imagePath,
         sortOrder: c.sortOrder,
+        updatedAt: c.updatedAt.toISOString(),
       })),
       formFields,
       appliedTemplateId: posting.appliedTemplateId,

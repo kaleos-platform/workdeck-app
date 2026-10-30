@@ -178,6 +178,7 @@ export const createSampleContentSchema = z.object({
 export type CreateSampleContentInput = z.infer<typeof createSampleContentSchema>
 
 export const updateContentSchema = z.object({
+  expectedUpdatedAt: z.string().datetime().optional(),
   // 블록 제목 — 빈 문자열/공백은 null 로 정규화(리스트에서 "카드 N" 폴백). trim 후 최대 100자.
   title: z
     .preprocess((v) => {
@@ -264,5 +265,9 @@ export const applyTemplateSchema = z.object({
   templateId: idLike,
   // append(기본): 기존 블록 하단에 추가 / replace: 기존 POSTING_DETAIL 전체 교체
   mode: z.enum(['append', 'replace']).default('append'),
+  expectedContents: z
+    .array(z.object({ id: idLike, updatedAt: z.string().datetime() }))
+    .max(1000)
+    .optional(),
 })
 export type ApplyTemplateInput = z.infer<typeof applyTemplateSchema>

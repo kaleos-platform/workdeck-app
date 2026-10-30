@@ -84,6 +84,12 @@ export function getPostingAssetPublicUrl(path: string): string {
   return data.publicUrl
 }
 
+/** 저장 실패로 참조되지 않은 새 공고 자산을 정리한다. */
+export async function deletePostingAsset(path: string): Promise<void> {
+  const { error } = await serviceClient().storage.from(HIRING_ASSETS_BUCKET).remove([path])
+  if (error) throw new Error('공고 자산 정리에 실패했습니다')
+}
+
 /**
  * 운영 어드민 샘플 템플릿 자산 업로드. 경로: samples/{templateId}/{uuid}.{ext}
  * (space 경로 `{spaceId}/postings/...` 와 분리 — 샘플은 spaceId=null 이라 space 경로에 넣을 수 없음)

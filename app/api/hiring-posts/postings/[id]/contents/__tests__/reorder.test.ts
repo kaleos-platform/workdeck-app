@@ -15,13 +15,22 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 const tx = { hiringContent: { findMany: jest.fn(), update: jest.fn() } }
-const request = (body: unknown) => ({ json: async () => body }) as NextRequest
+const request = (body: object) =>
+  ({
+    json: async () => ({
+      expectedContents: ['a', 'b'].map((id) => ({ id, updatedAt: '2026-01-01T00:00:00.000Z' })),
+      ...body,
+    }),
+  }) as NextRequest
 const params = { params: Promise.resolve({ id: 'qa' }) }
 beforeEach(() => {
   jest.clearAllMocks()
   jest.mocked(resolveDeckContext).mockResolvedValue({ space: { id: 'space' } } as never)
   jest.mocked(prisma.hiringPosting.findFirst).mockResolvedValue({ id: 'qa' } as never)
-  tx.hiringContent.findMany.mockResolvedValue([{ id: 'a' }, { id: 'b' }])
+  tx.hiringContent.findMany.mockResolvedValue([
+    { id: 'a', updatedAt: new Date('2026-01-01T00:00:00.000Z') },
+    { id: 'b', updatedAt: new Date('2026-01-01T00:00:00.000Z') },
+  ])
   tx.hiringContent.update.mockResolvedValue({})
   jest
     .mocked(prisma.$transaction)
@@ -33,11 +42,12 @@ it('공고의 전체 카드 순서를 같은 트랜잭션에서 저장한다', a
   expect(tx.hiringContent.findMany).toHaveBeenCalledWith(
     expect.objectContaining({
       where: { postingId: 'qa', spaceId: 'space', sourceType: 'POSTING_DETAIL' },
+      select: { id: true, updatedAt: true },
     })
   )
   expect(tx.hiringContent.update.mock.calls.map((call) => call[0])).toEqual([
-    { where: { id: 'b' }, data: { sortOrder: 0 } },
-    { where: { id: 'a' }, data: { sortOrder: 1 } },
+    { where: { id: 'b' }, data: { sortOrder: 0, updatedAt: expect.any(Date) } },
+    { where: { id: 'a' }, data: { sortOrder: 1, updatedAt: expect.any(Date) } },
   ])
   expect(prisma.$transaction).toHaveBeenCalledWith(expect.any(Function), {
     isolationLevel: 'Serializable',

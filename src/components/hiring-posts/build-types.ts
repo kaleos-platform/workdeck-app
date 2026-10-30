@@ -31,6 +31,7 @@ export type WizardContentData = {
   data: unknown
   imagePath: string | null
   sortOrder: number
+  updatedAt?: string
 }
 
 export type WizardStore = {
