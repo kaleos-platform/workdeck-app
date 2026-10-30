@@ -261,21 +261,72 @@ it.each(['text', 'button', 'image'])(
   }
 )
 
-it.each([
-  'https://example.com/p/qa/apply',
-  'https://workdeck.test/p/other/apply',
-  'https://workdeck.test/p/qa/apply-other',
-])('다른 지원서 또는 외부 주소 %s는 현재 공고 지원서로 취급하지 않는다', (url) => {
-  const result = renderPostingEmbed({
-    origin: 'https://workdeck.test',
-    posting: {
-      uuid: 'qa',
-      positions: [],
-      contents: [
-        { contentType: 'button', imagePath: null, data: { title: '링크', linkType: 'url', url } },
-      ],
-    },
-  })
-  expect(result.issues).toEqual([])
-  expect(result.usesFormLink).toBe(false)
-})
+it.each(['https://example.com/p/qa/apply', 'https://workdeck.test/p/qa/apply-other'])(
+  '다른 지원서 또는 외부 주소 %s는 현재 공고 지원서로 취급하지 않는다',
+  (url) => {
+    const result = renderPostingEmbed({
+      origin: 'https://workdeck.test',
+      posting: {
+        uuid: 'qa',
+        positions: [],
+        contents: [
+          { contentType: 'button', imagePath: null, data: { title: '링크', linkType: 'url', url } },
+        ],
+      },
+    })
+    expect(result.issues).toEqual([])
+    expect(result.usesFormLink).toBe(false)
+  }
+)
+
+it.each(['text', 'button', 'image'])(
+  '복사한 공고의 %s에 이전 공고 지원서가 있으면 경고한다',
+  (type) => {
+    const previous = process.env.NEXT_PUBLIC_SUPABASE_URL
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://assets.workdeck.test'
+    try {
+      const url = 'https://workdeck.test/p/old/apply?source=job'
+      const data =
+        type === 'text'
+          ? {
+              type: 'doc',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [
+                    { type: 'text', text: '지원', marks: [{ type: 'link', attrs: { href: url } }] },
+                  ],
+                },
+              ],
+            }
+          : type === 'button'
+            ? { title: '지원', linkType: 'url', url }
+            : { link: { linkType: 'url', url } }
+      const result = renderPostingEmbed({
+        origin: 'https://workdeck.test',
+        posting: {
+          uuid: 'new',
+          positions: [],
+          contents: [
+            {
+              contentType: type as 'text' | 'button' | 'image',
+              imagePath: type === 'image' ? 'qa/photo.png' : null,
+              data,
+            },
+          ],
+        },
+      })
+      expect(result.issues).toContainEqual(
+        expect.objectContaining({
+          blockNumber: 1,
+          severity: 'warning',
+          message: expect.stringContaining('다른 공고'),
+        })
+      )
+      expect(result.html).toContain(url.replace('&', '&amp;'))
+    } finally {
+      if (previous === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+      else process.env.NEXT_PUBLIC_SUPABASE_URL = previous
+    }
+  }
+)
