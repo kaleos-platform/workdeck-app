@@ -80,11 +80,15 @@ export function StepBasic({ ref, postingId, value, onChange }: Props) {
         </div>
         <Input
           id="title"
+          aria-describedby="posting-title-help"
           value={value.title}
           onChange={(e) => onChange({ title: e.target.value })}
           onBlur={handleBlur}
           placeholder="예: 강남점 주말 아르바이트 모집"
         />
+        <p id="posting-title-help" className="text-xs text-muted-foreground">
+          공고 제목을 바꿔도 본문은 자동으로 바뀌지 않습니다. 공고 꾸미기에서 본문 제목도 확인하세요.
+        </p>
       </div>
     </div>
   )
