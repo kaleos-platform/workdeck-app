@@ -1,4 +1,5 @@
 import 'server-only'
+import { buildAdminUrl } from '@/lib/domain'
 
 // 도입 신청 알림 — 실패해도 신청 접수는 성공이어야 하므로 호출 측에서 allSettled 로 묶는다.
 // sendSystemNotification 은 모든 Space 의 Slack 으로 브로드캐스트되므로 쓰지 않는다.
@@ -15,7 +16,12 @@ export type LeadNotifyInput = {
 }
 
 const TIMEOUT_MS = 5000
-const ADMIN_LEADS_URL = 'https://admin.workdeck.work/leads'
+const ADMIN_LEADS_URL = buildAdminUrl('/admin/leads')
+// preview·로컬 신청은 운영 채널·메일에서 구분되도록 제목 앞에 환경을 붙인다
+const ENV_PREFIX =
+  process.env.VERCEL_ENV === 'production'
+    ? ''
+    : `[${(process.env.VERCEL_ENV ?? 'local').toUpperCase()}] `
 
 function escapeHtml(value: string) {
   return value
@@ -39,7 +45,7 @@ export async function notifySlack(lead: LeadNotifyInput) {
   const url = process.env.LEAD_SLACK_WEBHOOK_URL
   if (!url) return
   const text = [
-    `:inbox_tray: 새 도입 신청 (${escapeSlack(lead.deckName)})`,
+    `${ENV_PREFIX}:inbox_tray: 새 도입 신청 (${escapeSlack(lead.deckName)})`,
     `회사: ${escapeSlack(lead.companyName)} (${escapeSlack(lead.employeeCount)})`,
     `담당자: ${escapeSlack(lead.name)} / ${escapeSlack(lead.position)}`,
     `이메일: ${escapeSlack(lead.email)}`,
@@ -76,7 +82,7 @@ export async function notifyEmail(lead: LeadNotifyInput) {
     body: JSON.stringify({
       from: process.env.LEAD_NOTIFY_FROM ?? 'Workdeck <noreply@workdeck.work>',
       to: process.env.LEAD_NOTIFY_TO ?? 'hello@workdeck.work',
-      subject: `[도입 신청] ${lead.companyName} (${lead.deckName})`,
+      subject: `${ENV_PREFIX}[도입 신청] ${lead.companyName} (${lead.deckName})`,
       html,
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
