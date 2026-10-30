@@ -468,6 +468,96 @@ export function LocationMappingTable({ locationId }: Props) {
         excludeOptionIds={editExcludeOptionIds}
         initialItems={editingRow ? mappingItemsToPickedWithQty(editingRow.items) : undefined}
       />
+
+      <LocationExcludedCodes locationId={locationId} />
     </>
+  )
+}
+
+type ExcludedCodeRow = {
+  id: string
+  externalCode: string
+  externalName: string | null
+  externalOptionName: string | null
+  createdAt: string
+}
+
+/** 재고 대조에서 제외한 외부 코드 — 재고 조정 화면 [제외] 탭에서 등록한다. 없으면 숨김. */
+function LocationExcludedCodes({ locationId }: { locationId: string }) {
+  const [rows, setRows] = useState<ExcludedCodeRow[]>([])
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/sh/inventory/locations/${locationId}/exclusions`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? '대조 제외 목록 조회 실패')
+      setRows(data.exclusions ?? [])
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '대조 제외 목록 조회 실패')
+    }
+  }, [locationId])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  async function handleRemove(code: string) {
+    try {
+      const res = await fetch(
+        `/api/sh/inventory/locations/${locationId}/exclusions?externalCode=${encodeURIComponent(code)}`,
+        { method: 'DELETE' }
+      )
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.message ?? '제외 해제 실패')
+      toast.success('제외 해제했습니다 — 다음 대조부터 미매칭으로 표시됩니다')
+      await load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '제외 해제 실패')
+    }
+  }
+
+  if (rows.length === 0) return null
+
+  return (
+    <div className="mt-6">
+      <div className="mb-2 text-sm font-medium">
+        대조 제외 SKU <span className="text-muted-foreground">{rows.length}</span>
+      </div>
+      <p className="mb-2 text-xs text-muted-foreground">
+        재고 대조에서 미매칭으로 잡지 않는 외부 코드입니다. 파일 수량이 생기면 다시 미매칭으로
+        표시됩니다.
+      </p>
+      <div className="rounded-md border bg-background">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>외부 코드</TableHead>
+              <TableHead>외부 상품명 (참조)</TableHead>
+              <TableHead>제외일</TableHead>
+              <TableHead className="text-right">액션</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow key={r.id}>
+                <TableCell className="font-mono text-xs">{r.externalCode}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {r.externalName ?? '-'}
+                  {r.externalOptionName ? ` / ${r.externalOptionName}` : ''}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {r.createdAt.slice(0, 10)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm" onClick={() => handleRemove(r.externalCode)}>
+                    제외 해제
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   )
 }

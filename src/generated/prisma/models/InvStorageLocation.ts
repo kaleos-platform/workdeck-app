@@ -219,6 +219,7 @@ export type InvStorageLocationWhereInput = {
   movements?: Prisma.InvMovementListRelationFilter
   incomingTransfers?: Prisma.InvMovementListRelationFilter
   locationMappings?: Prisma.InvLocationProductMapListRelationFilter
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeListRelationFilter
   reconciliations?: Prisma.InvReconciliationListRelationFilter
   settingsDefault?: Prisma.InvSettingsListRelationFilter
   productionRunStockIns?: Prisma.ProductionRunListRelationFilter
@@ -241,6 +242,7 @@ export type InvStorageLocationOrderByWithRelationInput = {
   movements?: Prisma.InvMovementOrderByRelationAggregateInput
   incomingTransfers?: Prisma.InvMovementOrderByRelationAggregateInput
   locationMappings?: Prisma.InvLocationProductMapOrderByRelationAggregateInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeOrderByRelationAggregateInput
   reconciliations?: Prisma.InvReconciliationOrderByRelationAggregateInput
   settingsDefault?: Prisma.InvSettingsOrderByRelationAggregateInput
   productionRunStockIns?: Prisma.ProductionRunOrderByRelationAggregateInput
@@ -267,6 +269,7 @@ export type InvStorageLocationWhereUniqueInput = Prisma.AtLeast<{
   movements?: Prisma.InvMovementListRelationFilter
   incomingTransfers?: Prisma.InvMovementListRelationFilter
   locationMappings?: Prisma.InvLocationProductMapListRelationFilter
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeListRelationFilter
   reconciliations?: Prisma.InvReconciliationListRelationFilter
   settingsDefault?: Prisma.InvSettingsListRelationFilter
   productionRunStockIns?: Prisma.ProductionRunListRelationFilter
@@ -318,6 +321,7 @@ export type InvStorageLocationCreateInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
@@ -339,6 +343,7 @@ export type InvStorageLocationUncheckedCreateInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
@@ -360,6 +365,7 @@ export type InvStorageLocationUpdateInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
@@ -381,6 +387,7 @@ export type InvStorageLocationUncheckedUpdateInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
@@ -602,6 +609,20 @@ export type InvStorageLocationUpdateOneRequiredWithoutLocationMappingsNestedInpu
   update?: Prisma.XOR<Prisma.XOR<Prisma.InvStorageLocationUpdateToOneWithWhereWithoutLocationMappingsInput, Prisma.InvStorageLocationUpdateWithoutLocationMappingsInput>, Prisma.InvStorageLocationUncheckedUpdateWithoutLocationMappingsInput>
 }
 
+export type InvStorageLocationCreateNestedOneWithoutReconExcludedCodesInput = {
+  create?: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReconExcludedCodesInput, Prisma.InvStorageLocationUncheckedCreateWithoutReconExcludedCodesInput>
+  connectOrCreate?: Prisma.InvStorageLocationCreateOrConnectWithoutReconExcludedCodesInput
+  connect?: Prisma.InvStorageLocationWhereUniqueInput
+}
+
+export type InvStorageLocationUpdateOneRequiredWithoutReconExcludedCodesNestedInput = {
+  create?: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReconExcludedCodesInput, Prisma.InvStorageLocationUncheckedCreateWithoutReconExcludedCodesInput>
+  connectOrCreate?: Prisma.InvStorageLocationCreateOrConnectWithoutReconExcludedCodesInput
+  upsert?: Prisma.InvStorageLocationUpsertWithoutReconExcludedCodesInput
+  connect?: Prisma.InvStorageLocationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvStorageLocationUpdateToOneWithWhereWithoutReconExcludedCodesInput, Prisma.InvStorageLocationUpdateWithoutReconExcludedCodesInput>, Prisma.InvStorageLocationUncheckedUpdateWithoutReconExcludedCodesInput>
+}
+
 export type InvStorageLocationCreateNestedOneWithoutSettingsDefaultInput = {
   create?: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutSettingsDefaultInput, Prisma.InvStorageLocationUncheckedCreateWithoutSettingsDefaultInput>
   connectOrCreate?: Prisma.InvStorageLocationCreateOrConnectWithoutSettingsDefaultInput
@@ -679,6 +700,7 @@ export type InvStorageLocationCreateWithoutSpaceInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
@@ -699,6 +721,7 @@ export type InvStorageLocationUncheckedCreateWithoutSpaceInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
@@ -760,6 +783,7 @@ export type InvStorageLocationCreateWithoutMovementsInput = {
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
@@ -780,6 +804,7 @@ export type InvStorageLocationUncheckedCreateWithoutMovementsInput = {
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
@@ -805,6 +830,7 @@ export type InvStorageLocationCreateWithoutIncomingTransfersInput = {
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutLocationInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
@@ -825,6 +851,7 @@ export type InvStorageLocationUncheckedCreateWithoutIncomingTransfersInput = {
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
@@ -861,6 +888,7 @@ export type InvStorageLocationUpdateWithoutMovementsInput = {
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
@@ -881,6 +909,7 @@ export type InvStorageLocationUncheckedUpdateWithoutMovementsInput = {
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
@@ -912,6 +941,7 @@ export type InvStorageLocationUpdateWithoutIncomingTransfersInput = {
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutLocationNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
@@ -932,6 +962,7 @@ export type InvStorageLocationUncheckedUpdateWithoutIncomingTransfersInput = {
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
@@ -952,6 +983,7 @@ export type InvStorageLocationCreateWithoutStockLevelsInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
@@ -972,6 +1004,7 @@ export type InvStorageLocationUncheckedCreateWithoutStockLevelsInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
@@ -1008,6 +1041,7 @@ export type InvStorageLocationUpdateWithoutStockLevelsInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
@@ -1028,6 +1062,7 @@ export type InvStorageLocationUncheckedUpdateWithoutStockLevelsInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
@@ -1049,6 +1084,7 @@ export type InvStorageLocationCreateWithoutReconciliationsInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
@@ -1069,6 +1105,7 @@ export type InvStorageLocationUncheckedCreateWithoutReconciliationsInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
@@ -1105,6 +1142,7 @@ export type InvStorageLocationUpdateWithoutReconciliationsInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
@@ -1125,6 +1163,7 @@ export type InvStorageLocationUncheckedUpdateWithoutReconciliationsInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
@@ -1144,6 +1183,7 @@ export type InvStorageLocationCreateWithoutLocationMappingsInput = {
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutLocationInput
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
@@ -1164,6 +1204,7 @@ export type InvStorageLocationUncheckedCreateWithoutLocationMappingsInput = {
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
@@ -1200,6 +1241,7 @@ export type InvStorageLocationUpdateWithoutLocationMappingsInput = {
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutLocationNestedInput
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
@@ -1220,6 +1262,107 @@ export type InvStorageLocationUncheckedUpdateWithoutLocationMappingsInput = {
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
+  reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
+  settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
+  productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
+}
+
+export type InvStorageLocationCreateWithoutReconExcludedCodesInput = {
+  id?: string
+  name: string
+  type?: $Enums.InvStorageLocationType
+  isActive?: boolean
+  externalSource?: string | null
+  externalIntegrationKey?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
+  stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutLocationInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
+  incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
+  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
+  settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
+  productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
+}
+
+export type InvStorageLocationUncheckedCreateWithoutReconExcludedCodesInput = {
+  id?: string
+  spaceId: string
+  name: string
+  type?: $Enums.InvStorageLocationType
+  isActive?: boolean
+  externalSource?: string | null
+  externalIntegrationKey?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
+  incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
+  settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
+  productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
+}
+
+export type InvStorageLocationCreateOrConnectWithoutReconExcludedCodesInput = {
+  where: Prisma.InvStorageLocationWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReconExcludedCodesInput, Prisma.InvStorageLocationUncheckedCreateWithoutReconExcludedCodesInput>
+}
+
+export type InvStorageLocationUpsertWithoutReconExcludedCodesInput = {
+  update: Prisma.XOR<Prisma.InvStorageLocationUpdateWithoutReconExcludedCodesInput, Prisma.InvStorageLocationUncheckedUpdateWithoutReconExcludedCodesInput>
+  create: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReconExcludedCodesInput, Prisma.InvStorageLocationUncheckedCreateWithoutReconExcludedCodesInput>
+  where?: Prisma.InvStorageLocationWhereInput
+}
+
+export type InvStorageLocationUpdateToOneWithWhereWithoutReconExcludedCodesInput = {
+  where?: Prisma.InvStorageLocationWhereInput
+  data: Prisma.XOR<Prisma.InvStorageLocationUpdateWithoutReconExcludedCodesInput, Prisma.InvStorageLocationUncheckedUpdateWithoutReconExcludedCodesInput>
+}
+
+export type InvStorageLocationUpdateWithoutReconExcludedCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
+  stockLevels?: Prisma.InvStockLevelUpdateManyWithoutLocationNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
+  incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
+  settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
+  productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
+}
+
+export type InvStorageLocationUncheckedUpdateWithoutReconExcludedCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
+  incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
@@ -1241,6 +1384,7 @@ export type InvStorageLocationCreateWithoutSettingsDefaultInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
@@ -1261,6 +1405,7 @@ export type InvStorageLocationUncheckedCreateWithoutSettingsDefaultInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
@@ -1297,6 +1442,7 @@ export type InvStorageLocationUpdateWithoutSettingsDefaultInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
@@ -1317,6 +1463,7 @@ export type InvStorageLocationUncheckedUpdateWithoutSettingsDefaultInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
@@ -1337,6 +1484,7 @@ export type InvStorageLocationCreateWithoutShippingMethodsInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
@@ -1357,6 +1505,7 @@ export type InvStorageLocationUncheckedCreateWithoutShippingMethodsInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
@@ -1393,6 +1542,7 @@ export type InvStorageLocationUpdateWithoutShippingMethodsInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
@@ -1413,6 +1563,7 @@ export type InvStorageLocationUncheckedUpdateWithoutShippingMethodsInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
@@ -1433,6 +1584,7 @@ export type InvStorageLocationCreateWithoutProductionRunStockInsInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
@@ -1453,6 +1605,7 @@ export type InvStorageLocationUncheckedCreateWithoutProductionRunStockInsInput =
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
@@ -1489,6 +1642,7 @@ export type InvStorageLocationUpdateWithoutProductionRunStockInsInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
@@ -1509,6 +1663,7 @@ export type InvStorageLocationUncheckedUpdateWithoutProductionRunStockInsInput =
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
@@ -1529,6 +1684,7 @@ export type InvStorageLocationCreateWithoutReorderPlansInput = {
   movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
@@ -1549,6 +1705,7 @@ export type InvStorageLocationUncheckedCreateWithoutReorderPlansInput = {
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
   incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
@@ -1585,6 +1742,7 @@ export type InvStorageLocationUpdateWithoutReorderPlansInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
@@ -1605,6 +1763,7 @@ export type InvStorageLocationUncheckedUpdateWithoutReorderPlansInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
@@ -1635,6 +1794,7 @@ export type InvStorageLocationUpdateWithoutSpaceInput = {
   movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
@@ -1655,6 +1815,7 @@ export type InvStorageLocationUncheckedUpdateWithoutSpaceInput = {
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
   incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
   locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
@@ -1683,6 +1844,7 @@ export type InvStorageLocationCountOutputType = {
   movements: number
   incomingTransfers: number
   locationMappings: number
+  reconExcludedCodes: number
   reconciliations: number
   settingsDefault: number
   productionRunStockIns: number
@@ -1695,6 +1857,7 @@ export type InvStorageLocationCountOutputTypeSelect<ExtArgs extends runtime.Type
   movements?: boolean | InvStorageLocationCountOutputTypeCountMovementsArgs
   incomingTransfers?: boolean | InvStorageLocationCountOutputTypeCountIncomingTransfersArgs
   locationMappings?: boolean | InvStorageLocationCountOutputTypeCountLocationMappingsArgs
+  reconExcludedCodes?: boolean | InvStorageLocationCountOutputTypeCountReconExcludedCodesArgs
   reconciliations?: boolean | InvStorageLocationCountOutputTypeCountReconciliationsArgs
   settingsDefault?: boolean | InvStorageLocationCountOutputTypeCountSettingsDefaultArgs
   productionRunStockIns?: boolean | InvStorageLocationCountOutputTypeCountProductionRunStockInsArgs
@@ -1738,6 +1901,13 @@ export type InvStorageLocationCountOutputTypeCountIncomingTransfersArgs<ExtArgs 
  */
 export type InvStorageLocationCountOutputTypeCountLocationMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.InvLocationProductMapWhereInput
+}
+
+/**
+ * InvStorageLocationCountOutputType without action
+ */
+export type InvStorageLocationCountOutputTypeCountReconExcludedCodesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvReconExcludedCodeWhereInput
 }
 
 /**
@@ -1791,6 +1961,7 @@ export type InvStorageLocationSelect<ExtArgs extends runtime.Types.Extensions.In
   movements?: boolean | Prisma.InvStorageLocation$movementsArgs<ExtArgs>
   incomingTransfers?: boolean | Prisma.InvStorageLocation$incomingTransfersArgs<ExtArgs>
   locationMappings?: boolean | Prisma.InvStorageLocation$locationMappingsArgs<ExtArgs>
+  reconExcludedCodes?: boolean | Prisma.InvStorageLocation$reconExcludedCodesArgs<ExtArgs>
   reconciliations?: boolean | Prisma.InvStorageLocation$reconciliationsArgs<ExtArgs>
   settingsDefault?: boolean | Prisma.InvStorageLocation$settingsDefaultArgs<ExtArgs>
   productionRunStockIns?: boolean | Prisma.InvStorageLocation$productionRunStockInsArgs<ExtArgs>
@@ -1844,6 +2015,7 @@ export type InvStorageLocationInclude<ExtArgs extends runtime.Types.Extensions.I
   movements?: boolean | Prisma.InvStorageLocation$movementsArgs<ExtArgs>
   incomingTransfers?: boolean | Prisma.InvStorageLocation$incomingTransfersArgs<ExtArgs>
   locationMappings?: boolean | Prisma.InvStorageLocation$locationMappingsArgs<ExtArgs>
+  reconExcludedCodes?: boolean | Prisma.InvStorageLocation$reconExcludedCodesArgs<ExtArgs>
   reconciliations?: boolean | Prisma.InvStorageLocation$reconciliationsArgs<ExtArgs>
   settingsDefault?: boolean | Prisma.InvStorageLocation$settingsDefaultArgs<ExtArgs>
   productionRunStockIns?: boolean | Prisma.InvStorageLocation$productionRunStockInsArgs<ExtArgs>
@@ -1866,6 +2038,7 @@ export type $InvStorageLocationPayload<ExtArgs extends runtime.Types.Extensions.
     movements: Prisma.$InvMovementPayload<ExtArgs>[]
     incomingTransfers: Prisma.$InvMovementPayload<ExtArgs>[]
     locationMappings: Prisma.$InvLocationProductMapPayload<ExtArgs>[]
+    reconExcludedCodes: Prisma.$InvReconExcludedCodePayload<ExtArgs>[]
     reconciliations: Prisma.$InvReconciliationPayload<ExtArgs>[]
     settingsDefault: Prisma.$InvSettingsPayload<ExtArgs>[]
     productionRunStockIns: Prisma.$ProductionRunPayload<ExtArgs>[]
@@ -2281,6 +2454,7 @@ export interface Prisma__InvStorageLocationClient<T, Null = never, ExtArgs exten
   movements<T extends Prisma.InvStorageLocation$movementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   incomingTransfers<T extends Prisma.InvStorageLocation$incomingTransfersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$incomingTransfersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   locationMappings<T extends Prisma.InvStorageLocation$locationMappingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$locationMappingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvLocationProductMapPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reconExcludedCodes<T extends Prisma.InvStorageLocation$reconExcludedCodesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$reconExcludedCodesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvReconExcludedCodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reconciliations<T extends Prisma.InvStorageLocation$reconciliationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$reconciliationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvReconciliationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   settingsDefault<T extends Prisma.InvStorageLocation$settingsDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$settingsDefaultArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productionRunStockIns<T extends Prisma.InvStorageLocation$productionRunStockInsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$productionRunStockInsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2813,6 +2987,30 @@ export type InvStorageLocation$locationMappingsArgs<ExtArgs extends runtime.Type
   take?: number
   skip?: number
   distinct?: Prisma.InvLocationProductMapScalarFieldEnum | Prisma.InvLocationProductMapScalarFieldEnum[]
+}
+
+/**
+ * InvStorageLocation.reconExcludedCodes
+ */
+export type InvStorageLocation$reconExcludedCodesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvReconExcludedCode
+   */
+  select?: Prisma.InvReconExcludedCodeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvReconExcludedCode
+   */
+  omit?: Prisma.InvReconExcludedCodeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvReconExcludedCodeInclude<ExtArgs> | null
+  where?: Prisma.InvReconExcludedCodeWhereInput
+  orderBy?: Prisma.InvReconExcludedCodeOrderByWithRelationInput | Prisma.InvReconExcludedCodeOrderByWithRelationInput[]
+  cursor?: Prisma.InvReconExcludedCodeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvReconExcludedCodeScalarFieldEnum | Prisma.InvReconExcludedCodeScalarFieldEnum[]
 }
 
 /**
