@@ -134,6 +134,9 @@ export function PostingDetail({
             <PublishDialog
               postingId={posting.id}
               closingDate={closingDate}
+              otherPostingLinkCards={embedIssues
+                .filter((issue) => issue.code === 'OTHER_POSTING_APPLY_LINK')
+                .map((issue) => issue.blockNumber)}
               onPublished={(updated) => {
                 setStatus(updated.status)
                 setClosingDate(updated.closingDate)

@@ -44,6 +44,7 @@ export type PostingEmbedIssue = {
   blockNumber: number
   severity: 'error' | 'warning'
   message: string
+  code?: 'OTHER_POSTING_APPLY_LINK'
 }
 
 type EmbedParams = {
@@ -134,10 +135,12 @@ export function renderPostingEmbed({ posting, origin }: EmbedParams): {
       issues.push({ blockNumber: index + 1, severity, message })
     }
     const warnOtherLink = () =>
-      issue(
-        '다른 공고의 지원서 링크가 있습니다. 현재 공고의 지원서 주소인지 확인하세요.',
-        'warning'
-      )
+      issues.push({
+        blockNumber: index + 1,
+        severity: 'warning',
+        message: '다른 공고의 지원서 링크가 있습니다. 현재 공고의 지원서 주소인지 확인하세요.',
+        code: 'OTHER_POSTING_APPLY_LINK',
+      })
     if (content.contentType === 'text') {
       if (!content.data) {
         issue('텍스트가 비어 있어 출력에서 제외됩니다.', 'warning')
