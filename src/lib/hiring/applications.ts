@@ -229,7 +229,7 @@ export async function listApplications(
   const [records, total, blacklist] = await Promise.all([
     prisma.hiringApplication.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       skip: (filters.page - 1) * filters.pageSize,
       take: filters.pageSize,
       select: {
