@@ -230,6 +230,30 @@ d('sales-content.setup.apply', () => {
     })) as { actionId: string }
     expect((await approveAndExecute(b.actionId, USER_ID)).status).toBe('EXECUTED')
     expect(await prisma.product.count({ where: { brandId: BRAND_ID } })).toBe(2)
+
+    // 기존 상품 설명 보충 — 새로 만들지 않고 넘긴 필드만 채운다.
+    const c = (await setup.execute(ctx, {
+      brand: 'E2E 셋업 브랜드',
+      products: [
+        {
+          name: 'DIY 키트',
+          oneLinerPitch: '재생펠트로 만드는 환경교육 키트',
+          customFields: [{ key: '대상', value: '초등' }],
+        },
+      ],
+    })) as { actionId: string }
+    expect((await approveAndExecute(c.actionId, USER_ID)).status).toBe('EXECUTED')
+    expect(await prisma.product.count({ where: { brandId: BRAND_ID } })).toBe(2)
+    const kit = await prisma.product.findFirstOrThrow({
+      where: { brandId: BRAND_ID, name: 'DIY 키트' },
+    })
+    expect(kit.oneLinerPitch).toBe('재생펠트로 만드는 환경교육 키트')
+    expect(kit.customFields).toEqual([{ key: '대상', value: '초등' }])
+    // 다른 상품은 그대로.
+    const box = await prisma.product.findFirstOrThrow({
+      where: { brandId: BRAND_ID, name: '펠트 수납박스' },
+    })
+    expect(box.oneLinerPitch).toBeNull()
     expect(await prisma.salesContentChannel.count({ where: { spaceId: SPACE_ID } })).toBe(1)
     expect(
       (
