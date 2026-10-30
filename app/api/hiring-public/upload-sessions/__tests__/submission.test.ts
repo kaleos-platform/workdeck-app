@@ -114,6 +114,21 @@ beforeEach(() => {
     mimeType: file.mimeType,
   })
 })
+it('첨부가 없는 지원서도 빈 세션을 생성하고 완료한다', async () => {
+  ;(prisma.hiringPosting.findUnique as jest.Mock).mockResolvedValue({
+    id: 'post',
+    uuid: 'qa-post',
+    spaceId: 'space',
+    status: 'ACTIVE',
+    positions: [],
+    stores: [],
+    applicationEntries: [],
+  })
+  ;(prisma.hiringUploadSession.findFirst as jest.Mock).mockResolvedValue(session({ files: [] }))
+  expect((await initiate(request({ postingUuid: 'qa-post', files: [] }))).status).toBe(201)
+  expect((await complete(request(payload))).status).toBe(201)
+  expect(inspectApplicantUpload).not.toHaveBeenCalled()
+})
 it('12MiB 파일은 서버 경로와 해시 토큰으로 직접 업로드 세션을 만든다', async () => {
   const response = await initiate(request({ postingUuid: 'qa-post', files: [file] }))
   expect(response.status).toBe(201)
@@ -206,15 +221,13 @@ it('동시 완료 claim을 놓쳐도 먼저 저장된 같은 지원서를 반환
 })
 
 it('마감일이 지난 공고에는 업로드 URL이나 제출을 허용하지 않는다', async () => {
-  jest
-    .mocked(prisma.hiringPosting.findUnique)
-    .mockResolvedValue({
-      id: 'post',
-      uuid: 'qa-post',
-      spaceId: 'space',
-      status: 'ACTIVE',
-      closingDate: new Date('2023-11-30'),
-    } as never)
+  jest.mocked(prisma.hiringPosting.findUnique).mockResolvedValue({
+    id: 'post',
+    uuid: 'qa-post',
+    spaceId: 'space',
+    status: 'ACTIVE',
+    closingDate: new Date('2023-11-30'),
+  } as never)
   expect((await initiate(request({ postingUuid: 'qa-post', files: [file] }))).status).toBe(404)
   expect((await complete(request(payload))).status).toBe(410)
   expect(createApplicantUploadUrl).not.toHaveBeenCalled()
