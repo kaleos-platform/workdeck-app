@@ -113,6 +113,7 @@ export async function PUT(request: NextRequest) {
           id: user.id,
           email: user.email,
           name: user.user_metadata?.name ?? null,
+          signupSource: user.user_metadata?.signup_source,
         })
       ).workspace
       // ensure 는 ownerId 로 단일 워크스페이스를 돌려준다 — 다른 Space 에 연결된 것이면 덮어쓰지 않는다.

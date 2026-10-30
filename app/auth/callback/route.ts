@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { resolveRedirectPath, sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { prisma } from '@/lib/prisma'
+import { resolveSignupSource } from '@/lib/workspace'
 import { hasSpaceAccess } from '@/lib/workspace-shell'
 
 // GET /auth/callback?code=... — 구글 OAuth 코드를 세션으로 교환
@@ -46,6 +47,8 @@ export async function GET(request: NextRequest) {
             id: user.id,
             email: user.email ?? '',
             name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
+            signupSource:
+              (await resolveSignupSource(user.user_metadata?.signup_source)) ?? undefined,
           },
           update: {
             email: user.email ?? '',
