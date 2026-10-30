@@ -689,6 +689,11 @@ export function ReconciliationPreview({
     [unifiedEntries]
   )
 
+  // 선택 키 중 지금 화면에 남아 있는 행만 — 라벨·전송 건수를 같은 값으로 쓴다.
+  const pickedForExclude = excludableEntries.filter((e) =>
+    selectedForExclude.has(excludeKeyOf(e.locationId, e.fileCode))
+  )
+
   function toggleExcludeSelect(entry: UnifiedEntry) {
     const key = excludeKeyOf(entry.locationId, entry.fileCode)
     setSelectedForExclude((prev) => {
@@ -701,9 +706,7 @@ export function ReconciliationPreview({
 
   async function excludeSelected() {
     if (!recon) return
-    const picked = excludableEntries.filter((e) =>
-      selectedForExclude.has(excludeKeyOf(e.locationId, e.fileCode))
-    )
+    const picked = pickedForExclude
     if (picked.length === 0) return
     const byLoc = new Map<string, UnifiedEntry[]>()
     for (const e of picked) {
@@ -732,13 +735,14 @@ export function ReconciliationPreview({
         `${picked.length}건 대조 제외` +
           (withStock > 0 ? ` — 수량이 있는 ${withStock}건은 0이 될 때까지 미매칭에 남습니다` : '')
       )
-      setSelectedForExclude(new Set())
-      await load()
-      onChanged?.()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '대조 제외 실패')
     } finally {
+      // 위치별 순차 POST 라 중간 실패여도 앞 위치는 저장됐다 — 항상 다시 읽는다.
+      setSelectedForExclude(new Set())
       setExcluding(false)
+      await load()
+      onChanged?.()
     }
   }
 
@@ -891,7 +895,10 @@ export function ReconciliationPreview({
             <button
               key={f.value}
               type="button"
-              onClick={() => setTab(f.value)}
+              onClick={() => {
+                setTab(f.value)
+                setSelectedForExclude(new Set())
+              }}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 tab === f.value
                   ? 'bg-background text-foreground shadow-sm'
@@ -964,7 +971,7 @@ export function ReconciliationPreview({
           <label className="flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap">
             <Checkbox
               checked={
-                selectedForExclude.size > 0 &&
+                pickedForExclude.length > 0 &&
                 excludableEntries.every((e) =>
                   selectedForExclude.has(excludeKeyOf(e.locationId, e.fileCode))
                 )
@@ -987,11 +994,11 @@ export function ReconciliationPreview({
             size="sm"
             variant="outline"
             className="ml-auto"
-            disabled={selectedForExclude.size === 0 || excluding}
+            disabled={pickedForExclude.length === 0 || excluding}
             onClick={excludeSelected}
           >
             {excluding && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-            선택 {selectedForExclude.size}건 대조 제외
+            선택 {pickedForExclude.length}건 대조 제외
           </Button>
         </div>
       )}

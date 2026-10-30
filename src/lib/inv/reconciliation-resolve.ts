@@ -4,7 +4,7 @@
 // InvLocationProductMap 을 만들어도 JSON 은 그대로 file-only 로 남는다. 상세 GET 과
 // 수동 확정이 같은 규칙으로 이 차이를 흡수해야 "매칭했는데 재고가 안 바뀌는" 괴리가 안 생긴다.
 import { prisma } from '@/lib/prisma'
-import type { MatchEntry, FileOnlyEntry } from './reconciliation-matcher'
+import type { MatchEntry, FileOnlyEntry, ExcludedEntry } from './reconciliation-matcher'
 
 /**
  * file-only 항목 중 InvLocationProductMap에 매핑이 생긴 것을
@@ -15,7 +15,10 @@ export async function resolveFileOnlyEntries(
   entries: MatchEntry[],
   reconLocationId: string
 ): Promise<MatchEntry[]> {
-  const fileOnlyEntries = entries.filter((e): e is FileOnlyEntry => e.status === 'file-only')
+  // excluded 도 대상 — 제외 후 매핑을 붙이면 매핑이 우선해야 한다. 매핑이 없으면 그대로 둔다.
+  const fileOnlyEntries = entries.filter(
+    (e): e is FileOnlyEntry | ExcludedEntry => e.status === 'file-only' || e.status === 'excluded'
+  )
   if (fileOnlyEntries.length === 0) return entries
 
   // (locationId, externalCode) 페어 수집
@@ -63,7 +66,7 @@ export async function resolveFileOnlyEntries(
 
   const result: MatchEntry[] = []
   for (const entry of entries) {
-    if (entry.status !== 'file-only') {
+    if (entry.status !== 'file-only' && entry.status !== 'excluded') {
       result.push(entry)
       continue
     }

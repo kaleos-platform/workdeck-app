@@ -221,6 +221,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       const hit = matchEntries.find(
         (e) =>
           (e.status === 'file-only' ||
+            e.status === 'excluded' ||
             e.status === 'matched-equal' ||
             e.status === 'matched-diff') &&
           e.row?.externalCode === externalCode &&

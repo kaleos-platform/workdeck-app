@@ -36,10 +36,10 @@ export async function applyExclusions(
     if ((e.status !== 'file-only' && e.status !== 'excluded') || !e.row.externalCode) return e
     const locationId = e.locationId ?? reconLocationId
     const isExcluded = excluded.has(`${locationId}|${e.row.externalCode}`)
+    const suggestions = e.suggestions ?? []
     if (isExcluded && e.row.quantity === 0) {
-      return { status: 'excluded', row: e.row, locationId }
+      return { status: 'excluded', row: e.row, locationId, suggestions }
     }
-    const suggestions = e.status === 'file-only' ? e.suggestions : []
     return isExcluded
       ? { status: 'file-only', row: e.row, locationId, suggestions, excludedWithStock: true }
       : { status: 'file-only', row: e.row, locationId, suggestions }

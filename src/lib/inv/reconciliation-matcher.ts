@@ -49,6 +49,8 @@ export type ExcludedEntry = {
   status: 'excluded'
   row: ParsedRow
   locationId: string
+  /** 해제 시 미매칭 행의 추천 후보를 되살리기 위해 보존 */
+  suggestions?: SuggestionOption[]
 }
 
 export type SystemOnlyEntry = {

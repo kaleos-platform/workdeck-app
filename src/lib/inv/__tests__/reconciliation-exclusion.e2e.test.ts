@@ -6,6 +6,7 @@
  *   2. 제외한 코드 + 파일 수량 > 0 → 'file-only' + excludedWithStock (재고가 생기면 다시 드러난다)
  *   3. 제외한 코드라도 매핑이 있으면 매핑이 우선한다
  *   4. 저장된 'excluded' 스냅샷도 해제하면 'file-only' 로 돌아간다 (상세 GET 재해석 경로)
+ *   5. 저장된 'excluded' 에 나중에 매핑을 붙이면 매핑이 우선한다 (상세 GET·확정 공용 resolve)
  *
  * throwaway Space(고유 hex UUID), afterAll cascade 0-state 복원. DB URL 없으면 skip.
  */
@@ -17,6 +18,7 @@ config({ path: path.resolve(process.cwd(), '.env.local') })
 import { prisma } from '@/lib/prisma'
 import { matchReconciliation, type MatchEntry } from '../reconciliation-matcher'
 import { applyExclusions } from '../reconciliation-exclusion'
+import { resolveFileOnlyEntries } from '../reconciliation-resolve'
 
 const SPACE_ID = 'e2e00000-0000-4000-8000-0000000000f1'
 const RUN = !!(process.env.DATABASE_URL || process.env.DIRECT_URL)
@@ -112,5 +114,15 @@ d('재고 대조 제외 SKU (dev DB)', () => {
     })
     const after = await applyExclusions(stored, locationId)
     expect(after[0].status).toBe('file-only')
+  })
+
+  it('저장된 excluded 에 나중에 매핑을 붙이면 matched 로 풀린다', async () => {
+    const stored: MatchEntry[] = [{ status: 'excluded', row: row('EX-MAPPED', 0), locationId }]
+    const resolved = await applyExclusions(
+      await resolveFileOnlyEntries(stored, locationId),
+      locationId
+    )
+    expect(resolved).toHaveLength(1)
+    expect(resolved[0].status).toBe('matched-equal')
   })
 })
