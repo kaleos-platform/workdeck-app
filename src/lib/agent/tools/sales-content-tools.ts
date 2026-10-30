@@ -2,7 +2,11 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireDeck } from '@/lib/mcp/context'
 import { createPendingAction } from '@/lib/agent/actions/create'
-import { postPublishParams } from '@/lib/agent/actions/sales-content'
+import {
+  postPublishParams,
+  setupApplyFields,
+  setupApplyParams,
+} from '@/lib/agent/actions/sales-content'
 import { idempotencyKeyFor } from './write-tools'
 import { pickDailyMetrics } from '@/lib/sc/metrics-dedup'
 import { redactErrorMessage } from '@/lib/sc/notifications'
@@ -353,6 +357,56 @@ const proposePost: ToolDefinition = {
   },
 }
 
+// 도구 입력은 brandId 대신 이름도 받는 brand — 액션 params 로 넘기기 전에 id 로 바꾼다.
+const setupInput = setupApplyFields.omit({ brandId: true }).extend({
+  brand: z.string().min(1).describe('브랜드 이름 또는 id(sc_list_brands 결과)'),
+})
+
+const proposeSetup: ToolDefinition = {
+  name: 'sc_propose_setup',
+  description:
+    '브랜드 1개의 세일즈 콘텐츠 기초 데이터(발행 채널·브랜드 프로필·상품)를 한 번에 등록하도록 제안합니다. 즉시 반영되지 않고 승인 대기 큐에 올라가며, 관리자(ADMIN)가 한 번 승인하면 등록됩니다. sc_list_channels·sc_list_brands·sc_list_products 가 비어 있어 게시물을 만들 수 없을 때 쓰세요. channel 은 수동 발행 채널로 만들어집니다(예: 네이버 블로그 = platform BLOG_NAVER, kind BLOG, platformSlug naver-blog). 같은 platformSlug 채널이 이미 있으면 그대로 두고, 같은 브랜드에 같은 이름 상품이 있으면 건너뜁니다. profile 은 해당 브랜드 프로필에서 넘긴 필드만 덮어씁니다(companyName 필수, toneOfVoice 최대 10개, customFields 는 {key,value} 목록). 상품 이름·구성·특징은 seller-hub 상품 정보(sellerhub_get_product_options 등)나 브랜드 공식 사이트처럼 확인한 자료에서만 가져오고 지어내지 마세요. 확인하지 못한 항목은 비워 두세요. 대화에는 무엇을 승인 대기에 올렸는지만 짧게 알리세요.',
+  inputSchema: setupInput.shape,
+  mode: 'write',
+  scope: 'sc:write',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    const input = setupInput.safeParse(params)
+    if (!input.success) {
+      throw new ToolUserError(`입력값 오류: ${input.error.issues.map((i) => i.message).join(', ')}`)
+    }
+    const { brand, ...rest } = input.data
+    const brandId = (await resolveBrandId(ctx.spaceId, brand))!
+    const parsed = setupApplyParams.safeParse({ ...rest, brandId })
+    if (!parsed.success) {
+      throw new ToolUserError(
+        `입력값 오류: ${parsed.error.issues.map((i) => i.message).join(', ')}`
+      )
+    }
+    const p = parsed.data
+    const brandName = (
+      await prisma.brand.findFirst({ where: { id: brandId }, select: { name: true } })
+    )?.name
+    const parts = [
+      p.channel && `채널 「${p.channel.name}」`,
+      p.profile && '브랜드 프로필',
+      p.products?.length && `상품 ${p.products.length}개`,
+    ].filter(Boolean)
+    return createPendingAction({
+      spaceId: ctx.spaceId,
+      actionType: 'sales-content.setup.apply',
+      params: p,
+      summary: `[${brandName ?? brand}] 세일즈 콘텐츠 등록: ${parts.join(', ')}`,
+      source: 'MCP',
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
+      idempotencyKey: idempotencyKeyFor('sales-content.setup.apply', ctx.spaceId, p),
+    })
+  },
+}
+
 export const salesContentTools: ToolDefinition[] = [
   listBrands,
   listProducts,
@@ -361,4 +415,5 @@ export const salesContentTools: ToolDefinition[] = [
   listContents,
   getContent,
   proposePost,
+  proposeSetup,
 ]
