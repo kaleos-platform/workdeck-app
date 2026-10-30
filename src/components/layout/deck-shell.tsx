@@ -1,5 +1,6 @@
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
+import { MobileRecruitingNavigation } from '@/components/layout/mobile-recruiting-navigation'
 import { SpaceFetchGuard } from '@/components/layout/space-fetch-guard'
 import { resolveSpaceContext } from '@/lib/api-helpers'
 import type { DeckVariant } from '@/lib/deck-meta'
@@ -38,21 +39,33 @@ export async function DeckShell({
   children,
 }: DeckShellProps) {
   const ctx = await resolveSpaceContext()
+  const sidebar = (
+    <Sidebar
+      workspaceName={workspaceName}
+      variant={variant}
+      mode={mode}
+      activeDecks={activeDecks}
+      isOwner={isOwner}
+      role={role}
+    />
+  )
   return (
     <div className="flex h-screen" data-deck={dataDeck}>
       <SpaceFetchGuard spaceId={'error' in ctx ? null : ctx.space.id} />
-      <Sidebar
-        workspaceName={workspaceName}
-        variant={variant}
-        mode={mode}
-        activeDecks={activeDecks}
-        isOwner={isOwner}
-        role={role}
-      />
+      {variant === 'recruiting' ? <div className="hidden h-full md:block">{sidebar}</div> : sidebar}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <Header variant={variant} />
+        {variant === 'recruiting' ? (
+          <div className="flex items-center border-b md:block md:border-0">
+            <MobileRecruitingNavigation workspaceName={workspaceName} role={role} />
+            <div className="min-w-0 flex-1">
+              <Header variant={variant} />
+            </div>
+          </div>
+        ) : (
+          <Header variant={variant} />
+        )}
         <main className="flex-1 overflow-y-auto">
-          <div className="p-8">
+          <div className={variant === 'recruiting' ? 'p-4 md:p-8' : 'p-8'}>
             {readOnlyNotice && (
               <p className="mb-6 rounded-md border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
                 {readOnlyNotice}
