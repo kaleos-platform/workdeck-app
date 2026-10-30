@@ -41,7 +41,7 @@ export function StockStatusToolbar({
     return () => clearTimeout(timer)
   }, [local, onSearchChange, q])
 
-  const hasFilters = !!(onlyLow || q)
+  const hasFilters = !!(onlyLow || q || withDiscontinued)
 
   return (
     <div className="flex flex-wrap items-center gap-2">

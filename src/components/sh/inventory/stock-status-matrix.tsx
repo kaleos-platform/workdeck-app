@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Info } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -51,6 +51,10 @@ export function StockStatusMatrix({
 }: Props) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [savingStatus, setSavingStatus] = useState(false)
+  // 상품·필터·검색이 바뀌면 선택을 비운다 — 화면 밖 선택이 되살아나 일괄 변경되지 않게
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [rows])
   // 상품을 바꾸면 행이 바뀐다 — 화면에 없는 옵션이 선택에 남지 않게 교집합만 쓴다.
   const pickedIds = rows.filter((r) => selectedIds.has(r.optionId)).map((r) => r.optionId)
 

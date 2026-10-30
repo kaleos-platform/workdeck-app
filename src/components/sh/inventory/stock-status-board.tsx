@@ -175,6 +175,7 @@ export function StockStatusBoard() {
       locationId: null,
       q: null,
       onlyLow: null,
+      withDiscontinued: null,
     })
   }, [updateParams])
 
