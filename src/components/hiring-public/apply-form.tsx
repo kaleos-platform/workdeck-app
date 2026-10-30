@@ -140,7 +140,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
               item.fieldKey !== selected[index].fieldKey || item.file !== selected[index].file
           )
         ) {
-          setUploadProgress('첨부 업로드 준비 중')
+          setUploadProgress(selected.length ? '첨부 업로드 준비 중' : '지원서 제출 준비 중')
           const intentResponse = await fetch('/api/hiring-public/upload-sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -156,7 +156,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
           })
           const intent = await intentResponse.json().catch(() => ({}))
           if (!intentResponse.ok)
-            throw new Error(intent.message ?? '첨부 업로드를 준비하지 못했습니다')
+            throw new Error(intent.message ?? '지원서 제출을 준비하지 못했습니다')
           uploadBatch.current = {
             files: selected,
             uploadSessionId: intent.uploadSessionId,
@@ -189,7 +189,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
           }
           batch.completed[index] = true
         }
-        setUploadProgress('업로드 확인 및 지원서 저장 중')
+        setUploadProgress(selected.length ? '업로드 확인 및 지원서 저장 중' : '지원서 저장 중')
         batch.lastAttemptedPayload = JSON.stringify({
           ...payload,
           uploadSessionId: batch.uploadSessionId,
