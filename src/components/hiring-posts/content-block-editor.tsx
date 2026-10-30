@@ -618,7 +618,7 @@ export function ContentBlockEditor({
   return (
     <div inert={busy} className="space-y-4">
       {/* 템플릿 툴바 — 좌: 현재 템플릿 정보 / 우: 불러오기·저장 */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
           {templateInfo ? (
             <>
@@ -637,7 +637,7 @@ export function ContentBlockEditor({
             <span>템플릿 미사용</span>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="outline" onClick={openLoadDialog} disabled={checkingTemplate}>
             <FolderOpen /> 템플릿 불러오기
           </Button>
@@ -666,8 +666,8 @@ export function ContentBlockEditor({
           const Icon = meta?.icon ?? TriangleAlert
           return (
             <div key={c.id} className="space-y-3 rounded-lg border p-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium">
                   <Icon className="size-4 shrink-0 text-muted-foreground" />
                   {editingTitleId === c.id ? (
                     <Input
@@ -685,7 +685,7 @@ export function ContentBlockEditor({
                         }
                       }}
                       maxLength={100}
-                      className="h-7 w-48"
+                      className="h-7 w-48 max-w-full"
                     />
                   ) : (
                     <>
@@ -704,7 +704,7 @@ export function ContentBlockEditor({
                     </>
                   )}
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 items-center justify-end gap-1">
                   {!isUnsupported && (
                     <Button
                       size="sm"
@@ -733,7 +733,12 @@ export function ContentBlockEditor({
                   >
                     <ArrowDown />
                   </Button>
-                  <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(c.id)}>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label="카드 삭제"
+                    onClick={() => handleDelete(c.id)}
+                  >
                     <Trash2 />
                   </Button>
                 </div>

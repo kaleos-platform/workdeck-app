@@ -68,6 +68,11 @@ function Form({
   )
 }
 
+it('카드 삭제 버튼을 이름으로 식별할 수 있다', () => {
+  render(<Form />)
+  expect(screen.getByRole('button', { name: '카드 삭제' })).toBeInTheDocument()
+})
+
 it('편집 완료는 본문 저장 응답이 끝날 때까지 편집기를 유지한다', async () => {
   let finish!: (value: unknown) => void
   global.fetch = jest.fn(

@@ -128,6 +128,7 @@ type SidebarProps = {
   /** 구독·결제 메뉴는 소유자에게만 노출한다 */
   isOwner?: boolean
   role?: Role
+  mobile?: boolean
 }
 
 const NVB_AD_TYPE = '신규 구매 고객 확보'
@@ -323,12 +324,14 @@ export function Sidebar({
   activeDecks = [],
   isOwner = false,
   role,
+  mobile = false,
 }: SidebarProps) {
   const pathname = usePathname()
   const { signOut } = useAuth()
   // AI 설정·구성원은 ADMIN 이상(서버 기준). 역할을 모르면(레이아웃이 안 넘김) 숨기지 않는다.
   const canAdmin = role ? hasRole(role, 'ADMIN') : true
-  const { collapsed, toggle, expand, mounted } = useSidebarCollapsed()
+  const { collapsed: desktopCollapsed, toggle, expand, mounted } = useSidebarCollapsed()
+  const collapsed = mobile ? false : desktopCollapsed
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0)
   const isWorkdeckSidebar = variant === 'workdeck'
@@ -424,7 +427,7 @@ export function Sidebar({
         'flex h-full flex-shrink-0 flex-col bg-slate-900 py-4 text-white ease-out',
         // 마운트 후에만 transition 적용 — 저장된 접힘 상태 복원 시 width 튐 방지
         mounted && 'transition-[width] duration-200',
-        collapsed ? 'w-16' : expandedWidth
+        mobile ? 'w-full' : collapsed ? 'w-16' : expandedWidth
       )}
     >
       {/* 상단: 접힘 시 펼치기 토글만 / 펼침 시 [로고 … 접기 토글] */}
@@ -464,15 +467,17 @@ export function Sidebar({
                 {meta.name}
               </span>
             </Link>
-            <button
-              type="button"
-              onClick={toggle}
-              aria-label="사이드바 접기"
-              aria-expanded={true}
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-zinc-400 transition hover:bg-white/10 hover:text-white"
-            >
-              <PanelLeftClose className="h-5 w-5" />
-            </button>
+            {!mobile && (
+              <button
+                type="button"
+                onClick={toggle}
+                aria-label="사이드바 접기"
+                aria-expanded={true}
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-zinc-400 transition hover:bg-white/10 hover:text-white"
+              >
+                <PanelLeftClose className="h-5 w-5" />
+              </button>
+            )}
           </>
         )}
       </div>

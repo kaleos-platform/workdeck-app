@@ -26,7 +26,7 @@ export function PreviewFrame({ children, actions, className }: Props) {
       {/* 툴바를 미리보기 영역 폭(현재 모드 폭)에 맞춰 중앙 정렬 — 토글은 가운데,
           부가 액션(새 탭 미리보기)은 미리보기 영역 우측 끝에 정렬. */}
       <div
-        className="relative mx-auto flex w-full justify-center transition-[max-width] duration-200"
+        className="mx-auto flex w-full flex-wrap items-center justify-center gap-2 transition-[max-width] duration-200 sm:justify-between"
         style={{ maxWidth: mode === 'pc' ? PREVIEW_PC_WIDTH : PREVIEW_MOBILE_WIDTH }}
       >
         <div className="inline-flex items-center rounded-md border bg-muted/40 p-0.5">
@@ -57,7 +57,7 @@ export function PreviewFrame({ children, actions, className }: Props) {
             <Smartphone className="size-3.5" /> 모바일
           </button>
         </div>
-        {actions && <div className="absolute top-1/2 right-0 -translate-y-1/2">{actions}</div>}
+        {actions && <div>{actions}</div>}
       </div>
 
       <div

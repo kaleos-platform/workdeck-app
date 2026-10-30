@@ -133,7 +133,8 @@ export function BuildWizard({ data }: { data: WizardData }) {
     if (currentIndex >= 0 && !isLast) selectStep(STEP_ORDER[currentIndex + 1])
   }
 
-  const gridCls = 'grid gap-8 lg:grid-cols-[38fr_62fr] xl:gap-[50px]'
+  const gridCls =
+    'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[38fr_62fr] xl:gap-[50px]'
   // 상단/하단 고정 바 실측 높이 반영 — 우측 sticky 컬럼 top/max-h 계산에 사용
   const TOP_BAR_OFFSET = 'lg:top-[6.5rem]'
   const RIGHT_COL_MAX_H = 'lg:max-h-[calc(100vh-6.5rem-5rem-2rem)]'
