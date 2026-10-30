@@ -4,12 +4,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
 import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { buttonBlockStyle } from '@/lib/hiring/button-color'
+import { formatPay, formatWorkDays, formatWorkTime } from '@/components/hiring-public/posting-labels'
 import { PostingStatusBadge, type PostingStatus } from './status-badge'
 import {
   getPostingAssetPublicUrl,
   JOB_TYPE_LABELS,
-  PAY_FREQUENCY_LABELS,
-  WEEKDAYS,
   type WizardContentData,
   type WizardPositionData,
   type WizardStore,
@@ -130,21 +129,12 @@ export function ContentBlockPreview({
             <div key={p.id} className="space-y-1 rounded-lg border px-4 py-3">
               <div className="text-sm font-medium">{p.name}</div>
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                {p.jobType && <span>{JOB_TYPE_LABELS[p.jobType]}</span>}
-                {p.payFrequency && (
-                  <span>
-                    {PAY_FREQUENCY_LABELS[p.payFrequency]}
-                    {p.payAmount != null && ` ${p.payAmount.toLocaleString('ko-KR')}원`}
-                  </span>
-                )}
+                {p.jobType && <span>{JOB_TYPE_LABELS[p.jobType] ?? p.jobType}</span>}
+                <span>{formatPay(p.payFrequency, p.payAmount)}</span>
                 {p.headcount != null && <span>{p.headcount}명</span>}
-                {p.workDays && p.workDays.length > 0 && (
-                  <span>{p.workDays.map((d) => WEEKDAYS[d]).join('·')}</span>
-                )}
-                {p.workStartAt && p.workEndAt && (
-                  <span>
-                    {p.workStartAt}~{p.workEndAt}
-                  </span>
+                {formatWorkDays(p.workDays) && <span>{formatWorkDays(p.workDays)}</span>}
+                {formatWorkTime(p.workStartAt, p.workEndAt) && (
+                  <span>{formatWorkTime(p.workStartAt, p.workEndAt)}</span>
                 )}
               </div>
             </div>
