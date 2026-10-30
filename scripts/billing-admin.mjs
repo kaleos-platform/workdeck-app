@@ -14,6 +14,8 @@
 //   node scripts/billing-admin.mjs migrate-grant <spaceId> [보장공급가=12273]
 //                                                                  # Opening 이전 고객: 모집 관리 보장가(lockedPrice, 실제 해지 시 소멸)
 //                                                                  # 무료는 일반 고객과 같은 7일 체험뿐 — 이력이 있으면 연장하지 않음
+//   node scripts/billing-admin.mjs set-trial <spaceId> <종료일 YYYY-MM-DD>
+//                                                                  # 체험 종료일(KST) 지정. 토스 결제 공백기 이전 고객 전용 — 결제 가능일+7일로 맞춘다
 import 'dotenv/config'
 import { config } from 'dotenv'
 import pg from 'pg'
@@ -177,9 +179,28 @@ async function main() {
       break
     }
 
+    case 'set-trial': {
+      const [spaceId, until] = args
+      if (!spaceId || !/^\d{4}-\d{2}-\d{2}$/.test(until ?? '')) {
+        throw new Error('사용법: set-trial <spaceId> <종료일 YYYY-MM-DD>')
+      }
+      // 종료일 다음날 00:00 KST 까지 체험. 체험 중인 구독만 바꾼다(유료 구독에 영향 없음)
+      const res = await client.query(
+        `UPDATE "SpaceSubscription"
+         SET "trialEndsAt" = (($2::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'UTC', "updatedAt" = now()
+         WHERE "spaceId" = $1 AND status = 'TRIALING'
+         RETURNING "spaceId", status, "trialEndsAt"::text AS "trialEndsAtUtc"`,
+        [spaceId, until]
+      )
+      if (res.rowCount === 0) throw new Error(`Space ${spaceId}: 체험 중인 구독 없음 (변경 없음)`)
+      console.log(`✔ Space ${spaceId} 체험 종료일 ${until}(KST)`)
+      console.table(res.rows)
+      break
+    }
+
     default:
       console.error(
-        '알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price|migrate-grant'
+        '알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price|migrate-grant|set-trial'
       )
       process.exit(1)
   }
