@@ -39,6 +39,31 @@ function setup() {
 
 afterEach(() => jest.restoreAllMocks())
 
+it('첨부 없이 제출한 응답이 유실되면 기존 접수 결과를 재확인한다', async () => {
+  let attempted = false
+  global.fetch = jest.fn(async (url) => {
+    if (url === sessionUrl) return session()
+    if (!attempted) {
+      attempted = true
+      throw new Error('응답 유실')
+    }
+    return response()
+  }) as jest.Mock
+  const rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('checkbox'))
+  const submit = () =>
+    act(async () => {
+      fireEvent.submit(rendered.container.querySelector('form')!)
+    })
+  await submit()
+  await submit()
+  const calls = (fetch as jest.Mock).mock.calls
+  expect(calls.map(([url]) => url)).toEqual([sessionUrl, completeUrl, completeUrl])
+  expect(JSON.parse(calls[0][1].body).files).toEqual([])
+  expect(calls[1][1].body).toBe(calls[2][1].body)
+  expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument()
+})
+
 it('복수 파일을 보존하고 개별 제거 후 signed URL로 원본 파일과 manifest를 제출한다', async () => {
   global.fetch = jest
     .fn()

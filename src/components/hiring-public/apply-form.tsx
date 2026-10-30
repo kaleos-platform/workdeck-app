@@ -112,12 +112,6 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
       privacyAgreed: true as const,
     }
 
-    const form = new FormData()
-    form.append('payload', JSON.stringify(payload))
-    for (const f of fileFields) {
-      for (const file of files[f.key] ?? []) form.append('files', file)
-    }
-
     setSubmitting(true)
     try {
       const selected = fileFields.flatMap((field) =>
@@ -136,7 +130,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
           uploadBatch.current.lastAttemptedPayload = undefined
         }
         if (res.status === 410) uploadBatch.current = null
-      } else if (selected.length) {
+      } else {
         const previous = uploadBatch.current
         if (
           !previous ||
@@ -209,8 +203,6 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
         // 최초 요청이 검증 오류로 거절된 경우에만 입력을 수정해 다시 제출할 수 있다.
         if (res.status === 400 || res.status === 422) batch.lastAttemptedPayload = undefined
         if (res.status === 410) uploadBatch.current = null
-      } else {
-        res = await fetch('/api/hiring-public/applications', { method: 'POST', body: form })
       }
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
