@@ -4,7 +4,13 @@ import { prisma } from '@/lib/prisma'
 import { requireDeck } from '@/lib/mcp/context'
 import { ToolUserError } from '@/lib/agent/tools/errors'
 import { deploymentData, withSlugRetry } from '@/lib/sc/deployments'
-import { httpUrl } from '@/lib/sc/schemas'
+import {
+  brandProfileSchema,
+  httpUrl,
+  productSchema,
+  salesContentChannelInputSchema,
+} from '@/lib/sc/schemas'
+import { isSpaceBrand, saveBrandProfile } from '@/lib/sc/brand-profile'
 import { textToDoc } from '@/lib/sc/text-to-doc'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
@@ -104,4 +110,103 @@ const postPublish: ActionDefinition<PostPublishParams> = {
   },
 }
 
-export const salesContentActions: ActionDefinition[] = [def(postPublish)]
+export const setupApplyFields = z.object({
+  // 대상 브랜드(seller-hub Brand id). 프로필·상품이 이 브랜드에 붙는다.
+  brandId: z.string().min(1).max(100),
+  // 발행 방식은 수동 고정 — 자동 발행(API·BROWSER)은 자격증명이 필요해 화면에서만 켠다.
+  channel: salesContentChannelInputSchema
+    .pick({ name: true, platformSlug: true, platform: true, kind: true })
+    .optional(),
+  profile: brandProfileSchema.optional(),
+  products: z
+    .array(productSchema.pick({ name: true, oneLinerPitch: true, customFields: true }))
+    .max(30)
+    .optional(),
+})
+// 도구 입력(sc_propose_setup)이 brandId 를 brand 로 바꿔 쓰도록 필드와 검증을 나눈다.
+export const setupApplyParams = setupApplyFields.refine(
+  (p) => p.channel || p.profile || p.products?.length,
+  {
+    message: 'channel·profile·products 중 하나 이상 필요합니다',
+  }
+)
+export type SetupApplyParams = z.infer<typeof setupApplyParams>
+
+async function requireSpaceBrand(spaceId: string, brandId: string) {
+  if (!(await isSpaceBrand(spaceId, brandId))) {
+    throw new ToolUserError('브랜드를 찾을 수 없습니다(sc_list_brands 로 확인)')
+  }
+}
+
+/**
+ * 브랜드 1개의 세일즈 콘텐츠 기초 데이터(채널·브랜드 프로필·상품)를 승인 1회로 등록한다.
+ * 채널은 같은 slug 가 있으면 그대로 두고, 상품은 같은 브랜드에 같은 이름이 있으면 건너뛴다(재제안 안전).
+ * 프로필은 덮어쓴다 — 실행 전 프로필을 snapshot 으로 남긴다.
+ */
+const setupApply: ActionDefinition<SetupApplyParams> = {
+  actionType: 'sales-content.setup.apply',
+  deckKey: 'sales-content',
+  title: '세일즈 콘텐츠 채널·브랜드 프로필·상품 등록',
+  paramsSchema: setupApplyParams,
+  requiredRole: 'ADMIN',
+  retryableAfterFailure: true,
+  validateCreate: async (ctx, params) => {
+    await requireDeck(ctx.spaceId, 'sales-content')
+    await requireSpaceBrand(ctx.spaceId, params.brandId)
+  },
+  snapshot: async (ctx, params) => ({
+    profile: await prisma.brandProfile.findFirst({
+      where: { spaceId: ctx.spaceId, brandId: params.brandId },
+      select: { companyName: true, shortDescription: true, toneOfVoice: true, customFields: true },
+    }),
+  }),
+  execute: async (ctx, params) => {
+    const { spaceId } = ctx
+    const { brandId, channel, profile, products } = params
+    await requireSpaceBrand(spaceId, brandId)
+
+    return prisma.$transaction(async (tx) => {
+      const result: Record<string, unknown> = {}
+      if (channel) {
+        const ch = await tx.salesContentChannel.upsert({
+          where: { spaceId_platformSlug: { spaceId, platformSlug: channel.platformSlug } },
+          create: { spaceId, ...channel, publisherMode: 'MANUAL', collectorMode: 'MANUAL' },
+          update: {},
+          select: { id: true, name: true, isActive: true },
+        })
+        result.channel = { id: ch.id, name: ch.name, isActive: ch.isActive }
+      }
+      if (profile) {
+        await saveBrandProfile(tx, spaceId, brandId, {
+          companyName: profile.companyName,
+          shortDescription: profile.shortDescription ?? null,
+          toneOfVoice: profile.toneOfVoice ?? undefined,
+          customFields: (profile.customFields ?? []) as never,
+        })
+        result.profile = 'saved'
+      }
+      if (products?.length) {
+        const existing = await tx.product.findMany({
+          where: { spaceId, brandId, name: { in: products.map((p) => p.name) } },
+          select: { name: true },
+        })
+        const taken = new Set(existing.map((p) => p.name))
+        // 목록 안의 중복 이름도 한 번만 만든다.
+        const fresh = products.filter((p) => !taken.has(p.name) && taken.add(p.name))
+        await tx.product.createMany({
+          data: fresh.map((p) => ({
+            spaceId,
+            brandId,
+            name: p.name,
+            oneLinerPitch: p.oneLinerPitch ?? null,
+            customFields: (p.customFields ?? []) as never,
+          })),
+        })
+        result.products = { created: fresh.length, skipped: products.length - fresh.length }
+      }
+      return result
+    })
+  },
+}
+
+export const salesContentActions: ActionDefinition[] = [def(postPublish), def(setupApply)]
