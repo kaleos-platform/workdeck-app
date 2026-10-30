@@ -156,4 +156,30 @@ describe('buildSalesMix', () => {
     })
     expect(r.products.map((x) => x.productId)).toEqual(['b', 'c', 'a', null])
   })
+
+  it('현재 광고가 이전 기간에만 판매된 상품에 귀속', () => {
+    const r = buildSalesMix({
+      ...base,
+      current: { products: [], ads: [{ optionId: 'o1', adCost: 700, adRevenue: 0 }] },
+      prev: { products: [p('p1', 5000, 1, '이전상품')], ads: [] },
+    })
+    const row = r.products.find((x) => x.productId === 'p1')!
+    expect(row.adCost).toBe(700)
+    expect(row.status).toBe('dependent')
+    expect(row.productName).toBe('이전상품')
+    expect(r.products.find((x) => x.productId === null)).toBeUndefined()
+    expect(r.kpi.adCost).toBe(700)
+  })
+
+  it('이전 광고가 현재 기간에만 판매된 상품에 귀속', () => {
+    const r = buildSalesMix({
+      ...base,
+      current: { products: [p('p1', 1000, 1, '현재상품')], ads: [] },
+      prev: { products: [], ads: [{ optionId: 'o1', adCost: 400, adRevenue: 0 }] },
+    })
+    const row = r.products.find((x) => x.productId === 'p1')!
+    expect(row.prevAdShare).toBeNull()
+    expect(row.productName).toBe('현재상품')
+    expect(r.products.find((x) => x.productId === null)).toBeUndefined()
+  })
 })

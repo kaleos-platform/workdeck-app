@@ -95,7 +95,7 @@ interface Period {
   ads: AdOptionRow[]
 }
 interface Agg {
-  name: string
+  name: string | null
   revenue: number
   salesQty: number
   adCost: number
@@ -105,19 +105,20 @@ interface Agg {
 // 상품별 집계. 벤더 행이 없는 상품·매핑 없는 광고는 null 키(판매 데이터 없음)로 모은다.
 function aggregate(period: Period, optionToProduct: Map<string, string>) {
   const map = new Map<string | null, Agg>()
-  const get = (id: string | null, name: string) => {
+  const get = (id: string | null, name: string | null) => {
     let a = map.get(id)
     if (!a) map.set(id, (a = { name, revenue: 0, salesQty: 0, adCost: 0, adRevenue: 0 }))
     return a
   }
   for (const p of period.products) {
     const a = get(p.productId, p.productName)
+    a.name ??= p.productName
     a.revenue += p.revenue
     a.salesQty += p.salesQty
   }
   for (const ad of period.ads) {
     const pid = ad.optionId ? (optionToProduct.get(ad.optionId) ?? null) : null
-    const a = get(pid !== null && map.has(pid) ? pid : null, NO_DATA_NAME)
+    const a = get(pid, null)
     a.adCost += ad.adCost
     a.adRevenue += ad.adRevenue
   }
@@ -158,13 +159,14 @@ export function buildSalesMix(input: {
   for (const id of new Set([...cur.keys(), ...prv.keys()])) {
     const c = cur.get(id)
     const pv = prv.get(id)
+    if (id === null && !c?.revenue && !c?.adCost && !c?.adRevenue && !pv?.adCost) continue
     const revenue = c?.revenue ?? 0
     const adCost = c?.adCost ?? 0
     const adShare = ratio(adCost, revenue)
     const prevAdShare = pv ? ratio(pv.adCost, pv.revenue) : null
     products.push({
       productId: id,
-      productName: id === null ? NO_DATA_NAME : (c ?? pv)!.name,
+      productName: id === null ? NO_DATA_NAME : (c?.name ?? pv?.name ?? id),
       revenue,
       salesQty: c?.salesQty ?? 0,
       adCost,
