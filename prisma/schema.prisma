@@ -167,6 +167,9 @@ model User {
   // 전역 운영자 role — null이면 일반 사용자 (워크덱 운영사 웹 어드민)
   platformRole PlatformRole?
 
+  // 가입 유입 경로 first-touch utm ({ utm_source, utm_medium, ..., landing, at }) — 가입 시 1회만 기록
+  signupSource Json?
+
   // 소유한 워크스페이스 (기존 — 점진 전환 기간 동안 유지)
   workspace Workspace?
 

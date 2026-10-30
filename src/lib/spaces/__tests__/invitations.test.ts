@@ -223,7 +223,12 @@ describe('acceptInvitation', () => {
     })
     expect(m.user.upsert).toHaveBeenCalledWith({
       where: { id: 'u-1' },
-      create: { id: 'u-1', email: 'invitee@example.com', name: '초대받은 사람' },
+      create: {
+        id: 'u-1',
+        email: 'invitee@example.com',
+        name: '초대받은 사람',
+        signupSource: { utm_source: 'invite' },
+      },
       update: {},
     })
   })

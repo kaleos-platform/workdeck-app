@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { resolveRedirectPath, sanitizeRedirectPath } from '@/lib/auth-redirect'
+import { signupSourceFromSearch } from '@/lib/marketing/signup-source'
 import { signupSchema, type SignupInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,6 +53,8 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
         emailRedirectTo: `${window.location.origin}/auth/callback?type=email&next=${encodeURIComponent(nextPath)}`,
         data: {
           name: data.name || '',
+          // 다른 기기에서 메일 인증해도 유입 경로가 남도록 user_metadata 에 싣는다
+          signup_source: signupSourceFromSearch(new URLSearchParams(window.location.search)),
         },
       },
     })
