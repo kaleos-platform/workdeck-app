@@ -13,7 +13,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { id, fileId } = await params
 
   const file = await prisma.hiringApplicationFile.findFirst({
-    where: { id: fileId, applicationId: id, spaceId: resolved.space.id },
+    where: {
+      id: fileId,
+      applicationId: id,
+      spaceId: resolved.space.id,
+      application: { spaceId: resolved.space.id, deletedAt: null },
+    },
     select: { filePath: true, fileName: true },
   })
   if (!file) return errorResponse('파일을 찾을 수 없습니다', 404)
