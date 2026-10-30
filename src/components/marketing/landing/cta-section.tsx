@@ -20,7 +20,9 @@ export function CtaSection({ finalCta, primaryCta, gradient }: CtaSectionProps) 
         {finalCta.subcopy ? (
           <p className="text-lg break-keep text-white/90">{finalCta.subcopy}</p>
         ) : null}
-        <Link href={buildAppUrl(primaryCta.href)}>
+        <Link
+          href={primaryCta.href.startsWith('#') ? primaryCta.href : buildAppUrl(primaryCta.href)}
+        >
           <Button size="lg" variant="secondary" className="gap-2">
             {primaryCta.label}
             <ArrowRight className="h-4 w-4" aria-hidden />

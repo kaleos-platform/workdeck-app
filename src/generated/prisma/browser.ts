@@ -799,3 +799,8 @@ export type WorkerToken = Prisma.WorkerTokenModel
  * 
  */
 export type KeywordRankSnapshot = Prisma.KeywordRankSnapshotModel
+/**
+ * Model MarketingLead
+ * 
+ */
+export type MarketingLead = Prisma.MarketingLeadModel

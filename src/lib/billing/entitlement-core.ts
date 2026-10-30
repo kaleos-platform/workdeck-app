@@ -1,7 +1,7 @@
 // deck 단위 entitlement 판정 순수 로직 — DB 무접근 (유닛 테스트 대상).
 // 판정 순서: FREE_BETA → 면제 → 구독 아이템 → Trial → 유료 전환 유예 → 잠금.
 
-export const TRIAL_DAYS = 14
+export const TRIAL_DAYS = 7
 export const GRACE_DAYS = 14
 
 export type DeckAccessReason = 'FREE_BETA' | 'EXEMPT' | 'SUBSCRIBED' | 'TRIAL' | 'GRACE' | 'LOCKED'

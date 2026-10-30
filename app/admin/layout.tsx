@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/admin', label: '대시보드' },
   { href: '/admin/users', label: '사용자' },
   { href: '/admin/billing', label: '결제' },
+  { href: '/admin/leads', label: '도입 신청' },
   { href: '/admin/templates', label: '템플릿' },
   { href: '/admin/recovery', label: '복구 관리' },
 ]
