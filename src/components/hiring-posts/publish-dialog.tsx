@@ -13,16 +13,24 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import Link from 'next/link'
+import { getRecruitingPostingBuildPath } from '@/lib/deck-routes'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import type { PostingStatus } from './status-badge'
 
 type Props = {
   postingId: string
   closingDate: string | null
+  otherPostingLinkCards?: number[]
   onPublished: (posting: { status: PostingStatus; closingDate: string | null }) => void
 }
 
-export function PublishDialog({ postingId, closingDate, onPublished }: Props) {
+export function PublishDialog({
+  postingId,
+  closingDate,
+  otherPostingLinkCards = [],
+  onPublished,
+}: Props) {
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState(closingDate?.slice(0, 10) ?? '')
   const [busy, setBusy] = useState(false)
@@ -82,6 +90,23 @@ export function PublishDialog({ postingId, closingDate, onPublished }: Props) {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
+          {otherPostingLinkCards.length > 0 && (
+            <div
+              role="alert"
+              className="space-y-1 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-900/40 dark:text-amber-200"
+            >
+              <p>
+                다른 공고의 지원서 링크가 있습니다. 카드 {otherPostingLinkCards.join(', ')}의 주소를
+                확인해 주세요.
+              </p>
+              <Link
+                className="inline-block underline"
+                href={getRecruitingPostingBuildPath(postingId)}
+              >
+                공고 수정하기
+              </Link>
+            </div>
+          )}
           <Label htmlFor="publish-closing-date">지원서 마감일</Label>
           <Input
             id="publish-closing-date"
