@@ -11,7 +11,7 @@ export const uploadFileSchema = z.object({
 })
 export const uploadIntentSchema = z.object({
   postingUuid: z.string().min(1),
-  files: z.array(uploadFileSchema).min(1).max(MAX_FORM_FILES),
+  files: z.array(uploadFileSchema).max(MAX_FORM_FILES),
 })
 export const completeUploadSchema = publicApplicationPayloadSchema.extend({
   uploadSessionId: z.string().uuid(),
@@ -21,7 +21,7 @@ export const storedUploadFileSchema = uploadFileSchema.extend({
   id: z.string().uuid(),
   path: z.string().min(1),
 })
-export const storedUploadFilesSchema = z.array(storedUploadFileSchema).min(1).max(MAX_FORM_FILES)
+export const storedUploadFilesSchema = z.array(storedUploadFileSchema).max(MAX_FORM_FILES)
 export type StoredUploadFile = z.infer<typeof storedUploadFileSchema>
 export function uploadTokenHash(token: string) {
   return createHash('sha256').update(token).digest('hex')
