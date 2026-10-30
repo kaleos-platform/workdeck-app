@@ -2,7 +2,7 @@
 
 - 작성: 2026-10-30
 - deck: `coupang-ads` (표시 이름만 「쿠팡 채널 관리」로 변경, id·경로 유지)
-- 상태: 설계 승인 대기
+- 상태: 설계 확정(2026-10-30)
 
 ## 1. 의도
 
@@ -94,6 +94,7 @@
 - 표시 이름 「쿠팡 광고 관리」 → 「쿠팡 채널 관리」: `src/lib/deck-meta.ts`, `src/lib/billing/catalog-defaults.ts`, `prisma/seed.ts`, `src/components/approvals/*`, 홈 `app/d/coupang-ads/page.tsx` 제목, 설정 페이지 문구, 브랜드 운영 쪽 안내 문구(`reconciliation-upload.tsx`, `reconciliation/route.ts`, `integration-catalog.tsx`, `seller-ops/settings/integration/page.tsx`), 로그인 안내, 마케팅(`src/lib/marketing/decks/coupang-ads.ts`, about/terms/llms.txt).
 - 운영 DB 의 `DeckApp.name` 등 표시용 행이 있으면 **데이터 마이그레이션**(`prisma migrate dev` 로 SQL migration, prod 직접 SQL 금지).
 - deck id `coupang-ads`, 경로 `/d/coupang-ads/*`, 결제 상품 id 는 **변경하지 않는다**.
+- **결제 상품명·마케팅 문구도 이번에 함께 변경**(사용자 결정 2026-10-30). 토스 빌링 심사 재개 대기 중이지만 심사 끝까지 미루지 않는다. 결제 화면·마케팅 요금 페이지·약관의 상품명이 서로 같은 이름으로 바뀌었는지 함께 확인.
 - deck description 은 광고 + 채널 매출 구성을 포괄하는 문장으로 갱신.
 - 사이드바(`src/components/layout/sidebar.tsx` `COUPANG_MAIN_ROUTES`)를 섹션 그룹으로: **광고**(쿠팡 광고 홈·광고 분석·실행 관리) / **채널**(매출 구성·로켓그로스 재고) / **설정**(데이터 수집·설정). 캠페인 목록 동작은 유지. 홈 라벨 「쿠팡 광고 홈」은 유지.
 
