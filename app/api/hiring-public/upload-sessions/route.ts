@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     where: { postingId: posting.id, createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } },
   })
   if (recent >= 120)
-    return errorResponse('첨부 요청이 몰리고 있습니다. 잠시 후 다시 시도해 주세요', 429)
+    return errorResponse('지원 요청이 몰리고 있습니다. 잠시 후 다시 시도해 주세요', 429)
   const id = randomUUID()
   const token = newUploadToken()
   const storedFiles = files.map((file) => {
@@ -72,6 +72,6 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
   } catch {
-    return errorResponse('첨부 업로드를 준비하지 못했습니다. 잠시 후 다시 시도해 주세요', 503)
+    return errorResponse('지원서 제출을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요', 503)
   }
 }

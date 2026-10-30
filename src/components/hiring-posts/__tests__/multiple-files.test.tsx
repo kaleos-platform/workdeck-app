@@ -39,6 +39,39 @@ function setup() {
 
 afterEach(() => jest.restoreAllMocks())
 
+it('첨부 없는 제출은 파일 업로드 대신 지원서 준비와 저장을 안내한다', async () => {
+  let finishIntent!: (value: ReturnType<typeof response>) => void
+  let finishComplete!: (value: ReturnType<typeof response>) => void
+  global.fetch = jest
+    .fn()
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishIntent = resolve
+        })
+    )
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishComplete = resolve
+        })
+    )
+  const rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('checkbox'))
+  await act(async () => {
+    fireEvent.submit(rendered.container.querySelector('form')!)
+  })
+  expect(screen.getByRole('status')).toHaveTextContent('지원서 제출 준비 중')
+  await act(async () => {
+    finishIntent(session())
+  })
+  expect(screen.getByRole('status')).toHaveTextContent('지원서 저장 중')
+  await act(async () => {
+    finishComplete(response())
+  })
+  expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument()
+})
+
 it('첨부 없이 제출한 응답이 유실되면 기존 접수 결과를 재확인한다', async () => {
   let attempted = false
   global.fetch = jest.fn(async (url) => {

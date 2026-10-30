@@ -129,6 +129,29 @@ it('첨부가 없는 지원서도 빈 세션을 생성하고 완료한다', asyn
   expect((await complete(request(payload))).status).toBe(201)
   expect(inspectApplicantUpload).not.toHaveBeenCalled()
 })
+it('제출 세션이 없을 때 파일 선택을 요구하지 않고 다시 제출을 안내한다', async () => {
+  ;(prisma.hiringUploadSession.findFirst as jest.Mock).mockResolvedValue(null)
+  const result = await complete(request(payload))
+  expect(result.status).toBe(410)
+  expect(await result.json()).toEqual({
+    message: '지원서 제출 준비가 만료되었습니다. 다시 제출해 주세요',
+  })
+})
+it('첨부 없는 지원도 준비 요청이 몰리면 지원 요청 제한을 안내한다', async () => {
+  ;(prisma.hiringPosting.findUnique as jest.Mock).mockResolvedValue({
+    id: 'post',
+    uuid: 'qa-post',
+    spaceId: 'space',
+    status: 'ACTIVE',
+    applicationEntries: [],
+  })
+  ;(prisma.hiringUploadSession.count as jest.Mock).mockResolvedValue(120)
+  const result = await initiate(request({ postingUuid: 'qa-post', files: [] }))
+  expect(result.status).toBe(429)
+  expect(await result.json()).toEqual({
+    message: '지원 요청이 몰리고 있습니다. 잠시 후 다시 시도해 주세요',
+  })
+})
 it('12MiB 파일은 서버 경로와 해시 토큰으로 직접 업로드 세션을 만든다', async () => {
   const response = await initiate(request({ postingUuid: 'qa-post', files: [file] }))
   expect(response.status).toBe(201)
