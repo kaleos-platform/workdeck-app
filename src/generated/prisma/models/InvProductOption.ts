@@ -49,6 +49,7 @@ export type InvProductOptionMinAggregateOutputType = {
   sizeLabel: string | null
   setSizeLabel: string | null
   safetyStockQty: number | null
+  status: $Enums.InvOptionStatus | null
   deletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -65,6 +66,7 @@ export type InvProductOptionMaxAggregateOutputType = {
   sizeLabel: string | null
   setSizeLabel: string | null
   safetyStockQty: number | null
+  status: $Enums.InvOptionStatus | null
   deletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -82,6 +84,7 @@ export type InvProductOptionCountAggregateOutputType = {
   setSizeLabel: number
   attributeValues: number
   safetyStockQty: number
+  status: number
   deletedAt: number
   createdAt: number
   updatedAt: number
@@ -112,6 +115,7 @@ export type InvProductOptionMinAggregateInputType = {
   sizeLabel?: true
   setSizeLabel?: true
   safetyStockQty?: true
+  status?: true
   deletedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -128,6 +132,7 @@ export type InvProductOptionMaxAggregateInputType = {
   sizeLabel?: true
   setSizeLabel?: true
   safetyStockQty?: true
+  status?: true
   deletedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -145,6 +150,7 @@ export type InvProductOptionCountAggregateInputType = {
   setSizeLabel?: true
   attributeValues?: true
   safetyStockQty?: true
+  status?: true
   deletedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -249,6 +255,7 @@ export type InvProductOptionGroupByOutputType = {
   setSizeLabel: string | null
   attributeValues: runtime.JsonValue | null
   safetyStockQty: number
+  status: $Enums.InvOptionStatus
   deletedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -289,6 +296,7 @@ export type InvProductOptionWhereInput = {
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   attributeValues?: Prisma.JsonNullableFilter<"InvProductOption">
   safetyStockQty?: Prisma.IntFilter<"InvProductOption"> | number
+  status?: Prisma.EnumInvOptionStatusFilter<"InvProductOption"> | $Enums.InvOptionStatus
   deletedAt?: Prisma.DateTimeNullableFilter<"InvProductOption"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
@@ -320,6 +328,7 @@ export type InvProductOptionOrderByWithRelationInput = {
   setSizeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   attributeValues?: Prisma.SortOrderInput | Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -354,6 +363,7 @@ export type InvProductOptionWhereUniqueInput = Prisma.AtLeast<{
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   attributeValues?: Prisma.JsonNullableFilter<"InvProductOption">
   safetyStockQty?: Prisma.IntFilter<"InvProductOption"> | number
+  status?: Prisma.EnumInvOptionStatusFilter<"InvProductOption"> | $Enums.InvOptionStatus
   deletedAt?: Prisma.DateTimeNullableFilter<"InvProductOption"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
@@ -385,6 +395,7 @@ export type InvProductOptionOrderByWithAggregationInput = {
   setSizeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   attributeValues?: Prisma.SortOrderInput | Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -410,6 +421,7 @@ export type InvProductOptionScalarWhereWithAggregatesInput = {
   setSizeLabel?: Prisma.StringNullableWithAggregatesFilter<"InvProductOption"> | string | null
   attributeValues?: Prisma.JsonNullableWithAggregatesFilter<"InvProductOption">
   safetyStockQty?: Prisma.IntWithAggregatesFilter<"InvProductOption"> | number
+  status?: Prisma.EnumInvOptionStatusWithAggregatesFilter<"InvProductOption"> | $Enums.InvOptionStatus
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"InvProductOption"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvProductOption"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvProductOption"> | Date | string
@@ -426,6 +438,7 @@ export type InvProductOptionCreateInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -457,6 +470,7 @@ export type InvProductOptionUncheckedCreateInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -486,6 +500,7 @@ export type InvProductOptionUpdateInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -517,6 +532,7 @@ export type InvProductOptionUncheckedUpdateInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -547,6 +563,7 @@ export type InvProductOptionCreateManyInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -563,6 +580,7 @@ export type InvProductOptionUpdateManyMutationInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -580,6 +598,7 @@ export type InvProductOptionUncheckedUpdateManyInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -607,6 +626,7 @@ export type InvProductOptionCountOrderByAggregateInput = {
   setSizeLabel?: Prisma.SortOrder
   attributeValues?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -629,6 +649,7 @@ export type InvProductOptionMaxOrderByAggregateInput = {
   sizeLabel?: Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -645,6 +666,7 @@ export type InvProductOptionMinOrderByAggregateInput = {
   sizeLabel?: Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrder
   safetyStockQty?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -706,6 +728,10 @@ export type InvProductOptionUncheckedUpdateManyWithoutProductNestedInput = {
   update?: Prisma.InvProductOptionUpdateWithWhereUniqueWithoutProductInput | Prisma.InvProductOptionUpdateWithWhereUniqueWithoutProductInput[]
   updateMany?: Prisma.InvProductOptionUpdateManyWithWhereWithoutProductInput | Prisma.InvProductOptionUpdateManyWithWhereWithoutProductInput[]
   deleteMany?: Prisma.InvProductOptionScalarWhereInput | Prisma.InvProductOptionScalarWhereInput[]
+}
+
+export type EnumInvOptionStatusFieldUpdateOperationsInput = {
+  set?: $Enums.InvOptionStatus
 }
 
 export type InvProductOptionCreateNestedOneWithoutMovementsInput = {
@@ -907,6 +933,7 @@ export type InvProductOptionCreateWithoutProductInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -936,6 +963,7 @@ export type InvProductOptionUncheckedCreateWithoutProductInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -995,6 +1023,7 @@ export type InvProductOptionScalarWhereInput = {
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   attributeValues?: Prisma.JsonNullableFilter<"InvProductOption">
   safetyStockQty?: Prisma.IntFilter<"InvProductOption"> | number
+  status?: Prisma.EnumInvOptionStatusFilter<"InvProductOption"> | $Enums.InvOptionStatus
   deletedAt?: Prisma.DateTimeNullableFilter<"InvProductOption"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductOption"> | Date | string
@@ -1011,6 +1040,7 @@ export type InvProductOptionCreateWithoutMovementsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1041,6 +1071,7 @@ export type InvProductOptionUncheckedCreateWithoutMovementsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1085,6 +1116,7 @@ export type InvProductOptionUpdateWithoutMovementsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1115,6 +1147,7 @@ export type InvProductOptionUncheckedUpdateWithoutMovementsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1143,6 +1176,7 @@ export type InvProductOptionCreateWithoutStockLevelsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1173,6 +1207,7 @@ export type InvProductOptionUncheckedCreateWithoutStockLevelsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1217,6 +1252,7 @@ export type InvProductOptionUpdateWithoutStockLevelsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1247,6 +1283,7 @@ export type InvProductOptionUncheckedUpdateWithoutStockLevelsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1275,6 +1312,7 @@ export type InvProductOptionCreateWithoutLocationMappingItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1305,6 +1343,7 @@ export type InvProductOptionUncheckedCreateWithoutLocationMappingItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1349,6 +1388,7 @@ export type InvProductOptionUpdateWithoutLocationMappingItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1379,6 +1419,7 @@ export type InvProductOptionUncheckedUpdateWithoutLocationMappingItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1407,6 +1448,7 @@ export type InvProductOptionCreateWithoutShippingLabelsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1437,6 +1479,7 @@ export type InvProductOptionUncheckedCreateWithoutShippingLabelsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1481,6 +1524,7 @@ export type InvProductOptionUpdateWithoutShippingLabelsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1511,6 +1555,7 @@ export type InvProductOptionUncheckedUpdateWithoutShippingLabelsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1539,6 +1584,7 @@ export type InvProductOptionCreateWithoutDelOrderItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1569,6 +1615,7 @@ export type InvProductOptionUncheckedCreateWithoutDelOrderItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1613,6 +1660,7 @@ export type InvProductOptionUpdateWithoutDelOrderItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1643,6 +1691,7 @@ export type InvProductOptionUncheckedUpdateWithoutDelOrderItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1671,6 +1720,7 @@ export type InvProductOptionCreateWithoutChannelAliasesInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1701,6 +1751,7 @@ export type InvProductOptionUncheckedCreateWithoutChannelAliasesInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1745,6 +1796,7 @@ export type InvProductOptionUpdateWithoutChannelAliasesInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1775,6 +1827,7 @@ export type InvProductOptionUncheckedUpdateWithoutChannelAliasesInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1803,6 +1856,7 @@ export type InvProductOptionCreateWithoutAliasFulfillmentsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1833,6 +1887,7 @@ export type InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1877,6 +1932,7 @@ export type InvProductOptionUpdateWithoutAliasFulfillmentsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1907,6 +1963,7 @@ export type InvProductOptionUncheckedUpdateWithoutAliasFulfillmentsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1935,6 +1992,7 @@ export type InvProductOptionCreateWithoutProductionRunItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1965,6 +2023,7 @@ export type InvProductOptionUncheckedCreateWithoutProductionRunItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2009,6 +2068,7 @@ export type InvProductOptionUpdateWithoutProductionRunItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2039,6 +2099,7 @@ export type InvProductOptionUncheckedUpdateWithoutProductionRunItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2067,6 +2128,7 @@ export type InvProductOptionCreateWithoutPricingScenarioItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2097,6 +2159,7 @@ export type InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2141,6 +2204,7 @@ export type InvProductOptionUpdateWithoutPricingScenarioItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2171,6 +2235,7 @@ export type InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2199,6 +2264,7 @@ export type InvProductOptionCreateWithoutListingItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2229,6 +2295,7 @@ export type InvProductOptionUncheckedCreateWithoutListingItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2273,6 +2340,7 @@ export type InvProductOptionUpdateWithoutListingItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2303,6 +2371,7 @@ export type InvProductOptionUncheckedUpdateWithoutListingItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2331,6 +2400,7 @@ export type InvProductOptionCreateWithoutFulfillmentsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2361,6 +2431,7 @@ export type InvProductOptionUncheckedCreateWithoutFulfillmentsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2405,6 +2476,7 @@ export type InvProductOptionUpdateWithoutFulfillmentsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2435,6 +2507,7 @@ export type InvProductOptionUncheckedUpdateWithoutFulfillmentsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2463,6 +2536,7 @@ export type InvProductOptionCreateWithoutReorderPlanItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2493,6 +2567,7 @@ export type InvProductOptionUncheckedCreateWithoutReorderPlanItemsInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2537,6 +2612,7 @@ export type InvProductOptionUpdateWithoutReorderPlanItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2567,6 +2643,7 @@ export type InvProductOptionUncheckedUpdateWithoutReorderPlanItemsInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2595,6 +2672,7 @@ export type InvProductOptionCreateWithoutReorderAccuraciesInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2625,6 +2703,7 @@ export type InvProductOptionUncheckedCreateWithoutReorderAccuraciesInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2669,6 +2748,7 @@ export type InvProductOptionUpdateWithoutReorderAccuraciesInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2699,6 +2779,7 @@ export type InvProductOptionUncheckedUpdateWithoutReorderAccuraciesInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2727,6 +2808,7 @@ export type InvProductOptionCreateManyProductInput = {
   setSizeLabel?: string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: number
+  status?: $Enums.InvOptionStatus
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2743,6 +2825,7 @@ export type InvProductOptionUpdateWithoutProductInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2772,6 +2855,7 @@ export type InvProductOptionUncheckedUpdateWithoutProductInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2801,6 +2885,7 @@ export type InvProductOptionUncheckedUpdateManyWithoutProductInput = {
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attributeValues?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   safetyStockQty?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumInvOptionStatusFieldUpdateOperationsInput | $Enums.InvOptionStatus
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2957,6 +3042,7 @@ export type InvProductOptionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   setSizeLabel?: boolean
   attributeValues?: boolean
   safetyStockQty?: boolean
+  status?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2989,6 +3075,7 @@ export type InvProductOptionSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   setSizeLabel?: boolean
   attributeValues?: boolean
   safetyStockQty?: boolean
+  status?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -3007,6 +3094,7 @@ export type InvProductOptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   setSizeLabel?: boolean
   attributeValues?: boolean
   safetyStockQty?: boolean
+  status?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -3025,12 +3113,13 @@ export type InvProductOptionSelectScalar = {
   setSizeLabel?: boolean
   attributeValues?: boolean
   safetyStockQty?: boolean
+  status?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvProductOptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "name" | "sku" | "costPrice" | "costVatIncluded" | "retailPrice" | "sizeLabel" | "setSizeLabel" | "attributeValues" | "safetyStockQty" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductOption"]>
+export type InvProductOptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "name" | "sku" | "costPrice" | "costVatIncluded" | "retailPrice" | "sizeLabel" | "setSizeLabel" | "attributeValues" | "safetyStockQty" | "status" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductOption"]>
 export type InvProductOptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
   movements?: boolean | Prisma.InvProductOption$movementsArgs<ExtArgs>
@@ -3085,6 +3174,7 @@ export type $InvProductOptionPayload<ExtArgs extends runtime.Types.Extensions.In
     setSizeLabel: string | null
     attributeValues: runtime.JsonValue | null
     safetyStockQty: number
+    status: $Enums.InvOptionStatus
     deletedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -3536,6 +3626,7 @@ export interface InvProductOptionFieldRefs {
   readonly setSizeLabel: Prisma.FieldRef<"InvProductOption", 'String'>
   readonly attributeValues: Prisma.FieldRef<"InvProductOption", 'Json'>
   readonly safetyStockQty: Prisma.FieldRef<"InvProductOption", 'Int'>
+  readonly status: Prisma.FieldRef<"InvProductOption", 'InvOptionStatus'>
   readonly deletedAt: Prisma.FieldRef<"InvProductOption", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"InvProductOption", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvProductOption", 'DateTime'>

@@ -37,6 +37,7 @@ export function StockStatusBoard() {
   const locationId = searchParams.get('locationId')
   const q = searchParams.get('q') ?? ''
   const onlyLow = searchParams.get('onlyLow') === '1'
+  const withDiscontinued = searchParams.get('withDiscontinued') === '1'
 
   const [data, setData] = useState<StockStatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -53,9 +54,10 @@ export function StockStatusBoard() {
     abortRef.current = controller
     setLoading(true)
     try {
-      const res = await fetch('/api/sh/inventory/stock-status', {
-        signal: controller.signal,
-      })
+      const res = await fetch(
+        `/api/sh/inventory/stock-status${withDiscontinued ? '?includeDiscontinued=1' : ''}`,
+        { signal: controller.signal }
+      )
       if (!res.ok) throw new Error('재고 데이터를 불러오지 못했습니다')
       const json = (await res.json()) as StockStatusResponse
       setData(json)
@@ -66,7 +68,30 @@ export function StockStatusBoard() {
     } finally {
       if (!controller.signal.aborted) setLoading(false)
     }
-  }, [])
+  }, [withDiscontinued])
+
+  const handleSetOptionStatus = useCallback(
+    async (optionIds: string[], status: 'ACTIVE' | 'DISCONTINUED') => {
+      try {
+        const res = await fetch('/api/sh/inventory/option-status', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ optionIds, status }),
+        })
+        const json = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(json.message ?? '상태 변경 실패')
+        toast.success(
+          status === 'DISCONTINUED'
+            ? `${json.updated}개 옵션 단종 — 생산·발주에서 제외, 재고 0이면 숨김`
+            : `${json.updated}개 옵션 판매중으로 변경`
+        )
+        await fetchData()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '상태 변경 실패')
+      }
+    },
+    [fetchData]
+  )
 
   useEffect(() => {
     fetchData()
@@ -150,6 +175,7 @@ export function StockStatusBoard() {
       locationId: null,
       q: null,
       onlyLow: null,
+      withDiscontinued: null,
     })
   }, [updateParams])
 
@@ -308,6 +334,7 @@ export function StockStatusBoard() {
               selectedProductName={selectedProductName}
               selectedProductOfficialName={selectedProductOfficialName}
               hiddenLocationIds={hiddenLocationIds}
+              onSetOptionStatus={handleSetOptionStatus}
               gradeInfo={<StockStatusGradePopover settings={gradeSettings} onSaved={fetchData} />}
               locationPicker={
                 // 위치 탭을 고르면 컬럼이 이미 1개라 선택 UI 가 모순된다.
@@ -324,6 +351,10 @@ export function StockStatusBoard() {
                 <StockStatusToolbar
                   q={q}
                   onlyLow={onlyLow}
+                  withDiscontinued={withDiscontinued}
+                  onWithDiscontinuedChange={(v) =>
+                    updateParams({ withDiscontinued: v ? '1' : null })
+                  }
                   onSearchChange={handleSearchChange}
                   onOnlyLowChange={handleOnlyLowChange}
                   onClearFilters={handleClearFilters}
