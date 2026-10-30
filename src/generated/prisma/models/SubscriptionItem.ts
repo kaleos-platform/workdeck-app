@@ -28,10 +28,12 @@ export type AggregateSubscriptionItem = {
 
 export type SubscriptionItemAvgAggregateOutputType = {
   priceSnapshot: number | null
+  lockedPrice: number | null
 }
 
 export type SubscriptionItemSumAggregateOutputType = {
   priceSnapshot: number | null
+  lockedPrice: number | null
 }
 
 export type SubscriptionItemMinAggregateOutputType = {
@@ -40,6 +42,7 @@ export type SubscriptionItemMinAggregateOutputType = {
   type: $Enums.SubscriptionItemType | null
   deckAppId: string | null
   priceSnapshot: number | null
+  lockedPrice: number | null
   status: $Enums.SubscriptionItemStatus | null
   addedAt: Date | null
   endedAt: Date | null
@@ -51,6 +54,7 @@ export type SubscriptionItemMaxAggregateOutputType = {
   type: $Enums.SubscriptionItemType | null
   deckAppId: string | null
   priceSnapshot: number | null
+  lockedPrice: number | null
   status: $Enums.SubscriptionItemStatus | null
   addedAt: Date | null
   endedAt: Date | null
@@ -62,6 +66,7 @@ export type SubscriptionItemCountAggregateOutputType = {
   type: number
   deckAppId: number
   priceSnapshot: number
+  lockedPrice: number
   status: number
   addedAt: number
   endedAt: number
@@ -71,10 +76,12 @@ export type SubscriptionItemCountAggregateOutputType = {
 
 export type SubscriptionItemAvgAggregateInputType = {
   priceSnapshot?: true
+  lockedPrice?: true
 }
 
 export type SubscriptionItemSumAggregateInputType = {
   priceSnapshot?: true
+  lockedPrice?: true
 }
 
 export type SubscriptionItemMinAggregateInputType = {
@@ -83,6 +90,7 @@ export type SubscriptionItemMinAggregateInputType = {
   type?: true
   deckAppId?: true
   priceSnapshot?: true
+  lockedPrice?: true
   status?: true
   addedAt?: true
   endedAt?: true
@@ -94,6 +102,7 @@ export type SubscriptionItemMaxAggregateInputType = {
   type?: true
   deckAppId?: true
   priceSnapshot?: true
+  lockedPrice?: true
   status?: true
   addedAt?: true
   endedAt?: true
@@ -105,6 +114,7 @@ export type SubscriptionItemCountAggregateInputType = {
   type?: true
   deckAppId?: true
   priceSnapshot?: true
+  lockedPrice?: true
   status?: true
   addedAt?: true
   endedAt?: true
@@ -203,6 +213,7 @@ export type SubscriptionItemGroupByOutputType = {
   type: $Enums.SubscriptionItemType
   deckAppId: string
   priceSnapshot: number
+  lockedPrice: number | null
   status: $Enums.SubscriptionItemStatus
   addedAt: Date
   endedAt: Date | null
@@ -237,6 +248,7 @@ export type SubscriptionItemWhereInput = {
   type?: Prisma.EnumSubscriptionItemTypeFilter<"SubscriptionItem"> | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFilter<"SubscriptionItem"> | string
   priceSnapshot?: Prisma.IntFilter<"SubscriptionItem"> | number
+  lockedPrice?: Prisma.IntNullableFilter<"SubscriptionItem"> | number | null
   status?: Prisma.EnumSubscriptionItemStatusFilter<"SubscriptionItem"> | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFilter<"SubscriptionItem"> | Date | string
   endedAt?: Prisma.DateTimeNullableFilter<"SubscriptionItem"> | Date | string | null
@@ -249,6 +261,7 @@ export type SubscriptionItemOrderByWithRelationInput = {
   type?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   priceSnapshot?: Prisma.SortOrder
+  lockedPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -265,6 +278,7 @@ export type SubscriptionItemWhereUniqueInput = Prisma.AtLeast<{
   type?: Prisma.EnumSubscriptionItemTypeFilter<"SubscriptionItem"> | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFilter<"SubscriptionItem"> | string
   priceSnapshot?: Prisma.IntFilter<"SubscriptionItem"> | number
+  lockedPrice?: Prisma.IntNullableFilter<"SubscriptionItem"> | number | null
   status?: Prisma.EnumSubscriptionItemStatusFilter<"SubscriptionItem"> | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFilter<"SubscriptionItem"> | Date | string
   endedAt?: Prisma.DateTimeNullableFilter<"SubscriptionItem"> | Date | string | null
@@ -277,6 +291,7 @@ export type SubscriptionItemOrderByWithAggregationInput = {
   type?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   priceSnapshot?: Prisma.SortOrder
+  lockedPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -296,6 +311,7 @@ export type SubscriptionItemScalarWhereWithAggregatesInput = {
   type?: Prisma.EnumSubscriptionItemTypeWithAggregatesFilter<"SubscriptionItem"> | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringWithAggregatesFilter<"SubscriptionItem"> | string
   priceSnapshot?: Prisma.IntWithAggregatesFilter<"SubscriptionItem"> | number
+  lockedPrice?: Prisma.IntNullableWithAggregatesFilter<"SubscriptionItem"> | number | null
   status?: Prisma.EnumSubscriptionItemStatusWithAggregatesFilter<"SubscriptionItem"> | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeWithAggregatesFilter<"SubscriptionItem"> | Date | string
   endedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SubscriptionItem"> | Date | string | null
@@ -306,6 +322,7 @@ export type SubscriptionItemCreateInput = {
   type?: $Enums.SubscriptionItemType
   deckAppId: string
   priceSnapshot: number
+  lockedPrice?: number | null
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
@@ -318,6 +335,7 @@ export type SubscriptionItemUncheckedCreateInput = {
   type?: $Enums.SubscriptionItemType
   deckAppId: string
   priceSnapshot: number
+  lockedPrice?: number | null
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
@@ -328,6 +346,7 @@ export type SubscriptionItemUpdateInput = {
   type?: Prisma.EnumSubscriptionItemTypeFieldUpdateOperationsInput | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   priceSnapshot?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -340,6 +359,7 @@ export type SubscriptionItemUncheckedUpdateInput = {
   type?: Prisma.EnumSubscriptionItemTypeFieldUpdateOperationsInput | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   priceSnapshot?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -351,6 +371,7 @@ export type SubscriptionItemCreateManyInput = {
   type?: $Enums.SubscriptionItemType
   deckAppId: string
   priceSnapshot: number
+  lockedPrice?: number | null
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
@@ -361,6 +382,7 @@ export type SubscriptionItemUpdateManyMutationInput = {
   type?: Prisma.EnumSubscriptionItemTypeFieldUpdateOperationsInput | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   priceSnapshot?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -372,6 +394,7 @@ export type SubscriptionItemUncheckedUpdateManyInput = {
   type?: Prisma.EnumSubscriptionItemTypeFieldUpdateOperationsInput | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   priceSnapshot?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -399,6 +422,7 @@ export type SubscriptionItemCountOrderByAggregateInput = {
   type?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   priceSnapshot?: Prisma.SortOrder
+  lockedPrice?: Prisma.SortOrder
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
@@ -406,6 +430,7 @@ export type SubscriptionItemCountOrderByAggregateInput = {
 
 export type SubscriptionItemAvgOrderByAggregateInput = {
   priceSnapshot?: Prisma.SortOrder
+  lockedPrice?: Prisma.SortOrder
 }
 
 export type SubscriptionItemMaxOrderByAggregateInput = {
@@ -414,6 +439,7 @@ export type SubscriptionItemMaxOrderByAggregateInput = {
   type?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   priceSnapshot?: Prisma.SortOrder
+  lockedPrice?: Prisma.SortOrder
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
@@ -425,6 +451,7 @@ export type SubscriptionItemMinOrderByAggregateInput = {
   type?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   priceSnapshot?: Prisma.SortOrder
+  lockedPrice?: Prisma.SortOrder
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
@@ -432,6 +459,7 @@ export type SubscriptionItemMinOrderByAggregateInput = {
 
 export type SubscriptionItemSumOrderByAggregateInput = {
   priceSnapshot?: Prisma.SortOrder
+  lockedPrice?: Prisma.SortOrder
 }
 
 export type SubscriptionItemCreateNestedManyWithoutSubscriptionInput = {
@@ -489,6 +517,7 @@ export type SubscriptionItemCreateWithoutSubscriptionInput = {
   type?: $Enums.SubscriptionItemType
   deckAppId: string
   priceSnapshot: number
+  lockedPrice?: number | null
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
@@ -499,6 +528,7 @@ export type SubscriptionItemUncheckedCreateWithoutSubscriptionInput = {
   type?: $Enums.SubscriptionItemType
   deckAppId: string
   priceSnapshot: number
+  lockedPrice?: number | null
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
@@ -539,6 +569,7 @@ export type SubscriptionItemScalarWhereInput = {
   type?: Prisma.EnumSubscriptionItemTypeFilter<"SubscriptionItem"> | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFilter<"SubscriptionItem"> | string
   priceSnapshot?: Prisma.IntFilter<"SubscriptionItem"> | number
+  lockedPrice?: Prisma.IntNullableFilter<"SubscriptionItem"> | number | null
   status?: Prisma.EnumSubscriptionItemStatusFilter<"SubscriptionItem"> | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFilter<"SubscriptionItem"> | Date | string
   endedAt?: Prisma.DateTimeNullableFilter<"SubscriptionItem"> | Date | string | null
@@ -549,6 +580,7 @@ export type SubscriptionItemCreateManySubscriptionInput = {
   type?: $Enums.SubscriptionItemType
   deckAppId: string
   priceSnapshot: number
+  lockedPrice?: number | null
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
@@ -559,6 +591,7 @@ export type SubscriptionItemUpdateWithoutSubscriptionInput = {
   type?: Prisma.EnumSubscriptionItemTypeFieldUpdateOperationsInput | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   priceSnapshot?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -569,6 +602,7 @@ export type SubscriptionItemUncheckedUpdateWithoutSubscriptionInput = {
   type?: Prisma.EnumSubscriptionItemTypeFieldUpdateOperationsInput | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   priceSnapshot?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -579,6 +613,7 @@ export type SubscriptionItemUncheckedUpdateManyWithoutSubscriptionInput = {
   type?: Prisma.EnumSubscriptionItemTypeFieldUpdateOperationsInput | $Enums.SubscriptionItemType
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   priceSnapshot?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -592,6 +627,7 @@ export type SubscriptionItemSelect<ExtArgs extends runtime.Types.Extensions.Inte
   type?: boolean
   deckAppId?: boolean
   priceSnapshot?: boolean
+  lockedPrice?: boolean
   status?: boolean
   addedAt?: boolean
   endedAt?: boolean
@@ -604,6 +640,7 @@ export type SubscriptionItemSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   type?: boolean
   deckAppId?: boolean
   priceSnapshot?: boolean
+  lockedPrice?: boolean
   status?: boolean
   addedAt?: boolean
   endedAt?: boolean
@@ -616,6 +653,7 @@ export type SubscriptionItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   type?: boolean
   deckAppId?: boolean
   priceSnapshot?: boolean
+  lockedPrice?: boolean
   status?: boolean
   addedAt?: boolean
   endedAt?: boolean
@@ -628,12 +666,13 @@ export type SubscriptionItemSelectScalar = {
   type?: boolean
   deckAppId?: boolean
   priceSnapshot?: boolean
+  lockedPrice?: boolean
   status?: boolean
   addedAt?: boolean
   endedAt?: boolean
 }
 
-export type SubscriptionItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "subscriptionId" | "type" | "deckAppId" | "priceSnapshot" | "status" | "addedAt" | "endedAt", ExtArgs["result"]["subscriptionItem"]>
+export type SubscriptionItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "subscriptionId" | "type" | "deckAppId" | "priceSnapshot" | "lockedPrice" | "status" | "addedAt" | "endedAt", ExtArgs["result"]["subscriptionItem"]>
 export type SubscriptionItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscription?: boolean | Prisma.SpaceSubscriptionDefaultArgs<ExtArgs>
 }
@@ -655,6 +694,7 @@ export type $SubscriptionItemPayload<ExtArgs extends runtime.Types.Extensions.In
     type: $Enums.SubscriptionItemType
     deckAppId: string
     priceSnapshot: number
+    lockedPrice: number | null
     status: $Enums.SubscriptionItemStatus
     addedAt: Date
     endedAt: Date | null
@@ -1087,6 +1127,7 @@ export interface SubscriptionItemFieldRefs {
   readonly type: Prisma.FieldRef<"SubscriptionItem", 'SubscriptionItemType'>
   readonly deckAppId: Prisma.FieldRef<"SubscriptionItem", 'String'>
   readonly priceSnapshot: Prisma.FieldRef<"SubscriptionItem", 'Int'>
+  readonly lockedPrice: Prisma.FieldRef<"SubscriptionItem", 'Int'>
   readonly status: Prisma.FieldRef<"SubscriptionItem", 'SubscriptionItemStatus'>
   readonly addedAt: Prisma.FieldRef<"SubscriptionItem", 'DateTime'>
   readonly endedAt: Prisma.FieldRef<"SubscriptionItem", 'DateTime'>

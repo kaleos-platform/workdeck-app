@@ -11,6 +11,11 @@
 //                                                                  # deck 과금 모드 전환
 //                                                                  # (SUBSCRIPTION 전환 시 paidActivatedAt 기록 → 유예 14일 시작)
 //   node scripts/billing-admin.mjs price <deckId> <월가(공급가)>    # deck 가격 변경
+//   node scripts/billing-admin.mjs migrate-grant <spaceId> [보장공급가=12273]
+//                                                                  # Opening 이전 고객: 모집 관리 보장가(lockedPrice, 실제 해지 시 소멸)
+//                                                                  # 무료는 일반 고객과 같은 7일 체험뿐 — 이력이 있으면 연장하지 않음
+//   node scripts/billing-admin.mjs set-trial <spaceId> <종료일 YYYY-MM-DD>
+//                                                                  # 체험 종료일(KST) 지정. 토스 결제 공백기 이전 고객 전용 — 결제 가능일+7일로 맞춘다
 import 'dotenv/config'
 import { config } from 'dotenv'
 import pg from 'pg'
@@ -32,6 +37,7 @@ const [cmd, ...args] = process.argv.slice(2)
 
 async function main() {
   await client.connect()
+  await client.query("SET TIME ZONE 'UTC'") // now() → timestamp(무tz) 캐스팅을 Prisma 기준(UTC)에 맞춤
 
   switch (cmd) {
     case 'status': {
@@ -50,6 +56,13 @@ async function main() {
         ORDER BY s."updatedAt" DESC`)
       console.log('\n── 구독 현황 ──')
       console.table(subs.rows)
+
+      const locked = await client.query(`
+        SELECT s."spaceId", i."deckAppId", i.status, i."lockedPrice"
+        FROM "SubscriptionItem" i JOIN "SpaceSubscription" s ON s.id = i."subscriptionId"
+        WHERE i."lockedPrice" IS NOT NULL ORDER BY s."spaceId"`)
+      console.log('\n── 보장가(lockedPrice) 보유 아이템 ──')
+      console.table(locked.rows)
 
       const charges = await client.query(`
         SELECT "orderId", amount, status, "failReason", "createdAt"
@@ -130,8 +143,87 @@ async function main() {
       break
     }
 
+    case 'migrate-grant': {
+      const [spaceId, price = '12273'] = args
+      const p = Number(price)
+      if (!spaceId || !Number.isInteger(p) || p <= 0) {
+        throw new Error('사용법: migrate-grant <spaceId> [보장공급가]')
+      }
+      await client.query('BEGIN')
+      try {
+        // 이전 고객도 무료는 일반 고객과 같은 7일 체험(TRIAL_DAYS)뿐 — 보장가가 곧 프로모션.
+        // 체험 이력(trialEndsAt)이 없을 때만 지금부터 7일을 부여하고, 있으면 그대로 둔다(평생 1회).
+        // entitlement-core TRIAL_DAYS 와 맞출 것
+        const sub = await client.query(
+          `INSERT INTO "SpaceSubscription" (id, "spaceId", status, "trialEndsAt", "createdAt", "updatedAt")
+           VALUES (gen_random_uuid()::text, $1, 'TRIALING', now() + interval '7 days', now(), now())
+           ON CONFLICT ("spaceId") DO UPDATE SET
+             "trialEndsAt" = CASE WHEN "SpaceSubscription"."trialEndsAt" IS NULL AND "SpaceSubscription".status = 'TRIALING'
+                                  THEN EXCLUDED."trialEndsAt" ELSE "SpaceSubscription"."trialEndsAt" END,
+             "updatedAt" = now()
+           RETURNING id, status, "trialEndsAt"::text AS "trialEndsAtUtc"`,
+          [spaceId]
+        )
+        const { id: subscriptionId } = sub.rows[0]
+        // ENDED item 에 보장가를 심는다 → startSubscription/addDeck 이 재활성화하며 사용
+        const item = await client.query(
+          `INSERT INTO "SubscriptionItem" (id, "subscriptionId", type, "deckAppId", "priceSnapshot", "lockedPrice", status, "endedAt")
+           VALUES (gen_random_uuid()::text, $1, 'DECK', 'recruiting', $2, $2, 'ENDED', now())
+           ON CONFLICT ("subscriptionId", type, "deckAppId") DO UPDATE SET "lockedPrice" = $2
+           RETURNING status, "priceSnapshot", "lockedPrice"`,
+          [subscriptionId, p]
+        )
+        if (item.rows[0].status !== 'ENDED') {
+          // 이미 구독 중: 다음 정기청구는 priceSnapshot 기준이라 보장가만 심으면 반영 안 됨
+          throw new Error(`모집 관리가 이미 ${item.rows[0].status} — 수동 처리 필요 (변경 없음)`)
+        }
+        await client.query('COMMIT')
+        console.log(`✔ Space ${spaceId} 이전 혜택 부여`)
+        console.table([{ ...sub.rows[0], ...item.rows[0] }])
+        const { status, trialEndsAtUtc } = sub.rows[0]
+        const trialOver =
+          !trialEndsAtUtc || new Date(`${trialEndsAtUtc.replace(' ', 'T')}Z`) <= new Date()
+        if (trialOver && status !== 'ACTIVE' && status !== 'PAST_DUE') {
+          console.log('⚠ 접근 불가 — set-trial 또는 결제 필요')
+        }
+      } catch (e) {
+        await client.query('ROLLBACK')
+        throw e
+      }
+      break
+    }
+
+    case 'set-trial': {
+      const [spaceId, until] = args
+      if (!spaceId || !/^\d{4}-\d{2}-\d{2}$/.test(until ?? '')) {
+        throw new Error('사용법: set-trial <spaceId> <종료일 YYYY-MM-DD>')
+      }
+      // 종료일 다음날 00:00 KST 까지 체험. 체험 중인 구독만 바꾼다(유료 구독에 영향 없음)
+      // 이전 고객(보장가 보유) 전용 — 과거 종료일은 즉시 잠금이라 거부
+      const res = await client.query(
+        `UPDATE "SpaceSubscription" s
+         SET "trialEndsAt" = (($2::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'UTC', "updatedAt" = now()
+         WHERE s."spaceId" = $1 AND s.status = 'TRIALING'
+           AND (($2::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') > now()
+           AND EXISTS (SELECT 1 FROM "SubscriptionItem" i
+                       WHERE i."subscriptionId" = s.id AND i."deckAppId" = 'recruiting' AND i."lockedPrice" IS NOT NULL)
+         RETURNING "spaceId", status, "trialEndsAt"::text AS "trialEndsAtUtc"`,
+        [spaceId, until]
+      )
+      if (res.rowCount === 0) {
+        throw new Error(
+          `Space ${spaceId}: 변경 없음 — 체험 중 구독, 모집 관리 보장가(migrate-grant), 미래 종료일이 모두 필요합니다`
+        )
+      }
+      console.log(`✔ Space ${spaceId} 체험 종료일 ${until}(KST)`)
+      console.table(res.rows)
+      break
+    }
+
     default:
-      console.error('알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price')
+      console.error(
+        '알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price|migrate-grant|set-trial'
+      )
       process.exit(1)
   }
 }
