@@ -2,6 +2,7 @@
 // 1:N 매핑: 외부코드 1개 → items[] N개, file 1행이 N개의 entry로 분리된다.
 import { prisma } from '@/lib/prisma'
 import type { ParsedRow, ParseResult } from './reconciliation-parser'
+import { applyExclusions } from './reconciliation-exclusion'
 
 export type SuggestionOption = {
   optionId: string
@@ -39,6 +40,17 @@ export type FileOnlyEntry = {
   row: ParsedRow
   locationId: string
   suggestions: SuggestionOption[]
+  /** 대조 제외한 코드인데 파일 수량이 생겨 다시 드러난 행 */
+  excludedWithStock?: true
+}
+
+/** 대조 제외한 외부 코드(수량 0) — 미매칭·자동 대조 판단에서 빠진다 */
+export type ExcludedEntry = {
+  status: 'excluded'
+  row: ParsedRow
+  locationId: string
+  /** 해제 시 미매칭 행의 추천 후보를 되살리기 위해 보존 */
+  suggestions?: SuggestionOption[]
 }
 
 export type SystemOnlyEntry = {
@@ -50,7 +62,12 @@ export type SystemOnlyEntry = {
   systemQuantity: number
 }
 
-export type MatchEntry = MatchedDiffEntry | MatchedEqualEntry | FileOnlyEntry | SystemOnlyEntry
+export type MatchEntry =
+  | MatchedDiffEntry
+  | MatchedEqualEntry
+  | FileOnlyEntry
+  | ExcludedEntry
+  | SystemOnlyEntry
 
 export type MatchReconciliationResult = {
   entries: MatchEntry[]
@@ -283,7 +300,7 @@ export async function matchReconciliation(
   }
 
   return {
-    entries,
+    entries: await applyExclusions(entries, locationId),
     totalItems: parsed.rows.length,
     matchedItems,
   }

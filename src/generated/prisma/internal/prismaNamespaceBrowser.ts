@@ -111,6 +111,7 @@ export const ModelName = {
   InvImportHistory: 'InvImportHistory',
   InvReconciliation: 'InvReconciliation',
   InvLocationProductMap: 'InvLocationProductMap',
+  InvReconExcludedCode: 'InvReconExcludedCode',
   InvLocationProductMapItem: 'InvLocationProductMapItem',
   InvSettings: 'InvSettings',
   DelShippingMethod: 'DelShippingMethod',
@@ -1241,6 +1242,19 @@ export const InvLocationProductMapScalarFieldEnum = {
 } as const
 
 export type InvLocationProductMapScalarFieldEnum = (typeof InvLocationProductMapScalarFieldEnum)[keyof typeof InvLocationProductMapScalarFieldEnum]
+
+
+export const InvReconExcludedCodeScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  locationId: 'locationId',
+  externalCode: 'externalCode',
+  externalName: 'externalName',
+  externalOptionName: 'externalOptionName',
+  createdAt: 'createdAt'
+} as const
+
+export type InvReconExcludedCodeScalarFieldEnum = (typeof InvReconExcludedCodeScalarFieldEnum)[keyof typeof InvReconExcludedCodeScalarFieldEnum]
 
 
 export const InvLocationProductMapItemScalarFieldEnum = {

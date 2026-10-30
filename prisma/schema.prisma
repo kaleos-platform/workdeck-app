@@ -422,15 +422,16 @@ model Space {
   workspace Workspace?
 
   // 통합 재고 관리 (Inv)
-  invProducts         InvProduct[]
-  invLocations        InvStorageLocation[]
-  invMovements        InvMovement[]
-  invStockLevels      InvStockLevel[]
-  invImportHistories  InvImportHistory[]
-  invReconciliations  InvReconciliation[]
-  invLocationMappings InvLocationProductMap[]
-  invSettings         InvSettings?
-  invProductGroups    InvProductGroup[]
+  invProducts           InvProduct[]
+  invLocations          InvStorageLocation[]
+  invMovements          InvMovement[]
+  invStockLevels        InvStockLevel[]
+  invImportHistories    InvImportHistory[]
+  invReconciliations    InvReconciliation[]
+  invLocationMappings   InvLocationProductMap[]
+  invReconExcludedCodes InvReconExcludedCode[]
+  invSettings           InvSettings?
+  invProductGroups      InvProductGroup[]
 
   // 통합 배송 관리 (Del)
   delShippingMethods      DelShippingMethod[]
@@ -462,9 +463,9 @@ model Space {
   reorderPlans ReorderPlan[]
 
   // 키워드 마스터 (§24)
-  keywordMasters      KeywordMaster[]
-  channelKeywordRules ChannelKeywordRule[]
-  keywordChangeLogs   KeywordChangeLog[] // §26 상품명·검색어 변경 이력
+  keywordMasters       KeywordMaster[]
+  channelKeywordRules  ChannelKeywordRule[]
+  keywordChangeLogs    KeywordChangeLog[] // §26 상품명·검색어 변경 이력
   keywordRankSnapshots KeywordRankSnapshot[]
 
   // Slack 연동 (M3)
@@ -641,9 +642,9 @@ model AgentPendingAction {
 // 테이블명은 기존 "SpaceAgent"를 유지한다(@@map). 모델 이름만 바꿔 에이전트 신원 모델에 SpaceAgent 이름을 넘긴다.
 // 테이블 rename을 하지 않으므로 배포 중 이전 버전 함수와 충돌하지 않는다.
 model SpaceAgentSetting {
-  id       String  @id @default(cuid())
-  spaceId  String  @unique
-  isActive Boolean @default(true)
+  id                String  @id @default(cuid())
+  spaceId           String  @unique
+  isActive          Boolean @default(true)
   // 에이전트가 wd run으로 ENV 비밀값을 받을 수 있는지. 행이 없으면 false(isActive와 반대).
   envSecretsEnabled Boolean @default(false)
 
@@ -1632,6 +1633,7 @@ model InvStorageLocation {
   movements             InvMovement[]           @relation("MovementLocation")
   incomingTransfers     InvMovement[]           @relation("MovementToLocation")
   locationMappings      InvLocationProductMap[]
+  reconExcludedCodes    InvReconExcludedCode[]
   reconciliations       InvReconciliation[]
   settingsDefault       InvSettings[]           @relation("DefaultLocation")
   productionRunStockIns ProductionRun[]         @relation("ProductionRunStockInLocation")
@@ -1764,6 +1766,27 @@ model InvLocationProductMap {
   externalOptionName String? // 보관 장소의 옵션명 (참조용)
 
   items InvLocationProductMapItem[]
+
+  space    Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  location InvStorageLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([locationId, externalCode])
+  @@index([spaceId])
+}
+
+// 재고 대조에서 제외한 외부 상품 코드 — 판매중지 등으로 더 이상 관리하지 않는 SKU.
+// 파일 수량이 0 인 동안만 제외된다. 재고가 생기면 다시 미매칭으로 드러난다.
+// 매핑(InvLocationProductMap)이 있으면 매핑이 우선한다.
+model InvReconExcludedCode {
+  id         String @id @default(cuid())
+  spaceId    String
+  locationId String
+
+  externalCode       String
+  externalName       String? // 참조용
+  externalOptionName String? // 참조용
 
   space    Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   location InvStorageLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
@@ -1922,12 +1945,12 @@ model DelOrder {
 
 // 주문 상품 (max 10, 앱 레벨 검증)
 model DelOrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  name      String // 원본 텍스트 — 미매칭 fallback 및 감사용
-  quantity  Int
-  optionId  String? // 단일 옵션 매칭 — InvProductOption.id (listingId와 상호 배타)
-  listingId String? // 판매채널 상품(ProductListing) 매칭 — fulfillments로 실제 출고 옵션·수량 팬아웃
+  id          String  @id @default(cuid())
+  orderId     String
+  name        String // 원본 텍스트 — 미매칭 fallback 및 감사용
+  quantity    Int
+  optionId    String? // 단일 옵션 매칭 — InvProductOption.id (listingId와 상호 배타)
+  listingId   String? // 판매채널 상품(ProductListing) 매칭 — fulfillments로 실제 출고 옵션·수량 팬아웃
   skuMappings Json? // N배송 API skuMappings — 바코드 매칭용
 
   order        DelOrder                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -2730,8 +2753,8 @@ enum KeywordChangeReason {
 // non-CASCADE FK 때문에 계정 삭제가 500 으로 죽은 사고가 있었고, 이력은 담당자 계정이
 // 사라져도 남아야 한다. listing/product 는 SetNull 이라 대상이 지워져도 기록은 보존된다.
 model KeywordChangeLog {
-  id        String  @id @default(cuid())
-  spaceId   String
+  id               String  @id @default(cuid())
+  spaceId          String
   listingId        String? // ProductListing — 채널 리스팅 단위 변경
   channelProductId String? // ChannelProduct — 채널상품(그룹) 단위 변경, 또는 리스팅의 소속 그룹
   productId        String? // InvProduct — 상품 단위 변경
@@ -2754,7 +2777,7 @@ model KeywordChangeLog {
 
   actorUserId String? // 담당자 User.id (FK 없음)
 
-  space   Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space          Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   listing        ProductListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
   channelProduct ChannelProduct? @relation(fields: [channelProductId], references: [id], onDelete: SetNull)
   product        InvProduct?     @relation(fields: [productId], references: [id], onDelete: SetNull)

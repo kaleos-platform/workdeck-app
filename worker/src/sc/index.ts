@@ -7,7 +7,11 @@ import { startWorkerHeartbeat } from '../heartbeat.js'
 
 startWorkerHeartbeat('sales-content-worker', process.env.WEB_APP_URL ?? 'http://127.0.0.1:3000')
 
-runScLoop().catch((err) => {
-  console.error('[sc-worker] 치명적 오류:', err)
-  process.exit(1)
-})
+// 루프가 끝나도 heartbeat setInterval 이 이벤트 루프를 붙잡으므로 직접 종료한다.
+// 없으면 SIGTERM 뒤에도 프로세스가 남아 launchd 재시작 시 worker 가 둘이 된다.
+runScLoop()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('[sc-worker] 치명적 오류:', err)
+    process.exit(1)
+  })
