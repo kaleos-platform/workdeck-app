@@ -9,7 +9,6 @@ import {
   UploadCloud,
   BarChart2,
   BarChart3,
-  Play,
   LogOut,
   ChevronDown,
   Home,
@@ -60,6 +59,7 @@ import {
   COUPANG_ADS_EXECUTION_PATH,
   COUPANG_ADS_SETTINGS_PATH,
   COUPANG_ADS_INVENTORY_PATH,
+  COUPANG_ADS_SALES_MIX_PATH,
   getCoupangAdsCampaignPath,
   SELLER_HUB_BASE_PATH,
   SELLER_HUB_HOME_PATH,
@@ -206,37 +206,19 @@ const RECRUITING_FLAT_ROUTES = [
   { label: '직무 관리', icon: Tags, href: RECRUITING_POSITIONS_PATH },
 ]
 
-const COUPANG_MAIN_ROUTES = [
-  {
-    label: '쿠팡 광고 홈',
-    icon: LayoutDashboard,
-    href: COUPANG_ADS_BASE_PATH,
-  },
-  {
-    label: '데이터 수집',
-    icon: UploadCloud,
-    href: COUPANG_ADS_UPLOAD_PATH,
-  },
-  {
-    label: '로켓그로스 재고',
-    icon: Package,
-    href: COUPANG_ADS_INVENTORY_PATH,
-  },
-  {
-    label: '광고 분석',
-    icon: BarChart3,
-    href: COUPANG_ADS_ANALYSIS_PATH,
-  },
-  {
-    label: '실행 관리',
-    icon: Play,
-    href: COUPANG_ADS_EXECUTION_PATH,
-  },
-  {
-    label: '설정',
-    icon: Settings,
-    href: COUPANG_ADS_SETTINGS_PATH,
-  },
+const COUPANG_ADS_ITEMS: SidebarItem[] = [
+  { label: '광고 분석', href: COUPANG_ADS_ANALYSIS_PATH },
+  { label: '실행 관리', href: COUPANG_ADS_EXECUTION_PATH },
+]
+
+const COUPANG_CHANNEL_ITEMS: SidebarItem[] = [
+  { label: '매출 구성', href: COUPANG_ADS_SALES_MIX_PATH },
+  { label: '로켓그로스 재고', href: COUPANG_ADS_INVENTORY_PATH },
+]
+
+const COUPANG_SETTINGS_ITEMS: SidebarItem[] = [
+  { label: '데이터 수집', href: COUPANG_ADS_UPLOAD_PATH },
+  { label: '설정', href: COUPANG_ADS_SETTINGS_PATH },
 ]
 
 function getDeckHref(deckId: string) {
@@ -727,23 +709,35 @@ export function Sidebar({
 
         {isCoupangSidebar && (
           <>
-            <div className="space-y-1">
-              {COUPANG_MAIN_ROUTES.map((route) => {
-                const isHomeRoute = route.href === COUPANG_ADS_BASE_PATH
-                const isActive = isHomeRoute
-                  ? pathname === route.href
-                  : pathname === route.href || pathname.startsWith(`${route.href}/`)
-                return (
-                  <RailLink
-                    key={route.href}
-                    href={route.href}
-                    icon={route.icon}
-                    label={route.label}
-                    isActive={isActive}
-                    collapsed={collapsed}
-                  />
-                )
-              })}
+            <div className="space-y-2">
+              <RailLink
+                href={COUPANG_ADS_BASE_PATH}
+                icon={LayoutDashboard}
+                label="쿠팡 광고 홈"
+                isActive={pathname === COUPANG_ADS_BASE_PATH}
+                collapsed={collapsed}
+              />
+              <SidebarSection
+                label="광고"
+                icon={BarChart3}
+                items={COUPANG_ADS_ITEMS}
+                collapsed={collapsed}
+                onExpand={expand}
+              />
+              <SidebarSection
+                label="채널"
+                icon={Package}
+                items={COUPANG_CHANNEL_ITEMS}
+                collapsed={collapsed}
+                onExpand={expand}
+              />
+              <SidebarSection
+                label="설정"
+                icon={Settings}
+                items={COUPANG_SETTINGS_ITEMS}
+                collapsed={collapsed}
+                onExpand={expand}
+              />
             </div>
 
             {!collapsed && (

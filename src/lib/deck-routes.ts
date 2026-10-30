@@ -5,6 +5,7 @@ export const COUPANG_ADS_ANALYSIS_PATH = `${COUPANG_ADS_BASE_PATH}/analysis`
 export const COUPANG_ADS_EXECUTION_PATH = `${COUPANG_ADS_BASE_PATH}/execution`
 export const COUPANG_ADS_SETTINGS_PATH = `${COUPANG_ADS_BASE_PATH}/settings`
 export const COUPANG_ADS_INVENTORY_PATH = `${COUPANG_ADS_BASE_PATH}/inventory`
+export const COUPANG_ADS_SALES_MIX_PATH = `${COUPANG_ADS_BASE_PATH}/sales-mix`
 
 export function getCoupangAdsCampaignPath(campaignId: string): string {
   return `${COUPANG_ADS_BASE_PATH}/campaigns/${campaignId}`
