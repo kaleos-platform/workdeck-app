@@ -166,7 +166,9 @@ function routeRequest(
       '/auth',
       '/oauth',
     ]
-    const shouldMoveToApp = appOnlyPaths.some((base) => isPathOrChild(pathname, base))
+    // 도입 신청 폼은 마케팅 오리진에서 같은 오리진으로 POST 하므로 app 으로 넘기지 않는다
+    const shouldMoveToApp =
+      pathname !== '/api/public/leads' && appOnlyPaths.some((base) => isPathOrChild(pathname, base))
     if (shouldMoveToApp) {
       return NextResponse.redirect(buildAppUrl(getRequestPathWithQuery(request)))
     }

@@ -38,13 +38,25 @@ export function HeroSection({ hero, deckName, gradient, icon: Icon }: HeroSectio
         </p>
 
         <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
-          <Link href={buildAppUrl(hero.primaryCta.href)}>
+          <Link
+            href={
+              hero.primaryCta.href.startsWith('#')
+                ? hero.primaryCta.href
+                : buildAppUrl(hero.primaryCta.href)
+            }
+          >
             <Button size="lg" className="w-full sm:w-auto">
               {hero.primaryCta.label}
             </Button>
           </Link>
           {hero.secondaryCta ? (
-            <Link href={buildAppUrl(hero.secondaryCta.href)}>
+            <Link
+              href={
+                hero.secondaryCta.href.startsWith('#')
+                  ? hero.secondaryCta.href
+                  : buildAppUrl(hero.secondaryCta.href)
+              }
+            >
               <Button size="lg" variant="outline" className="w-full sm:w-auto">
                 {hero.secondaryCta.label}
               </Button>

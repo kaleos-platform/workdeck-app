@@ -33,6 +33,7 @@ test('모델별 purpose 고정', () => {
     SpaceAiSetting: 'ai-key',
     DelOrder: 'pii',
     HiringPosting: 'pii',
+    MarketingLead: 'pii',
     HiringApplication: 'pii',
     HiringMigrationRecord: 'pii',
     HiringBlacklist: 'pii',
