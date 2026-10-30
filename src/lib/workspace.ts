@@ -4,17 +4,36 @@
 // Supabase Auth UUID ↔ Prisma User 동기화 + Workspace + (최초 1회)Space 구조 생성을
 // 한 트랜잭션으로 묶어, 어느 Deck 에서 먼저 호출해도 동일하게 계정에 존속된다.
 
+import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import {
+  SIGNUP_SOURCE_COOKIE,
+  parseSignupSourceCookie,
+  sanitizeSignupSource,
+} from '@/lib/marketing/signup-source'
 
 export type EnsureWorkspaceUser = {
   id: string
   email?: string | null
   name?: string | null
+  /** Supabase user_metadata.signup_source (이메일 가입 시 폼이 실어 둔 값) */
+  signupSource?: unknown
 }
 
 export type EnsureWorkspaceResult = {
   workspace: { id: string; name: string }
   created: boolean
+}
+
+/** 신규 User 의 가입 경로 — user_metadata 우선, 없으면 wd_src 쿠키. 요청 컨텍스트 밖이면 null. */
+export async function resolveSignupSource(metadata?: unknown) {
+  const fromMeta = sanitizeSignupSource(metadata)
+  if (fromMeta) return fromMeta
+  try {
+    return parseSignupSourceCookie((await cookies()).get(SIGNUP_SOURCE_COOKIE)?.value)
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -28,7 +47,12 @@ export async function ensureWorkspaceForUser(
   // Supabase Auth UUID ↔ Prisma User 동기화
   await prisma.user.upsert({
     where: { id: user.id },
-    create: { id: user.id, email: user.email ?? '', name: user.name ?? null },
+    create: {
+      id: user.id,
+      email: user.email ?? '',
+      name: user.name ?? null,
+      signupSource: (await resolveSignupSource(user.signupSource)) ?? undefined,
+    },
     update: { email: user.email ?? '' },
   })
 

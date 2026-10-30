@@ -13,7 +13,12 @@ export async function POST(request: NextRequest) {
   if (!name) return errorResponse('워크스페이스 이름을 입력해주세요', 400)
 
   const { workspace, created } = await ensureWorkspaceForUser(
-    { id: user.id, email: user.email, name: user.user_metadata?.name ?? null },
+    {
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata?.name ?? null,
+      signupSource: user.user_metadata?.signup_source,
+    },
     name
   )
 
