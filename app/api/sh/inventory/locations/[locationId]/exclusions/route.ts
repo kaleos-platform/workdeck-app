@@ -42,8 +42,13 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
   const body = (await req.json().catch(() => ({}))) as {
     codes?: { externalCode?: string; externalName?: string; externalOptionName?: string }[]
   }
-  const codes = (body.codes ?? [])
-    .map((c) => ({ ...c, externalCode: c.externalCode?.trim() }))
+  const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
+  const codes = (Array.isArray(body.codes) ? body.codes : [])
+    .map((c) => ({
+      externalCode: str(c?.externalCode),
+      externalName: str(c?.externalName),
+      externalOptionName: str(c?.externalOptionName),
+    }))
     .filter((c): c is typeof c & { externalCode: string } => !!c.externalCode)
   if (codes.length === 0) return errorResponse('codes가 필요합니다', 400)
 
