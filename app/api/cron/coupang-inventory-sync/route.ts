@@ -45,6 +45,7 @@ const MIN_ABS_FOR_RATIO_GUARD = 10
  *  - matched-diff  → 자동 반영(ADJUSTMENT, 절대량 set)
  *  - matched-equal → 무시(movement 없음)
  *  - file-only     → 매핑이 없어 자동 반영 불가. PARTIAL 유지 + Slack 알림
+ *  - excluded      → 대조 제외한 SKU(수량 0). 미매칭으로 세지 않는다. 수량이 생기면 file-only 로 복귀
  *  - system-only   → **조건부** 0 반영. file-only 0건 AND 스냅샷 완전성 통과일 때만.
  *                    미매핑이 남아 있으면 "스냅샷에 없음"이 매핑 누락일 수 있다.
  *
@@ -194,6 +195,9 @@ async function runInventorySync(_request: NextRequest, scope: SweepScope) {
         new Set(entries.filter((e) => e.status === 'matched-diff').map((e) => e.optionId))
       )
       const fileOnlyCount = entries.filter((e) => e.status === 'file-only').length
+      const excludedWithStockCount = entries.filter(
+        (e) => e.status === 'file-only' && e.excludedWithStock
+      ).length
       const systemOnlyCount = entries.filter((e) => e.status === 'system-only').length
 
       // 가드 2: 대량 변동 — 분모는 시스템 재고와 대응되는 항목 수(matched-* + system-only).
@@ -272,6 +276,9 @@ async function runInventorySync(_request: NextRequest, scope: SweepScope) {
           `[cron/${WORKER_SERVICE}] space ${spaceId}: 미매핑(file-only) ${fileOnlyCount}건 — 사람 매핑 필요`
         )
         issues.push({ kind: 'file-only', count: fileOnlyCount })
+        if (excludedWithStockCount > 0) {
+          issues.push({ kind: 'excluded-with-stock', count: excludedWithStockCount })
+        }
       }
 
       if (issues.length > 0) {

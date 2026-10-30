@@ -342,6 +342,11 @@ export type InvReconciliation = Prisma.InvReconciliationModel
  */
 export type InvLocationProductMap = Prisma.InvLocationProductMapModel
 /**
+ * Model InvReconExcludedCode
+ * 
+ */
+export type InvReconExcludedCode = Prisma.InvReconExcludedCodeModel
+/**
  * Model InvLocationProductMapItem
  * 
  */

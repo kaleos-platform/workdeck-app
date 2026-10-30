@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Table,
   TableBody,
@@ -98,7 +99,16 @@ type MatchEntry =
   | {
       status: 'file-only'
       row: ParsedRow
+      locationId?: string
       suggestions: SuggestionOption[]
+      /** 대조 제외한 SKU 인데 수량이 생겨 다시 드러난 행 */
+      excludedWithStock?: boolean
+    }
+  | {
+      /** 대조 제외한 SKU(수량 0) — 표가 아니라 [제외] 탭에서만 보인다 */
+      status: 'excluded'
+      row: ParsedRow
+      locationId?: string
     }
   | {
       status: 'system-only'
@@ -187,9 +197,12 @@ type UnifiedEntry = {
   externalGrade?: string
   /** 그룹 안의 반품 등급 재고 합계(세트 환산 후). 표시 전용 — Σ 에는 포함돼 있다. */
   groupReturnQuantity?: number
+  /** file-only 의 보관 장소 — 대조 제외 API 대상 */
+  locationId?: string
+  excludedWithStock?: boolean
 }
 
-type TabValue = 'all' | 'matched' | 'file-only'
+type TabValue = 'all' | 'matched' | 'file-only' | 'excluded'
 type MatchedSub = 'all' | 'matched-diff' | 'matched-equal'
 
 /**
@@ -309,6 +322,10 @@ export function ReconciliationPreview({
   // 시스템 쪽 미등장 옵션 다이얼로그
   const [unmatchedOpen, setUnmatchedOpen] = useState(false)
 
+  // 미매칭 탭에서 대조 제외할 행 — key = `${locationId}|${externalCode}`
+  const [selectedForExclude, setSelectedForExclude] = useState<Set<string>>(new Set())
+  const [excluding, setExcluding] = useState(false)
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -348,6 +365,14 @@ export function ReconciliationPreview({
     () =>
       entries.filter(
         (e): e is Extract<MatchEntry, { status: 'file-only' }> => e.status === 'file-only'
+      ),
+    [entries]
+  )
+
+  const excludedEntries = useMemo(
+    () =>
+      entries.filter(
+        (e): e is Extract<MatchEntry, { status: 'excluded' }> => e.status === 'excluded'
       ),
     [entries]
   )
@@ -447,6 +472,8 @@ export function ReconciliationPreview({
         sysItems: isMapped ? items : undefined,
         suggestions: e.suggestions,
         row: e.row,
+        locationId: e.locationId,
+        excludedWithStock: e.excludedWithStock,
       })
     })
 
@@ -653,6 +680,89 @@ export function ReconciliationPreview({
     }
   }
 
+  const excludeKeyOf = (locationId: string | undefined, code: string) =>
+    `${locationId ?? recon?.location.id}|${code}`
+
+  // 미매칭 탭에서 고를 수 있는 행 — 화면에서 수동 매칭한 행은 매칭이 우선이라 뺀다.
+  const excludableEntries = useMemo(
+    () => unifiedEntries.filter((e) => e.status === 'file-only' && !e.isManualMatched),
+    [unifiedEntries]
+  )
+
+  // 선택 키 중 지금 화면에 남아 있는 행만 — 라벨·전송 건수를 같은 값으로 쓴다.
+  const pickedForExclude = excludableEntries.filter((e) =>
+    selectedForExclude.has(excludeKeyOf(e.locationId, e.fileCode))
+  )
+
+  function toggleExcludeSelect(entry: UnifiedEntry) {
+    const key = excludeKeyOf(entry.locationId, entry.fileCode)
+    setSelectedForExclude((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  async function excludeSelected() {
+    if (!recon) return
+    const picked = pickedForExclude
+    if (picked.length === 0) return
+    const byLoc = new Map<string, UnifiedEntry[]>()
+    for (const e of picked) {
+      const locId = e.locationId ?? recon.location.id
+      byLoc.set(locId, [...(byLoc.get(locId) ?? []), e])
+    }
+    setExcluding(true)
+    try {
+      for (const [locId, list] of byLoc) {
+        const res = await fetch(`/api/sh/inventory/locations/${locId}/exclusions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            codes: list.map((e) => ({
+              externalCode: e.fileCode,
+              externalName: e.row?.externalName,
+              externalOptionName: e.row?.externalOptionName,
+            })),
+          }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.message ?? '대조 제외 실패')
+      }
+      const withStock = picked.filter((e) => e.fileRowQty > 0).length
+      toast.success(
+        `${picked.length}건 대조 제외` +
+          (withStock > 0 ? ` — 수량이 있는 ${withStock}건은 0이 될 때까지 미매칭에 남습니다` : '')
+      )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '대조 제외 실패')
+    } finally {
+      // 위치별 순차 POST 라 중간 실패여도 앞 위치는 저장됐다 — 항상 다시 읽는다.
+      setSelectedForExclude(new Set())
+      setExcluding(false)
+      await load()
+      onChanged?.()
+    }
+  }
+
+  async function unexclude(locationId: string | undefined, code: string) {
+    if (!recon) return
+    try {
+      const res = await fetch(
+        `/api/sh/inventory/locations/${locationId ?? recon.location.id}/exclusions?externalCode=${encodeURIComponent(code)}`,
+        { method: 'DELETE' }
+      )
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.message ?? '제외 해제 실패')
+      toast.success('제외 해제됨 — 미매칭으로 돌아갑니다')
+      await load()
+      onChanged?.()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '제외 해제 실패')
+    }
+  }
+
   function removeMapping(externalCode: string) {
     setManualMap((m) => {
       const next = { ...m }
@@ -779,12 +889,16 @@ export function ReconciliationPreview({
               { value: 'all', label: '전체', count: counts.all },
               { value: 'matched', label: '매칭', count: counts.matched },
               { value: 'file-only', label: '미매칭', count: counts['file-only'] },
+              { value: 'excluded', label: '제외', count: excludedEntries.length },
             ] as const
           ).map((f) => (
             <button
               key={f.value}
               type="button"
-              onClick={() => setTab(f.value)}
+              onClick={() => {
+                setTab(f.value)
+                setSelectedForExclude(new Set())
+              }}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 tab === f.value
                   ? 'bg-background text-foreground shadow-sm'
@@ -852,7 +966,95 @@ export function ReconciliationPreview({
         )}
       </div>
 
-      {filteredEntries.length === 0 ? (
+      {tab === 'file-only' && canEdit && excludableEntries.length > 0 && (
+        <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 text-sm">
+          <label className="flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap">
+            <Checkbox
+              checked={
+                pickedForExclude.length > 0 &&
+                excludableEntries.every((e) =>
+                  selectedForExclude.has(excludeKeyOf(e.locationId, e.fileCode))
+                )
+              }
+              onCheckedChange={(v) =>
+                setSelectedForExclude(
+                  v
+                    ? new Set(excludableEntries.map((e) => excludeKeyOf(e.locationId, e.fileCode)))
+                    : new Set()
+                )
+              }
+            />
+            전체 선택
+          </label>
+          <span className="text-xs text-muted-foreground">
+            판매중지 등 관리하지 않는 SKU 는 대조에서 제외하면 다음부터 미매칭으로 잡히지 않습니다.
+            수량이 생기면 다시 표시됩니다.
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            disabled={pickedForExclude.length === 0 || excluding}
+            onClick={excludeSelected}
+          >
+            {excluding && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
+            선택 {pickedForExclude.length}건 대조 제외
+          </Button>
+        </div>
+      )}
+
+      {tab === 'excluded' ? (
+        excludedEntries.length === 0 ? (
+          <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+            대조에서 제외한 SKU 가 없습니다
+          </div>
+        ) : (
+          <div className="rounded-md border">
+            <Table className="table-fixed">
+              <colgroup>
+                <col />
+                <col className="w-[72px]" />
+                <col className="w-[96px]" />
+              </colgroup>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>파일 상품 · 옵션</TableHead>
+                  <TableHead className="text-right">수량</TableHead>
+                  <TableHead className="whitespace-nowrap">동작</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {excludedEntries.map((e) => (
+                  <TableRow key={excludeKeyOf(e.locationId, e.row.externalCode)}>
+                    <TableCell>
+                      <div className="truncate" title={e.row.externalName}>
+                        {e.row.externalName ?? e.row.externalCode}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {e.row.externalOptionName ?? '-'}
+                        <ExternalCodeChip code={e.row.externalCode} />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{e.row.quantity}</TableCell>
+                    <TableCell>
+                      {canEdit && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => unexclude(e.locationId, e.row.externalCode)}
+                        >
+                          제외 해제
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )
+      ) : filteredEntries.length === 0 ? (
         <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
           해당 상태의 항목이 없습니다
         </div>
@@ -944,6 +1146,18 @@ export function ReconciliationPreview({
                   <Badge className="border-green-200 bg-green-100 text-green-700">적용됨</Badge>
                 ) : entry.status === 'file-only' && entry.isManualMatched ? (
                   <Badge className="border-blue-200 bg-blue-100 text-blue-700">매칭됨</Badge>
+                ) : entry.excludedWithStock ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge className="cursor-help border-red-200 bg-red-100 text-red-700">
+                        재고 발생
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      대조에서 제외한 SKU 인데 파일에 수량이 잡혀 다시 표시됩니다. 상품을 연결하거나
+                      실재고를 확인하세요.
+                    </TooltipContent>
+                  </Tooltip>
                 ) : (
                   entryStatusBadge(entry.status)
                 )
@@ -954,7 +1168,19 @@ export function ReconciliationPreview({
                       {/* ── 시스템 재고 ── */}
                       <TableCell>
                         {entry.sysProductName === null ? (
-                          <span className="text-muted-foreground/50">—</span>
+                          tab === 'file-only' && canEdit && entry.status === 'file-only' ? (
+                            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                              <Checkbox
+                                checked={selectedForExclude.has(
+                                  excludeKeyOf(entry.locationId, entry.fileCode)
+                                )}
+                                onCheckedChange={() => toggleExcludeSelect(entry)}
+                              />
+                              대조 제외 선택
+                            </label>
+                          ) : (
+                            <span className="text-muted-foreground/50">—</span>
+                          )
                         ) : (
                           <>
                             <div
