@@ -1,8 +1,42 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { PostingDetail } from '../posting-detail'
+import { renderPostingEmbed } from '@/lib/hiring/render-embed-html'
 
 jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh: jest.fn() }) }))
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }))
+
+it('다른 공고 지원서 링크가 있으면 발행 팝업에서 확인을 안내하되 발행은 허용한다', () => {
+  const embed = renderPostingEmbed({
+    origin: 'https://workdeck.test',
+    posting: {
+      uuid: 'new',
+      positions: [],
+      contents: [
+        {
+          contentType: 'button',
+          imagePath: null,
+          data: { title: '지원', linkType: 'url', url: 'https://workdeck.test/p/old/apply' },
+        },
+      ],
+    },
+  })
+  render(
+    <PostingDetail
+      posting={{ id: 'test', uuid: 'new', title: 'QA', status: 'DRAFT', closingDate: null }}
+      origin="https://workdeck.test"
+      embedHtml={embed.html}
+      embedIssues={embed.issues}
+    />
+  )
+  fireEvent.click(screen.getByRole('button', { name: '공고 발행' }))
+  const dialog = within(screen.getByRole('dialog'))
+  expect(dialog.getByText(/다른 공고의 지원서 링크/)).toBeInTheDocument()
+  expect(dialog.getByRole('link', { name: '공고 수정하기' })).toHaveAttribute(
+    'href',
+    '/d/recruiting/postings/test/build'
+  )
+  expect(dialog.getByRole('button', { name: '발행하기' })).toBeEnabled()
+})
 
 it('초안에서도 HTML을 우선 복사하고 앱 CSS와 격리된 미리보기를 제공한다', async () => {
   const writeText = jest.fn().mockResolvedValue(undefined)
