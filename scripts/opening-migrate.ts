@@ -8,10 +8,23 @@
  *   OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다. OPENING_WEB_URL 기본 https://opening.work.
  *   --out 은 저장소 밖의 빈 폴더만 허용한다. 이미지 안 글자는 검사하지 못하므로 폴더를 고객 자료로 다룬다.
  *
+ * 사람 검토(연락처 적중 해제·이미지 확인):
+ *   1) prepare ... --review-dir /secure/review  → candidates.json, items/*.json(원문), images/*
+ *   2) 내용을 읽고 승인할 것만 담은 파일을 만든다(저장소 밖):
+ *      { "sourceSpaceId": "123", "reviewer": "이름", "reviewedAt": "2026-11-01",
+ *        "items": [{ "kind": "template", "id": "40", "contentHash": "<candidates.json 값>" }],
+ *        "images": ["<sha256>"] }
+ *   3) prepare ... --review-file review.json --out /secure/dir --write-packets
+ *      승인은 내용 해시에 묶이므로 내용이 바뀌면 다시 검토해야 한다(REVIEW_STALE).
+ *   검토 폴더에는 연락처 원문이 있다. 소유자 전용(0700/0600)으로 쓰며 끝나면 지운다.
+ *
  * 적재(기본 dry-run. DATABASE_URL/DIRECT_URL을 환경변수로 주면 그 환경만 쓰고, 없으면 .env.local):
- *   npx tsx scripts/opening-migrate.ts import --packets /secure/dir --target-space <id>
- *   npx tsx scripts/opening-migrate.ts import --packets /secure/dir --target-space <id> --apply
- *   운영 DB면 --confirm-prod <대상 Space id> 가 추가로 필요하다.
+ *   npx tsx scripts/opening-migrate.ts import --packets /secure/dir --brand-id 123 --target-space <id>
+ *   npx tsx scripts/opening-migrate.ts import --packets /secure/dir --brand-id 123 --target-space <id> \
+ *     --review-file review.json --apply
+ *   개발 프로젝트로 확인되지 않는 대상은 --confirm-prod <brandId>:<spaceId> 가 추가로 필요하다.
+ *   --apply 는 --review-file 이 필수이고, 승인되지 않은 이미지가 있는 항목은 refused.json 에 남기고 뺀다.
+ *   충돌이 있으면 쓰기 없이 멈추고 conflicts.json 을 남긴다. --skip-conflicts 를 주면 그 항목만 빼고 진행한다.
  *   --apply 는 SUPABASE_SERVICE_ROLE_KEY(Storage)와 ENCRYPTION_KEY*(원장 스냅샷 암호화)를 쓴다.
  *
  * 출력은 건수와 고정 코드뿐이다. 원문·id·접속 정보는 stdout/stderr에 남기지 않는다.
@@ -21,8 +34,8 @@ import { config } from 'dotenv'
 if (!process.env.DATABASE_URL && !process.env.DIRECT_URL) config({ path: '.env.local' })
 
 import { execFile } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { join, resolve, sep } from 'node:path'
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { parseArgs, promisify } from 'node:util'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { createClient } from '@supabase/supabase-js'
@@ -32,11 +45,14 @@ import { HIRING_ASSETS_BUCKET } from '@/lib/hiring/storage'
 import {
   assertImportTarget,
   runOpeningImport,
+  writeImportIssues,
   type PacketSet,
   type TargetStorage,
 } from '@/lib/hiring/migration/opening-import'
 import {
+  assertOutDir,
   prepareOpeningCustomer,
+  writeReviewDir,
   type OpeningObjectReader,
   type PreparedCustomer,
 } from '@/lib/hiring/migration/opening-prepare'
@@ -54,12 +70,13 @@ const readS3: OpeningObjectReader = async ({ bucket, key }) => {
   return stdout
 }
 
-// 원본을 읽기 전에 거부한다. 지난 실행의 packet이 섞이지 않게 빈 폴더만 받는다.
-function assertOutDir(out: string) {
-  const root = resolve(out)
-  if (root === repoRoot || root.startsWith(repoRoot + sep)) throw Error('OUT_DIR_INSIDE_REPO')
-  if (existsSync(root) && readdirSync(root).length) throw Error('OUT_DIR_NOT_EMPTY')
-  return root
+function readReviewFile(path: string | undefined): unknown {
+  if (!path) return undefined
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    throw Error('REVIEW_FILE_INVALID')
+  }
 }
 
 function writePacketSet(root: string, prepared: PreparedCustomer) {
@@ -123,12 +140,17 @@ async function prepare(args: string[]) {
       'brand-id': { type: 'string' },
       out: { type: 'string' },
       'write-packets': { type: 'boolean', default: false },
+      'review-dir': { type: 'string' },
+      'review-file': { type: 'string' },
     },
   })
   const brandId = values['brand-id']
   if (!/^[1-9]\d{0,18}$/.test(brandId ?? '')) throw Error('EXPLICIT_SCOPE_REQUIRED')
   if (values['write-packets'] && !values.out) throw Error('OUT_DIR_REQUIRED')
-  const outDir = values['write-packets'] ? assertOutDir(values.out as string) : null
+  // 원본을 읽기 전에 거부한다.
+  const outDir = values['write-packets'] ? assertOutDir(values.out as string, repoRoot) : null
+  const reviewDir = values['review-dir'] ? assertOutDir(values['review-dir'], repoRoot) : null
+  const review = readReviewFile(values['review-file'])
   const connectionString = process.env.OPENING_SOURCE_URL
   if (!connectionString) throw Error('OPENING_SOURCE_URL_REQUIRED')
   const client = new Client({
@@ -140,8 +162,10 @@ async function prepare(args: string[]) {
     const prepared = await prepareOpeningCustomer(client, readS3, {
       brandId: brandId as string,
       webOrigin: process.env.OPENING_WEB_URL ?? 'https://opening.work',
+      review,
     })
     if (outDir) writePacketSet(outDir, prepared)
+    if (reviewDir) writeReviewDir(reviewDir, prepared.review)
     console.log(
       JSON.stringify({ status: outDir ? 'PACKETS_WRITTEN' : 'DRY_RUN', ...prepared.summary })
     )
@@ -155,16 +179,25 @@ async function importPackets(args: string[]) {
     args,
     options: {
       packets: { type: 'string' },
+      'brand-id': { type: 'string' },
       'target-space': { type: 'string' },
       apply: { type: 'boolean', default: false },
       'confirm-prod': { type: 'string' },
+      'review-file': { type: 'string' },
+      'skip-conflicts': { type: 'boolean', default: false },
     },
   })
   const { packets, apply } = values
   const targetSpace = values['target-space']
-  if (!packets || !/^[A-Za-z0-9_-]+$/.test(targetSpace ?? ''))
+  const brandId = values['brand-id']
+  if (
+    !packets ||
+    !/^[1-9]\d{0,18}$/.test(brandId ?? '') ||
+    !/^[A-Za-z0-9_-]+$/.test(targetSpace ?? '')
+  )
     throw Error('EXPLICIT_SCOPE_REQUIRED')
   const environment = assertImportTarget(process.env, {
+    brandId: brandId as string,
     targetSpace: targetSpace as string,
     confirmProd: values['confirm-prod'],
   })
@@ -175,11 +208,16 @@ async function importPackets(args: string[]) {
   try {
     const report = await runOpeningImport(db, readPacketSet(packets), {
       spaceId: targetSpace as string,
+      brandId: brandId as string,
       apply,
       storage: apply ? supabaseStorage() : undefined,
       readAsset: async (sha256) => readFileSync(join(packets, 'assets', sha256)),
+      review: readReviewFile(values['review-file']),
+      skipConflicts: values['skip-conflicts'],
     })
-    console.log(JSON.stringify({ environment, ...report }))
+    const { issues, ...summary } = report
+    writeImportIssues(packets, issues)
+    console.log(JSON.stringify({ environment, ...summary }))
     if (report.status === 'CONFLICT_STOPPED') process.exitCode = 1
   } finally {
     await db.$disconnect()

@@ -1,25 +1,55 @@
 /** @jest-environment node */
 import { createHash } from 'node:crypto'
+import { mkdtempSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import sharp from 'sharp'
 import type { HiringMigrationRecord } from '@/generated/prisma/client'
 import { decodeMigrationSnapshot, migrationSourceRef } from '../ledger'
-import { assertImportTarget, runOpeningImport, type TargetStorage } from '../opening-import'
+import {
+  assertImportTarget,
+  runOpeningImport,
+  writeImportIssues,
+  type TargetStorage,
+} from '../opening-import'
 import {
   isInMigrationWindow,
   migrationWindowStart,
+  postingPacketSchema,
+  reviewHash,
   scanContacts,
   type PostingPacket,
 } from '../opening-packet'
+import { sanitizeScene, stripImageMetadata } from '../opening-sanitize'
 import {
+  assertOutDir,
   prepareOpeningCustomer,
+  writeReviewDir,
   type OpeningObjectReader,
   type OpeningSourceClient,
 } from '../opening-prepare'
 
+function crc32(data: Buffer) {
+  let crc = ~0
+  for (const byte of data) {
+    crc ^= byte
+    for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0)
+  }
+  return ~crc >>> 0
+}
+
 const snapshotAt = new Date('2026-10-31T03:00:00.000Z')
 const recent = new Date('2026-09-01T00:00:00.000Z')
 const old = new Date('2024-01-01T00:00:00.000Z')
-const png = (seed: number) =>
-  Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, seed, seed + 1])
+const solid = (seed: number) =>
+  sharp({
+    create: { width: 2, height: 2, channels: 3, background: { r: seed, g: 10, b: 20 } },
+  })
+const png = async (seed: number) => new Uint8Array(await solid(seed).png().toBuffer())
+let embeddedPng = ''
+beforeAll(async () => {
+  embeddedPng = `data:image/png;base64,${Buffer.from(await png(1)).toString('base64')}`
+})
 
 const form = [
   { key: 'name', type: 'string', label: '이름', required: true },
@@ -28,10 +58,16 @@ const form = [
 const scene = (text = '합성 안내') => ({
   type: 'excalidraw',
   version: 2,
-  elements: [{ id: 'a', type: 'text', text }],
-  appState: { viewBackgroundColor: '#ffffff' },
-  // base64 안의 숫자열은 전화번호로 세지 않아야 한다.
-  files: { f: { dataURL: 'data:image/png;base64,MDEwMTIzNDU2Nzg=01012345678' } },
+  elements: [
+    { id: 'a', type: 'text', text },
+    { id: 'i', type: 'image', fileId: 'f' },
+    { id: 'd', type: 'text', text: '지운 글자 hr-old@synthetic.test', isDeleted: true },
+  ],
+  appState: { viewBackgroundColor: '#ffffff', collaborators: [{ name: '합성 편집자' }] },
+  files: {
+    f: { id: 'f', mimeType: 'image/png', dataURL: embeddedPng, lastRetrieved: 1 },
+    orphan: { id: 'orphan', mimeType: 'image/png', dataURL: embeddedPng },
+  },
 })
 const body = (id: string, overrides: Record<string, unknown> = {}) => ({
   id,
@@ -170,6 +206,8 @@ function sourceRows(extra: Record<string, unknown[]> = {}) {
         file(`content_data/${name}.json`, 'content_data'),
       ]),
     ],
+    sampleTemplates: [] as unknown[],
+    sampleContents: [] as unknown[],
     ...extra,
   }
 }
@@ -184,7 +222,14 @@ function contentRow(id: string, image_key: string, file_key: string) {
   }
 }
 function file(file_key: string, target_type: string) {
-  return { file_key, status: 1, target_type, storage_type: 's3', storage: 'bucket' }
+  return {
+    file_key,
+    status: 1,
+    target_type,
+    storage_type: 's3',
+    storage: 'bucket',
+    owner_brand_id: '9' as string | null,
+  }
 }
 
 function fakeSource(rows = sourceRows()) {
@@ -193,6 +238,10 @@ function fakeSource(rows = sourceRows()) {
     query: async (sql) => {
       queries.push(sql)
       const table: [RegExp, unknown[]][] = [
+        [/FROM file/, rows.files],
+        [/FROM setting/, [{ setting_value: '[500]' }]],
+        [/SELECT image_key, data FROM detail_template/, rows.sampleTemplates],
+        [/SELECT image_key FROM content/, rows.sampleContents],
         [/now\(\)/, [{ snapshot_at: snapshotAt }]],
         [/FROM brand/, [{ id: '9', name: '합성브랜드' }]],
         [/status, created_at, updated_at FROM posting/, rows.overview],
@@ -203,7 +252,6 @@ function fakeSource(rows = sourceRows()) {
         [/FROM position/, rows.positions],
         [/FROM detail_template WHERE|FROM detail_template\s+WHERE/, rows.templates],
         [/FROM content/, rows.contents],
-        [/FROM file/, rows.files],
       ]
       return { rows: table.find(([pattern]) => pattern.test(sql))?.[1] ?? [] }
     },
@@ -217,11 +265,20 @@ const readObject: OpeningObjectReader = async ({ key }) => {
   if (key === 'content_data/c.json') return Buffer.from(JSON.stringify(scene()))
   return png([...key].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 200)
 }
-const prepare = (rows = sourceRows()) =>
+const prepare = (rows = sourceRows(), review?: unknown) =>
   prepareOpeningCustomer(fakeSource(rows).client, readObject, {
     brandId: '9',
     webOrigin: 'https://opening.work',
+    review,
   })
+const reviewFile = (overrides: Record<string, unknown> = {}) => ({
+  sourceSpaceId: '9',
+  reviewer: '합성 검토자',
+  reviewedAt: '2026-11-01',
+  items: [] as unknown[],
+  images: [] as string[],
+  ...overrides,
+})
 
 type Row = { id: string; spaceId: string; [key: string]: unknown }
 function fakeDb() {
@@ -257,9 +314,13 @@ function fakeDb() {
       return base.create({ data: { ...data, contents } })
     },
   })
+  const transactionOptions: unknown[] = []
   const db = {
-    $transaction: async (fn: (tx: unknown) => unknown) => fn(db),
-    space: { findUnique: async () => ({ id: 'space' }) },
+    $transaction: async (fn: (tx: unknown) => unknown, options?: unknown) => {
+      transactionOptions.push(options)
+      return fn(db)
+    },
+    space: { findUnique: async () => ({ id: 'space', name: '합성 고객 공간' }) },
     spaceMember: {
       findFirst: async () => ({ userId: 'owner' }),
       findUnique: async () => ({ role: 'OWNER' }),
@@ -283,7 +344,7 @@ function fakeDb() {
     hiringPosting: nested(table(postings)),
     hiringDetailTemplate: nested(table(templates)),
   }
-  return { db, records, stores, positions, postings, templates }
+  return { db, records, stores, positions, postings, templates, transactionOptions }
 }
 type FakeDb = Parameters<typeof runOpeningImport>[0]
 
@@ -296,17 +357,23 @@ function memoryStorage() {
   return { objects, storage }
 }
 
+// 기본은 검토자가 이미지를 모두 확인한 상태로 적재한다.
 async function importSet(
   db: ReturnType<typeof fakeDb>['db'],
   prepared: Awaited<ReturnType<typeof prepare>>,
   apply: boolean,
-  storage = memoryStorage().storage
+  storage = memoryStorage().storage,
+  extra: { review?: unknown; skipConflicts?: boolean } = {}
 ) {
+  const images = prepared.manifest.manualReviewImages.map((image) => image.sha256)
   return runOpeningImport(db as unknown as FakeDb, prepared, {
     spaceId: 'space',
+    brandId: '9',
     apply,
     storage,
     readAsset: async (sha256) => prepared.assets.get(sha256) as Uint8Array,
+    review: reviewFile({ images }),
+    ...extra,
   })
 }
 
@@ -335,22 +402,148 @@ describe('기간·연락처 판정', () => {
   })
 
   it.each([
-    ['문의 010-1234-5678', 1, 0],
-    ['010 1234 5678', 1, 0],
-    ['01012345678', 1, 0],
-    ['+82 10-1234-5678', 1, 0],
-    ['0507-1234-5678', 1, 0],
-    ['02-123-4567', 1, 0],
-    ['hr.team+a@synthetic.co.kr', 0, 1],
-    ['a'.repeat(4) + '01012345678' + 'b'.repeat(4), 0, 0],
-    ['2026-10-31T03:00:00.000Z', 0, 0],
-    ['시급 10,030원', 0, 0],
-  ])('%s', (value, phone, email) => {
-    expect(scanContacts({ nested: [value] })).toEqual({ phone, email })
+    ['문의 010-1234-5678', { phone: 1 }],
+    ['010 1234 5678', { phone: 1 }],
+    ['01012345678', { phone: 1 }],
+    ['+82 10-1234-5678', { phone: 1 }],
+    ['0507-1234-5678', { phone: 1 }],
+    ['02-123-4567', { phone: 1 }],
+    ['010–1234–5678', { phone: 1 }],
+    ['010/1234/5678', { phone: 1 }],
+    ['０１０－１２３４－５６７８', { phone: 1 }],
+    ['010 . 1234 . 5678', { phone: 1 }],
+    ['hr.team+a@synthetic.co.kr', { email: 1 }],
+    ['hr (at) synthetic.co.kr', { email: 1 }],
+    ['hr[at]synthetic.co.kr', { email: 1 }],
+    ['ｈｒ＠synthetic.co.kr', { email: 1 }],
+    ['채용 담당자에게 보내 주세요', { keyword: 1 }],
+    ['연락처를 남겨 주세요', { keyword: 1 }],
+    ['채용문의', { keyword: 1 }],
+    ['오픈채팅방', { keyword: 1 }],
+    ['https://open.kakao.com/o/abc', { keyword: 1 }],
+    ['https://user:pass@example.test/a', { email: 1, url: 1 }],
+    ['https://example.test/a?token=abc', { url: 1 }],
+    ['https://example.test/a?X-Amz-Signature=abc', { url: 1 }],
+    ['https://example.test/a?utm_source=x', {}],
+    ['a'.repeat(4) + '01012345678' + 'b'.repeat(4), {}],
+    ['2026-10-31T03:00:00.000Z', {}],
+    ['2026.10.31', {}],
+    ['시급 10,030원', {}],
+  ])('%s', (value, expected) => {
+    expect(scanContacts({ nested: [value] })).toEqual({
+      phone: 0,
+      email: 0,
+      keyword: 0,
+      url: 0,
+      ...expected,
+    })
   })
 
-  it('이미지 data URL은 검사하지 않는다', () => {
-    expect(scanContacts(scene())).toEqual({ phone: 0, email: 0 })
+  it('객체 키도 검사한다', () => {
+    expect(scanContacts({ '010-1234-5678': 'x' }).phone).toBe(1)
+  })
+
+  it('지원서 폼의 표준 문항명은 키워드로 세지 않지만 전화번호는 잡는다', () => {
+    expect(scanContacts({ applicationEntries: [{ label: '연락처' }] }).keyword).toBe(0)
+    expect(scanContacts({ applicationEntries: [{ label: '010-1234-5678' }] }).phone).toBe(1)
+  })
+
+  it('이미지 데이터는 scene.files[*].dataURL만 건너뛴다', () => {
+    const dataURL = '010-1234-5678'
+    expect(scanContacts({ files: { f: { dataURL } } }).phone).toBe(0)
+    expect(scanContacts({ scene: { files: { f: { dataURL } } } }).phone).toBe(0)
+    expect(scanContacts({ dataURL }).phone).toBe(1)
+    expect(scanContacts({ elements: [{ dataURL }] }).phone).toBe(1)
+    expect(scanContacts({ a: { b: { files: { f: { dataURL } } } } }).phone).toBe(1)
+  })
+})
+
+describe('이미지·scene 정제', () => {
+  const metadataOf = (bytes: Uint8Array) => sharp(bytes).metadata()
+
+  it('JPEG의 EXIF·XMP를 지우고 방향은 픽셀에 반영한다', async () => {
+    const source = await sharp({
+      create: { width: 4, height: 2, channels: 3, background: { r: 1, g: 2, b: 3 } },
+    })
+      .jpeg()
+      .withExif({ IFD0: { Copyright: '합성 작성자' }, IFD2: {} })
+      .withXmp('<x:xmpmeta xmlns:x="adobe:ns:meta/">synthetic</x:xmpmeta>')
+      .toBuffer()
+    const rotated = await sharp(source).withMetadata({ orientation: 6 }).toBuffer()
+    expect((await metadataOf(rotated)).exif).toBeDefined()
+    const clean = await stripImageMetadata(rotated, 'image/jpeg')
+    const metadata = await metadataOf(clean)
+    expect(metadata).toMatchObject({ width: 2, height: 4 })
+    expect(metadata.exif).toBeUndefined()
+    expect(metadata.xmp).toBeUndefined()
+    expect(metadata.orientation).toBeUndefined()
+  })
+
+  it('PNG 텍스트 청크를 지운다', async () => {
+    const base = Buffer.from(await png(5))
+    const body = Buffer.from('Comment\x00' + '010-1234-5678', 'latin1')
+    const type = Buffer.from('tEXt', 'latin1')
+    const length = Buffer.alloc(4)
+    length.writeUInt32BE(body.length)
+    const crc = Buffer.alloc(4)
+    crc.writeUInt32BE(crc32(Buffer.concat([type, body])))
+    const withText = Buffer.concat([
+      base.subarray(0, 33),
+      length,
+      type,
+      body,
+      crc,
+      base.subarray(33),
+    ])
+    expect(withText.includes(Buffer.from('010-1234-5678'))).toBe(true)
+    const clean = await stripImageMetadata(withText, 'image/png')
+    expect(Buffer.from(clean).includes(Buffer.from('010-1234-5678'))).toBe(false)
+  })
+
+  it('움직이는 GIF의 프레임을 유지한다', async () => {
+    const frames = await Promise.all([solid(1).png().toBuffer(), solid(90).png().toBuffer()])
+    const gif = await sharp(frames, { join: { animated: true } })
+      .gif()
+      .toBuffer()
+    const clean = await stripImageMetadata(gif, 'image/gif')
+    expect((await sharp(clean, { animated: true }).metadata()).pages).toBe(2)
+  })
+
+  it('디코딩할 수 없는 이미지는 고정 코드로 막는다', async () => {
+    await expect(
+      stripImageMetadata(Uint8Array.from([0x89, 0x50, 0x4e, 0x47]), 'image/png')
+    ).rejects.toThrow('ASSET_UNDECODABLE')
+  })
+
+  it('삭제 요소·미사용 파일·customData·편집기 상태를 지운다', async () => {
+    const raw = scene()
+    Object.assign(raw.elements[0], { customData: { owner: '합성' } })
+    const clean = await sanitizeScene(raw)
+    expect(clean.elements.map((element: { id: string }) => element.id)).toEqual(['a', 'i'])
+    expect(clean.elements[0].customData).toBeUndefined()
+    expect(Object.keys(clean.files)).toEqual(['f'])
+    expect(clean.files.f.lastRetrieved).toBeUndefined()
+    expect(clean.appState).toEqual({ viewBackgroundColor: '#ffffff' })
+    expect(JSON.stringify(clean)).not.toMatch(/hr-old|합성 편집자/)
+  })
+
+  it('scene 내장 이미지의 메타데이터도 지운다', async () => {
+    const exif = await sharp(await png(7))
+      .withExif({ IFD0: { Copyright: '합성 작성자' } })
+      .toBuffer()
+    const raw = scene()
+    raw.files.f.dataURL = `data:image/png;base64,${exif.toString('base64')}`
+    const clean = await sanitizeScene(raw)
+    const bytes = Buffer.from(clean.files.f.dataURL.split(',')[1], 'base64')
+    expect(bytes.includes(Buffer.from('합성'))).toBe(false)
+    expect((await sharp(bytes).metadata()).exif).toBeUndefined()
+  })
+
+  it('내장 이미지가 비이미지(SVG)면 보류한다', async () => {
+    const raw = scene()
+    const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>').toString('base64')
+    raw.files.f.dataURL = `data:image/svg+xml;base64,${svg}`
+    await expect(sanitizeScene(raw)).rejects.toThrow('SCENE_IMAGE_UNSUPPORTED')
   })
 })
 
@@ -397,6 +590,7 @@ describe('prepare', () => {
     })
     expect(summary.updatedOnly).toEqual({ count: 1, byDate: { '2026-03-02': 1 } })
     expect(summary.contactHits).toMatchObject({ phone: 2, email: 1, postingsHit: 2 })
+    expect(summary.review).toEqual({ released: 0, stale: 0, pendingItems: 2 })
     expect(summary.images.manualReview).toBeGreaterThan(0)
     expect(summary.removedSections.managerSections).toBeGreaterThan(0)
     expect(postings.map((p) => p.sourcePostingId)).toEqual(['1', '2'])
@@ -462,6 +656,49 @@ describe('prepare', () => {
     ])
     expect(summary.postings.warnings).toEqual({ OPENING_URL_REMAINS: 1 })
     expect(manifest.postings.find((p) => p.id === '1')?.warnings).toEqual(['OPENING_URL_REMAINS'])
+  })
+
+  it('스키마 거부는 값 없이 경로와 코드만 집계한다', async () => {
+    const rows = sourceRows()
+    rows.postings[0].title = ''
+    rows.postingPositions[0].name = '합성 비밀 문항'.repeat(50)
+    const { summary, manifest } = await prepare(rows)
+    expect(manifest.postings.find((p) => p.id === '1')?.reasons).toEqual(['PACKET_SCHEMA_REJECTED'])
+    expect(summary.schemaIssues).toEqual({
+      'posting:posting.title:too_small': 1,
+      'posting:positions.*.fields.name:too_big': 1,
+    })
+    expect(JSON.stringify(summary)).not.toContain('합성 비밀 문항')
+  })
+
+  it('섹션이 가리키는 이미지가 다른 고객 파일이면 보류하고 공통 샘플이면 허용한다', async () => {
+    const rows = sourceRows()
+    const key = 'posting_detail/u/사람이름.png'
+    const shared = rows.files.find((row) => row.file_key === key)
+    Object.assign(shared as object, { owner_brand_id: '8' })
+    let result = await prepare(rows)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_MISMATCH',
+    ])
+    Object.assign(shared as object, { owner_brand_id: null })
+    result = await prepare(rows)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_UNKNOWN',
+    ])
+    Object.assign(shared as object, { owner_brand_id: '8' })
+    rows.sampleTemplates = [{ image_key: '', data: [{ type: 'image', image_key: key }] }]
+    result = await prepare(rows)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+  })
+
+  it('자격증명·서명이 든 URL은 승인할 수 없는 보류로 둔다', async () => {
+    const rows = sourceRows()
+    rows.postings[0].detail = [
+      { type: 'content_link', enabled: true, resource_id: 70, url: 'https://x.test/?token=a' },
+    ] as never
+    const { manifest, summary } = await prepare(rows)
+    expect(manifest.postings.find((p) => p.id === '1')?.reasons).toEqual(['HELD_SENSITIVE_URL'])
+    expect(summary.review.pendingItems).toBe(2)
   })
 
   it('다른 고객 소유 content를 쓰는 공고는 보류한다', async () => {
@@ -709,10 +946,243 @@ describe('import', () => {
     await expect(
       runOpeningImport(fakeDb().db as unknown as FakeDb, prepared, {
         spaceId: 'space',
+        brandId: '9',
         apply: true,
+        review: reviewFile(),
         readAsset: async () => new Uint8Array(),
       })
     ).rejects.toThrow('TARGET_STORAGE_REQUIRED')
+  })
+})
+
+describe('사람 검토', () => {
+  async function approved() {
+    const first = await prepare()
+    const items = first.review.items.map(({ kind, id, contentHash }) => ({ kind, id, contentHash }))
+    const images = first.review.images.map((image) => image.sha256)
+    return { first, items, images }
+  }
+
+  it('검토 대상은 원문과 이미지까지 내주고 packet에는 넣지 않는다', async () => {
+    const { first } = await approved()
+    expect(first.review.items.map((item) => item.id)).toEqual(['5', '6'])
+    const flagged = first.review.items[0].texts.filter((text) => text.flagged)
+    expect(flagged[0].text).toContain('010-1234-5678')
+    expect(first.review.images.length).toBeGreaterThan(0)
+    expect(first.postings.map((p) => p.sourcePostingId)).toEqual(['1', '2'])
+  })
+
+  it('승인하면 보류를 풀고, 같은 검토 파일로 적재할 수 있다', async () => {
+    const { first, items, images } = await approved()
+    const review = reviewFile({ items, images })
+    const released = await prepare(sourceRows(), review)
+    expect(released.summary.review).toEqual({ released: 2, stale: 0, pendingItems: 0 })
+    expect(released.postings.map((p) => p.sourcePostingId)).toEqual(['1', '2', '5', '6'])
+    expect(released.manifest.review).toEqual({
+      reviewer: '합성 검토자',
+      reviewedAt: '2026-11-01',
+    })
+    expect(released.manifest.postings.find((p) => p.id === '5')?.released).toBe(true)
+    expect(reviewHash(released.postings[2])).toBe(items[0].contentHash)
+    expect(first.review.items).toHaveLength(2)
+
+    const { db, postings } = fakeDb()
+    const report = await importSet(db, released, true, undefined, {
+      review: reviewFile({
+        items,
+        images: released.manifest.manualReviewImages.map((image) => image.sha256),
+      }),
+    })
+    expect(report.status).toBe('APPLIED')
+    expect(postings.size).toBe(4)
+  })
+
+  it('승인 뒤 내용이 바뀌면 다시 보류하고 REVIEW_STALE로 알린다', async () => {
+    const { items, images } = await approved()
+    const rows = sourceRows()
+    rows.postings[2].detail = [
+      {
+        type: 'custom',
+        enabled: true,
+        items: [{ label: '문의', value: '연락 010-1234-9999' }],
+      },
+    ]
+    const { summary, manifest, postings } = await prepare(rows, reviewFile({ items, images }))
+    expect(summary.review).toMatchObject({ released: 1, stale: 1, pendingItems: 1 })
+    expect(manifest.postings.find((p) => p.id === '5')?.warnings).toContain('REVIEW_STALE')
+    expect(postings.map((p) => p.sourcePostingId)).not.toContain('5')
+  })
+
+  it('승인 없이 적재 packet에 연락처가 있으면 전체 중단한다', async () => {
+    const { items, images } = await approved()
+    const released = await prepare(sourceRows(), reviewFile({ items, images }))
+    const { db, records } = fakeDb()
+    await expect(importSet(db, released, true)).rejects.toThrow('HELD_CONTACT_PATTERN')
+    expect(records.size).toBe(0)
+  })
+
+  it('민감 URL은 검토 파일로 풀 수 없다', async () => {
+    const prepared = await prepare()
+    prepared.postings[0].content.companyIntro = 'https://x.test/?token=a'
+    const packet = prepared.postings[0]
+    const { db } = fakeDb()
+    await expect(
+      importSet(db, prepared, true, undefined, {
+        review: reviewFile({
+          items: [{ kind: 'posting', id: '1', contentHash: reviewHash(packet) }],
+          images: prepared.manifest.manualReviewImages.map((image) => image.sha256),
+        }),
+      })
+    ).rejects.toThrow('HELD_SENSITIVE_URL')
+  })
+
+  it.each([
+    ['검토자 없음', { reviewer: ' ' }, 'REVIEW_FILE_INVALID'],
+    ['날짜 없음', { reviewedAt: '어제' }, 'REVIEW_FILE_INVALID'],
+    ['추가 키', { note: 'x' }, 'REVIEW_FILE_INVALID'],
+    ['잘못된 해시', { images: ['x'] }, 'REVIEW_FILE_INVALID'],
+    ['다른 고객', { sourceSpaceId: '8' }, 'REVIEW_SCOPE_MISMATCH'],
+  ])('검토 파일 오류: %s', async (_name, overrides, code) => {
+    await expect(prepare(sourceRows(), reviewFile(overrides))).rejects.toThrow(code)
+  })
+
+  it('검토 폴더는 저장소 밖 빈 폴더만 받고 소유자 전용으로 쓴다', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'opening-review-'))
+    try {
+      expect(() => assertOutDir(join(root, 'repo/inside'), join(root, 'repo'))).toThrow(
+        'OUT_DIR_INSIDE_REPO'
+      )
+      const dir = assertOutDir(join(root, 'review'), join(root, 'repo'))
+      const { review } = await prepare()
+      writeReviewDir(dir, review)
+      expect(() => assertOutDir(dir, join(root, 'repo'))).toThrow('OUT_DIR_NOT_EMPTY')
+      const paths = [
+        'candidates.json',
+        ...readdirSync(join(dir, 'items')).map((name) => join('items', name)),
+        ...readdirSync(join(dir, 'images')).map((name) => join('images', name)),
+      ]
+      expect(paths.length).toBeGreaterThan(3)
+      for (const path of paths) expect(statSync(join(dir, path)).mode & 0o777).toBe(0o600)
+      for (const path of ['.', 'items', 'images'])
+        expect(statSync(join(dir, path)).mode & 0o777).toBe(0o700)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('적재 게이트', () => {
+  it('--apply는 검토 파일 없이 시작하지 않는다', async () => {
+    const prepared = await prepare()
+    await expect(
+      importSet(fakeDb().db, prepared, true, undefined, { review: undefined })
+    ).rejects.toThrow('REVIEW_FILE_REQUIRED')
+  })
+
+  it('검토 안 된 이미지가 있는 항목만 거부하고 나머지는 적재한다', async () => {
+    const prepared = await prepare()
+    const refusedSha = prepared.manifest.manualReviewImages.find((image) =>
+      image.owners.includes('posting:2')
+    )?.sha256
+    const onlyPosting1 = prepared.manifest.manualReviewImages
+      .map((image) => image.sha256)
+      .filter((sha) => sha !== refusedSha)
+    const { db, postings, records } = fakeDb()
+    const { objects, storage } = memoryStorage()
+    const report = await importSet(db, prepared, true, storage, {
+      review: reviewFile({ images: onlyPosting1 }),
+    })
+    expect(report.status).toBe('APPLIED_PARTIAL')
+    expect(report.issues.refused.length).toBeGreaterThan(0)
+    expect(report.issues.refused[0].code).toBe('IMAGE_REVIEW_REQUIRED')
+    expect(postings.size + report.refused.postings).toBe(2)
+    expect(records.size).toBeGreaterThan(0)
+    expect(objects.size).toBe(report.assets.total)
+  })
+
+  it('dry-run은 검토 파일 없이도 거부될 항목 수를 보여 준다', async () => {
+    const prepared = await prepare()
+    const report = await importSet(fakeDb().db, prepared, false, undefined, { review: undefined })
+    expect(report.status).toBe('PLANNED')
+    expect(report.refused.postings).toBe(2)
+    expect(report.targetSpaceName).toBe('합성 고객 공간')
+  })
+
+  it('packet의 고객과 --brand-id가 다르면 거부한다', async () => {
+    const prepared = await prepare()
+    await expect(
+      runOpeningImport(fakeDb().db as unknown as FakeDb, prepared, {
+        spaceId: 'space',
+        brandId: '8',
+        apply: false,
+        readAsset: async () => new Uint8Array(),
+      })
+    ).rejects.toThrow('PACKET_BRAND_MISMATCH')
+  })
+
+  it('충돌 항목을 기록하고 --skip-conflicts면 그 항목만 빼고 진행한다', async () => {
+    const first = await prepare()
+    const { db, postings, positions } = fakeDb()
+    await importSet(db, first, true)
+    const changed = await prepare()
+    changed.postings[0].posting.title = '수정된 합성 공고'
+    changed.org.positions.push({ ...changed.org.positions[0], sourceId: '31', name: '새 직무' })
+
+    const stopped = await importSet(db, changed, true)
+    expect(stopped.status).toBe('CONFLICT_STOPPED')
+    expect(stopped.issues.conflicts).toEqual([
+      { kind: 'posting', id: '1', code: 'Migration source conflict' },
+    ])
+    expect(positions.size).toBe(1)
+
+    const report = await importSet(db, changed, true, undefined, { skipConflicts: true })
+    expect(report).toMatchObject({
+      status: 'APPLIED_PARTIAL',
+      positions: { created: 1, skipped: 1 },
+      postings: { conflict: 1, skipped: 1 },
+    })
+    expect(positions.size).toBe(2)
+    expect([...postings.values()][0].title).toBe('합성 공고 1')
+
+    const root = mkdtempSync(join(tmpdir(), 'opening-issues-'))
+    try {
+      writeImportIssues(root, report.issues)
+      expect(statSync(join(root, 'conflicts.json')).mode & 0o777).toBe(0o600)
+      writeImportIssues(root, { conflicts: [], refused: [] })
+      expect(readdirSync(root)).toEqual([])
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('템플릿 트랜잭션은 60초 제한을 쓴다', async () => {
+    const prepared = await prepare()
+    const { db, transactionOptions } = fakeDb()
+    await importSet(db, prepared, true)
+    expect(transactionOptions).toContainEqual({ timeout: 60_000 })
+    expect(transactionOptions.filter(Boolean)).toHaveLength(3)
+  })
+
+  it('packet의 scene에 삭제 요소·customData·미사용 파일이 있으면 거부한다', async () => {
+    const { postings } = await prepare()
+    const parse = (edit: (scene: Record<string, unknown>) => void) => {
+      const packet = JSON.parse(JSON.stringify(postings[0]))
+      edit(packet.content.resources['70'].scene)
+      return postingPacketSchema.safeParse(packet).success
+    }
+    expect(parse(() => undefined)).toBe(true)
+    expect(parse((scene) => (scene.elements as unknown[]).push({ id: 'x', isDeleted: true }))).toBe(
+      false
+    )
+    expect(parse((scene) => (scene.elements as unknown[]).push({ customData: {} }))).toBe(false)
+    expect(
+      parse((scene) =>
+        Object.assign(scene.files as object, {
+          y: { id: 'y', mimeType: 'image/png', dataURL: 'x' },
+        })
+      )
+    ).toBe(false)
+    expect(parse((scene) => Object.assign(scene, { appState: { collaborators: [] } }))).toBe(false)
   })
 })
 
@@ -721,32 +1191,43 @@ describe('대상 환경 가드', () => {
   const direct = `postgresql://postgres:p@db.${prod}.supabase.co:5432/postgres`
   const pooler = `postgresql://postgres.${prod}:p@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres`
   const dev = 'postgresql://postgres.tumkfkfgzkmisguyaghn:p@aws-1.pooler.supabase.com:5432/postgres'
+  const devStorage = 'https://tumkfkfgzkmisguyaghn.supabase.co'
   const prodStorage = `https://${prod}.supabase.co`
+  const scope = { brandId: '9', targetSpace: 's1' }
 
   it.each([
     ['direct', { DATABASE_URL: direct, NEXT_PUBLIC_SUPABASE_URL: prodStorage }],
     ['pooler 사용자명', { DATABASE_URL: pooler, NEXT_PUBLIC_SUPABASE_URL: prodStorage }],
     ['DIRECT_URL만', { DIRECT_URL: pooler, NEXT_PUBLIC_SUPABASE_URL: prodStorage }],
-  ])('운영(%s)은 확인값 없이 거부한다', (_name, env) => {
-    expect(() => assertImportTarget(env, { targetSpace: 's1' })).toThrow(
+  ])('운영(%s)은 <brandId>:<spaceId> 확인값이 있어야 한다', (_name, env) => {
+    expect(() => assertImportTarget(env, scope)).toThrow('PRODUCTION_CONFIRM_REQUIRED')
+    expect(() => assertImportTarget(env, { ...scope, confirmProd: 's1' })).toThrow(
       'PRODUCTION_CONFIRM_REQUIRED'
     )
-    expect(() => assertImportTarget(env, { targetSpace: 's1', confirmProd: 's2' })).toThrow(
+    expect(() => assertImportTarget(env, { ...scope, confirmProd: '8:s1' })).toThrow(
       'PRODUCTION_CONFIRM_REQUIRED'
     )
-    expect(assertImportTarget(env, { targetSpace: 's1', confirmProd: 's1' })).toBe('production')
+    expect(assertImportTarget(env, { ...scope, confirmProd: '9:s1' })).toBe('production')
   })
 
-  it('DB와 Storage 프로젝트가 다르면 거부한다', () => {
+  it('개발로 확인되지 않는 대상은 운영처럼 확인을 요구한다', () => {
+    const env = { DATABASE_URL: 'postgresql://u:p@db.unknown.example/postgres' }
+    expect(() => assertImportTarget(env, scope)).toThrow('PRODUCTION_CONFIRM_REQUIRED')
+    expect(assertImportTarget(env, { ...scope, confirmProd: '9:s1' })).toBe('unidentified')
+  })
+
+  it('DB와 Storage 프로젝트가 다르면 확인값이 있어도 거부한다', () => {
     expect(() =>
       assertImportTarget(
         { DATABASE_URL: dev, NEXT_PUBLIC_SUPABASE_URL: prodStorage },
-        { targetSpace: 's1', confirmProd: 's1' }
+        { ...scope, confirmProd: '9:s1' }
       )
     ).toThrow('TARGET_PROJECT_MISMATCH')
   })
 
-  it('개발 DB는 통과한다', () => {
-    expect(assertImportTarget({ DATABASE_URL: dev }, { targetSpace: 's1' })).toBe('non-production')
+  it('개발 프로젝트로 확인되면 통과한다', () => {
+    expect(
+      assertImportTarget({ DATABASE_URL: dev, NEXT_PUBLIC_SUPABASE_URL: devStorage }, scope)
+    ).toBe('development')
   })
 })

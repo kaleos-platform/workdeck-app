@@ -18,6 +18,7 @@ const base = String(Date.now()) + String(Math.floor(Math.random() * 1000)).padSt
 const sourceId = (n: number) => `9${base}${n}`
 const space = `opening-e2e-${token}`
 const user = randomUUID()
+// 적재는 packet의 sha256만 검증하므로 디코딩 가능한 이미지일 필요가 없다.
 const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3])
 const asset = {
   ref: 'b'.repeat(64),
@@ -116,8 +117,16 @@ const storage: TargetStorage = {
 const run = (set: ReturnType<typeof packets>, apply: boolean) =>
   runOpeningImport(prisma, set, {
     spaceId: space,
+    brandId: sourceId(1),
     apply,
     storage,
+    review: {
+      sourceSpaceId: sourceId(1),
+      reviewer: '합성 검토자',
+      reviewedAt: '2026-11-01',
+      items: [],
+      images: [asset.sha256],
+    },
     readAsset: async () => png,
   })
 
@@ -162,7 +171,11 @@ describe('Opening 비PII 적재 (dev DB)', () => {
     expect(objects.size).toBe(0)
 
     const applied = await run(packets(), true)
-    expect(applied).toMatchObject({ status: 'APPLIED', postings: { created: 1, conflict: 0 } })
+    expect(applied).toMatchObject({
+      status: 'APPLIED',
+      targetSpaceName: 'opening-e2e',
+      postings: { created: 1, conflict: 0 },
+    })
     expect(objects.size).toBe(1)
     const posting = await prisma.hiringPosting.findFirstOrThrow({
       where: { spaceId: space },

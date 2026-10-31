@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { postingPositionSchema, storeSchema, positionSchema } from '@/lib/validations/hiring-posts'
+import { migrationHash } from './ledger'
 
 // 법인이 달라 개인정보를 옮기지 않는 신규 이전 packet. 모든 깊이에서 허용 필드만 통과시킨다.
 // 담당자·작성자·지원서·rawSnapshot·원본 파일 키 필드는 스키마에 없어서 들어오면 거부된다.
@@ -22,14 +23,34 @@ const assetShape = {
   mimeType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'image/gif']),
 }
 const assetSchema = z.strictObject(assetShape)
-const sceneSchema = z.strictObject({
-  type: z.string().optional(),
-  version: z.number().optional(),
-  source: z.string().optional(),
-  elements: z.array(z.unknown()),
-  appState: z.record(z.string(), z.unknown()).optional(),
-  files: z.record(z.string(), z.unknown()),
-})
+// 화면에 안 보이는 데이터(삭제 요소·미사용 파일·customData)는 들어오면 거부한다.
+const sceneSchema = z
+  .strictObject({
+    type: z.string().optional(),
+    version: z.number().optional(),
+    source: z.string().optional(),
+    elements: z.array(
+      z.looseObject({
+        isDeleted: z.literal(false).optional(),
+        customData: z.never().optional(),
+        fileId: z.string().nullish(),
+      })
+    ),
+    appState: z.strictObject({ viewBackgroundColor: z.string().optional() }).optional(),
+    files: z.record(
+      z.string(),
+      z.strictObject({
+        id: z.string(),
+        mimeType: assetShape.mimeType,
+        dataURL: z.string(),
+        created: z.number().optional(),
+      })
+    ),
+  })
+  .refine((scene) => {
+    const used = new Set(scene.elements.map((element) => element.fileId))
+    return Object.keys(scene.files).every((id) => used.has(id))
+  })
 const resourceSchema = z.strictObject({
   ...assetShape,
   hasSceneSource: z.boolean(),
@@ -182,29 +203,133 @@ export function isInMigrationWindow(
   )
 }
 
+const SEPARATOR = '[\\s.\\-\\u2010-\\u2015\\u2212/\\u00b7\\u2022()]{0,3}'
 // 해시·긴 id 안의 숫자열은 적중으로 세지 않도록 앞뒤가 영숫자이면 제외한다.
-const PHONE =
-  /(?<![0-9A-Za-z])(?:\+?82[ .-]?\(?0?\)?[ .-]?1[016789]|050\d|01[016789]|0[2-9]\d?)[ .)-]{0,2}\d{3,4}[ .-]?\d{4}(?![0-9A-Za-z])/g
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g
-// base64 본문의 숫자열이 전화번호로 오탐되지 않게 이미지 데이터는 건너뛴다(이미지 안 글자는 수동 검수 대상).
-const OPAQUE_KEYS = new Set(['dataURL'])
+const PHONE = new RegExp(
+  `(?<![0-9A-Za-z])(?:\\+?82${SEPARATOR}0?${SEPARATOR}1[016789]|050\\d|01[016789]|0[2-9]\\d?)${SEPARATOR}\\d{3,4}${SEPARATOR}\\d{4}(?![0-9A-Za-z])`,
+  'g'
+)
+const EMAIL =
+  /[A-Za-z0-9._%+-]+\s*(?:@|\(at\)|\[at\])\s*[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/gi
+const KEYWORD = /담당자|연락처|채용\s*문의|오픈\s*채팅|open\.?kakao/gi
+const URL_PATTERN = /https?:\/\/[^\s"'<>]+/gi
+const SENSITIVE_PARAM = /token|signature|secret|passw|^sig$|^key$|api_?key|^auth|^x-amz-/i
 
-export type ContactHits = { phone: number; email: number }
-
-export function scanContacts(value: unknown, hits: ContactHits = { phone: 0, email: 0 }) {
-  if (typeof value === 'string') {
-    hits.phone += value.match(PHONE)?.length ?? 0
-    hits.email += value.match(EMAIL)?.length ?? 0
-  } else if (Array.isArray(value)) {
-    for (const item of value) scanContacts(item, hits)
-  } else if (value !== null && typeof value === 'object') {
-    for (const [key, item] of Object.entries(value))
-      if (!OPAQUE_KEYS.has(key)) scanContacts(item, hits)
+function isSensitiveUrl(value: string): boolean {
+  try {
+    const url = new URL(value.replace(/[),.]+$/, ''))
+    return (
+      !!(url.username || url.password) ||
+      [...url.searchParams.keys()].some((name) => SENSITIVE_PARAM.test(name))
+    )
+  } catch {
+    return false
   }
+}
+
+export type ContactHits = { phone: number; email: number; keyword: number; url: number }
+export const emptyHits = (): ContactHits => ({ phone: 0, email: 0, keyword: 0, url: 0 })
+// 사람이 풀어 줄 수 있는 적중. 민감 URL은 원본에서 고쳐야 하므로 세지 않는다.
+export const contactCount = (hits: ContactHits) => hits.phone + hits.email + hits.keyword
+
+function scanText(raw: string, hits: ContactHits, trail: string[]) {
+  const value = raw.normalize('NFKC')
+  hits.phone += value.match(PHONE)?.length ?? 0
+  hits.email += value.match(EMAIL)?.length ?? 0
+  // 지원서 폼의 표준 문항명(연락처)은 개인 연락처가 아니다.
+  if (!trail.includes('applicationEntries')) hits.keyword += value.match(KEYWORD)?.length ?? 0
+  hits.url += (value.match(URL_PATTERN) ?? []).filter(isSensitiveUrl).length
+}
+
+// base64 숫자열 오탐을 막으려고 scene.files[*].dataURL만 건너뛴다. 이미지 안 글자는 수동 검수 대상이다.
+const isSceneImageData = (trail: string[], key: string) =>
+  key === 'dataURL' && trail.at(-2) === 'files' && (trail.length === 2 || trail.at(-3) === 'scene')
+
+function walkStrings(
+  value: unknown,
+  visit: (text: string, trail: string[]) => void,
+  trail: string[]
+) {
+  if (typeof value === 'string') visit(value, trail)
+  else if (Array.isArray(value)) value.forEach((item) => walkStrings(item, visit, trail))
+  else if (value !== null && typeof value === 'object') {
+    for (const [key, item] of Object.entries(value)) {
+      if (isSceneImageData(trail, key)) continue
+      visit(key, trail)
+      walkStrings(item, visit, [...trail, key])
+    }
+  }
+}
+
+export function scanContacts(value: unknown, hits: ContactHits = emptyHits()) {
+  walkStrings(value, (text, trail) => scanText(text, hits, trail), [])
   return hits
 }
 
-export function hasContacts(value: unknown): boolean {
-  const hits = scanContacts(value)
-  return hits.phone + hits.email > 0
+// 검토자가 읽을 문자열. 구조값(해시·색상·id)을 빼고 적중 문자열을 앞에 둔다.
+export function reviewTexts(value: unknown) {
+  const texts: { path: string; text: string; flagged: boolean }[] = []
+  walkStrings(
+    value,
+    (text, trail) => {
+      if (!/[가-힣]|\s|@|https?:/.test(text)) return
+      const hits = emptyHits()
+      scanText(text, hits, trail)
+      texts.push({ path: trail.join('.'), text, flagged: contactCount(hits) + hits.url > 0 })
+    },
+    []
+  )
+  return texts.sort((a, b) => Number(b.flagged) - Number(a.flagged))
+}
+
+// 승인은 내용에 묶인다. T만 달라진 재준비는 다시 검토하지 않아도 된다.
+export const reviewHash = (packet: { sourceSnapshotAt: string }) =>
+  migrationHash(JSON.parse(JSON.stringify({ ...packet, sourceSnapshotAt: null })))
+
+type Asset = z.output<typeof assetSchema>
+// OCR이 없어 글자를 읽지 못한 이미지는 사람이 본다. 내장 이미지 없는 scene의 내보내기만 예외다.
+export function unreadImages(
+  content: Pick<PostingPacket['content'], 'resources' | 'images'>,
+  extra: (Asset | undefined)[] = []
+): string[] {
+  const unread = [
+    ...extra.filter((asset) => !!asset),
+    ...Object.values(content.images),
+    ...Object.values(content.resources).filter(
+      (resource) => !resource.scene || Object.keys(resource.scene.files).length > 0
+    ),
+  ]
+  return [...new Set(unread.map((asset) => asset.sha256))]
+}
+
+const reviewFileSchema = z.strictObject({
+  sourceSpaceId: sourceId,
+  reviewer: z.string().trim().min(1).max(100),
+  reviewedAt: z.iso.date(),
+  items: z.array(
+    z.strictObject({
+      kind: z.enum(['posting', 'template']),
+      id: sourceId,
+      contentHash: sha256,
+    })
+  ),
+  images: z.array(sha256),
+})
+export type ReviewApprovals = {
+  reviewer: string
+  reviewedAt: string
+  items: Map<string, string>
+  images: Set<string>
+}
+
+export function parseReviewFile(raw: unknown, sourceSpaceId: string): ReviewApprovals {
+  const parsed = reviewFileSchema.safeParse(raw)
+  if (!parsed.success) throw Error('REVIEW_FILE_INVALID')
+  if (parsed.data.sourceSpaceId !== sourceSpaceId) throw Error('REVIEW_SCOPE_MISMATCH')
+  return {
+    reviewer: parsed.data.reviewer,
+    reviewedAt: parsed.data.reviewedAt,
+    items: new Map(parsed.data.items.map((item) => [`${item.kind}:${item.id}`, item.contentHash])),
+    images: new Set(parsed.data.images),
+  }
 }
