@@ -307,6 +307,7 @@ function reasonOf(error: unknown): string {
   const message = error instanceof Error ? error.message : ''
   const blocked = message.match(/^Migration (form|content) blocked: ([A-Za-z_]+)$/)
   if (blocked) return `${blocked[1].toUpperCase()}_${blocked[2].toUpperCase()}`
+  if (message === 'Migration design exceeds editable size') return 'DESIGN_TOO_LARGE'
   if (/^[A-Z][A-Z_]{2,80}$/.test(message)) return message
   return 'PLAN_BLOCKED'
 }
@@ -754,6 +755,11 @@ async function buildCustomerPackets(
 
   const statusCount = (entries: ManifestEntry[], status: ManifestEntry['status']) =>
     entries.filter((entry) => entry.status === status).length
+  // 보류·제외 항목의 이미지는 읽었더라도 packet 폴더에 남기지 않는다.
+  const keptImages = new Set(
+    [...postingEntries, ...templateEntries].flatMap((entry) => entry.imageSha256)
+  )
+  const keptAssets = new Map([...assets].filter(([sha256]) => keptImages.has(sha256)))
   const updatedOnlyByDate: Record<string, number> = {}
   for (const date of updatedOnlyDates.sort()) count(updatedOnlyByDate, date)
   const summary = {
@@ -770,7 +776,7 @@ async function buildCustomerPackets(
     },
     updatedOnly: { count: updatedOnlyDates.length, byDate: updatedOnlyByDate },
     contactHits: hitTotals,
-    images: { total: assets.size, manualReview: manualReview.size },
+    images: { total: keptAssets.size, manualReview: manualReview.size },
     templates: {
       total: templateEntries.length,
       included: statusCount(templateEntries, 'included'),
@@ -798,6 +804,13 @@ async function buildCustomerPackets(
     heldOrg,
     manualReviewImages: [...manualReview.values()],
   }
-  return { summary, manifest, org, templates: templatePackets, postings: postingPackets, assets }
+  return {
+    summary,
+    manifest,
+    org,
+    templates: templatePackets,
+    postings: postingPackets,
+    assets: keptAssets,
+  }
 }
 export type PreparedCustomer = Awaited<ReturnType<typeof prepareOpeningCustomer>>

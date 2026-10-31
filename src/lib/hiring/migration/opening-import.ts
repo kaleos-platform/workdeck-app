@@ -17,7 +17,6 @@ import {
   templatePacketSchema,
   type OrgPacket,
   type PostingPacket,
-  type TemplatePacket,
 } from './opening-packet'
 import type { VerifiedContentImage } from './posting-content'
 import { planOpeningPosting } from './posting-import'
@@ -525,8 +524,17 @@ export async function runOpeningImport(
     (sum, counts) => sum + counts.conflict,
     0
   )
-  if (conflicts) return { status: 'CONFLICT_STOPPED' as const, writes: 0, ...report }
-  if (!apply) return { status: 'PLANNED' as const, writes: 0, ...report }
+  // 원장 밖의 같은 이름만 남긴다. 재실행에서 이미 옮긴 항목을 중복으로 알리지 않는다.
+  report.sameNameInTarget.stores = Math.max(
+    0,
+    report.sameNameInTarget.stores - report.stores.skipped
+  )
+  report.sameNameInTarget.positions = Math.max(
+    0,
+    report.sameNameInTarget.positions - report.positions.skipped
+  )
+  if (conflicts) return { status: 'CONFLICT_STOPPED' as const, ...report }
+  if (!apply) return { status: 'PLANNED' as const, ...report }
 
   const copy = assetCopier(spaceId, readAsset)
   for (const asset of assets()) {
@@ -542,10 +550,10 @@ export async function runOpeningImport(
     } catch (error) {
       if (!isConflict(error)) throw error
       step.counts.conflict++
-      return { status: 'CONFLICT_STOPPED' as const, writes: 1, ...report }
+      return { status: 'CONFLICT_STOPPED' as const, ...report }
     }
   }
-  return { status: 'APPLIED' as const, writes: 1, ...report }
+  return { status: 'APPLIED' as const, ...report }
 }
 
 const PRODUCTION_REF = 'duyteczbadcuvfeawlzu'
