@@ -2,6 +2,7 @@ import 'server-only'
 import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import { CURRENT_SPACE_COOKIE, CURRENT_SPACE_COOKIE_OPTIONS } from './current-space-cookie'
 
 export { CURRENT_SPACE_COOKIE, CURRENT_SPACE_COOKIE_OPTIONS }
@@ -27,7 +28,7 @@ export const resolveCurrentMembership = cache(async function resolveCurrentMembe
   userId: string,
   requested?: string | null
 ): Promise<CurrentMembership | { forbidden: true } | null> {
-  const all = await listMemberships(userId)
+  const all = await measureCoupangAds('membership_list', () => listMemberships(userId))
   if (all.length === 0) return null
   const pick = (id?: string | null) => (id ? all.find((x) => x.space.id === id) : undefined)
   const strip = (x: CurrentMembership & { createdAt: Date }): CurrentMembership => ({
@@ -39,7 +40,11 @@ export const resolveCurrentMembership = cache(async function resolveCurrentMembe
     const hit = pick(requested)
     return hit ? strip(hit) : { forbidden: true }
   }
-  const fromCookie = pick((await cookies()).get(CURRENT_SPACE_COOKIE)?.value)
+  const cookieValue = await measureCoupangAds(
+    'membership_cookie',
+    async () => (await cookies()).get(CURRENT_SPACE_COOKIE)?.value
+  )
+  const fromCookie = pick(cookieValue)
   if (fromCookie) return strip(fromCookie)
   return strip(all.find((x) => x.role === 'OWNER') ?? all[0])
 })
