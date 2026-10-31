@@ -164,6 +164,19 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
     expect((await resolveEntitlement(SPACE_A)).decks['recruiting'].reason).toBe('LOCKED')
   })
 
+  it('결제 일시 중지 중에는 구독 시작이 막히고 청구하지 않는다', async () => {
+    await registerCard(SPACE_A)
+    process.env.BILLING_CHECKOUT_PAUSED = '1'
+    try {
+      await expect(startSubscription(SPACE_A, ['recruiting'])).rejects.toMatchObject({
+        status: 503,
+      })
+      expect(mockCharge).not.toHaveBeenCalled()
+    } finally {
+      delete process.env.BILLING_CHECKOUT_PAUSED
+    }
+  })
+
   it('구독 시작 최초 청구는 보장가 13,500', async () => {
     await registerCard(SPACE_A)
     mockCharge.mockResolvedValue({ ok: true, paymentKey: 'pay_a1', failReason: null })
