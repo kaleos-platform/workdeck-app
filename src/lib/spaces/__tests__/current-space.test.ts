@@ -4,6 +4,7 @@ jest.mock('next/headers', () => ({ cookies: async () => cookieStore }))
 jest.mock('@/lib/prisma', () => ({ prisma: { spaceMember: { findMany: jest.fn() } } }))
 import { prisma } from '@/lib/prisma'
 import { resolveCurrentMembership } from '../current-space'
+import { collectServerTimings } from '@/lib/coupang-ads/server-timing'
 
 const findMany = prisma.spaceMember.findMany as jest.Mock
 const m = (id: string, role: string, day: number) => ({
@@ -15,6 +16,15 @@ const m = (id: string, role: string, day: number) => ({
 beforeEach(() => {
   jest.resetAllMocks()
   cookieStore.get.mockReturnValue(undefined)
+})
+
+it('멤버십 조회와 쿠키 확인의 대기 시간을 식별자 없이 수집한다', async () => {
+  findMany.mockResolvedValue([m('a', 'OWNER', 1)])
+  const { result, timings } = await collectServerTimings(() => resolveCurrentMembership('u'))
+  expect(result).toMatchObject({ space: { id: 'a' }, role: 'OWNER' })
+  expect(timings.membership_list).toEqual(expect.any(Number))
+  expect(timings.membership_cookie).toEqual(expect.any(Number))
+  expect(JSON.stringify(timings)).not.toContain('Space a')
 })
 
 it('멤버십이 없으면 null', async () => {
