@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto'
+import { chmodSync, rmSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { z } from 'zod'
 import { Prisma, type PrismaClient } from '@/generated/prisma/client'
 import { copyMigrationFile } from './file-copy'
@@ -10,13 +12,18 @@ import {
 } from './ledger'
 import {
   OPENING_TRANSFORM_VERSION,
-  hasContacts,
+  contactCount,
   isInMigrationWindow,
   orgPacketSchema,
+  parseReviewFile,
   postingPacketSchema,
+  reviewHash,
+  scanContacts,
   templatePacketSchema,
+  unreadImages,
   type OrgPacket,
   type PostingPacket,
+  type ReviewApprovals,
 } from './opening-packet'
 import type { VerifiedContentImage } from './posting-content'
 import { planOpeningPosting } from './posting-import'
@@ -61,8 +68,19 @@ const isConflict = (error: unknown) => error instanceof Error && CONFLICT_CODES.
 function parsePacket<S extends z.ZodType>(schema: S, raw: unknown): z.output<S> {
   const parsed = schema.safeParse(raw)
   if (!parsed.success) throw Error('PACKET_SCHEMA_REJECTED')
-  if (hasContacts(parsed.data)) throw Error('HELD_CONTACT_PATTERN')
   return parsed.data
+}
+
+// 연락처 적중은 같은 내용을 사람이 승인했을 때만 통과한다. 민감 URL은 승인 대상이 아니다.
+function assertClean(
+  packet: unknown,
+  approved?: { review?: ReviewApprovals; key: string; hash: () => string }
+) {
+  const hits = scanContacts(packet)
+  if (hits.url) throw Error('HELD_SENSITIVE_URL')
+  if (!contactCount(hits)) return
+  const approvedHash = approved?.review?.items.get(approved.key)
+  if (!approved || approvedHash !== approved.hash()) throw Error('HELD_CONTACT_PATTERN')
 }
 
 const plain = <T>(value: T): T => JSON.parse(JSON.stringify(value))
@@ -87,8 +105,18 @@ async function bindMaps(
   return { resources: boundResources, images: boundImages }
 }
 
-export async function planPosting(raw: unknown, spaceId: string, bind: AssetBinder) {
+export async function planPosting(
+  raw: unknown,
+  spaceId: string,
+  bind: AssetBinder,
+  review?: ReviewApprovals
+) {
   const packet = parsePacket(postingPacketSchema, raw)
+  assertClean(packet, {
+    review,
+    key: `posting:${packet.sourcePostingId}`,
+    hash: () => reviewHash(packet),
+  })
   if (!isInMigrationWindow(packet.posting, new Date(packet.sourceSnapshotAt)))
     throw Error('OUT_OF_WINDOW')
   const { detailImage, ...text } = packet.content
@@ -137,9 +165,15 @@ export async function planTemplate(
   raw: unknown,
   spaceId: string,
   ownerUserId: string,
-  bind: AssetBinder
+  bind: AssetBinder,
+  review?: ReviewApprovals
 ) {
   const packet = parsePacket(templatePacketSchema, raw)
+  assertClean(packet, {
+    review,
+    key: `template:${packet.sourceTemplateId}`,
+    hash: () => reviewHash(packet),
+  })
   const cover = packet.cover && (await bind(packet.cover))
   const maps = await bindMaps(packet, bind)
   const scope = { sourceSpaceId: packet.sourceSpaceId, sourceTemplateId: packet.sourceTemplateId }
@@ -371,21 +405,46 @@ function dryBinder(spaceId: string, readAsset: (sha256: string) => Promise<Uint8
   return { bind, assets: () => [...assets.values()].map((value) => value.asset) }
 }
 
+type ImportIssue = { kind: string; id: string; code: string }
+type ImportIssues = { conflicts: ImportIssue[]; refused: ImportIssue[] }
+
+// id는 stdout에 남기지 않고 packet 폴더에만 쓴다. 지난 실행 결과가 남지 않게 지운다.
+export function writeImportIssues(dir: string, issues: ImportIssues) {
+  for (const [name, list] of Object.entries(issues)) {
+    const path = join(dir, `${name}.json`)
+    rmSync(path, { force: true })
+    if (!list.length) continue
+    writeFileSync(path, JSON.stringify(list, null, 2), { mode: 0o600 })
+    chmodSync(path, 0o600)
+  }
+}
+
 export async function runOpeningImport(
   db: Db,
   set: PacketSet,
   options: {
     spaceId: string
+    brandId: string
     apply: boolean
     readAsset: (sha256: string) => Promise<Uint8Array>
     storage?: TargetStorage
+    review?: unknown
+    skipConflicts?: boolean
   }
 ) {
-  const { spaceId, apply, readAsset, storage } = options
+  const { spaceId, brandId, apply, readAsset, storage, skipConflicts } = options
   if (apply && !storage) throw Error('TARGET_STORAGE_REQUIRED')
+  if (apply && options.review === undefined) throw Error('REVIEW_FILE_REQUIRED')
   const org = parsePacket(orgPacketSchema, set.org)
-  if (!(await db.space.findUnique({ where: { id: spaceId }, select: { id: true } })))
-    throw Error('TARGET_SPACE_MISSING')
+  assertClean(org)
+  if (org.sourceSpaceId !== brandId) throw Error('PACKET_BRAND_MISMATCH')
+  const review =
+    options.review === undefined ? undefined : parseReviewFile(options.review, org.sourceSpaceId)
+  const space = await db.space.findUnique({
+    where: { id: spaceId },
+    select: { id: true, name: true },
+  })
+  if (!space) throw Error('TARGET_SPACE_MISSING')
   const owner = await db.spaceMember.findFirst({
     where: { spaceId, role: 'OWNER' },
     select: { userId: true },
@@ -393,12 +452,28 @@ export async function runOpeningImport(
   })
   if (!owner) throw Error('TARGET_OWNER_MISSING')
 
+  const issues: ImportIssues = { conflicts: [], refused: [] }
+  // 검토하지 않은 이미지가 있는 항목은 자산 복사 대상에서도 뺀다.
+  const refuseUnreviewed = (kind: string, id: string, shas: string[]) => {
+    if (shas.every((sha) => review?.images.has(sha))) return false
+    issues.refused.push({ kind, id, code: 'IMAGE_REVIEW_REQUIRED' })
+    return true
+  }
   const { bind, assets } = dryBinder(spaceId, readAsset)
   const postings: PostingPlan[] = []
-  for (const raw of set.postings) postings.push(await planPosting(raw, spaceId, bind))
+  for (const raw of set.postings) {
+    const packet = parsePacket(postingPacketSchema, raw)
+    const images = unreadImages(packet.content, [packet.content.detailImage])
+    if (refuseUnreviewed('posting', packet.sourcePostingId, images)) continue
+    postings.push(await planPosting(packet, spaceId, bind, review))
+  }
   const templates: TemplatePlan[] = []
-  for (const raw of set.templates)
-    templates.push(await planTemplate(raw, spaceId, owner.userId, bind))
+  for (const raw of set.templates) {
+    const packet = parsePacket(templatePacketSchema, raw)
+    const images = unreadImages(packet, [packet.cover])
+    if (refuseUnreviewed('template', packet.sourceTemplateId, images)) continue
+    templates.push(await planTemplate(packet, spaceId, owner.userId, bind, review))
+  }
 
   const storeIds = new Set(org.stores.map((s) => s.sourceId))
   const positionIds = new Set(org.positions.map((p) => p.sourceId))
@@ -415,6 +490,11 @@ export async function runOpeningImport(
 
   const empty = (): Counts => ({ created: 0, skipped: 0, conflict: 0 })
   const report = {
+    targetSpaceName: space.name,
+    refused: {
+      postings: issues.refused.filter((item) => item.kind === 'posting').length,
+      templates: issues.refused.filter((item) => item.kind === 'template').length,
+    },
     stores: empty(),
     positions: empty(),
     templates: empty(),
@@ -432,6 +512,8 @@ export async function runOpeningImport(
   }
   const tx = db as unknown as Prisma.TransactionClient
   const steps: {
+    kind: string
+    id: string
     counts: Counts
     check: () => Promise<unknown>
     write: () => Promise<{ status: 'created' | 'existing' }>
@@ -439,6 +521,8 @@ export async function runOpeningImport(
     ...org.stores.map((store) => {
       const input = orgRecordInput('store', 'HiringStore', org, spaceId, store)
       return {
+        kind: 'store',
+        id: store.sourceId,
         counts: report.stores,
         check: () => findExistingMigrationRecord(tx, input, storeTarget),
         write: () =>
@@ -465,6 +549,8 @@ export async function runOpeningImport(
     ...org.positions.map((position) => {
       const input = orgRecordInput('position', 'HiringPosition', org, spaceId, position)
       return {
+        kind: 'position',
+        id: position.sourceId,
         counts: report.positions,
         check: () => findExistingMigrationRecord(tx, input, positionTarget),
         write: () =>
@@ -487,11 +573,15 @@ export async function runOpeningImport(
       }
     }),
     ...templates.map(({ input, target, plan }) => ({
+      kind: 'template',
+      id: input.sourceTemplateId,
       counts: report.templates,
       check: () => findExistingOpeningTemplate(tx, plan, spaceId),
       write: () => importOpeningTemplate(db, input, target),
     })),
     ...postings.map((plan) => ({
+      kind: 'posting',
+      id: plan.packet.sourcePostingId,
       counts: report.postings,
       check: async () => {
         const existing = await findExistingMigrationRecord(
@@ -511,19 +601,22 @@ export async function runOpeningImport(
     })),
   ]
 
-  // 쓰기 전에 전체를 읽어서 판정한다. 충돌이 하나라도 있으면 아무것도 쓰지 않는다.
+  // 쓰기 전에 전체를 읽어서 판정한다. 기본은 충돌이 하나라도 있으면 아무것도 쓰지 않는다.
+  const conflicted = new Set<(typeof steps)[number]>()
+  const addConflict = (step: (typeof steps)[number], error: unknown) => {
+    step.counts.conflict++
+    conflicted.add(step)
+    const code = error instanceof Error ? error.message : 'CONFLICT'
+    issues.conflicts.push({ kind: step.kind, id: step.id, code })
+  }
   for (const step of steps) {
     try {
       step.counts[(await step.check()) ? 'skipped' : 'created']++
     } catch (error) {
       if (!isConflict(error)) throw error
-      step.counts.conflict++
+      addConflict(step, error)
     }
   }
-  const conflicts = [report.stores, report.positions, report.templates, report.postings].reduce(
-    (sum, counts) => sum + counts.conflict,
-    0
-  )
   // 원장 밖의 같은 이름만 남긴다. 재실행에서 이미 옮긴 항목을 중복으로 알리지 않는다.
   report.sameNameInTarget.stores = Math.max(
     0,
@@ -533,8 +626,9 @@ export async function runOpeningImport(
     0,
     report.sameNameInTarget.positions - report.positions.skipped
   )
-  if (conflicts) return { status: 'CONFLICT_STOPPED' as const, ...report }
-  if (!apply) return { status: 'PLANNED' as const, ...report }
+  if (conflicted.size && !skipConflicts)
+    return { status: 'CONFLICT_STOPPED' as const, ...report, issues }
+  if (!apply) return { status: 'PLANNED' as const, ...report, issues }
 
   const copy = assetCopier(spaceId, readAsset)
   for (const asset of assets()) {
@@ -542,38 +636,46 @@ export async function runOpeningImport(
     report.assets[copied.status === 'created' ? 'created' : 'skipped']++
   }
   for (const counts of [report.stores, report.positions, report.templates, report.postings])
-    Object.assign(counts, empty())
+    Object.assign(counts, { created: 0, skipped: 0 })
   for (const step of steps) {
+    if (conflicted.has(step)) continue
     try {
       const result = await step.write()
       step.counts[result.status === 'created' ? 'created' : 'skipped']++
     } catch (error) {
-      if (!isConflict(error)) throw error
-      step.counts.conflict++
-      return { status: 'CONFLICT_STOPPED' as const, ...report }
+      // 건너뛴 매장·직무에 기대는 공고도 항목 단위로 넘긴다.
+      const unmapped = error instanceof Error && error.message === 'MIGRATION_REFERENCE_UNMAPPED'
+      if (!isConflict(error) && !(skipConflicts && unmapped)) throw error
+      addConflict(step, error)
+      if (!skipConflicts) return { status: 'CONFLICT_STOPPED' as const, ...report, issues }
     }
   }
-  return { status: 'APPLIED' as const, ...report }
+  const partial = issues.conflicts.length || issues.refused.length
+  return {
+    status: partial ? ('APPLIED_PARTIAL' as const) : ('APPLIED' as const),
+    ...report,
+    issues,
+  }
 }
 
 const PRODUCTION_REF = 'duyteczbadcuvfeawlzu'
+const DEVELOPMENT_REF = 'tumkfkfgzkmisguyaghn'
 
-// pooler URL은 프로젝트 ref가 host가 아니라 사용자명(postgres.<ref>)에 있어 URL 전체를 본다.
-const isProductionUrl = (url: string) => url.toLowerCase().includes(PRODUCTION_REF)
-
-// 운영 대상은 명시 확인 없이는 거부한다. DB와 Storage가 서로 다른 프로젝트를 가리켜도 거부한다.
+// 개발 프로젝트로 확인되지 않으면 전부 운영으로 본다. pooler URL은 ref가 사용자명에 있어 URL 전체를 본다.
 export function assertImportTarget(
   env: Record<string, string | undefined>,
-  options: { targetSpace: string; confirmProd?: string }
+  options: { brandId: string; targetSpace: string; confirmProd?: string }
 ) {
-  const urls = [env.DATABASE_URL, env.DIRECT_URL, env.NEXT_PUBLIC_SUPABASE_URL].filter(
-    (value): value is string => !!value
-  )
   if (!env.DATABASE_URL && !env.DIRECT_URL) throw Error('TARGET_DATABASE_REQUIRED')
-  if (urls.some(isProductionUrl)) {
-    if (!urls.every(isProductionUrl)) throw Error('TARGET_PROJECT_MISMATCH')
-    if (options.confirmProd !== options.targetSpace) throw Error('PRODUCTION_CONFIRM_REQUIRED')
-    return 'production' as const
-  }
-  return 'non-production' as const
+  const urls = [env.DATABASE_URL, env.DIRECT_URL, env.NEXT_PUBLIC_SUPABASE_URL]
+    .filter((value): value is string => !!value)
+    .map((url) => url.toLowerCase())
+  const hasDev = urls.some((url) => url.includes(DEVELOPMENT_REF))
+  if (urls.every((url) => url.includes(DEVELOPMENT_REF))) return 'development' as const
+  const hasProd = urls.some((url) => url.includes(PRODUCTION_REF))
+  if (hasDev || (hasProd && !urls.every((url) => url.includes(PRODUCTION_REF))))
+    throw Error('TARGET_PROJECT_MISMATCH')
+  if (options.confirmProd !== `${options.brandId}:${options.targetSpace}`)
+    throw Error('PRODUCTION_CONFIRM_REQUIRED')
+  return hasProd ? ('production' as const) : ('unidentified' as const)
 }

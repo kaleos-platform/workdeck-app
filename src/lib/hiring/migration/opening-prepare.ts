@@ -1,19 +1,30 @@
 import { createHash } from 'node:crypto'
+import { chmodSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { join, resolve, sep } from 'node:path'
+import type { z } from 'zod'
 import { planOpeningForm } from '@/lib/hiring/opening-form-migration'
 import { planPosting, planTemplate, type AssetBinder } from './opening-import'
 import {
+  contactCount,
+  emptyHits,
   isInMigrationWindow,
   kstDate,
   migrationWindowStart,
   orgPacketSchema,
+  parseReviewFile,
   postingPacketSchema,
+  reviewHash,
+  reviewTexts,
   scanContacts,
   templatePacketSchema,
+  unreadImages,
   type ContactHits,
   type OrgPacket,
   type PostingPacket,
+  type ReviewApprovals,
   type TemplatePacket,
 } from './opening-packet'
+import { sanitizeScene, sniffImage, stripImageMetadata } from './opening-sanitize'
 
 // 원본 조회는 필요한 컬럼만 지정한다. 담당자·작성자·회원·지원서 컬럼/테이블은 절대 읽지 않는다.
 export type OpeningSourceClient = {
@@ -41,6 +52,7 @@ type FileRow = {
   target_type: string
   storage_type: string
   storage: string
+  owner_brand_id: string | null
 }
 
 const POSTING_IMAGE_TARGETS = ['posting_detail_img', 'posting_detail', 'content_image']
@@ -176,10 +188,43 @@ export async function readOpeningSource(client: OpeningSourceClient, brandId: st
       ...sections.map((s) => s?.image_key),
       ...contents.flatMap((c) => [c.image_key, c.file_key]),
     ].filter((key): key is string => typeof key === 'string' && key.length > 0)
+    // target_id는 처음 쓴 공고/콘텐츠다. 복사본은 파일 키를 공유하므로 공통 샘플 키는 따로 모은다.
     const files = await select<FileRow>(
-      `SELECT file_key, status, target_type, storage_type, storage FROM file
-      WHERE file_key = ANY($1::text[])`,
+      `SELECT f.file_key, f.status, f.target_type, f.storage_type, f.storage,
+        COALESCE(fp.brand_id, cp.brand_id, cdt.brand_id)::text AS owner_brand_id
+      FROM file f
+      LEFT JOIN posting fp ON f.target_type IN ('posting_detail_img', 'posting_detail')
+        AND fp.id = f.target_id
+      LEFT JOIN content fc ON f.target_type IN ('content_image', 'content_data')
+        AND fc.id = f.target_id
+      LEFT JOIN posting cp ON fc.source_type = 'posting_detail' AND cp.id = fc.source_id
+      LEFT JOIN detail_template cdt ON fc.source_type = 'detail_template' AND cdt.id = fc.source_id
+      WHERE f.file_key = ANY($1::text[])`,
       [[...new Set(keys)]]
+    )
+    const [sampleSetting] = await select<{ setting_value: unknown }>(
+      `SELECT setting_value FROM setting
+      WHERE setting_key = 'detail_template_samples' AND status = 1 LIMIT 1`,
+      []
+    )
+    const sampleIds = parseSampleIds(sampleSetting?.setting_value)
+    const sampleTemplates = await select<Row>(
+      'SELECT image_key, data FROM detail_template WHERE id = ANY($1::bigint[])',
+      [sampleIds]
+    )
+    const sampleContents = await select<Row>(
+      `SELECT image_key FROM content
+      WHERE source_type = 'detail_template' AND source_id = ANY($1::bigint[])`,
+      [sampleIds]
+    )
+    const sharedKeys = new Set(
+      [
+        ...sampleTemplates.flatMap((row) => [
+          row.image_key,
+          ...(Array.isArray(row.data) ? (row.data as Row[]).map((item) => item?.image_key) : []),
+        ]),
+        ...sampleContents.map((row) => row.image_key),
+      ].filter((key): key is string => typeof key === 'string' && key.length > 0)
     )
     await client.query('COMMIT')
     return {
@@ -194,6 +239,7 @@ export async function readOpeningSource(client: OpeningSourceClient, brandId: st
       templates,
       contents,
       files,
+      sharedKeys,
     }
   } catch (error) {
     await client.query('ROLLBACK').catch(() => undefined)
@@ -202,19 +248,18 @@ export async function readOpeningSource(client: OpeningSourceClient, brandId: st
 }
 type OpeningSource = Awaited<ReturnType<typeof readOpeningSource>>
 
+function parseSampleIds(value: unknown): string[] {
+  try {
+    const list: unknown = typeof value === 'string' ? JSON.parse(value) : value
+    return Array.isArray(list) ? list.map(String).filter((id) => /^[1-9]\d{0,18}$/.test(id)) : []
+  } catch {
+    return []
+  }
+}
+
 const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '')
 const iso = (value: unknown) => new Date(value as Date).toISOString()
 const hashKey = (key: string) => createHash('sha256').update(key).digest('hex')
-
-function sniffImage(bytes: Uint8Array): Asset['mimeType'] | null {
-  const head = Buffer.from(bytes.subarray(0, 12))
-  if (head.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))) return 'image/png'
-  if (head.subarray(0, 3).equals(Buffer.from('ffd8ff', 'hex'))) return 'image/jpeg'
-  if (head.subarray(0, 4).toString('latin1') === 'GIF8') return 'image/gif'
-  if (head.subarray(0, 4).toString() === 'RIFF' && head.subarray(8, 12).toString() === 'WEBP')
-    return 'image/webp'
-  return null
-}
 
 function mapPosition(row: Row, warn: (code: string) => void) {
   const jobType = text(row.job_type)
@@ -319,6 +364,27 @@ type ManifestEntry = {
   warnings: string[]
   contactHits: ContactHits
   imageSha256: string[]
+  released?: boolean
+}
+const newEntry = (id: string, status: ManifestEntry['status']): ManifestEntry => ({
+  id,
+  status,
+  reasons: [],
+  warnings: [],
+  contactHits: emptyHits(),
+  imageSha256: [],
+})
+
+// 경로만 남긴다. 숫자(인덱스·id)와 영문 필드명이 아닌 조각은 원문일 수 있어 가린다.
+const issuePath = (path: PropertyKey[]) =>
+  path.map((part) => (typeof part === 'string' && /^[A-Za-z_]+$/.test(part) ? part : '*')).join('.')
+
+export type ReviewItem = {
+  kind: 'posting' | 'template'
+  id: string
+  contentHash: string
+  hits: ContactHits
+  texts: ReturnType<typeof reviewTexts>
 }
 
 // 검증용 경로. 실제 경로는 적재 시 대상 Space로 계산한다.
@@ -334,22 +400,31 @@ const placeholderBind: AssetBinder = async (asset) => ({
 export async function prepareOpeningCustomer(
   client: OpeningSourceClient,
   readObject: OpeningObjectReader,
-  options: { brandId: string; webOrigin: string }
+  options: { brandId: string; webOrigin: string; review?: unknown }
 ) {
+  const review =
+    options.review === undefined ? undefined : parseReviewFile(options.review, options.brandId)
   const source = await readOpeningSource(client, options.brandId)
-  return buildCustomerPackets(source, readObject, options.webOrigin)
+  return buildCustomerPackets(source, readObject, options.webOrigin, review)
 }
 
 async function buildCustomerPackets(
   source: OpeningSource,
   readObject: OpeningObjectReader,
-  webOrigin: string
+  webOrigin: string,
+  review?: ReviewApprovals
 ) {
   const { snapshotAt, brand } = source
   const sourceSnapshotAt = new Date(snapshotAt).toISOString()
   const reasonCounts: Record<string, number> = {}
   const warningCounts: Record<string, number> = {}
-  const hitTotals = { phone: 0, email: 0, postingsHit: 0, templatesHit: 0 }
+  const count = (bucket: Record<string, number>, code: string) => {
+    bucket[code] = (bucket[code] ?? 0) + 1
+  }
+  const hitTotals = { ...emptyHits(), postingsHit: 0, templatesHit: 0 }
+  const schemaIssues: Record<string, number> = {}
+  const reviewCounts = { released: 0, stale: 0 }
+  const reviewItems: ReviewItem[] = []
   const removed = { managerSections: 0, disabledSections: 0, templateDynamicSections: 0 }
   const assets = new Map<string, Uint8Array>()
   const manualReview = new Map<string, { sha256: string; owners: string[] }>()
@@ -371,7 +446,7 @@ async function buildCustomerPackets(
   }
 
   const objects = new Map<string, Promise<Uint8Array>>()
-  async function readFile(key: string, targetTypes: string[]) {
+  async function readFile(key: string, targetTypes: string[], owned = false) {
     const candidates = filesByKey.get(key) ?? []
     if (candidates.length !== 1) throw Error('ASSET_FILE_MISSING')
     const [file] = candidates
@@ -382,20 +457,33 @@ async function buildCustomerPackets(
       !file.storage
     )
       throw Error('ASSET_FILE_REJECTED')
+    // 섹션이 직접 가리키는 키는 다른 고객 파일일 수 있어 소유를 확인한다.
+    if (owned && file.owner_brand_id !== brand.id && !source.sharedKeys.has(key))
+      throw Error(file.owner_brand_id ? 'ASSET_SCOPE_MISMATCH' : 'ASSET_SCOPE_UNKNOWN')
     if (!objects.has(key)) objects.set(key, readObject({ bucket: file.storage, key }))
     return (objects.get(key) as Promise<Uint8Array>).catch(() => {
       throw Error('ASSET_READ_FAILED')
     })
   }
-  async function readAsset(key: unknown, targetTypes: string[]): Promise<Asset> {
+  const stripped = new Map<string, Promise<Asset>>()
+  async function readAsset(key: unknown, targetTypes: string[], owned = false): Promise<Asset> {
     if (typeof key !== 'string' || !key) throw Error('ASSET_KEY_MISSING')
-    const bytes = await readFile(key, targetTypes)
-    const mimeType = sniffImage(bytes)
-    if (!mimeType) throw Error('ASSET_UNSUPPORTED_TYPE')
-    if (bytes.byteLength > 10 * 1024 * 1024) throw Error('ASSET_TOO_LARGE')
-    const sha256 = createHash('sha256').update(bytes).digest('hex')
-    assets.set(sha256, bytes)
-    return { ref: hashKey(key), sha256, sizeBytes: bytes.byteLength, mimeType }
+    const raw = await readFile(key, targetTypes, owned)
+    if (!stripped.has(key))
+      stripped.set(
+        key,
+        (async () => {
+          const mimeType = sniffImage(raw)
+          if (!mimeType) throw Error('ASSET_UNSUPPORTED_TYPE')
+          // 메타데이터를 지운 결과를 해시한다. 검토·복사 대상은 이 바이트다.
+          const bytes = await stripImageMetadata(raw, mimeType)
+          if (bytes.byteLength > 10 * 1024 * 1024) throw Error('ASSET_TOO_LARGE')
+          const sha256 = createHash('sha256').update(bytes).digest('hex')
+          assets.set(sha256, bytes)
+          return { ref: hashKey(key), sha256, sizeBytes: bytes.byteLength, mimeType }
+        })()
+      )
+    return stripped.get(key) as Promise<Asset>
   }
   async function readScene(key: string) {
     let scene: Row
@@ -405,11 +493,48 @@ async function buildCustomerPackets(
       if (reasonOf(error).startsWith('ASSET_')) throw error
       throw Error('SCENE_INVALID')
     }
-    const { type, version, source: origin, elements, appState, files } = scene
-    // 없는 키가 undefined로 남으면 scene 검증(JSON 값만 허용)에 걸린다.
-    return JSON.parse(
-      JSON.stringify({ type, version, source: origin, elements, appState, files })
-    ) as Resource['scene']
+    return (await sanitizeScene(scene)) as Resource['scene']
+  }
+  function parseCandidate<S extends z.ZodType>(
+    schema: S,
+    candidate: unknown,
+    label: string
+  ): z.output<S> {
+    const parsed = schema.safeParse(candidate)
+    if (parsed.success) return parsed.data
+    for (const issue of parsed.error.issues)
+      count(schemaIssues, `${label}:${issuePath(issue.path)}:${issue.code}`)
+    throw Error('PACKET_SCHEMA_REJECTED')
+  }
+  // 연락처 적중을 승인과 맞춰 본다. 승인이 없거나 내용이 바뀌었으면 검토 대기로 보류한다.
+  function gateContacts(
+    kind: ReviewItem['kind'],
+    entry: ManifestEntry,
+    packet: { sourceSnapshotAt: string },
+    images: string[]
+  ) {
+    if (entry.contactHits.url) throw Error('HELD_SENSITIVE_URL')
+    if (!contactCount(entry.contactHits)) return
+    const contentHash = reviewHash(packet)
+    const approved = review?.items.get(`${kind}:${entry.id}`)
+    if (approved === contentHash) {
+      entry.released = true
+      reviewCounts.released++
+      return
+    }
+    if (approved) {
+      reviewCounts.stale++
+      entry.warnings.push('REVIEW_STALE')
+    }
+    reviewItems.push({
+      kind,
+      id: entry.id,
+      contentHash,
+      hits: entry.contactHits,
+      texts: reviewTexts(packet),
+    })
+    noteImages(`${kind}:${entry.id}`, images)
+    throw Error('HELD_CONTACT_PATTERN')
   }
 
   // 원본 섹션을 허용 필드만 남겨 다시 만든다. 비활성·manager 섹션은 싣지 않는다.
@@ -475,7 +600,7 @@ async function buildCustomerPackets(
       }
       const imageSlot = `index:${detail.length}`
       if (type === 'image') {
-        const asset = await readAsset(section.image_key, POSTING_IMAGE_TARGETS)
+        const asset = await readAsset(section.image_key, POSTING_IMAGE_TARGETS, true)
         images[imageSlot] = asset
         detail.push({ ...base, type, image_key: asset.ref })
         continue
@@ -509,7 +634,7 @@ async function buildCustomerPackets(
       }
       // 원본 HTML은 섹션 이미지, 편집기는 resource scene을 쓰므로 다르면 둘 다 보존한다.
       if (section.image_key && section.image_key !== row.image_key) {
-        const original = await readAsset(section.image_key, POSTING_IMAGE_TARGETS)
+        const original = await readAsset(section.image_key, POSTING_IMAGE_TARGETS, true)
         images[imageSlot] = original
         next.image_key = original.ref
       } else next.image_key = asset.ref
@@ -518,20 +643,8 @@ async function buildCustomerPackets(
     return { detail, resources, images }
   }
 
-  function noteImages(
-    owner: string,
-    content: Pick<PostingPacket['content'], 'resources' | 'images'>,
-    extra: Asset[] = []
-  ) {
-    // OCR을 하지 않으므로 글자를 읽지 못한 이미지는 전부 사람이 본다. 내장 이미지 없는 scene만 예외.
-    const unread = [
-      ...extra,
-      ...Object.values(content.images),
-      ...Object.values(content.resources).filter(
-        (resource) => !resource.scene || Object.keys(resource.scene.files).length > 0
-      ),
-    ]
-    for (const { sha256 } of unread) {
+  function noteImages(owner: string, images: string[]) {
+    for (const sha256 of images) {
       const known = manualReview.get(sha256) ?? { sha256, owners: [] }
       if (!known.owners.includes(owner)) known.owners.push(owner)
       manualReview.set(sha256, known)
@@ -557,7 +670,7 @@ async function buildCustomerPackets(
       updatedAt: iso(row.updated_at),
     }
     const hits = scanContacts(entry)
-    if (hits.phone + hits.email) {
+    if (contactCount(hits) + hits.url) {
       heldOrg.stores.push(entry.sourceId)
       continue
     }
@@ -581,7 +694,7 @@ async function buildCustomerPackets(
       updatedAt: iso(row.updated_at),
     }
     const hits = scanContacts(entry)
-    if (hits.phone + hits.email) heldOrg.positions.push(entry.sourceId)
+    if (contactCount(hits) + hits.url) heldOrg.positions.push(entry.sourceId)
     else positions.push(entry)
   }
   const org = orgPacketSchema.parse({
@@ -591,9 +704,25 @@ async function buildCustomerPackets(
     positions,
   })
 
-  const count = (bucket: Record<string, number>, code: string) => {
-    bucket[code] = (bucket[code] ?? 0) + 1
+  const addHits = (hits: ContactHits, bucket: 'postingsHit' | 'templatesHit') => {
+    hitTotals.phone += hits.phone
+    hitTotals.email += hits.email
+    hitTotals.keyword += hits.keyword
+    hitTotals.url += hits.url
+    if (contactCount(hits) + hits.url) hitTotals[bucket]++
   }
+  const usedImages = (
+    content: Pick<PostingPacket['content'], 'resources' | 'images'>,
+    extra?: Asset
+  ) => [
+    ...new Set(
+      [
+        ...Object.values(content.resources),
+        ...Object.values(content.images),
+        ...(extra ? [extra] : []),
+      ].map((asset) => asset.sha256)
+    ),
+  ]
   const postingEntries: ManifestEntry[] = []
   const postingPackets: PostingPacket[] = []
   const bodies = new Map(source.postings.map((row) => [String(row.id), row]))
@@ -601,14 +730,7 @@ async function buildCustomerPackets(
   const windowStart = migrationWindowStart(new Date(snapshotAt)).getTime()
 
   for (const row of source.overview) {
-    const entry: ManifestEntry = {
-      id: row.id,
-      status: 'excluded',
-      reasons: [],
-      warnings: [],
-      contactHits: { phone: 0, email: 0 },
-      imageSha256: [],
-    }
+    const entry = newEntry(row.id, 'excluded')
     postingEntries.push(entry)
     const body = bodies.get(row.id)
     if (!body) {
@@ -646,7 +768,7 @@ async function buildCustomerPackets(
       })
       const detailImageKey = text(body.detail_image_key)
       const detailImage = detailImageKey
-        ? await readAsset(detailImageKey, ['posting_detail_img'])
+        ? await readAsset(detailImageKey, ['posting_detail_img'], true)
         : undefined
       const form = planOpeningForm(`opening.work:posting:${row.id}`, body.application_entries, {
         preserveRepeatedCustomFields: true,
@@ -685,31 +807,16 @@ async function buildCustomerPackets(
       if (JSON.stringify(candidate.content).replaceAll(applyUrl, '').includes(webHost))
         warn('OPENING_URL_REMAINS')
       entry.contactHits = scanContacts(candidate)
-      hitTotals.phone += entry.contactHits.phone
-      hitTotals.email += entry.contactHits.email
-      if (entry.contactHits.phone + entry.contactHits.email) {
-        hitTotals.postingsHit++
-        entry.status = 'held'
-        entry.reasons.push('HELD_CONTACT_PATTERN')
-        count(reasonCounts, 'HELD_CONTACT_PATTERN')
-        continue
-      }
-      const packet = postingPacketSchema.safeParse(candidate)
-      if (!packet.success) throw Error('PACKET_SCHEMA_REJECTED')
+      addHits(entry.contactHits, 'postingsHit')
+      const packet = parseCandidate(postingPacketSchema, candidate, 'posting')
+      const images = unreadImages(packet.content, [packet.content.detailImage])
+      gateContacts('posting', entry, packet, images)
       // 적재기와 같은 계획기로 미리 통과시켜 적재 단계에서 막힐 공고를 여기서 보류한다.
-      await planPosting(packet.data, PLACEHOLDER_SPACE, placeholderBind)
+      await planPosting(packet, PLACEHOLDER_SPACE, placeholderBind, review)
       entry.status = 'included'
-      entry.imageSha256 = [
-        ...new Set(
-          [
-            ...Object.values(content.resources),
-            ...Object.values(content.images),
-            ...(detailImage ? [detailImage] : []),
-          ].map((asset) => asset.sha256)
-        ),
-      ]
-      noteImages(`posting:${row.id}`, content, detailImage ? [detailImage] : [])
-      postingPackets.push(packet.data)
+      entry.imageSha256 = usedImages(packet.content, packet.content.detailImage)
+      noteImages(`posting:${row.id}`, images)
+      postingPackets.push(packet)
     } catch (error) {
       entry.status = 'held'
       const reason = reasonOf(error)
@@ -723,19 +830,12 @@ async function buildCustomerPackets(
   const templateReasons: Record<string, number> = {}
   for (const row of source.templates) {
     const id = String(row.id)
-    const entry: ManifestEntry = {
-      id,
-      status: 'held',
-      reasons: [],
-      warnings: [],
-      contactHits: { phone: 0, email: 0 },
-      imageSha256: [],
-    }
+    const entry = newEntry(id, 'held')
     templateEntries.push(entry)
     try {
       const content = await sanitizeSections(row.data, 'template')
       const cover = text(row.image_key)
-        ? await readAsset(row.image_key, POSTING_IMAGE_TARGETS)
+        ? await readAsset(row.image_key, POSTING_IMAGE_TARGETS, true)
         : undefined
       const candidate = {
         sourceSpaceId: brand.id,
@@ -749,27 +849,15 @@ async function buildCustomerPackets(
         ...content,
       }
       entry.contactHits = scanContacts(candidate)
-      hitTotals.phone += entry.contactHits.phone
-      hitTotals.email += entry.contactHits.email
-      if (entry.contactHits.phone + entry.contactHits.email) {
-        hitTotals.templatesHit++
-        throw Error('HELD_CONTACT_PATTERN')
-      }
-      const packet = templatePacketSchema.safeParse(candidate)
-      if (!packet.success) throw Error('PACKET_SCHEMA_REJECTED')
-      await planTemplate(packet.data, PLACEHOLDER_SPACE, PLACEHOLDER_SPACE, placeholderBind)
+      addHits(entry.contactHits, 'templatesHit')
+      const packet = parseCandidate(templatePacketSchema, candidate, 'template')
+      const images = unreadImages(packet, [packet.cover])
+      gateContacts('template', entry, packet, images)
+      await planTemplate(packet, PLACEHOLDER_SPACE, PLACEHOLDER_SPACE, placeholderBind, review)
       entry.status = 'included'
-      entry.imageSha256 = [
-        ...new Set(
-          [
-            ...Object.values(content.resources),
-            ...Object.values(content.images),
-            ...(cover ? [cover] : []),
-          ].map((asset) => asset.sha256)
-        ),
-      ]
-      noteImages(`template:${id}`, content, cover ? [cover] : [])
-      templatePackets.push(packet.data)
+      entry.imageSha256 = usedImages(packet, packet.cover)
+      noteImages(`template:${id}`, images)
+      templatePackets.push(packet)
     } catch (error) {
       const reason = reasonOf(error)
       entry.reasons.push(reason)
@@ -784,6 +872,9 @@ async function buildCustomerPackets(
     [...postingEntries, ...templateEntries].flatMap((entry) => entry.imageSha256)
   )
   const keptAssets = new Map([...assets].filter(([sha256]) => keptImages.has(sha256)))
+  const pendingImages = [...manualReview.values()].filter(
+    (image) => !review?.images.has(image.sha256)
+  )
   const updatedOnlyByDate: Record<string, number> = {}
   for (const date of updatedOnlyDates.sort()) count(updatedOnlyByDate, date)
   const summary = {
@@ -800,7 +891,13 @@ async function buildCustomerPackets(
     },
     updatedOnly: { count: updatedOnlyDates.length, byDate: updatedOnlyByDate },
     contactHits: hitTotals,
-    images: { total: keptAssets.size, manualReview: manualReview.size },
+    images: {
+      total: keptAssets.size,
+      manualReview: manualReview.size,
+      pendingReview: pendingImages.length,
+    },
+    schemaIssues,
+    review: { ...reviewCounts, pendingItems: reviewItems.length },
     templates: {
       total: templateEntries.length,
       included: statusCount(templateEntries, 'included'),
@@ -827,6 +924,7 @@ async function buildCustomerPackets(
     positions: org.positions.map((position) => position.sourceId),
     heldOrg,
     manualReviewImages: [...manualReview.values()],
+    review: review ? { reviewer: review.reviewer, reviewedAt: review.reviewedAt } : null,
   }
   return {
     summary,
@@ -835,6 +933,65 @@ async function buildCustomerPackets(
     templates: templatePackets,
     postings: postingPackets,
     assets: keptAssets,
+    review: {
+      sourceSpaceId: brand.id,
+      items: reviewItems,
+      images: pendingImages.flatMap((image) => {
+        const bytes = assets.get(image.sha256)
+        return bytes ? [{ ...image, bytes }] : []
+      }),
+    },
   }
 }
 export type PreparedCustomer = Awaited<ReturnType<typeof prepareOpeningCustomer>>
+
+// 고객 자료가 저장소에 섞이지 않게, 지난 실행 결과가 섞이지 않게 저장소 밖 빈 폴더만 받는다.
+export function assertOutDir(out: string, repoRoot: string) {
+  const root = resolve(out)
+  if (root === repoRoot || root.startsWith(repoRoot + sep)) throw Error('OUT_DIR_INSIDE_REPO')
+  if (existsSync(root) && readdirSync(root).length) throw Error('OUT_DIR_NOT_EMPTY')
+  return root
+}
+
+const IMAGE_EXTENSIONS: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+}
+
+// 원문·연락처가 들어 있는 폴더라 소유자만 읽게 쓰고, 다 쓴 뒤 지우는 것은 운영자 몫이다.
+export function writeReviewDir(root: string, review: PreparedCustomer['review']) {
+  for (const dir of [root, join(root, 'items'), join(root, 'images')]) {
+    mkdirSync(dir, { recursive: true, mode: 0o700 })
+    chmodSync(dir, 0o700)
+  }
+  const write = (path: string, data: string | Uint8Array) => {
+    writeFileSync(join(root, path), data, { mode: 0o600 })
+    chmodSync(join(root, path), 0o600)
+  }
+  write(
+    'candidates.json',
+    JSON.stringify(
+      {
+        sourceSpaceId: review.sourceSpaceId,
+        items: review.items.map(({ kind, id, contentHash, hits }) => ({
+          kind,
+          id,
+          contentHash,
+          hits,
+        })),
+        images: review.images.map(({ sha256, owners }) => ({ sha256, owners })),
+      },
+      null,
+      2
+    )
+  )
+  for (const item of review.items)
+    write(`items/${item.kind}-${item.id}.json`, JSON.stringify(item, null, 2))
+  for (const image of review.images)
+    write(
+      `images/${image.sha256}.${IMAGE_EXTENSIONS[sniffImage(image.bytes) ?? ''] ?? 'bin'}`,
+      image.bytes
+    )
+}
