@@ -1,6 +1,6 @@
 /** @jest-environment node */
 import { NextRequest } from 'next/server'
-import { POST } from '../route'
+import { POST } from '../[sessionId]/route'
 import { prisma } from '@/lib/prisma'
 
 jest.mock('@/lib/prisma', () => ({
@@ -14,7 +14,7 @@ jest.mock('@/lib/hiring/public-request', () => ({ publicRequestKey: () => 'qa' }
 const id = '00000000-0000-4000-8000-000000000001'
 const token = 'a'.repeat(64)
 function req(cookie = `wd-recovery-${id}=${token}`) {
-  return new NextRequest('http://localhost/api/hiring-public/upload-sessions/recover', {
+  return new NextRequest(`http://localhost/api/hiring-public/upload-sessions/recover/${id}`, {
     method: 'POST',
     headers: { origin: 'http://localhost', cookie, 'content-type': 'application/json' },
     body: JSON.stringify({ uploadSessionId: id, postingUuid: 'post' }),
@@ -27,6 +27,37 @@ beforeEach(() => {
 it('쿠키가 없으면 세션을 변경하지 않는다', async () => {
   const res = await POST(req(''))
   expect(res.status).toBe(403)
+  expect(prisma.hiringUploadSession.updateMany).not.toHaveBeenCalled()
+})
+it('제출 전에 복구 쿠키를 확인하고 세션 상태는 변경하지 않는다', async () => {
+  ;(prisma.hiringUploadSession.findFirst as jest.Mock).mockResolvedValue({ id })
+  const request = new NextRequest(
+    `http://localhost/api/hiring-public/upload-sessions/recover/${id}`,
+    {
+      method: 'POST',
+      headers: {
+        origin: 'http://localhost',
+        cookie: `wd-recovery-${id}=${token}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ uploadSessionId: id, postingUuid: 'post', action: 'verify' }),
+    }
+  )
+  const res = await POST(request)
+  expect(await res.json()).toEqual({ status: 'ready' })
+  expect(prisma.hiringUploadSession.updateMany).not.toHaveBeenCalled()
+})
+it('URL의 세션과 요청 본문의 세션이 다르면 거절한다', async () => {
+  const request = new NextRequest(
+    'http://localhost/api/hiring-public/upload-sessions/recover/other',
+    {
+      method: 'POST',
+      headers: { origin: 'http://localhost', cookie: `wd-recovery-${id}=${token}` },
+      body: JSON.stringify({ uploadSessionId: id, postingUuid: 'post' }),
+    }
+  )
+  const res = await POST(request)
+  expect(res.status).toBe(400)
   expect(prisma.hiringUploadSession.updateMany).not.toHaveBeenCalled()
 })
 it('미완료 세션을 원자적으로 취소하고 재작성하도록 알린다', async () => {
@@ -70,11 +101,14 @@ it('취소 응답이 유실되어 다시 확인해도 취소 결과를 반환한
   expect(await res.json()).toEqual({ status: 'cancelled' })
 })
 it('다른 출처의 복구 요청을 거부한다', async () => {
-  const request = new NextRequest('http://localhost/api/hiring-public/upload-sessions/recover', {
-    method: 'POST',
-    headers: { origin: 'https://other.example', cookie: `wd-recovery-${id}=${token}` },
-    body: JSON.stringify({ uploadSessionId: id, postingUuid: 'post' }),
-  })
+  const request = new NextRequest(
+    `http://localhost/api/hiring-public/upload-sessions/recover/${id}`,
+    {
+      method: 'POST',
+      headers: { origin: 'https://other.example', cookie: `wd-recovery-${id}=${token}` },
+      body: JSON.stringify({ uploadSessionId: id, postingUuid: 'post' }),
+    }
+  )
   const res = await POST(request)
   expect(res.status).toBe(403)
   expect(prisma.hiringUploadSession.updateMany).not.toHaveBeenCalled()

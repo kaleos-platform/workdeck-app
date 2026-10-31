@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      path: '/api/hiring-public/upload-sessions/recover',
+      path: `/api/hiring-public/upload-sessions/recover/${id}`,
       maxAge: 24 * 60 * 60,
     })
     return response

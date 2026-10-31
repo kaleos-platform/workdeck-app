@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { fileFieldError, fileLimitText } from '@/lib/hiring/file-fields'
 import { scalarFieldError } from '@/lib/hiring/form-values'
+import { verifyRecovery } from '@/lib/hiring/recovery-client'
 import type { HiringFieldDef } from '@/lib/validations/hiring-applicants'
 
 type FieldValue = string | string[] | boolean
@@ -75,11 +76,14 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
     }
     setRecoveryState('checking')
     try {
-      const res = await fetch('/api/hiring-public/upload-sessions/recover', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uploadSessionId: id, postingUuid }),
-      })
+      const res = await fetch(
+        `/api/hiring-public/upload-sessions/recover/${encodeURIComponent(id)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uploadSessionId: id, postingUuid }),
+        }
+      )
       const result = await res.json()
       if (!res.ok || !['completed', 'cancelled'].includes(result.status))
         throw new Error('recovery failed')
@@ -201,6 +205,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
         const previous = uploadBatch.current
         if (
           !previous ||
+          previous.expiresAt <= Date.now() ||
           previous.files.length !== selected.length ||
           previous.files.some(
             (item, index) =>
@@ -262,6 +267,9 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
           uploadSessionId: batch.uploadSessionId,
           uploadToken: batch.uploadToken,
         })
+        if (!(await verifyRecovery(batch.uploadSessionId, postingUuid))) {
+          throw new Error('브라우저 쿠키 또는 연결을 확인한 뒤 다시 제출해 주세요.')
+        }
         try {
           sessionStorage.setItem(recoveryKey, batch.uploadSessionId)
         } catch {

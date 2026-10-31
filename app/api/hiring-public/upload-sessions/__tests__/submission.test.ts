@@ -127,6 +127,7 @@ it('제출 준비 응답에 HttpOnly 복구 쿠키를 설정한다', async () =>
   const cookie = res.cookies.get(`wd-recovery-${body.uploadSessionId}`)
   expect(cookie?.httpOnly).toBe(true)
   expect(cookie?.sameSite).toBe('strict')
+  expect(cookie?.path).toBe(`/api/hiring-public/upload-sessions/recover/${body.uploadSessionId}`)
   expect(cookie?.value).toBe(body.uploadToken)
 })
 it('첨부가 없는 지원서도 빈 세션을 생성하고 완료한다', async () => {

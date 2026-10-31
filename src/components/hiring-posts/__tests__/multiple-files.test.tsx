@@ -1,5 +1,10 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ApplyForm } from '@/components/hiring-public/apply-form'
+import { verifyRecovery } from '@/lib/hiring/recovery-client'
+
+jest.mock('@/lib/hiring/recovery-client', () => ({
+  verifyRecovery: jest.fn().mockResolvedValue(true),
+}))
 
 const sessionUrl = '/api/hiring-public/upload-sessions'
 const completeUrl = `${sessionUrl}/complete`
@@ -100,7 +105,7 @@ it('완료 응답 유실 후 다시 열면 이전 세션만 확인하고 새 제
   expect((fetch as jest.Mock).mock.calls.map(([url]) => url)).toEqual([
     sessionUrl,
     completeUrl,
-    '/api/hiring-public/upload-sessions/recover',
+    '/api/hiring-public/upload-sessions/recover/session-1',
   ])
   rendered.unmount()
 })
@@ -129,6 +134,40 @@ it('브라우저 저장소에 복구 식별자를 기록할 수 없으면 최종
   })
   expect(fetch).toHaveBeenCalledTimes(1)
   expect(screen.getByText(/브라우저 저장소/)).toBeInTheDocument()
+})
+it('복구 쿠키가 차단되면 최종 제출을 보내지 않는다', async () => {
+  ;(verifyRecovery as jest.Mock).mockResolvedValueOnce(false)
+  global.fetch = jest.fn().mockResolvedValue(session())
+  const rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('checkbox'))
+  await act(async () => {
+    fireEvent.submit(rendered.container.querySelector('form')!)
+  })
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(screen.getByText(/브라우저 쿠키/)).toBeInTheDocument()
+})
+it('복구 쿠키 확인 전에 세션이 만료되면 다음 시도에 새 세션을 준비한다', async () => {
+  const now = Date.now()
+  const clock = jest.spyOn(Date, 'now').mockReturnValue(now)
+  ;(verifyRecovery as jest.Mock)
+    .mockResolvedValueOnce(false)
+    .mockResolvedValueOnce(false)
+    .mockResolvedValueOnce(false)
+  global.fetch = jest
+    .fn()
+    .mockResolvedValueOnce(session('session-1', new Date(now + 1000).toISOString()))
+    .mockResolvedValueOnce(session('session-2', new Date(now + 60000).toISOString()))
+  const rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('checkbox'))
+  const submit = () =>
+    act(async () => {
+      fireEvent.submit(rendered.container.querySelector('form')!)
+    })
+  await submit()
+  clock.mockReturnValue(now + 2000)
+  await submit()
+  await submit()
+  expect(fetch).toHaveBeenCalledTimes(2)
 })
 
 it('제출 중과 결과가 불확실한 동안 이탈을 경고하고 확인 후 해제한다', async () => {
@@ -345,13 +384,15 @@ it('제출 결과가 불확실하면 이전 입력으로 재확인됨을 안내�
   expect(screen.getByRole('button', { name: '이전 제출 결과 확인' })).toBeEnabled()
 })
 
-it('업로드 응답 유실 뒤 세션이 만료되면 완료 API로 상태를 확인한다', async () => {
+it('업로드 응답 유실 후 세션이 만료되면 새 세션으로 업로드한다', async () => {
   const now = Date.now()
   const clock = jest.spyOn(Date, 'now').mockReturnValue(now)
   global.fetch = jest
     .fn()
     .mockResolvedValueOnce(session('session-1', new Date(now + 1000).toISOString()))
     .mockRejectedValueOnce(new Error('응답 유실'))
+    .mockResolvedValueOnce(session('session-2', new Date(now + 60000).toISOString()))
+    .mockResolvedValueOnce(response())
     .mockResolvedValueOnce(response())
   const { submit } = setup()
   await submit()
@@ -360,6 +401,8 @@ it('업로드 응답 유실 뒤 세션이 만료되면 완료 API로 상태를 �
   expect((fetch as jest.Mock).mock.calls.map(([url]) => url)).toEqual([
     sessionUrl,
     'https://storage.test/session-1',
+    sessionUrl,
+    'https://storage.test/session-2',
     completeUrl,
   ])
   expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument()
@@ -459,7 +502,9 @@ it('불확실한 완료를 확인하다 410이면 이전 세션의 결과를 다
   expect(fetch).toHaveBeenCalledTimes(4)
   fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
   await waitFor(() => expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument())
-  expect((fetch as jest.Mock).mock.calls[4][0]).toBe('/api/hiring-public/upload-sessions/recover')
+  expect((fetch as jest.Mock).mock.calls[4][0]).toBe(
+    '/api/hiring-public/upload-sessions/recover/session-1'
+  )
 })
 
 it.each([400, 422])(
@@ -484,6 +529,6 @@ it.each([400, 422])(
     await waitFor(() =>
       expect(screen.getByText(/이전 제출은 완료되지 않았습니다/)).toBeInTheDocument()
     )
-    expect(mock.mock.calls[4][0]).toBe('/api/hiring-public/upload-sessions/recover')
+    expect(mock.mock.calls[4][0]).toBe('/api/hiring-public/upload-sessions/recover/session-1')
   }
 )

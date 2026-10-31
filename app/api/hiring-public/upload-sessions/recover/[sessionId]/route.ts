@@ -8,6 +8,7 @@ import { uploadTokenHash } from '@/lib/hiring/upload-protocol'
 const schema = z.object({
   uploadSessionId: z.string().uuid(),
   postingUuid: z.string().min(1).max(100),
+  action: z.literal('verify').optional(),
 })
 const cancelledHash = 'recovery-cancelled-v1'
 export const runtime = 'nodejs'
@@ -20,6 +21,8 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return NextResponse.json({}, { status: 400 })
   const { uploadSessionId, postingUuid } = parsed.data
+  if (req.nextUrl.pathname.split('/').pop() !== uploadSessionId)
+    return NextResponse.json({}, { status: 400 })
   const token = req.cookies.get(`wd-recovery-${uploadSessionId}`)?.value
   if (!token || !/^[a-f0-9]{64}$/.test(token)) return NextResponse.json({}, { status: 403 })
   const where = {
@@ -28,6 +31,15 @@ export async function POST(req: NextRequest) {
     posting: { uuid: postingUuid },
   }
   try {
+    if (parsed.data.action === 'verify') {
+      const session = await prisma.hiringUploadSession.findFirst({
+        where: { ...where, claimedAt: null, completedAt: null, expiresAt: { gt: new Date() } },
+        select: { id: true },
+      })
+      return session
+        ? NextResponse.json({ status: 'ready' }, { headers: { 'Cache-Control': 'no-store' } })
+        : NextResponse.json({}, { status: 409 })
+    }
     const status = await prisma.$transaction(async (tx) => {
       // 완료 요청과 같은 행을 잠가 완료 또는 취소 중 하나만 확정한다.
       const result = await tx.hiringUploadSession.updateMany({
