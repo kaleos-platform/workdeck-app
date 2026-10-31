@@ -17,6 +17,7 @@ import {
   migrationWindowStart,
   postingPacketSchema,
   reviewHash,
+  reviewTexts,
   scanContacts,
   type PostingPacket,
 } from '../opening-packet'
@@ -500,6 +501,18 @@ describe('이미지·scene 정제', () => {
     expect(Buffer.from(clean).includes(Buffer.from('010-1234-5678'))).toBe(false)
   })
 
+  it.each([
+    ['image/png', () => solid(30).png().toBuffer()],
+    ['image/jpeg', () => solid(30).jpeg().toBuffer()],
+    ['image/webp', () => solid(30).webp().toBuffer()],
+    ['image/gif', () => solid(30).gif().toBuffer()],
+  ] as const)('%s 재인코딩 결과는 실행마다 같아 승인 해시가 유지된다', async (mimeType, make) => {
+    const bytes = await make()
+    const first = await stripImageMetadata(bytes, mimeType)
+    const second = await stripImageMetadata(bytes, mimeType)
+    expect(Buffer.from(first).equals(Buffer.from(second))).toBe(true)
+  })
+
   it('움직이는 GIF의 프레임을 유지한다', async () => {
     const frames = await Promise.all([solid(1).png().toBuffer(), solid(90).png().toBuffer()])
     const gif = await sharp(frames, { join: { animated: true } })
@@ -669,6 +682,15 @@ describe('prepare', () => {
       'posting:positions.*.fields.name:too_big': 1,
     })
     expect(JSON.stringify(summary)).not.toContain('합성 비밀 문항')
+  })
+
+  it('매장 형식 오류는 그 매장만 보류하고 경로만 집계한다', async () => {
+    const rows = sourceRows()
+    rows.stores[0].name = ''
+    const { manifest, summary } = await prepare(rows)
+    expect(manifest.heldOrg.stores).toEqual(['20'])
+    expect(summary.schemaIssues).toEqual({ 'store:name:too_small': 1 })
+    expect(manifest.postings.find((p) => p.id === '1')?.reasons).toEqual(['STORE_UNAVAILABLE'])
   })
 
   it('섹션이 가리키는 이미지가 다른 고객 파일이면 보류하고 공통 샘플이면 허용한다', async () => {
@@ -970,6 +992,16 @@ describe('사람 검토', () => {
     expect(flagged[0].text).toContain('010-1234-5678')
     expect(first.review.images.length).toBeGreaterThan(0)
     expect(first.postings.map((p) => p.sourcePostingId)).toEqual(['1', '2'])
+  })
+
+  it('숫자만 있는 값·키도 검토 원문에 적중으로 나온다', () => {
+    const texts = reviewTexts({ a: '010-1234-5678', b: '01012345678', '0212345678': 'x', c: 'abc' })
+    expect(texts.filter((text) => text.flagged).map((text) => text.text)).toEqual([
+      '010-1234-5678',
+      '01012345678',
+      '0212345678',
+    ])
+    expect(texts.some((text) => text.text === 'abc')).toBe(false)
   })
 
   it('승인하면 보류를 풀고, 같은 검토 파일로 적재할 수 있다', async () => {
