@@ -359,6 +359,17 @@ async function buildCustomerPackets(
     filesByKey.set(file.file_key, [...(filesByKey.get(file.file_key) ?? []), file])
   const contentById = new Map(source.contents.map((c) => [c.id, c]))
 
+  const webHost = new URL(webOrigin).host
+  // Opening은 같은 origin의 /p/ 링크를 지원 링크로 다룬다(복사 공고의 옛 링크 포함).
+  const isOpeningPostingUrl = (url: string) => {
+    try {
+      const parsed = new URL(url)
+      return parsed.origin === new URL(webOrigin).origin && parsed.pathname.startsWith('/p/')
+    } catch {
+      return false
+    }
+  }
+
   const objects = new Map<string, Promise<Uint8Array>>()
   async function readFile(key: string, targetTypes: string[]) {
     const candidates = filesByKey.get(key) ?? []
@@ -410,6 +421,7 @@ async function buildCustomerPackets(
       intro?: string
       stores?: string
       positions?: boolean
+      applyUrl?: string
     } = {}
   ) {
     if (!Array.isArray(raw)) throw Error('CONTENT_INVALID_DETAIL')
@@ -486,7 +498,14 @@ async function buildCustomerPackets(
         ...base,
         type,
         resource_id: id,
-        ...(typeof section.url === 'string' ? { url: section.url } : {}),
+        ...(typeof section.url === 'string'
+          ? {
+              url:
+                dynamic.applyUrl && isOpeningPostingUrl(section.url)
+                  ? dynamic.applyUrl
+                  : section.url,
+            }
+          : {}),
       }
       // 원본 HTML은 섹션 이미지, 편집기는 resource scene을 쓰므로 다르면 둘 다 보존한다.
       if (section.image_key && section.image_key !== row.image_key) {
@@ -617,11 +636,13 @@ async function buildCustomerPackets(
       const positionNotes = mapped.flatMap((item) => (item.note ? [item.note] : [])).join('\n')
       const title = text(body.posting_title)
       const intro = text(body.company_intro)
+      const applyUrl = `${webOrigin}/p/${text(body.uuid)}`
       const content = await sanitizeSections(body.detail, 'posting', {
         title,
         intro,
         stores: storesText,
         positions: mapped.length > 0,
+        applyUrl,
       })
       const detailImageKey = text(body.detail_image_key)
       const detailImage = detailImageKey
@@ -657,9 +678,12 @@ async function buildCustomerPackets(
           positionsVerified: mapped.length > 0,
           ...(positionNotes ? { positionConditionsText: positionNotes } : {}),
           ...(storesText ? { storesText } : {}),
-          originalApplyUrl: `${webOrigin}/p/${text(body.uuid)}`,
+          originalApplyUrl: applyUrl,
         },
       }
+      // 본문 글자·scene 링크의 opening 주소는 12/18에 끊긴다. 자동 치환하지 않고 건수만 알린다.
+      if (JSON.stringify(candidate.content).replaceAll(applyUrl, '').includes(webHost))
+        warn('OPENING_URL_REMAINS')
       entry.contactHits = scanContacts(candidate)
       hitTotals.phone += entry.contactHits.phone
       hitTotals.email += entry.contactHits.email
