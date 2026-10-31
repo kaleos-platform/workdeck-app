@@ -13,6 +13,10 @@ async function loadAccess() {
       userMs: user === undefined ? null : Math.round(user),
       contextMs: context === undefined ? null : Math.round(context),
       entitlementMs: entitlement === undefined ? null : Math.round(entitlement),
+      membershipListMs:
+        timings.membership_list === undefined ? null : Math.round(timings.membership_list),
+      membershipCookieMs:
+        timings.membership_cookie === undefined ? null : Math.round(timings.membership_cookie),
     })
   }
   return result

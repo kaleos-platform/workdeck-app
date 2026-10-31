@@ -11,6 +11,8 @@ it('느린 layout은 사용자 정보 없이 각 대기 시간만 기록한다',
     recordCoupangAdsTiming('layout_user', 100)
     recordCoupangAdsTiming('layout_context', 300)
     recordCoupangAdsTiming('layout_entitlement', 200)
+    recordCoupangAdsTiming('membership_list', 250)
+    recordCoupangAdsTiming('membership_cookie', 5)
     return { spaceName: 'private-space-name' }
   })
   const log = jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -19,6 +21,8 @@ it('느린 layout은 사용자 정보 없이 각 대기 시간만 기록한다',
     userMs: 100,
     contextMs: 300,
     entitlementMs: 200,
+    membershipListMs: 250,
+    membershipCookieMs: 5,
   })
   expect(JSON.stringify(log.mock.calls)).not.toContain('private')
 })

@@ -30,6 +30,8 @@ it('느린 요청은 개인정보 없이 인증과 목록 조회 시간만 기�
     recordCoupangAdsTiming('auth_user', 120)
     recordCoupangAdsTiming('auth_membership', 160)
     recordCoupangAdsTiming('auth_deck', 30)
+    recordCoupangAdsTiming('membership_list', 130)
+    recordCoupangAdsTiming('membership_cookie', 5)
     return { space: { id: 'synthetic-private-id' } }
   })
   const log = jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -40,6 +42,8 @@ it('느린 요청은 개인정보 없이 인증과 목록 조회 시간만 기�
     authUserMs: 120,
     membershipMs: 160,
     deckMs: 30,
+    membershipListMs: 130,
+    membershipCookieMs: 5,
   })
 })
 it('빠른 요청은 로그를 남기지 않는다', async () => {
@@ -66,5 +70,7 @@ it('공유된 컨텍스트로 세부 구간이 없으면 0이 아닌 null로 기
     authUserMs: null,
     membershipMs: null,
     deckMs: null,
+    membershipListMs: null,
+    membershipCookieMs: null,
   })
 })

@@ -29,6 +29,10 @@ async function loadPostings(params: PostingSearchParams) {
       membershipMs:
         timings.auth_membership === undefined ? null : Math.round(timings.auth_membership),
       deckMs: timings.auth_deck === undefined ? null : Math.round(timings.auth_deck),
+      membershipListMs:
+        timings.membership_list === undefined ? null : Math.round(timings.membership_list),
+      membershipCookieMs:
+        timings.membership_cookie === undefined ? null : Math.round(timings.membership_cookie),
     })
   }
   return { rows, ...pagination }
