@@ -66,7 +66,7 @@ export function decodeMigrationSnapshot(
   }
 }
 
-type MigrationInput = MigrationSource & {
+export type MigrationInput = MigrationSource & {
   spaceId: string
   sourceSnapshotAt: Date
   transformVersion: string
@@ -74,20 +74,20 @@ type MigrationInput = MigrationSource & {
   targetModel: string
 }
 
+type MigrationTarget<T> = {
+  read: (tx: Prisma.TransactionClient, id: string) => Promise<T | null>
+  snapshot: (value: T) => unknown
+}
+
 /**
- * 반드시 prisma.$transaction 콜백 안에서 호출하고 오류를 바깥까지 전파한다.
- * create/read는 전달받은 tx만 사용한다. snapshot은 실제 저장된 대상의 일관된 JSON 투영이다.
- * 동시 실행의 unique 충돌은 전체 transaction을 롤백한 뒤 재시도한다.
+ * 기존 기록을 읽기만 해서 검증한다. 원본 변경·고객 수정이면 충돌 오류를 던지고, 기록이 없으면 null.
+ * 적재 전 계획 단계와 importMigrationRecord가 같은 판정을 쓴다.
  */
-export async function importMigrationRecord<T extends { id: string; spaceId: string }>(
+export async function findExistingMigrationRecord<T extends { id: string; spaceId: string }>(
   tx: Prisma.TransactionClient,
   input: MigrationInput,
-  target: {
-    create: (tx: Prisma.TransactionClient) => Promise<T>
-    read: (tx: Prisma.TransactionClient, id: string) => Promise<T | null>
-    snapshot: (value: T) => unknown
-  }
-): Promise<{ status: 'created' | 'existing'; target: T; record: HiringMigrationRecord }> {
+  target: MigrationTarget<T>
+): Promise<{ target: T; record: HiringMigrationRecord } | null> {
   const sourceRef = migrationSourceRef(input)
   if (
     !input.spaceId ||
@@ -99,22 +99,37 @@ export async function importMigrationRecord<T extends { id: string; spaceId: str
   }
   const sourceHash = migrationHash(input.snapshot)
   const existing = await tx.hiringMigrationRecord.findUnique({ where: { sourceRef } })
-  if (existing) {
-    if (existing.spaceId !== input.spaceId) throw new Error('Migration space conflict')
-    if (existing.sourceHash !== sourceHash || existing.transformVersion !== input.transformVersion)
-      throw new Error('Migration source conflict')
-    if (existing.targetModel !== input.targetModel) throw new Error('Migration target conflict')
-    const current = await target.read(tx, existing.targetId)
-    if (
-      !current ||
-      current.id !== existing.targetId ||
-      current.spaceId !== input.spaceId ||
-      migrationHash(target.snapshot(current)) !== existing.targetHash
-    ) {
-      throw new Error('Migration target conflict')
-    }
-    return { status: 'existing', target: current, record: existing }
+  if (!existing) return null
+  if (existing.spaceId !== input.spaceId) throw new Error('Migration space conflict')
+  if (existing.sourceHash !== sourceHash || existing.transformVersion !== input.transformVersion)
+    throw new Error('Migration source conflict')
+  if (existing.targetModel !== input.targetModel) throw new Error('Migration target conflict')
+  const current = await target.read(tx, existing.targetId)
+  if (
+    !current ||
+    current.id !== existing.targetId ||
+    current.spaceId !== input.spaceId ||
+    migrationHash(target.snapshot(current)) !== existing.targetHash
+  ) {
+    throw new Error('Migration target conflict')
   }
+  return { target: current, record: existing }
+}
+
+/**
+ * 반드시 prisma.$transaction 콜백 안에서 호출하고 오류를 바깥까지 전파한다.
+ * create/read는 전달받은 tx만 사용한다. snapshot은 실제 저장된 대상의 일관된 JSON 투영이다.
+ * 동시 실행의 unique 충돌은 전체 transaction을 롤백한 뒤 재시도한다.
+ */
+export async function importMigrationRecord<T extends { id: string; spaceId: string }>(
+  tx: Prisma.TransactionClient,
+  input: MigrationInput,
+  target: MigrationTarget<T> & { create: (tx: Prisma.TransactionClient) => Promise<T> }
+): Promise<{ status: 'created' | 'existing'; target: T; record: HiringMigrationRecord }> {
+  const existing = await findExistingMigrationRecord(tx, input, target)
+  if (existing) return { status: 'existing', ...existing }
+  const sourceRef = migrationSourceRef(input)
+  const sourceHash = migrationHash(input.snapshot)
   // 대상 쓰기 전에 암호화 키와 원본 직렬화 오류를 확인한다.
   const encrypted = encryptPii(canonicalJson(input.snapshot))
   const created = await target.create(tx)
