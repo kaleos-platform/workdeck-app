@@ -39,6 +39,41 @@ function setup() {
 
 afterEach(() => jest.restoreAllMocks())
 
+it('제출 중과 결과가 불확실한 동안 이탈을 경고하고 확인 후 해제한다', async () => {
+  let finish!: (value: ReturnType<typeof response>) => void
+  global.fetch = jest
+    .fn()
+    .mockResolvedValueOnce(session())
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        })
+    )
+    .mockResolvedValueOnce(response())
+  const rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  const leaving = () => {
+    const event = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(event)
+    return event.defaultPrevented
+  }
+  expect(leaving()).toBe(false)
+  fireEvent.click(screen.getByRole('checkbox'))
+  const submit = () =>
+    act(async () => {
+      fireEvent.submit(rendered.container.querySelector('form')!)
+    })
+  await submit()
+  expect(leaving()).toBe(true)
+  await act(async () => {
+    finish(response(500))
+  })
+  expect(leaving()).toBe(true)
+  await submit()
+  expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument()
+  expect(leaving()).toBe(false)
+})
+
 it('첨부 없는 제출은 파일 업로드 대신 지원서 준비와 저장을 안내한다', async () => {
   let finishIntent!: (value: ReturnType<typeof response>) => void
   let finishComplete!: (value: ReturnType<typeof response>) => void
