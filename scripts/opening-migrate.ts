@@ -8,7 +8,7 @@
  *   OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다. OPENING_WEB_URL 기본 https://opening.work.
  *   --out 은 저장소 밖의 빈 폴더만 허용한다. 이미지 안 글자는 검사하지 못하므로 폴더를 고객 자료로 다룬다.
  *
- * 적재(기본 dry-run, 대상 환경은 .env.local 또는 프로세스 환경변수):
+ * 적재(기본 dry-run. DATABASE_URL/DIRECT_URL을 환경변수로 주면 그 환경만 쓰고, 없으면 .env.local):
  *   npx tsx scripts/opening-migrate.ts import --packets /secure/dir --target-space <id>
  *   npx tsx scripts/opening-migrate.ts import --packets /secure/dir --target-space <id> --apply
  *   운영 DB면 --confirm-prod <대상 Space id> 가 추가로 필요하다.
@@ -17,7 +17,8 @@
  * 출력은 건수와 고정 코드뿐이다. 원문·id·접속 정보는 stdout/stderr에 남기지 않는다.
  */
 import { config } from 'dotenv'
-config({ path: '.env.local', override: false })
+// 대상을 프로세스 환경변수로 지정하면 .env.local을 읽지 않는다. 개발 키가 운영 실행에 섞이지 않게 한다.
+if (!process.env.DATABASE_URL && !process.env.DIRECT_URL) config({ path: '.env.local' })
 
 import { execFile } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
@@ -167,7 +168,7 @@ async function importPackets(args: string[]) {
     targetSpace: targetSpace as string,
     confirmProd: values['confirm-prod'],
   })
-  const connectionString = (process.env.DIRECT_URL ?? process.env.DATABASE_URL) as string
+  const connectionString = (process.env.DIRECT_URL || process.env.DATABASE_URL) as string
   const db = new PrismaClient({
     adapter: new PrismaPg({ connectionString, ssl: { rejectUnauthorized: false } }),
   })

@@ -446,6 +446,24 @@ describe('prepare', () => {
     expect(assets.size).toBeGreaterThan(0)
   })
 
+  it('옛 공고 지원 링크는 지원 폼으로 잇고 외부 링크와 남은 opening 주소는 구분한다', async () => {
+    const rows = sourceRows()
+    const link = (url: string) => ({ type: 'content_link', enabled: true, resource_id: 70, url })
+    rows.postings[0].detail = [
+      link('https://opening.work/p/other/apply'),
+      link('https://example.test/brand'),
+      { type: 'custom', enabled: true, items: [{ label: '안내', value: 'opening.work/p/old' }] },
+    ] as never
+    const { postings, summary, manifest } = await prepare(rows)
+    expect(postings[0].content.detail.map((section) => section.url)).toEqual([
+      'https://opening.work/p/pub1',
+      'https://example.test/brand',
+      undefined,
+    ])
+    expect(summary.postings.warnings).toEqual({ OPENING_URL_REMAINS: 1 })
+    expect(manifest.postings.find((p) => p.id === '1')?.warnings).toEqual(['OPENING_URL_REMAINS'])
+  })
+
   it('다른 고객 소유 content를 쓰는 공고는 보류한다', async () => {
     const rows = sourceRows()
     rows.contents[0].owner_brand_id = '8'
