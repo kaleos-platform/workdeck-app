@@ -376,8 +376,15 @@ const newEntry = (id: string, status: ManifestEntry['status']): ManifestEntry =>
 })
 
 // 경로만 남긴다. 숫자(인덱스·id)와 영문 필드명이 아닌 조각은 원문일 수 있어 가린다.
-const issuePath = (path: PropertyKey[]) =>
-  path.map((part) => (typeof part === 'string' && /^[A-Za-z_]+$/.test(part) ? part : '*')).join('.')
+const maskPart = (part: PropertyKey) =>
+  typeof part === 'string' && /^[A-Za-z_]+$/.test(part) ? part : '*'
+function issueLabel(issue: z.core.$ZodIssue) {
+  const path = issue.path.map(maskPart).join('.')
+  // 허용 필드를 넓힐지 판단하려면 어떤 키인지 알아야 한다. 키 이름도 같은 마스크를 쓴다.
+  return issue.code === 'unrecognized_keys'
+    ? `${path}[${issue.keys.map(maskPart).join(',')}]:${issue.code}`
+    : `${path}:${issue.code}`
+}
 
 export type ReviewItem = {
   kind: 'posting' | 'template'
@@ -502,9 +509,17 @@ async function buildCustomerPackets(
   ): z.output<S> {
     const parsed = schema.safeParse(candidate)
     if (parsed.success) return parsed.data
-    for (const issue of parsed.error.issues)
-      count(schemaIssues, `${label}:${issuePath(issue.path)}:${issue.code}`)
+    for (const issue of parsed.error.issues) count(schemaIssues, `${label}:${issueLabel(issue)}`)
     throw Error('PACKET_SCHEMA_REJECTED')
+  }
+  // 매장·직무 하나의 형식 오류로 고객 전체를 멈추지 않고 그 항목만 보류한다.
+  function validOrgEntry(schema: z.ZodType, entry: unknown, label: string) {
+    try {
+      parseCandidate(schema, entry, label)
+      return true
+    } catch {
+      return false
+    }
   }
   // 연락처 적중을 승인과 맞춰 본다. 승인이 없거나 내용이 바뀌었으면 검토 대기로 보류한다.
   function gateContacts(
@@ -670,7 +685,10 @@ async function buildCustomerPackets(
       updatedAt: iso(row.updated_at),
     }
     const hits = scanContacts(entry)
-    if (contactCount(hits) + hits.url) {
+    if (
+      contactCount(hits) + hits.url ||
+      !validOrgEntry(orgPacketSchema.shape.stores.element, entry, 'store')
+    ) {
       heldOrg.stores.push(entry.sourceId)
       continue
     }
@@ -694,7 +712,11 @@ async function buildCustomerPackets(
       updatedAt: iso(row.updated_at),
     }
     const hits = scanContacts(entry)
-    if (contactCount(hits) + hits.url) heldOrg.positions.push(entry.sourceId)
+    if (
+      contactCount(hits) + hits.url ||
+      !validOrgEntry(orgPacketSchema.shape.positions.element, entry, 'position')
+    )
+      heldOrg.positions.push(entry.sourceId)
     else positions.push(entry)
   }
   const org = orgPacketSchema.parse({

@@ -272,10 +272,11 @@ export function reviewTexts(value: unknown) {
   walkStrings(
     value,
     (text, trail) => {
-      if (!/[가-힣]|\s|@|https?:/.test(text)) return
       const hits = emptyHits()
       scanText(text, hits, trail)
-      texts.push({ path: trail.join('.'), text, flagged: contactCount(hits) + hits.url > 0 })
+      const flagged = contactCount(hits) + hits.url > 0
+      if (flagged || /[가-힣]|\s|@|https?:/.test(text))
+        texts.push({ path: trail.join('.'), text, flagged })
     },
     []
   )
