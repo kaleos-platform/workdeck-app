@@ -3,20 +3,37 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { listPostingPage } from '@/lib/hiring/posting-list'
 import { PostingsTable, type PostingRow } from '@/components/hiring-posts/postings-table'
 
+type PostingSearchParams = {
+  q?: string | string[]
+  status?: string | string[]
+  page?: string | string[]
+}
+
+async function loadPostings(params: PostingSearchParams) {
+  const startedAt = performance.now()
+  const resolved = await resolveDeckContext('recruiting')
+  if ('error' in resolved) redirect('/my-deck')
+
+  const contextAt = performance.now()
+  const { rows, ...pagination } = await listPostingPage(resolved.space.id, params)
+  const queriedAt = performance.now()
+  if (queriedAt - startedAt >= 500) {
+    // 고객 식별자와 검색어 없이 느린 서버 조회 구간만 기록한다.
+    console.info('[recruiting:postings:slow]', {
+      contextMs: Math.round(contextAt - startedAt),
+      queryMs: Math.round(queriedAt - contextAt),
+    })
+  }
+  return { rows, ...pagination }
+}
+
 // 공고 목록 페이지
 export default async function PostingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    q?: string | string[]
-    status?: string | string[]
-    page?: string | string[]
-  }>
+  searchParams: Promise<PostingSearchParams>
 }) {
-  const resolved = await resolveDeckContext('recruiting')
-  if ('error' in resolved) redirect('/my-deck')
-
-  const { rows, ...pagination } = await listPostingPage(resolved.space.id, await searchParams)
+  const { rows, ...pagination } = await loadPostings(await searchParams)
   const postings: PostingRow[] = rows.map((p) => ({
     id: p.id,
     uuid: p.uuid,
