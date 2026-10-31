@@ -21,7 +21,7 @@ import {
   scanContacts,
   type PostingPacket,
 } from '../opening-packet'
-import { sanitizeScene, stripImageMetadata } from '../opening-sanitize'
+import { cleanImage, sanitizeScene, stripImageMetadata } from '../opening-sanitize'
 import {
   assertOutDir,
   prepareOpeningCustomer,
@@ -552,11 +552,97 @@ describe('이미지·scene 정제', () => {
     expect((await sharp(bytes).metadata()).exif).toBeUndefined()
   })
 
-  it('내장 이미지가 비이미지(SVG)면 보류한다', async () => {
+  const dataUrl = (mime: string, bytes: Uint8Array | string) =>
+    `data:${mime};base64,${Buffer.from(bytes as Uint8Array).toString('base64')}`
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>'
+
+  it('내장 SVG는 PNG로 굽고 형식을 고친다', async () => {
     const raw = scene()
-    const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>').toString('base64')
-    raw.files.f.dataURL = `data:image/svg+xml;base64,${svg}`
-    await expect(sanitizeScene(raw)).rejects.toThrow('SCENE_IMAGE_UNSUPPORTED')
+    raw.files.f.dataURL = dataUrl('image/svg+xml', svg)
+    const diag: string[] = []
+    const clean = await sanitizeScene(raw, (key) => diag.push(key))
+    expect(clean.files.f.mimeType).toBe('image/png')
+    expect(clean.files.f.dataURL).toMatch(/^data:image\/png;base64,/)
+    const bytes = Buffer.from(clean.files.f.dataURL.split(',')[1], 'base64')
+    expect((await sharp(bytes).metadata()).format).toBe('png')
+    expect(diag).toEqual(['image/svg+xml|svg|CONVERTED'])
+  })
+
+  it.each([
+    [
+      'URL 인코딩',
+      () => `data:image/svg+xml,${encodeURIComponent(svg)}`,
+      'image/svg+xml|svg|CONVERTED',
+    ],
+    [
+      'charset',
+      () => `data:image/svg+xml;charset=utf-8;base64,${Buffer.from(svg).toString('base64')}`,
+      'image/svg+xml|svg|CONVERTED',
+    ],
+    [
+      '대문자',
+      () => embeddedPng.replace('data:image/png;base64', 'DATA:IMAGE/PNG;BASE64'),
+      'image/png|png|OK',
+    ],
+    ['image/jpg 선언', () => embeddedPng.replace('image/png', 'image/jpg'), 'image/jpg|png|OK'],
+  ])('dataURL 변형을 받는다: %s', async (_name, make, key) => {
+    const raw = scene()
+    raw.files.f.dataURL = make()
+    const diag: string[] = []
+    const clean = await sanitizeScene(raw, (entry) => diag.push(entry))
+    expect(clean.files.f.dataURL).toMatch(/^data:image\/png;base64,/)
+    expect(diag).toEqual([key])
+  })
+
+  it.each([
+    ['잘린 이미지', () => embeddedPng.slice(0, 60), 'SCENE_IMAGE_CORRUPT'],
+    ['원격 URL', () => 'https://cdn.example.test/a.png', 'SCENE_IMAGE_REMOTE'],
+    ['base64 깨짐', () => 'data:image/png;base64,###', 'SCENE_IMAGE_MALFORMED'],
+    ['이미지 아님', () => dataUrl('text/plain', 'hello'), 'SCENE_IMAGE_UNSUPPORTED'],
+    [
+      '외부 참조 SVG',
+      () =>
+        dataUrl('image/svg+xml', svg.replace('<rect', '<image href="file:///etc/hosts"/><rect')),
+      'SVG_EXTERNAL_REF',
+    ],
+  ])('복구할 수 없으면 보류한다: %s', async (_name, make, code) => {
+    const raw = scene()
+    raw.files.f.dataURL = make()
+    await expect(sanitizeScene(raw)).rejects.toThrow(code)
+  })
+
+  it('파일이 없는 이미지 요소는 빼고 나머지를 살린다', async () => {
+    for (const files of [undefined, null, { f: null }, {}]) {
+      const diag: string[] = []
+      const clean = await sanitizeScene({ ...scene(), files } as Record<string, unknown>, (key) =>
+        diag.push(key)
+      )
+      expect(clean.elements.map((element: { id: string }) => element.id)).toEqual(['a'])
+      expect(clean.files).toEqual({})
+      expect(diag).toEqual(['none|none|ELEMENT_DROPPED_NO_FILE'])
+    }
+  })
+
+  it('진단은 실패해도 모든 파일을 세고 값을 담지 않는다', async () => {
+    const raw = scene()
+    raw.elements.push({ id: 'j', type: 'image', fileId: 'g' })
+    Object.assign(raw.files, {
+      f: { id: 'f', dataURL: dataUrl('text/x-합성값', 'hello') },
+      g: { id: 'g', dataURL: embeddedPng },
+    })
+    const diag: string[] = []
+    await expect(sanitizeScene(raw, (key) => diag.push(key))).rejects.toThrow(
+      'SCENE_IMAGE_UNSUPPORTED'
+    )
+    expect(diag).toEqual(['other|unknown|ASSET_UNSUPPORTED_TYPE', 'image/png|png|OK'])
+  })
+
+  it('독립 SVG 자산도 PNG가 된다', async () => {
+    const clean = await cleanImage(Buffer.from(svg))
+    expect(clean.mimeType).toBe('image/png')
+    expect((await sharp(clean.bytes).metadata()).format).toBe('png')
+    await expect(cleanImage(Buffer.from('hello'))).rejects.toThrow('ASSET_UNSUPPORTED_TYPE')
   })
 })
 
@@ -671,14 +757,35 @@ describe('prepare', () => {
     expect(manifest.postings.find((p) => p.id === '1')?.warnings).toEqual(['OPENING_URL_REMAINS'])
   })
 
+  it('제목 없는 공고는 스키마 거부가 아니라 NO_TITLE로 제외한다', async () => {
+    const rows = sourceRows()
+    rows.postings[0].title = '  '
+    const { manifest, summary } = await prepare(rows)
+    const entry = manifest.postings.find((p) => p.id === '1')
+    expect(entry).toMatchObject({ status: 'excluded', reasons: ['NO_TITLE'] })
+    expect(summary.postings.reasons.NO_TITLE).toBe(1)
+    expect(summary.schemaIssues).toEqual({})
+  })
+
+  it('직무·매장 보류 사유를 값 없이 집계하고 직무명 키워드로는 보류하지 않는다', async () => {
+    const rows = sourceRows()
+    rows.positions[0].name = '인사 담당자'
+    rows.positions.push({ ...rows.positions[0], id: '31', name: '' })
+    rows.positions.push({ ...rows.positions[0], id: '32', name: '문의 010-1234-5678' })
+    const { summary, manifest, org } = await prepare(rows)
+    expect(org.positions.map((p) => p.sourceId)).toEqual(['30'])
+    expect(manifest.heldOrg.positions).toEqual(['31', '32'])
+    expect(summary.positions.heldReasons).toEqual({ FORMAT: 1, CONTACT_PATTERN: 1 })
+    expect(summary.schemaIssues).toEqual({ 'position:name:too_small': 1 })
+    expect(JSON.stringify(summary)).not.toContain('010-1234-5678')
+  })
+
   it('스키마 거부는 값 없이 경로와 코드만 집계한다', async () => {
     const rows = sourceRows()
-    rows.postings[0].title = ''
     rows.postingPositions[0].name = '합성 비밀 문항'.repeat(50)
     const { summary, manifest } = await prepare(rows)
     expect(manifest.postings.find((p) => p.id === '1')?.reasons).toEqual(['PACKET_SCHEMA_REJECTED'])
     expect(summary.schemaIssues).toEqual({
-      'posting:posting.title:too_small': 1,
       'posting:positions.*.fields.name:too_big': 1,
     })
     expect(JSON.stringify(summary)).not.toContain('합성 비밀 문항')
@@ -732,13 +839,11 @@ describe('prepare', () => {
     ])
   })
 
-  it('SVG 등 비이미지 자산은 복사하지 않고 보류한다', async () => {
+  it('이미지가 아닌 자산은 복사하지 않고 보류한다', async () => {
     const { manifest } = await prepareOpeningCustomer(
       fakeSource().client,
       async (object) =>
-        object.key.endsWith('.json')
-          ? readObject(object)
-          : Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'),
+        object.key.endsWith('.json') ? readObject(object) : Buffer.from('not an image'),
       { brandId: '9', webOrigin: 'https://opening.work' }
     )
     expect(manifest.postings.find((p) => p.id === '1')?.reasons).toEqual(['ASSET_UNSUPPORTED_TYPE'])
