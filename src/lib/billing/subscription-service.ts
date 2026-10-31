@@ -54,6 +54,14 @@ class BillingError extends Error {
 }
 export { BillingError }
 
+// 토스 계약 전(운영=테스트 키) 공백기: 실출금 없는 구독이 생기지 않게 새 결제·카드 등록을 막는다.
+// 정기청구(cron)와 해제 예약 취소는 영향 없음. 계약 후 BILLING_CHECKOUT_PAUSED 환경변수를 지운다.
+export function assertCheckoutOpen() {
+  if (process.env.BILLING_CHECKOUT_PAUSED === '1') {
+    throw new BillingError('결제 준비 중입니다. 결제가 열리면 이메일로 안내드립니다', 503)
+  }
+}
+
 // provider.charge()가 예외를 던져도(네트워크·타임아웃·env 오류) 실패 결과로 정규화한다.
 // 예외가 새어나가면 PENDING 청구·ACTIVE 아이템이 롤백 없이 남아
 // "결제 없이 접근 허용" 또는 "재시도 영구 차단" 상태가 된다 (Codex P1 2건).
@@ -313,6 +321,7 @@ export async function removeBillingMethod(spaceId: string, methodId: string | nu
 }
 
 export async function startSubscription(spaceId: string, deckIds: string[]) {
+  assertCheckoutOpen()
   if (deckIds.length === 0) throw new BillingError('구독할 업무를 선택하세요', 400)
   const products = await loadProducts(deckIds)
   const method = await loadDefaultMethod(spaceId)
@@ -461,6 +470,7 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     return { prorated: false, amount: 0 }
   }
 
+  assertCheckoutOpen()
   const now = new Date()
   // 주기 일수 = periodEnd - (periodEnd - 1개월), 실제 달력 기준
   const prevPeriodStart = new Date(subscription.currentPeriodEnd)
