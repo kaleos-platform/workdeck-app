@@ -215,26 +215,29 @@ export async function importOpeningTemplate(
 ) {
   const plan = planOpeningTemplate(raw, target)
   const { fields, blocks } = templateFields(plan, target.spaceId)
-  return db.$transaction(async (tx) => {
-    const owner = await tx.spaceMember.findUnique({
-      where: { spaceId_userId: { spaceId: target.spaceId, userId: target.ownerUserId } },
-      select: { role: true },
-    })
-    if (owner?.role !== 'OWNER') throw Error('TEMPLATE_OWNER_REQUIRED')
-    const existing = await findExistingOpeningTemplate(tx, plan, target.spaceId)
-    if (existing) return { status: 'existing' as const, target: existing }
-    const created = await tx.hiringDetailTemplate.create({
-      data: {
-        ...fields,
-        contents: {
-          create: blocks.map((block) => ({
-            ...block,
-            data: block.data === null ? Prisma.JsonNull : (block.data as Prisma.InputJsonValue),
-          })),
+  return db.$transaction(
+    async (tx) => {
+      const owner = await tx.spaceMember.findUnique({
+        where: { spaceId_userId: { spaceId: target.spaceId, userId: target.ownerUserId } },
+        select: { role: true },
+      })
+      if (owner?.role !== 'OWNER') throw Error('TEMPLATE_OWNER_REQUIRED')
+      const existing = await findExistingOpeningTemplate(tx, plan, target.spaceId)
+      if (existing) return { status: 'existing' as const, target: existing }
+      const created = await tx.hiringDetailTemplate.create({
+        data: {
+          ...fields,
+          contents: {
+            create: blocks.map((block) => ({
+              ...block,
+              data: block.data === null ? Prisma.JsonNull : (block.data as Prisma.InputJsonValue),
+            })),
+          },
         },
-      },
-      include,
-    })
-    return { status: 'created' as const, target: created }
-  })
+        include,
+      })
+      return { status: 'created' as const, target: created }
+    },
+    { timeout: 60_000 }
+  )
 }
