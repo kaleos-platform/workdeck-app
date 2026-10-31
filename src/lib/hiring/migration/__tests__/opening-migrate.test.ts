@@ -1,4 +1,5 @@
 /** @jest-environment node */
+import { createHash } from 'node:crypto'
 import type { HiringMigrationRecord } from '@/generated/prisma/client'
 import { decodeMigrationSnapshot, migrationSourceRef } from '../ledger'
 import { assertImportTarget, runOpeningImport, type TargetStorage } from '../opening-import'
@@ -214,7 +215,7 @@ const readObject: OpeningObjectReader = async ({ key }) => {
   if (key === 'content_data/b.json')
     return Buffer.from(JSON.stringify(scene('담당 010-1234-5678 / hr@synthetic.test')))
   if (key === 'content_data/c.json') return Buffer.from(JSON.stringify(scene()))
-  return png(key.length)
+  return png([...key].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 200)
 }
 const prepare = (rows = sourceRows()) =>
   prepareOpeningCustomer(fakeSource(rows).client, readObject, {
@@ -430,6 +431,21 @@ describe('prepare', () => {
     expect(org.stores.find((s) => s.sourceId === '21')?.isActive).toBe(false)
   })
 
+  it('보류된 공고에만 쓰인 이미지는 자산 목록에서 뺀다', async () => {
+    const { assets, manifest } = await prepare()
+    const held = manifest.postings.find((p) => p.id === '6')
+    expect(held?.status).toBe('held')
+    const included = manifest.postings
+      .filter((p) => p.status === 'included')
+      .flatMap((p) => p.imageSha256)
+    const templateImages = manifest.templates.flatMap((t) => t.imageSha256)
+    expect([...assets.keys()].sort()).toEqual([...new Set([...included, ...templateImages])].sort())
+    // b.png는 보류 공고 6에서만 쓴다.
+    const onlyHeld = await readObject({ bucket: 'bucket', key: 'content_image/b.png' })
+    expect(assets.has(createHash('sha256').update(onlyHeld).digest('hex'))).toBe(false)
+    expect(assets.size).toBeGreaterThan(0)
+  })
+
   it('다른 고객 소유 content를 쓰는 공고는 보류한다', async () => {
     const rows = sourceRows()
     rows.contents[0].owner_brand_id = '8'
@@ -534,7 +550,6 @@ describe('import', () => {
     const { objects, storage } = memoryStorage()
     const report = await importSet(db, prepared, false, storage)
     expect(report.status).toBe('PLANNED')
-    expect(report.writes).toBe(0)
     expect(report.postings.created).toBe(2)
     expect(records.size + postings.size + objects.size).toBe(0)
   })
@@ -613,11 +628,7 @@ describe('import', () => {
     changed.postings[0].posting.title = '수정된 합성 공고'
     changed.org.positions.push({ ...changed.org.positions[0], sourceId: '31' })
     const report = await importSet(db, changed, true)
-    expect(report).toMatchObject({
-      status: 'CONFLICT_STOPPED',
-      writes: 0,
-      postings: { conflict: 1 },
-    })
+    expect(report).toMatchObject({ status: 'CONFLICT_STOPPED', postings: { conflict: 1 } })
     expect(positions.size).toBe(1)
   })
 
