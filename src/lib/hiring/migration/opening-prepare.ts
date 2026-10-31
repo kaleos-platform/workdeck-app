@@ -1,0 +1,803 @@
+import { createHash } from 'node:crypto'
+import { planOpeningForm } from '@/lib/hiring/opening-form-migration'
+import { planPosting, planTemplate, type AssetBinder } from './opening-import'
+import {
+  isInMigrationWindow,
+  kstDate,
+  migrationWindowStart,
+  orgPacketSchema,
+  postingPacketSchema,
+  scanContacts,
+  templatePacketSchema,
+  type ContactHits,
+  type OrgPacket,
+  type PostingPacket,
+  type TemplatePacket,
+} from './opening-packet'
+
+// 원본 조회는 필요한 컬럼만 지정한다. 담당자·작성자·회원·지원서 컬럼/테이블은 절대 읽지 않는다.
+export type OpeningSourceClient = {
+  query: (sql: string, params?: unknown[]) => Promise<{ rows: unknown[] }>
+}
+export type OpeningObjectReader = (object: { bucket: string; key: string }) => Promise<Uint8Array>
+
+type Row = Record<string, unknown>
+type Asset = PostingPacket['content']['images'][string]
+type Section = PostingPacket['content']['detail'][number]
+type Resource = PostingPacket['content']['resources'][string]
+
+type PostingOverview = { id: string; status: number; created_at: Date; updated_at: Date }
+type ContentRow = {
+  id: string
+  status: number
+  content_type: string
+  image_key: string | null
+  file_key: string | null
+  owner_brand_id: string | null
+}
+type FileRow = {
+  file_key: string
+  status: number
+  target_type: string
+  storage_type: string
+  storage: string
+}
+
+const POSTING_IMAGE_TARGETS = ['posting_detail_img', 'posting_detail', 'content_image']
+const SECTION_ATTRIBUTES = new Set([
+  'type',
+  'enabled',
+  'uuid',
+  'resource_id',
+  'name',
+  'url',
+  'image_key',
+  'file_key',
+  'image_url',
+  'image_download_url',
+  'items',
+])
+const JOB_TYPES: Record<string, string> = {
+  full_time: 'FULL_TIME',
+  part_time: 'PART_TIME',
+  contract: 'CONTRACT',
+  free_lancer: 'FREELANCER',
+  intern: 'INTERN',
+}
+const PAY_FREQUENCIES: Record<string, string> = {
+  hourly: 'HOURLY',
+  daily: 'DAILY',
+  weekly: 'WEEKLY',
+  monthly: 'MONTHLY',
+  yearly: 'YEARLY',
+  per_task: 'PER_TASK',
+  tbd: 'TBD',
+}
+const EXPERIENCE: Record<string, string> = {
+  no_exp: '신입',
+  experienced: '경력',
+  all: '경력 무관',
+}
+const EDUCATION: Record<string, string> = {
+  all: '학력 무관',
+  high: '고등학교 졸업',
+  cc: '대학 졸업 (2, 3년)',
+  univ: '대학교 졸업 (4년)',
+  master: '석사 졸업',
+  phd: '박사 졸업',
+}
+const FIXED_WORK_DAYS: Record<string, number[]> = {
+  mon_to_fri: [1, 2, 3, 4, 5],
+  mon_to_sat: [1, 2, 3, 4, 5, 6],
+}
+
+export async function readOpeningSource(client: OpeningSourceClient, brandId: string) {
+  const select = async <T>(sql: string, params: unknown[]) =>
+    (await client.query(sql, params)).rows as T[]
+  // 같은 시점을 보도록 REPEATABLE READ로 묶는다. READ ONLY라 쓰기는 DB가 거부한다.
+  await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY')
+  try {
+    const [{ snapshot_at: snapshotAt }] = await select<{ snapshot_at: Date }>(
+      'SELECT now() AS snapshot_at',
+      []
+    )
+    const [brand] = await select<{ id: string; name: string }>(
+      'SELECT id::text, name FROM brand WHERE id = $1',
+      [brandId]
+    )
+    if (!brand) throw Error('SOURCE_BRAND_NOT_FOUND')
+    const overview = await select<PostingOverview>(
+      'SELECT id::text, status, created_at, updated_at FROM posting WHERE brand_id = $1',
+      [brandId]
+    )
+    const inWindow = overview
+      .filter(
+        (p) =>
+          p.status !== 0 &&
+          isInMigrationWindow({ createdAt: p.created_at, updatedAt: p.updated_at }, snapshotAt)
+      )
+      .map((p) => p.id)
+    const postings = await select<Row>(
+      `SELECT id::text, uuid, status, title, created_at, updated_at, closing_date, posting_title,
+        company_intro, detail, application_entries, detail_image_key
+      FROM posting WHERE id = ANY($1::bigint[])`,
+      [inWindow]
+    )
+    const postingPositions = await select<Row>(
+      `SELECT id::text, posting_id::text, position_id::text, name, job_type, job_experience,
+        pay_frequency, pay_amount, scheduled_work, job_days_custom, job_hours_custom,
+        probation_months, contract_months, fixed_work_schedule_type, work_days, work_start_time,
+        work_end_time, intake, unknown_intake, job_description, education, required_qualifications,
+        preferred_qualifications, created_at, updated_at
+      FROM posting_position WHERE posting_id = ANY($1::bigint[]) AND status = 1`,
+      [inWindow]
+    )
+    const postingStores = await select<{ posting_id: string; store_id: string }>(
+      `SELECT posting_id::text, store_id::text FROM posting_store
+      WHERE posting_id = ANY($1::bigint[]) AND status = 1`,
+      [inWindow]
+    )
+    const stores = await select<Row>(
+      `SELECT s.id::text, s.status, s.name, s.created_at, s.updated_at, a.original_address,
+        a.original_addr1, a.original_addr2, a.zipcode
+      FROM store s LEFT JOIN address a ON a.id = s.address_id
+      WHERE s.brand_id = $1 AND (s.status = 1 OR s.id = ANY($2::bigint[]))`,
+      [brandId, postingStores.map((row) => row.store_id)]
+    )
+    const positions = await select<Row>(
+      `SELECT id::text, status, name, category_name, created_at, updated_at FROM position
+      WHERE brand_id = $1 AND (status = 1 OR id = ANY($2::bigint[]))`,
+      [brandId, postingPositions.map((row) => row.position_id)]
+    )
+    const templates = await select<Row>(
+      `SELECT id::text, name, image_key, data, created_at, updated_at FROM detail_template
+      WHERE brand_id = $1 AND status = 1`,
+      [brandId]
+    )
+    const sections = [...postings.map((p) => p.detail), ...templates.map((t) => t.data)].flatMap(
+      (detail) => (Array.isArray(detail) ? (detail as Row[]) : [])
+    )
+    const resourceIds = [
+      ...new Set(sections.flatMap((s) => (s?.resource_id ? [String(s.resource_id)] : []))),
+    ]
+    // content에는 brand_id가 없어 원본 source 관계로 소유 고객을 확인한다.
+    const contents = await select<ContentRow>(
+      `SELECT c.id::text, c.status, c.content_type, c.file_key, c.image_key,
+        CASE WHEN c.source_type = 'posting_detail' THEN p.brand_id::text
+          WHEN c.source_type = 'detail_template' THEN dt.brand_id::text END AS owner_brand_id
+      FROM content c LEFT JOIN posting p ON c.source_type = 'posting_detail' AND p.id = c.source_id
+      LEFT JOIN detail_template dt ON c.source_type = 'detail_template' AND dt.id = c.source_id
+      WHERE c.id = ANY($1::bigint[])`,
+      [resourceIds]
+    )
+    const keys = [
+      ...postings.map((p) => p.detail_image_key),
+      ...templates.map((t) => t.image_key),
+      ...sections.map((s) => s?.image_key),
+      ...contents.flatMap((c) => [c.image_key, c.file_key]),
+    ].filter((key): key is string => typeof key === 'string' && key.length > 0)
+    const files = await select<FileRow>(
+      `SELECT file_key, status, target_type, storage_type, storage FROM file
+      WHERE file_key = ANY($1::text[])`,
+      [[...new Set(keys)]]
+    )
+    await client.query('COMMIT')
+    return {
+      snapshotAt,
+      brand,
+      overview,
+      postings,
+      postingPositions,
+      postingStores,
+      stores,
+      positions,
+      templates,
+      contents,
+      files,
+    }
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
+    throw error
+  }
+}
+type OpeningSource = Awaited<ReturnType<typeof readOpeningSource>>
+
+const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '')
+const iso = (value: unknown) => new Date(value as Date).toISOString()
+const hashKey = (key: string) => createHash('sha256').update(key).digest('hex')
+
+function sniffImage(bytes: Uint8Array): Asset['mimeType'] | null {
+  const head = Buffer.from(bytes.subarray(0, 12))
+  if (head.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))) return 'image/png'
+  if (head.subarray(0, 3).equals(Buffer.from('ffd8ff', 'hex'))) return 'image/jpeg'
+  if (head.subarray(0, 4).toString('latin1') === 'GIF8') return 'image/gif'
+  if (head.subarray(0, 4).toString() === 'RIFF' && head.subarray(8, 12).toString() === 'WEBP')
+    return 'image/webp'
+  return null
+}
+
+function mapPosition(row: Row, warn: (code: string) => void) {
+  const jobType = text(row.job_type)
+  const payFrequency = text(row.pay_frequency)
+  const experience = text(row.job_experience)
+  const education = text(row.education)
+  if (jobType && jobType !== 'recruiting' && !JOB_TYPES[jobType]) warn('JOB_TYPE_UNMAPPED')
+  if (payFrequency && !PAY_FREQUENCIES[payFrequency]) warn('PAY_FREQUENCY_UNMAPPED')
+  if (experience && !EXPERIENCE[experience]) warn('EXPERIENCE_UNMAPPED')
+  if (education && !EDUCATION[education]) warn('EDUCATION_UNMAPPED')
+  const sourceDays = Array.isArray(row.work_days) ? (row.work_days as number[]) : []
+  const days = sourceDays.length
+    ? sourceDays
+    : (FIXED_WORK_DAYS[text(row.fixed_work_schedule_type)] ?? [])
+  const workDays = days.every((day) => Number.isInteger(day) && day >= 0 && day <= 6) ? days : []
+  if (workDays.length !== days.length) warn('WORK_DAYS_UNMAPPED')
+  const fixedHours = row.scheduled_work !== true
+  const time = (value: unknown) => {
+    const match = text(value).match(/^([01]\d|2[0-3]):([0-5]\d)/)
+    return fixedHours && match ? `${match[1]}:${match[2]}` : undefined
+  }
+  const workStartAt = time(row.work_start_time)
+  const workEndAt = time(row.work_end_time)
+  const name = text(row.name)
+  // Workdeck 직무 컬럼에 대응이 없는 조건은 본문 문구로 남긴다.
+  const notes = [
+    jobType === 'recruiting' ? '일반 모집' : '',
+    row.contract_months ? `근무 ${row.contract_months}개월` : '',
+    row.probation_months ? `수습 ${row.probation_months}개월` : '',
+    workDays.length ? '' : text(row.job_days_custom),
+    workStartAt && workEndAt ? '' : text(row.job_hours_custom),
+  ].filter(Boolean)
+  const optional = {
+    jobType: JOB_TYPES[jobType],
+    payFrequency: PAY_FREQUENCIES[payFrequency],
+    payAmount: typeof row.pay_amount === 'number' ? row.pay_amount : undefined,
+    workDays: workDays.length ? workDays : undefined,
+    workStartAt,
+    workEndAt,
+    headcount:
+      row.unknown_intake !== true && typeof row.intake === 'number' ? row.intake : undefined,
+    experience: EXPERIENCE[experience],
+    education: EDUCATION[education],
+    jobDescription: text(row.job_description) || undefined,
+    requiredQualifications: text(row.required_qualifications) || undefined,
+    preferredQualifications: text(row.preferred_qualifications) || undefined,
+  }
+  return {
+    position: {
+      sourceId: String(row.id),
+      sourcePositionId: String(row.position_id),
+      fields: {
+        name,
+        ...Object.fromEntries(Object.entries(optional).filter(([, value]) => value !== undefined)),
+      },
+      createdAt: iso(row.created_at),
+      updatedAt: iso(row.updated_at),
+    },
+    note: notes.length ? `${name}: ${notes.join(', ')}` : '',
+  }
+}
+
+const FORM_ATTRIBUTES = [
+  'key',
+  'type',
+  'label',
+  'required',
+  'description',
+  'error_message',
+  'placeholder',
+  'max_file_count',
+  'max_file_size',
+  'min_length',
+  'max_length',
+]
+function formDefinition(entries: unknown) {
+  return (entries as Row[]).map((entry) => ({
+    ...Object.fromEntries(
+      FORM_ATTRIBUTES.flatMap((key) =>
+        entry[key] === undefined || entry[key] === null ? [] : [[key, entry[key]]]
+      )
+    ),
+    ...(Array.isArray(entry.items) && entry.items.length
+      ? { items: (entry.items as Row[]).map(({ label, value }) => ({ label, value })) }
+      : {}),
+  }))
+}
+
+function reasonOf(error: unknown): string {
+  const message = error instanceof Error ? error.message : ''
+  const blocked = message.match(/^Migration (form|content) blocked: ([A-Za-z_]+)$/)
+  if (blocked) return `${blocked[1].toUpperCase()}_${blocked[2].toUpperCase()}`
+  if (/^[A-Z][A-Z_]{2,80}$/.test(message)) return message
+  return 'PLAN_BLOCKED'
+}
+
+type ManifestEntry = {
+  id: string
+  status: 'included' | 'held' | 'excluded'
+  reasons: string[]
+  warnings: string[]
+  contactHits: ContactHits
+  imageSha256: string[]
+}
+
+// 검증용 경로. 실제 경로는 적재 시 대상 Space로 계산한다.
+const PLACEHOLDER_SPACE = 'prepare'
+const placeholderBind: AssetBinder = async (asset) => ({
+  sourceImageKey: asset.ref,
+  copiedImagePath: `${PLACEHOLDER_SPACE}/migration/prepare/${asset.sha256}`,
+  verified: true,
+  sha256: asset.sha256,
+  sizeBytes: asset.sizeBytes,
+})
+
+export async function prepareOpeningCustomer(
+  client: OpeningSourceClient,
+  readObject: OpeningObjectReader,
+  options: { brandId: string; webOrigin: string }
+) {
+  const source = await readOpeningSource(client, options.brandId)
+  return buildCustomerPackets(source, readObject, options.webOrigin)
+}
+
+async function buildCustomerPackets(
+  source: OpeningSource,
+  readObject: OpeningObjectReader,
+  webOrigin: string
+) {
+  const { snapshotAt, brand } = source
+  const sourceSnapshotAt = new Date(snapshotAt).toISOString()
+  const reasonCounts: Record<string, number> = {}
+  const warningCounts: Record<string, number> = {}
+  const hitTotals = { phone: 0, email: 0, postingsHit: 0, templatesHit: 0 }
+  const removed = { managerSections: 0, disabledSections: 0, templateDynamicSections: 0 }
+  const assets = new Map<string, Uint8Array>()
+  const manualReview = new Map<string, { sha256: string; owners: string[] }>()
+
+  const filesByKey = new Map<string, FileRow[]>()
+  for (const file of source.files)
+    filesByKey.set(file.file_key, [...(filesByKey.get(file.file_key) ?? []), file])
+  const contentById = new Map(source.contents.map((c) => [c.id, c]))
+
+  const objects = new Map<string, Promise<Uint8Array>>()
+  async function readFile(key: string, targetTypes: string[]) {
+    const candidates = filesByKey.get(key) ?? []
+    if (candidates.length !== 1) throw Error('ASSET_FILE_MISSING')
+    const [file] = candidates
+    if (
+      file.status !== 1 ||
+      !targetTypes.includes(file.target_type) ||
+      file.storage_type !== 's3' ||
+      !file.storage
+    )
+      throw Error('ASSET_FILE_REJECTED')
+    if (!objects.has(key)) objects.set(key, readObject({ bucket: file.storage, key }))
+    return (objects.get(key) as Promise<Uint8Array>).catch(() => {
+      throw Error('ASSET_READ_FAILED')
+    })
+  }
+  async function readAsset(key: unknown, targetTypes: string[]): Promise<Asset> {
+    if (typeof key !== 'string' || !key) throw Error('ASSET_KEY_MISSING')
+    const bytes = await readFile(key, targetTypes)
+    const mimeType = sniffImage(bytes)
+    if (!mimeType) throw Error('ASSET_UNSUPPORTED_TYPE')
+    if (bytes.byteLength > 10 * 1024 * 1024) throw Error('ASSET_TOO_LARGE')
+    const sha256 = createHash('sha256').update(bytes).digest('hex')
+    assets.set(sha256, bytes)
+    return { ref: hashKey(key), sha256, sizeBytes: bytes.byteLength, mimeType }
+  }
+  async function readScene(key: string) {
+    let scene: Row
+    try {
+      scene = JSON.parse(Buffer.from(await readFile(key, ['content_data'])).toString('utf8'))
+    } catch (error) {
+      if (reasonOf(error).startsWith('ASSET_')) throw error
+      throw Error('SCENE_INVALID')
+    }
+    const { type, version, source: origin, elements, appState, files } = scene
+    // 없는 키가 undefined로 남으면 scene 검증(JSON 값만 허용)에 걸린다.
+    return JSON.parse(
+      JSON.stringify({ type, version, source: origin, elements, appState, files })
+    ) as Resource['scene']
+  }
+
+  // 원본 섹션을 허용 필드만 남겨 다시 만든다. 비활성·manager 섹션은 싣지 않는다.
+  async function sanitizeSections(
+    raw: unknown,
+    kind: 'posting' | 'template',
+    dynamic: {
+      title?: string
+      intro?: string
+      stores?: string
+      positions?: boolean
+    } = {}
+  ) {
+    if (!Array.isArray(raw)) throw Error('CONTENT_INVALID_DETAIL')
+    const detail: Section[] = []
+    const resources: Record<string, Resource> = {}
+    const images: Record<string, Asset> = {}
+    for (const section of raw as Row[]) {
+      if (section === null || typeof section !== 'object') throw Error('CONTENT_INVALID_SECTION')
+      if (section.type === 'manager') {
+        removed.managerSections++
+        continue
+      }
+      if (section.enabled !== true) {
+        removed.disabledSections++
+        continue
+      }
+      if (Object.keys(section).some((key) => !SECTION_ATTRIBUTES.has(key)))
+        throw Error('CONTENT_UNSUPPORTED_ATTRIBUTE')
+      const type = String(section.type)
+      const base = {
+        enabled: true as const,
+        ...(typeof section.name === 'string' ? { name: section.name } : {}),
+      }
+      const dynamicText: Record<string, string | undefined> = {
+        posting_title: dynamic.title,
+        company_intro: dynamic.intro,
+        posting_stores: dynamic.stores,
+      }
+      if (type === 'posting_title' || type === 'company_intro' || type === 'posting_stores') {
+        if (kind === 'template') {
+          removed.templateDynamicSections++
+        } else if (dynamicText[type]) detail.push({ ...base, type })
+        continue
+      }
+      if (type === 'posting_positions') {
+        if (kind === 'template') removed.templateDynamicSections++
+        else if (dynamic.positions) detail.push({ ...base, type })
+        continue
+      }
+      if (type === 'custom') {
+        if (kind === 'template') throw Error('TEMPLATE_UNSUPPORTED_SECTION')
+        if (!Array.isArray(section.items)) throw Error('CONTENT_INVALID_SECTION')
+        if ((section.items as Row[]).some((item) => Object.keys(item ?? {}).length > 2))
+          throw Error('CONTENT_UNSUPPORTED_ATTRIBUTE')
+        const items = (section.items as Row[]).map((item) => ({
+          label: String(item?.label ?? ''),
+          value: String(item?.value ?? ''),
+        }))
+        detail.push({ ...base, type, items })
+        continue
+      }
+      const imageSlot = `index:${detail.length}`
+      if (type === 'image') {
+        const asset = await readAsset(section.image_key, POSTING_IMAGE_TARGETS)
+        images[imageSlot] = asset
+        detail.push({ ...base, type, image_key: asset.ref })
+        continue
+      }
+      if (type !== 'content' && type !== 'content_link') throw Error('CONTENT_UNSUPPORTED_SECTION')
+      const id = String(section.resource_id ?? '')
+      const row = contentById.get(id)
+      if (!row) throw Error('CONTENT_MISSING_RESOURCE')
+      if (row.status !== 1 || row.content_type !== 'excalidraw') throw Error('RESOURCE_UNSUPPORTED')
+      if (row.owner_brand_id !== brand.id) throw Error('RESOURCE_SCOPE_MISMATCH')
+      const asset = await readAsset(row.image_key, ['content_image'])
+      const sceneKey = text(row.file_key)
+      if (type === 'content' && !sceneKey) throw Error('CONTENT_MISSING_SCENE')
+      resources[id] = {
+        ...asset,
+        hasSceneSource: !!sceneKey,
+        ...(sceneKey ? { scene: await readScene(sceneKey) } : {}),
+      }
+      const next: Section = {
+        ...base,
+        type,
+        resource_id: id,
+        ...(typeof section.url === 'string' ? { url: section.url } : {}),
+      }
+      // 원본 HTML은 섹션 이미지, 편집기는 resource scene을 쓰므로 다르면 둘 다 보존한다.
+      if (section.image_key && section.image_key !== row.image_key) {
+        const original = await readAsset(section.image_key, POSTING_IMAGE_TARGETS)
+        images[imageSlot] = original
+        next.image_key = original.ref
+      } else next.image_key = asset.ref
+      detail.push(next)
+    }
+    return { detail, resources, images }
+  }
+
+  function noteImages(
+    owner: string,
+    content: Pick<PostingPacket['content'], 'resources' | 'images'>,
+    extra: Asset[] = []
+  ) {
+    // OCR을 하지 않으므로 글자를 읽지 못한 이미지는 전부 사람이 본다. 내장 이미지 없는 scene만 예외.
+    const unread = [
+      ...extra,
+      ...Object.values(content.images),
+      ...Object.values(content.resources).filter(
+        (resource) => !resource.scene || Object.keys(resource.scene.files).length > 0
+      ),
+    ]
+    for (const { sha256 } of unread) {
+      const known = manualReview.get(sha256) ?? { sha256, owners: [] }
+      if (!known.owners.includes(owner)) known.owners.push(owner)
+      manualReview.set(sha256, known)
+    }
+  }
+
+  // 조직 기준정보. 비활성은 대상 공고가 참조할 때만 읽혔다.
+  const heldOrg = { stores: [] as string[], positions: [] as string[] }
+  const stores: OrgPacket['stores'] = []
+  const storeText = new Map<string, string>()
+  for (const row of source.stores) {
+    const roadAddress = text(row.original_addr1) || text(row.original_address)
+    const detailAddress = text(row.original_addr1) ? text(row.original_addr2) : ''
+    const zipcode = text(row.zipcode)
+    const entry = {
+      sourceId: String(row.id),
+      name: text(row.name),
+      ...(roadAddress ? { roadAddress } : {}),
+      ...(detailAddress ? { detailAddress } : {}),
+      ...(zipcode ? { zipcode } : {}),
+      isActive: row.status === 1,
+      createdAt: iso(row.created_at),
+      updatedAt: iso(row.updated_at),
+    }
+    const hits = scanContacts(entry)
+    if (hits.phone + hits.email) {
+      heldOrg.stores.push(entry.sourceId)
+      continue
+    }
+    stores.push(entry)
+    storeText.set(
+      entry.sourceId,
+      [`${brand.name} ${entry.name}`.trim(), [roadAddress, detailAddress].filter(Boolean).join(' ')]
+        .filter(Boolean)
+        .join('\n')
+    )
+  }
+  const positions: OrgPacket['positions'] = []
+  for (const row of source.positions) {
+    const category = text(row.category_name)
+    const entry = {
+      sourceId: String(row.id),
+      name: text(row.name),
+      ...(category ? { category } : {}),
+      isActive: row.status === 1,
+      createdAt: iso(row.created_at),
+      updatedAt: iso(row.updated_at),
+    }
+    const hits = scanContacts(entry)
+    if (hits.phone + hits.email) heldOrg.positions.push(entry.sourceId)
+    else positions.push(entry)
+  }
+  const org = orgPacketSchema.parse({
+    sourceSpaceId: brand.id,
+    sourceSnapshotAt,
+    stores,
+    positions,
+  })
+
+  const count = (bucket: Record<string, number>, code: string) => {
+    bucket[code] = (bucket[code] ?? 0) + 1
+  }
+  const postingEntries: ManifestEntry[] = []
+  const postingPackets: PostingPacket[] = []
+  const bodies = new Map(source.postings.map((row) => [String(row.id), row]))
+  const updatedOnlyDates: string[] = []
+  const windowStart = migrationWindowStart(new Date(snapshotAt)).getTime()
+
+  for (const row of source.overview) {
+    const entry: ManifestEntry = {
+      id: row.id,
+      status: 'excluded',
+      reasons: [],
+      warnings: [],
+      contactHits: { phone: 0, email: 0 },
+      imageSha256: [],
+    }
+    postingEntries.push(entry)
+    const body = bodies.get(row.id)
+    if (!body) {
+      entry.reasons.push(row.status === 0 ? 'DELETED' : 'OUT_OF_WINDOW')
+      count(reasonCounts, entry.reasons[0])
+      continue
+    }
+    if (new Date(row.created_at).getTime() < windowStart)
+      updatedOnlyDates.push(kstDate(row.updated_at))
+    try {
+      const warn = (code: string) => {
+        if (!entry.warnings.includes(code)) entry.warnings.push(code)
+        count(warningCounts, code)
+      }
+      const linkedStores = source.postingStores
+        .filter((link) => link.posting_id === row.id)
+        .map((link) => link.store_id)
+        .sort()
+      if (linkedStores.some((id) => !storeText.has(id))) throw Error('STORE_UNAVAILABLE')
+      const positionRows = source.postingPositions.filter((p) => p.posting_id === row.id)
+      if (positionRows.some((p) => !org.positions.some((o) => o.sourceId === p.position_id)))
+        throw Error('POSITION_UNAVAILABLE')
+      const mapped = positionRows.map((position) => mapPosition(position, warn))
+      const storesText = linkedStores.map((id) => storeText.get(id)).join('\n\n')
+      const positionNotes = mapped.flatMap((item) => (item.note ? [item.note] : [])).join('\n')
+      const title = text(body.posting_title)
+      const intro = text(body.company_intro)
+      const content = await sanitizeSections(body.detail, 'posting', {
+        title,
+        intro,
+        stores: storesText,
+        positions: mapped.length > 0,
+      })
+      const detailImageKey = text(body.detail_image_key)
+      const detailImage = detailImageKey
+        ? await readAsset(detailImageKey, ['posting_detail_img'])
+        : undefined
+      const form = planOpeningForm(`opening.work:posting:${row.id}`, body.application_entries, {
+        preserveRepeatedCustomFields: true,
+      })
+      if (!form.ok) throw Error(`FORM_${form.code}`)
+      const candidate = {
+        sourceSpaceId: brand.id,
+        sourcePostingId: row.id,
+        sourceSnapshotAt,
+        posting: {
+          uuid: text(body.uuid),
+          title: text(body.title),
+          status: row.status,
+          createdAt: iso(row.created_at),
+          updatedAt: iso(row.updated_at),
+          closingDate: body.closing_date ? iso(body.closing_date) : null,
+          applicationEntries: formDefinition(body.application_entries),
+        },
+        positions: mapped.map((item) => item.position),
+        sourceStoreIds: linkedStores,
+        historicalStoreIds: linkedStores.filter(
+          (id) => !org.stores.some((store) => store.sourceId === id && store.isActive)
+        ),
+        content: {
+          ...content,
+          ...(detailImage ? { detailImage } : {}),
+          ...(title ? { postingTitle: title } : {}),
+          ...(intro ? { companyIntro: intro } : {}),
+          positionsVerified: mapped.length > 0,
+          ...(positionNotes ? { positionConditionsText: positionNotes } : {}),
+          ...(storesText ? { storesText } : {}),
+          originalApplyUrl: `${webOrigin}/p/${text(body.uuid)}`,
+        },
+      }
+      entry.contactHits = scanContacts(candidate)
+      hitTotals.phone += entry.contactHits.phone
+      hitTotals.email += entry.contactHits.email
+      if (entry.contactHits.phone + entry.contactHits.email) {
+        hitTotals.postingsHit++
+        entry.status = 'held'
+        entry.reasons.push('HELD_CONTACT_PATTERN')
+        count(reasonCounts, 'HELD_CONTACT_PATTERN')
+        continue
+      }
+      const packet = postingPacketSchema.safeParse(candidate)
+      if (!packet.success) throw Error('PACKET_SCHEMA_REJECTED')
+      // 적재기와 같은 계획기로 미리 통과시켜 적재 단계에서 막힐 공고를 여기서 보류한다.
+      await planPosting(packet.data, PLACEHOLDER_SPACE, placeholderBind)
+      entry.status = 'included'
+      entry.imageSha256 = [
+        ...new Set(
+          [
+            ...Object.values(content.resources),
+            ...Object.values(content.images),
+            ...(detailImage ? [detailImage] : []),
+          ].map((asset) => asset.sha256)
+        ),
+      ]
+      noteImages(`posting:${row.id}`, content, detailImage ? [detailImage] : [])
+      postingPackets.push(packet.data)
+    } catch (error) {
+      entry.status = 'held'
+      const reason = reasonOf(error)
+      entry.reasons.push(reason)
+      count(reasonCounts, reason)
+    }
+  }
+
+  const templateEntries: ManifestEntry[] = []
+  const templatePackets: TemplatePacket[] = []
+  const templateReasons: Record<string, number> = {}
+  for (const row of source.templates) {
+    const id = String(row.id)
+    const entry: ManifestEntry = {
+      id,
+      status: 'held',
+      reasons: [],
+      warnings: [],
+      contactHits: { phone: 0, email: 0 },
+      imageSha256: [],
+    }
+    templateEntries.push(entry)
+    try {
+      const content = await sanitizeSections(row.data, 'template')
+      const cover = text(row.image_key)
+        ? await readAsset(row.image_key, POSTING_IMAGE_TARGETS)
+        : undefined
+      const candidate = {
+        sourceSpaceId: brand.id,
+        sourceTemplateId: id,
+        sourceSnapshotAt,
+        sourceWebOrigin: webOrigin,
+        name: text(row.name),
+        createdAt: iso(row.created_at),
+        updatedAt: iso(row.updated_at),
+        ...(cover ? { cover } : {}),
+        ...content,
+      }
+      entry.contactHits = scanContacts(candidate)
+      hitTotals.phone += entry.contactHits.phone
+      hitTotals.email += entry.contactHits.email
+      if (entry.contactHits.phone + entry.contactHits.email) {
+        hitTotals.templatesHit++
+        throw Error('HELD_CONTACT_PATTERN')
+      }
+      const packet = templatePacketSchema.safeParse(candidate)
+      if (!packet.success) throw Error('PACKET_SCHEMA_REJECTED')
+      await planTemplate(packet.data, PLACEHOLDER_SPACE, PLACEHOLDER_SPACE, placeholderBind)
+      entry.status = 'included'
+      entry.imageSha256 = [
+        ...new Set(
+          [
+            ...Object.values(content.resources),
+            ...Object.values(content.images),
+            ...(cover ? [cover] : []),
+          ].map((asset) => asset.sha256)
+        ),
+      ]
+      noteImages(`template:${id}`, content, cover ? [cover] : [])
+      templatePackets.push(packet.data)
+    } catch (error) {
+      const reason = reasonOf(error)
+      entry.reasons.push(reason)
+      count(templateReasons, reason)
+    }
+  }
+
+  const statusCount = (entries: ManifestEntry[], status: ManifestEntry['status']) =>
+    entries.filter((entry) => entry.status === status).length
+  const updatedOnlyByDate: Record<string, number> = {}
+  for (const date of updatedOnlyDates.sort()) count(updatedOnlyByDate, date)
+  const summary = {
+    sourceSpaceId: brand.id,
+    snapshotAt: sourceSnapshotAt,
+    windowStart: new Date(windowStart).toISOString(),
+    postings: {
+      total: postingEntries.length,
+      included: statusCount(postingEntries, 'included'),
+      held: statusCount(postingEntries, 'held'),
+      excluded: statusCount(postingEntries, 'excluded'),
+      reasons: reasonCounts,
+      warnings: warningCounts,
+    },
+    updatedOnly: { count: updatedOnlyDates.length, byDate: updatedOnlyByDate },
+    contactHits: hitTotals,
+    images: { total: assets.size, manualReview: manualReview.size },
+    templates: {
+      total: templateEntries.length,
+      included: statusCount(templateEntries, 'included'),
+      held: statusCount(templateEntries, 'held'),
+      reasons: templateReasons,
+    },
+    stores: {
+      active: org.stores.filter((s) => s.isActive).length,
+      historical: org.stores.filter((s) => !s.isActive).length,
+      held: heldOrg.stores.length,
+    },
+    positions: {
+      active: org.positions.filter((p) => p.isActive).length,
+      historical: org.positions.filter((p) => !p.isActive).length,
+      held: heldOrg.positions.length,
+    },
+    removedSections: removed,
+  }
+  const manifest = {
+    summary,
+    postings: postingEntries,
+    templates: templateEntries,
+    stores: org.stores.map((store) => store.sourceId),
+    positions: org.positions.map((position) => position.sourceId),
+    heldOrg,
+    manualReviewImages: [...manualReview.values()],
+  }
+  return { summary, manifest, org, templates: templatePackets, postings: postingPackets, assets }
+}
+export type PreparedCustomer = Awaited<ReturnType<typeof prepareOpeningCustomer>>
