@@ -40,7 +40,7 @@ export async function listPostingPage(
         status: true,
         closingDate: true,
         createdAt: true,
-        _count: { select: { applications: true } },
+        _count: { select: { applications: { where: { deletedAt: null } } } },
       },
     }),
     prisma.hiringPosting.count({ where }),

@@ -4,6 +4,8 @@ import { NextRequest } from 'next/server'
 import * as XLSX from 'xlsx'
 import { prisma } from '@/lib/prisma'
 import { listApplications } from '@/lib/hiring/applications'
+import { listPostingPage } from '@/lib/hiring/posting-list'
+import { listPostings } from '@/lib/hiring/postings'
 import { buildApplicationPii } from '@/lib/hiring/pii'
 import { buildApplicantSearchToken } from '@/lib/hiring/application-search'
 import { GET as exportApplications } from '../../../../app/api/hiring-applicants/applications/export/route'
@@ -113,6 +115,15 @@ beforeAll(async () => {
       deletedId = deleted.id
     }
   }
+})
+
+it('공고 목록과 API의 지원자 수는 삭제된 지원서를 제외한 목록과 일치한다', async () => {
+  const list = await listApplications(spaces[0], { page: 1, pageSize: 50 })
+  const page = await listPostingPage(spaces[0], {})
+  const api = await listPostings(spaces[0])
+  expect(list.total).toBe(1)
+  expect(page.rows[0]._count.applications).toBe(list.total)
+  expect(api[0]._count.applications).toBe(list.total)
 })
 
 it('첨부 링크는 같은 고객의 삭제되지 않은 지원서에만 발급한다', async () => {
