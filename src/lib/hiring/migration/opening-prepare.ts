@@ -24,7 +24,14 @@ import {
   type ReviewApprovals,
   type TemplatePacket,
 } from './opening-packet'
-import { sanitizeScene, sniffImage, stripImageMetadata } from './opening-sanitize'
+import {
+  cleanImage,
+  failureLabel,
+  imageDiagKey,
+  sanitizeScene,
+  sniffImage,
+  sniffLabel,
+} from './opening-sanitize'
 
 // 원본 조회는 필요한 컬럼만 지정한다. 담당자·작성자·회원·지원서 컬럼/테이블은 절대 읽지 않는다.
 export type OpeningSourceClient = {
@@ -430,6 +437,8 @@ async function buildCustomerPackets(
   }
   const hitTotals = { ...emptyHits(), postingsHit: 0, templatesHit: 0 }
   const schemaIssues: Record<string, number> = {}
+  const sceneImageDiag: Record<string, number> = {}
+  const assetImageDiag: Record<string, number> = {}
   const reviewCounts = { released: 0, stale: 0 }
   const reviewItems: ReviewItem[] = []
   const removed = { managerSections: 0, disabledSections: 0, templateDynamicSections: 0 }
@@ -480,10 +489,14 @@ async function buildCustomerPackets(
       stripped.set(
         key,
         (async () => {
-          const mimeType = sniffImage(raw)
-          if (!mimeType) throw Error('ASSET_UNSUPPORTED_TYPE')
           // 메타데이터를 지운 결과를 해시한다. 검토·복사 대상은 이 바이트다.
-          const bytes = await stripImageMetadata(raw, mimeType)
+          const sniffed = sniffLabel(raw)
+          const clean = await cleanImage(raw).catch((error) => {
+            count(assetImageDiag, imageDiagKey('', sniffed, failureLabel(error)))
+            throw error
+          })
+          count(assetImageDiag, imageDiagKey('', sniffed, sniffed === 'svg' ? 'CONVERTED' : 'OK'))
+          const { bytes, mimeType } = clean
           if (bytes.byteLength > 10 * 1024 * 1024) throw Error('ASSET_TOO_LARGE')
           const sha256 = createHash('sha256').update(bytes).digest('hex')
           assets.set(sha256, bytes)
@@ -500,7 +513,7 @@ async function buildCustomerPackets(
       if (reasonOf(error).startsWith('ASSET_')) throw error
       throw Error('SCENE_INVALID')
     }
-    return (await sanitizeScene(scene)) as Resource['scene']
+    return (await sanitizeScene(scene, (key) => count(sceneImageDiag, key))) as Resource['scene']
   }
   function parseCandidate<S extends z.ZodType>(
     schema: S,
@@ -512,14 +525,23 @@ async function buildCustomerPackets(
     for (const issue of parsed.error.issues) count(schemaIssues, `${label}:${issueLabel(issue)}`)
     throw Error('PACKET_SCHEMA_REJECTED')
   }
-  // 매장·직무 하나의 형식 오류로 고객 전체를 멈추지 않고 그 항목만 보류한다.
-  function validOrgEntry(schema: z.ZodType, entry: unknown, label: string) {
+  // 매장·직무 하나의 문제로 고객 전체를 멈추지 않고 그 항목만 보류한다. 형식 오류는 항상 집계한다.
+  // 이름은 직무명("인사 담당자")일 수 있고 해제 경로가 없어 키워드는 보지 않는다.
+  function orgHoldReason(
+    schema: z.ZodType,
+    entry: unknown,
+    label: string,
+    reasons: Record<string, number>
+  ) {
+    const hits = scanContacts(entry)
+    let reason = hits.url ? 'SENSITIVE_URL' : hits.phone + hits.email ? 'CONTACT_PATTERN' : ''
     try {
       parseCandidate(schema, entry, label)
-      return true
     } catch {
-      return false
+      reason ||= 'FORMAT'
     }
+    if (reason) count(reasons, reason)
+    return reason
   }
   // 연락처 적중을 승인과 맞춰 본다. 승인이 없거나 내용이 바뀌었으면 검토 대기로 보류한다.
   function gateContacts(
@@ -668,6 +690,10 @@ async function buildCustomerPackets(
 
   // 조직 기준정보. 비활성은 대상 공고가 참조할 때만 읽혔다.
   const heldOrg = { stores: [] as string[], positions: [] as string[] }
+  const orgReasons = {
+    stores: {} as Record<string, number>,
+    positions: {} as Record<string, number>,
+  }
   const stores: OrgPacket['stores'] = []
   const storeText = new Map<string, string>()
   for (const row of source.stores) {
@@ -684,11 +710,7 @@ async function buildCustomerPackets(
       createdAt: iso(row.created_at),
       updatedAt: iso(row.updated_at),
     }
-    const hits = scanContacts(entry)
-    if (
-      contactCount(hits) + hits.url ||
-      !validOrgEntry(orgPacketSchema.shape.stores.element, entry, 'store')
-    ) {
+    if (orgHoldReason(orgPacketSchema.shape.stores.element, entry, 'store', orgReasons.stores)) {
       heldOrg.stores.push(entry.sourceId)
       continue
     }
@@ -711,10 +733,13 @@ async function buildCustomerPackets(
       createdAt: iso(row.created_at),
       updatedAt: iso(row.updated_at),
     }
-    const hits = scanContacts(entry)
     if (
-      contactCount(hits) + hits.url ||
-      !validOrgEntry(orgPacketSchema.shape.positions.element, entry, 'position')
+      orgHoldReason(
+        orgPacketSchema.shape.positions.element,
+        entry,
+        'position',
+        orgReasons.positions
+      )
     )
       heldOrg.positions.push(entry.sourceId)
     else positions.push(entry)
@@ -758,6 +783,12 @@ async function buildCustomerPackets(
     if (!body) {
       entry.reasons.push(row.status === 0 ? 'DELETED' : 'OUT_OF_WINDOW')
       count(reasonCounts, entry.reasons[0])
+      continue
+    }
+    // 제목 없는 작성 중 공고는 옮길 내용이 없다.
+    if (!text(body.title)) {
+      entry.reasons.push('NO_TITLE')
+      count(reasonCounts, 'NO_TITLE')
       continue
     }
     if (new Date(row.created_at).getTime() < windowStart)
@@ -919,6 +950,8 @@ async function buildCustomerPackets(
       pendingReview: pendingImages.length,
     },
     schemaIssues,
+    sceneImageDiag,
+    assetImageDiag,
     review: { ...reviewCounts, pendingItems: reviewItems.length },
     templates: {
       total: templateEntries.length,
@@ -930,11 +963,13 @@ async function buildCustomerPackets(
       active: org.stores.filter((s) => s.isActive).length,
       historical: org.stores.filter((s) => !s.isActive).length,
       held: heldOrg.stores.length,
+      heldReasons: orgReasons.stores,
     },
     positions: {
       active: org.positions.filter((p) => p.isActive).length,
       historical: org.positions.filter((p) => !p.isActive).length,
       held: heldOrg.positions.length,
+      heldReasons: orgReasons.positions,
     },
     removedSections: removed,
   }

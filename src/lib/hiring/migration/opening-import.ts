@@ -436,7 +436,10 @@ export async function runOpeningImport(
   if (apply && !storage) throw Error('TARGET_STORAGE_REQUIRED')
   if (apply && options.review === undefined) throw Error('REVIEW_FILE_REQUIRED')
   const org = parsePacket(orgPacketSchema, set.org)
-  assertClean(org)
+  // prepare와 같은 기준이다. 조직 이름은 키워드를 보지 않는다.
+  const orgHits = scanContacts(org)
+  if (orgHits.url) throw Error('HELD_SENSITIVE_URL')
+  if (orgHits.phone + orgHits.email) throw Error('HELD_CONTACT_PATTERN')
   if (org.sourceSpaceId !== brandId) throw Error('PACKET_BRAND_MISMATCH')
   const review =
     options.review === undefined ? undefined : parseReviewFile(options.review, org.sourceSpaceId)
