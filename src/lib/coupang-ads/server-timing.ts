@@ -3,6 +3,13 @@ import { performance } from 'node:perf_hooks'
 
 const timings = new AsyncLocalStorage<Map<string, number>>()
 
+// 기존 계측 구간을 요청별로 모으되 결과나 사용자 값은 포함하지 않는다.
+export async function collectServerTimings<T>(handler: () => Promise<T>) {
+  const scope = new Map<string, number>()
+  const result = await timings.run(scope, handler)
+  return { result, timings: Object.fromEntries(scope) }
+}
+
 // 이름은 호출부의 고정 식별자만 사용하고 사용자 입력이나 SQL을 포함하지 않는다.
 export async function measureCoupangAds<T>(name: string, loader: () => Promise<T>): Promise<T> {
   const scope = timings.getStore()

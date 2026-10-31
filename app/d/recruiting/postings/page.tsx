@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { listPostingPage } from '@/lib/hiring/posting-list'
+import { collectServerTimings } from '@/lib/coupang-ads/server-timing'
 import { PostingsTable, type PostingRow } from '@/components/hiring-posts/postings-table'
 
 type PostingSearchParams = {
@@ -11,7 +12,9 @@ type PostingSearchParams = {
 
 async function loadPostings(params: PostingSearchParams) {
   const startedAt = performance.now()
-  const resolved = await resolveDeckContext('recruiting')
+  const { result: resolved, timings } = await collectServerTimings(() =>
+    resolveDeckContext('recruiting')
+  )
   if ('error' in resolved) redirect('/my-deck')
 
   const contextAt = performance.now()
@@ -22,6 +25,10 @@ async function loadPostings(params: PostingSearchParams) {
     console.info('[recruiting:postings:slow]', {
       contextMs: Math.round(contextAt - startedAt),
       queryMs: Math.round(queriedAt - contextAt),
+      authUserMs: timings.auth_user === undefined ? null : Math.round(timings.auth_user),
+      membershipMs:
+        timings.auth_membership === undefined ? null : Math.round(timings.auth_membership),
+      deckMs: timings.auth_deck === undefined ? null : Math.round(timings.auth_deck),
     })
   }
   return { rows, ...pagination }
