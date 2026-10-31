@@ -1,6 +1,42 @@
 /** @jest-environment node */
 
 import { measureCoupangAds, withCoupangAdsTiming } from '../server-timing'
+import { collectServerTimings } from '../server-timing'
+
+test('기존 측정 구간을 요청별로 수집하고 반환값을 보존한다', async () => {
+  const collected = await collectServerTimings(async () => {
+    await measureCoupangAds('auth_user', async () => 'private-user')
+    return 'private-result'
+  })
+  expect(collected.result).toBe('private-result')
+  expect(collected.timings.auth_user).toEqual(expect.any(Number))
+  expect(JSON.stringify(collected.timings)).not.toContain('private')
+})
+test('동시 요청의 계측은 서로 섞이지 않고 오류는 그대로 전달한다', async () => {
+  const { recordCoupangAdsTiming } = await import('../server-timing')
+  let release!: () => void
+  const wait = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const first = collectServerTimings(async () => {
+    recordCoupangAdsTiming('first', 3)
+    await wait
+    return 1
+  })
+  const second = await collectServerTimings(async () => {
+    recordCoupangAdsTiming('second', 4)
+    return 2
+  })
+  release()
+  expect((await first).timings).toEqual({ first: 3 })
+  expect(second.timings).toEqual({ second: 4 })
+  const error = new Error('private-error')
+  await expect(
+    collectServerTimings(async () => {
+      throw error
+    })
+  ).rejects.toBe(error)
+})
 
 test('요청별 측정을 분리하고 기존 응답 상태와 헤더를 유지한다', async () => {
   let release!: () => void
