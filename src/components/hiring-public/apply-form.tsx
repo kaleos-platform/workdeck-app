@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, Controller, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -55,6 +55,17 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
   const [done, setDone] = useState(false)
   const [positionId, setPositionId] = useState<string>('')
   const [storeIds, setStoreIds] = useState<Set<string>>(new Set())
+
+  const warnBeforeLeaving = !done && (submitting || !!uploadBatch.current?.lastAttemptedPayload)
+  useEffect(() => {
+    if (!warnBeforeLeaving) return
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [warnBeforeLeaving])
 
   const schema = useMemo(() => buildSchema(valueFields), [valueFields])
 
