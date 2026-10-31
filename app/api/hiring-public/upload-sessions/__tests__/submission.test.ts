@@ -114,6 +114,21 @@ beforeEach(() => {
     mimeType: file.mimeType,
   })
 })
+it('제출 준비 응답에 HttpOnly 복구 쿠키를 설정한다', async () => {
+  ;(prisma.hiringPosting.findUnique as jest.Mock).mockResolvedValue({
+    id: 'post',
+    spaceId: 'space',
+    status: 'ACTIVE',
+    closingDate: null,
+    applicationEntries: [],
+  })
+  const res = await initiate(request({ postingUuid: 'qa-post', files: [] }))
+  const body = await res.json()
+  const cookie = res.cookies.get(`wd-recovery-${body.uploadSessionId}`)
+  expect(cookie?.httpOnly).toBe(true)
+  expect(cookie?.sameSite).toBe('strict')
+  expect(cookie?.value).toBe(body.uploadToken)
+})
 it('첨부가 없는 지원서도 빈 세션을 생성하고 완료한다', async () => {
   ;(prisma.hiringPosting.findUnique as jest.Mock).mockResolvedValue({
     id: 'post',

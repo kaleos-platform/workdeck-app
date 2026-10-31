@@ -67,10 +67,18 @@ export async function POST(req: NextRequest) {
         expiresAt,
       },
     })
-    return NextResponse.json(
+    const response = NextResponse.json(
       { uploadSessionId: id, uploadToken: token, expiresAt, uploads },
       { status: 201 }
     )
+    response.cookies.set(`wd-recovery-${id}`, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/hiring-public/upload-sessions/recover',
+      maxAge: 24 * 60 * 60,
+    })
+    return response
   } catch {
     return errorResponse('지원서 제출을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요', 503)
   }

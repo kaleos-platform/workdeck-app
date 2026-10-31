@@ -55,6 +55,61 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
   const [done, setDone] = useState(false)
   const [positionId, setPositionId] = useState<string>('')
   const [storeIds, setStoreIds] = useState<Set<string>>(new Set())
+  const [recoveryState, setRecoveryState] = useState<'checking' | 'ready' | 'confirm' | 'failed'>(
+    'checking'
+  )
+  const [recoveryNotice, setRecoveryNotice] = useState(false)
+  const recoveryKey = `hiring-recovery:${postingUuid}`
+
+  async function recoverPrevious() {
+    let id: string | null
+    try {
+      id = sessionStorage.getItem(recoveryKey)
+    } catch {
+      setRecoveryState('failed')
+      return
+    }
+    if (!id) {
+      setRecoveryState('ready')
+      return
+    }
+    setRecoveryState('checking')
+    try {
+      const res = await fetch('/api/hiring-public/upload-sessions/recover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uploadSessionId: id, postingUuid }),
+      })
+      const result = await res.json()
+      if (!res.ok || !['completed', 'cancelled'].includes(result.status))
+        throw new Error('recovery failed')
+      sessionStorage.removeItem(recoveryKey)
+      if (result.status === 'completed') setDone(true)
+      else {
+        uploadBatch.current = null
+        setRecoveryNotice(true)
+      }
+      setRecoveryState('ready')
+    } catch {
+      setRecoveryState('failed')
+    }
+  }
+
+  useEffect(() => {
+    try {
+      setRecoveryState(!preview && sessionStorage.getItem(recoveryKey) ? 'confirm' : 'ready')
+    } catch {
+      setRecoveryState('failed')
+    }
+  }, [recoveryKey, preview])
+
+  function clearRecovery() {
+    try {
+      sessionStorage.removeItem(recoveryKey)
+    } catch {
+      /* 저장소를 사용할 수 없다. */
+    }
+  }
 
   const warnBeforeLeaving = !done && (submitting || !!uploadBatch.current?.lastAttemptedPayload)
   useEffect(() => {
@@ -137,10 +192,11 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
           headers: { 'Content-Type': 'application/json' },
           body: uploadBatch.current.lastAttemptedPayload,
         })
-        if (res.status === 400 || res.status === 422) {
-          uploadBatch.current.lastAttemptedPayload = undefined
+        if (res.status === 400 || res.status === 409 || res.status === 422 || res.status === 410) {
+          // 이전 완료 요청이 여전히 처리 중일 수 있으므로 원자적 복구로 확인한다.
+          setRecoveryState('confirm')
+          return
         }
-        if (res.status === 410) uploadBatch.current = null
       } else {
         const previous = uploadBatch.current
         if (
@@ -201,24 +257,39 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
           batch.completed[index] = true
         }
         setUploadProgress(selected.length ? '업로드 확인 및 지원서 저장 중' : '지원서 저장 중')
-        batch.lastAttemptedPayload = JSON.stringify({
+        const attemptedPayload = JSON.stringify({
           ...payload,
           uploadSessionId: batch.uploadSessionId,
           uploadToken: batch.uploadToken,
         })
+        try {
+          sessionStorage.setItem(recoveryKey, batch.uploadSessionId)
+        } catch {
+          throw new Error(
+            '브라우저 저장소를 사용할 수 없습니다. 설정을 확인한 뒤 다시 제출해 주세요.'
+          )
+        }
+        batch.lastAttemptedPayload = attemptedPayload
         res = await fetch('/api/hiring-public/upload-sessions/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: batch.lastAttemptedPayload,
         })
         // 최초 요청이 검증 오류로 거절된 경우에만 입력을 수정해 다시 제출할 수 있다.
-        if (res.status === 400 || res.status === 422) batch.lastAttemptedPayload = undefined
-        if (res.status === 410) uploadBatch.current = null
+        if (res.status === 400 || res.status === 422) {
+          batch.lastAttemptedPayload = undefined
+          clearRecovery()
+        }
+        if (res.status === 410) {
+          uploadBatch.current = null
+          clearRecovery()
+        }
       }
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err?.message ?? '지원서 제출에 실패했습니다')
       }
+      clearRecovery()
       setDone(true)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : '지원서 제출에 실패했습니다')
@@ -228,6 +299,54 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
     }
   }
 
+  if (recoveryState !== 'ready') {
+    return (
+      <div role="status" className="rounded-lg border bg-card p-8 text-center">
+        {recoveryState === 'checking' ? (
+          '이전 지원서 제출 결과를 확인하고 있습니다.'
+        ) : recoveryState === 'confirm' ? (
+          <>
+            <p>
+              이전 제출 결과를 확인합니다. 아직 제출이 진행 중이면 해당 요청은 중단될 수 있습니다.
+            </p>
+            <Button type="button" onClick={() => void recoverPrevious()}>
+              이전 제출 결과 확인
+            </Button>
+          </>
+        ) : (
+          <>
+            <p>
+              이전 제출 결과를 확인하지 못했습니다. 다시 시도하거나 모집 담당자에게 문의해 주세요.
+            </p>
+            <Button type="button" onClick={() => void recoverPrevious()}>
+              이전 제출 결과 다시 확인
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                if (
+                  !window.confirm(
+                    '이전 지원서가 접수되었을 수 있습니다. 다시 제출하면 중복 지원이 될 수 있으므로 모집 담당자에게 확인한 뒤 진행해 주세요. 계속하시겠습니까?'
+                  )
+                )
+                  return
+                try {
+                  sessionStorage.removeItem(recoveryKey)
+                  uploadBatch.current = null
+                  setRecoveryState('ready')
+                } catch {
+                  setRecoveryState('failed')
+                }
+              }}
+            >
+              결과 확인 없이 다시 작성
+            </Button>
+          </>
+        )}
+      </div>
+    )
+  }
   if (done) {
     return (
       <div className="space-y-4 rounded-lg border bg-card p-8 text-center shadow-sm">
@@ -249,6 +368,9 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-5 rounded-lg border bg-card p-6 shadow-sm"
     >
+      {recoveryNotice && (
+        <p role="status">이전 제출은 완료되지 않았습니다. 내용을 다시 작성해 제출해 주세요.</p>
+      )}
       {/* 지원 부문 선택(공고에 부문이 여러 개일 때) */}
       {positions.length > 1 && (
         <div className="space-y-1.5">

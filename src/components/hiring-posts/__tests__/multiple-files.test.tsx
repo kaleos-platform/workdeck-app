@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ApplyForm } from '@/components/hiring-public/apply-form'
 
 const sessionUrl = '/api/hiring-public/upload-sessions'
@@ -37,7 +37,99 @@ function setup() {
   }
 }
 
-afterEach(() => jest.restoreAllMocks())
+afterEach(() => {
+  jest.restoreAllMocks()
+  sessionStorage.clear()
+})
+
+it('새로 열린 화면에서 이전 제출 완료를 확인한다', async () => {
+  sessionStorage.setItem('hiring-recovery:qa', 'session-1')
+  global.fetch = jest.fn().mockResolvedValue(response(200, { status: 'completed' }))
+  render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
+  await waitFor(() => expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument())
+  expect(sessionStorage.getItem('hiring-recovery:qa')).toBeNull()
+})
+
+it('이전 제출 결과를 확인할 수 없으면 새 제출을 막는다', async () => {
+  sessionStorage.setItem('hiring-recovery:qa', 'session-1')
+  global.fetch = jest.fn().mockRejectedValue(new Error('연결 오류'))
+  render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: '이전 제출 결과 다시 확인' })).toBeEnabled()
+  )
+  expect(screen.queryByRole('button', { name: '지원서 제출' })).not.toBeInTheDocument()
+  expect(sessionStorage.getItem('hiring-recovery:qa')).toBe('session-1')
+})
+
+it('결과를 확인할 수 없을 때 중복 가능성을 확인한 뒤 다시 작성할 수 있다', async () => {
+  sessionStorage.setItem('hiring-recovery:qa', 'session-1')
+  global.fetch = jest.fn().mockRejectedValue(new Error('연결 오류'))
+  const confirm = jest.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true)
+  render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: '결과 확인 없이 다시 작성' })).toBeEnabled()
+  )
+  fireEvent.click(screen.getByRole('button', { name: '결과 확인 없이 다시 작성' }))
+  expect(sessionStorage.getItem('hiring-recovery:qa')).toBe('session-1')
+  fireEvent.click(screen.getByRole('button', { name: '결과 확인 없이 다시 작성' }))
+  expect(confirm).toHaveBeenCalledTimes(2)
+  expect(sessionStorage.getItem('hiring-recovery:qa')).toBeNull()
+  expect(screen.getByRole('button', { name: '지원서 제출' })).toBeEnabled()
+})
+
+it('완료 응답 유실 후 다시 열면 이전 세션만 확인하고 새 제출은 만들지 않는다', async () => {
+  global.fetch = jest
+    .fn()
+    .mockResolvedValueOnce(session())
+    .mockRejectedValueOnce(new Error('응답 유실'))
+    .mockResolvedValueOnce(response(200, { status: 'completed' }))
+  let rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('checkbox'))
+  await act(async () => {
+    fireEvent.submit(rendered.container.querySelector('form')!)
+  })
+  expect(sessionStorage.getItem('hiring-recovery:qa')).toBe('session-1')
+  rendered.unmount()
+  rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  expect(fetch).toHaveBeenCalledTimes(2)
+  fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
+  await waitFor(() => expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument())
+  expect((fetch as jest.Mock).mock.calls.map(([url]) => url)).toEqual([
+    sessionUrl,
+    completeUrl,
+    '/api/hiring-public/upload-sessions/recover',
+  ])
+  rendered.unmount()
+})
+
+it('이전 제출이 취소된 경우 다시 작성할 수 있다', async () => {
+  sessionStorage.setItem('hiring-recovery:qa', 'session-1')
+  global.fetch = jest.fn().mockResolvedValue(response(200, { status: 'cancelled' }))
+  render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
+  await waitFor(() =>
+    expect(screen.getByText(/이전 제출은 완료되지 않았습니다/)).toBeInTheDocument()
+  )
+  expect(screen.getByRole('button', { name: '지원서 제출' })).toBeEnabled()
+  expect(sessionStorage.getItem('hiring-recovery:qa')).toBeNull()
+})
+
+it('브라우저 저장소에 복구 식별자를 기록할 수 없으면 최종 제출을 보내지 않는다', async () => {
+  global.fetch = jest.fn().mockResolvedValue(session())
+  jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('blocked')
+  })
+  const rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('checkbox'))
+  await act(async () => {
+    fireEvent.submit(rendered.container.querySelector('form')!)
+  })
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(screen.getByText(/브라우저 저장소/)).toBeInTheDocument()
+})
 
 it('제출 중과 결과가 불확실한 동안 이탈을 경고하고 확인 후 해제한다', async () => {
   let finish!: (value: ReturnType<typeof response>) => void
@@ -250,7 +342,7 @@ it('제출 결과가 불확실하면 이전 입력으로 재확인됨을 안내�
   expect(screen.getByRole('button', { name: '이전 제출 결과 확인' })).toBeEnabled()
   await submit()
   expect(screen.queryByText(/이전에 제출한 내용으로 결과를 확인/)).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: '지원서 제출' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: '이전 제출 결과 확인' })).toBeEnabled()
 })
 
 it('업로드 응답 유실 뒤 세션이 만료되면 완료 API로 상태를 확인한다', async () => {
@@ -353,28 +445,25 @@ it.each(['network', 'server', 'conflict'])(
   }
 )
 
-it('불확실한 완료를 확인하다 410이면 현재 클릭에서는 새 세션을 만들지 않는다', async () => {
+it('불확실한 완료를 확인하다 410이면 이전 세션의 결과를 다시 확인한다', async () => {
   global.fetch = jest
     .fn()
     .mockResolvedValueOnce(session())
     .mockResolvedValueOnce(response())
     .mockRejectedValueOnce(new Error('응답 유실'))
     .mockResolvedValueOnce(response(410, { message: '만료' }))
-    .mockResolvedValueOnce(session('session-2'))
-    .mockResolvedValueOnce(response())
-    .mockResolvedValueOnce(response())
+    .mockResolvedValueOnce(response(200, { status: 'completed' }))
   const { submit } = setup()
   await submit()
   await submit()
   expect(fetch).toHaveBeenCalledTimes(4)
-  expect(screen.getByText('만료')).toBeInTheDocument()
-  await submit()
-  expect((fetch as jest.Mock).mock.calls[4][0]).toBe(sessionUrl)
-  expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
+  await waitFor(() => expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument())
+  expect((fetch as jest.Mock).mock.calls[4][0]).toBe('/api/hiring-public/upload-sessions/recover')
 })
 
 it.each([400, 422])(
-  '이전 요청 확인이 %s로 거절되면 다음 클릭에서 수정 입력을 제출한다',
+  '이전 요청 확인이 %s로 거절되어도 기존 결과를 먼저 확인한다',
   async (status) => {
     const mock = jest
       .fn()
@@ -382,7 +471,7 @@ it.each([400, 422])(
       .mockResolvedValueOnce(response())
       .mockRejectedValueOnce(new Error('응답 유실'))
       .mockResolvedValueOnce(response(status, { message: '입력 수정 필요' }))
-      .mockResolvedValueOnce(response())
+      .mockResolvedValueOnce(response(200, { status: 'cancelled' }))
     global.fetch = mock
     const { submit } = setup()
     fireEvent.change(screen.getByLabelText('메모'), { target: { value: '기존 입력' } })
@@ -391,12 +480,10 @@ it.each([400, 422])(
     await submit()
     expect(mock).toHaveBeenCalledTimes(4)
     expect(mock.mock.calls[3][1].body).toBe(mock.mock.calls[2][1].body)
-    expect(screen.getByText('입력 수정 필요')).toBeInTheDocument()
-    await submit()
-    expect(mock.mock.calls[4][0]).toBe(completeUrl)
-    expect(JSON.parse(mock.mock.calls[4][1].body).entries).toContainEqual(
-      expect.objectContaining({ key: 'note', value: '수정 입력' })
+    fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
+    await waitFor(() =>
+      expect(screen.getByText(/이전 제출은 완료되지 않았습니다/)).toBeInTheDocument()
     )
-    expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument()
+    expect(mock.mock.calls[4][0]).toBe('/api/hiring-public/upload-sessions/recover')
   }
 )
