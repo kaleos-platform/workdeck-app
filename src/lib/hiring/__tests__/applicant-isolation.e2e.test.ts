@@ -150,6 +150,7 @@ it('첨부 링크는 같은 고객의 삭제되지 않은 지원서에만 발급
   expect(getApplicantFileSignedUrl).toHaveBeenCalledTimes(1)
 })
 afterAll(async () => {
+  await prisma.hiringPostingPosition.deleteMany({ where: { spaceId: { in: created } } })
   for (const id of created)
     if (id.startsWith('qa-applicant-') && spaces.includes(id))
       await prisma.space.deleteMany({ where: { id } })
@@ -223,6 +224,51 @@ it('목록과 Excel은 같은 고객의 기간 내 미삭제 지원서만 반환
     지원일: '2026-09-27',
   })
   expect(JSON.stringify(rows)).not.toContain('다른 고객 응답')
+})
+
+it('Excel은 같은 고객의 근무지와 같은 공고의 직무 및 한국 지원 시각을 내보낸다', async () => {
+  const own = await prisma.hiringApplication.findUniqueOrThrow({ where: { id: ownId } })
+  const other = await prisma.hiringApplication.findUniqueOrThrow({ where: { id: otherId } })
+  const [store, foreignStore, position, foreignPosition] = await Promise.all([
+    prisma.hiringStore.create({ data: { spaceId: spaces[0], name: '합성 근무지' } }),
+    prisma.hiringStore.create({ data: { spaceId: spaces[1], name: '다른 고객 근무지' } }),
+    prisma.hiringPostingPosition.create({
+      data: { spaceId: spaces[0], postingId: own.postingId, name: '합성 직무' },
+    }),
+    prisma.hiringPostingPosition.create({
+      data: { spaceId: spaces[1], postingId: other.postingId, name: '다른 고객 직무' },
+    }),
+  ])
+  await prisma.hiringApplicationStore.createMany({
+    data: [
+      { applicationId: ownId, storeId: store.id },
+      { applicationId: ownId, storeId: foreignStore.id },
+    ],
+  })
+  await prisma.hiringApplication.update({
+    where: { id: ownId },
+    data: { postingPositionId: position.id },
+  })
+  const readRows = async () => {
+    const response = await exportApplications(new NextRequest('http://localhost/export'))
+    expect(response?.status).toBe(200)
+    const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+    return XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets['지원자'])
+  }
+  const rows = await readRows()
+  expect(rows).toHaveLength(1)
+  expect(rows[0]).toMatchObject({
+    근무지: '합성 근무지',
+    직무: '합성 직무',
+    지원일: '2026-09-27',
+    '지원 시각': '2026-09-27 00:30',
+  })
+  expect(JSON.stringify(rows)).not.toContain('다른 고객 근무지')
+  await prisma.hiringApplication.update({
+    where: { id: ownId },
+    data: { postingPositionId: foreignPosition.id },
+  })
+  expect((await readRows())[0]).toMatchObject({ 직무: '' })
 })
 
 it('합성 이름·전화 검색과 Excel 결과가 일치하며 다른 고객은 검색되지 않는다', async () => {

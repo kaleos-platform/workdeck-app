@@ -59,6 +59,8 @@ export async function GET(req: NextRequest) {
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     include: {
       posting: { select: { title: true } },
+      postingPosition: { select: { name: true, spaceId: true, postingId: true } },
+      stores: { where: { store: { spaceId } }, select: { store: { select: { name: true } } } },
       files: {
         select: { id: true, applicationId: true, spaceId: true, fileName: true, sizeBytes: true },
       },
@@ -85,7 +87,19 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const headers = ['이름', '전화', '이메일', '주소', '공고', '결과', '단계', '지원일']
+  const headers = [
+    '이름',
+    '전화',
+    '이메일',
+    '주소',
+    '공고',
+    '결과',
+    '단계',
+    '지원일',
+    '지원 시각',
+    '근무지',
+    '직무',
+  ]
   const usedHeaders = new Set(headers)
   for (const label of customLabels.values()) {
     let header = label
@@ -106,6 +120,14 @@ export async function GET(req: NextRequest) {
       STAGE_LABELS[app.stage],
       PROCESS_STAGE_LABELS[app.hiringStage],
       formatDateToYmdKst(app.createdAt),
+      new Date(app.createdAt.getTime() + 9 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 16)
+        .replace('T', ' '),
+      app.stores?.map(({ store }) => store.name).join(', ') ?? '',
+      app.postingPosition?.spaceId === spaceId && app.postingPosition.postingId === app.postingId
+        ? app.postingPosition.name
+        : '',
     ]
     const entries = (app.applicationEntries as ApplicationEntryValue[] | null) ?? []
     const byKey = new Map(entries.map((e) => [e.key, e]))
