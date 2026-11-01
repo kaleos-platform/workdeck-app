@@ -51,6 +51,11 @@ export interface ActionDefinition<TParams = Record<string, unknown>> {
    * true 면 FAILED 로 끝난 같은 내용의 제안을 멱등 키에 막히지 않고 다시 만들 수 있다.
    */
   retryableAfterFailure?: boolean
+  /**
+   * true 면 웹 상세에서 전문을 본 단건 승인만 받는다. Slack 버튼·일괄 승인은 전문을 보여주지 못한다.
+   * 거절은 막지 않는다.
+   */
+  requiresWebReview?: (params: TParams) => boolean
   // 생성 시점 가드 (선택) — throw하면 액션 생성 자체가 거부된다.
   // snapshot과 달리 실패해도 생성이 진행되지 않는다 — 사람이 실행 불가능한
   // 액션(예: 연동 안 된 space)을 승인 큐에서 보는 사고를 막는다.

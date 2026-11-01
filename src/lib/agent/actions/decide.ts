@@ -23,7 +23,7 @@ export async function decideAction(
   actionId: string,
   decision: 'approve' | 'reject',
   /** 일괄 승인: 지출 액션은 결정하지 않고 403(한 건씩 확인하며 승인하도록). 거절은 영향 없음. */
-  opts: { excludeSpendApprove?: boolean } = {}
+  opts: { excludeSpendApprove?: boolean; webReviewed?: boolean } = {}
 ): Promise<DecideResult> {
   const action = await prisma.agentPendingAction.findUnique({
     where: { id: actionId },
@@ -45,7 +45,7 @@ export async function decideAction(
 
   const outcome =
     decision === 'approve'
-      ? await approveAndExecute(actionId, userId)
+      ? await approveAndExecute(actionId, userId, { webReviewed: opts.webReviewed })
       : await rejectAction(actionId, userId)
   // 응답의 실행 결과·오류 메시지도 GET과 같은 규칙으로 비밀 값을 가린다(maskParams가 문자열에 maskSecrets 적용).
   const masked = maskParams(outcome) as DecisionOutcome

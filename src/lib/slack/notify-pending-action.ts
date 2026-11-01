@@ -15,6 +15,7 @@ import { postMessage } from './client'
 import { describeActors } from '@/lib/agent/actions/actor-label'
 import { escapeMrkdwn } from './mrkdwn'
 import { maskParams, maskSecrets } from '@/lib/agent/audit'
+import { needsWebReview } from '@/lib/agent/actions/decision-policy'
 
 // 승인 UI에서도 쓰는 deck 라벨(한국어).
 const DECK_LABELS: Record<string, string> = {
@@ -134,13 +135,18 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
         type: 'actions',
         block_id: `agent_action_${action.id}`,
         elements: [
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: '승인', emoji: true },
-            style: 'primary',
-            action_id: 'agent_action_approve',
-            value: action.id,
-          },
+          // 전문 확인이 필요한 액션은 승인 버튼을 빼고 웹으로 보낸다(기존 메시지 클릭은 서버가 막는다).
+          ...(needsWebReview(action)
+            ? []
+            : [
+                {
+                  type: 'button',
+                  text: { type: 'plain_text', text: '승인', emoji: true },
+                  style: 'primary',
+                  action_id: 'agent_action_approve',
+                  value: action.id,
+                },
+              ]),
           {
             type: 'button',
             text: { type: 'plain_text', text: '거부', emoji: true },

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { OnboardingProgressCard } from '@/components/sc/home/onboarding-progress-card'
+import { AwaitingManualCard } from '@/components/sc/home/awaiting-manual-card'
 import { PendingProposalsCard } from '@/components/sc/home/pending-proposals-card'
 import {
   Lightbulb,
@@ -87,6 +88,7 @@ export default function SalesContentHomePage() {
       </header>
 
       <PendingProposalsCard />
+      <AwaitingManualCard />
 
       <OnboardingProgressCard />
 

@@ -40,6 +40,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     })
   }
 
+  // 수동 게시 대기 배포가 있으면 게시 URL 과 함께 완료 처리해야 콘텐츠·배포 상태가 어긋나지 않는다.
+  if (parsed.data.to === 'PUBLISHED') {
+    const waiting = await prisma.contentDeployment.count({
+      where: { contentId: id, spaceId: resolved.space.id, status: 'AWAITING_MANUAL' },
+    })
+    if (waiting > 0) {
+      return errorResponse('콘텐츠 상세의 배포 카드에서 게시 URL 을 넣어 완료 처리하세요', 409)
+    }
+  }
+
   // IN_REVIEW 전환 시 최소 본문 길이 검증.
   if (parsed.data.to === 'IN_REVIEW') {
     const length = countDocTextLength(content.doc)

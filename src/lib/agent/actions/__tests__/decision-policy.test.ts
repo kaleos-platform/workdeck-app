@@ -2,7 +2,7 @@
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getActionDefinition } from '../registry'
-import { deciderDenial, requiredDecisionRole } from '../decision-policy'
+import { deciderDenial, needsWebReview, requiredDecisionRole } from '../decision-policy'
 
 jest.mock('@/lib/prisma', () => ({
   prisma: { space: { findUnique: jest.fn() }, spaceMember: { findUnique: jest.fn() } },
@@ -105,5 +105,25 @@ describe('deciderDenial', () => {
     getDef.mockReturnValue(undefined)
     findMember.mockResolvedValue({ role: 'ADMIN' })
     await expect(deciderDenial(action({}), 'u', 'approve')).resolves.toBeNull()
+  })
+})
+
+describe('needsWebReview', () => {
+  it('정의에 조건이 없으면 필요 없음', () => {
+    getDef.mockReturnValue({})
+    expect(needsWebReview({ actionType: 'x', payload: {} })).toBe(false)
+  })
+  it('조건 결과를 따른다', () => {
+    getDef.mockReturnValue({ requiresWebReview: (p: { n: number }) => p.n > 1 })
+    expect(needsWebReview({ actionType: 'x', payload: { n: 2 } })).toBe(true)
+    expect(needsWebReview({ actionType: 'x', payload: { n: 1 } })).toBe(false)
+  })
+  it('조건 판단이 실패하면 웹 확인으로 보낸다', () => {
+    getDef.mockReturnValue({
+      requiresWebReview: () => {
+        throw new Error('bad payload')
+      },
+    })
+    expect(needsWebReview({ actionType: 'x', payload: null })).toBe(true)
   })
 })

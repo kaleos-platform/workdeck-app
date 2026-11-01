@@ -66,3 +66,16 @@ export async function deciderDenial(
     ? '지출 제안은 OWNER(회사 대표 계정)만 승인할 수 있습니다. 워크덱 승인 화면에서 승인하세요.'
     : '이 요청은 OWNER(회사 대표 계정)만 승인할 수 있습니다. 워크덱 승인 화면에서 승인하세요.'
 }
+
+export const WEB_REVIEW_REQUIRED = '전문 확인이 필요한 액션입니다. 웹 승인 화면에서 승인해 주세요'
+
+/** 승인 전 전문 확인이 필요한지. 정의가 없거나 판단이 실패하면 안전하게 웹 확인으로 보낸다. */
+export function needsWebReview(action: { actionType: string; payload: unknown }): boolean {
+  const check = getActionDefinition(action.actionType)?.requiresWebReview
+  if (!check) return false
+  try {
+    return check(action.payload as Record<string, unknown>)
+  } catch {
+    return true
+  }
+}

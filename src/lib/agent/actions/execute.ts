@@ -5,7 +5,7 @@ import { isPrismaError } from '@/lib/agent/tools/run-tool'
 import type { ActorType } from '@/lib/agent/identity/principal'
 import type { ActionExecContext } from './types'
 import { getActionDefinition } from './registry'
-import { deciderDenial } from './decision-policy'
+import { deciderDenial, needsWebReview, WEB_REVIEW_REQUIRED } from './decision-policy'
 
 // 결정 결과 — API·Slack 핸들러가 그대로 응답에 쓴다.
 export type DecisionOutcome =
@@ -56,7 +56,9 @@ function executionError(err: unknown): string {
 
 export async function approveAndExecute(
   actionId: string,
-  deciderId: string
+  deciderId: string,
+  /** 호출자가 전문을 보여주는 웹 단건 승인일 때만 true. 기본값은 Slack·일괄처럼 미확인으로 본다. */
+  opts: { webReviewed?: boolean } = {}
 ): Promise<DecisionOutcome> {
   const now = new Date()
 
@@ -74,6 +76,9 @@ export async function approveAndExecute(
     // approvalLimitKrw·payload 변경은 반영되지 않는다(payload 는 생성 후 불변, 역할 변경은 드묾).
     const denial = await deciderDenial(pre, deciderId, 'approve')
     if (denial) return { ok: false, status: 'FORBIDDEN', message: denial }
+    if (!opts.webReviewed && needsWebReview(pre)) {
+      return { ok: false, status: 'BLOCKED', message: WEB_REVIEW_REQUIRED }
+    }
     const blocked = await assertDeckWritable(pre.spaceId, pre.deckKey)
     if (blocked) return { ok: false, status: 'BLOCKED', message: blocked }
   }

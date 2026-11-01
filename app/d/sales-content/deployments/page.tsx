@@ -9,6 +9,7 @@ import { prisma } from '@/lib/prisma'
 const STATUS_LABEL: Record<string, string> = {
   SCHEDULED: '예약',
   PUBLISHING: '게시 중',
+  AWAITING_MANUAL: '게시 대기',
   PUBLISHED: '게시됨',
   FAILED: '실패',
   CANCELED: '취소',

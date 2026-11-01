@@ -40,14 +40,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
+  let manualChannel = false
   // targetId 에는 FK 가 없다 — 다른 Space 의 배포를 가리키는 job 은 job·배포 어느 쪽도 갱신하지 않는다.
   // (배포가 이미 삭제됐으면 아래 updateMany 가 0건이라 job 만 종료한다 — 재선점 루프 방지)
   if (job.kind === 'PUBLISH' && job.targetId) {
     const target = await prisma.contentDeployment.findUnique({
       where: { id: job.targetId },
-      select: { spaceId: true },
+      select: { spaceId: true, channel: { select: { publisherMode: true } } },
     })
     if (target && target.spaceId !== job.spaceId) return errorResponse('job 이 없습니다', 404)
+    manualChannel = target?.channel.publisherMode === 'MANUAL'
   }
 
   if (parsed.data.ok) {
@@ -57,15 +59,18 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ ok: true, noop: true })
     }
     if (job.kind === 'PUBLISH' && job.targetId) {
+      // 수동 채널의 워커 성공은 "게시할 차례"일 뿐이다 — 사람이 게시 완료할 때까지 PUBLISHED 로 두지 않는다.
       // updateMany 로 status filter 적용 — 이미 PUBLISHED/FAILED 인 deployment 는 덮어쓰지 않음.
       await prisma.contentDeployment.updateMany({
         where: { id: job.targetId, spaceId: job.spaceId, status: 'PUBLISHING' },
-        data: {
-          status: 'PUBLISHED',
-          publishedAt: new Date(),
-          platformUrl: parsed.data.platformUrl ?? undefined,
-          errorMessage: null,
-        },
+        data: manualChannel
+          ? { status: 'AWAITING_MANUAL', errorMessage: null }
+          : {
+              status: 'PUBLISHED',
+              publishedAt: new Date(),
+              platformUrl: parsed.data.platformUrl ?? undefined,
+              errorMessage: null,
+            },
       })
     }
     return NextResponse.json({ ok: true })
