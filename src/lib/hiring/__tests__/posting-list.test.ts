@@ -11,6 +11,23 @@ beforeEach(() => {
   ;(prisma.hiringPosting.count as jest.Mock).mockResolvedValue(501)
 })
 
+it('장소와 직무명 및 고용 형태를 같은 공간의 공고에 함께 적용한다', async () => {
+  const result = await listPostingPage('space-qa', {
+    store: ' 강남 ',
+    position: '서빙',
+    jobType: 'PART_TIME',
+    page: '2',
+  })
+  expect(result).toMatchObject({ store: '강남', position: '서빙', jobType: 'PART_TIME', page: 2 })
+  const args = (prisma.hiringPosting.findMany as jest.Mock).mock.calls[0][0]
+  expect(args.where).toMatchObject({
+    spaceId: 'space-qa',
+    stores: { some: { store: { name: { contains: '강남', mode: 'insensitive' } } } },
+    positions: { some: { name: { contains: '서빙', mode: 'insensitive' }, jobType: 'PART_TIME' } },
+  })
+  expect(prisma.hiringPosting.count).toHaveBeenCalledWith({ where: args.where })
+})
+
 it('501번째 공고까지 공간·검색·상태 조건을 동일하게 적용해 조회한다', async () => {
   const result = await listPostingPage('space-qa', { q: '  강남  ', status: 'DRAFT', page: '11' })
   expect(result).toMatchObject({

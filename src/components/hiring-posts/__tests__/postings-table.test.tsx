@@ -9,8 +9,31 @@ const props = {
   pageSize: 50,
   q: '강남',
   status: 'DRAFT' as const,
+  store: '',
+  position: '',
+  jobType: '',
 }
 beforeEach(() => jest.clearAllMocks())
+
+it('고용 형태 선택을 즉시 적용하며 입력 중인 검색 조건도 보존한다', () => {
+  render(<PostingsTable {...props} />)
+  fireEvent.change(screen.getByLabelText('모집 직무'), { target: { value: '서빙' } })
+  fireEvent.change(screen.getByLabelText('고용 형태'), { target: { value: 'PART_TIME' } })
+  expect(push).toHaveBeenLastCalledWith(expect.stringContaining('position=%EC%84%9C%EB%B9%99'))
+  expect(push).toHaveBeenLastCalledWith(expect.stringContaining('jobType=PART_TIME'))
+})
+
+it('장소·직무·고용 형태를 검색하고 페이지 이동 시 조건을 유지한다', () => {
+  render(<PostingsTable {...props} store="강남" position="서빙" jobType="PART_TIME" />)
+  fireEvent.click(screen.getByRole('button', { name: '이전' }))
+  expect(push).toHaveBeenLastCalledWith(expect.stringContaining('store=%EA%B0%95%EB%82%A8'))
+  expect(push).toHaveBeenLastCalledWith(expect.stringContaining('position=%EC%84%9C%EB%B9%99'))
+  expect(push).toHaveBeenLastCalledWith(expect.stringContaining('jobType=PART_TIME'))
+  fireEvent.change(screen.getByLabelText('모집 장소'), { target: { value: '홍대' } })
+  fireEvent.submit(screen.getByRole('search'))
+  expect(push).toHaveBeenLastCalledWith(expect.stringContaining('store=%ED%99%8D%EB%8C%80'))
+  expect(push).toHaveBeenLastCalledWith(expect.not.stringContaining('page='))
+})
 
 it('페이지 이동에서 확정 검색·상태를 유지하고 검색 제출은 첫 페이지로 이동한다', () => {
   render(<PostingsTable {...props} />)

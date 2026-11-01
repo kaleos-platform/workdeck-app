@@ -1,14 +1,26 @@
 import { prisma } from '@/lib/prisma'
 import type { PostingListStatus } from './postings'
+import { jobTypeEnum } from '@/lib/validations/hiring-posts'
 
 const PAGE_SIZE = 50
 const STATUSES = new Set(['DRAFT', 'ACTIVE', 'CLOSED', 'ARCHIVED'])
 
 export async function listPostingPage(
   spaceId: string,
-  params: { q?: string | string[]; status?: string | string[]; page?: string | string[] }
+  params: {
+    q?: string | string[]
+    status?: string | string[]
+    page?: string | string[]
+    store?: string | string[]
+    position?: string | string[]
+    jobType?: string | string[]
+  }
 ) {
   const q = typeof params.q === 'string' ? params.q.trim().slice(0, 200) : ''
+  const store = typeof params.store === 'string' ? params.store.trim().slice(0, 200) : ''
+  const position = typeof params.position === 'string' ? params.position.trim().slice(0, 200) : ''
+  const parsedJobType = jobTypeEnum.safeParse(params.jobType)
+  const jobType = parsedJobType.success ? parsedJobType.data : ''
   const status: PostingListStatus | 'ALL' =
     typeof params.status === 'string' && STATUSES.has(params.status)
       ? (params.status as PostingListStatus)
@@ -26,6 +38,19 @@ export async function listPostingPage(
     spaceId,
     ...(status !== 'ALL' ? { status } : {}),
     ...(q ? { title: { contains: q, mode: 'insensitive' as const } } : {}),
+    ...(store
+      ? { stores: { some: { store: { name: { contains: store, mode: 'insensitive' as const } } } } }
+      : {}),
+    ...(position || jobType
+      ? {
+          positions: {
+            some: {
+              ...(position ? { name: { contains: position, mode: 'insensitive' as const } } : {}),
+              ...(jobType ? { jobType } : {}),
+            },
+          },
+        }
+      : {}),
   }
   const [rows, total] = await Promise.all([
     prisma.hiringPosting.findMany({
@@ -45,5 +70,5 @@ export async function listPostingPage(
     }),
     prisma.hiringPosting.count({ where }),
   ])
-  return { rows, total, page, pageSize: PAGE_SIZE, q, status }
+  return { rows, total, page, pageSize: PAGE_SIZE, q, status, store, position, jobType }
 }
