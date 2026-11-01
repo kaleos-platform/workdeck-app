@@ -119,6 +119,66 @@ it('UTC 전날인 새벽 지원도 엑셀에 한국 날짜로 기록한다', asy
   ])
 })
 
+it('지원자가 선택한 근무지와 직무 및 한국 시각을 엑셀에 포함한다', async () => {
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'app-qa',
+      spaceId: 'qa-space',
+      postingId: 'post-qa',
+      createdAt: new Date('2026-09-26T15:04:00Z'),
+      stage: 'HIRING',
+      hiringStage: 'APPLIED',
+      posting: { title: 'QA' },
+      applicationEntries: [],
+      postingPosition: { name: '홀 서빙', spaceId: 'qa-space', postingId: 'post-qa' },
+      stores: [{ store: { name: '강남점' } }, { store: { name: '홍대점' } }],
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  expect(XLSX.utils.sheet_to_json(workbook.Sheets['지원자'])).toEqual([
+    expect.objectContaining({
+      지원일: '2026-09-27',
+      '지원 시각': '2026-09-27 00:04',
+      근무지: '강남점, 홍대점',
+      직무: '홀 서빙',
+    }),
+  ])
+  expect(prisma.hiringApplication.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      include: expect.objectContaining({
+        stores: expect.objectContaining({ where: { store: { spaceId: 'qa-space' } } }),
+      }),
+    })
+  )
+})
+
+it.each([
+  ['other-space', 'other-post'],
+  ['qa-space', 'other-post'],
+  ['other-space', 'post-qa'],
+])('공간 %s·공고 %s에 연결된 다른 직무명은 내보내지 않는다', async (spaceId, postingId) => {
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'app-qa',
+      spaceId: 'qa-space',
+      postingId: 'post-qa',
+      createdAt: new Date('2026-09-26T15:04:00Z'),
+      stage: 'HIRING',
+      hiringStage: 'APPLIED',
+      posting: { title: 'QA' },
+      applicationEntries: [],
+      stores: [],
+      postingPosition: { name: '다른 직무', spaceId, postingId },
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  expect(XLSX.utils.sheet_to_json(workbook.Sheets['지원자'])).toEqual([
+    expect.objectContaining({ 직무: '' }),
+  ])
+})
+
 it('중복 질문명과 기본 열 이름이 충돌해도 모든 값을 독립된 열에 보존한다', async () => {
   ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
     {
@@ -132,6 +192,9 @@ it('중복 질문명과 기본 열 이름이 충돌해도 모든 값을 독립�
         { key: 'custom_c', label: '이름', type: 'string', value: '질문 답변' },
         { key: 'custom_d', label: '__proto__', type: 'string', value: '특수 라벨 답변' },
         { key: 'custom_e', label: '경력 (2)', type: 'string', value: '원래 괄호 라벨' },
+        { key: 'custom_f', label: '근무지', type: 'string', value: '근무지 답변' },
+        { key: 'custom_g', label: '직무', type: 'string', value: '직무 답변' },
+        { key: 'custom_h', label: '지원 시각', type: 'string', value: '시각 답변' },
       ],
     },
   ])
@@ -142,10 +205,19 @@ it('중복 질문명과 기본 열 이름이 충돌해도 모든 값을 독립�
   })
   expect(new Set(headers).size).toBe(headers.length)
   expect(values[headers.indexOf('이름')]).toBe('QA')
-  for (const answer of ['첫 답변', '둘째 답변', '질문 답변', '특수 라벨 답변', '원래 괄호 라벨']) {
+  for (const answer of [
+    '첫 답변',
+    '둘째 답변',
+    '질문 답변',
+    '특수 라벨 답변',
+    '원래 괄호 라벨',
+    '근무지 답변',
+    '직무 답변',
+    '시각 답변',
+  ]) {
     expect(values.filter((value) => value === answer)).toHaveLength(1)
   }
-  expect(headers).toHaveLength(13)
+  expect(headers).toHaveLength(19)
 })
 
 const legacySnapshot = {
