@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { NewPostingButton } from './new-posting-button'
+import { JOB_TYPE_LABELS } from './build-types'
 import { PostingStatusBadge, STATUS_LABELS, type PostingStatus } from './status-badge'
 import {
   RECRUITING_POSTINGS_PATH,
@@ -64,6 +65,9 @@ export function PostingsTable({
   pageSize,
   q,
   status,
+  store,
+  position,
+  jobType,
 }: {
   postings: PostingRow[]
   total: number
@@ -71,17 +75,31 @@ export function PostingsTable({
   pageSize: number
   q: string
   status: 'ALL' | PostingStatus
+  store: string
+  position: string
+  jobType: string
 }) {
   const router = useRouter()
   const [query, setQuery] = useState(q)
+  const [storeInput, setStoreInput] = useState(store)
+  const [positionInput, setPositionInput] = useState(position)
+  const [jobTypeInput, setJobTypeInput] = useState(jobType)
   const [pending, startTransition] = useTransition()
   const [copyingId, setCopyingId] = useState<string | null>(null)
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
-  function navigate(nextPage: number, nextQuery = q, nextStatus = status) {
+  function navigate(
+    nextPage: number,
+    nextQuery = q,
+    nextStatus = status,
+    filters = { store, position, jobType }
+  ) {
     const params = new URLSearchParams()
     if (nextQuery.trim()) params.set('q', nextQuery.trim())
     if (nextStatus !== 'ALL') params.set('status', nextStatus)
+    if (filters.store.trim()) params.set('store', filters.store.trim())
+    if (filters.position.trim()) params.set('position', filters.position.trim())
+    if (filters.jobType) params.set('jobType', filters.jobType)
     if (nextPage > 1) params.set('page', String(nextPage))
     const suffix = params.toString()
     startTransition(() => router.push(`${RECRUITING_POSTINGS_PATH}${suffix ? `?${suffix}` : ''}`))
@@ -108,32 +126,81 @@ export function PostingsTable({
     <div className="space-y-4" aria-busy={pending}>
       <form
         role="search"
-        className="flex max-w-lg gap-2"
+        className="flex flex-wrap gap-2"
         onSubmit={(event) => {
           event.preventDefault()
-          navigate(1, query)
+          navigate(1, query, status, {
+            store: storeInput,
+            position: positionInput,
+            jobType: jobTypeInput,
+          })
         }}
       >
         <Input
+          className="w-full sm:w-48"
           aria-label="공고 제목 검색"
           placeholder="공고 제목 검색"
+          disabled={pending}
           maxLength={200}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
+        <Input
+          className="w-full sm:w-40"
+          aria-label="모집 장소"
+          disabled={pending}
+          placeholder="모집 장소"
+          maxLength={200}
+          value={storeInput}
+          onChange={(event) => setStoreInput(event.target.value)}
+        />
+        <Input
+          className="w-full sm:w-40"
+          aria-label="모집 직무"
+          disabled={pending}
+          placeholder="모집 직무"
+          maxLength={200}
+          value={positionInput}
+          onChange={(event) => setPositionInput(event.target.value)}
+        />
+        <select
+          aria-label="고용 형태"
+          disabled={pending}
+          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-40"
+          value={jobTypeInput}
+          onChange={(event) => {
+            const nextJobType = event.target.value
+            setJobTypeInput(nextJobType)
+            navigate(1, query, status, {
+              store: storeInput,
+              position: positionInput,
+              jobType: nextJobType,
+            })
+          }}
+        >
+          <option value="">전체 고용 형태</option>
+          {Object.entries(JOB_TYPE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
         <Button type="submit" variant="outline" disabled={pending}>
           검색
         </Button>
-        {(q || status !== 'ALL') && (
+        {(q || status !== 'ALL' || store || position || jobType) && (
           <Button
             type="button"
             variant="ghost"
             disabled={pending}
-            onClick={() => navigate(1, '', 'ALL')}
+            onClick={() => navigate(1, '', 'ALL', { store: '', position: '', jobType: '' })}
           >
             초기화
           </Button>
         )}
+        <p className="w-full text-xs text-muted-foreground">
+          제목·장소·직무를 입력한 뒤 검색을 눌러 적용하세요.
+        </p>
       </form>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Tabs value={status} onValueChange={(v) => navigate(1, q, v as 'ALL' | PostingStatus)}>
@@ -166,7 +233,7 @@ export function PostingsTable({
                 <TableCell colSpan={6} className="h-24 text-center text-sm text-muted-foreground">
                   {page > totalPages
                     ? '요청한 페이지에 공고가 없습니다.'
-                    : q || status !== 'ALL'
+                    : q || status !== 'ALL' || store || position || jobType
                       ? '조건에 맞는 공고가 없습니다.'
                       : '공고가 없습니다. 새 공고로 첫 공고를 만들어 보세요.'}
                   {page > 1 && (

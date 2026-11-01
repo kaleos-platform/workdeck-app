@@ -8,6 +8,9 @@ type PostingSearchParams = {
   q?: string | string[]
   status?: string | string[]
   page?: string | string[]
+  store?: string | string[]
+  position?: string | string[]
+  jobType?: string | string[]
 }
 
 async function loadPostings(params: PostingSearchParams) {
@@ -65,7 +68,14 @@ export default async function PostingsPage({
         </p>
       </div>
       <PostingsTable
-        key={`${pagination.q}:${pagination.status}:${pagination.page}`}
+        key={JSON.stringify([
+          pagination.q,
+          pagination.status,
+          pagination.page,
+          pagination.store,
+          pagination.position,
+          pagination.jobType,
+        ])}
         postings={postings}
         {...pagination}
       />

@@ -15,7 +15,19 @@ it('제목을 입력한 뒤 초안을 생성하고 편집 화면으로 이동한
     ok: true,
     json: async () => ({ posting: { id: 'qa' } }),
   })
-  render(<PostingsTable postings={[]} total={0} page={1} pageSize={50} q="" status="ALL" />)
+  render(
+    <PostingsTable
+      postings={[]}
+      total={0}
+      page={1}
+      pageSize={50}
+      q=""
+      status="ALL"
+      store=""
+      position=""
+      jobType=""
+    />
+  )
   fireEvent.click(screen.getByRole('button', { name: '새 공고' }))
   expect(fetch).not.toHaveBeenCalled()
   fireEvent.change(screen.getByLabelText('공고 제목'), { target: { value: '  강남점 채용  ' } })
@@ -29,7 +41,19 @@ it('제목을 입력한 뒤 초안을 생성하고 편집 화면으로 이동한
 
 it('공백 제목은 제출하지 않고 실패 시 입력을 유지해 재시도한다', async () => {
   ;(fetch as jest.Mock).mockResolvedValue({ ok: false })
-  render(<PostingsTable postings={[]} total={0} page={1} pageSize={50} q="" status="ALL" />)
+  render(
+    <PostingsTable
+      postings={[]}
+      total={0}
+      page={1}
+      pageSize={50}
+      q=""
+      status="ALL"
+      store=""
+      position=""
+      jobType=""
+    />
+  )
   fireEvent.click(screen.getByRole('button', { name: '새 공고' }))
   const title = screen.getByLabelText('공고 제목')
   fireEvent.change(title, { target: { value: '   ' } })
@@ -48,7 +72,19 @@ it('생성 응답을 기다리는 동안 중복 제출과 닫기를 막는다', 
       resolve = done
     })
   )
-  render(<PostingsTable postings={[]} total={0} page={1} pageSize={50} q="" status="ALL" />)
+  render(
+    <PostingsTable
+      postings={[]}
+      total={0}
+      page={1}
+      pageSize={50}
+      q=""
+      status="ALL"
+      store=""
+      position=""
+      jobType=""
+    />
+  )
   fireEvent.click(screen.getByRole('button', { name: '새 공고' }))
   fireEvent.change(screen.getByLabelText('공고 제목'), { target: { value: '중복 방지' } })
   const form = screen.getByRole('button', { name: '공고 만들기' }).closest('form')!
