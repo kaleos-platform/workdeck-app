@@ -139,7 +139,10 @@ export function CoupangSourceCard({ deckKey }: { deckKey: DeckKey }) {
         {!credentialActive && (
           <p className="text-xs text-muted-foreground">
             쿠팡 Open API 자격증명이 등록되지 않았습니다.{' '}
-            <Link href={SETTINGS_INTEGRATIONS_PATH} className="underline underline-offset-2">
+            <Link
+              href={`${SETTINGS_INTEGRATIONS_PATH}?tab=services`}
+              className="underline underline-offset-2"
+            >
               연동 설정
             </Link>
             에서 API 자격증명을 등록하면 API 수집을 사용할 수 있습니다.
