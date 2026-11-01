@@ -15,6 +15,20 @@ const props = {
 }
 beforeEach(() => jest.clearAllMocks())
 
+it('입력 중인 조건이 목록에 아직 적용되지 않았음을 알린다', () => {
+  render(<PostingsTable {...props} />)
+  expect(screen.queryByText('입력한 검색 조건은 아직 적용되지 않았습니다.')).not.toBeInTheDocument()
+  fireEvent.change(screen.getByLabelText('모집 직무'), { target: { value: '서빙' } })
+  expect(screen.getByText('입력한 검색 조건은 아직 적용되지 않았습니다.')).toBeInTheDocument()
+})
+
+it('초기화할 때 미적용 입력도 즉시 비운다', () => {
+  render(<PostingsTable {...props} q="" />)
+  fireEvent.change(screen.getByLabelText('모집 장소'), { target: { value: '입력 중' } })
+  fireEvent.click(screen.getByRole('button', { name: '초기화' }))
+  expect(screen.getByLabelText('모집 장소')).toHaveValue('')
+})
+
 it('고용 형태 선택을 즉시 적용하며 입력 중인 검색 조건도 보존한다', () => {
   render(<PostingsTable {...props} />)
   fireEvent.change(screen.getByLabelText('모집 직무'), { target: { value: '서빙' } })
