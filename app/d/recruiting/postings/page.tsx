@@ -70,8 +70,6 @@ export default async function PostingsPage({
       <PostingsTable
         key={JSON.stringify([
           pagination.q,
-          pagination.status,
-          pagination.page,
           pagination.store,
           pagination.position,
           pagination.jobType,

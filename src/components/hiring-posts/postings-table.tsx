@@ -87,6 +87,8 @@ export function PostingsTable({
   const [pending, startTransition] = useTransition()
   const [copyingId, setCopyingId] = useState<string | null>(null)
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const hasUnappliedInput =
+    query.trim() !== q || storeInput.trim() !== store || positionInput.trim() !== position
 
   function navigate(
     nextPage: number,
@@ -193,13 +195,21 @@ export function PostingsTable({
             type="button"
             variant="ghost"
             disabled={pending}
-            onClick={() => navigate(1, '', 'ALL', { store: '', position: '', jobType: '' })}
+            onClick={() => {
+              setQuery('')
+              setStoreInput('')
+              setPositionInput('')
+              setJobTypeInput('')
+              navigate(1, '', 'ALL', { store: '', position: '', jobType: '' })
+            }}
           >
             초기화
           </Button>
         )}
-        <p className="w-full text-xs text-muted-foreground">
-          제목·장소·직무를 입력한 뒤 검색을 눌러 적용하세요.
+        <p className="w-full text-xs text-muted-foreground" aria-live="polite">
+          {hasUnappliedInput
+            ? '입력한 검색 조건은 아직 적용되지 않았습니다.'
+            : '제목·장소·직무를 입력한 뒤 검색을 눌러 적용하세요.'}
         </p>
       </form>
       <div className="flex flex-wrap items-center justify-between gap-4">
