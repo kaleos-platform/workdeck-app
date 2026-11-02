@@ -346,6 +346,23 @@ describe('meta-ads (포팅)', () => {
     await expect(p).rejects.toThrow(/access_token=\[redacted\]/)
   })
 
+  it('Graph 오류에 error_user_msg·error_subcode를 붙인다', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({
+        error: {
+          message: 'Invalid parameter',
+          error_user_msg: '예산 공유 여부를 지정하세요',
+          error_subcode: 4834011,
+        },
+      }),
+    })
+    await expect(tool('meta_ads_list_campaigns').execute(ctx(), {})).rejects.toThrow(
+      'Invalid parameter (예산 공유 여부를 지정하세요, subcode 4834011)'
+    )
+  })
+
   it('get_insights: 다른 광고 계정의 object_id는 거부(Space 경계)', async () => {
     fetchMock.mockResolvedValueOnce(ok({ account_id: '999' }))
     await expect(
