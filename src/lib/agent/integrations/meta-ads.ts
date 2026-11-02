@@ -78,7 +78,15 @@ const STUDY_FIELDS = ['name', 'description', 'start_time', 'end_time', 'cells']
 export const META_ACTIONS = {
   'campaign.create': {
     endpoint: (a) => `/${a}/campaigns`,
-    keys: [...CAMPAIGN_FIELDS, 'objective', 'buying_type', 'promoted_object', ...META_MONEY_KEYS],
+    // is_adset_budget_sharing_enabled: 캠페인 예산 없는(ABO) 캠페인 생성에 Meta가 필수로 요구한다.
+    keys: [
+      ...CAMPAIGN_FIELDS,
+      'objective',
+      'buying_type',
+      'promoted_object',
+      'is_adset_budget_sharing_enabled',
+      ...META_MONEY_KEYS,
+    ],
   },
   'campaign.update': {
     endpoint: (_a, p) => `/${p.campaign_id}`,
@@ -405,11 +413,17 @@ export async function graphRequest(
         : 'Meta API에 연결하지 못했습니다'
     )
   }
-  const body = (await res.json().catch(() => ({}))) as { error?: { message?: string } }
+  const body = (await res.json().catch(() => ({}))) as {
+    error?: { message?: string; error_user_msg?: string; error_subcode?: number }
+  }
   if (!res.ok) {
-    throw new MetaApiError(
-      maskSecrets(body?.error?.message || `Meta API 요청 실패 (${res.status})`)
-    )
+    const e = body?.error
+    // "Invalid parameter"만으로는 원인을 알 수 없어 Meta의 사용자 메시지·subcode를 붙인다.
+    const detail = [e?.error_user_msg, e?.error_subcode && `subcode ${e.error_subcode}`]
+      .filter(Boolean)
+      .join(', ')
+    const msg = e?.message || `Meta API 요청 실패 (${res.status})`
+    throw new MetaApiError(maskSecrets(detail ? `${msg} (${detail})` : msg))
   }
   return sanitizeMetaResponse(body)
 }
