@@ -193,7 +193,9 @@ export const deploymentCreateSchema = z.object({
 export type DeploymentCreateInput = z.infer<typeof deploymentCreateSchema>
 
 export const deploymentUpdateSchema = deploymentCreateSchema.partial().extend({
-  status: z.enum(['SCHEDULED', 'PUBLISHING', 'PUBLISHED', 'FAILED', 'CANCELED']).optional(),
+  status: z
+    .enum(['SCHEDULED', 'PUBLISHING', 'AWAITING_MANUAL', 'PUBLISHED', 'FAILED', 'CANCELED'])
+    .optional(),
   platformUrl: emptyToUndefined.pipe(z.string().url().max(2000)).optional(),
 })
 

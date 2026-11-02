@@ -64,7 +64,8 @@ export async function PATCH(
   }
 
   // 판정 규칙은 일괄 승인(bulk)과 공유한다 — decideAction.
-  const r = await decideAction(user.id, actionId, decision)
+  // 이 PATCH 는 전문을 보여주는 승인 상세 시트만 호출한다.
+  const r = await decideAction(user.id, actionId, decision, { webReviewed: true })
   if (r.error !== undefined) return errorResponse(r.error, r.status)
   return NextResponse.json({ outcome: r.outcome }, { status: r.status })
 }

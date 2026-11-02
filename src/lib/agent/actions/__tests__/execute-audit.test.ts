@@ -15,7 +15,10 @@ jest.mock('@/lib/prisma', () => ({
 jest.mock('@/lib/billing/entitlement', () => ({
   assertDeckWritable: jest.fn().mockResolvedValue(null),
 }))
-jest.mock('../decision-policy', () => ({ deciderDenial: jest.fn().mockResolvedValue(null) }))
+jest.mock('../decision-policy', () => ({
+  deciderDenial: jest.fn().mockResolvedValue(null),
+  needsWebReview: jest.fn().mockReturnValue(false),
+}))
 jest.mock('../registry', () => ({ getActionDefinition: jest.fn() }))
 jest.mock('@/lib/agent/audit', () => ({
   startToolAudit: jest.fn(),
