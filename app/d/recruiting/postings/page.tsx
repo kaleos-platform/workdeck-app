@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { listPostingPage } from '@/lib/hiring/posting-list'
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { collectServerTimings } from '@/lib/coupang-ads/server-timing'
 import { PostingsTable, type PostingRow } from '@/components/hiring-posts/postings-table'
 
@@ -56,6 +57,7 @@ export default async function PostingsPage({
     return <p className="p-6">검색 조건이 올바르지 않습니다. 주소를 확인해 주세요.</p>
   }
   const { rows, ...pagination } = await loadPostings(params)
+  const now = new Date()
   const postings: PostingRow[] = rows.map((p) => ({
     id: p.id,
     uuid: p.uuid,
@@ -64,6 +66,7 @@ export default async function PostingsPage({
     closingDate: p.closingDate ? p.closingDate.toISOString() : null,
     createdAt: p.createdAt.toISOString(),
     applicantCount: p._count.applications,
+    receptionExpired: p.status === 'ACTIVE' && isHiringDeadlinePassed(p.closingDate, now),
   }))
 
   return (
