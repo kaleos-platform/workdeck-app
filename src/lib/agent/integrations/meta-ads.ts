@@ -578,6 +578,23 @@ export async function assertActionInAccount(
   await assertCellsInAccount(cred, cells, adAccountId)
 }
 
+/**
+ * adstudy.create에 business_id가 없으면 광고 계정을 소유한 비즈니스로 채운다(제안 시점).
+ * 채운 값은 저장 payload에 남아 승인자가 보고, 실행 전 assertActionInAccount가 다시 확인한다.
+ */
+export async function fillAdStudyBusiness(
+  cred: MetaCred,
+  action: string,
+  params: unknown,
+  adAccountId: string
+): Promise<unknown> {
+  if (action !== 'adstudy.create' || !params || typeof params !== 'object') return params
+  if (Array.isArray(params) || 'business_id' in params) return params
+  const account = await graphGet<{ business?: { id?: string } }>(cred, adAccountId, 'business')
+  if (!account.business?.id) throw new ToolUserError(BUSINESS_UNVERIFIED)
+  return { ...params, business_id: account.business.id }
+}
+
 function safeJson(s: string): unknown {
   try {
     return JSON.parse(s)
