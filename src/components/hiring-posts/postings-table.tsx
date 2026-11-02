@@ -38,6 +38,7 @@ export type PostingRow = {
   closingDate: string | null
   createdAt: string
   applicantCount: number
+  receptionExpired: boolean
 }
 
 const STATUS_TABS: Array<{ value: 'ALL' | PostingStatus; label: string }> = [
@@ -224,12 +225,18 @@ export function PostingsTable({
         </Tabs>
         <NewPostingButton />
       </div>
+      <p className="text-xs text-muted-foreground">
+        상태 탭은 발행 상태 기준입니다. 마감일이 지난 공고는 접수가 중단되며, 목록을 새로고침해 접수
+        상태를 확인할 수 있습니다.
+      </p>
 
       <div className="rounded-lg border">
-        <Table className="min-w-[760px] table-fixed">
+        <Table className="min-w-[668px] table-fixed sm:min-w-[760px]">
           <TableHeader>
             <TableRow>
-              <TableHead className="sticky left-0 z-20 w-[272px] bg-background">제목</TableHead>
+              <TableHead className="sticky left-0 z-20 w-[180px] bg-background sm:w-[272px]">
+                제목
+              </TableHead>
               <TableHead className="w-24">상태</TableHead>
               <TableHead className="w-24 text-right">지원자</TableHead>
               <TableHead className="w-32">마감일</TableHead>
@@ -266,7 +273,12 @@ export function PostingsTable({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <PostingStatusBadge status={p.status} />
+                    <div className="flex flex-col items-start gap-1">
+                      <PostingStatusBadge status={p.status} />
+                      {p.receptionExpired && (
+                        <span className="text-xs font-semibold text-destructive">접수 마감</span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{p.applicantCount}</TableCell>
                   <TableCell className="text-muted-foreground">
