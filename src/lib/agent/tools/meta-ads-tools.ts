@@ -5,10 +5,12 @@ import {
   assertActionInAccount,
   assertMetaTarget,
   assertObjectInAccount,
+  fillAdStudyBusiness,
   graphRequest,
   loadMetaCred,
   resolveAdAccount,
   validateMetaAction,
+  type MetaActionName,
 } from '@/lib/agent/integrations/meta-ads'
 import { makeListActionsTool } from './action-list-tools'
 import { ToolUserError } from './errors'
@@ -135,7 +137,7 @@ const getInsights: ToolDefinition = {
 
 const proposeAction: ToolDefinition = {
   name: 'meta_ads_propose_action',
-  description: `메타 광고 변경을 제안합니다(${Object.keys(META_ACTIONS).join(', ')}). 즉시 실행되지 않고 승인 대기 큐에 등록되며, create·update는 등록 전에 Meta에 validate_only로 미리 검증해 거부될 요청이면 오류를 돌려줍니다(adstudy.* 제외). 구성원이 승인한 뒤에만 Meta API를 호출합니다. 예산이 Space 승인 한도를 넘는 변경은 OWNER 승인이 필요합니다. 예산 변경은 KRW 광고 계정만 지원합니다. adstudy.*(A/B 테스트)는 business_id·study_id를 경로에만 씁니다.`,
+  description: `메타 광고 변경을 제안합니다(${Object.keys(META_ACTIONS).join(', ')}). 즉시 실행되지 않고 승인 대기 큐에 등록되며, create·update는 등록 전에 Meta에 validate_only로 미리 검증해 거부될 요청이면 오류를 돌려줍니다(adstudy.* 제외). 구성원이 승인한 뒤에만 Meta API를 호출합니다. 예산이 Space 승인 한도를 넘는 변경은 OWNER 승인이 필요합니다. 예산 변경은 KRW 광고 계정만 지원합니다. adstudy.*(A/B 테스트)는 business_id·study_id를 경로에만 씁니다. adstudy.create에서 business_id를 빼면 광고 계정을 소유한 비즈니스로 채웁니다.`,
   inputSchema: {
     brand,
     action: z.enum(Object.keys(META_ACTIONS) as [string, ...string[]]),
@@ -145,11 +147,17 @@ const proposeAction: ToolDefinition = {
   mode: 'write',
   scope: 'meta:write',
   async execute(ctx, p) {
-    const { action, params } = validateMetaAction({ action: p.action, params: p.params })
-    // 계정 매핑·통화를 확인한다. 같은 검사를 validateCreate(create·update는 Meta validate_only 포함)와 execute가 다시 한다.
+    // action은 inputSchema enum이 이미 확인했다. 계정 매핑·통화를 확인한다. 같은 검사를 validateCreate(create·update는 Meta validate_only 포함)와 execute가 다시 한다.
     const cred = await loadMetaCred(ctx.spaceId, ctx.decryptedCredentialIds)
     const brandKey = (p.brand as string | undefined) || cred.config.defaultBrand
-    const adAccountId = assertMetaTarget(cred.config, { brand: brandKey, action })
+    const adAccountId = assertMetaTarget(cred.config, {
+      brand: brandKey,
+      action: p.action as MetaActionName,
+    })
+    const { action, params } = validateMetaAction({
+      action: p.action,
+      params: await fillAdStudyBusiness(cred, p.action as string, p.params, adAccountId),
+    })
     return createPendingAction({
       spaceId: ctx.spaceId,
       actionType: `meta-ads.${action}`,
