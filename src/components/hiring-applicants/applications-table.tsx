@@ -48,12 +48,61 @@ type Props = {
   pageSize: number
   page: number
   postings: Array<{ id: string; title: string }>
-  filters: { search?: string; posting: string; stage: string; from: string; to: string }
+  filters: {
+    search?: string
+    posting: string
+    stage: string
+    from: string
+    to: string
+    store: string
+    position: string
+  }
 }
 
 const ALL = '__all__'
 
-export function ApplicationsTable({ rows, total, pageSize, page, postings, filters }: Props) {
+export function ApplicationsTable(props: Props) {
+  const [storeInput, setStoreInput] = useState(props.filters.store)
+  const [positionInput, setPositionInput] = useState(props.filters.position)
+  const { filters, page } = props
+  return (
+    <ApplicationsTableContent
+      key={JSON.stringify([
+        filters.search,
+        filters.posting,
+        filters.stage,
+        filters.from,
+        filters.to,
+        filters.store,
+        filters.position,
+        page,
+      ])}
+      {...props}
+      storeInput={storeInput}
+      setStoreInput={setStoreInput}
+      positionInput={positionInput}
+      setPositionInput={setPositionInput}
+    />
+  )
+}
+
+function ApplicationsTableContent({
+  rows,
+  total,
+  pageSize,
+  page,
+  postings,
+  filters,
+  storeInput,
+  setStoreInput,
+  positionInput,
+  setPositionInput,
+}: Props & {
+  storeInput: string
+  setStoreInput: (value: string) => void
+  positionInput: string
+  setPositionInput: (value: string) => void
+}) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -83,6 +132,8 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
     if (next.stage) params.set('stage', next.stage)
     if (next.from) params.set('from', next.from)
     if (next.to) params.set('to', next.to)
+    if (next.store) params.set('store', next.store)
+    if (next.position) params.set('position', next.position)
     if (next.page && next.page !== '1') params.set('page', next.page)
     startTransition(() => {
       router.push(`${RECRUITING_APPLICATIONS_PATH}?${params.toString()}`)
@@ -160,6 +211,8 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
     if (filters.stage) params.set('stage', filters.stage)
     if (filters.from) params.set('from', filters.from)
     if (filters.to) params.set('to', filters.to)
+    if (filters.store) params.set('store', filters.store)
+    if (filters.position) params.set('position', filters.position)
     try {
       const res = await fetch(`/api/hiring-applicants/applications/export?${params.toString()}`)
       if (!res.ok) {
@@ -198,7 +251,12 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
 
   return (
     <div className="space-y-3">
-      <form onSubmit={searchApplicants} className="flex flex-wrap items-center gap-2" role="search">
+      <form
+        onSubmit={searchApplicants}
+        className="flex flex-wrap items-center gap-2"
+        role="search"
+        aria-label="지원자 검색"
+      >
         <Input
           aria-label="지원자 이름 또는 휴대전화 검색"
           placeholder="이름 전체 · 휴대전화 · 끝 4자리"
@@ -226,6 +284,56 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
               검색 해제
             </Button>
           </>
+        )}
+      </form>
+      <form
+        role="search"
+        aria-label="근무지와 직무 검색"
+        className="flex flex-wrap items-center gap-2"
+        onSubmit={(event) => {
+          event.preventDefault()
+          updateQuery({ store: storeInput.trim(), position: positionInput.trim() })
+        }}
+      >
+        <Input
+          aria-label="지원 근무지"
+          placeholder="지원 근무지"
+          maxLength={200}
+          disabled={busy}
+          className="w-full sm:w-44"
+          value={storeInput}
+          onChange={(event) => setStoreInput(event.target.value)}
+        />
+        <Input
+          aria-label="지원 직무"
+          placeholder="지원 직무"
+          maxLength={200}
+          disabled={busy}
+          className="w-full sm:w-44"
+          value={positionInput}
+          onChange={(event) => setPositionInput(event.target.value)}
+        />
+        <Button type="submit" variant="outline" disabled={busy}>
+          조건 검색
+        </Button>
+        {(filters.store || filters.position) && (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={busy}
+            onClick={() => {
+              setStoreInput('')
+              setPositionInput('')
+              updateQuery({ store: '', position: '' })
+            }}
+          >
+            조건 초기화
+          </Button>
+        )}
+        {(storeInput.trim() !== filters.store || positionInput.trim() !== filters.position) && (
+          <span className="text-xs text-muted-foreground">
+            입력한 근무지·직무 조건은 아직 적용되지 않았습니다.
+          </span>
         )}
       </form>
       {/* 필터 */}
@@ -271,7 +379,7 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
               disabled={busy}
               value={filters.from}
               onChange={(e) => updateQuery({ from: e.target.value })}
-              className="w-36"
+              className="w-32 sm:w-36"
             />
             <span className="text-muted-foreground">~</span>
             <Input
@@ -279,7 +387,7 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
               disabled={busy}
               value={filters.to}
               onChange={(e) => updateQuery({ to: e.target.value })}
-              className="w-36"
+              className="w-32 sm:w-36"
             />
           </div>
         </div>

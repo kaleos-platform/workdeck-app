@@ -15,6 +15,9 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     hiringApplication: { findMany: jest.fn() },
     hiringPosting: { findMany: jest.fn(async () => []) },
+    hiringPostingPosition: {
+      findMany: jest.fn(async () => [{ id: 'position-qa', postingId: 'posting-qa' }]),
+    },
     hiringMigrationRecord: { findMany: jest.fn(async () => []) },
   },
 }))
@@ -35,6 +38,48 @@ beforeEach(() => {
   ;(prisma.hiringMigrationRecord.findMany as jest.Mock).mockResolvedValue([])
   ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([])
 })
+
+it('근무지와 직무 조건을 지원자 목록과 Excel에 함께 적용한다', async () => {
+  const params = { store: '  강남  ', position: '서빙' }
+  await ApplicationsPage({ searchParams: Promise.resolve(params) })
+  await GET(new NextRequest(`http://localhost/api/export?${new URLSearchParams(params)}`))
+  expect(listApplications).toHaveBeenCalledWith(
+    'qa-space',
+    expect.objectContaining({ store: '강남', position: '서빙' })
+  )
+  expect(prisma.hiringApplication.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: expect.objectContaining({
+        spaceId: 'qa-space',
+        stores: {
+          some: { store: { spaceId: 'qa-space', name: { contains: '강남', mode: 'insensitive' } } },
+        },
+        AND: [{ OR: [{ postingId: 'posting-qa', postingPositionId: { in: ['position-qa'] } }] }],
+      }),
+    })
+  )
+})
+
+it('공고가 선택된 경우 직무 후보도 해당 공고로 제한한다', async () => {
+  await GET(new NextRequest('http://localhost/api/export?position=서빙&posting=post-qa'))
+  expect(prisma.hiringPostingPosition.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: expect.objectContaining({ spaceId: 'qa-space', postingId: 'post-qa' }),
+    })
+  )
+})
+
+it.each(['store', 'position'])(
+  '반복된 %s 조건은 목록과 Excel을 전체 결과로 확장하지 않는다',
+  async (field) => {
+    const page = await ApplicationsPage({ searchParams: Promise.resolve({ [field]: ['a', 'b'] }) })
+    expect(page.props.children).toContain('검색 조건이 올바르지 않습니다')
+    expect(listApplications).not.toHaveBeenCalled()
+    const response = await GET(new NextRequest(`http://localhost/api/export?${field}=a&${field}=b`))
+    expect(response?.status).toBe(400)
+    expect(prisma.hiringApplication.findMany).not.toHaveBeenCalled()
+  }
+)
 
 it.each(['999999999999999999999', '42949674', '1.5', '2oops', '-1', '0', ['2', '3']])(
   '잘못된 페이지 %s는 첫 페이지로 조회한다',
@@ -444,8 +489,8 @@ it('잘못된 검색 토큰을 전체 지원자 엑셀로 확대하지 않는다
   )
 })
 
-it('검색 기록 이동 시 다른 검색의 선택 상태가 재사용되지 않는다', async () => {
-  const a = await ApplicationsPage({ searchParams: Promise.resolve({ search: 'a'.repeat(64) }) })
-  const b = await ApplicationsPage({ searchParams: Promise.resolve({ search: 'b'.repeat(64) }) })
+it('근무지 검색 조건이 바뀌면 입력 영역을 새 조건으로 초기화한다', async () => {
+  const a = await ApplicationsPage({ searchParams: Promise.resolve({ store: '강남' }) })
+  const b = await ApplicationsPage({ searchParams: Promise.resolve({ store: '홍대' }) })
   expect(a.props.children[1].key).not.toBe(b.props.children[1].key)
 })
