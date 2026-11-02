@@ -72,6 +72,8 @@ NEXT_PUBLIC_APP_URL=$U NEXT_PUBLIC_MARKETING_URL=$U npx next dev -H 127.0.0.1 -p
 - `funnel`을 쓰지 않는다.
 - `NEXT_PUBLIC_ADMIN_URL`은 넣지 않는다. 같은 주소면 모든 요청이 `/admin`으로 간다.
 - 끝나면 dev 서버를 내리고 `tailscale serve --tcp=8443 off`로 닫는다.
+- 수정 지시: dev 서버에는 `react-grab`이 켜진다. 에디가 요소를 집어 붙인 `in <Component> (at <file>:<line>)` 줄을 그 요소의 위치로 쓴다. 직접 확인할 때는 `window.__REACT_GRAB__.getSource(el)`.
+- 로그인 확인은 테스트 계정(Aside u1)으로 직접 한다. 에디에게 로그인을 부탁하지 않는다.
 
 ## 금지
 
