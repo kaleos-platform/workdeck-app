@@ -536,6 +536,7 @@ export type ContentAssetKind = (typeof ContentAssetKind)[keyof typeof ContentAss
 export const DeploymentStatus = {
   SCHEDULED: 'SCHEDULED',
   PUBLISHING: 'PUBLISHING',
+  AWAITING_MANUAL: 'AWAITING_MANUAL',
   PUBLISHED: 'PUBLISHED',
   FAILED: 'FAILED',
   CANCELED: 'CANCELED'

@@ -3204,6 +3204,7 @@ model Content {
 enum DeploymentStatus {
   SCHEDULED
   PUBLISHING
+  AWAITING_MANUAL // 수동 채널: 예약 처리는 끝났고 사람이 플랫폼에 게시하기를 기다림
   PUBLISHED
   FAILED
   CANCELED
