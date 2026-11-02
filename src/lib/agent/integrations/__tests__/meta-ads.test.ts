@@ -492,6 +492,24 @@ describe('meta-ads (포팅)', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('adstudy.create에 business_id가 없으면 광고 계정의 비즈니스로 채워 제안한다', async () => {
+    fetchMock.mockResolvedValueOnce(ok({ business: { id: '680' } }))
+    await tool('meta_ads_propose_action').execute(ctx(), {
+      brand: 'brand-a',
+      action: 'adstudy.create',
+      params: { name: 't', type: 'SPLIT_TEST' },
+      summary: 'A/B',
+    })
+    expect(new URL(fetchMock.mock.calls[0][0]).pathname).toMatch(/\/act_111$/)
+    expect(createPendingAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: expect.objectContaining({
+          params: { name: 't', type: 'SPLIT_TEST', business_id: '680' },
+        }),
+      })
+    )
+  })
+
   // 승인 역할 판정은 requiredDecisionRole(웹 PATCH와 Slack 버튼 공용)이 한다.
   it('metaSpendKrw: 예산 파라미터의 최댓값, 없으면 null', () => {
     expect(metaSpendKrw({ daily_budget: '200000' })).toBe(200000)
