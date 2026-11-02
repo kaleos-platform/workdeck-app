@@ -47,7 +47,15 @@ export default async function PostingsPage({
 }: {
   searchParams: Promise<PostingSearchParams>
 }) {
-  const { rows, ...pagination } = await loadPostings(await searchParams)
+  const params = await searchParams
+  if (
+    [params.q, params.store, params.position, params.status, params.jobType, params.page].some(
+      Array.isArray
+    )
+  ) {
+    return <p className="p-6">검색 조건이 올바르지 않습니다. 주소를 확인해 주세요.</p>
+  }
+  const { rows, ...pagination } = await loadPostings(params)
   const postings: PostingRow[] = rows.map((p) => ({
     id: p.id,
     uuid: p.uuid,
