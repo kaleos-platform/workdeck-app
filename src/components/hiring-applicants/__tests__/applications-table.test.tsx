@@ -48,9 +48,35 @@ const props = {
   pageSize: 50,
   page: 1,
   postings: [],
-  filters: { posting: '', stage: '', from: '2026-09-27', to: '' },
+  filters: { posting: '', stage: '', from: '2026-09-27', to: '', store: '', position: '' },
 }
 beforeEach(() => jest.clearAllMocks())
+
+it('검색 기록 변경 시 선택은 초기화하고 미적용 근무지 입력은 유지한다', () => {
+  const result = render(
+    <ApplicationsTable {...props} filters={{ ...props.filters, search: 'a'.repeat(64) }} />
+  )
+  fireEvent.click(screen.getByRole('checkbox', { name: 'QAa 선택' }))
+  fireEvent.change(screen.getByLabelText('지원 근무지'), { target: { value: '입력 중' } })
+  result.rerender(
+    <ApplicationsTable {...props} filters={{ ...props.filters, search: 'b'.repeat(64) }} />
+  )
+  expect(screen.getByRole('checkbox', { name: 'QAa 선택' })).not.toBeChecked()
+  expect(screen.getByLabelText('지원 근무지')).toHaveValue('입력 중')
+})
+
+it('근무지와 직무 조건을 검색하고 Excel에도 유지한다', async () => {
+  global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({ message: '오류' }) })
+  const filters = { ...props.filters, store: '강남', position: '서빙' }
+  render(<ApplicationsTable {...props} filters={filters} />)
+  fireEvent.change(screen.getByLabelText('지원 근무지'), { target: { value: '홍대' } })
+  fireEvent.submit(screen.getByRole('search', { name: '근무지와 직무 검색' }))
+  expect(push).toHaveBeenCalledWith(expect.stringContaining('store=%ED%99%8D%EB%8C%80'))
+  expect(push).toHaveBeenCalledWith(expect.stringContaining('position=%EC%84%9C%EB%B9%99'))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '엑셀 내보내기' })))
+  expect(fetch).toHaveBeenCalledWith(expect.stringContaining('store=%EA%B0%95%EB%82%A8'))
+  expect(fetch).toHaveBeenCalledWith(expect.stringContaining('position=%EC%84%9C%EB%B9%99'))
+})
 
 it('일괄 변경 중 선택과 필터를 잠그고 실제 변경 건수를 안내한다', async () => {
   let finish!: (v: unknown) => void
@@ -149,7 +175,7 @@ it('검색 원문은 server action에만 전달하고 URL에는 검색 토큰만
   fireEvent.change(screen.getByRole('textbox', { name: '지원자 이름 또는 휴대전화 검색' }), {
     target: { value: '홍길동' },
   })
-  await act(async () => fireEvent.submit(screen.getByRole('search')))
+  await act(async () => fireEvent.submit(screen.getByRole('search', { name: '지원자 검색' })))
   expect(createApplicantSearch).toHaveBeenCalledWith('홍길동')
   expect(push).toHaveBeenCalledWith(expect.stringContaining('search=' + 'a'.repeat(64)))
   expect(push.mock.calls[0][0]).not.toContain(encodeURIComponent('홍길동'))
