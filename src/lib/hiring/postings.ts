@@ -42,7 +42,7 @@ export async function listPostings(spaceId: string, status?: PostingListStatus) 
       closingDate: true,
       publishedAt: true,
       createdAt: true,
-      _count: { select: { applications: { where: { deletedAt: null } } } },
+      _count: { select: { applications: { where: { spaceId, deletedAt: null } } } },
     },
   })
 }

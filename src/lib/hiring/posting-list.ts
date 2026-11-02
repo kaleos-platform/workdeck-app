@@ -4,6 +4,7 @@ import { jobTypeEnum } from '@/lib/validations/hiring-posts'
 
 const PAGE_SIZE = 50
 const STATUSES = new Set(['DRAFT', 'ACTIVE', 'CLOSED', 'ARCHIVED'])
+const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&')
 
 export async function listPostingPage(
   spaceId: string,
@@ -37,15 +38,27 @@ export async function listPostingPage(
   const where = {
     spaceId,
     ...(status !== 'ALL' ? { status } : {}),
-    ...(q ? { title: { contains: q, mode: 'insensitive' as const } } : {}),
+    ...(q ? { title: { contains: escapeLike(q), mode: 'insensitive' as const } } : {}),
     ...(store
-      ? { stores: { some: { store: { name: { contains: store, mode: 'insensitive' as const } } } } }
+      ? {
+          stores: {
+            some: {
+              store: {
+                spaceId,
+                name: { contains: escapeLike(store), mode: 'insensitive' as const },
+              },
+            },
+          },
+        }
       : {}),
     ...(position || jobType
       ? {
           positions: {
             some: {
-              ...(position ? { name: { contains: position, mode: 'insensitive' as const } } : {}),
+              spaceId,
+              ...(position
+                ? { name: { contains: escapeLike(position), mode: 'insensitive' as const } }
+                : {}),
               ...(jobType ? { jobType } : {}),
             },
           },
@@ -65,7 +78,7 @@ export async function listPostingPage(
         status: true,
         closingDate: true,
         createdAt: true,
-        _count: { select: { applications: { where: { deletedAt: null } } } },
+        _count: { select: { applications: { where: { spaceId, deletedAt: null } } } },
       },
     }),
     prisma.hiringPosting.count({ where }),

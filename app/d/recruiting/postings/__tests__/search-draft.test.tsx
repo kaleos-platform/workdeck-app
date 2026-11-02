@@ -43,3 +43,11 @@ it('상태 또는 페이지를 바꿔도 검색 전에 입력한 제목과 장�
   result.rerender(await PostingsPage({ searchParams: Promise.resolve({ q: '확정 검색' }) }))
   expect(screen.getByLabelText('공고 제목 검색')).toHaveValue('확정 검색')
 })
+
+it.each(['q', 'store', 'position', 'status', 'jobType', 'page'])(
+  '반복된 %s 조건은 전체 공고로 확장하지 않고 안내한다',
+  async (field) => {
+    const page = await PostingsPage({ searchParams: Promise.resolve({ [field]: ['a', 'b'] }) })
+    expect(page.props.children).toContain('검색 조건이 올바르지 않습니다')
+  }
+)
