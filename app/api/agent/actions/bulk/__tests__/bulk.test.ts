@@ -89,7 +89,7 @@ it('멤버십은 각 액션의 spaceId로 확인한다 — 미가입 Space 액�
   )
   expect(results.map((r: { status: string }) => r.status)).toEqual(['ok', 'forbidden'])
   expect(approveAndExecute).toHaveBeenCalledTimes(1)
-  expect(approveAndExecute).toHaveBeenCalledWith('act-a', 'user-1')
+  expect(approveAndExecute).toHaveBeenCalledWith('act-a', 'user-1', { webReviewed: undefined })
 })
 
 it('OWNER가 필요한 항목은 건너뛰고(forbidden) 나머지는 계속 처리한다', async () => {
@@ -179,7 +179,7 @@ it('일괄 승인은 지출 액션을 결정하지 않고 forbidden, 나머지�
     expect.objectContaining({ actionId: 'act-a', status: 'ok' }),
   ])
   expect(approveAndExecute).toHaveBeenCalledTimes(1)
-  expect(approveAndExecute).toHaveBeenCalledWith('act-a', 'user-1')
+  expect(approveAndExecute).toHaveBeenCalledWith('act-a', 'user-1', { webReviewed: undefined })
 })
 
 it('일괄 승인은 spendKrw 정의가 있어도 비예산 액션(null)은 승인한다', async () => {

@@ -7,8 +7,11 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { ContentStatusBadge } from '@/components/sc/contents/content-status-badge'
 import { DeployButton } from '@/components/sc/contents/deploy-button'
+import { ManualPublishPanel } from '@/components/sc/contents/manual-publish-panel'
 import { SALES_CONTENT_CONTENTS_PATH, SALES_CONTENT_ANALYTICS_PATH } from '@/lib/deck-routes'
 import { nextAllowed } from '@/lib/sc/content-state'
+import { exportNaverPost } from '@/lib/sc/exporters/naver-post'
+import { buildAppUrl } from '@/lib/domain'
 import { getContentMetricsTotal } from '@/lib/sc/metrics'
 import { PLATFORM_LABEL } from '@/components/sc/analytics/analytics-filters'
 import { ContentMetricsChart } from '@/components/sc/analytics/content-metrics-chart'
@@ -101,6 +104,8 @@ export default async function ContentDetailPage({ params }: Props) {
   // 배포별 지표 맵 (Bernstein 함수에서 받은 데이터)
   const deploymentMetricsMap = new Map(metricsData.byDeployment.map((d) => [d.deploymentId, d]))
 
+  const preview = exportNaverPost({ doc: content.doc })
+
   return (
     <div className="space-y-6">
       {/* 헤더 */}
@@ -125,6 +130,23 @@ export default async function ContentDetailPage({ params }: Props) {
           </Button>
         </div>
       </div>
+
+      {/* 본문 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">본문</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {preview.text ? (
+            <div
+              className="max-h-[32rem] space-y-3 overflow-y-auto text-sm leading-relaxed [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:text-base [&_h2]:font-semibold [&_h3]:font-semibold [&_img]:max-w-full [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+              dangerouslySetInnerHTML={{ __html: preview.html }}
+            />
+          ) : (
+            <p className="text-xs text-muted-foreground">아직 작성된 본문이 없습니다.</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 합계 Stats Row */}
       <StatsRow total={metricsData.total} />
@@ -181,6 +203,7 @@ export default async function ContentDetailPage({ params }: Props) {
                 const dm = deploymentMetricsMap.get(d.id)
                 const m = dm?.metrics
                 const internalClicks = d._count.clickEvents
+                const shortUrl = buildAppUrl(`/c/${d.shortSlug}`)
                 return (
                   <div key={d.id} className="rounded border p-3 text-xs">
                     {/* 배포 헤더 행 */}
@@ -201,7 +224,7 @@ export default async function ContentDetailPage({ params }: Props) {
                                 : 'bg-muted text-muted-foreground',
                           ].join(' ')}
                         >
-                          {d.status}
+                          {d.status === 'AWAITING_MANUAL' ? '게시 대기' : d.status}
                         </span>
                       </div>
                       <span className="shrink-0 text-muted-foreground">
@@ -214,6 +237,17 @@ export default async function ContentDetailPage({ params }: Props) {
                       <span>{PLATFORM_LABEL[d.channel.platform]}</span>
                       {d.targetUrl && <span className="truncate">→ {d.targetUrl}</span>}
                     </div>
+
+                    {d.platformUrl && (
+                      <a
+                        href={d.platformUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-1 block truncate text-primary underline-offset-2 hover:underline"
+                      >
+                        {d.platformUrl}
+                      </a>
+                    )}
 
                     {/* 채널별 지표 */}
                     <div className="mt-2 grid grid-cols-4 gap-2">
@@ -236,6 +270,14 @@ export default async function ContentDetailPage({ params }: Props) {
                         </div>
                       ))}
                     </div>
+
+                    {d.status === 'AWAITING_MANUAL' && (
+                      <ManualPublishPanel
+                        deploymentId={d.id}
+                        shortUrl={shortUrl}
+                        {...exportNaverPost({ doc: content.doc, deploymentUrl: shortUrl })}
+                      />
+                    )}
 
                     {/* 분석 자세히 버튼 */}
                     <div className="mt-2">

@@ -43,6 +43,8 @@ async function activeChannel(spaceId: string, channelId: string) {
  * 구성원이 화면에서 쓰는 검수 흐름(IN_REVIEW→APPROVED)은 그대로 두고, 에이전트 제안만 이 경로를 탄다.
  */
 const postPublish: ActionDefinition<PostPublishParams> = {
+  // Slack 승인 알림은 값을 300자에서 자른다 — 그보다 긴 본문은 전문을 볼 수 있는 웹에서만 승인한다.
+  requiresWebReview: (params) => params.body.length > 300,
   actionType: 'sales-content.post.publish',
   deckKey: 'sales-content',
   title: '세일즈 콘텐츠 게시물 발행 예약',
