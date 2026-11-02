@@ -1,6 +1,7 @@
 // 지원자 관리 Deck 도메인 모듈 — 공개 지원 생성·목록·복호화·레이트리밋·블랙리스트 매칭.
 // PII 처리는 반드시 src/lib/hiring/pii.ts 유틸을 거친다(call-site 강제).
 import { applicantSearchWhere } from './application-search'
+import { applicantWorkplaceWhere } from './application-workplace-filter'
 import { fileFieldError, type FileField } from './file-fields'
 import { randomUUID } from 'node:crypto'
 import { prisma } from '@/lib/prisma'
@@ -197,6 +198,8 @@ export async function createPublicApplication(params: {
 
 export type ApplicationListFilters = {
   search?: string
+  store?: string
+  position?: string
   postingId?: string
   stage?: HiringApplicationStage
   from?: Date
@@ -212,6 +215,12 @@ export async function listApplications(
 ): Promise<{ rows: ApplicationListRow[]; total: number }> {
   const where = {
     ...applicantSearchWhere(filters.search),
+    ...(await applicantWorkplaceWhere(
+      spaceId,
+      filters.store ?? '',
+      filters.position ?? '',
+      filters.postingId
+    )),
     spaceId,
     deletedAt: null,
     ...(filters.postingId ? { postingId: filters.postingId } : {}),

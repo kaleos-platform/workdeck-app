@@ -3,6 +3,10 @@
 import { projectApplicationHistory } from '@/lib/hiring/migration/application-history'
 import { decodeMigrationSnapshot } from '@/lib/hiring/migration/ledger'
 import { applicantSearchWhere } from '@/lib/hiring/application-search'
+import {
+  applicantWorkplaceWhere,
+  normalizeWorkplaceFilter,
+} from '@/lib/hiring/application-workplace-filter'
 import { NextRequest } from 'next/server'
 import * as XLSX from 'xlsx'
 import { prisma } from '@/lib/prisma'
@@ -28,6 +32,10 @@ export async function GET(req: NextRequest) {
   const spaceId = resolved.space.id
 
   const sp = req.nextUrl.searchParams
+  if (sp.getAll('store').length > 1 || sp.getAll('position').length > 1)
+    return errorResponse('근무지 또는 직무 검색 조건이 올바르지 않습니다', 400)
+  const store = normalizeWorkplaceFilter(sp.get('store') ?? undefined)
+  const position = normalizeWorkplaceFilter(sp.get('position') ?? undefined)
   const posting = sp.get('posting') || undefined
   const stageRaw = sp.get('stage') || undefined
   const stage =
@@ -43,6 +51,7 @@ export async function GET(req: NextRequest) {
       ...applicantSearchWhere(
         sp.getAll('search').length > 1 ? 'invalid' : (sp.get('search') ?? '')
       ),
+      ...(await applicantWorkplaceWhere(spaceId, store, position, posting)),
       spaceId,
       deletedAt: null,
       ...(posting ? { postingId: posting } : {}),

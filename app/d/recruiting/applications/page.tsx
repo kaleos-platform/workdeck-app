@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { listApplications } from '@/lib/hiring/applications'
 import type { HiringApplicationStage } from '@/generated/prisma/client'
 import { ApplicationsTable } from '@/components/hiring-applicants/applications-table'
+import { normalizeWorkplaceFilter } from '@/lib/hiring/application-workplace-filter'
 
 import { parseYmdDateKst } from '@/lib/date-range'
 
@@ -19,6 +20,8 @@ type Props = {
     from?: string | string[]
     to?: string | string[]
     page?: string | string[]
+    store?: string | string[]
+    position?: string | string[]
   }>
 }
 
@@ -28,12 +31,19 @@ export default async function ApplicationsPage({ searchParams }: Props) {
   const spaceId = resolved.space.id
 
   const raw = await searchParams
+  if (Array.isArray(raw.store) || Array.isArray(raw.position)) {
+    return (
+      <p className="p-6">근무지 또는 직무 검색 조건이 올바르지 않습니다. 주소를 확인해 주세요.</p>
+    )
+  }
   const sp = {
     search: typeof raw.search === 'string' ? raw.search : raw.search ? 'invalid' : '',
     posting: typeof raw.posting === 'string' ? raw.posting : '',
     stage: typeof raw.stage === 'string' ? raw.stage : '',
     from: typeof raw.from === 'string' ? raw.from : '',
     to: typeof raw.to === 'string' ? raw.to : '',
+    store: normalizeWorkplaceFilter(raw.store),
+    position: normalizeWorkplaceFilter(raw.position),
   }
   const requestedPage =
     typeof raw.page === 'string' && /^\d+$/.test(raw.page) ? Number(raw.page) : 1
@@ -54,6 +64,8 @@ export default async function ApplicationsPage({ searchParams }: Props) {
   const [{ rows, total }, postings] = await Promise.all([
     listApplications(spaceId, {
       search: sp.search,
+      store: sp.store,
+      position: sp.position,
       postingId: sp.posting || undefined,
       stage,
       from,
@@ -78,7 +90,7 @@ export default async function ApplicationsPage({ searchParams }: Props) {
       </div>
 
       <ApplicationsTable
-        key={JSON.stringify([sp.search, sp.posting, stage, sp.from, sp.to, page])}
+        key={JSON.stringify([sp.store, sp.position])}
         rows={rows}
         total={total}
         pageSize={PAGE_SIZE}
@@ -86,6 +98,8 @@ export default async function ApplicationsPage({ searchParams }: Props) {
         postings={postings}
         filters={{
           search: sp.search,
+          store: sp.store,
+          position: sp.position,
           posting: sp.posting ?? '',
           stage: stage ?? '',
           from: from ? (sp.from ?? '') : '',

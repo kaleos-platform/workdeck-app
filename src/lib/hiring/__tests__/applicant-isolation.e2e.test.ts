@@ -271,6 +271,132 @@ it('Excel은 같은 고객의 근무지와 같은 공고의 직무 및 한국 �
   expect((await readRows())[0]).toMatchObject({ 직무: '' })
 })
 
+it('지원 근무지와 직무 검색 결과는 목록과 Excel에서 일치하고 다른 고객을 제외한다', async () => {
+  const own = await prisma.hiringApplication.findUniqueOrThrow({ where: { id: ownId } })
+  const other = await prisma.hiringApplication.findUniqueOrThrow({ where: { id: otherId } })
+  const position = await prisma.hiringPostingPosition.findFirstOrThrow({
+    where: { spaceId: spaces[0], postingId: own.postingId, name: '합성 직무' },
+  })
+  const foreignPosition = await prisma.hiringPostingPosition.create({
+    data: { spaceId: spaces[1], postingId: other.postingId, name: '합성 직무' },
+  })
+  const foreignStore = await prisma.hiringStore.create({
+    data: { spaceId: spaces[1], name: '합성 근무지' },
+  })
+  await prisma.hiringApplication.update({
+    where: { id: ownId },
+    data: { postingPositionId: position.id },
+  })
+  await prisma.hiringApplication.update({
+    where: { id: otherId },
+    data: {
+      postingPositionId: foreignPosition.id,
+      stores: { create: { storeId: foreignStore.id } },
+    },
+  })
+  const filters = { store: '합성 근무', position: '합성 직무', page: 1, pageSize: 50 }
+  const list = await listApplications(spaces[0], filters)
+  expect(list.rows.map((row) => row.id)).toEqual([ownId])
+  const params = new URLSearchParams({ store: filters.store, position: filters.position })
+  const response = await exportApplications(new NextRequest(`http://localhost/export?${params}`))
+  expect(response?.status).toBe(200)
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets['지원자'])
+  expect(rows).toHaveLength(1)
+  expect(rows[0]).toMatchObject({ 이름: '합성고객가', 근무지: '합성 근무지', 직무: '합성 직무' })
+  const search = buildApplicantSearchToken('합성고객가')
+  expect(
+    (await listApplications(spaces[0], { ...filters, search })).rows.map((row) => row.id)
+  ).toEqual([ownId])
+  params.set('search', search)
+  const searched = await exportApplications(new NextRequest(`http://localhost/export?${params}`))
+  const searchedWorkbook = XLSX.read(Buffer.from(await searched!.arrayBuffer()), { type: 'buffer' })
+  expect(XLSX.utils.sheet_to_json(searchedWorkbook.Sheets['지원자'])).toHaveLength(1)
+  const noPosition = { ...filters, position: '일치하지 않는 합성 직무' }
+  expect((await listApplications(spaces[0], noPosition)).total).toBe(0)
+  const noPositionParams = new URLSearchParams({
+    store: noPosition.store,
+    position: noPosition.position,
+  })
+  const noPositionExport = await exportApplications(
+    new NextRequest(`http://localhost/export?${noPositionParams}`)
+  )
+  const noPositionWorkbook = XLSX.read(Buffer.from(await noPositionExport!.arrayBuffer()), {
+    type: 'buffer',
+  })
+  expect(XLSX.utils.sheet_to_json(noPositionWorkbook.Sheets['지원자'])).toHaveLength(0)
+  await prisma.hiringApplication.update({
+    where: { id: ownId },
+    data: { postingPositionId: foreignPosition.id },
+  })
+  expect((await listApplications(spaces[0], filters)).total).toBe(0)
+  const denied = await exportApplications(new NextRequest(`http://localhost/export?${params}`))
+  const empty = XLSX.read(Buffer.from(await denied!.arrayBuffer()), { type: 'buffer' })
+  expect(XLSX.utils.sheet_to_json(empty.Sheets['지원자'])).toHaveLength(0)
+  const otherPosting = await prisma.hiringPosting.create({
+    data: { spaceId: spaces[0], title: '합성 다른 공고' },
+  })
+  const otherPosition = await prisma.hiringPostingPosition.create({
+    data: { spaceId: spaces[0], postingId: otherPosting.id, name: '합성 직무' },
+  })
+  await prisma.hiringApplication.update({
+    where: { id: ownId },
+    data: { postingPositionId: otherPosition.id },
+  })
+  expect((await listApplications(spaces[0], filters)).total).toBe(0)
+  const wrongPosting = await exportApplications(
+    new NextRequest(`http://localhost/export?${params}`)
+  )
+  const wrongPostingWorkbook = XLSX.read(Buffer.from(await wrongPosting!.arrayBuffer()), {
+    type: 'buffer',
+  })
+  expect(XLSX.utils.sheet_to_json(wrongPostingWorkbook.Sheets['지원자'])).toHaveLength(0)
+})
+
+it('근무지와 직무의 %, 밑줄, 역슬래시는 와일드카드가 아닌 문자로 찾는다', async () => {
+  const own = await prisma.hiringApplication.findUniqueOrThrow({ where: { id: ownId } })
+  const store = await prisma.hiringStore.findFirstOrThrow({
+    where: { spaceId: spaces[0], name: '합성 근무지' },
+  })
+  const position = await prisma.hiringPostingPosition.findFirstOrThrow({
+    where: { spaceId: spaces[0], postingId: own.postingId, name: '합성 직무' },
+  })
+  await prisma.hiringStore.update({ where: { id: store.id }, data: { name: '합성%_\\매장' } })
+  await prisma.hiringPostingPosition.update({
+    where: { id: position.id },
+    data: { name: '합성%_\\직무' },
+  })
+  await prisma.hiringApplication.update({
+    where: { id: ownId },
+    data: { postingPositionId: position.id },
+  })
+  const ordinaryStore = await prisma.hiringStore.create({
+    data: { spaceId: spaces[0], name: '보통 매장' },
+  })
+  const ordinaryPosition = await prisma.hiringPostingPosition.create({
+    data: { spaceId: spaces[0], postingId: own.postingId, name: '보통 직무' },
+  })
+  await prisma.hiringApplication.create({
+    data: {
+      spaceId: spaces[0],
+      postingId: own.postingId,
+      postingPositionId: ordinaryPosition.id,
+      stores: { create: { storeId: ordinaryStore.id } },
+    },
+  })
+  for (const term of ['%', '_', '\\']) {
+    for (const field of ['store', 'position'] as const) {
+      const list = await listApplications(spaces[0], { [field]: term, page: 1, pageSize: 50 })
+      expect(list.rows.map((row) => row.id)).toEqual([ownId])
+      const response = await exportApplications(
+        new NextRequest(`http://localhost/export?${new URLSearchParams({ [field]: term })}`)
+      )
+      const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+      expect(XLSX.utils.sheet_to_json(workbook.Sheets['지원자'])).toHaveLength(1)
+    }
+  }
+})
+
 it('합성 이름·전화 검색과 Excel 결과가 일치하며 다른 고객은 검색되지 않는다', async () => {
   const stored = await prisma.hiringApplication.findUniqueOrThrow({ where: { id: ownId } })
   expect(stored.nameEnc).not.toContain('합성고객가')
