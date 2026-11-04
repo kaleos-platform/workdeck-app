@@ -117,7 +117,7 @@ export const salesContentChannelInputSchema = z.object({
     'OTHER',
   ]),
   kind: z.enum(['BLOG', 'SOCIAL']),
-  publisherMode: z.enum(['API', 'BROWSER', 'MANUAL']).optional(),
+  publisherMode: z.enum(['API', 'BROWSER', 'ASIDE', 'MANUAL']).optional(),
   collectorMode: z.enum(['API', 'BROWSER', 'MANUAL', 'NONE']).optional(),
   isActive: z.boolean().optional(),
   config: z.record(z.string(), z.unknown()).optional(),
@@ -194,7 +194,15 @@ export type DeploymentCreateInput = z.infer<typeof deploymentCreateSchema>
 
 export const deploymentUpdateSchema = deploymentCreateSchema.partial().extend({
   status: z
-    .enum(['SCHEDULED', 'PUBLISHING', 'AWAITING_MANUAL', 'PUBLISHED', 'FAILED', 'CANCELED'])
+    .enum([
+      'SCHEDULED',
+      'AWAITING_ASSETS',
+      'PUBLISHING',
+      'AWAITING_MANUAL',
+      'PUBLISHED',
+      'FAILED',
+      'CANCELED',
+    ])
     .optional(),
   platformUrl: emptyToUndefined.pipe(z.string().url().max(2000)).optional(),
 })

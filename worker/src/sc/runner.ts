@@ -19,6 +19,7 @@ type RouteResult = {
   errorMessage?: string
   errorCode?: string
   platformUrl?: string
+  draftSaved?: boolean
 }
 
 export type RouteDeps = {
@@ -72,6 +73,7 @@ export async function routeJob(c: ClaimedJob, deps: RouteDeps = realDeps): Promi
           errorMessage: result.errorMessage,
           errorCode: result.errorCode,
           platformUrl: result.platformUrl,
+          draftSaved: result.draftSaved,
         }
       } catch (err) {
         // publisher.publish() 자체에서 throw — 일시적 오류로 간주, retry 허용.
@@ -198,6 +200,7 @@ function buildPublishContext(c: ClaimedJob): PublishContext | null {
     assets: c.assets ?? [],
     credential: openCredential(c.credential),
     deploymentUrl: typeof c.deploymentUrl === 'string' ? c.deploymentUrl : '',
+    jobId: c.job.id,
   }
 }
 

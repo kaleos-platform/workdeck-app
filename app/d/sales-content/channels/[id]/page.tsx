@@ -57,6 +57,7 @@ export default async function ChannelDetailPage({ params }: Props) {
           publisherMode: channel.publisherMode,
           collectorMode: channel.collectorMode,
           isActive: channel.isActive,
+          config: (channel.config ?? null) as Record<string, unknown> | null,
         }}
       />
 

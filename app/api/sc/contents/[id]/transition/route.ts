@@ -43,10 +43,10 @@ export async function POST(req: NextRequest, { params }: Params) {
   // 수동 게시 대기 배포가 있으면 게시 URL 과 함께 완료 처리해야 콘텐츠·배포 상태가 어긋나지 않는다.
   if (parsed.data.to === 'PUBLISHED') {
     const waiting = await prisma.contentDeployment.count({
-      where: { contentId: id, spaceId: resolved.space.id, status: 'AWAITING_MANUAL' },
+      where: { contentId: id, spaceId: resolved.space.id, status: { in: ['AWAITING_ASSETS', 'AWAITING_MANUAL'] } },
     })
     if (waiting > 0) {
-      return errorResponse('콘텐츠 상세의 배포 카드에서 게시 URL 을 넣어 완료 처리하세요', 409)
+      return errorResponse('콘텐츠 상세의 배포 카드에서 사진 등록이나 게시 완료 처리를 먼저 하세요', 409)
     }
   }
 

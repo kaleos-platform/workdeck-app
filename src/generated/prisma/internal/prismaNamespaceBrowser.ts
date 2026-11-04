@@ -2040,6 +2040,11 @@ export const ContentDeploymentScalarFieldEnum = {
   utmContent: 'utmContent',
   utmTerm: 'utmTerm',
   errorMessage: 'errorMessage',
+  publishSnapshot: 'publishSnapshot',
+  assetPlan: 'assetPlan',
+  publishAttemptedAt: 'publishAttemptedAt',
+  notifySlackChannelId: 'notifySlackChannelId',
+  notifySlackThreadTs: 'notifySlackThreadTs',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

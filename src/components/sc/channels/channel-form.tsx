@@ -28,7 +28,7 @@ type Platform =
   | 'OTHER'
 
 type Kind = 'BLOG' | 'SOCIAL'
-type PublisherMode = 'API' | 'BROWSER' | 'MANUAL'
+type PublisherMode = 'API' | 'BROWSER' | 'ASIDE' | 'MANUAL'
 type CollectorMode = 'API' | 'BROWSER' | 'MANUAL' | 'NONE'
 
 type Mode = 'create' | 'edit'
@@ -44,8 +44,11 @@ type Props = {
     publisherMode?: PublisherMode
     collectorMode?: CollectorMode
     isActive?: boolean
+    config?: Record<string, unknown> | null
   }
 }
+
+type AsideConfig = { autoPublish?: boolean; blogId?: string; defaultCategory?: string }
 
 const PLATFORM_OPTIONS: { value: Platform; label: string; defaultKind: Kind }[] = [
   { value: 'BLOG_NAVER', label: '네이버 블로그', defaultKind: 'BLOG' },
@@ -73,6 +76,10 @@ export function ChannelForm({ mode, channelId, initial }: Props) {
     initial?.collectorMode ?? 'MANUAL'
   )
   const [isActive, setIsActive] = useState(initial?.isActive ?? true)
+  const initialAside = (initial?.config?.aside ?? {}) as AsideConfig
+  const [asideBlogId, setAsideBlogId] = useState(initialAside.blogId ?? '')
+  const [asideCategory, setAsideCategory] = useState(initialAside.defaultCategory ?? '')
+  const [asideAutoPublish, setAsideAutoPublish] = useState(initialAside.autoPublish ?? false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -99,6 +106,20 @@ export function ChannelForm({ mode, channelId, initial }: Props) {
           publisherMode,
           collectorMode,
           isActive,
+          // 다른 config 키는 유지하고 aside 만 바꾼다.
+          ...(publisherMode === 'ASIDE'
+            ? {
+                config: {
+                  ...(initial?.config ?? {}),
+                  aside: {
+                    ...initialAside,
+                    autoPublish: asideAutoPublish,
+                    blogId: asideBlogId.trim() || undefined,
+                    defaultCategory: asideCategory.trim() || undefined,
+                  },
+                },
+              }
+            : {}),
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -182,6 +203,7 @@ export function ChannelForm({ mode, channelId, initial }: Props) {
                 <SelectContent>
                   <SelectItem value="API">API</SelectItem>
                   <SelectItem value="BROWSER">브라우저 자동화</SelectItem>
+                  <SelectItem value="ASIDE">Aside 자동 게시</SelectItem>
                   <SelectItem value="MANUAL">수동</SelectItem>
                 </SelectContent>
               </Select>
@@ -204,6 +226,46 @@ export function ChannelForm({ mode, channelId, initial }: Props) {
               </Select>
             </div>
           </div>
+
+          {publisherMode === 'ASIDE' && (
+            <div className="space-y-3 rounded-md border p-3">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="asideBlogId">블로그 ID</Label>
+                  <Input
+                    id="asideBlogId"
+                    value={asideBlogId}
+                    onChange={(e) => setAsideBlogId(e.target.value)}
+                    placeholder="meaning-lab"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="asideCategory">기본 카테고리</Label>
+                  <Input
+                    id="asideCategory"
+                    value={asideCategory}
+                    onChange={(e) => setAsideCategory(e.target.value)}
+                    placeholder="환경교육 자료실"
+                  />
+                </div>
+              </div>
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={asideAutoPublish}
+                  onChange={(e) => setAsideAutoPublish(e.target.checked)}
+                />
+                <span>
+                  자동 발행
+                  <span className="block text-xs text-muted-foreground">
+                    끄면 네이버 임시저장까지만 하고 Slack 으로 확인을 요청합니다(리허설).
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
 
           {error && (
             <p className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">

@@ -2,6 +2,7 @@
 // PUBLISHING/PUBLISHED 는 워커·게시 완료 처리 전용이라 외부 전이 불가.
 export const ALLOWED_DEPLOYMENT_TRANSITIONS: Partial<Record<string, string[]>> = {
   SCHEDULED: ['CANCELED'],
+  AWAITING_ASSETS: ['CANCELED'],
   AWAITING_MANUAL: ['CANCELED'],
   FAILED: ['SCHEDULED', 'CANCELED'],
   CANCELED: ['SCHEDULED'],
