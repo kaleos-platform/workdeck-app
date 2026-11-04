@@ -173,6 +173,8 @@ export const WORKER_ERROR_CODES = [
   'PLATFORM_ERROR',
   'NOT_IMPLEMENTED',
   'NETWORK',
+  // 결과가 불명확하거나(발행 클릭 뒤 확인 실패) 사람 확인이 필요한 상태 — 재시도하지 않고 사람에게 넘긴다.
+  'NEEDS_REVIEW',
 ] as const
 export type WorkerErrorCode = (typeof WORKER_ERROR_CODES)[number]
 

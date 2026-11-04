@@ -74,6 +74,8 @@ export async function GET(req: NextRequest) {
         () => null
       )
       const assets = deployment.content.assets.map((a) => ({
+        id: a.id,
+        mimeType: a.mimeType,
         slotKey: a.slotKey,
         url: a.url,
         alt: a.alt,

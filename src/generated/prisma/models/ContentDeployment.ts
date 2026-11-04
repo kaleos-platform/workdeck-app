@@ -41,6 +41,9 @@ export type ContentDeploymentMinAggregateOutputType = {
   utmContent: string | null
   utmTerm: string | null
   errorMessage: string | null
+  publishAttemptedAt: Date | null
+  notifySlackChannelId: string | null
+  notifySlackThreadTs: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,6 +65,9 @@ export type ContentDeploymentMaxAggregateOutputType = {
   utmContent: string | null
   utmTerm: string | null
   errorMessage: string | null
+  publishAttemptedAt: Date | null
+  notifySlackChannelId: string | null
+  notifySlackThreadTs: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -83,6 +89,11 @@ export type ContentDeploymentCountAggregateOutputType = {
   utmContent: number
   utmTerm: number
   errorMessage: number
+  publishSnapshot: number
+  assetPlan: number
+  publishAttemptedAt: number
+  notifySlackChannelId: number
+  notifySlackThreadTs: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -106,6 +117,9 @@ export type ContentDeploymentMinAggregateInputType = {
   utmContent?: true
   utmTerm?: true
   errorMessage?: true
+  publishAttemptedAt?: true
+  notifySlackChannelId?: true
+  notifySlackThreadTs?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -127,6 +141,9 @@ export type ContentDeploymentMaxAggregateInputType = {
   utmContent?: true
   utmTerm?: true
   errorMessage?: true
+  publishAttemptedAt?: true
+  notifySlackChannelId?: true
+  notifySlackThreadTs?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -148,6 +165,11 @@ export type ContentDeploymentCountAggregateInputType = {
   utmContent?: true
   utmTerm?: true
   errorMessage?: true
+  publishSnapshot?: true
+  assetPlan?: true
+  publishAttemptedAt?: true
+  notifySlackChannelId?: true
+  notifySlackThreadTs?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -242,6 +264,11 @@ export type ContentDeploymentGroupByOutputType = {
   utmContent: string | null
   utmTerm: string | null
   errorMessage: string | null
+  publishSnapshot: runtime.JsonValue | null
+  assetPlan: runtime.JsonValue | null
+  publishAttemptedAt: Date | null
+  notifySlackChannelId: string | null
+  notifySlackThreadTs: string | null
   createdAt: Date
   updatedAt: Date
   _count: ContentDeploymentCountAggregateOutputType | null
@@ -284,6 +311,11 @@ export type ContentDeploymentWhereInput = {
   utmContent?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   utmTerm?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
+  publishSnapshot?: Prisma.JsonNullableFilter<"ContentDeployment">
+  assetPlan?: Prisma.JsonNullableFilter<"ContentDeployment">
+  publishAttemptedAt?: Prisma.DateTimeNullableFilter<"ContentDeployment"> | Date | string | null
+  notifySlackChannelId?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
+  notifySlackThreadTs?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ContentDeployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContentDeployment"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -310,6 +342,11 @@ export type ContentDeploymentOrderByWithRelationInput = {
   utmContent?: Prisma.SortOrderInput | Prisma.SortOrder
   utmTerm?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
+  assetPlan?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishAttemptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  notifySlackChannelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  notifySlackThreadTs?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -339,6 +376,11 @@ export type ContentDeploymentWhereUniqueInput = Prisma.AtLeast<{
   utmContent?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   utmTerm?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
+  publishSnapshot?: Prisma.JsonNullableFilter<"ContentDeployment">
+  assetPlan?: Prisma.JsonNullableFilter<"ContentDeployment">
+  publishAttemptedAt?: Prisma.DateTimeNullableFilter<"ContentDeployment"> | Date | string | null
+  notifySlackChannelId?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
+  notifySlackThreadTs?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ContentDeployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContentDeployment"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -365,6 +407,11 @@ export type ContentDeploymentOrderByWithAggregationInput = {
   utmContent?: Prisma.SortOrderInput | Prisma.SortOrder
   utmTerm?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
+  assetPlan?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishAttemptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  notifySlackChannelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  notifySlackThreadTs?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ContentDeploymentCountOrderByAggregateInput
@@ -392,6 +439,11 @@ export type ContentDeploymentScalarWhereWithAggregatesInput = {
   utmContent?: Prisma.StringNullableWithAggregatesFilter<"ContentDeployment"> | string | null
   utmTerm?: Prisma.StringNullableWithAggregatesFilter<"ContentDeployment"> | string | null
   errorMessage?: Prisma.StringNullableWithAggregatesFilter<"ContentDeployment"> | string | null
+  publishSnapshot?: Prisma.JsonNullableWithAggregatesFilter<"ContentDeployment">
+  assetPlan?: Prisma.JsonNullableWithAggregatesFilter<"ContentDeployment">
+  publishAttemptedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ContentDeployment"> | Date | string | null
+  notifySlackChannelId?: Prisma.StringNullableWithAggregatesFilter<"ContentDeployment"> | string | null
+  notifySlackThreadTs?: Prisma.StringNullableWithAggregatesFilter<"ContentDeployment"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ContentDeployment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ContentDeployment"> | Date | string
 }
@@ -410,6 +462,11 @@ export type ContentDeploymentCreateInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
@@ -436,6 +493,11 @@ export type ContentDeploymentUncheckedCreateInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
@@ -456,6 +518,11 @@ export type ContentDeploymentUpdateInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
@@ -482,6 +549,11 @@ export type ContentDeploymentUncheckedUpdateInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
@@ -505,6 +577,11 @@ export type ContentDeploymentCreateManyInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -523,6 +600,11 @@ export type ContentDeploymentUpdateManyMutationInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -544,6 +626,11 @@ export type ContentDeploymentUncheckedUpdateManyInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -575,6 +662,11 @@ export type ContentDeploymentCountOrderByAggregateInput = {
   utmContent?: Prisma.SortOrder
   utmTerm?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
+  publishSnapshot?: Prisma.SortOrder
+  assetPlan?: Prisma.SortOrder
+  publishAttemptedAt?: Prisma.SortOrder
+  notifySlackChannelId?: Prisma.SortOrder
+  notifySlackThreadTs?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -596,6 +688,9 @@ export type ContentDeploymentMaxOrderByAggregateInput = {
   utmContent?: Prisma.SortOrder
   utmTerm?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
+  publishAttemptedAt?: Prisma.SortOrder
+  notifySlackChannelId?: Prisma.SortOrder
+  notifySlackThreadTs?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -617,6 +712,9 @@ export type ContentDeploymentMinOrderByAggregateInput = {
   utmContent?: Prisma.SortOrder
   utmTerm?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
+  publishAttemptedAt?: Prisma.SortOrder
+  notifySlackChannelId?: Prisma.SortOrder
+  notifySlackThreadTs?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -798,6 +896,11 @@ export type ContentDeploymentCreateWithoutSpaceInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   content: Prisma.ContentCreateNestedOneWithoutDeploymentsInput
@@ -822,6 +925,11 @@ export type ContentDeploymentUncheckedCreateWithoutSpaceInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
@@ -874,6 +982,11 @@ export type ContentDeploymentScalarWhereInput = {
   utmContent?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   utmTerm?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
+  publishSnapshot?: Prisma.JsonNullableFilter<"ContentDeployment">
+  assetPlan?: Prisma.JsonNullableFilter<"ContentDeployment">
+  publishAttemptedAt?: Prisma.DateTimeNullableFilter<"ContentDeployment"> | Date | string | null
+  notifySlackChannelId?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
+  notifySlackThreadTs?: Prisma.StringNullableFilter<"ContentDeployment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ContentDeployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContentDeployment"> | Date | string
 }
@@ -892,6 +1005,11 @@ export type ContentDeploymentCreateWithoutChannelInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
@@ -916,6 +1034,11 @@ export type ContentDeploymentUncheckedCreateWithoutChannelInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
@@ -962,6 +1085,11 @@ export type ContentDeploymentCreateWithoutContentInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
@@ -986,6 +1114,11 @@ export type ContentDeploymentUncheckedCreateWithoutContentInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
@@ -1032,6 +1165,11 @@ export type ContentDeploymentCreateWithoutClickEventsInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
@@ -1057,6 +1195,11 @@ export type ContentDeploymentUncheckedCreateWithoutClickEventsInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   metrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutDeploymentInput
@@ -1092,6 +1235,11 @@ export type ContentDeploymentUpdateWithoutClickEventsInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
@@ -1117,6 +1265,11 @@ export type ContentDeploymentUncheckedUpdateWithoutClickEventsInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutDeploymentNestedInput
@@ -1136,6 +1289,11 @@ export type ContentDeploymentCreateWithoutMetricsInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutContentDeploymentsInput
@@ -1161,6 +1319,11 @@ export type ContentDeploymentUncheckedCreateWithoutMetricsInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutDeploymentInput
@@ -1196,6 +1359,11 @@ export type ContentDeploymentUpdateWithoutMetricsInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
@@ -1221,6 +1389,11 @@ export type ContentDeploymentUncheckedUpdateWithoutMetricsInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
@@ -1242,6 +1415,11 @@ export type ContentDeploymentCreateManySpaceInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1260,6 +1438,11 @@ export type ContentDeploymentUpdateWithoutSpaceInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   content?: Prisma.ContentUpdateOneRequiredWithoutDeploymentsNestedInput
@@ -1284,6 +1467,11 @@ export type ContentDeploymentUncheckedUpdateWithoutSpaceInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
@@ -1306,6 +1494,11 @@ export type ContentDeploymentUncheckedUpdateManyWithoutSpaceInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1326,6 +1519,11 @@ export type ContentDeploymentCreateManyChannelInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1344,6 +1542,11 @@ export type ContentDeploymentUpdateWithoutChannelInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
@@ -1368,6 +1571,11 @@ export type ContentDeploymentUncheckedUpdateWithoutChannelInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
@@ -1390,6 +1598,11 @@ export type ContentDeploymentUncheckedUpdateManyWithoutChannelInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1410,6 +1623,11 @@ export type ContentDeploymentCreateManyContentInput = {
   utmContent?: string | null
   utmTerm?: string | null
   errorMessage?: string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Date | string | null
+  notifySlackChannelId?: string | null
+  notifySlackThreadTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1428,6 +1646,11 @@ export type ContentDeploymentUpdateWithoutContentInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentDeploymentsNestedInput
@@ -1452,6 +1675,11 @@ export type ContentDeploymentUncheckedUpdateWithoutContentInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutDeploymentNestedInput
@@ -1474,6 +1702,11 @@ export type ContentDeploymentUncheckedUpdateManyWithoutContentInput = {
   utmContent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   utmTerm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  assetPlan?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifySlackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifySlackThreadTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1535,6 +1768,11 @@ export type ContentDeploymentSelect<ExtArgs extends runtime.Types.Extensions.Int
   utmContent?: boolean
   utmTerm?: boolean
   errorMessage?: boolean
+  publishSnapshot?: boolean
+  assetPlan?: boolean
+  publishAttemptedAt?: boolean
+  notifySlackChannelId?: boolean
+  notifySlackThreadTs?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1562,6 +1800,11 @@ export type ContentDeploymentSelectCreateManyAndReturn<ExtArgs extends runtime.T
   utmContent?: boolean
   utmTerm?: boolean
   errorMessage?: boolean
+  publishSnapshot?: boolean
+  assetPlan?: boolean
+  publishAttemptedAt?: boolean
+  notifySlackChannelId?: boolean
+  notifySlackThreadTs?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1586,6 +1829,11 @@ export type ContentDeploymentSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   utmContent?: boolean
   utmTerm?: boolean
   errorMessage?: boolean
+  publishSnapshot?: boolean
+  assetPlan?: boolean
+  publishAttemptedAt?: boolean
+  notifySlackChannelId?: boolean
+  notifySlackThreadTs?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1610,11 +1858,16 @@ export type ContentDeploymentSelectScalar = {
   utmContent?: boolean
   utmTerm?: boolean
   errorMessage?: boolean
+  publishSnapshot?: boolean
+  assetPlan?: boolean
+  publishAttemptedAt?: boolean
+  notifySlackChannelId?: boolean
+  notifySlackThreadTs?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ContentDeploymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "contentId" | "channelId" | "shortSlug" | "targetUrl" | "platformUrl" | "status" | "scheduledAt" | "publishedAt" | "utmSource" | "utmMedium" | "utmCampaign" | "utmContent" | "utmTerm" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["contentDeployment"]>
+export type ContentDeploymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "contentId" | "channelId" | "shortSlug" | "targetUrl" | "platformUrl" | "status" | "scheduledAt" | "publishedAt" | "utmSource" | "utmMedium" | "utmCampaign" | "utmContent" | "utmTerm" | "errorMessage" | "publishSnapshot" | "assetPlan" | "publishAttemptedAt" | "notifySlackChannelId" | "notifySlackThreadTs" | "createdAt" | "updatedAt", ExtArgs["result"]["contentDeployment"]>
 export type ContentDeploymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   content?: boolean | Prisma.ContentDefaultArgs<ExtArgs>
@@ -1660,6 +1913,11 @@ export type $ContentDeploymentPayload<ExtArgs extends runtime.Types.Extensions.I
     utmContent: string | null
     utmTerm: string | null
     errorMessage: string | null
+    publishSnapshot: runtime.JsonValue | null
+    assetPlan: runtime.JsonValue | null
+    publishAttemptedAt: Date | null
+    notifySlackChannelId: string | null
+    notifySlackThreadTs: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["contentDeployment"]>
@@ -2106,6 +2364,11 @@ export interface ContentDeploymentFieldRefs {
   readonly utmContent: Prisma.FieldRef<"ContentDeployment", 'String'>
   readonly utmTerm: Prisma.FieldRef<"ContentDeployment", 'String'>
   readonly errorMessage: Prisma.FieldRef<"ContentDeployment", 'String'>
+  readonly publishSnapshot: Prisma.FieldRef<"ContentDeployment", 'Json'>
+  readonly assetPlan: Prisma.FieldRef<"ContentDeployment", 'Json'>
+  readonly publishAttemptedAt: Prisma.FieldRef<"ContentDeployment", 'DateTime'>
+  readonly notifySlackChannelId: Prisma.FieldRef<"ContentDeployment", 'String'>
+  readonly notifySlackThreadTs: Prisma.FieldRef<"ContentDeployment", 'String'>
   readonly createdAt: Prisma.FieldRef<"ContentDeployment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ContentDeployment", 'DateTime'>
 }

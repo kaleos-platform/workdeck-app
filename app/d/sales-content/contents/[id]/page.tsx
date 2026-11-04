@@ -8,6 +8,8 @@ import { prisma } from '@/lib/prisma'
 import { ContentStatusBadge } from '@/components/sc/contents/content-status-badge'
 import { DeployButton } from '@/components/sc/contents/deploy-button'
 import { ManualPublishPanel } from '@/components/sc/contents/manual-publish-panel'
+import { AssetPlanPanel } from '@/components/sc/contents/asset-plan-panel'
+import { photoSlots, type AssetPlan, type PublishSnapshot } from '@/lib/sc/aside-publish'
 import { SALES_CONTENT_CONTENTS_PATH, SALES_CONTENT_ANALYTICS_PATH } from '@/lib/deck-routes'
 import { nextAllowed } from '@/lib/sc/content-state'
 import { exportNaverPost } from '@/lib/sc/exporters/naver-post'
@@ -70,6 +72,12 @@ function StatsRow({
 }
 
 // ─── 페이지 ────────────────────────────────────────────────────────────────
+
+const DEPLOYMENT_STATUS_LABEL: Record<string, string> = {
+  AWAITING_ASSETS: '사진 대기',
+  PUBLISHING: '게시 중',
+  AWAITING_MANUAL: '게시 대기',
+}
 
 export default async function ContentDetailPage({ params }: Props) {
   const resolved = await resolveDeckContext('sales-content')
@@ -224,7 +232,7 @@ export default async function ContentDetailPage({ params }: Props) {
                                 : 'bg-muted text-muted-foreground',
                           ].join(' ')}
                         >
-                          {d.status === 'AWAITING_MANUAL' ? '게시 대기' : d.status}
+                          {DEPLOYMENT_STATUS_LABEL[d.status] ?? d.status}
                         </span>
                       </div>
                       <span className="shrink-0 text-muted-foreground">
@@ -270,6 +278,27 @@ export default async function ContentDetailPage({ params }: Props) {
                         </div>
                       ))}
                     </div>
+
+                    {d.errorMessage && d.status !== 'PUBLISHED' && (
+                      <p className="mt-2 text-muted-foreground">{d.errorMessage}</p>
+                    )}
+
+                    {d.status === 'AWAITING_ASSETS' && d.publishSnapshot && (
+                      <AssetPlanPanel
+                        deploymentId={d.id}
+                        contentId={content.id}
+                        slots={photoSlots(d.publishSnapshot as unknown as PublishSnapshot)}
+                        initial={Object.fromEntries(
+                          ((d.assetPlan as AssetPlan | null)?.slots ?? []).map((s) => [
+                            s.index,
+                            { assetId: s.assetId, skip: s.skip },
+                          ])
+                        )}
+                        images={content.assets
+                          .filter((a) => a.kind === 'IMAGE')
+                          .map((a) => ({ id: a.id, url: a.url }))}
+                      />
+                    )}
 
                     {d.status === 'AWAITING_MANUAL' && (
                       <ManualPublishPanel

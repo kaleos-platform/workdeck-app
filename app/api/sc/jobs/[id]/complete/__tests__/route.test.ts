@@ -217,7 +217,10 @@ describe('POST /complete — 다른 Space 배포를 가리키는 job', () => {
     mockRetryable.mockReturnValue(false)
     const res = await call(body)
     expect(res.status).toBe(404)
-    expect(findDeployment).toHaveBeenCalledWith({ where: { id: 'd1' }, select: { spaceId: true } })
+    expect(findDeployment).toHaveBeenCalledWith({
+      where: { id: 'd1' },
+      select: { spaceId: true, channel: { select: { publisherMode: true } } },
+    })
     expect(mockComplete).not.toHaveBeenCalled()
     expect(mockFail).not.toHaveBeenCalled()
     expect(updateMany).not.toHaveBeenCalled()

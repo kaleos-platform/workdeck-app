@@ -58,8 +58,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
   }
 
-  const updated = await prisma.contentDeployment.update({
-    where: { id },
+  // 읽은 뒤 다른 요청(사진 등록 완료·워커 보고)이 상태를 바꿨으면 덮어쓰지 않는다.
+  const gate = await prisma.contentDeployment.updateMany({
+    where: { id, status: existing.status },
     data: {
       targetUrl: parsed.data.targetUrl ?? undefined,
       scheduledAt: parsed.data.scheduledAt ? new Date(parsed.data.scheduledAt) : undefined,
@@ -72,6 +73,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       utmTerm: parsed.data.utmTerm ? normalizeKebab(parsed.data.utmTerm) : undefined,
     },
   })
+  if (gate.count === 0) return errorResponse('배포 상태가 바뀌었습니다. 새로고침 후 다시 시도하세요', 409)
+  const updated = await prisma.contentDeployment.findUniqueOrThrow({ where: { id } })
   return NextResponse.json({ deployment: updated })
 }
 
