@@ -10,6 +10,7 @@
 // aside repl 은 stdin 대화형으로 띄워 한 세션에서 단계별로 실행한다(입력 1개당 120초 제한).
 
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -103,13 +104,24 @@ const STEP = {
 
 export const ASIDE_STEPS = STEP
 
+// launchd 의 PATH 에는 ~/.local/bin 이 없다 — 설치 위치를 먼저 본다.
+function asideBin(): string {
+  if (process.env.ASIDE_BIN) return process.env.ASIDE_BIN
+  const local = join(homedir(), '.local', 'bin', 'aside')
+  return existsSync(local) ? local : 'aside'
+}
+
 /** `aside repl` 대화형 프로세스. 입력마다 `[ok | ` / `[error | ` 줄로 끝난다. */
 export async function openAsideRepl(account: string, cwd: string): Promise<ReplSession> {
-  const child: ChildProcessWithoutNullStreams = spawn('aside', ['repl', '--account', account], {
+  const child: ChildProcessWithoutNullStreams = spawn(asideBin(), ['repl', '--account', account], {
     cwd,
     stdio: ['pipe', 'pipe', 'pipe'],
   })
   let buffer = ''
+  let spawnError: Error | null = null
+  // 실행 파일이 없으면 error 이벤트가 난다 — 처리하지 않으면 워커 프로세스가 죽는다.
+  child.on('error', (err) => (spawnError = err))
+  child.stdin.on('error', () => {})
   child.stdout.on('data', (d) => (buffer += String(d)))
   child.stderr.on('data', (d) => (buffer += String(d)))
 
@@ -123,6 +135,7 @@ export async function openAsideRepl(account: string, cwd: string): Promise<ReplS
           const out = buffer.slice(start).replace(ANSI, '')
           const done = /\[(ok|error) \| \d+ms\]/.exec(out)
           if (done) return resolve({ ok: done[1] === 'ok', out })
+          if (spawnError) return resolve({ ok: false, out: `aside 실행 실패: ${spawnError.message}` })
           if (child.exitCode !== null || Date.now() > deadline) return resolve({ ok: false, out })
           setTimeout(tick, 200)
         }
