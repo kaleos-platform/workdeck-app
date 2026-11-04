@@ -4,6 +4,8 @@ import { withSentryConfig } from '@sentry/nextjs'
 const nextConfig: NextConfig = {
   // 직접 관리하는 AGENTS.md에 개발 서버가 규칙을 자동 추가하지 않도록 한다.
   agentRules: false,
+  // 라이브 작업대: tailnet 주소로 여는 dev 서버의 HMR·리소스 요청을 허용한다.
+  allowedDevOrigins: ['100.77.48.94', 'kaleos-macmini', '*.ts.net'],
   env: {
     // Expose Vercel's system URL so client code can detect preview deployments
     NEXT_PUBLIC_VERCEL_URL: process.env.VERCEL_URL ?? '',
