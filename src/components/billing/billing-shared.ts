@@ -9,7 +9,14 @@ export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED'
 export type SubscriptionItemStatus = 'ACTIVE' | 'CANCEL_AT_PERIOD_END' | 'ENDED'
 export type PricingMode = 'FREE_BETA' | 'SUBSCRIPTION'
 export type ChargeStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELED' | 'REFUNDED'
-export type DeckAccessReason = 'FREE_BETA' | 'EXEMPT' | 'SUBSCRIBED' | 'TRIAL' | 'GRACE' | 'LOCKED'
+export type DeckAccessReason =
+  | 'FREE_BETA'
+  | 'EXEMPT'
+  | 'SUBSCRIBED'
+  | 'TRIAL'
+  | 'GRACE'
+  | 'PAUSED'
+  | 'LOCKED'
 
 export interface BillingProduct {
   id: string
@@ -156,6 +163,10 @@ export const REASON_BADGE: Partial<Record<DeckAccessReason, { label: string; cla
     TRIAL: {
       label: 'Trial 이용 중',
       className: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+    },
+    PAUSED: {
+      label: '결제 준비 중 (무료)',
+      className: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
     },
   }
 
