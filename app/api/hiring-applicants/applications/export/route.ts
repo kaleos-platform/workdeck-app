@@ -92,7 +92,9 @@ export async function GET(req: NextRequest) {
     for (const e of entries) {
       if (['name', 'phone', 'email', 'address'].includes(e.key)) continue
       if (e.value == null || (Array.isArray(e.value) && e.value.length === 0)) continue
-      if (!customLabels.has(e.key)) customLabels.set(e.key, e.label || e.key)
+      const label = e.label || e.key
+      const identity = JSON.stringify([e.key, label])
+      if (!customLabels.has(identity)) customLabels.set(identity, label)
     }
   }
 
@@ -139,9 +141,9 @@ export async function GET(req: NextRequest) {
         : '',
     ]
     const entries = (app.applicationEntries as ApplicationEntryValue[] | null) ?? []
-    const byKey = new Map(entries.map((e) => [e.key, e]))
-    for (const key of customLabels.keys()) {
-      const e = byKey.get(key)
+    const byKey = new Map(entries.map((e) => [JSON.stringify([e.key, e.label || e.key]), e]))
+    for (const identity of customLabels.keys()) {
+      const e = byKey.get(identity)
       const val = e?.value
       row.push(Array.isArray(val) ? val.join(', ') : typeof val === 'string' ? val : '')
     }

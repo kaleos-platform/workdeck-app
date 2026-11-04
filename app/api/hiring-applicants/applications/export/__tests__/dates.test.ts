@@ -224,6 +224,38 @@ it.each([
   ])
 })
 
+it('복사한 공고에서 같은 질문 키의 문구가 바뀌면 답변을 별도 열에 표시한다', async () => {
+  const base = {
+    createdAt: new Date('2026-09-26T15:00:00Z'),
+    stage: 'HIRING',
+    hiringStage: 'APPLIED',
+    posting: { title: 'QA' },
+  }
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      ...base,
+      applicationEntries: [{ key: 'custom_a', label: '경력', type: 'string', value: '3년' }],
+    },
+    {
+      ...base,
+      applicationEntries: [
+        { key: 'custom_a', label: '입사 가능일', type: 'string', value: '다음 주' },
+      ],
+    },
+    {
+      ...base,
+      applicationEntries: [{ key: 'custom_a', label: '경력', type: 'string', value: '5년' }],
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  const rows = XLSX.utils.sheet_to_json<Record<string, string>>(workbook.Sheets['지원자'])
+  expect(rows[0]).toMatchObject({ 경력: '3년' })
+  expect(rows[1]).toMatchObject({ '입사 가능일': '다음 주' })
+  expect(rows[1]['경력'] ?? '').toBe('')
+  expect(rows[2]).toMatchObject({ 경력: '5년' })
+})
+
 it('중복 질문명과 기본 열 이름이 충돌해도 모든 값을 독립된 열에 보존한다', async () => {
   ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
     {
