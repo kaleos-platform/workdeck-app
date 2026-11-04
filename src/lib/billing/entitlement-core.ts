@@ -1,10 +1,17 @@
 // deck 단위 entitlement 판정 순수 로직 — DB 무접근 (유닛 테스트 대상).
-// 판정 순서: FREE_BETA → 면제 → 구독 아이템 → Trial → 유료 전환 유예 → 잠금.
+// 판정 순서: FREE_BETA → 면제 → 구독 아이템 → Trial → 유료 전환 유예 → 결제 중지 → 잠금.
 
 export const TRIAL_DAYS = 7
 export const GRACE_DAYS = 14
 
-export type DeckAccessReason = 'FREE_BETA' | 'EXEMPT' | 'SUBSCRIBED' | 'TRIAL' | 'GRACE' | 'LOCKED'
+export type DeckAccessReason =
+  | 'FREE_BETA'
+  | 'EXEMPT'
+  | 'SUBSCRIBED'
+  | 'TRIAL'
+  | 'GRACE'
+  | 'PAUSED'
+  | 'LOCKED'
 
 export interface DeckProductInput {
   id: string
@@ -28,6 +35,8 @@ export interface DeckAccessInput {
   // 해당 Space의 DeckInstance 생성 시각 (없으면 null) — 유예 판정용
   deckInstanceCreatedAt: Date | null
   now: Date
+  // 결제 일시 중지(BILLING_CHECKOUT_PAUSED) — 결제할 방법이 없으니 잠그지 않는다
+  checkoutPaused?: boolean
 }
 
 export interface DeckAccess {
@@ -81,6 +90,12 @@ export function evaluateDeckAccess(input: DeckAccessInput): DeckAccess {
     }
   }
 
-  // 6. 잠금 (해당 deck만 — 다른 deck 무영향)
+  // 6. 결제 일시 중지 중엔 구독할 수 없으므로 체험 만료·미구독도 허용.
+  // 해제 시 만료 체험 공간이 한꺼번에 잠기니 billing-admin trial-all 로 기간을 먼저 준다.
+  if (input.checkoutPaused) {
+    return { allowed: true, reason: 'PAUSED' }
+  }
+
+  // 7. 잠금 (해당 deck만 — 다른 deck 무영향)
   return { allowed: false, reason: 'LOCKED' }
 }

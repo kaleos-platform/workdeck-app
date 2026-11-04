@@ -18,6 +18,7 @@ import {
   type ChargeLine,
 } from './pricing'
 import { DECK_CATALOG_DEFAULTS } from './catalog-defaults'
+import { isCheckoutPaused } from './entitlement'
 
 // dunning: 결제일 경과 +1·+3·+5일에 재시도, 3회 실패 시 EXPIRED
 const RETRY_OFFSETS_DAYS = [1, 3, 5]
@@ -55,9 +56,10 @@ class BillingError extends Error {
 export { BillingError }
 
 // 토스 계약 전(운영=테스트 키) 공백기: 실출금 없는 구독이 생기지 않게 새 결제·카드 등록을 막는다.
-// 정기청구(cron)와 해제 예약 취소는 영향 없음. 계약 후 BILLING_CHECKOUT_PAUSED 환경변수를 지운다.
+// 정기청구(cron)와 해제 예약 취소는 영향 없음. 중지 중엔 잠금도 보류된다(entitlement-core PAUSED).
+// 계약 후 billing-admin trial-all 로 체험 공간에 기간을 준 뒤 BILLING_CHECKOUT_PAUSED 환경변수를 지운다.
 export function assertCheckoutOpen() {
-  if (process.env.BILLING_CHECKOUT_PAUSED === '1') {
+  if (isCheckoutPaused()) {
     throw new BillingError('결제 준비 중입니다. 결제가 열리면 이메일로 안내드립니다', 503)
   }
 }
