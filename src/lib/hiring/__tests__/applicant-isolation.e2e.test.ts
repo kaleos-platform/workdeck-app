@@ -448,6 +448,30 @@ it('일반 구성원은 지원자 Excel을 다운로드할 수 없다', async ()
   }
 })
 
+it('같은 질문 키를 가진 공고의 다른 질문 문구는 Excel에서 분리한다', async () => {
+  const labels = ['경력', '입사 가능일']
+  for (const [index, label] of labels.entries()) {
+    const posting = await prisma.hiringPosting.create({
+      data: { spaceId: spaces[0], title: `[QA] 질문 변경 ${index}`, status: 'DRAFT' },
+    })
+    await prisma.hiringApplication.create({
+      data: {
+        spaceId: spaces[0],
+        postingId: posting.id,
+        applicationEntries: [{ key: 'custom-copy', type: 'string', label, value: `답변 ${index}` }],
+      },
+    })
+  }
+  const response = await exportApplications(new NextRequest('http://localhost/export'))
+  expect(response?.status).toBe(200)
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  const rows = XLSX.utils.sheet_to_json<Record<string, string>>(workbook.Sheets['지원자'])
+  expect(rows.find((row) => row.경력 === '답변 0')?.['입사 가능일'] ?? '').toBe('')
+  expect(rows.find((row) => row['입사 가능일'] === '답변 1')?.경력 ?? '').toBe('')
+  expect(rows.some((row) => row.경력 === '답변 0')).toBe(true)
+  expect(rows.some((row) => row['입사 가능일'] === '답변 1')).toBe(true)
+})
+
 it('상태 변경 후 목록과 Excel이 같은 결과 필터를 적용한다', async () => {
   await prisma.hiringApplication.update({ where: { id: ownId }, data: { stage: 'ACCEPTED' } })
   const list = await listApplications(spaces[0], { page: 1, pageSize: 50, stage: 'ACCEPTED' })
