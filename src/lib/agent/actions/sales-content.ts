@@ -12,6 +12,9 @@ import {
 } from '@/lib/sc/schemas'
 import { isSpaceBrand, saveBrandProfile } from '@/lib/sc/brand-profile'
 import { textToDoc } from '@/lib/sc/text-to-doc'
+import { getAppOrigin } from '@/lib/domain'
+import { buildPublishSnapshot, photoSlots, readAsideConfig } from '@/lib/sc/aside-publish'
+import { notifyDeploymentThread } from '@/lib/sc/deployment-notify'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
 function def<T>(d: ActionDefinition<T>): ActionDefinition {
@@ -26,13 +29,23 @@ export const postPublishParams = z.object({
   targetUrl: httpUrl,
   scheduledAt: z.string().datetime().optional(),
   targetKeyword: z.string().trim().max(200).optional(),
+  // 자동 게시(Aside) 채널에서 쓰는 블로그 카테고리·태그. 없으면 채널 기본 카테고리.
+  category: z.string().trim().min(1).max(100).optional(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(30).optional(),
 })
 export type PostPublishParams = z.infer<typeof postPublishParams>
 
 async function activeChannel(spaceId: string, channelId: string) {
   const channel = await prisma.salesContentChannel.findFirst({
     where: { id: channelId, spaceId, isActive: true },
-    select: { id: true, name: true, kind: true, platformSlug: true },
+    select: {
+      id: true,
+      name: true,
+      kind: true,
+      platformSlug: true,
+      publisherMode: true,
+      config: true,
+    },
   })
   if (!channel) throw new ToolUserError('활성 채널을 찾을 수 없습니다(sc_list_channels 로 확인)')
   return channel
@@ -63,6 +76,15 @@ const postPublish: ActionDefinition<PostPublishParams> = {
     // 예약 시각이 지났으면(승인이 늦은 경우) 승인 시점에 바로 발행한다.
     const requested = params.scheduledAt ? new Date(params.scheduledAt) : null
     const scheduledAt = requested && requested > new Date() ? requested : new Date()
+    const doc = textToDoc(params.body)
+    const aside = channel.publisherMode === 'ASIDE' ? readAsideConfig(channel.config) : null
+    // 승인 알림 메시지 스레드 — 사진 요청·게시 결과를 여기에 이어 단다.
+    const approval = ctx.actionId
+      ? await prisma.agentPendingAction.findUnique({
+          where: { id: ctx.actionId },
+          select: { slackChannelId: true, slackMessageTs: true },
+        })
+      : null
 
     // 콘텐츠·배포·발행 작업을 한 트랜잭션으로 만든다(실패 시 부분 행·고아 작업이 남지 않게).
     // 배포는 처음부터 PUBLISHING 으로 만든다 — SCHEDULED 로 만든 뒤 바꾸면 그 사이 배포 실행 API 가
@@ -76,7 +98,7 @@ const postPublish: ActionDefinition<PostPublishParams> = {
             userId: ctx.deciderId ?? null,
             title: params.title,
             body: params.body,
-            doc: textToDoc(params.body) as never,
+            doc: doc as never,
             status: 'SCHEDULED',
             scheduledAt,
             channelId: channel.id,
@@ -84,16 +106,44 @@ const postPublish: ActionDefinition<PostPublishParams> = {
           },
           select: { id: true, title: true },
         })
+        const data = deploymentData(spaceId, content, channel, {
+          targetUrl: params.targetUrl,
+          scheduledAt: scheduledAt.toISOString(),
+        })
+        // Aside 채널은 승인본을 배포에 고정한다. 사진 자리가 있으면 사람이 채울 때까지 발행 작업을 만들지 않는다.
+        const snapshot = aside
+          ? buildPublishSnapshot({
+              title: params.title,
+              doc,
+              deploymentUrl: `${getAppOrigin()}/c/${data.shortSlug}`,
+              category: params.category ?? aside.defaultCategory ?? null,
+              tags: params.tags,
+              autoPublish: aside.autoPublish,
+            })
+          : null
+        const slots = snapshot ? photoSlots(snapshot) : []
+        const awaitingAssets = slots.length > 0
         const deployment = await tx.contentDeployment.create({
           data: {
-            ...deploymentData(spaceId, content, channel, {
-              targetUrl: params.targetUrl,
-              scheduledAt: scheduledAt.toISOString(),
-            }),
-            status: 'PUBLISHING',
+            ...data,
+            status: awaitingAssets ? 'AWAITING_ASSETS' : 'PUBLISHING',
+            publishSnapshot: (snapshot ?? undefined) as never,
+            assetPlan: awaitingAssets
+              ? ({ slots: slots.map((s) => ({ index: s.index })) } as never)
+              : undefined,
+            notifySlackChannelId: approval?.slackChannelId ?? null,
+            notifySlackThreadTs: approval?.slackMessageTs ?? null,
           },
           select: { id: true },
         })
+        if (awaitingAssets) {
+          return {
+            contentId: content.id,
+            deploymentId: deployment.id,
+            jobId: null as string | null,
+            photoSlots: slots.length,
+          }
+        }
         // enqueueJob(lib/sc/jobs) 과 같은 행 — 트랜잭션 클라이언트로 직접 만든다.
         const job = await tx.salesContentJob.create({
           data: {
@@ -105,9 +155,16 @@ const postPublish: ActionDefinition<PostPublishParams> = {
           },
           select: { id: true },
         })
-        return { contentId: content.id, deploymentId: deployment.id, jobId: job.id }
+        return { contentId: content.id, deploymentId: deployment.id, jobId: job.id, photoSlots: 0 }
       })
     )
+    if (created.photoSlots > 0) {
+      await notifyDeploymentThread(created.deploymentId, {
+        kind: 'assets-needed',
+        contentId: created.contentId,
+        slots: created.photoSlots,
+      })
+    }
     return { ...created, channel: channel.name, scheduledAt: scheduledAt.toISOString() }
   },
 }

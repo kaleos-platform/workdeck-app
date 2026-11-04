@@ -27,7 +27,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
   // 조건부 claim — PUBLISHING/PUBLISHED 상태가 아닌 경우에만 원자적으로 전환
   // (동시 요청 시 중복 enqueue 방지)
   const claimed = await prisma.contentDeployment.updateMany({
-    where: { id, spaceId: resolved.space.id, status: { notIn: ['PUBLISHING', 'AWAITING_MANUAL', 'PUBLISHED'] } },
+    where: { id, spaceId: resolved.space.id, status: { notIn: ['AWAITING_ASSETS', 'PUBLISHING', 'AWAITING_MANUAL', 'PUBLISHED'] } },
     data: { status: 'PUBLISHING', errorMessage: null },
   })
   if (claimed.count === 0) {
