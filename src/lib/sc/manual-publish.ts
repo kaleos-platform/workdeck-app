@@ -32,15 +32,19 @@ export async function completeManualDeployment(input: {
   spaceId: string
   deploymentId: string
   platformUrl: string
+  // Aside 워커의 발행 성공은 PUBLISHING 에서 바로 완료한다(사람 완료는 AWAITING_MANUAL 에서).
+  fromStatus?: 'AWAITING_MANUAL' | 'PUBLISHING'
 }): Promise<CompleteManualResult> {
+  const fromStatus = input.fromStatus ?? 'AWAITING_MANUAL'
   const { spaceId, deploymentId } = input
   const deployment = await prisma.contentDeployment.findFirst({
     where: { id: deploymentId, spaceId },
     select: { contentId: true, channel: { select: { platform: true, publisherMode: true } } },
   })
   if (!deployment) return { ok: false, status: 404, message: '배포를 찾을 수 없습니다' }
-  if (deployment.channel.publisherMode !== 'MANUAL') {
-    return { ok: false, status: 409, message: '수동 게시 채널의 배포가 아닙니다' }
+  // Aside 채널도 리허설(임시저장)·결과 불명확 시 사람이 게시 완료한다.
+  if (deployment.channel.publisherMode !== 'MANUAL' && deployment.channel.publisherMode !== 'ASIDE') {
+    return { ok: false, status: 409, message: '수동 게시 대상 배포가 아닙니다' }
   }
 
   const platformUrl = normalizePlatformUrl(deployment.channel.platform, input.platformUrl)
@@ -62,7 +66,7 @@ export async function completeManualDeployment(input: {
 
     // 조건부 전이 — 동시 요청 중 하나만 통과한다.
     const gate = await tx.contentDeployment.updateMany({
-      where: { id: deploymentId, spaceId, status: 'AWAITING_MANUAL' },
+      where: { id: deploymentId, spaceId, status: fromStatus },
       data: { status: 'PUBLISHED', platformUrl, publishedAt: now, errorMessage: null },
     })
     if (gate.count === 0) {
@@ -87,7 +91,7 @@ export async function completeManualDeployment(input: {
     const open = await tx.contentDeployment.count({
       where: {
         contentId: deployment.contentId,
-        status: { in: ['SCHEDULED', 'PUBLISHING', 'AWAITING_MANUAL', 'FAILED'] },
+        status: { in: ['SCHEDULED', 'AWAITING_ASSETS', 'PUBLISHING', 'AWAITING_MANUAL', 'FAILED'] },
       },
     })
     if (open === 0) {

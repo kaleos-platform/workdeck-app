@@ -3077,6 +3077,7 @@ enum SalesContentChannelKind {
 enum PublisherMode {
   API
   BROWSER
+  ASIDE // 맥미니 Aside 브라우저(로그인 세션)로 에디터를 조작해 게시. 설정은 channel.config.aside
   MANUAL
 }
 
@@ -3203,6 +3204,7 @@ model Content {
 
 enum DeploymentStatus {
   SCHEDULED
+  AWAITING_ASSETS // 자동 게시 채널: 본문의 사진 자리를 사람이 채우기를 기다림(발행 작업 없음)
   PUBLISHING
   AWAITING_MANUAL // 수동 채널: 예약 처리는 끝났고 사람이 플랫폼에 게시하기를 기다림
   PUBLISHED
@@ -3228,6 +3230,15 @@ model ContentDeployment {
   utmContent   String?
   utmTerm      String?
   errorMessage String?
+  // 자동 게시(ASIDE) 채널: 승인 시점에 고정한 게시본(제목·본문 블록·카테고리·태그). 워커는 이것만 게시한다.
+  publishSnapshot      Json?
+  // 사진 자리별 선택 { slots: [{ index, label, assetId?, skip? }] } — AWAITING_ASSETS 동안 사람이 채운다.
+  assetPlan            Json?
+  // 워커가 최종 발행을 누르기 직전에 찍는다. 이미 찍힌 배포는 자동 재시도하지 않는다(중복 발행 방지).
+  publishAttemptedAt   DateTime?
+  // 진행 알림을 보낼 Slack 스레드(승인 요청 메시지).
+  notifySlackChannelId String?
+  notifySlackThreadTs  String?
 
   space       Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   content     Content             @relation(fields: [contentId], references: [id], onDelete: Cascade)

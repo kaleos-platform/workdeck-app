@@ -488,6 +488,7 @@ export type SalesContentChannelKind = (typeof SalesContentChannelKind)[keyof typ
 export const PublisherMode = {
   API: 'API',
   BROWSER: 'BROWSER',
+  ASIDE: 'ASIDE',
   MANUAL: 'MANUAL'
 } as const
 
@@ -535,6 +536,7 @@ export type ContentAssetKind = (typeof ContentAssetKind)[keyof typeof ContentAss
 
 export const DeploymentStatus = {
   SCHEDULED: 'SCHEDULED',
+  AWAITING_ASSETS: 'AWAITING_ASSETS',
   PUBLISHING: 'PUBLISHING',
   AWAITING_MANUAL: 'AWAITING_MANUAL',
   PUBLISHED: 'PUBLISHED',

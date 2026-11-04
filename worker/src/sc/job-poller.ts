@@ -111,6 +111,7 @@ export async function completeJob(
     errorMessage?: string
     errorCode?: string
     platformUrl?: string
+    draftSaved?: boolean
   }
 ): Promise<{ reported: boolean }> {
   if (!WORKER_API_KEY) throw new Error('WORKER_API_KEY 환경변수가 필요합니다')
@@ -138,6 +139,22 @@ export async function completeJob(
   }
 }
 
+/** 최종 발행 직전 1회 확인. 이미 시도한 배포거나 보고에 실패하면 false — 호출 측은 발행하지 않는다. */
+export async function markPublishAttempt(jobId: string): Promise<boolean> {
+  if (!WORKER_API_KEY) throw new Error('WORKER_API_KEY 환경변수가 필요합니다')
+  try {
+    const res = await fetchWithTimeout(`${WEB_APP_URL}/api/sc/jobs/${jobId}/publish-attempt`, {
+      method: 'POST',
+      headers: { 'x-worker-api-key': WORKER_API_KEY },
+    })
+    if (!res.ok) return false
+    const data = (await res.json().catch(() => null)) as { ok?: boolean } | null
+    return data?.ok === true
+  } catch {
+    return false
+  }
+}
+
 // 1회 polling 사이클 — Unit 10+ 에서 Publisher/Collector factory 주입 예정.
 export async function pollOnce(
   handleJob: (c: ClaimedJob) => Promise<{
@@ -145,6 +162,7 @@ export async function pollOnce(
     errorMessage?: string
     errorCode?: string
     platformUrl?: string
+    draftSaved?: boolean
   }>
 ): Promise<{ processed: number; failed: number }> {
   const claimed = await claimJobs({ limit: 5 })
@@ -158,6 +176,7 @@ export async function pollOnce(
         errorMessage: result.errorMessage,
         errorCode: result.errorCode,
         platformUrl: result.platformUrl,
+        draftSaved: result.draftSaved,
       })
       if (result.ok) processed += 1
       else failed += 1
