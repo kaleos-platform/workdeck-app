@@ -16,6 +16,8 @@
 //                                                                  # 무료는 일반 고객과 같은 7일 체험뿐 — 이력이 있으면 연장하지 않음
 //   node scripts/billing-admin.mjs set-trial <spaceId> <종료일 YYYY-MM-DD>
 //                                                                  # 체험 종료일(KST) 지정. 토스 결제 공백기 이전 고객 전용 — 결제 가능일+7일로 맞춘다
+//   node scripts/billing-admin.mjs trial-all <종료일 YYYY-MM-DD> [--apply]
+//                                                                  # 면제 아닌 체험 공간 일괄 연장(기본 미리보기). BILLING_CHECKOUT_PAUSED 해제 직전에 실행
 import 'dotenv/config'
 import { config } from 'dotenv'
 import pg from 'pg'
@@ -220,9 +222,41 @@ async function main() {
       break
     }
 
+    case 'trial-all': {
+      const [until, flag] = args
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(until ?? '')) {
+        throw new Error('사용법: trial-all <종료일 YYYY-MM-DD> [--apply]')
+      }
+      // 결제 일시 중지 해제 직전용: 해제하면 체험이 끝난 공간이 바로 잠기므로
+      // 면제 아닌 TRIALING 구독의 체험 종료일을 종료일 다음날 00:00 KST 로 일괄 연장한다(앞당기지 않음).
+      // EXPIRED·CANCELED(직접 해지·결제 실패)는 대상 아님 — 해제 후 다시 결제하면 된다.
+      // 구독 행 없는 공간은 deck 설치 시 ensureTrialStarted 가 체험을 만들므로 없음(기존 공간은 면제 백필).
+      const end = `(($1::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'UTC'`
+      const future = await client.query(`SELECT ${end} > (now() AT TIME ZONE 'UTC') AS ok`, [until])
+      if (!future.rows[0].ok) throw new Error(`${until}: 과거 종료일은 즉시 잠금이라 거부`)
+      const where = `status = 'TRIALING' AND "exemptFlag" = false AND "trialEndsAt" IS NOT NULL AND "trialEndsAt" < ${end}`
+      if (flag !== '--apply') {
+        const preview = await client.query(
+          `SELECT "spaceId", "trialEndsAt"::text AS "trialEndsAtUtc" FROM "SpaceSubscription" WHERE ${where}`,
+          [until]
+        )
+        console.log(`미리보기: ${preview.rowCount}개 공간 → ${until}(KST). 적용하려면 --apply`)
+        console.table(preview.rows)
+        break
+      }
+      const res = await client.query(
+        `UPDATE "SpaceSubscription" SET "trialEndsAt" = ${end}, "updatedAt" = now()
+         WHERE ${where} RETURNING "spaceId", "trialEndsAt"::text AS "trialEndsAtUtc"`,
+        [until]
+      )
+      console.log(`✔ ${res.rowCount}개 공간 체험 종료일 ${until}(KST)`)
+      console.table(res.rows)
+      break
+    }
+
     default:
       console.error(
-        '알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price|migrate-grant|set-trial'
+        '알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price|migrate-grant|set-trial|trial-all'
       )
       process.exit(1)
   }

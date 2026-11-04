@@ -126,4 +126,20 @@ describe('evaluateDeckAccess', () => {
     const r = evaluate({})
     expect(r.reason).toBe('LOCKED')
   })
+
+  test('결제 일시 중지 중엔 체험 만료여도 허용', () => {
+    const r = evaluate({
+      subscription: sub({ status: 'TRIALING', trialEndsAt: new Date('2026-07-25T00:00:00Z') }),
+      checkoutPaused: true,
+    })
+    expect(r).toEqual({ allowed: true, reason: 'PAUSED' })
+  })
+
+  test('결제 일시 중지는 체험 중·유예 판정보다 뒤 (기존 사유 유지)', () => {
+    const r = evaluate({
+      subscription: sub({ status: 'TRIALING', trialEndsAt: new Date('2026-08-05T00:00:00Z') }),
+      checkoutPaused: true,
+    })
+    expect(r.reason).toBe('TRIAL')
+  })
 })

@@ -9,6 +9,11 @@ import {
 
 export * from './entitlement-core'
 
+// 토스 계약 전 결제 일시 중지 스위치 — 결제 차단(assertCheckoutOpen)과 잠금 보류가 같은 판정을 쓴다
+export function isCheckoutPaused(): boolean {
+  return process.env.BILLING_CHECKOUT_PAUSED === '1'
+}
+
 function addDays(base: Date, days: number): Date {
   return new Date(base.getTime() + days * 24 * 60 * 60 * 1000)
 }
@@ -63,6 +68,7 @@ export async function resolveEntitlement(spaceId: string): Promise<SpaceEntitlem
       subscription: subInput,
       deckInstanceCreatedAt: instanceMap.get(product.id) ?? null,
       now,
+      checkoutPaused: isCheckoutPaused(),
     })
     decks[product.id] = access
     if (access.allowed) allowedDecks.push(product.id)
