@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { AlertTriangle, CheckCircle2, Info, Loader2, ShieldAlert, XCircle } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
@@ -452,19 +451,18 @@ export function SubscriptionSettingsClient() {
                         )}
 
                         {!item && needsSubscriptionStart && isOwner && hasSubscribableProduct && (
-                          <div className="ml-auto flex items-center gap-1.5">
-                            <Checkbox
-                              id={`deck-select-${product.id}`}
-                              checked={selectedDecks.includes(product.id)}
-                              onCheckedChange={() => toggleDeckSelection(product.id)}
-                            />
-                            <label
-                              htmlFor={`deck-select-${product.id}`}
-                              className="text-xs text-muted-foreground"
-                            >
-                              선택
-                            </label>
-                          </div>
+                          <Button
+                            size="sm"
+                            variant={selectedDecks.includes(product.id) ? 'secondary' : 'outline'}
+                            className="ml-auto"
+                            onClick={() =>
+                              method
+                                ? toggleDeckSelection(product.id)
+                                : openSubscribeDialog([product.id], false)
+                            }
+                          >
+                            {selectedDecks.includes(product.id) ? '빼기' : '구독'}
+                          </Button>
                         )}
                       </div>
                     )}
@@ -480,13 +478,19 @@ export function SubscriptionSettingsClient() {
           <Card>
             <CardHeader>
               <CardTitle>구독 시작</CardTitle>
-              <CardDescription>이용할 업무를 선택하고 구독을 시작하세요.</CardDescription>
+              <CardDescription>업무의 구독 버튼을 눌러 담은 뒤 구독을 시작하세요.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {selectedDecks.length > 0 && (
                 <div className="rounded-md bg-muted/50 p-3 text-sm">
+                  <p className="mb-2 text-muted-foreground">
+                    {subscribableProducts
+                      .filter((p) => selectedDecks.includes(p.id))
+                      .map((p) => p.name)
+                      .join(', ')}
+                  </p>
                   <div className="flex justify-between font-medium">
-                    <span>선택 {selectedDecks.length}개 · VAT 포함 결제 예정액</span>
+                    <span>{selectedDecks.length}개 · VAT 포함 결제 예정액</span>
                     <span>{formatWon(selectionTotal.withVat)}</span>
                   </div>
                 </div>
