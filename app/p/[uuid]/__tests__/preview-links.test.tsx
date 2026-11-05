@@ -20,9 +20,15 @@ const posting = {
   positions: [],
   stores: [],
   contents: [
-    { id: 'button', contentType: 'button', data: { title: '지원하기', linkType: 'form' } },
+    {
+      id: 'button',
+      spaceId: 's',
+      contentType: 'button',
+      data: { title: '지원하기', linkType: 'form' },
+    },
     {
       id: 'image',
+      spaceId: 's',
       contentType: 'image',
       imagePath: 'qa.png',
       data: { link: { linkType: 'form' } },

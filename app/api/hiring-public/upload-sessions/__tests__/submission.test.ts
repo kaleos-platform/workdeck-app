@@ -114,6 +114,45 @@ beforeEach(() => {
     mimeType: file.mimeType,
   })
 })
+it.each(['position', 'store'])(
+  '잘못 연결된 다른 고객의 %s로 지원을 완료하지 않는다',
+  async (kind) => {
+    ;(prisma.hiringPosting.findUnique as jest.Mock).mockResolvedValue({
+      id: 'post',
+      uuid: 'qa-post',
+      spaceId: 'space',
+      status: 'ACTIVE',
+      applicationEntries: [],
+      positions: [{ id: 'foreign-position', spaceId: 'other' }],
+      stores: [{ storeId: 'foreign-store', store: { spaceId: 'other' } }],
+    })
+    ;(prisma.hiringUploadSession.findFirst as jest.Mock).mockResolvedValue(session({ files: [] }))
+    const selection =
+      kind === 'position'
+        ? { postingPositionId: 'foreign-position' }
+        : { storeIds: ['foreign-store'] }
+    const result = await complete(request({ ...payload, ...selection }))
+    expect(result.status).toBe(400)
+    expect(prisma.hiringApplication.create).not.toHaveBeenCalled()
+  }
+)
+
+it('같은 고객의 정상 근무지와 직무는 지원을 완료한다', async () => {
+  ;(prisma.hiringPosting.findUnique as jest.Mock).mockResolvedValue({
+    id: 'post',
+    uuid: 'qa-post',
+    spaceId: 'space',
+    status: 'ACTIVE',
+    applicationEntries: [],
+    positions: [{ id: 'own-position', spaceId: 'space' }],
+    stores: [{ storeId: 'own-store', store: { spaceId: 'space' } }],
+  })
+  ;(prisma.hiringUploadSession.findFirst as jest.Mock).mockResolvedValue(session({ files: [] }))
+  const result = await complete(
+    request({ ...payload, postingPositionId: 'own-position', storeIds: ['own-store'] })
+  )
+  expect(result.status).toBe(201)
+})
 it('제출 준비 응답에 HttpOnly 복구 쿠키를 설정한다', async () => {
   ;(prisma.hiringPosting.findUnique as jest.Mock).mockResolvedValue({
     id: 'post',

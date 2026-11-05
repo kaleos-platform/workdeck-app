@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { TemplatesManager, type TemplateRow } from '@/components/hiring-posts/templates-manager'
+import { templateContentScope, templateListScope } from '@/lib/hiring/template-scope'
 
 // 상세 템플릿 관리 (생성은 위저드 상세 스텝, 여기서는 이름 변경/삭제)
 export default async function TemplatesPage() {
@@ -11,11 +12,11 @@ export default async function TemplatesPage() {
   const rows = await prisma.hiringDetailTemplate.findMany({
     // 샘플은 블록이 1개 이상인 것만 노출 — 어드민에서 만들다 만 빈 샘플이 고객 목록에 뜨는 것 방지.
     // space 소유 템플릿은 무관(사용자가 만든 빈 템플릿도 지금처럼 노출).
-    where: {
-      OR: [{ spaceId: resolved.space.id }, { isSample: true, contents: { some: {} } }],
-    },
+    where: templateListScope(resolved.space.id),
     orderBy: [{ isSample: 'asc' }, { updatedAt: 'desc' }],
-    include: { _count: { select: { contents: true } } },
+    include: {
+      _count: { select: { contents: { where: templateContentScope(resolved.space.id) } } },
+    },
   })
   const templates: TemplateRow[] = rows.map((t) => ({
     id: t.id,

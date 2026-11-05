@@ -22,6 +22,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
     select: { filePath: true, fileName: true },
   })
   if (!file) return errorResponse('파일을 찾을 수 없습니다', 404)
+  const segments = file.filePath.split('/')
+  if (
+    segments[0] !== resolved.space.id ||
+    segments.length < 2 ||
+    segments.some(
+      (segment) => !segment || segment === '.' || segment === '..' || /[\\%]/.test(segment)
+    )
+  )
+    return errorResponse('파일을 찾을 수 없습니다', 404)
 
   try {
     const url = await getApplicantFileSignedUrl(file.filePath)

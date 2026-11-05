@@ -23,7 +23,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!posting) return errorResponse('공고를 찾을 수 없습니다', 404)
 
   const positions = await prisma.hiringPostingPosition.findMany({
-    where: { postingId: id },
+    where: { postingId: id, spaceId: resolved.space.id },
     orderBy: { createdAt: 'asc' },
   })
   return NextResponse.json({ positions })

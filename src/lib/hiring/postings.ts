@@ -64,9 +64,9 @@ export async function getPostingDetail(spaceId: string, id: string) {
   return prisma.hiringPosting.findFirst({
     where: { id, spaceId },
     include: {
-      positions: { orderBy: { createdAt: 'asc' } },
-      stores: { select: { id: true, storeId: true } },
-      contents: { orderBy: { sortOrder: 'asc' } },
+      positions: { where: { spaceId }, orderBy: { createdAt: 'asc' } },
+      stores: { where: { store: { spaceId } }, select: { id: true, storeId: true } },
+      contents: { where: { spaceId }, orderBy: { sortOrder: 'asc' } },
     },
   })
 }
