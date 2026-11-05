@@ -14,7 +14,7 @@ export async function POST() {
   if (roleError) return roleError
 
   try {
-    assertCheckoutOpen()
+    assertCheckoutOpen(resolved.space.id)
   } catch (e) {
     if (e instanceof BillingError) return errorResponse(e.message, e.status)
     throw e
