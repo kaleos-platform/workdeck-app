@@ -9,6 +9,7 @@ import { ContentStatusBadge } from '@/components/sc/contents/content-status-badg
 import { DeployButton } from '@/components/sc/contents/deploy-button'
 import { ManualPublishPanel } from '@/components/sc/contents/manual-publish-panel'
 import { AssetPlanPanel } from '@/components/sc/contents/asset-plan-panel'
+import { DeleteContentButton } from '@/components/sc/contents/delete-content-button'
 import { photoSlots, type AssetPlan, type PublishSnapshot } from '@/lib/sc/aside-publish'
 import { SALES_CONTENT_CONTENTS_PATH, SALES_CONTENT_ANALYTICS_PATH } from '@/lib/deck-routes'
 import { nextAllowed } from '@/lib/sc/content-state'
@@ -133,6 +134,9 @@ export default async function ContentDetailPage({ params }: Props) {
           <Button asChild>
             <Link href={`${SALES_CONTENT_CONTENTS_PATH}/${content.id}/edit`}>편집</Link>
           </Button>
+          {content.status !== 'PUBLISHED' && content.status !== 'ANALYZED' && (
+            <DeleteContentButton contentId={content.id} />
+          )}
           <Button asChild variant="ghost">
             <Link href={SALES_CONTENT_CONTENTS_PATH}>← 목록</Link>
           </Button>
