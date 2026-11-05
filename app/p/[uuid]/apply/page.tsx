@@ -70,7 +70,7 @@ export default async function ApplyPage({ params, searchParams }: Params) {
 
       <header className="space-y-1">
         <Link
-          href={getHiringPublicPostingPath(uuid)}
+          href={`${getHiringPublicPostingPath(uuid)}${isPreview && posting.status === 'DRAFT' ? '?preview=1' : ''}`}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
           ← 공고로 돌아가기
