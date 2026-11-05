@@ -15,7 +15,9 @@ jest.mock('next/navigation', () => ({
   },
 }))
 jest.mock('@/components/hiring-public/apply-form', () => ({
-  ApplyForm: () => <form aria-label="지원서" />,
+  ApplyForm: ({ preview }: { preview: boolean }) => (
+    <form aria-label="지원서" data-preview={String(preview)} />
+  ),
 }))
 const props = { params: Promise.resolve({ uuid: 'qa' }), searchParams: Promise.resolve({}) }
 beforeEach(() => jest.clearAllMocks())
@@ -42,6 +44,24 @@ it('초안의 권한 없는 미리보기도 접수 불가 안내를 표시한다
   expect(
     screen.getByRole('heading', { name: '현재 지원할 수 없는 공고입니다' })
   ).toBeInTheDocument()
+})
+it('공간 구성원은 초안 지원서의 제출 불가 미리보기를 볼 수 있다', async () => {
+  jest.mocked(getUser).mockResolvedValue({ id: 'user' } as never)
+  jest.mocked(prisma.spaceMember.findFirst).mockResolvedValue({ id: 'member' } as never)
+  jest.mocked(prisma.hiringPosting.findUnique).mockResolvedValue({
+    status: 'DRAFT',
+    spaceId: 's',
+    title: '검증',
+    positions: [],
+    stores: [],
+    applicationEntries: [],
+  } as never)
+  render(await Page({ ...props, searchParams: Promise.resolve({ preview: '1' }) }))
+  expect(screen.getByRole('form', { name: '지원서' })).toHaveAttribute('data-preview', 'true')
+  expect(screen.getByRole('link', { name: '← 공고로 돌아가기' })).toHaveAttribute(
+    'href',
+    '/p/qa?preview=1'
+  )
 })
 it('존재하지 않는 공고는 404를 유지한다', async () => {
   jest.mocked(prisma.hiringPosting.findUnique).mockResolvedValue(null)
@@ -73,4 +93,5 @@ it('발행된 상시 모집 공고는 정상 지원서를 표시한다', async (
   } as never)
   render(await Page(props))
   expect(screen.getByRole('form', { name: '지원서' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: '← 공고로 돌아가기' })).toHaveAttribute('href', '/p/qa')
 })

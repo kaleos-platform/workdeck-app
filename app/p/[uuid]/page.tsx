@@ -72,6 +72,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
   if (posting.status === 'DRAFT' && !isPreview) notFound()
 
   const isClosed = posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate)
+  const applyHref = `${getHiringPublicApplyPath(uuid)}${isPreview ? '?preview=1' : ''}`
 
   // 마감일 D-day (KST 기준 날짜 비교 — closingDate는 UTC 자정으로 저장된 날짜값)
   const closingLabel = (() => {
@@ -133,7 +134,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
         <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
           {posting.contents.map((c) =>
             (c.contentType === 'image' || c.contentType === 'design') && c.imagePath ? (
-              <ImageContentBlock key={c.id} content={c} uuid={uuid} isClosed={isClosed} />
+              <ImageContentBlock key={c.id} content={c} applyHref={applyHref} isClosed={isClosed} />
             ) : c.contentType === 'text' && c.data ? (
               <div
                 key={c.id}
@@ -165,7 +166,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
                         {btn.title}
                       </span>
                     ) : isForm ? (
-                      <Link href={getHiringPublicApplyPath(uuid)} style={style} className={btnCls}>
+                      <Link href={applyHref} style={style} className={btnCls}>
                         {btn.title}
                       </Link>
                     ) : (
@@ -230,11 +231,11 @@ export default async function PublicPostingPage({ params, searchParams }: Params
 // image·design 블록 이미지 — data.link 가 form/url 이면 링크로 래핑. 마감 시 링크 비활성(button 과 동일).
 function ImageContentBlock({
   content,
-  uuid,
+  applyHref,
   isClosed,
 }: {
   content: { imagePath: string | null; data: unknown }
-  uuid: string
+  applyHref: string
   isClosed: boolean
 }) {
   const img = (
@@ -250,7 +251,7 @@ function ImageContentBlock({
   const link = (content.data as { link?: { linkType?: string; url?: string } } | null)?.link
   if (!isClosed && link?.linkType === 'form') {
     return (
-      <Link href={getHiringPublicApplyPath(uuid)} className="block">
+      <Link href={applyHref} className="block">
         {img}
       </Link>
     )
