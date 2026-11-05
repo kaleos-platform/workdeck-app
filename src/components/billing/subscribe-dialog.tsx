@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { buildMarketingUrl } from '@/lib/domain'
-import { discountNote, formatWon, loadTossSdk } from './billing-shared'
+import { discountNote, formatWon, startCardRegistration } from './billing-shared'
 
 export type SubscribeTarget = {
   /** 구독할 업무 목록 — 구독 시작은 여러 건, 업무 추가는 1건 */
@@ -56,25 +56,7 @@ export function SubscribeDialog({
     setCardBusy(true)
     setCardError(null)
     try {
-      const res = await fetch('/api/billing/setup', { method: 'POST' })
-      const json = await res.json()
-      if (!res.ok) {
-        setCardError(json?.message ?? json?.error ?? '카드 등록 준비에 실패했습니다')
-        return
-      }
-      const { customerKey, clientKey } = json as { customerKey: string; clientKey: string }
-      await loadTossSdk()
-      if (!window.TossPayments) throw new Error('결제 SDK 로드에 실패했습니다')
-      const origin = window.location.origin
-      const callback = `${origin}/api/billing/toss/callback?returnTo=${encodeURIComponent(returnTo)}`
-      await window
-        .TossPayments(clientKey)
-        .payment({ customerKey })
-        .requestBillingAuth({
-          method: 'CARD',
-          successUrl: callback,
-          failUrl: `${origin}${returnTo}`,
-        })
+      await startCardRegistration(returnTo)
     } catch (e) {
       setCardError(e instanceof Error ? e.message : '카드 등록에 실패했습니다')
     } finally {

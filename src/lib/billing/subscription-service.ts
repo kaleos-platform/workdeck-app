@@ -18,7 +18,7 @@ import {
   type ChargeLine,
 } from './pricing'
 import { DECK_CATALOG_DEFAULTS } from './catalog-defaults'
-import { isCheckoutPaused } from './entitlement'
+import { isCheckoutPausedFor } from './entitlement'
 
 // dunning: 결제일 경과 +1·+3·+5일에 재시도, 3회 실패 시 EXPIRED
 const RETRY_OFFSETS_DAYS = [1, 3, 5]
@@ -60,11 +60,7 @@ export { BillingError }
 // 계약 후 billing-admin trial-all 로 체험 공간에 기간을 준 뒤 BILLING_CHECKOUT_PAUSED 환경변수를 지운다.
 // BILLING_CHECKOUT_ALLOW_SPACES(쉼표 구분 spaceId)는 중지 중에도 결제를 연다 — 토스 심사 담당자의 결제창 확인용.
 export function assertCheckoutOpen(spaceId: string) {
-  const allowed = (process.env.BILLING_CHECKOUT_ALLOW_SPACES ?? '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-  if (isCheckoutPaused() && !allowed.includes(spaceId)) {
+  if (isCheckoutPausedFor(spaceId)) {
     throw new BillingError('결제 준비 중입니다. 결제가 열리면 이메일로 안내드립니다', 503)
   }
 }
