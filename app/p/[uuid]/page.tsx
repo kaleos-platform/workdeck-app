@@ -81,7 +81,8 @@ export default async function PublicPostingPage({ params, searchParams }: Params
   const positions = posting.positions.filter((position) => position.spaceId === posting.spaceId)
   const stores = posting.stores.filter(({ store }) => store.spaceId === posting.spaceId)
   const contents = posting.contents.filter((content) => content.spaceId === posting.spaceId)
-  const isClosed = posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate)
+  const isClosed =
+    !isPreview && (posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate))
   const applyHref = `${getHiringPublicApplyPath(uuid)}${isPreview ? '?preview=1' : ''}`
 
   // 마감일 D-day (KST 기준 날짜 비교 — closingDate는 UTC 자정으로 저장된 날짜값)
@@ -108,21 +109,34 @@ export default async function PublicPostingPage({ params, searchParams }: Params
 
       <header className="space-y-3 rounded-lg border bg-card p-6 shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
-          {isClosed ? (
+          {isPreview ? (
+            <Badge className="border-amber-200 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+              발행 전
+            </Badge>
+          ) : isClosed ? (
             <Badge className="bg-muted text-muted-foreground">마감</Badge>
           ) : (
             <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
               모집 중
             </Badge>
           )}
-          {!isClosed &&
+          {isPreview ? (
+            <span className="text-sm text-muted-foreground">
+              지원 접수 전 ·{' '}
+              {posting.closingDate
+                ? `설정 마감일 ${posting.closingDate.toISOString().slice(0, 10)}`
+                : '상시 모집'}
+            </span>
+          ) : (
+            !isClosed &&
             (closingLabel ? (
               <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
                 {closingLabel}
               </span>
             ) : (
               <span className="text-sm text-muted-foreground">상시 모집</span>
-            ))}
+            ))
+          )}
         </div>
         {stores.length > 0 && (
           <p className="text-sm text-muted-foreground">
