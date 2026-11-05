@@ -64,7 +64,7 @@ export default async function ApplyPage({ params, searchParams }: Params) {
     <div className="space-y-6">
       {isPreview && (
         <div className="sticky top-0 z-50 -mx-4 -mt-4 bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-900 shadow-sm sm:-mx-6 sm:-mt-6 dark:bg-amber-950 dark:text-amber-200">
-          미리보기 — 발행 전 화면입니다
+          미리보기 — 지원서를 제출할 수 없습니다
         </div>
       )}
 

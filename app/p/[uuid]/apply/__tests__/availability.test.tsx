@@ -63,6 +63,24 @@ it('공간 구성원은 초안 지원서의 제출 불가 미리보기를 볼 �
     '/p/qa?preview=1'
   )
 })
+it.each(['DRAFT', 'ACTIVE', 'CLOSED'])(
+  '%s 지원서 미리보기에서 발행 여부 대신 제출 불가를 안내한다',
+  async (status) => {
+    jest.mocked(getUser).mockResolvedValue({ id: 'user' } as never)
+    jest.mocked(prisma.spaceMember.findFirst).mockResolvedValue({ id: 'member' } as never)
+    jest.mocked(prisma.hiringPosting.findUnique).mockResolvedValue({
+      status,
+      spaceId: 's',
+      title: '검증',
+      positions: [],
+      stores: [],
+      applicationEntries: [],
+    } as never)
+    render(await Page({ ...props, searchParams: Promise.resolve({ preview: '1' }) }))
+    expect(screen.getByText('미리보기 — 지원서를 제출할 수 없습니다')).toBeInTheDocument()
+    expect(screen.queryByText('미리보기 — 발행 전 화면입니다')).not.toBeInTheDocument()
+  }
+)
 it('존재하지 않는 공고는 404를 유지한다', async () => {
   jest.mocked(prisma.hiringPosting.findUnique).mockResolvedValue(null)
   await expect(Page(props)).rejects.toThrow('404')
