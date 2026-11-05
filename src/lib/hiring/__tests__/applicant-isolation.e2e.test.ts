@@ -134,7 +134,7 @@ it('첨부 링크는 같은 고객의 삭제되지 않은 지원서에만 발급
           spaceId: index === 1 ? spaces[1] : spaces[0],
           applicationId,
           fileName: 'qa.pdf',
-          filePath: `qa/${runId}/${index}.pdf`,
+          filePath: `${index === 1 ? spaces[1] : spaces[0]}/applications/${applicationId}/${index}.pdf`,
           mimeType: 'application/pdf',
           sizeBytes: 10,
         },

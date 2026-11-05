@@ -28,6 +28,37 @@ const standardEntries = [
   { key: 'name', type: 'string', value: '합성 지원자' },
   { key: 'phone', type: 'phone', value: '01012345678' },
 ]
+it('이전 제출 API는 잘못 연결된 다른 고객의 근무지와 직무를 저장하지 않는다', async () => {
+  ;(prisma.hiringPosting.findUnique as jest.Mock).mockResolvedValue({
+    id: 'post',
+    spaceId: 'space',
+    status: 'ACTIVE',
+    applicationEntries: [],
+    positions: [{ id: 'foreign-position', spaceId: 'other' }],
+    stores: [{ storeId: 'foreign-store', store: { spaceId: 'other' } }],
+  })
+  const form = new FormData()
+  form.set(
+    'payload',
+    JSON.stringify({
+      postingUuid: 'qa',
+      entries: standardEntries,
+      privacyAgreed: true,
+      postingPositionId: 'foreign-position',
+      storeIds: ['foreign-store'],
+    })
+  )
+  const response = await POST(
+    new NextRequest('http://localhost/api/hiring-public/applications', {
+      method: 'POST',
+      body: form,
+    })
+  )
+  expect(response.status).toBe(201)
+  expect(createPublicApplication).toHaveBeenCalledWith(
+    expect.objectContaining({ postingPositionId: null, storeIds: [] })
+  )
+})
 it.each([
   ['date', '2026-02-30', 400],
   ['number', 'Infinity', 400],

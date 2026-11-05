@@ -249,7 +249,7 @@ export async function listApplications(
         duplicated: true,
         phoneHash: true,
         createdAt: true,
-        posting: { select: { title: true } },
+        posting: { select: { title: true, spaceId: true } },
       },
     }),
     prisma.hiringApplication.count({ where }),
@@ -264,7 +264,7 @@ export async function listApplications(
   const rows: ApplicationListRow[] = records.map((r) => ({
     id: r.id,
     maskedName: r.maskedName ?? '(이름 없음)',
-    postingTitle: r.posting?.title ?? '(삭제된 공고)',
+    postingTitle: r.posting?.spaceId === spaceId ? r.posting.title : '(삭제된 공고)',
     stage: r.stage,
     hiringStage: r.hiringStage,
     createdAt: r.createdAt.toISOString(),
@@ -282,19 +282,21 @@ export async function getApplicationDetail(spaceId: string, id: string) {
   const app = await prisma.hiringApplication.findFirst({
     where: { id, spaceId, deletedAt: null },
     include: {
-      posting: { select: { id: true, title: true, uuid: true } },
-      postingPosition: { select: { name: true } },
-      stores: { include: { store: { select: { name: true } } } },
+      posting: { select: { id: true, title: true, uuid: true, spaceId: true } },
+      postingPosition: { select: { name: true, spaceId: true, postingId: true } },
+      stores: { where: { store: { spaceId } }, include: { store: { select: { name: true } } } },
       files: {
+        where: { spaceId },
         select: { id: true, fileName: true, mimeType: true, sizeBytes: true, createdAt: true },
         orderBy: { createdAt: 'asc' },
       },
       comments: {
-        where: { deletedAt: null },
+        where: { spaceId, deletedAt: null },
         orderBy: { createdAt: 'asc' },
         select: { id: true, userId: true, content: true, editedAt: true, createdAt: true },
       },
       notifications: {
+        where: { spaceId },
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
@@ -317,7 +319,18 @@ export async function getApplicationDetail(spaceId: string, id: string) {
       }))
     : false
 
-  return { app, pii, blacklisted }
+  return {
+    app: {
+      ...app,
+      posting: app.posting?.spaceId === spaceId ? app.posting : null,
+      postingPosition:
+        app.postingPosition?.spaceId === spaceId && app.postingPosition.postingId === app.postingId
+          ? app.postingPosition
+          : null,
+    },
+    pii,
+    blacklisted,
+  }
 }
 
 /** 블랙리스트 매칭 키(복호화된 전화번호로 재현) */

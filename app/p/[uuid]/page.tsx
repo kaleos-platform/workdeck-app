@@ -29,10 +29,17 @@ async function loadPosting(uuid: string) {
     where: { uuid },
     include: {
       positions: { orderBy: { createdAt: 'asc' } },
-      stores: { include: { store: { select: { name: true, roadAddress: true } } } },
+      stores: { include: { store: { select: { name: true, roadAddress: true, spaceId: true } } } },
       contents: {
         orderBy: { sortOrder: 'asc' },
-        select: { id: true, contentType: true, data: true, imagePath: true, sortOrder: true },
+        select: {
+          id: true,
+          spaceId: true,
+          contentType: true,
+          data: true,
+          imagePath: true,
+          sortOrder: true,
+        },
       },
     },
   })
@@ -71,6 +78,9 @@ export default async function PublicPostingPage({ params, searchParams }: Params
     posting.status === 'DRAFT' && (await isSpaceMemberPreview(preview, posting.spaceId))
   if (posting.status === 'DRAFT' && !isPreview) notFound()
 
+  const positions = posting.positions.filter((position) => position.spaceId === posting.spaceId)
+  const stores = posting.stores.filter(({ store }) => store.spaceId === posting.spaceId)
+  const contents = posting.contents.filter((content) => content.spaceId === posting.spaceId)
   const isClosed = posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate)
   const applyHref = `${getHiringPublicApplyPath(uuid)}${isPreview ? '?preview=1' : ''}`
 
@@ -114,9 +124,9 @@ export default async function PublicPostingPage({ params, searchParams }: Params
               <span className="text-sm text-muted-foreground">상시 모집</span>
             ))}
         </div>
-        {posting.stores.length > 0 && (
+        {stores.length > 0 && (
           <p className="text-sm text-muted-foreground">
-            {posting.stores.map((s) => s.store.name).join(', ')}
+            {stores.map((s) => s.store.name).join(', ')}
           </p>
         )}
       </header>
@@ -130,9 +140,9 @@ export default async function PublicPostingPage({ params, searchParams }: Params
       )}
 
       {/* 상세 본문 — image / text / button / positions 블록을 순서대로 렌더 */}
-      {posting.contents.length > 0 && (
+      {contents.length > 0 && (
         <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
-          {posting.contents.map((c) =>
+          {contents.map((c) =>
             (c.contentType === 'image' || c.contentType === 'design') && c.imagePath ? (
               <ImageContentBlock key={c.id} content={c} applyHref={applyHref} isClosed={isClosed} />
             ) : c.contentType === 'text' && c.data ? (
@@ -183,10 +193,10 @@ export default async function PublicPostingPage({ params, searchParams }: Params
                   </div>
                 )
               })()
-            ) : c.contentType === 'positions' && posting.positions.length > 0 ? (
+            ) : c.contentType === 'positions' && positions.length > 0 ? (
               <div key={c.id} className="space-y-4 p-6">
                 <h2 className="text-sm font-semibold">모집 부문 · 근무조건</h2>
-                {posting.positions.map((p) => {
+                {positions.map((p) => {
                   const workDays = formatWorkDays(p.workDays)
                   const workTime = formatWorkTime(p.workStartAt, p.workEndAt)
                   return (

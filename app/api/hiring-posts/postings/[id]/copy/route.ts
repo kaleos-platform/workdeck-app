@@ -13,9 +13,11 @@ export async function POST(_req: NextRequest, { params }: Params) {
   const source = await prisma.hiringPosting.findFirst({
     where: { id, spaceId: resolved.space.id },
     include: {
-      positions: true,
-      stores: true,
-      contents: { where: { postingId: id } },
+      positions: { where: { spaceId: resolved.space.id } },
+      stores: { where: { store: { spaceId: resolved.space.id } } },
+      contents: {
+        where: { postingId: id, spaceId: resolved.space.id },
+      },
     },
   })
   if (!source) return errorResponse('공고를 찾을 수 없습니다', 404)

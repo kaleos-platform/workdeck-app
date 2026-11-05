@@ -33,8 +33,8 @@ export default async function ApplyPage({ params, searchParams }: Params) {
       status: true,
       closingDate: true,
       applicationEntries: true,
-      positions: { orderBy: { createdAt: 'asc' }, select: { id: true, name: true } },
-      stores: { include: { store: { select: { id: true, name: true } } } },
+      positions: { orderBy: { createdAt: 'asc' }, select: { id: true, name: true, spaceId: true } },
+      stores: { include: { store: { select: { id: true, name: true, spaceId: true } } } },
     },
   })
 
@@ -57,8 +57,12 @@ export default async function ApplyPage({ params, searchParams }: Params) {
   }
 
   const fields = parseApplicationEntriesSchema(posting.applicationEntries)
-  const positions = posting.positions.map((p) => ({ id: p.id, name: p.name }))
-  const stores = posting.stores.map((s) => ({ id: s.store.id, name: s.store.name }))
+  const positions = posting.positions
+    .filter((p) => p.spaceId === posting.spaceId)
+    .map((p) => ({ id: p.id, name: p.name }))
+  const stores = posting.stores
+    .filter(({ store }) => store.spaceId === posting.spaceId)
+    .map((s) => ({ id: s.store.id, name: s.store.name }))
 
   return (
     <div className="space-y-6">
