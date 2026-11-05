@@ -81,19 +81,14 @@ export async function ensureWorkspaceForUser(
     })
 
     // 기존 계정 호환: Workspace만 존재하는 계정은 Space 구조를 자동 복구한다.
+    // 업무는 켜지 않는다 — 사용자가 내 워크덱에서 고른다.
     let linkSpaceId: string | null = null
     if (!existingMembership) {
-      await tx.deckApp.upsert({
-        where: { id: 'coupang-ads' },
-        create: { id: 'coupang-ads', name: '쿠팡 광고 관리', isActive: true },
-        update: {},
-      })
       const space = await tx.space.create({
         data: {
           name: workspace.name,
           type: 'PERSONAL',
           members: { create: { userId: user.id, role: 'OWNER' } },
-          deckInstances: { create: { deckAppId: 'coupang-ads', isActive: true } },
         },
         select: { id: true },
       })
