@@ -3,6 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
 import { applyTemplateSchema } from '@/lib/validations/hiring-posts'
+import { templateAccessScope, templateContentScope } from '@/lib/hiring/template-scope'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -35,13 +36,13 @@ export async function POST(req: NextRequest, { params }: Params) {
   const template = await prisma.hiringDetailTemplate.findFirst({
     where: {
       id: parsed.data.templateId,
-      OR: [{ spaceId: resolved.space.id }, { isSample: true }],
+      ...templateAccessScope(resolved.space.id),
     },
     select: {
       id: true,
       name: true,
       contents: {
-        where: { sourceType: 'DETAIL_TEMPLATE' },
+        where: templateContentScope(resolved.space.id),
         orderBy: { sortOrder: 'asc' },
         select: { contentType: true, title: true, data: true, imagePath: true, sortOrder: true },
       },
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         }
       } else {
         const agg = await tx.hiringContent.aggregate({
-          where: { postingId: id, sourceType: 'POSTING_DETAIL' },
+          where: { postingId: id, spaceId: resolved.space.id, sourceType: 'POSTING_DETAIL' },
           _max: { sortOrder: true },
         })
         base = (agg._max.sortOrder ?? -1) + 1
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       })
       // 반환용 조회 실패도 변경과 함께 롤백해 적용 완료를 실패로 오인하지 않도록 한다.
       return tx.hiringContent.findMany({
-        where: { postingId: id, sourceType: 'POSTING_DETAIL' },
+        where: { postingId: id, spaceId: resolved.space.id, sourceType: 'POSTING_DETAIL' },
         orderBy: { sortOrder: 'asc' },
       })
     })

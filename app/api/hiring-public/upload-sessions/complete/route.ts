@@ -45,7 +45,10 @@ export async function POST(req: NextRequest) {
     return errorResponse('지원서 제출 준비가 만료되었습니다. 다시 제출해 주세요', 410)
   const posting = await prisma.hiringPosting.findUnique({
     where: { id: session.postingId },
-    include: { positions: { select: { id: true } }, stores: { select: { storeId: true } } },
+    include: {
+      positions: { select: { id: true, spaceId: true } },
+      stores: { select: { storeId: true, store: { select: { spaceId: true } } } },
+    },
   })
   if (
     !posting ||
@@ -72,10 +75,19 @@ export async function POST(req: NextRequest) {
     return errorResponse('허용되지 않는 파일 형식입니다', 400)
   if (
     body.postingPositionId &&
-    !posting.positions.some((position) => position.id === body.postingPositionId)
+    !posting.positions.some(
+      (position) => position.id === body.postingPositionId && position.spaceId === posting.spaceId
+    )
   )
     return errorResponse('공고에 없는 모집 분야입니다', 400)
-  if (body.storeIds?.some((id) => !posting.stores.some((store) => store.storeId === id)))
+  if (
+    body.storeIds?.some(
+      (id) =>
+        !posting.stores.some(
+          (store) => store.storeId === id && store.store.spaceId === posting.spaceId
+        )
+    )
+  )
     return errorResponse('공고에 없는 근무지입니다', 400)
   try {
     for (const file of files) {

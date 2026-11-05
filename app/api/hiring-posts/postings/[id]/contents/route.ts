@@ -19,7 +19,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!posting) return errorResponse('공고를 찾을 수 없습니다', 404)
 
   const contents = await prisma.hiringContent.findMany({
-    where: { postingId: id, sourceType: 'POSTING_DETAIL' },
+    where: {
+      postingId: id,
+      sourceType: 'POSTING_DETAIL',
+      spaceId: resolved.space.id,
+    },
     orderBy: { sortOrder: 'asc' },
   })
   return NextResponse.json({ contents })
@@ -55,7 +59,12 @@ export async function POST(req: NextRequest, { params }: Params) {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`hiring-content:${id}`}))`
     if (parsed.data.contentType === 'positions') {
       const existing = await tx.hiringContent.findFirst({
-        where: { postingId: id, sourceType: 'POSTING_DETAIL', contentType: 'positions' },
+        where: {
+          postingId: id,
+          spaceId: resolved.space.id,
+          sourceType: 'POSTING_DETAIL',
+          contentType: 'positions',
+        },
         select: { id: true },
       })
       if (existing) {
@@ -65,7 +74,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     // sortOrder 미지정 시 마지막 뒤에 배치
     const last = await tx.hiringContent.findFirst({
-      where: { postingId: id, sourceType: 'POSTING_DETAIL' },
+      where: { postingId: id, spaceId: resolved.space.id, sourceType: 'POSTING_DETAIL' },
       orderBy: { sortOrder: 'desc' },
       select: { sortOrder: true },
     })

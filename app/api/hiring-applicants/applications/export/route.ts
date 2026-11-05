@@ -67,10 +67,11 @@ export async function GET(req: NextRequest) {
     },
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     include: {
-      posting: { select: { title: true } },
+      posting: { select: { title: true, spaceId: true } },
       postingPosition: { select: { name: true, spaceId: true, postingId: true } },
       stores: { where: { store: { spaceId } }, select: { store: { select: { name: true } } } },
       files: {
+        where: { spaceId },
         select: { id: true, applicationId: true, spaceId: true, fileName: true, sizeBytes: true },
       },
     },
@@ -127,7 +128,7 @@ export async function GET(req: NextRequest) {
       pii.phone ?? '',
       pii.email ?? '',
       pii.address ?? '',
-      app.posting?.title ?? '',
+      app.posting?.spaceId === spaceId ? app.posting.title : '',
       STAGE_LABELS[app.stage],
       PROCESS_STAGE_LABELS[app.hiringStage],
       formatDateToYmdKst(app.createdAt),
@@ -218,7 +219,7 @@ export async function GET(req: NextRequest) {
         historyRows.push([
           app.id,
           name,
-          app.posting?.title ?? '',
+          app.posting?.spaceId === spaceId ? app.posting.title : '',
           history.sourceSnapshotAt,
           entry.index + 1,
           entry.label ?? '',

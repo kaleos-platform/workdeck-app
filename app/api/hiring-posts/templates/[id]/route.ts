@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { updateTemplateSchema } from '@/lib/validations/hiring-posts'
+import { templateAccessScope, templateContentScope } from '@/lib/hiring/template-scope'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -13,13 +14,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { id } = await params
 
   const template = await prisma.hiringDetailTemplate.findFirst({
-    where: { id, OR: [{ spaceId: resolved.space.id }, { isSample: true }] },
+    where: { id, ...templateAccessScope(resolved.space.id) },
     select: {
       id: true,
       name: true,
       isSample: true,
       contents: {
-        where: { sourceType: 'DETAIL_TEMPLATE' },
+        where: templateContentScope(resolved.space.id),
         orderBy: { sortOrder: 'asc' },
         select: {
           id: true,

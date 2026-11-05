@@ -95,8 +95,8 @@ export async function POST(req: NextRequest) {
       status: true,
       closingDate: true,
       applicationEntries: true,
-      positions: { select: { id: true } },
-      stores: { select: { storeId: true } },
+      positions: { select: { id: true, spaceId: true } },
+      stores: { select: { storeId: true, store: { select: { spaceId: true } } } },
     },
   })
   if (!posting || posting.status === 'DRAFT' || posting.status === 'ARCHIVED') {
@@ -124,12 +124,16 @@ export async function POST(req: NextRequest) {
   }
 
   // 부문·매장은 해당 공고 소속 값만 허용(타 공고/공간 값 주입 차단)
-  const validPositionIds = new Set(posting.positions.map((p) => p.id))
+  const validPositionIds = new Set(
+    posting.positions.filter((p) => p.spaceId === posting.spaceId).map((p) => p.id)
+  )
   const postingPositionId =
     payload.postingPositionId && validPositionIds.has(payload.postingPositionId)
       ? payload.postingPositionId
       : null
-  const validStoreIds = new Set(posting.stores.map((s) => s.storeId))
+  const validStoreIds = new Set(
+    posting.stores.filter((s) => s.store.spaceId === posting.spaceId).map((s) => s.storeId)
+  )
   const storeIds = (payload.storeIds ?? []).filter((sid) => validStoreIds.has(sid))
 
   // 파일 수집 + 방어 검증
