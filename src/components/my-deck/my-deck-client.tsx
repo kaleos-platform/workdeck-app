@@ -18,7 +18,6 @@ import {
 import { ExternalLink, PlusCircle } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { SubscribeDialog, type SubscribeTarget } from '@/components/billing/subscribe-dialog'
-import { startCardRegistration } from '@/components/billing/billing-shared'
 import {
   COUPANG_ADS_BASE_PATH,
   SELLER_HUB_BASE_PATH,
@@ -150,21 +149,13 @@ export function MyDeckClient({
   )
 
   const openDeck = useCallback(
-    (deck: DeckSummary, fromClick = false) => {
+    (deck: DeckSummary) => {
       if (!needsSubscription(deck.id)) {
         setSelectedDeck(deck)
         return
       }
       if (!isOwner) {
         toast.error('구독이 필요한 업무입니다. 워크스페이스 소유자에게 요청하세요.')
-        return
-      }
-      // 카드가 없으면 확인 모달 없이 카드 등록으로 바로 보낸다. 돌아오면 ?subscribe= 가 구독 확인을 연다.
-      // 딥링크(useEffect) 진입은 사용자 클릭이 아니라 결제창을 자동으로 띄우지 않는다.
-      if (!cardSummary && fromClick) {
-        startCardRegistration(`/my-deck?subscribe=${deck.id}`).catch((e) =>
-          toast.error(e instanceof Error ? e.message : '카드 등록에 실패했습니다')
-        )
         return
       }
       const info = billingById.get(deck.id)
@@ -180,7 +171,7 @@ export function MyDeckClient({
         isAddition: hasActiveSubscription,
       })
     },
-    [billingById, cardSummary, hasActiveSubscription, isOwner, needsSubscription]
+    [billingById, hasActiveSubscription, isOwner, needsSubscription]
   )
 
   const hasActiveDecks = useMemo(() => activeDecks.length > 0, [activeDecks.length])
@@ -366,7 +357,7 @@ export function MyDeckClient({
                   {isLocked(deck.id) ? (
                     <Button
                       className="w-full"
-                      onClick={() => openDeck(deck, true)}
+                      onClick={() => openDeck(deck)}
                       disabled={!isOwner}
                       aria-label={`${deck.name} 구독 다시 시작`}
                     >
@@ -435,7 +426,7 @@ export function MyDeckClient({
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => openDeck(deck, true)}
+                    onClick={() => openDeck(deck)}
                     aria-label={`${deck.name} 추가 확인 열기`}
                   >
                     <PlusCircle className="h-4 w-4" />
