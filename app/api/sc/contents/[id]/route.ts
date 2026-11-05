@@ -3,6 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { contentUpdateSchema } from '@/lib/sc/schemas'
 import { snapshotContent } from '@/lib/sc/content-versions'
+import { deleteAsset } from '@/lib/supabase/storage'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -100,14 +101,38 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id } = await params
   const existing = await prisma.content.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true, status: true },
+    select: {
+      id: true,
+      status: true,
+      deployments: { select: { id: true, status: true } },
+      assets: { select: { storagePath: true } },
+    },
   })
   if (!existing) return errorResponse('콘텐츠를 찾을 수 없습니다', 404)
 
   if (existing.status === 'PUBLISHED' || existing.status === 'ANALYZED') {
-    return errorResponse('게시된 콘텐츠는 삭제할 수 없습니다 — 먼저 보관 처리하세요', 409)
+    return errorResponse('게시된 콘텐츠는 성과 기록 보존을 위해 삭제할 수 없습니다', 409)
+  }
+  if (existing.deployments.some((d) => d.status === 'PUBLISHING')) {
+    return errorResponse(
+      '게시가 진행 중인 콘텐츠는 삭제할 수 없습니다 — 끝난 뒤 다시 시도하세요',
+      409
+    )
   }
 
-  await prisma.content.delete({ where: { id } })
+  const deploymentIds = existing.deployments.map((d) => d.id)
+  await prisma.$transaction([
+    // 배포는 cascade 로 지워지지만 job 은 targetId 느슨한 참조라 직접 정리한다.
+    prisma.salesContentJob.deleteMany({
+      where: { spaceId: resolved.space.id, targetId: { in: deploymentIds }, status: 'PENDING' },
+    }),
+    prisma.content.delete({ where: { id } }),
+  ])
+
+  for (const a of existing.assets) {
+    if (!a.storagePath) continue
+    // storage 삭제 실패해도 콘텐츠 삭제는 유지 — 고아 객체는 수동 정리.
+    await deleteAsset(a.storagePath).catch(() => {})
+  }
   return NextResponse.json({ ok: true })
 }
