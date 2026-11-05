@@ -282,7 +282,7 @@ export function SubscriptionSettingsClient() {
                   Trial
                 </Badge>
                 <span>
-                  {trialDaysLeft !== null && trialDaysLeft >= 0
+                  {trialDaysLeft !== null && trialDaysLeft > 0
                     ? `Trial 종료까지 ${trialDaysLeft}일 남았습니다 (${formatDate(subscription.trialEndsAt)})`
                     : Object.values(entitlement.decks).some((d) => d.reason === 'PAUSED')
                       ? '결제 준비 중이라 무료로 이용하고 있습니다. 결제가 열리면 이메일로 안내드립니다'
