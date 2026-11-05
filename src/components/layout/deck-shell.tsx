@@ -1,4 +1,5 @@
 import { Header } from '@/components/layout/header'
+import { AppLegalFooter } from '@/components/layout/app-legal-footer'
 import { Sidebar } from '@/components/layout/sidebar'
 import { MobileRecruitingNavigation } from '@/components/layout/mobile-recruiting-navigation'
 import { SpaceFetchGuard } from '@/components/layout/space-fetch-guard'
@@ -72,6 +73,7 @@ export async function DeckShell({
               </p>
             )}
             {children}
+            {mode === 'my-deck' && <AppLegalFooter />}
           </div>
         </main>
       </div>
