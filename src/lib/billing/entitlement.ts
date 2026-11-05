@@ -14,6 +14,17 @@ export function isCheckoutPaused(): boolean {
   return process.env.BILLING_CHECKOUT_PAUSED === '1'
 }
 
+// BILLING_CHECKOUT_ALLOW_SPACES(쉼표 구분 spaceId) 공간은 중지 중에도 결제가 열린 공간으로 본다 — 토스 심사용.
+// 결제 차단과 잠금 보류가 같이 풀려야 업무 추가 → 구독 결제 흐름이 실제와 같다.
+export function isCheckoutPausedFor(spaceId: string): boolean {
+  if (!isCheckoutPaused()) return false
+  const allowed = (process.env.BILLING_CHECKOUT_ALLOW_SPACES ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  return !allowed.includes(spaceId)
+}
+
 function addDays(base: Date, days: number): Date {
   return new Date(base.getTime() + days * 24 * 60 * 60 * 1000)
 }
@@ -68,7 +79,7 @@ export async function resolveEntitlement(spaceId: string): Promise<SpaceEntitlem
       subscription: subInput,
       deckInstanceCreatedAt: instanceMap.get(product.id) ?? null,
       now,
-      checkoutPaused: isCheckoutPaused(),
+      checkoutPaused: isCheckoutPausedFor(spaceId),
     })
     decks[product.id] = access
     if (access.allowed) allowedDecks.push(product.id)

@@ -1,5 +1,6 @@
 /** @jest-environment node */
 import { assertCheckoutOpen } from '../subscription-service'
+import { isCheckoutPausedFor } from '../entitlement'
 
 jest.mock('@/lib/prisma', () => ({ prisma: {} }))
 jest.mock('../providers/toss', () => ({ getBillingProvider: jest.fn() }))
@@ -31,5 +32,12 @@ describe('assertCheckoutOpen — 결제 중지 중 허용 공간', () => {
 
   it('중지가 아니면 누구나 통과', () => {
     expect(() => assertCheckoutOpen('space_customer')).not.toThrow()
+  })
+
+  it('잠금 보류 판정도 허용 공간만 중지에서 뺀다', () => {
+    process.env.BILLING_CHECKOUT_PAUSED = '1'
+    process.env.BILLING_CHECKOUT_ALLOW_SPACES = 'space_review'
+    expect(isCheckoutPausedFor('space_review')).toBe(false)
+    expect(isCheckoutPausedFor('space_customer')).toBe(true)
   })
 })

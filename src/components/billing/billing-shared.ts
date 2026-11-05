@@ -143,6 +143,26 @@ export function loadTossSdk(): Promise<void> {
   })
 }
 
+// 카드 등록: customerKey 선발급 → 토스 빌링 인증으로 풀페이지 이동. 성공 시 돌아오지 않는다.
+// returnTo 는 콜백 후 돌아올 내부 경로 (쿼리로 이어서 열 단계를 싣는다).
+export async function startCardRegistration(returnTo: string): Promise<void> {
+  const res = await fetch('/api/billing/setup', { method: 'POST' })
+  const json = await res.json()
+  if (!res.ok) throw new Error(json?.message ?? json?.error ?? '카드 등록 준비에 실패했습니다')
+  const { customerKey, clientKey } = json as { customerKey: string; clientKey: string }
+  await loadTossSdk()
+  if (!window.TossPayments) throw new Error('결제 SDK 로드에 실패했습니다')
+  const origin = window.location.origin
+  await window
+    .TossPayments(clientKey)
+    .payment({ customerKey })
+    .requestBillingAuth({
+      method: 'CARD',
+      successUrl: `${origin}/api/billing/toss/callback?returnTo=${encodeURIComponent(returnTo)}`,
+      failUrl: `${origin}${returnTo}`,
+    })
+}
+
 export const CHARGE_STATUS_LABEL: Record<
   ChargeStatus,
   { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
