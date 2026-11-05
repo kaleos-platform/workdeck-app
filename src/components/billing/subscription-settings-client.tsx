@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { AlertTriangle, CheckCircle2, Info, Loader2, ShieldAlert, XCircle } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
@@ -356,9 +355,7 @@ export function SubscriptionSettingsClient() {
                         </div>
                         <div className="text-xs text-muted-foreground">
                           월 {formatWon(Math.round(product.effectivePrice * 1.1))}
-                          <span className="ml-1">
-                            (VAT 포함 / 공급가 {formatWon(product.effectivePrice)})
-                          </span>
+                          <span className="ml-1">(VAT 포함)</span>
                         </div>
                         {discountNote(product.monthlyPrice, product.effectivePrice) && (
                           <div className="text-xs text-primary">
@@ -488,15 +485,8 @@ export function SubscriptionSettingsClient() {
             <CardContent className="space-y-3">
               {selectedDecks.length > 0 && (
                 <div className="rounded-md bg-muted/50 p-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      선택 {selectedDecks.length}개 · 공급가 합계
-                    </span>
-                    <span>{formatWon(selectionTotal.supply)}</span>
-                  </div>
-                  <Separator className="my-2" />
                   <div className="flex justify-between font-medium">
-                    <span>VAT 포함 결제 예정액</span>
+                    <span>선택 {selectedDecks.length}개 · VAT 포함 결제 예정액</span>
                     <span>{formatWon(selectionTotal.withVat)}</span>
                   </div>
                 </div>

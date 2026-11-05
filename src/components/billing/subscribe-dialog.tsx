@@ -95,9 +95,7 @@ export function SubscribeDialog({
               <span className="text-muted-foreground">월 결제 금액</span>
               <span className="text-lg font-semibold">{formatWon(total)}</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              부가세 포함 / 공급가 {formatWon(supply)}
-            </p>
+            <p className="text-xs text-muted-foreground">부가세 포함</p>
             {note && <p className="text-xs text-primary">{note}</p>}
             {target.decks.length > 1 && (
               <>
