@@ -1,4 +1,5 @@
 import { Header } from '@/components/layout/header'
+import { cn } from '@/lib/utils'
 import { AppLegalFooter } from '@/components/layout/app-legal-footer'
 import { Sidebar } from '@/components/layout/sidebar'
 import { MobileRecruitingNavigation } from '@/components/layout/mobile-recruiting-navigation'
@@ -66,13 +67,19 @@ export async function DeckShell({
           <Header variant={variant} />
         )}
         <main className="flex-1 overflow-y-auto">
-          <div className={variant === 'recruiting' ? 'p-4 md:p-8' : 'p-8'}>
+          {/* my-deck 셸은 법정 표기 푸터를 짧은 화면에서도 스크롤 영역 바닥에 붙인다 */}
+          <div
+            className={cn(
+              variant === 'recruiting' ? 'p-4 md:p-8' : 'p-8',
+              mode === 'my-deck' && 'flex min-h-full flex-col'
+            )}
+          >
             {readOnlyNotice && (
               <p className="mb-6 rounded-md border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
                 {readOnlyNotice}
               </p>
             )}
-            {children}
+            {mode === 'my-deck' ? <div className="flex-1">{children}</div> : children}
             {mode === 'my-deck' && <AppLegalFooter />}
           </div>
         </main>
