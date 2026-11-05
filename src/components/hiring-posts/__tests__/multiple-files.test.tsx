@@ -47,6 +47,16 @@ afterEach(() => {
   sessionStorage.clear()
 })
 
+it('지원서 미리보기에서는 직접 제출 이벤트도 요청을 보내지 않는다', async () => {
+  global.fetch = jest.fn()
+  const { container } = render(
+    <ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} preview />
+  )
+  expect(screen.getByRole('button', { name: '지원서 제출' })).toBeDisabled()
+  await act(async () => fireEvent.submit(container.querySelector('form')!))
+  expect(global.fetch).not.toHaveBeenCalled()
+})
+
 it('새로 열린 화면에서 이전 제출 완료를 확인한다', async () => {
   sessionStorage.setItem('hiring-recovery:qa', 'session-1')
   global.fetch = jest.fn().mockResolvedValue(response(200, { status: 'completed' }))
