@@ -58,8 +58,13 @@ export { BillingError }
 // 토스 계약 전(운영=테스트 키) 공백기: 실출금 없는 구독이 생기지 않게 새 결제·카드 등록을 막는다.
 // 정기청구(cron)와 해제 예약 취소는 영향 없음. 중지 중엔 잠금도 보류된다(entitlement-core PAUSED).
 // 계약 후 billing-admin trial-all 로 체험 공간에 기간을 준 뒤 BILLING_CHECKOUT_PAUSED 환경변수를 지운다.
-export function assertCheckoutOpen() {
-  if (isCheckoutPaused()) {
+// BILLING_CHECKOUT_ALLOW_SPACES(쉼표 구분 spaceId)는 중지 중에도 결제를 연다 — 토스 심사 담당자의 결제창 확인용.
+export function assertCheckoutOpen(spaceId: string) {
+  const allowed = (process.env.BILLING_CHECKOUT_ALLOW_SPACES ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (isCheckoutPaused() && !allowed.includes(spaceId)) {
     throw new BillingError('결제 준비 중입니다. 결제가 열리면 이메일로 안내드립니다', 503)
   }
 }
@@ -323,7 +328,7 @@ export async function removeBillingMethod(spaceId: string, methodId: string | nu
 }
 
 export async function startSubscription(spaceId: string, deckIds: string[]) {
-  assertCheckoutOpen()
+  assertCheckoutOpen(spaceId)
   if (deckIds.length === 0) throw new BillingError('구독할 업무를 선택하세요', 400)
   const products = await loadProducts(deckIds)
   const method = await loadDefaultMethod(spaceId)
@@ -472,7 +477,7 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     return { prorated: false, amount: 0 }
   }
 
-  assertCheckoutOpen()
+  assertCheckoutOpen(spaceId)
   const now = new Date()
   // 주기 일수 = periodEnd - (periodEnd - 1개월), 실제 달력 기준
   const prevPeriodStart = new Date(subscription.currentPeriodEnd)
