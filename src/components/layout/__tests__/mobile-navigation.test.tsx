@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { MobileRecruitingNavigation } from '../mobile-recruiting-navigation'
+import { MobileNavigation } from '../mobile-navigation'
 
 let mockPathname = '/d/recruiting'
 jest.mock('next/navigation', () => ({ usePathname: () => mockPathname }))
@@ -8,21 +8,21 @@ jest.mock('../sidebar', () => ({
 }))
 
 it('모바일 메뉴를 열고 항목을 선택하면 메뉴를 닫는다', () => {
-  render(<MobileRecruitingNavigation workspaceName="합성 공간" />)
+  render(<MobileNavigation workspaceName="합성 공간" variant="recruiting" />)
   expect(screen.queryByRole('link', { name: '지원자' })).not.toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: '모집 관리 메뉴 열기' }))
-  expect(screen.getByRole('dialog', { name: '모집 관리 메뉴' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '메뉴 열기' }))
+  expect(screen.getByRole('dialog', { name: '메뉴' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('link', { name: '지원자' }))
-  expect(screen.queryByRole('dialog', { name: '모집 관리 메뉴' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('dialog', { name: '메뉴' })).not.toBeInTheDocument()
 })
 
 it('브라우저 이동으로 경로가 바뀌면 열린 메뉴를 닫는다', () => {
   mockPathname = '/d/recruiting'
-  const view = render(<MobileRecruitingNavigation workspaceName="합성 공간" />)
-  fireEvent.click(screen.getByRole('button', { name: '모집 관리 메뉴 열기' }))
+  const view = render(<MobileNavigation workspaceName="합성 공간" variant="recruiting" />)
+  fireEvent.click(screen.getByRole('button', { name: '메뉴 열기' }))
   mockPathname = '/d/recruiting/applications'
-  view.rerender(<MobileRecruitingNavigation workspaceName="합성 공간" />)
-  expect(screen.queryByRole('dialog', { name: '모집 관리 메뉴' })).not.toBeInTheDocument()
+  view.rerender(<MobileNavigation workspaceName="합성 공간" variant="recruiting" />)
+  expect(screen.queryByRole('dialog', { name: '메뉴' })).not.toBeInTheDocument()
 })
 
 it('데스크톱 폭으로 바뀌면 열린 메뉴를 닫는다', () => {
@@ -33,10 +33,10 @@ it('데스크톱 폭으로 바뀌면 열린 메뉴를 닫는다', () => {
     },
     removeEventListener: jest.fn(),
   })
-  render(<MobileRecruitingNavigation workspaceName="합성 공간" />)
-  fireEvent.click(screen.getByRole('button', { name: '모집 관리 메뉴 열기' }))
+  render(<MobileNavigation workspaceName="합성 공간" variant="recruiting" />)
+  fireEvent.click(screen.getByRole('button', { name: '메뉴 열기' }))
   act(() => {
     change?.({ matches: true })
   })
-  expect(screen.queryByRole('dialog', { name: '모집 관리 메뉴' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('dialog', { name: '메뉴' })).not.toBeInTheDocument()
 })
