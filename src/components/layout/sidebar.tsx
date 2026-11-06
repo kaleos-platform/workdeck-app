@@ -120,7 +120,7 @@ import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { hasRole, type Role } from '@/lib/auth/roles'
 
-type SidebarProps = {
+export type SidebarProps = {
   workspaceName: string
   variant?: DeckVariant
   mode?: 'default' | 'my-deck'

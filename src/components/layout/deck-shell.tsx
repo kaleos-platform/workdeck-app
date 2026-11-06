@@ -2,7 +2,7 @@ import { Header } from '@/components/layout/header'
 import { cn } from '@/lib/utils'
 import { AppLegalFooter } from '@/components/layout/app-legal-footer'
 import { Sidebar } from '@/components/layout/sidebar'
-import { MobileRecruitingNavigation } from '@/components/layout/mobile-recruiting-navigation'
+import { MobileNavigation } from '@/components/layout/mobile-navigation'
 import { SpaceFetchGuard } from '@/components/layout/space-fetch-guard'
 import { resolveSpaceContext } from '@/lib/api-helpers'
 import type { DeckVariant } from '@/lib/deck-meta'
@@ -41,39 +41,24 @@ export async function DeckShell({
   children,
 }: DeckShellProps) {
   const ctx = await resolveSpaceContext()
-  const sidebar = (
-    <Sidebar
-      workspaceName={workspaceName}
-      variant={variant}
-      mode={mode}
-      activeDecks={activeDecks}
-      isOwner={isOwner}
-      role={role}
-    />
-  )
+  const sidebarProps = { workspaceName, variant, mode, activeDecks, isOwner, role }
   return (
     <div className="flex h-screen" data-deck={dataDeck}>
       <SpaceFetchGuard spaceId={'error' in ctx ? null : ctx.space.id} />
-      {variant === 'recruiting' ? <div className="hidden h-full md:block">{sidebar}</div> : sidebar}
+      {/* 좁은 화면은 사이드바를 숨기고 헤더 왼쪽 메뉴 버튼(시트)으로 연다 */}
+      <div className="hidden h-full md:block">
+        <Sidebar {...sidebarProps} />
+      </div>
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {variant === 'recruiting' ? (
-          <div className="flex items-center border-b md:block md:border-0">
-            <MobileRecruitingNavigation workspaceName={workspaceName} role={role} />
-            <div className="min-w-0 flex-1">
-              <Header variant={variant} />
-            </div>
+        <div className="flex items-center border-b md:block md:border-0">
+          <MobileNavigation {...sidebarProps} />
+          <div className="min-w-0 flex-1">
+            <Header variant={variant} />
           </div>
-        ) : (
-          <Header variant={variant} />
-        )}
+        </div>
         <main className="flex-1 overflow-y-auto">
           {/* my-deck 셸은 법정 표기 푸터를 짧은 화면에서도 스크롤 영역 바닥에 붙인다 */}
-          <div
-            className={cn(
-              variant === 'recruiting' ? 'p-4 md:p-8' : 'p-8',
-              mode === 'my-deck' && 'flex min-h-full flex-col'
-            )}
-          >
+          <div className={cn('p-4 md:p-8', mode === 'my-deck' && 'flex min-h-full flex-col')}>
             {readOnlyNotice && (
               <p className="mb-6 rounded-md border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
                 {readOnlyNotice}
