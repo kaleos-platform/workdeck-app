@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useHydrated } from '@/hooks/use-hydrated'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,6 +28,7 @@ interface SignupFormProps {
 }
 
 export function SignupForm({ redirectTo, email }: SignupFormProps) {
+  const hydrated = useHydrated()
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const router = useRouter()
@@ -139,81 +141,83 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
 
       {/* 이메일/비밀번호 폼 */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem id="signup-name-field">
-                <FormLabel>이름 (선택)</FormLabel>
-                <FormControl>
-                  <Input placeholder="홍길동" disabled={isAnyLoading} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <fieldset disabled={!hydrated} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem id="signup-name-field">
+                  <FormLabel>이름 (선택)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="홍길동" disabled={isAnyLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem id="signup-email-field">
-                <FormLabel>이메일</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="name@example.com"
-                    type="email"
-                    disabled={isAnyLoading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem id="signup-email-field">
+                  <FormLabel>이메일</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="name@example.com"
+                      type="email"
+                      disabled={isAnyLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem id="signup-password-field">
-                <FormLabel>비밀번호</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="••••••••"
-                    type="password"
-                    disabled={isAnyLoading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem id="signup-password-field">
+                  <FormLabel>비밀번호</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="••••••••"
+                      type="password"
+                      disabled={isAnyLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem id="signup-confirm-password-field">
-                <FormLabel>비밀번호 확인</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="••••••••"
-                    type="password"
-                    disabled={isAnyLoading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem id="signup-confirm-password-field">
+                  <FormLabel>비밀번호 확인</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="••••••••"
+                      type="password"
+                      disabled={isAnyLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <Button type="submit" className="w-full" disabled={isAnyLoading} size="lg">
-            {isLoading ? '회원가입 중...' : '회원가입'}
-          </Button>
+            <Button type="submit" className="w-full" disabled={isAnyLoading} size="lg">
+              {isLoading ? '회원가입 중...' : '회원가입'}
+            </Button>
+          </fieldset>
         </form>
       </Form>
     </div>
