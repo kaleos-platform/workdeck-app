@@ -156,6 +156,7 @@ export function ContentBlockEditor({
         toast.error(
           error instanceof Error &&
             (error.message.includes('다른 창에서') ||
+              error.message.includes('카드가 변경되었습니다') ||
               error.message.includes('카드 버전이 없습니다'))
             ? error.message
             : '본문 저장에 실패했습니다. 편집 완료를 눌러 다시 저장하세요.'
@@ -208,6 +209,7 @@ export function ContentBlockEditor({
           contentId,
           error instanceof Error &&
             (error.message.includes('다른 창에서') ||
+              error.message.includes('카드가 변경되었습니다') ||
               error.message.includes('카드 버전이 없습니다'))
             ? error.message
             : retryMessage
@@ -267,6 +269,8 @@ export function ContentBlockEditor({
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...body, ...(version ? { expectedUpdatedAt: version } : {}) }),
+      }).catch(() => {
+        throw new Error('저장 결과를 확인하지 못했습니다. 연결 상태를 확인하고 다시 저장해 주세요.')
       })
       if (!res.ok) {
         if (res.status === 409 || res.status === 428) {
@@ -422,7 +426,10 @@ export function ContentBlockEditor({
   function saveTitle(contentId: string) {
     void commitTitle(contentId).catch((error: unknown) =>
       toast.error(
-        error instanceof Error && error.message.includes('다른 창에서')
+        error instanceof Error &&
+          (error.message.includes('다른 창에서') ||
+            error.message.includes('카드가 변경되었습니다') ||
+            error.message.includes('카드 버전이 없습니다'))
           ? error.message
           : '카드 제목 저장에 실패했습니다. 입력은 유지됩니다. 다시 저장하세요.'
       )

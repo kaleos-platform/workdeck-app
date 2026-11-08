@@ -302,12 +302,10 @@ it('템플릿 조회가 응답하지 않아도 5초 후 새 저장을 제공한�
 
 it('본문 저장은 편집 시작 시점의 카드 버전을 전송한다', async () => {
   const version = '2026-10-29T12:00:00.000Z'
-  global.fetch = jest
-    .fn()
-    .mockResolvedValue({
-      ok: true,
-      json: async () => ({ content: { updatedAt: '2026-10-29T12:00:01.000Z' } }),
-    }) as jest.Mock
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ content: { updatedAt: '2026-10-29T12:00:01.000Z' } }),
+  }) as jest.Mock
   render(<Form initialVersion={version} />)
   fireEvent.click(screen.getByRole('button', { name: '편집' }))
   fireEvent.click(screen.getByRole('button', { name: '본문 변경' }))
@@ -318,7 +316,7 @@ it('본문 저장은 편집 시작 시점의 카드 버전을 전송한다', asy
 })
 
 it('다른 창의 저장과 충돌하면 입력을 유지하고 충돌 해결 방법을 알린다', async () => {
-  const message = '다른 창에서 카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 주세요.'
+  const message = '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 저장된 내용을 확인해 주세요.'
   global.fetch = jest
     .fn()
     .mockResolvedValue({ ok: false, status: 409, json: async () => ({ message }) }) as jest.Mock
@@ -331,3 +329,52 @@ it('다른 창의 저장과 충돌하면 입력을 유지하고 충돌 해결 �
   expect(screen.getByTestId('text-editor')).toBeInTheDocument()
   expect(toast.error).toHaveBeenCalledWith(message)
 })
+
+it('본문 자동 저장 충돌에서는 재시도 대신 저장 결과 확인을 안내한다', async () => {
+  const message = '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 저장된 내용을 확인해 주세요.'
+  ;(toast.error as jest.Mock).mockClear()
+  global.fetch = jest
+    .fn()
+    .mockResolvedValue({ ok: false, status: 409, json: async () => ({ message }) }) as jest.Mock
+  render(<Form initialVersion="2026-10-29T12:00:00.000Z" />)
+  fireEvent.click(screen.getByRole('button', { name: '편집' }))
+  fireEvent.click(screen.getByRole('button', { name: '본문 변경' }))
+  await waitFor(() => expect(toast.error).toHaveBeenCalledWith(message), { timeout: 3000 })
+  expect(screen.getByTestId('text-editor')).toBeInTheDocument()
+})
+
+it('카드 제목 저장 충돌에서는 저장 결과 확인을 안내하고 입력을 유지한다', async () => {
+  const message = '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 저장된 내용을 확인해 주세요.'
+  ;(toast.error as jest.Mock).mockClear()
+  global.fetch = jest
+    .fn()
+    .mockResolvedValue({ ok: false, status: 409, json: async () => ({ message }) }) as jest.Mock
+  render(<Form initialVersion="2026-10-29T12:00:00.000Z" />)
+  fireEvent.click(screen.getByRole('button', { name: '제목 편집' }))
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: '보존할 제목' } })
+  fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' })
+  await waitFor(() => expect(toast.error).toHaveBeenCalledWith(message))
+  expect(screen.getByRole('textbox')).toHaveValue('보존할 제목')
+})
+
+it.each(['디자인 저장', '이미지 저장'])(
+  '%s 충돌 후 완료할 때 저장 결과 확인을 안내한다',
+  async (button) => {
+    const message =
+      '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 저장된 내용을 확인해 주세요.'
+    ;(toast.error as jest.Mock).mockClear()
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue({ ok: false, status: 409, json: async () => ({ message }) }) as jest.Mock
+    render(<Form initialVersion="2026-10-29T12:00:00.000Z" />)
+    fireEvent.click(screen.getByRole('button', { name: '편집' }))
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: button }))
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '편집 완료' }))
+    })
+    expect(toast.error).toHaveBeenCalledWith(message)
+    expect(screen.getByTestId('text-editor')).toBeInTheDocument()
+  }
+)
