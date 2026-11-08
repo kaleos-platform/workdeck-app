@@ -76,6 +76,10 @@
     {
       "path": "/api/cron/credential-health",
       "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/cron/sc-osmu-intake",
+      "schedule": "*/10 * * * *"
     }
   ]
 }

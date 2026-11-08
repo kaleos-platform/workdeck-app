@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useCurrentSpace } from '@/hooks/use-current-space'
 import { ExpiryCountdown } from './expiry-countdown'
+import { OsmuReviewSection } from './osmu-review-section'
 import { DECK_LABELS, SOURCE_LABELS, STATUS_LABELS, type AgentPendingActionDTO } from './types'
 
 type ApprovalDetailSheetProps = {
@@ -126,6 +127,12 @@ export function ApprovalDetailSheet({
   const spaceName = current?.id === action.spaceId ? current.name : null
 
   const beforeEntries = toEntries(action.beforeState)
+  // OSMU 발행 요청에서 온 게시 제안이면 소재 근거·사진 썸네일을 함께 보여준다.
+  const osmu =
+    action.actionType === 'sales-content.post.publish' &&
+    typeof (action.payload as { requestId?: unknown } | null)?.requestId === 'string'
+      ? (action.payload as { requestId: string; photos?: { slot: number; copyId: string }[] })
+      : null
   const isPending = action.status === 'PENDING'
   // 지출 한도 초과 등 OWNER가 필요한 액션 — 거부는 기본 역할로 가능하므로 승인 버튼만 막는다.
   const needsOwner = action.requiredRole === 'OWNER' && viewerRole !== 'OWNER'
@@ -274,6 +281,13 @@ export function ApprovalDetailSheet({
             </h3>
             <ParamsView payload={action.payload} />
           </section>
+
+          {osmu && (
+            <section>
+              <h3 className="mb-2 text-sm font-semibold text-foreground">소재·사진 확인</h3>
+              <OsmuReviewSection requestId={osmu.requestId} photos={osmu.photos ?? []} />
+            </section>
+          )}
 
           {(action.spendKrw != null || action.requiredRole) && (
             <dl className="space-y-1 rounded-md border bg-muted/30 p-3 text-sm">

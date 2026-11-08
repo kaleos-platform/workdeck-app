@@ -208,7 +208,14 @@ export const ModelName = {
   AdminAuditLog: 'AdminAuditLog',
   WorkerToken: 'WorkerToken',
   KeywordRankSnapshot: 'KeywordRankSnapshot',
-  MarketingLead: 'MarketingLead'
+  MarketingLead: 'MarketingLead',
+  ScNotionConnection: 'ScNotionConnection',
+  ScDriveConnection: 'ScDriveConnection',
+  ScSource: 'ScSource',
+  ScSourceVersion: 'ScSourceVersion',
+  ScMedia: 'ScMedia',
+  ScPublishRequest: 'ScPublishRequest',
+  ScMediaCopy: 'ScMediaCopy'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -2013,6 +2020,7 @@ export const ContentScalarFieldEnum = {
   ideationId: 'ideationId',
   ideaIndex: 'ideaIndex',
   channelId: 'channelId',
+  sourceVersionId: 'sourceVersionId',
   snapshotHash: 'snapshotHash',
   publishedAt: 'publishedAt',
   scheduledAt: 'scheduledAt',
@@ -2925,6 +2933,132 @@ export const MarketingLeadScalarFieldEnum = {
 } as const
 
 export type MarketingLeadScalarFieldEnum = (typeof MarketingLeadScalarFieldEnum)[keyof typeof MarketingLeadScalarFieldEnum]
+
+
+export const ScNotionConnectionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  sourceDataSourceId: 'sourceDataSourceId',
+  requestDataSourceId: 'requestDataSourceId',
+  lastPolledAt: 'lastPolledAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScNotionConnectionScalarFieldEnum = (typeof ScNotionConnectionScalarFieldEnum)[keyof typeof ScNotionConnectionScalarFieldEnum]
+
+
+export const ScDriveConnectionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  serviceAccountEmail: 'serviceAccountEmail',
+  rootId: 'rootId',
+  lastSyncedAt: 'lastSyncedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScDriveConnectionScalarFieldEnum = (typeof ScDriveConnectionScalarFieldEnum)[keyof typeof ScDriveConnectionScalarFieldEnum]
+
+
+export const ScSourceScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  notionPageId: 'notionPageId',
+  title: 'title',
+  driveFolderId: 'driveFolderId',
+  latestVersion: 'latestVersion',
+  lastImportedAt: 'lastImportedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScSourceScalarFieldEnum = (typeof ScSourceScalarFieldEnum)[keyof typeof ScSourceScalarFieldEnum]
+
+
+export const ScSourceVersionScalarFieldEnum = {
+  id: 'id',
+  sourceId: 'sourceId',
+  version: 'version',
+  data: 'data',
+  rawText: 'rawText',
+  contentHash: 'contentHash',
+  createdAt: 'createdAt'
+} as const
+
+export type ScSourceVersionScalarFieldEnum = (typeof ScSourceVersionScalarFieldEnum)[keyof typeof ScSourceVersionScalarFieldEnum]
+
+
+export const ScMediaScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  sourceId: 'sourceId',
+  driveFileId: 'driveFileId',
+  driveFolderId: 'driveFolderId',
+  path: 'path',
+  name: 'name',
+  mimeType: 'mimeType',
+  md5: 'md5',
+  driveModifiedAt: 'driveModifiedAt',
+  takenAt: 'takenAt',
+  width: 'width',
+  height: 'height',
+  caption: 'caption',
+  tags: 'tags',
+  faceStatus: 'faceStatus',
+  allowedByUserId: 'allowedByUserId',
+  allowedAt: 'allowedAt',
+  allowedMd5: 'allowedMd5',
+  describedAt: 'describedAt',
+  describeError: 'describeError',
+  removedAt: 'removedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScMediaScalarFieldEnum = (typeof ScMediaScalarFieldEnum)[keyof typeof ScMediaScalarFieldEnum]
+
+
+export const ScPublishRequestScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  notionPageId: 'notionPageId',
+  snapshot: 'snapshot',
+  revision: 'revision',
+  sourceId: 'sourceId',
+  sourceVersionId: 'sourceVersionId',
+  state: 'state',
+  leaseUntil: 'leaseUntil',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  lastError: 'lastError',
+  contentId: 'contentId',
+  projectedStatus: 'projectedStatus',
+  projectedAt: 'projectedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScPublishRequestScalarFieldEnum = (typeof ScPublishRequestScalarFieldEnum)[keyof typeof ScPublishRequestScalarFieldEnum]
+
+
+export const ScMediaCopyScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  requestId: 'requestId',
+  mediaId: 'mediaId',
+  md5: 'md5',
+  storagePath: 'storagePath',
+  url: 'url',
+  mimeType: 'mimeType',
+  width: 'width',
+  height: 'height',
+  createdAt: 'createdAt'
+} as const
+
+export type ScMediaCopyScalarFieldEnum = (typeof ScMediaCopyScalarFieldEnum)[keyof typeof ScMediaCopyScalarFieldEnum]
 
 
 export const SortOrder = {
