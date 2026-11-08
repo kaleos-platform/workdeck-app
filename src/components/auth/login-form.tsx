@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useHydrated } from '@/hooks/use-hydrated'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -54,6 +55,7 @@ export function LoginForm({
   isResetSuccess = false,
   redirectTo,
 }: LoginFormProps) {
+  const hydrated = useHydrated()
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [showBanner, setShowBanner] = useState(isVerifyPending || isVerifySuccess || isResetSuccess)
@@ -206,65 +208,67 @@ export function LoginForm({
 
       {/* 이메일/비밀번호 폼 */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem id="login-email-field">
-                <FormLabel>이메일</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="name@example.com"
-                    type="email"
-                    disabled={isAnyLoading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+        <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <fieldset disabled={!hydrated} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem id="login-email-field">
+                  <FormLabel>이메일</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="name@example.com"
+                      type="email"
+                      disabled={isAnyLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem id="login-password-field">
+                  <FormLabel>비밀번호</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="••••••••"
+                      type="password"
+                      disabled={isAnyLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted-foreground hover:text-primary hover:underline"
+              >
+                비밀번호를 잊으셨나요?
+              </Link>
+            </div>
+
+            {/* 로그인 에러 인라인 Alert */}
+            {authError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
             )}
-          />
 
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem id="login-password-field">
-                <FormLabel>비밀번호</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="••••••••"
-                    type="password"
-                    disabled={isAnyLoading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="text-right">
-            <Link
-              href="/forgot-password"
-              className="text-sm text-muted-foreground hover:text-primary hover:underline"
-            >
-              비밀번호를 잊으셨나요?
-            </Link>
-          </div>
-
-          {/* 로그인 에러 인라인 Alert */}
-          {authError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{authError}</AlertDescription>
-            </Alert>
-          )}
-
-          <Button type="submit" className="w-full" disabled={isAnyLoading} size="lg">
-            {isLoading ? '로그인 중...' : '로그인'}
-          </Button>
+            <Button type="submit" className="w-full" disabled={isAnyLoading} size="lg">
+              {isLoading ? '로그인 중...' : '로그인'}
+            </Button>
+          </fieldset>
         </form>
       </Form>
     </div>
