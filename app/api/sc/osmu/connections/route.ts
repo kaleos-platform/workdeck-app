@@ -15,7 +15,7 @@ export async function GET() {
   const resolved = await resolveDeckContext('sales-content')
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
-  const [notion, drive] = await Promise.all([
+  const [notion, drive, mfaError] = await Promise.all([
     prisma.scNotionConnection.findUnique({
       where: { spaceId },
       select: {
@@ -29,8 +29,10 @@ export async function GET() {
       where: { spaceId },
       select: { serviceAccountEmail: true, rootId: true, lastSyncedAt: true, lastError: true },
     }),
+    requireAal2(),
   ])
-  return NextResponse.json({ notion, drive })
+  // 화면이 입력 전에 단계 인증부터 받게 한다(저장 시점 인증은 입력값을 잃는다).
+  return NextResponse.json({ notion, drive, mfaReady: mfaError === null })
 }
 
 const putSchema = z.discriminatedUnion('kind', [
