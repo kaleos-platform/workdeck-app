@@ -92,6 +92,9 @@ it('같은 초기 내용을 읽은 두 편집자 중 늦게 저장한 요청은 
   const second = await send('편집자 B의 내용')
   expect(first?.status).toBe(200)
   expect(second?.status).toBe(409)
+  expect((await second!.json()).message).toBe(
+    '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 저장된 내용을 확인해 주세요.'
+  )
   const result = await prisma.hiringContent.findUniqueOrThrow({ where: { id: contentId } })
   expect(JSON.stringify(result.data)).toContain('편집자 A의 내용')
   expect(JSON.stringify(result.data)).not.toContain('편집자 B의 내용')
@@ -141,6 +144,9 @@ it('다른 창에서 바뀐 카드는 이전 버전으로 삭제할 수 없다',
     { params: Promise.resolve({ id: postingId, contentId }) }
   )
   expect(response?.status).toBe(409)
+  expect((await response!.json()).message).toBe(
+    '카드가 변경되었습니다. 새로고침해 저장된 내용을 확인해 주세요.'
+  )
   expect((await prisma.hiringContent.findUniqueOrThrow({ where: { id: contentId } })).title).toBe(
     '다른 창의 변경'
   )
@@ -231,6 +237,9 @@ it('다른 창에서 변경된 카드가 있으면 템플릿 교체를 취소한
     { params: Promise.resolve({ id: postingId }) }
   )
   expect(response?.status).toBe(409)
+  expect((await response!.json()).message).toBe(
+    '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 저장된 내용을 확인해 주세요.'
+  )
   expect((await prisma.hiringContent.findUniqueOrThrow({ where: { id: contentId } })).title).toBe(
     '보존할 변경'
   )

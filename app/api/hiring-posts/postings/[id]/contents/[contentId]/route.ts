@@ -46,7 +46,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const expectedUpdatedAt = parsed.data.expectedUpdatedAt
     ? new Date(parsed.data.expectedUpdatedAt)
     : undefined
-  const conflictMessage = '다른 창에서 카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 주세요.'
+  const conflictMessage =
+    '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 저장된 내용을 확인해 주세요.'
   if (expectedUpdatedAt && existing.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
     return errorResponse(conflictMessage, 409)
   }
@@ -163,7 +164,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     await prisma.hiringContent.delete({ where: { id: contentId, updatedAt: new Date(version) } })
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
-      return errorResponse('다른 창에서 카드가 변경되었습니다. 새로고침해 주세요.', 409)
+      return errorResponse('카드가 변경되었습니다. 새로고침해 저장된 내용을 확인해 주세요.', 409)
     }
     throw error
   }

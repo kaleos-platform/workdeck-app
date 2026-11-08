@@ -484,7 +484,9 @@ export function ImageBlock({
       setFailedFile(file)
       setVersionConflict(
         error instanceof Error &&
-          (error.message.includes('다른 창에서') || error.message.includes('카드 버전이 없습니다'))
+          (error.message.includes('다른 창에서') ||
+            error.message.includes('카드가 변경되었습니다') ||
+            error.message.includes('카드 버전이 없습니다'))
       )
       toast.error(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다')
     } finally {
