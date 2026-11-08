@@ -16,7 +16,8 @@
 
 ## 1. 사용자 준비 (개발 착수 전)
 
-- [ ] 노션 내부 통합 「Workdeck」 생성(ameaning 워크스페이스 소유자) → 「콘텐츠 소재」「콘텐츠 발행」 DB를 둘 상위 페이지에 연결
+- [x] 노션 내부 통합 「Workdeck」 생성 + 상위 페이지 「콘텐츠 파이프라인」(`41274629c38a803dbad3cbac47cfb9d7`) 연결. 토큰은 맥미니 `~/.config/workdeck/notion-token`(600)
+- [x] DB 2개 API 로 생성(2026-11-08): 콘텐츠 소재 db `e675b3b7-a798-4a9e-b694-09633f808eeb` / ds `02b6ee55-283c-4416-bb60-8bd1e90fbbe5`, 콘텐츠 발행 db `720a5363-ba3b-488e-b3b6-7c98d7886e46` / ds `f7e7fee6-7c8d-4cde-9bbb-599161f06eb9`. 「상태」 select 옵션 9개 선생성. 시험 행 각 1개([시험], 발행 행 상태 비움, 미디어 폴더 비움)
 - [ ] 공유 드라이브에 시험용 행사 폴더 1개 + 사진 업로드
 - [x] `gcloud auth login hello@kaleos.co.kr --no-activate --no-launch-browser` 재로그인 (기본 계정은 `hello@ameaning.co.kr` 유지)
 
