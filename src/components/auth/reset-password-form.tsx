@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useHydrated } from '@/hooks/use-hydrated'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/form'
 
 export function ResetPasswordForm() {
+  const hydrated = useHydrated()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -53,45 +55,47 @@ export function ResetPasswordForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>새 비밀번호</FormLabel>
-              <FormControl>
-                <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+      <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <fieldset disabled={!hydrated} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>새 비밀번호</FormLabel>
+                <FormControl>
+                  <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>비밀번호 확인</FormLabel>
+                <FormControl>
+                  <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
-        />
 
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>비밀번호 확인</FormLabel>
-              <FormControl>
-                <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        <Button type="submit" className="w-full" disabled={isLoading} size="lg">
-          {isLoading ? '변경 중...' : '비밀번호 변경'}
-        </Button>
+          <Button type="submit" className="w-full" disabled={isLoading} size="lg">
+            {isLoading ? '변경 중...' : '비밀번호 변경'}
+          </Button>
+        </fieldset>
       </form>
     </Form>
   )
