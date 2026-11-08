@@ -88,3 +88,19 @@ export function updatePageProperties(
 ): Promise<NotionPage> {
   return call(token, `/pages/${pageId}`, { method: 'PATCH', body: JSON.stringify({ properties }) })
 }
+
+/** 노션 DB 링크·id → 32자 id(하이픈 제거). 못 찾으면 null. */
+export function notionIdFromInput(input: string): string | null {
+  const m =
+    input.replace(/-/g, '').match(/([0-9a-f]{32})(?:\?|$|#)/i) ??
+    input.replace(/-/g, '').match(/([0-9a-f]{32})/i)
+  return m ? m[1].toLowerCase() : null
+}
+
+/** 데이터베이스(링크로 받은 것)의 첫 data source id. 통합이 공유되지 않았으면 404. */
+export async function resolveDataSourceId(token: string, databaseId: string): Promise<string> {
+  const db = await call<{ data_sources?: { id: string }[] }>(token, `/databases/${databaseId}`)
+  const id = db.data_sources?.[0]?.id
+  if (!id) throw new NotionError('데이터 소스가 없는 데이터베이스입니다', 400)
+  return id
+}

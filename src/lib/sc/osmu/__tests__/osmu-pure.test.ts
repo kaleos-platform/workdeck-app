@@ -102,3 +102,19 @@ describe('notion-schema', () => {
     expect(driveFolderIdFromUrl('https://example.com')).toBeNull()
   })
 })
+
+describe('notionIdFromInput', () => {
+  it('노션 링크·하이픈 id 에서 32자 id', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { notionIdFromInput } = require('../notion')
+    expect(
+      notionIdFromInput(
+        'https://www.notion.so/ameaning/2dc74629c38a805b93a2dbee5d169aa2?v=1234567890abcdef1234567890abcdef'
+      )
+    ).toBe('2dc74629c38a805b93a2dbee5d169aa2')
+    expect(notionIdFromInput('2dc74629-c38a-805b-93a2-dbee5d169aa2')).toBe(
+      '2dc74629c38a805b93a2dbee5d169aa2'
+    )
+    expect(notionIdFromInput('없음')).toBeNull()
+  })
+})
