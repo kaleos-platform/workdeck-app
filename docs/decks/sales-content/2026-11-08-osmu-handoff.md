@@ -18,7 +18,8 @@
 
 - [x] 노션 내부 통합 「Workdeck」 생성 + 상위 페이지 「콘텐츠 파이프라인」(`41274629c38a803dbad3cbac47cfb9d7`) 연결. 토큰은 맥미니 `~/.config/workdeck/notion-token`(600)
 - [x] DB 2개 API 로 생성(2026-11-08): 콘텐츠 소재 db `e675b3b7-a798-4a9e-b694-09633f808eeb` / ds `02b6ee55-283c-4416-bb60-8bd1e90fbbe5`, 콘텐츠 발행 db `720a5363-ba3b-488e-b3b6-7c98d7886e46` / ds `f7e7fee6-7c8d-4cde-9bbb-599161f06eb9`. 「상태」 select 옵션 9개 선생성. 시험 행 각 1개([시험], 발행 행 상태 비움, 미디어 폴더 비움)
-- [ ] 공유 드라이브에 시험용 행사 폴더 1개 + 사진 업로드
+- [x] 공유 드라이브 `행사/`(`1WPTcT86o2h7Cx2YvQ5sggS98JwPL-q81`) 아래 「2026-08 조민주 선생님 협업 1」(6장, `1p2mBIENYcuh2xzmAksw5ocLSw9iLzdYE`)·「협업 2」(12장, `16cWVdxLev1XW_i844P4qzo_URkuBc2v9`) — 노션 「[미닝랩] 블로그 작성 [8월 3주차]」 토글의 원본 사진
+- [x] 노션 소재 2행(토글 본문 원문 그대로, 행사일·기관은 원문에 없어 비움) + 발행 2행(유형 블로그, 상태 비움). [시험] 행은 휴지통. 주의: 원문은 이미 쓰인 블로그 초안이라 인터뷰 인용의 실제 출처 확인 필요, 아이 얼굴 사진은 FACE 판정 → 수동 허용 UI 없어 게시 불가
 - [x] `gcloud auth login hello@kaleos.co.kr --no-activate --no-launch-browser` 재로그인 (기본 계정은 `hello@ameaning.co.kr` 유지)
 
 ## 2. GCP 정리 (재로그인 후, 항상 `--account=hello@kaleos.co.kr`)
