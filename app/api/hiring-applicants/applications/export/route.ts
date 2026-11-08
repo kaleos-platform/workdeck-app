@@ -151,6 +151,13 @@ export async function GET(req: NextRequest) {
     return row
   })
 
+  if ([headers, ...rows].some((row) => row.some((value) => value.length > 32767))) {
+    return errorResponse(
+      '지원자 정보가 엑셀 셀 길이 한도를 초과합니다. 지원자 상세에서 확인해 주세요',
+      422
+    )
+  }
+
   // 사용자 라벨을 객체 속성으로 사용하지 않아 중복·특수 이름도 값을 덮어쓰지 않는다.
   const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows])
   const workbook = XLSX.utils.book_new()

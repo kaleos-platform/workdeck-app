@@ -23,6 +23,7 @@ jest.mock('@/lib/prisma', () => ({
       count: jest.fn(),
       create: jest.fn(),
     },
+    $queryRaw: jest.fn(),
     $transaction: jest.fn(),
   },
 }))
@@ -107,6 +108,7 @@ beforeEach(() => {
     id: sessionId,
     uuid: 'result',
   })
+  ;(prisma.$queryRaw as jest.Mock).mockResolvedValue([{ status: 'ACTIVE', closingDate: null }])
   ;(prisma.$transaction as jest.Mock).mockImplementation((fn) => fn(prisma))
   ;(createApplicantUploadUrl as jest.Mock).mockResolvedValue('https://storage.example/signed')
   ;(inspectApplicantUpload as jest.Mock).mockResolvedValue({
@@ -310,4 +312,24 @@ it('마감일이 지난 공고에는 업로드 URL이나 제출을 허용하지 
   expect((await complete(request(payload))).status).toBe(410)
   expect(createApplicantUploadUrl).not.toHaveBeenCalled()
   expect(prisma.hiringApplication.create).not.toHaveBeenCalled()
+})
+
+it('공고 마감 직전에 완료된 동일 요청은 마감 후에도 원래 결과를 반환한다', async () => {
+  jest
+    .mocked(prisma.hiringUploadSession.findFirst)
+    .mockResolvedValueOnce(session() as never)
+    .mockResolvedValueOnce(
+      session({
+        completedAt: new Date(),
+        requestHash: submissionHash(payload),
+        applicationId: sessionId,
+      }) as never
+    )
+  jest
+    .mocked(prisma.hiringPosting.findUnique)
+    .mockResolvedValue({ id: 'post', uuid: 'qa-post', spaceId: 'space', status: 'CLOSED' } as never)
+  jest.mocked(prisma.hiringApplication.findFirst).mockResolvedValue({ uuid: 'original' } as never)
+  const response = await complete(request(payload))
+  expect(response.status).toBe(201)
+  expect(await response.json()).toEqual({ uuid: 'original' })
 })

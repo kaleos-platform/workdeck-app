@@ -1,8 +1,11 @@
 /** @jest-environment node */
 import { createPublicApplication } from '../applications'
 import { prisma } from '@/lib/prisma'
+import { uploadApplicantFile, removeApplicantFiles } from '../storage'
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    $queryRaw: jest.fn(async () => [{ status: 'ACTIVE', closingDate: null }]),
+    $transaction: jest.fn(async (fn) => fn(jest.requireMock('@/lib/prisma').prisma)),
     hiringApplication: {
       create: jest.fn(async () => ({ id: 'app', uuid: 'uuid' })),
       delete: jest.fn(),
@@ -79,4 +82,40 @@ it('한 항목의 복수 파일명과 ID를 모두 저장한다', async () => {
   expect(saved.value).toEqual(['one.pdf', 'two.pdf'])
   expect(saved.fileIds).toHaveLength(2)
   expect(new Set(saved.fileIds).size).toBe(2)
+})
+
+it('마감된 공고에는 지원서를 생성하거나 파일을 업로드하지 않는다', async () => {
+  jest.mocked(prisma.$queryRaw).mockResolvedValueOnce([{ status: 'CLOSED', closingDate: null }])
+  await expect(
+    createPublicApplication({
+      posting: { id: 'post', spaceId: 'space' },
+      privacyAgreed: true,
+      entries: [],
+      files: [],
+    })
+  ).rejects.toThrow()
+  expect(prisma.hiringApplication.create).not.toHaveBeenCalled()
+})
+
+it('두 번째 첨부 업로드가 실패하면 저장된 파일과 지원서를 정리한다', async () => {
+  jest
+    .mocked(uploadApplicantFile)
+    .mockResolvedValueOnce({ path: 'private/first' } as never)
+    .mockRejectedValueOnce(new Error('upload failed'))
+  await expect(
+    createPublicApplication({
+      posting: { id: 'post', spaceId: 'space' },
+      privacyAgreed: true,
+      entries: [{ key: 'a', type: 'file', value: null }],
+      fileFields: [{ key: 'a', type: 'file', maxFileCount: 2, maxFileSize: 100 }],
+      files: ['one.pdf', 'two.pdf'].map((fileName) => ({
+        fieldKey: 'a',
+        fileName,
+        mimeType: 'application/pdf',
+        data: Buffer.from('pdf'),
+      })),
+    })
+  ).rejects.toThrow('upload failed')
+  expect(removeApplicantFiles).toHaveBeenCalledWith(['private/first'])
+  expect(prisma.hiringApplication.delete).toHaveBeenCalledWith({ where: { id: 'app' } })
 })
