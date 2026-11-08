@@ -364,6 +364,12 @@ const proposePost: ToolDefinition = {
     if (photoInput?.length && !rest.requestId) {
       throw new ToolUserError('photos 는 requestId 와 함께만 쓸 수 있습니다')
     }
+    if (photoInput?.length) {
+      const active = await prisma.salesContentChannel.count({
+        where: { id: rest.channelId, spaceId: ctx.spaceId, isActive: true },
+      })
+      if (!active) throw new ToolUserError('활성 채널을 찾을 수 없습니다(sc_list_channels 로 확인)')
+    }
     // 제안 시점에 사진을 storage 로 복사해 승인 화면·게시본을 고정한다((requestId, mediaId, md5) 멱등).
     const photos = rest.requestId
       ? await copyRequestPhotos({

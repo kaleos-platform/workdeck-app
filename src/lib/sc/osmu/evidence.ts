@@ -11,14 +11,16 @@ export const normalizedSourceSchema = z.object({
     org: z.string().nullable().optional(),
     products: z.array(z.string()).optional(),
   }),
-  facts: z.array(z.object({ text: z.string().min(1), evidence: z.string() })),
-  quotes: z.array(
-    z.object({
-      speaker: z.string().nullable().optional(),
-      text: z.string().min(1),
-      evidence: z.string(),
-    })
-  ),
+  facts: z.array(z.object({ text: z.string().min(1), evidence: z.string() })).default([]),
+  quotes: z
+    .array(
+      z.object({
+        speaker: z.string().nullable().optional(),
+        text: z.string().min(1),
+        evidence: z.string(),
+      })
+    )
+    .default([]),
 })
 export type NormalizedSource = z.infer<typeof normalizedSourceSchema>
 

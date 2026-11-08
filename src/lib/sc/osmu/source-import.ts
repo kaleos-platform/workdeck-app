@@ -82,7 +82,7 @@ export async function importSource(
       },
       { actor: { type: 'system', id: 'sc-osmu-import' } }
     )
-    const parsed = normalizedSourceSchema.safeParse({ fields, ...safeJson(result.content) })
+    const parsed = normalizedSourceSchema.safeParse({ ...safeJson(result.content), fields })
     if (!parsed.success) throw new Error('소재 정규화 응답 형식 오류')
     normalized = parsed.data
   }

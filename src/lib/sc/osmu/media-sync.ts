@@ -28,12 +28,19 @@ export async function syncSourceMedia(spaceId: string, sourceId: string): Promis
     prisma.scDriveConnection.findUnique({ where: { spaceId }, select: { rootId: true } }),
   ])
   if (!source?.driveFolderId) return 0
-  if (!conn) throw new DriveError('드라이브 연결이 없습니다')
+  // status 400 = 사람이 고쳐야 하는 설정 문제 → 수신 쪽에서 재시도 대신 「확인 필요」로 보낸다.
+  if (!conn) throw new DriveError('드라이브 연결이 없습니다', 400)
+  if (!conn.rootId) throw new DriveError('설정에서 공유 드라이브 링크를 등록하세요', 400)
 
   const token = await driveTokenForSpace(spaceId)
-  const root = await getDriveFile(token, source.driveFolderId)
+  const root = await getDriveFile(token, source.driveFolderId).catch((err) => {
+    if (err instanceof DriveError && (err.status === 403 || err.status === 404)) {
+      throw new DriveError('미디어 폴더를 열 수 없습니다(링크·공유 드라이브 구성원 확인)', 400)
+    }
+    throw err
+  })
   if (root.mimeType !== FOLDER_MIME || !isWithinRoot(root, conn.rootId)) {
-    throw new DriveError('미디어 폴더가 연결된 공유 드라이브 밖에 있습니다')
+    throw new DriveError('미디어 폴더가 등록한 공유 드라이브 밖에 있습니다', 400)
   }
 
   const images: Array<DriveFile & { folderId: string; path: string }> = []
@@ -121,7 +128,13 @@ const DESCRIBE_SYSTEM = `사진을 블로그 작성자에게 설명한다. JSON 
 /** 설명 안 된 사진을 limit 장까지 처리. 반환: 처리 수. 얼굴 판정 실패는 UNKNOWN 유지(게시 불가). */
 export async function describePendingMedia(spaceId: string, limit = 10): Promise<number> {
   const pending = await prisma.scMedia.findMany({
-    where: { spaceId, removedAt: null, describedAt: null, describeError: null },
+    // 일시 오류(429·5xx)는 1시간 뒤 다시 시도한다.
+    where: {
+      spaceId,
+      removedAt: null,
+      describedAt: null,
+      OR: [{ describeError: null }, { updatedAt: { lt: new Date(Date.now() - 3600_000) } }],
+    },
     orderBy: { createdAt: 'asc' },
     take: limit,
   })

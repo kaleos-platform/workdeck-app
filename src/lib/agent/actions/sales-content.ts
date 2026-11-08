@@ -146,7 +146,10 @@ const postPublish: ActionDefinition<PostPublishParams> = {
           const r = locked[0]
           if (!r) throw new ToolUserError('발행 요청을 찾을 수 없습니다')
           if (r.contentId) throw new ToolUserError('이미 승인된 발행 요청입니다')
-          if (r.state === 'CANCELED') throw new ToolUserError('취소된 발행 요청입니다')
+          // 제안 이후 요청이 취소·재시작됐으면 이 제안은 낡은 것이다.
+          if (r.state !== 'PROPOSED') {
+            throw new ToolUserError('승인 대기 상태의 발행 요청이 아닙니다(취소·재요청됨)')
+          }
           sourceVersionId = r.sourceVersionId
         }
         const content = await tx.content.create({
@@ -269,12 +272,13 @@ const postPublish: ActionDefinition<PostPublishParams> = {
         where: { id: created.deploymentId },
         select: { assetPlan: true },
       })
+      // 트랜잭션은 이미 커밋됨 — 여기서 실패해도 사진은 미리 채워져 있으니 사람 완료 경로(알림)로 넘긴다.
       const done = await saveAssetPlan({
         spaceId,
         deploymentId: created.deploymentId,
         plan: plan!.assetPlan as never,
         complete: true,
-      })
+      }).catch(() => ({ ok: false as const }))
       if (done.ok) {
         return {
           ...created,

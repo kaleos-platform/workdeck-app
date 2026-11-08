@@ -15,6 +15,7 @@ import { queryDataSource, updatePageProperties } from './notion'
 import { canCancel, notionStatusFor } from './projection'
 import { importSource } from './source-import'
 import { describePendingMedia, syncSourceMedia } from './media-sync'
+import { DriveError } from './drive'
 
 const LEASE_MS = 5 * 60_000
 const MAX_ATTEMPTS = 5
@@ -168,7 +169,11 @@ export async function runIntakeForSpace(spaceId: string, deadline: number): Prom
 
 function isRestartable(r: { state: string; contentId: string | null }) {
   return (
-    r.state === 'NEEDS_INPUT' || r.state === 'FAILED' || (r.state === 'CANCELED' && !r.contentId)
+    // PROPOSED 포함: 제안이 거부·만료돼도 사람이 다시 요청하면 풀린다(남은 낡은 제안은 승인 시 거부됨).
+    r.state === 'NEEDS_INPUT' ||
+    r.state === 'FAILED' ||
+    r.state === 'PROPOSED' ||
+    (r.state === 'CANCELED' && !r.contentId)
   )
 }
 
@@ -190,7 +195,20 @@ async function processRequest(spaceId: string, token: string, requestId: string)
     where: { spaceId },
     select: { id: true },
   })
-  const photos = drive ? await syncSourceMedia(spaceId, imported.sourceId) : 0
+  let photos = 0
+  try {
+    photos = drive ? await syncSourceMedia(spaceId, imported.sourceId) : 0
+  } catch (err) {
+    // 설정 문제(공유 드라이브 미등록·폴더 접근 불가)는 재시도해도 안 풀린다 → 「확인 필요」.
+    if (err instanceof DriveError && err.status === 400) {
+      await prisma.scPublishRequest.update({
+        where: { id: requestId },
+        data: { sourceId: imported.sourceId, sourceVersionId: imported.versionId },
+      })
+      return needsInput(err.message)
+    }
+    throw err
+  }
 
   await prisma.scPublishRequest.update({
     where: { id: requestId },
@@ -220,8 +238,8 @@ async function projectToNotion(
         { projectedStatus: { notIn: [NOTION_STATUS.PUBLISHED, NOTION_STATUS.CANCELED] } },
       ],
     },
-    orderBy: { updatedAt: 'desc' },
-    take: 100,
+    // 배포 상태 변화는 요청 행 updatedAt 을 안 바꾸므로 최근순 절단 대신 넉넉히 다 본다.
+    take: 1000,
     include: {
       content: {
         select: {

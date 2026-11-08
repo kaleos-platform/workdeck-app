@@ -194,6 +194,22 @@ d('OSMU 발행 요청 승인', () => {
     ).rejects.toThrow('작성 대기 상태의 발행 요청이 아닙니다')
   })
 
+  test('제안 후 요청이 재시작됐으면 낡은 제안 승인은 거부', async () => {
+    const request = await makeRequest('req-stale')
+    const proposed = (await propose.execute(ctx, {
+      title: 'OSMU 낡은 제안',
+      body: BODY,
+      channelId: CHANNEL_ID,
+      targetUrl: 'https://tally.so/r/x',
+      requestId: request.id,
+    })) as { actionId: string }
+    await prisma.scPublishRequest.update({ where: { id: request.id }, data: { state: 'READY' } })
+    const out = await approveAndExecute(proposed.actionId, USER_ID, { webReviewed: true })
+    expect(out.status).not.toBe('EXECUTED')
+    const after = await prisma.scPublishRequest.findUniqueOrThrow({ where: { id: request.id } })
+    expect(after.contentId).toBeNull()
+  })
+
   test('얼굴 사진·요청 없는 photos 는 제안 단계에서 거부', async () => {
     const request = await makeRequest('req-2')
     await expect(

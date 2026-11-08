@@ -114,6 +114,8 @@ export async function DELETE() {
   if ('error' in resolved) return resolved.error
   const roleError = assertRole(resolved.role, 'ADMIN')
   if (roleError) return roleError
+  const mfaError = await requireAal2()
+  if (mfaError) return mfaError
   const spaceId = resolved.space.id
   await prisma.$transaction([
     prisma.scNotionConnection.deleteMany({ where: { spaceId } }),

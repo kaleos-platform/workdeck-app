@@ -34,9 +34,13 @@ export async function copyRequestPhotos(input: {
   if (photos.length === 0) return []
   const request = await prisma.scPublishRequest.findFirst({
     where: { id: requestId, spaceId },
-    select: { sourceId: true },
+    select: { sourceId: true, state: true, contentId: true },
   })
   if (!request?.sourceId) throw new ToolUserError('발행 요청의 소재를 찾을 수 없습니다')
+  // 복사(드라이브·storage 호출) 전에 거를 수 있는 건 거른다.
+  if (request.contentId || (request.state !== 'READY' && request.state !== 'PROPOSED')) {
+    throw new ToolUserError('작성 대기 상태의 발행 요청이 아닙니다')
+  }
 
   const ids = [...new Set(photos.map((p) => p.mediaId))]
   const media = await prisma.scMedia.findMany({

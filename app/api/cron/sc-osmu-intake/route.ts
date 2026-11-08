@@ -14,7 +14,12 @@ const BUDGET_MS = 240_000
  */
 export const GET = withCronRun('/api/cron/sc-osmu-intake', async () => {
   const deadline = Date.now() + BUDGET_MS
-  const conns = await prisma.scNotionConnection.findMany({ select: { spaceId: true } })
+  // 세일즈 콘텐츠 카드가 켜진 Space 만, 오래 못 돈 Space 부터(한 Space 가 예산을 독식해도 다음 실행엔 뒤로 감).
+  const conns = await prisma.scNotionConnection.findMany({
+    where: { space: { deckInstances: { some: { deckAppId: 'sales-content', isActive: true } } } },
+    orderBy: { lastPolledAt: { sort: 'asc', nulls: 'first' } },
+    select: { spaceId: true },
+  })
   const results: Record<string, IntakeReport | { error: string }> = {}
   for (const { spaceId } of conns) {
     if (Date.now() > deadline) break
@@ -24,7 +29,7 @@ export const GET = withCronRun('/api/cron/sc-osmu-intake', async () => {
       const error = (err instanceof Error ? err.message : String(err)).slice(0, 300)
       results[spaceId] = { error }
       await prisma.scNotionConnection
-        .update({ where: { spaceId }, data: { lastError: error } })
+        .update({ where: { spaceId }, data: { lastError: error, lastPolledAt: new Date() } })
         .catch(() => undefined)
     }
   }
