@@ -1,3 +1,4 @@
+import { PostingClosedError } from '@/lib/hiring/lock-open-posting'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 // 공개 지원 제출 API — 무인증. 남용 방어(레이트리밋·MIME·용량·개수) 필수.
 // 단일 멀티파트 POST: payload(JSON) + files(최대 3). spaceId/postingId 는 posting 행에서 파생.
@@ -199,6 +200,7 @@ export async function POST(req: NextRequest) {
     // 블랙리스트/중복 여부는 응답에 노출하지 않는다(비공개 성공 응답 고정).
     return NextResponse.json({ ok: true, uuid: result.uuid }, { status: 201 })
   } catch (err) {
+    if (err instanceof PostingClosedError) return errorResponse('마감된 공고입니다', 410)
     const message = err instanceof Error ? err.message : '지원서 제출에 실패했습니다'
     return errorResponse(message, 400)
   }

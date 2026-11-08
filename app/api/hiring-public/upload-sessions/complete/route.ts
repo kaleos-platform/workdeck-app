@@ -1,3 +1,4 @@
+import { lockOpenPosting, PostingClosedError } from '@/lib/hiring/lock-open-posting'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { randomUUID } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
@@ -56,8 +57,23 @@ export async function POST(req: NextRequest) {
     posting.uuid !== body.postingUuid ||
     posting.status !== 'ACTIVE' ||
     isHiringDeadlinePassed(posting.closingDate)
-  )
+  ) {
+    const previous = await prisma.hiringUploadSession.findFirst({
+      where: { id: session.id, tokenHash },
+    })
+    if (previous?.completedAt) {
+      if (previous.requestHash !== requestHash || !previous.applicationId)
+        return errorResponse('이미 다른 지원서로 제출된 첨부입니다', 409)
+      const app = await prisma.hiringApplication.findFirst({
+        where: { id: previous.applicationId, spaceId: session.spaceId },
+        select: { uuid: true },
+      })
+      return app
+        ? NextResponse.json({ uuid: app.uuid }, { status: 201 })
+        : errorResponse('제출 결과를 확인할 수 없습니다', 409)
+    }
     return errorResponse('지원 가능한 공고가 아닙니다', 410)
+  }
   const fields = parseApplicationEntriesSchema(posting.applicationEntries)
   const valuesError = typedSubmissionError(fields, body.entries)
   if (valuesError) return errorResponse(valuesError, 400)
@@ -116,6 +132,22 @@ export async function POST(req: NextRequest) {
   try {
     const { columns, sanitizedEntries } = buildApplicationPii(entries)
     const result = await prisma.$transaction(async (tx) => {
+      // 마감·삭제와 완료가 같은 공고 행에서 직렬화된다.
+      try {
+        await lockOpenPosting(tx, posting.id, session.spaceId)
+      } catch (error) {
+        if (!(error instanceof PostingClosedError)) throw error
+        const previous = await tx.hiringUploadSession.findFirst({
+          where: { id: session.id, tokenHash },
+        })
+        if (previous?.completedAt && previous.requestHash === requestHash && previous.applicationId)
+          return tx.hiringApplication.findUniqueOrThrow({
+            where: { id: previous.applicationId },
+            select: { uuid: true },
+          })
+        if (previous?.completedAt) throw Error('conflict')
+        throw error
+      }
       // 원자적 claim과 지원서 생성으로 동시 제출·응답 유실 재시도를 처리한다.
       const claimed = await tx.hiringUploadSession.updateMany({
         where: {
@@ -181,7 +213,9 @@ export async function POST(req: NextRequest) {
       return app
     })
     return NextResponse.json({ uuid: result.uuid }, { status: 201 })
-  } catch {
+  } catch (error) {
+    if (error instanceof PostingClosedError)
+      return errorResponse('지원 가능한 공고가 아닙니다', 410)
     return errorResponse('지원서를 저장하지 못했습니다. 잠시 후 같은 내용으로 다시 제출하세요', 409)
   }
 }

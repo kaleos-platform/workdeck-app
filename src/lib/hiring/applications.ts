@@ -1,3 +1,4 @@
+import { lockOpenPosting } from './lock-open-posting'
 // 지원자 관리 Deck 도메인 모듈 — 공개 지원 생성·목록·복호화·레이트리밋·블랙리스트 매칭.
 // PII 처리는 반드시 src/lib/hiring/pii.ts 유틸을 거친다(call-site 강제).
 import { applicantSearchWhere } from './application-search'
@@ -142,21 +143,24 @@ export async function createPublicApplication(params: {
   }
 
   // 지원서 생성(파일 경로는 applicationId 필요 → 생성 후 업로드)
-  const application = await prisma.hiringApplication.create({
-    data: {
-      spaceId: posting.spaceId,
-      postingId: posting.id,
-      postingPositionId: params.postingPositionId ?? null,
-      applicationEntries: sanitizedEntries as unknown as object,
-      ...columns,
-      referrer: params.referrer ?? null,
-      duplicated,
-      privacyAgreedAt: params.privacyAgreed ? new Date() : null,
-      stores: params.storeIds?.length
-        ? { create: params.storeIds.map((storeId) => ({ storeId })) }
-        : undefined,
-    },
-    select: { id: true, uuid: true },
+  const application = await prisma.$transaction(async (tx) => {
+    await lockOpenPosting(tx, posting.id, posting.spaceId)
+    return tx.hiringApplication.create({
+      data: {
+        spaceId: posting.spaceId,
+        postingId: posting.id,
+        postingPositionId: params.postingPositionId ?? null,
+        applicationEntries: sanitizedEntries as unknown as object,
+        ...columns,
+        referrer: params.referrer ?? null,
+        duplicated,
+        privacyAgreedAt: params.privacyAgreed ? new Date() : null,
+        stores: params.storeIds?.length
+          ? { create: params.storeIds.map((storeId) => ({ storeId })) }
+          : undefined,
+      },
+      select: { id: true, uuid: true },
+    })
   })
 
   // 첨부 업로드 + 메타 저장 — 중간 실패 시 지원서 행·기업로드 파일을 보상 삭제해

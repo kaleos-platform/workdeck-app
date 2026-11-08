@@ -67,24 +67,23 @@ export async function POST(req: NextRequest, { params }: Params) {
         return NextResponse.json({ posting: updated })
       })
     }
-    case 'close': {
-      const updated = await prisma.hiringPosting.update({
-        where: { id },
-        data: { status: 'CLOSED' },
+    case 'close':
+    case 'archive': {
+      const [updated] = await prisma.hiringPosting.updateManyAndReturn({
+        where: {
+          id,
+          spaceId: resolved.space.id,
+          OR: [{ status: { not: 'DRAFT' } }, { publishedAt: { not: null } }],
+        },
+        data: { status: parsed.data.action === 'close' ? 'CLOSED' : 'ARCHIVED' },
         select: { id: true, status: true },
       })
+      if (!updated)
+        return errorResponse('발행 이력이 없는 초안은 마감하거나 보관할 수 없습니다', 409)
       return NextResponse.json({ posting: updated })
     }
     case 'reopen': {
       return errorResponse('새로운 모집은 공고를 복사해 진행해 주세요.', 409)
-    }
-    case 'archive': {
-      const updated = await prisma.hiringPosting.update({
-        where: { id },
-        data: { status: 'ARCHIVED' },
-        select: { id: true, status: true },
-      })
-      return NextResponse.json({ posting: updated })
     }
   }
 }
