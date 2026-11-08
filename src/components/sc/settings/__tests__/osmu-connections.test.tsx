@@ -36,10 +36,21 @@ async function submit() {
 describe('OsmuConnections', () => {
   beforeEach(() => jest.clearAllMocks())
 
+  it('단계 인증 전이면 입력을 잠그고 인증 버튼부터 보여준다', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(reply(200, { notion: null, drive: null, mfaReady: false })) as never
+    render(<OsmuConnections />)
+    const link = await screen.findByRole('link', { name: '2단계 인증하기' })
+    expect(link.getAttribute('href')).toMatch(/^\/auth\/mfa\?next=/)
+    expect(screen.getByLabelText(/통합 토큰/)).toBeDisabled()
+    expect(screen.getByRole('button', { name: '드라이브 계정 만들기' })).toBeDisabled()
+  })
+
   it('MFA 필요 응답이면 단계 인증으로 보내고 오류 토스트는 띄우지 않는다', async () => {
     global.fetch = jest
       .fn()
-      .mockResolvedValueOnce(reply(200, { notion: null, drive: null }))
+      .mockResolvedValueOnce(reply(200, { notion: null, drive: null, mfaReady: true }))
       .mockResolvedValueOnce(
         reply(403, { message: '2단계 인증이 필요합니다', code: 'MFA_REQUIRED' })
       ) as never
@@ -51,7 +62,7 @@ describe('OsmuConnections', () => {
   it('서버 오류 메시지(message)를 그대로 보여준다', async () => {
     global.fetch = jest
       .fn()
-      .mockResolvedValueOnce(reply(200, { notion: null, drive: null }))
+      .mockResolvedValueOnce(reply(200, { notion: null, drive: null, mfaReady: true }))
       .mockResolvedValueOnce(
         reply(400, { message: '노션 데이터베이스 링크를 확인해주세요' })
       ) as never

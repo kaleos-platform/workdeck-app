@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { mfaStepUpPath } from '@/lib/auth/mfa-policy'
 
 type Status = {
   notion: {
@@ -22,6 +23,7 @@ type Status = {
     lastSyncedAt: string | null
     lastError: string | null
   } | null
+  mfaReady: boolean
 }
 
 const API = '/api/sc/osmu/connections'
@@ -73,9 +75,23 @@ export function OsmuConnections() {
 
   const notion = status?.notion
   const drive = status?.drive
+  // 상태를 불러오기 전이나 단계 인증 전엔 입력을 잠근다.
+  const locked = !status?.mfaReady
 
   return (
     <div className="space-y-4">
+      {status && !status.mfaReady && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+          <span>
+            연결 정보를 저장하려면 먼저 2단계 인증을 해주세요. 인증 후 이 화면으로 돌아옵니다.
+          </span>
+          <Button asChild size="sm">
+            <a href={mfaStepUpPath(window.location.pathname + window.location.search)}>
+              2단계 인증하기
+            </a>
+          </Button>
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">노션 — 콘텐츠 소재·발행</CardTitle>
@@ -99,6 +115,7 @@ export function OsmuConnections() {
             <Input
               id="osmu-token"
               type="password"
+              disabled={locked}
               autoComplete="off"
               value={token}
               onChange={(e) => setToken(e.target.value)}
@@ -109,6 +126,7 @@ export function OsmuConnections() {
             <Label htmlFor="osmu-source">「콘텐츠 소재」 데이터베이스 링크</Label>
             <Input
               id="osmu-source"
+              disabled={locked}
               value={sourceDb}
               onChange={(e) => setSourceDb(e.target.value)}
             />
@@ -117,13 +135,14 @@ export function OsmuConnections() {
             <Label htmlFor="osmu-request">「콘텐츠 발행」 데이터베이스 링크</Label>
             <Input
               id="osmu-request"
+              disabled={locked}
               value={requestDb}
               onChange={(e) => setRequestDb(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
             <Button
-              disabled={busy || !sourceDb || !requestDb || (!notion && !token)}
+              disabled={locked || busy || !sourceDb || !requestDb || (!notion && !token)}
               onClick={() =>
                 send(
                   'PUT',
@@ -137,7 +156,7 @@ export function OsmuConnections() {
             {notion && (
               <Button
                 variant="outline"
-                disabled={busy}
+                disabled={locked || busy}
                 onClick={() => send('DELETE', undefined, '노션 연결을 해제했습니다')}
               >
                 연결 해제
@@ -158,7 +177,7 @@ export function OsmuConnections() {
         <CardContent className="space-y-3">
           {!drive ? (
             <Button
-              disabled={busy}
+              disabled={locked || busy}
               onClick={() => send('PUT', { kind: 'drive-account' }, '드라이브 계정을 만들었습니다')}
             >
               드라이브 계정 만들기
@@ -186,6 +205,7 @@ export function OsmuConnections() {
                 <div className="flex gap-2">
                   <Input
                     id="osmu-root"
+                    disabled={locked}
                     value={root}
                     onChange={(e) => setRoot(e.target.value)}
                     placeholder={
@@ -195,7 +215,7 @@ export function OsmuConnections() {
                     }
                   />
                   <Button
-                    disabled={busy || !root}
+                    disabled={locked || busy || !root}
                     onClick={() =>
                       send('PUT', { kind: 'drive-root', root }, '공유 드라이브를 등록했습니다')
                     }
