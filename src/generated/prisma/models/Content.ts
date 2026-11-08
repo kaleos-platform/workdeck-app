@@ -46,6 +46,7 @@ export type ContentMinAggregateOutputType = {
   ideationId: string | null
   ideaIndex: number | null
   channelId: string | null
+  sourceVersionId: string | null
   snapshotHash: string | null
   publishedAt: Date | null
   scheduledAt: Date | null
@@ -65,6 +66,7 @@ export type ContentMaxAggregateOutputType = {
   ideationId: string | null
   ideaIndex: number | null
   channelId: string | null
+  sourceVersionId: string | null
   snapshotHash: string | null
   publishedAt: Date | null
   scheduledAt: Date | null
@@ -86,6 +88,7 @@ export type ContentCountAggregateOutputType = {
   ideationId: number
   ideaIndex: number
   channelId: number
+  sourceVersionId: number
   snapshotHash: number
   publishedAt: number
   scheduledAt: number
@@ -115,6 +118,7 @@ export type ContentMinAggregateInputType = {
   ideationId?: true
   ideaIndex?: true
   channelId?: true
+  sourceVersionId?: true
   snapshotHash?: true
   publishedAt?: true
   scheduledAt?: true
@@ -134,6 +138,7 @@ export type ContentMaxAggregateInputType = {
   ideationId?: true
   ideaIndex?: true
   channelId?: true
+  sourceVersionId?: true
   snapshotHash?: true
   publishedAt?: true
   scheduledAt?: true
@@ -155,6 +160,7 @@ export type ContentCountAggregateInputType = {
   ideationId?: true
   ideaIndex?: true
   channelId?: true
+  sourceVersionId?: true
   snapshotHash?: true
   publishedAt?: true
   scheduledAt?: true
@@ -263,6 +269,7 @@ export type ContentGroupByOutputType = {
   ideationId: string | null
   ideaIndex: number | null
   channelId: string | null
+  sourceVersionId: string | null
   snapshotHash: string | null
   publishedAt: Date | null
   scheduledAt: Date | null
@@ -307,11 +314,14 @@ export type ContentWhereInput = {
   ideationId?: Prisma.StringNullableFilter<"Content"> | string | null
   ideaIndex?: Prisma.IntNullableFilter<"Content"> | number | null
   channelId?: Prisma.StringNullableFilter<"Content"> | string | null
+  sourceVersionId?: Prisma.StringNullableFilter<"Content"> | string | null
   snapshotHash?: Prisma.StringNullableFilter<"Content"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"Content"> | Date | string | null
   scheduledAt?: Prisma.DateTimeNullableFilter<"Content"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Content"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Content"> | Date | string
+  sourceVersion?: Prisma.XOR<Prisma.ScSourceVersionNullableScalarRelationFilter, Prisma.ScSourceVersionWhereInput> | null
+  publishRequest?: Prisma.XOR<Prisma.ScPublishRequestNullableScalarRelationFilter, Prisma.ScPublishRequestWhereInput> | null
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channel?: Prisma.XOR<Prisma.SalesContentChannelNullableScalarRelationFilter, Prisma.SalesContentChannelWhereInput> | null
   assets?: Prisma.ContentAssetListRelationFilter
@@ -333,11 +343,14 @@ export type ContentOrderByWithRelationInput = {
   ideationId?: Prisma.SortOrderInput | Prisma.SortOrder
   ideaIndex?: Prisma.SortOrderInput | Prisma.SortOrder
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceVersionId?: Prisma.SortOrderInput | Prisma.SortOrder
   snapshotHash?: Prisma.SortOrderInput | Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  sourceVersion?: Prisma.ScSourceVersionOrderByWithRelationInput
+  publishRequest?: Prisma.ScPublishRequestOrderByWithRelationInput
   space?: Prisma.SpaceOrderByWithRelationInput
   channel?: Prisma.SalesContentChannelOrderByWithRelationInput
   assets?: Prisma.ContentAssetOrderByRelationAggregateInput
@@ -362,11 +375,14 @@ export type ContentWhereUniqueInput = Prisma.AtLeast<{
   ideationId?: Prisma.StringNullableFilter<"Content"> | string | null
   ideaIndex?: Prisma.IntNullableFilter<"Content"> | number | null
   channelId?: Prisma.StringNullableFilter<"Content"> | string | null
+  sourceVersionId?: Prisma.StringNullableFilter<"Content"> | string | null
   snapshotHash?: Prisma.StringNullableFilter<"Content"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"Content"> | Date | string | null
   scheduledAt?: Prisma.DateTimeNullableFilter<"Content"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Content"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Content"> | Date | string
+  sourceVersion?: Prisma.XOR<Prisma.ScSourceVersionNullableScalarRelationFilter, Prisma.ScSourceVersionWhereInput> | null
+  publishRequest?: Prisma.XOR<Prisma.ScPublishRequestNullableScalarRelationFilter, Prisma.ScPublishRequestWhereInput> | null
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channel?: Prisma.XOR<Prisma.SalesContentChannelNullableScalarRelationFilter, Prisma.SalesContentChannelWhereInput> | null
   assets?: Prisma.ContentAssetListRelationFilter
@@ -388,6 +404,7 @@ export type ContentOrderByWithAggregationInput = {
   ideationId?: Prisma.SortOrderInput | Prisma.SortOrder
   ideaIndex?: Prisma.SortOrderInput | Prisma.SortOrder
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceVersionId?: Prisma.SortOrderInput | Prisma.SortOrder
   snapshotHash?: Prisma.SortOrderInput | Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -417,6 +434,7 @@ export type ContentScalarWhereWithAggregatesInput = {
   ideationId?: Prisma.StringNullableWithAggregatesFilter<"Content"> | string | null
   ideaIndex?: Prisma.IntNullableWithAggregatesFilter<"Content"> | number | null
   channelId?: Prisma.StringNullableWithAggregatesFilter<"Content"> | string | null
+  sourceVersionId?: Prisma.StringNullableWithAggregatesFilter<"Content"> | string | null
   snapshotHash?: Prisma.StringNullableWithAggregatesFilter<"Content"> | string | null
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Content"> | Date | string | null
   scheduledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Content"> | Date | string | null
@@ -441,6 +459,8 @@ export type ContentCreateInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sourceVersion?: Prisma.ScSourceVersionCreateNestedOneWithoutContentsInput
+  publishRequest?: Prisma.ScPublishRequestCreateNestedOneWithoutContentInput
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
@@ -462,11 +482,13 @@ export type ContentUncheckedCreateInput = {
   ideationId?: string | null
   ideaIndex?: number | null
   channelId?: string | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedCreateNestedOneWithoutContentInput
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
   versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
@@ -489,6 +511,8 @@ export type ContentUpdateInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceVersion?: Prisma.ScSourceVersionUpdateOneWithoutContentsNestedInput
+  publishRequest?: Prisma.ScPublishRequestUpdateOneWithoutContentNestedInput
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
@@ -510,11 +534,13 @@ export type ContentUncheckedUpdateInput = {
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedUpdateOneWithoutContentNestedInput
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
   versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
@@ -534,6 +560,7 @@ export type ContentCreateManyInput = {
   ideationId?: string | null
   ideaIndex?: number | null
   channelId?: string | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
@@ -574,6 +601,7 @@ export type ContentUncheckedUpdateManyInput = {
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -605,6 +633,7 @@ export type ContentCountOrderByAggregateInput = {
   ideationId?: Prisma.SortOrder
   ideaIndex?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  sourceVersionId?: Prisma.SortOrder
   snapshotHash?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
@@ -628,6 +657,7 @@ export type ContentMaxOrderByAggregateInput = {
   ideationId?: Prisma.SortOrder
   ideaIndex?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  sourceVersionId?: Prisma.SortOrder
   snapshotHash?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
@@ -647,6 +677,7 @@ export type ContentMinOrderByAggregateInput = {
   ideationId?: Prisma.SortOrder
   ideaIndex?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  sourceVersionId?: Prisma.SortOrder
   snapshotHash?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
@@ -661,6 +692,11 @@ export type ContentSumOrderByAggregateInput = {
 export type ContentScalarRelationFilter = {
   is?: Prisma.ContentWhereInput
   isNot?: Prisma.ContentWhereInput
+}
+
+export type ContentNullableScalarRelationFilter = {
+  is?: Prisma.ContentWhereInput | null
+  isNot?: Prisma.ContentWhereInput | null
 }
 
 export type ContentCreateNestedManyWithoutSpaceInput = {
@@ -793,6 +829,64 @@ export type ContentUpdateOneRequiredWithoutAssetsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContentUpdateToOneWithWhereWithoutAssetsInput, Prisma.ContentUpdateWithoutAssetsInput>, Prisma.ContentUncheckedUpdateWithoutAssetsInput>
 }
 
+export type ContentCreateNestedManyWithoutSourceVersionInput = {
+  create?: Prisma.XOR<Prisma.ContentCreateWithoutSourceVersionInput, Prisma.ContentUncheckedCreateWithoutSourceVersionInput> | Prisma.ContentCreateWithoutSourceVersionInput[] | Prisma.ContentUncheckedCreateWithoutSourceVersionInput[]
+  connectOrCreate?: Prisma.ContentCreateOrConnectWithoutSourceVersionInput | Prisma.ContentCreateOrConnectWithoutSourceVersionInput[]
+  createMany?: Prisma.ContentCreateManySourceVersionInputEnvelope
+  connect?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+}
+
+export type ContentUncheckedCreateNestedManyWithoutSourceVersionInput = {
+  create?: Prisma.XOR<Prisma.ContentCreateWithoutSourceVersionInput, Prisma.ContentUncheckedCreateWithoutSourceVersionInput> | Prisma.ContentCreateWithoutSourceVersionInput[] | Prisma.ContentUncheckedCreateWithoutSourceVersionInput[]
+  connectOrCreate?: Prisma.ContentCreateOrConnectWithoutSourceVersionInput | Prisma.ContentCreateOrConnectWithoutSourceVersionInput[]
+  createMany?: Prisma.ContentCreateManySourceVersionInputEnvelope
+  connect?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+}
+
+export type ContentUpdateManyWithoutSourceVersionNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentCreateWithoutSourceVersionInput, Prisma.ContentUncheckedCreateWithoutSourceVersionInput> | Prisma.ContentCreateWithoutSourceVersionInput[] | Prisma.ContentUncheckedCreateWithoutSourceVersionInput[]
+  connectOrCreate?: Prisma.ContentCreateOrConnectWithoutSourceVersionInput | Prisma.ContentCreateOrConnectWithoutSourceVersionInput[]
+  upsert?: Prisma.ContentUpsertWithWhereUniqueWithoutSourceVersionInput | Prisma.ContentUpsertWithWhereUniqueWithoutSourceVersionInput[]
+  createMany?: Prisma.ContentCreateManySourceVersionInputEnvelope
+  set?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+  disconnect?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+  delete?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+  connect?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+  update?: Prisma.ContentUpdateWithWhereUniqueWithoutSourceVersionInput | Prisma.ContentUpdateWithWhereUniqueWithoutSourceVersionInput[]
+  updateMany?: Prisma.ContentUpdateManyWithWhereWithoutSourceVersionInput | Prisma.ContentUpdateManyWithWhereWithoutSourceVersionInput[]
+  deleteMany?: Prisma.ContentScalarWhereInput | Prisma.ContentScalarWhereInput[]
+}
+
+export type ContentUncheckedUpdateManyWithoutSourceVersionNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentCreateWithoutSourceVersionInput, Prisma.ContentUncheckedCreateWithoutSourceVersionInput> | Prisma.ContentCreateWithoutSourceVersionInput[] | Prisma.ContentUncheckedCreateWithoutSourceVersionInput[]
+  connectOrCreate?: Prisma.ContentCreateOrConnectWithoutSourceVersionInput | Prisma.ContentCreateOrConnectWithoutSourceVersionInput[]
+  upsert?: Prisma.ContentUpsertWithWhereUniqueWithoutSourceVersionInput | Prisma.ContentUpsertWithWhereUniqueWithoutSourceVersionInput[]
+  createMany?: Prisma.ContentCreateManySourceVersionInputEnvelope
+  set?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+  disconnect?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+  delete?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+  connect?: Prisma.ContentWhereUniqueInput | Prisma.ContentWhereUniqueInput[]
+  update?: Prisma.ContentUpdateWithWhereUniqueWithoutSourceVersionInput | Prisma.ContentUpdateWithWhereUniqueWithoutSourceVersionInput[]
+  updateMany?: Prisma.ContentUpdateManyWithWhereWithoutSourceVersionInput | Prisma.ContentUpdateManyWithWhereWithoutSourceVersionInput[]
+  deleteMany?: Prisma.ContentScalarWhereInput | Prisma.ContentScalarWhereInput[]
+}
+
+export type ContentCreateNestedOneWithoutPublishRequestInput = {
+  create?: Prisma.XOR<Prisma.ContentCreateWithoutPublishRequestInput, Prisma.ContentUncheckedCreateWithoutPublishRequestInput>
+  connectOrCreate?: Prisma.ContentCreateOrConnectWithoutPublishRequestInput
+  connect?: Prisma.ContentWhereUniqueInput
+}
+
+export type ContentUpdateOneWithoutPublishRequestNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentCreateWithoutPublishRequestInput, Prisma.ContentUncheckedCreateWithoutPublishRequestInput>
+  connectOrCreate?: Prisma.ContentCreateOrConnectWithoutPublishRequestInput
+  upsert?: Prisma.ContentUpsertWithoutPublishRequestInput
+  disconnect?: Prisma.ContentWhereInput | boolean
+  delete?: Prisma.ContentWhereInput | boolean
+  connect?: Prisma.ContentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentUpdateToOneWithWhereWithoutPublishRequestInput, Prisma.ContentUpdateWithoutPublishRequestInput>, Prisma.ContentUncheckedUpdateWithoutPublishRequestInput>
+}
+
 export type ContentCreateWithoutSpaceInput = {
   id?: string
   userId?: string | null
@@ -810,6 +904,8 @@ export type ContentCreateWithoutSpaceInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sourceVersion?: Prisma.ScSourceVersionCreateNestedOneWithoutContentsInput
+  publishRequest?: Prisma.ScPublishRequestCreateNestedOneWithoutContentInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
   versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
@@ -829,11 +925,13 @@ export type ContentUncheckedCreateWithoutSpaceInput = {
   ideationId?: string | null
   ideaIndex?: number | null
   channelId?: string | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedCreateNestedOneWithoutContentInput
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
   versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
@@ -882,6 +980,7 @@ export type ContentScalarWhereInput = {
   ideationId?: Prisma.StringNullableFilter<"Content"> | string | null
   ideaIndex?: Prisma.IntNullableFilter<"Content"> | number | null
   channelId?: Prisma.StringNullableFilter<"Content"> | string | null
+  sourceVersionId?: Prisma.StringNullableFilter<"Content"> | string | null
   snapshotHash?: Prisma.StringNullableFilter<"Content"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"Content"> | Date | string | null
   scheduledAt?: Prisma.DateTimeNullableFilter<"Content"> | Date | string | null
@@ -906,6 +1005,8 @@ export type ContentCreateWithoutChannelInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sourceVersion?: Prisma.ScSourceVersionCreateNestedOneWithoutContentsInput
+  publishRequest?: Prisma.ScPublishRequestCreateNestedOneWithoutContentInput
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
   versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
@@ -925,11 +1026,13 @@ export type ContentUncheckedCreateWithoutChannelInput = {
   relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   ideationId?: string | null
   ideaIndex?: number | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedCreateNestedOneWithoutContentInput
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
   versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
@@ -978,6 +1081,8 @@ export type ContentCreateWithoutDeploymentsInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sourceVersion?: Prisma.ScSourceVersionCreateNestedOneWithoutContentsInput
+  publishRequest?: Prisma.ScPublishRequestCreateNestedOneWithoutContentInput
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
@@ -998,11 +1103,13 @@ export type ContentUncheckedCreateWithoutDeploymentsInput = {
   ideationId?: string | null
   ideaIndex?: number | null
   channelId?: string | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedCreateNestedOneWithoutContentInput
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
   versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
 }
@@ -1040,6 +1147,8 @@ export type ContentUpdateWithoutDeploymentsInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceVersion?: Prisma.ScSourceVersionUpdateOneWithoutContentsNestedInput
+  publishRequest?: Prisma.ScPublishRequestUpdateOneWithoutContentNestedInput
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
@@ -1060,11 +1169,13 @@ export type ContentUncheckedUpdateWithoutDeploymentsInput = {
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedUpdateOneWithoutContentNestedInput
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
   versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
 }
@@ -1086,6 +1197,8 @@ export type ContentCreateWithoutVersionsInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sourceVersion?: Prisma.ScSourceVersionCreateNestedOneWithoutContentsInput
+  publishRequest?: Prisma.ScPublishRequestCreateNestedOneWithoutContentInput
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
   assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
@@ -1106,11 +1219,13 @@ export type ContentUncheckedCreateWithoutVersionsInput = {
   ideationId?: string | null
   ideaIndex?: number | null
   channelId?: string | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedCreateNestedOneWithoutContentInput
   assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
 }
@@ -1148,6 +1263,8 @@ export type ContentUpdateWithoutVersionsInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceVersion?: Prisma.ScSourceVersionUpdateOneWithoutContentsNestedInput
+  publishRequest?: Prisma.ScPublishRequestUpdateOneWithoutContentNestedInput
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
@@ -1168,11 +1285,13 @@ export type ContentUncheckedUpdateWithoutVersionsInput = {
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedUpdateOneWithoutContentNestedInput
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
 }
@@ -1194,6 +1313,8 @@ export type ContentCreateWithoutAssetsInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sourceVersion?: Prisma.ScSourceVersionCreateNestedOneWithoutContentsInput
+  publishRequest?: Prisma.ScPublishRequestCreateNestedOneWithoutContentInput
   space: Prisma.SpaceCreateNestedOneWithoutContentsInput
   channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
   versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
@@ -1214,11 +1335,13 @@ export type ContentUncheckedCreateWithoutAssetsInput = {
   ideationId?: string | null
   ideaIndex?: number | null
   channelId?: string | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedCreateNestedOneWithoutContentInput
   versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
   deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
 }
@@ -1256,6 +1379,8 @@ export type ContentUpdateWithoutAssetsInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceVersion?: Prisma.ScSourceVersionUpdateOneWithoutContentsNestedInput
+  publishRequest?: Prisma.ScPublishRequestUpdateOneWithoutContentNestedInput
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
   versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
@@ -1276,11 +1401,205 @@ export type ContentUncheckedUpdateWithoutAssetsInput = {
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedUpdateOneWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
+  deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
+}
+
+export type ContentCreateWithoutSourceVersionInput = {
+  id?: string
+  userId?: string | null
+  title: string
+  body?: string | null
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: $Enums.ContentStatus
+  urlSlug?: string | null
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: string | null
+  ideaIndex?: number | null
+  snapshotHash?: string | null
+  publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  publishRequest?: Prisma.ScPublishRequestCreateNestedOneWithoutContentInput
+  space: Prisma.SpaceCreateNestedOneWithoutContentsInput
+  channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
+  assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
+  deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutContentInput
+}
+
+export type ContentUncheckedCreateWithoutSourceVersionInput = {
+  id?: string
+  spaceId: string
+  userId?: string | null
+  title: string
+  body?: string | null
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: $Enums.ContentStatus
+  urlSlug?: string | null
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: string | null
+  ideaIndex?: number | null
+  channelId?: string | null
+  snapshotHash?: string | null
+  publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedCreateNestedOneWithoutContentInput
+  assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
+  deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
+}
+
+export type ContentCreateOrConnectWithoutSourceVersionInput = {
+  where: Prisma.ContentWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentCreateWithoutSourceVersionInput, Prisma.ContentUncheckedCreateWithoutSourceVersionInput>
+}
+
+export type ContentCreateManySourceVersionInputEnvelope = {
+  data: Prisma.ContentCreateManySourceVersionInput | Prisma.ContentCreateManySourceVersionInput[]
+  skipDuplicates?: boolean
+}
+
+export type ContentUpsertWithWhereUniqueWithoutSourceVersionInput = {
+  where: Prisma.ContentWhereUniqueInput
+  update: Prisma.XOR<Prisma.ContentUpdateWithoutSourceVersionInput, Prisma.ContentUncheckedUpdateWithoutSourceVersionInput>
+  create: Prisma.XOR<Prisma.ContentCreateWithoutSourceVersionInput, Prisma.ContentUncheckedCreateWithoutSourceVersionInput>
+}
+
+export type ContentUpdateWithWhereUniqueWithoutSourceVersionInput = {
+  where: Prisma.ContentWhereUniqueInput
+  data: Prisma.XOR<Prisma.ContentUpdateWithoutSourceVersionInput, Prisma.ContentUncheckedUpdateWithoutSourceVersionInput>
+}
+
+export type ContentUpdateManyWithWhereWithoutSourceVersionInput = {
+  where: Prisma.ContentScalarWhereInput
+  data: Prisma.XOR<Prisma.ContentUpdateManyMutationInput, Prisma.ContentUncheckedUpdateManyWithoutSourceVersionInput>
+}
+
+export type ContentCreateWithoutPublishRequestInput = {
+  id?: string
+  userId?: string | null
+  title: string
+  body?: string | null
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: $Enums.ContentStatus
+  urlSlug?: string | null
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: string | null
+  ideaIndex?: number | null
+  snapshotHash?: string | null
+  publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sourceVersion?: Prisma.ScSourceVersionCreateNestedOneWithoutContentsInput
+  space: Prisma.SpaceCreateNestedOneWithoutContentsInput
+  channel?: Prisma.SalesContentChannelCreateNestedOneWithoutContentsInput
+  assets?: Prisma.ContentAssetCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionCreateNestedManyWithoutContentInput
+  deployments?: Prisma.ContentDeploymentCreateNestedManyWithoutContentInput
+}
+
+export type ContentUncheckedCreateWithoutPublishRequestInput = {
+  id?: string
+  spaceId: string
+  userId?: string | null
+  title: string
+  body?: string | null
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: $Enums.ContentStatus
+  urlSlug?: string | null
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: string | null
+  ideaIndex?: number | null
+  channelId?: string | null
+  sourceVersionId?: string | null
+  snapshotHash?: string | null
+  publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  assets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutContentInput
+  versions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutContentInput
+  deployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutContentInput
+}
+
+export type ContentCreateOrConnectWithoutPublishRequestInput = {
+  where: Prisma.ContentWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentCreateWithoutPublishRequestInput, Prisma.ContentUncheckedCreateWithoutPublishRequestInput>
+}
+
+export type ContentUpsertWithoutPublishRequestInput = {
+  update: Prisma.XOR<Prisma.ContentUpdateWithoutPublishRequestInput, Prisma.ContentUncheckedUpdateWithoutPublishRequestInput>
+  create: Prisma.XOR<Prisma.ContentCreateWithoutPublishRequestInput, Prisma.ContentUncheckedCreateWithoutPublishRequestInput>
+  where?: Prisma.ContentWhereInput
+}
+
+export type ContentUpdateToOneWithWhereWithoutPublishRequestInput = {
+  where?: Prisma.ContentWhereInput
+  data: Prisma.XOR<Prisma.ContentUpdateWithoutPublishRequestInput, Prisma.ContentUncheckedUpdateWithoutPublishRequestInput>
+}
+
+export type ContentUpdateWithoutPublishRequestInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+  urlSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceVersion?: Prisma.ScSourceVersionUpdateOneWithoutContentsNestedInput
+  space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
+  channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
+  assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
+  deployments?: Prisma.ContentDeploymentUpdateManyWithoutContentNestedInput
+}
+
+export type ContentUncheckedUpdateWithoutPublishRequestInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+  urlSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
   versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
 }
@@ -1298,6 +1617,7 @@ export type ContentCreateManySpaceInput = {
   ideationId?: string | null
   ideaIndex?: number | null
   channelId?: string | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
@@ -1322,6 +1642,8 @@ export type ContentUpdateWithoutSpaceInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceVersion?: Prisma.ScSourceVersionUpdateOneWithoutContentsNestedInput
+  publishRequest?: Prisma.ScPublishRequestUpdateOneWithoutContentNestedInput
   channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
   versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
@@ -1341,11 +1663,13 @@ export type ContentUncheckedUpdateWithoutSpaceInput = {
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedUpdateOneWithoutContentNestedInput
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
   versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
@@ -1364,6 +1688,7 @@ export type ContentUncheckedUpdateManyWithoutSpaceInput = {
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1384,6 +1709,7 @@ export type ContentCreateManyChannelInput = {
   relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   ideationId?: string | null
   ideaIndex?: number | null
+  sourceVersionId?: string | null
   snapshotHash?: string | null
   publishedAt?: Date | string | null
   scheduledAt?: Date | string | null
@@ -1408,6 +1734,8 @@ export type ContentUpdateWithoutChannelInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceVersion?: Prisma.ScSourceVersionUpdateOneWithoutContentsNestedInput
+  publishRequest?: Prisma.ScPublishRequestUpdateOneWithoutContentNestedInput
   space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
   assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
   versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
@@ -1427,11 +1755,13 @@ export type ContentUncheckedUpdateWithoutChannelInput = {
   relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedUpdateOneWithoutContentNestedInput
   assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
   versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
   deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
@@ -1450,6 +1780,99 @@ export type ContentUncheckedUpdateManyWithoutChannelInput = {
   relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sourceVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ContentCreateManySourceVersionInput = {
+  id?: string
+  spaceId: string
+  userId?: string | null
+  title: string
+  body?: string | null
+  doc: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: $Enums.ContentStatus
+  urlSlug?: string | null
+  targetKeyword?: string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: string | null
+  ideaIndex?: number | null
+  channelId?: string | null
+  snapshotHash?: string | null
+  publishedAt?: Date | string | null
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ContentUpdateWithoutSourceVersionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+  urlSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publishRequest?: Prisma.ScPublishRequestUpdateOneWithoutContentNestedInput
+  space?: Prisma.SpaceUpdateOneRequiredWithoutContentsNestedInput
+  channel?: Prisma.SalesContentChannelUpdateOneWithoutContentsNestedInput
+  assets?: Prisma.ContentAssetUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUpdateManyWithoutContentNestedInput
+  deployments?: Prisma.ContentDeploymentUpdateManyWithoutContentNestedInput
+}
+
+export type ContentUncheckedUpdateWithoutSourceVersionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+  urlSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publishRequest?: Prisma.ScPublishRequestUncheckedUpdateOneWithoutContentNestedInput
+  assets?: Prisma.ContentAssetUncheckedUpdateManyWithoutContentNestedInput
+  versions?: Prisma.ContentVersionUncheckedUpdateManyWithoutContentNestedInput
+  deployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutContentNestedInput
+}
+
+export type ContentUncheckedUpdateManyWithoutSourceVersionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  doc?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+  urlSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetKeyword?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedKeywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  ideationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideaIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   snapshotHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1520,11 +1943,14 @@ export type ContentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   ideationId?: boolean
   ideaIndex?: boolean
   channelId?: boolean
+  sourceVersionId?: boolean
   snapshotHash?: boolean
   publishedAt?: boolean
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  sourceVersion?: boolean | Prisma.Content$sourceVersionArgs<ExtArgs>
+  publishRequest?: boolean | Prisma.Content$publishRequestArgs<ExtArgs>
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.Content$channelArgs<ExtArgs>
   assets?: boolean | Prisma.Content$assetsArgs<ExtArgs>
@@ -1547,11 +1973,13 @@ export type ContentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   ideationId?: boolean
   ideaIndex?: boolean
   channelId?: boolean
+  sourceVersionId?: boolean
   snapshotHash?: boolean
   publishedAt?: boolean
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  sourceVersion?: boolean | Prisma.Content$sourceVersionArgs<ExtArgs>
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.Content$channelArgs<ExtArgs>
 }, ExtArgs["result"]["content"]>
@@ -1570,11 +1998,13 @@ export type ContentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   ideationId?: boolean
   ideaIndex?: boolean
   channelId?: boolean
+  sourceVersionId?: boolean
   snapshotHash?: boolean
   publishedAt?: boolean
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  sourceVersion?: boolean | Prisma.Content$sourceVersionArgs<ExtArgs>
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.Content$channelArgs<ExtArgs>
 }, ExtArgs["result"]["content"]>
@@ -1593,6 +2023,7 @@ export type ContentSelectScalar = {
   ideationId?: boolean
   ideaIndex?: boolean
   channelId?: boolean
+  sourceVersionId?: boolean
   snapshotHash?: boolean
   publishedAt?: boolean
   scheduledAt?: boolean
@@ -1600,8 +2031,10 @@ export type ContentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ContentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "userId" | "title" | "body" | "doc" | "status" | "urlSlug" | "targetKeyword" | "relatedKeywords" | "ideationId" | "ideaIndex" | "channelId" | "snapshotHash" | "publishedAt" | "scheduledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["content"]>
+export type ContentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "userId" | "title" | "body" | "doc" | "status" | "urlSlug" | "targetKeyword" | "relatedKeywords" | "ideationId" | "ideaIndex" | "channelId" | "sourceVersionId" | "snapshotHash" | "publishedAt" | "scheduledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["content"]>
 export type ContentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  sourceVersion?: boolean | Prisma.Content$sourceVersionArgs<ExtArgs>
+  publishRequest?: boolean | Prisma.Content$publishRequestArgs<ExtArgs>
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.Content$channelArgs<ExtArgs>
   assets?: boolean | Prisma.Content$assetsArgs<ExtArgs>
@@ -1610,10 +2043,12 @@ export type ContentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   _count?: boolean | Prisma.ContentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ContentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  sourceVersion?: boolean | Prisma.Content$sourceVersionArgs<ExtArgs>
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.Content$channelArgs<ExtArgs>
 }
 export type ContentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  sourceVersion?: boolean | Prisma.Content$sourceVersionArgs<ExtArgs>
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.Content$channelArgs<ExtArgs>
 }
@@ -1621,6 +2056,8 @@ export type ContentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type $ContentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Content"
   objects: {
+    sourceVersion: Prisma.$ScSourceVersionPayload<ExtArgs> | null
+    publishRequest: Prisma.$ScPublishRequestPayload<ExtArgs> | null
     space: Prisma.$SpacePayload<ExtArgs>
     channel: Prisma.$SalesContentChannelPayload<ExtArgs> | null
     assets: Prisma.$ContentAssetPayload<ExtArgs>[]
@@ -1641,6 +2078,7 @@ export type $ContentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     ideationId: string | null
     ideaIndex: number | null
     channelId: string | null
+    sourceVersionId: string | null
     snapshotHash: string | null
     publishedAt: Date | null
     scheduledAt: Date | null
@@ -2040,6 +2478,8 @@ readonly fields: ContentFieldRefs;
  */
 export interface Prisma__ContentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  sourceVersion<T extends Prisma.Content$sourceVersionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Content$sourceVersionArgs<ExtArgs>>): Prisma.Prisma__ScSourceVersionClient<runtime.Types.Result.GetResult<Prisma.$ScSourceVersionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  publishRequest<T extends Prisma.Content$publishRequestArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Content$publishRequestArgs<ExtArgs>>): Prisma.Prisma__ScPublishRequestClient<runtime.Types.Result.GetResult<Prisma.$ScPublishRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   channel<T extends Prisma.Content$channelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Content$channelArgs<ExtArgs>>): Prisma.Prisma__SalesContentChannelClient<runtime.Types.Result.GetResult<Prisma.$SalesContentChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   assets<T extends Prisma.Content$assetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Content$assetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2087,6 +2527,7 @@ export interface ContentFieldRefs {
   readonly ideationId: Prisma.FieldRef<"Content", 'String'>
   readonly ideaIndex: Prisma.FieldRef<"Content", 'Int'>
   readonly channelId: Prisma.FieldRef<"Content", 'String'>
+  readonly sourceVersionId: Prisma.FieldRef<"Content", 'String'>
   readonly snapshotHash: Prisma.FieldRef<"Content", 'String'>
   readonly publishedAt: Prisma.FieldRef<"Content", 'DateTime'>
   readonly scheduledAt: Prisma.FieldRef<"Content", 'DateTime'>
@@ -2485,6 +2926,44 @@ export type ContentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Limit how many Contents to delete.
    */
   limit?: number
+}
+
+/**
+ * Content.sourceVersion
+ */
+export type Content$sourceVersionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScSourceVersion
+   */
+  select?: Prisma.ScSourceVersionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScSourceVersion
+   */
+  omit?: Prisma.ScSourceVersionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScSourceVersionInclude<ExtArgs> | null
+  where?: Prisma.ScSourceVersionWhereInput
+}
+
+/**
+ * Content.publishRequest
+ */
+export type Content$publishRequestArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScPublishRequest
+   */
+  select?: Prisma.ScPublishRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScPublishRequest
+   */
+  omit?: Prisma.ScPublishRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScPublishRequestInclude<ExtArgs> | null
+  where?: Prisma.ScPublishRequestWhereInput
 }
 
 /**
