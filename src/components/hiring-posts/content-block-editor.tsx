@@ -156,6 +156,7 @@ export function ContentBlockEditor({
         toast.error(
           error instanceof Error &&
             (error.message.includes('다른 창에서') ||
+              error.message.includes('카드가 변경되었습니다') ||
               error.message.includes('카드 버전이 없습니다'))
             ? error.message
             : '본문 저장에 실패했습니다. 편집 완료를 눌러 다시 저장하세요.'
@@ -208,6 +209,7 @@ export function ContentBlockEditor({
           contentId,
           error instanceof Error &&
             (error.message.includes('다른 창에서') ||
+              error.message.includes('카드가 변경되었습니다') ||
               error.message.includes('카드 버전이 없습니다'))
             ? error.message
             : retryMessage
@@ -422,7 +424,10 @@ export function ContentBlockEditor({
   function saveTitle(contentId: string) {
     void commitTitle(contentId).catch((error: unknown) =>
       toast.error(
-        error instanceof Error && error.message.includes('다른 창에서')
+        error instanceof Error &&
+          (error.message.includes('다른 창에서') ||
+            error.message.includes('카드가 변경되었습니다') ||
+            error.message.includes('카드 버전이 없습니다'))
           ? error.message
           : '카드 제목 저장에 실패했습니다. 입력은 유지됩니다. 다시 저장하세요.'
       )

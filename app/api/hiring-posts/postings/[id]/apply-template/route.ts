@@ -121,7 +121,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   } catch (error) {
     if (error === conflict)
       return errorResponse(
-        '다른 창에서 카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 주세요.',
+        '카드가 변경되었습니다. 입력을 복사한 뒤 새로고침해 저장된 내용을 확인해 주세요.',
         409
       )
     throw error
