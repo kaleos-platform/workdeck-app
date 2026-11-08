@@ -11,7 +11,8 @@ import { idempotencyKeyFor } from './write-tools'
 import { pickDailyMetrics } from '@/lib/sc/metrics-dedup'
 import { redactErrorMessage } from '@/lib/sc/notifications'
 import { ToolUserError } from './errors'
-import { copyRequestPhotos } from '@/lib/sc/osmu/media-copy'
+import { copyRequestPhotos, isPublishable } from '@/lib/sc/osmu/media-copy'
+import type { RequestSnapshot } from '@/lib/sc/osmu/notion-schema'
 import type { ToolDefinition } from './types'
 
 const DECK = 'sales-content'
@@ -468,6 +469,125 @@ const proposeSetup: ToolDefinition = {
   },
 }
 
+const listRequests: ToolDefinition = {
+  name: 'sc_list_requests',
+  description:
+    '노션 「콘텐츠 발행」에서 들어온 발행 요청 목록(제목·유형·관점·희망 발행일·소재·게시 가능 사진 수)을 반환합니다. 기본은 작성 대기(READY)만입니다. 요청 하나를 쓰려면 sc_get_source(requestId) 로 소재·사진을 확인한 뒤 sc_propose_post 에 requestId 와 photos 를 넣어 제안하세요.',
+  inputSchema: {
+    state: z
+      .enum(['RECEIVED', 'NEEDS_INPUT', 'READY', 'PROPOSED', 'APPROVED', 'CANCELED', 'FAILED'])
+      .optional(),
+  },
+  mode: 'read',
+  scope: 'sc:read',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    const state = (params.state as string | undefined) ?? 'READY'
+    const rows = await prisma.scPublishRequest.findMany({
+      where: { spaceId: ctx.spaceId, state: state as never },
+      orderBy: { createdAt: 'asc' },
+      take: 50,
+      select: {
+        id: true,
+        state: true,
+        snapshot: true,
+        lastError: true,
+        createdAt: true,
+        source: { select: { id: true, title: true } },
+      },
+    })
+    const sourceIds = rows.flatMap((r) => (r.source ? [r.source.id] : []))
+    const media = await prisma.scMedia.findMany({
+      where: { spaceId: ctx.spaceId, sourceId: { in: sourceIds }, removedAt: null },
+      select: { sourceId: true, faceStatus: true, md5: true, allowedMd5: true, removedAt: true },
+    })
+    const publishable = new Map<string, number>()
+    for (const m of media) {
+      if (m.sourceId && isPublishable(m))
+        publishable.set(m.sourceId, (publishable.get(m.sourceId) ?? 0) + 1)
+    }
+    return {
+      requests: rows.map((r) => {
+        const s = r.snapshot as unknown as RequestSnapshot
+        return {
+          requestId: r.id,
+          state: r.state,
+          title: s.title,
+          kind: s.kind,
+          brief: s.brief,
+          desiredDate: s.desiredDate,
+          source: r.source?.title ?? null,
+          publishablePhotos: r.source ? (publishable.get(r.source.id) ?? 0) : 0,
+          lastError: r.lastError,
+        }
+      }),
+    }
+  },
+}
+
+const getSource: ToolDefinition = {
+  name: 'sc_get_source',
+  description:
+    '발행 요청 1건의 소재(정규화된 항목·사실·인용과 각 근거 원문)와 소재 사진 목록(설명·태그·촬영 시각·publishable), 같은 소재로 이미 만든 결과물 요약을 반환합니다. 사실은 facts·quotes 에 있는 것만 쓰고, 사진은 publishable=true 인 것만 sc_propose_post photos 에 쓰세요. 같은 소재의 기존 결과물과 관점·구성·사진이 겹치지 않게 쓰세요(네이버는 유사 문서 노출을 낮춥니다).',
+  inputSchema: { requestId: z.string().min(1).max(100) },
+  mode: 'read',
+  scope: 'sc:read',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    const r = await prisma.scPublishRequest.findFirst({
+      where: { id: params.requestId as string, spaceId: ctx.spaceId },
+      select: {
+        id: true,
+        state: true,
+        snapshot: true,
+        sourceId: true,
+        sourceVersion: { select: { version: true, data: true } },
+        source: { select: { title: true } },
+      },
+    })
+    if (!r) throw new ToolUserError('발행 요청을 찾을 수 없습니다(sc_list_requests 로 확인)')
+    if (!r.sourceId || !r.sourceVersion) throw new ToolUserError('소재가 아직 준비되지 않았습니다')
+    const [media, siblings] = await Promise.all([
+      prisma.scMedia.findMany({
+        where: { spaceId: ctx.spaceId, sourceId: r.sourceId, removedAt: null },
+        orderBy: [{ takenAt: 'asc' }, { name: 'asc' }],
+        take: 200,
+      }),
+      prisma.content.findMany({
+        where: { spaceId: ctx.spaceId, sourceVersion: { sourceId: r.sourceId } },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: { id: true, title: true, body: true, status: true },
+      }),
+    ])
+    return {
+      requestId: r.id,
+      state: r.state,
+      request: r.snapshot,
+      source: {
+        title: r.source?.title ?? null,
+        version: r.sourceVersion.version,
+        ...(r.sourceVersion.data as object),
+      },
+      media: media.map((m) => ({
+        id: m.id,
+        name: m.name,
+        path: m.path,
+        caption: m.caption,
+        tags: m.tags,
+        takenAt: m.takenAt,
+        publishable: isPublishable(m),
+      })),
+      existingOutputs: siblings.map((c) => ({
+        contentId: c.id,
+        title: c.title,
+        status: c.status,
+        excerpt: c.body?.slice(0, 300) ?? null,
+      })),
+    }
+  },
+}
+
 export const salesContentTools: ToolDefinition[] = [
   listBrands,
   listProducts,
@@ -475,6 +595,8 @@ export const salesContentTools: ToolDefinition[] = [
   listChannels,
   listContents,
   getContent,
+  listRequests,
+  getSource,
   proposePost,
   proposeSetup,
 ]
