@@ -34,6 +34,7 @@ jest.mock('@/components/ui/select', () => ({
   ),
 }))
 const props = {
+  canExportExcel: true,
   rows: ['a', 'b'].map((id) => ({
     id,
     maskedName: `QA${id}`,
@@ -186,4 +187,21 @@ it('검색 해제는 다른 필터를 유지한다', () => {
   fireEvent.click(screen.getByRole('button', { name: '검색 해제' }))
   expect(push).toHaveBeenCalledWith(expect.stringContaining('from=2026-09-27'))
   expect(push.mock.calls[0][0]).not.toContain('search=')
+})
+
+it('엑셀 권한이 없는 구성원에게 관리자 역할을 안내하고 다운로드를 막는다', () => {
+  global.fetch = jest.fn()
+  render(<ApplicationsTable {...props} canExportExcel={false} />)
+  expect(screen.getByRole('button', { name: '엑셀 내보내기' })).toBeDisabled()
+  expect(screen.getByText('엑셀 내보내기는 관리자 이상만 이용할 수 있습니다.')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '엑셀 내보내기' }))
+  expect(fetch).not.toHaveBeenCalled()
+})
+
+it('엑셀 권한이 있는 구성원에게 다운로드를 제공한다', () => {
+  render(<ApplicationsTable {...props} canExportExcel />)
+  expect(screen.getByRole('button', { name: '엑셀 내보내기' })).toBeEnabled()
+  expect(
+    screen.queryByText('엑셀 내보내기는 관리자 이상만 이용할 수 있습니다.')
+  ).not.toBeInTheDocument()
 })

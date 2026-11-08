@@ -43,6 +43,7 @@ import {
 } from '@/components/hiring-applicants/badges'
 
 type Props = {
+  canExportExcel: boolean
   rows: ApplicationListRow[]
   total: number
   pageSize: number
@@ -87,6 +88,7 @@ export function ApplicationsTable(props: Props) {
 }
 
 function ApplicationsTableContent({
+  canExportExcel,
   rows,
   total,
   pageSize,
@@ -391,14 +393,27 @@ function ApplicationsTableContent({
             />
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={exportExcel} disabled={exporting || busy}>
-          {exporting ? (
-            <Loader2 className="mr-1 size-4 animate-spin" />
-          ) : (
-            <Download className="mr-1 size-4" />
+        <div className="flex flex-col items-start gap-1 sm:items-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportExcel}
+            disabled={!canExportExcel || exporting || busy}
+            aria-describedby={canExportExcel ? undefined : 'excel-permission-note'}
+          >
+            {exporting ? (
+              <Loader2 className="mr-1 size-4 animate-spin" />
+            ) : (
+              <Download className="mr-1 size-4" />
+            )}
+            엑셀 내보내기
+          </Button>
+          {!canExportExcel && (
+            <p id="excel-permission-note" className="text-xs text-muted-foreground">
+              엑셀 내보내기는 관리자 이상만 이용할 수 있습니다.
+            </p>
           )}
-          엑셀 내보내기
-        </Button>
+        </div>
       </div>
 
       <div className="rounded-md border">

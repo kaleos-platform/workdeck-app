@@ -90,6 +90,7 @@ export default async function ApplicationsPage({ searchParams }: Props) {
       </div>
 
       <ApplicationsTable
+        canExportExcel={resolved.role === 'OWNER' || resolved.role === 'ADMIN'}
         key={JSON.stringify([sp.store, sp.position])}
         rows={rows}
         total={total}
