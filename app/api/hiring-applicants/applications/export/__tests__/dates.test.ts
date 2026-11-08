@@ -440,6 +440,46 @@ it('첨부는 검증된 파일명만 내보내고 Storage 경로와 미확정 �
   expect(JSON.stringify(rows)).not.toMatch(/private\/source-key|unmatched-key/)
 })
 
+it.each([
+  ['답변', '질문', '가'.repeat(32768)],
+  ['합쳐진 선택값', '질문', ['가'.repeat(32766), '나']],
+  ['질문 제목', '가'.repeat(32768), '답변'],
+])('기본 시트의 긴 %s은 잘라내지 않고 안내한다', async (_description, label, value) => {
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'app-1',
+      createdAt: new Date('2026-09-01'),
+      stage: 'HIRING',
+      hiringStage: 'APPLIED',
+      posting: null,
+      applicationEntries: [{ key: 'custom', label, type: 'text', value }],
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  expect(response!.status).toBe(422)
+  expect(await response!.json()).toEqual({
+    message: '지원자 정보가 엑셀 셀 길이 한도를 초과합니다. 지원자 상세에서 확인해 주세요',
+  })
+})
+
+it('셀 한도와 같은 길이의 답변은 그대로 내보낸다', async () => {
+  const value = '가'.repeat(32767)
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'app-1',
+      createdAt: new Date('2026-09-01'),
+      stage: 'HIRING',
+      hiringStage: 'APPLIED',
+      posting: null,
+      applicationEntries: [{ key: 'custom', label: '질문', type: 'text', value }],
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  expect(response!.status).toBe(200)
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  expect(workbook.Sheets['지원자'].L2.v).toBe(value)
+})
+
 it('긴 원문을 잘라내거나 손상된 엑셀로 내려주지 않는다', async () => {
   ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
     {
