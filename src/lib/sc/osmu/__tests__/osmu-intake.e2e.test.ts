@@ -131,9 +131,40 @@ d('OSMU 수신', () => {
 
     // 다시 돌면: 신규 수신 0, 같은 내용은 버전 재사용, 노션 쓰기 없음(멱등)
     n.updatePageProperties.mockClear()
+    // 노션은 이제 되쓰기된 상태(작성 중·확인 필요)라 「작성 요청」 조회는 비어 있다.
+    n.queryDataSource.mockResolvedValue([])
     const r2 = await runIntakeForSpace(SPACE_ID, Date.now() + 60_000)
     expect(r2.received).toBe(0)
     expect(n.updatePageProperties).not.toHaveBeenCalled()
+
+    // 확인 필요였던 요청을 사람이 고쳐(유형 블로그) 다시 「작성 요청」 → 새 snapshot 으로 재시작해 READY
+    n.queryDataSource.mockImplementation(async (_t, _ds, filter) =>
+      (filter as { select: { equals: string } }).select.equals === '작성 요청'
+        ? ([reqPage('p-press', '블로그')] as never)
+        : []
+    )
+    const rRetry = await runIntakeForSpace(SPACE_ID, Date.now() + 60_000)
+    expect(rRetry.received).toBe(1)
+    const retried = await prisma.scPublishRequest.findUniqueOrThrow({
+      where: { spaceId_notionPageId: { spaceId: SPACE_ID, notionPageId: 'p-press' } },
+    })
+    expect(retried.state).toBe('READY')
+    expect((retried.snapshot as { kind: string }).kind).toBe('블로그')
+
+    // 승인 이후 「취소」는 반영하지 않고 실제 상태로 되돌려 쓴다
+    await prisma.scPublishRequest.update({ where: { id: retried.id }, data: { state: 'APPROVED' } })
+    n.updatePageProperties.mockClear()
+    n.queryDataSource.mockImplementation(async (_t, _ds, filter) =>
+      (filter as { select: { equals: string } }).select.equals === '취소'
+        ? ([reqPage('p-press', '블로그')] as never)
+        : []
+    )
+    const rLate = await runIntakeForSpace(SPACE_ID, Date.now() + 60_000)
+    expect(rLate.canceled).toBe(0)
+    expect(n.updatePageProperties).toHaveBeenCalledWith('secret_test', 'p-press', {
+      상태: { select: { name: '확인 필요' } },
+    })
+    n.updatePageProperties.mockClear()
 
     // 사람이 「취소」로 바꾸면 승인 전 요청은 취소
     n.queryDataSource.mockImplementation(async (_t, _ds, filter) =>

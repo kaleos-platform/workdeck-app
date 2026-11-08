@@ -59,6 +59,8 @@
 - 사진 설명 실패(`describeError`)는 재시도 안 함, 형식 오류는 UNKNOWN(게시 불가) — 사람 허용 UI 미구현(`allowedByUserId/At/Md5` 컬럼만).
 - `targetUrl` 은 여전히 필수(§10 의 채널 기본 링크 정책 미구현). 희망 발행일 → scheduledAt 은 에이전트가 넣는다.
 - 승인 거부 시 요청은 PROPOSED 그대로(재제안 허용).
+- 확인 필요·실패·승인 전 취소 요청을 사람이 다시 「작성 요청」으로 바꾸면 새 snapshot 으로 재시작. 그 밖의 사람 상태 수정(승인 후 취소 포함)은 다음 cron 에 실제 상태로 덮어쓴다(「취소 무시됨」 전용 표시는 없음).
+- 실연동 때 확인: 처음 보는 select 옵션 이름(예: 「사진 대기」)으로 페이지 PATCH 하면 옵션이 자동 생성되는지. 안 되면 설정 안내에 「상태」 옵션 9개 미리 만들기를 추가.
 - 로컬 e2e: `set -a; . ./.env.local; set +a; npx jest -c jest.config.e2e.ts --runInBand src/lib/sc/osmu`. 전체 jest 의 기존 실패 4종(nbaesong settings·use-user·worker 3)은 base 에서도 실패.
 
 1. Prisma 모델: `ScNotionConnection`, `ScDriveConnection`, `ScSource`, `ScSourceVersion`, `ScMedia`(faceStatus UNKNOWN/NO_FACE/FACE), `ScPublishRequest`(unique `(spaceId, notionPageId)`, lease·attempts·snapshot), `Content.sourceVersionId` — `migrate dev` 만

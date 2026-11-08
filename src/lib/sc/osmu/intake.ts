@@ -50,27 +50,47 @@ export async function runIntakeForSpace(spaceId: string, deadline: number): Prom
   const { secret } = await loadSpaceCredential<{ token: string }>(spaceId, 'notion', audit)
   const token = secret.token
 
-  // 1) 수신: 「작성 요청」 행을 요청 테이블에 등록(이미 있으면 그대로 — 이후 노션 수정은 무시).
+  // 1) 수신: 「작성 요청」 행을 요청 테이블에 등록.
+  //    이미 있는 행: 막혔던 요청(확인 필요·실패·승인 전 취소)이면 사람이 고친 뒤 다시 요청한 것 → 새 snapshot 으로 재시작.
+  //    그 밖이면 노션만 사람이 바꾼 것 → projectedStatus 를 지워 이번 되쓰기에서 실제 상태로 덮어쓴다.
   const requested = await queryDataSource(token, conn.requestDataSourceId, {
     property: REQUEST_PROPS.status,
     select: { equals: NOTION_STATUS.REQUESTED },
   })
   for (const page of requested) {
-    const created = await prisma.scPublishRequest.createMany({
-      data: [
-        {
-          spaceId,
-          notionPageId: page.id,
-          snapshot: readRequestSnapshot(page) as never,
-          revision: page.last_edited_time,
-        },
-      ],
-      skipDuplicates: true,
+    const where = { spaceId_notionPageId: { spaceId, notionPageId: page.id } }
+    const existing = await prisma.scPublishRequest.findUnique({
+      where,
+      select: { state: true, contentId: true },
     })
-    report.received += created.count
+    const snapshot = readRequestSnapshot(page) as never
+    if (!existing) {
+      const created = await prisma.scPublishRequest.createMany({
+        data: [{ spaceId, notionPageId: page.id, snapshot, revision: page.last_edited_time }],
+        skipDuplicates: true,
+      })
+      report.received += created.count
+    } else if (isRestartable(existing)) {
+      await prisma.scPublishRequest.update({
+        where,
+        data: {
+          state: 'RECEIVED',
+          snapshot,
+          revision: page.last_edited_time,
+          attempts: 0,
+          lastError: null,
+          nextAttemptAt: null,
+          leaseUntil: null,
+          projectedStatus: null,
+        },
+      })
+      report.received++
+    } else {
+      await prisma.scPublishRequest.update({ where, data: { projectedStatus: null } })
+    }
   }
 
-  // 2) 취소: 사람이 「취소」로 바꾼 행은 승인 전일 때만 반영(이후엔 projection 이 상태를 되돌려 쓴다).
+  // 2) 취소: 사람이 「취소」로 바꾼 행은 승인 전일 때만 반영. 이후면 되쓰기로 실제 상태를 다시 보여준다.
   const canceled = await queryDataSource(token, conn.requestDataSourceId, {
     property: REQUEST_PROPS.status,
     select: { equals: NOTION_STATUS.CANCELED },
@@ -80,9 +100,13 @@ export async function runIntakeForSpace(spaceId: string, deadline: number): Prom
       where: { spaceId_notionPageId: { spaceId, notionPageId: page.id } },
       select: { id: true, state: true },
     })
-    if (r && canCancel(r.state)) {
+    if (!r || r.state === 'CANCELED') continue
+    if (canCancel(r.state)) {
       await prisma.scPublishRequest.update({ where: { id: r.id }, data: { state: 'CANCELED' } })
       report.canceled++
+    } else {
+      // ponytail: 「취소 무시됨」 전용 표시 없이 실제 상태로 되돌려 쓴다. 필요하면 1회성 「확인 필요」 플래그 추가.
+      await prisma.scPublishRequest.update({ where: { id: r.id }, data: { projectedStatus: null } })
     }
   }
 
@@ -140,6 +164,12 @@ export async function runIntakeForSpace(spaceId: string, deadline: number): Prom
     data: { lastPolledAt: new Date(), lastError: report.errors[0] ?? null },
   })
   return report
+}
+
+function isRestartable(r: { state: string; contentId: string | null }) {
+  return (
+    r.state === 'NEEDS_INPUT' || r.state === 'FAILED' || (r.state === 'CANCELED' && !r.contentId)
+  )
 }
 
 async function processRequest(spaceId: string, token: string, requestId: string) {
