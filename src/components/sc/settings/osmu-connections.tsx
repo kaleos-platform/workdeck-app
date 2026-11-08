@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Status = {
   notion: {
@@ -53,9 +54,11 @@ export function OsmuConnections() {
         headers: { 'Content-Type': 'application/json' },
         body: body ? JSON.stringify(body) : undefined,
       })
+      // 자격증명 저장은 2단계 인증 필요 — 단계 인증 페이지로 보냈다가 돌아온다.
+      if (await redirectIfMfaRequired(res)) return
       const json = await res.json().catch(() => ({}))
       if (!res.ok) {
-        toast.error(json.error ?? '요청에 실패했습니다')
+        toast.error(json.message ?? '요청에 실패했습니다')
         return
       }
       setStatus(json)
