@@ -1894,6 +1894,40 @@ export type EnumMarketingLeadStatusWithAggregatesFilter<$PrismaModel = never> = 
   _max?: Prisma.NestedEnumMarketingLeadStatusFilter<$PrismaModel>
 }
 
+export type EnumScFaceStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScFaceStatus | Prisma.EnumScFaceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScFaceStatus[] | Prisma.ListEnumScFaceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScFaceStatus[] | Prisma.ListEnumScFaceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScFaceStatusFilter<$PrismaModel> | $Enums.ScFaceStatus
+}
+
+export type EnumScFaceStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScFaceStatus | Prisma.EnumScFaceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScFaceStatus[] | Prisma.ListEnumScFaceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScFaceStatus[] | Prisma.ListEnumScFaceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScFaceStatusWithAggregatesFilter<$PrismaModel> | $Enums.ScFaceStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScFaceStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScFaceStatusFilter<$PrismaModel>
+}
+
+export type EnumScPublishRequestStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScPublishRequestState | Prisma.EnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ScPublishRequestState[] | Prisma.ListEnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScPublishRequestState[] | Prisma.ListEnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel> | $Enums.ScPublishRequestState
+}
+
+export type EnumScPublishRequestStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScPublishRequestState | Prisma.EnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ScPublishRequestState[] | Prisma.ListEnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScPublishRequestState[] | Prisma.ListEnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScPublishRequestStateWithAggregatesFilter<$PrismaModel> | $Enums.ScPublishRequestState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -3720,6 +3754,40 @@ export type NestedEnumMarketingLeadStatusWithAggregatesFilter<$PrismaModel = nev
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumMarketingLeadStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumMarketingLeadStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumScFaceStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScFaceStatus | Prisma.EnumScFaceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScFaceStatus[] | Prisma.ListEnumScFaceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScFaceStatus[] | Prisma.ListEnumScFaceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScFaceStatusFilter<$PrismaModel> | $Enums.ScFaceStatus
+}
+
+export type NestedEnumScFaceStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScFaceStatus | Prisma.EnumScFaceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScFaceStatus[] | Prisma.ListEnumScFaceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScFaceStatus[] | Prisma.ListEnumScFaceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScFaceStatusWithAggregatesFilter<$PrismaModel> | $Enums.ScFaceStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScFaceStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScFaceStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumScPublishRequestStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScPublishRequestState | Prisma.EnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ScPublishRequestState[] | Prisma.ListEnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScPublishRequestState[] | Prisma.ListEnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel> | $Enums.ScPublishRequestState
+}
+
+export type NestedEnumScPublishRequestStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScPublishRequestState | Prisma.EnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ScPublishRequestState[] | Prisma.ListEnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScPublishRequestState[] | Prisma.ListEnumScPublishRequestStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScPublishRequestStateWithAggregatesFilter<$PrismaModel> | $Enums.ScPublishRequestState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel>
 }
 
 

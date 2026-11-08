@@ -831,3 +831,38 @@ export type KeywordRankSnapshot = Prisma.KeywordRankSnapshotModel
  * 
  */
 export type MarketingLead = Prisma.MarketingLeadModel
+/**
+ * Model ScNotionConnection
+ * 
+ */
+export type ScNotionConnection = Prisma.ScNotionConnectionModel
+/**
+ * Model ScDriveConnection
+ * 
+ */
+export type ScDriveConnection = Prisma.ScDriveConnectionModel
+/**
+ * Model ScSource
+ * 
+ */
+export type ScSource = Prisma.ScSourceModel
+/**
+ * Model ScSourceVersion
+ * 
+ */
+export type ScSourceVersion = Prisma.ScSourceVersionModel
+/**
+ * Model ScMedia
+ * 
+ */
+export type ScMedia = Prisma.ScMediaModel
+/**
+ * Model ScPublishRequest
+ * 
+ */
+export type ScPublishRequest = Prisma.ScPublishRequestModel
+/**
+ * Model ScMediaCopy
+ * 
+ */
+export type ScMediaCopy = Prisma.ScMediaCopyModel

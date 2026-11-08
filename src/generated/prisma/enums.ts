@@ -853,3 +853,25 @@ export const MarketingLeadStatus = {
 } as const
 
 export type MarketingLeadStatus = (typeof MarketingLeadStatus)[keyof typeof MarketingLeadStatus]
+
+
+export const ScFaceStatus = {
+  UNKNOWN: 'UNKNOWN',
+  NO_FACE: 'NO_FACE',
+  FACE: 'FACE'
+} as const
+
+export type ScFaceStatus = (typeof ScFaceStatus)[keyof typeof ScFaceStatus]
+
+
+export const ScPublishRequestState = {
+  RECEIVED: 'RECEIVED',
+  NEEDS_INPUT: 'NEEDS_INPUT',
+  READY: 'READY',
+  PROPOSED: 'PROPOSED',
+  APPROVED: 'APPROVED',
+  CANCELED: 'CANCELED',
+  FAILED: 'FAILED'
+} as const
+
+export type ScPublishRequestState = (typeof ScPublishRequestState)[keyof typeof ScPublishRequestState]

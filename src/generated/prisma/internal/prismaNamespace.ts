@@ -541,7 +541,14 @@ export const ModelName = {
   AdminAuditLog: 'AdminAuditLog',
   WorkerToken: 'WorkerToken',
   KeywordRankSnapshot: 'KeywordRankSnapshot',
-  MarketingLead: 'MarketingLead'
+  MarketingLead: 'MarketingLead',
+  ScNotionConnection: 'ScNotionConnection',
+  ScDriveConnection: 'ScDriveConnection',
+  ScSource: 'ScSource',
+  ScSourceVersion: 'ScSourceVersion',
+  ScMedia: 'ScMedia',
+  ScPublishRequest: 'ScPublishRequest',
+  ScMediaCopy: 'ScMediaCopy'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -557,7 +564,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -12253,6 +12260,524 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ScNotionConnection: {
+      payload: Prisma.$ScNotionConnectionPayload<ExtArgs>
+      fields: Prisma.ScNotionConnectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScNotionConnectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScNotionConnectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>
+        }
+        findFirst: {
+          args: Prisma.ScNotionConnectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScNotionConnectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>
+        }
+        findMany: {
+          args: Prisma.ScNotionConnectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>[]
+        }
+        create: {
+          args: Prisma.ScNotionConnectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>
+        }
+        createMany: {
+          args: Prisma.ScNotionConnectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScNotionConnectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>[]
+        }
+        delete: {
+          args: Prisma.ScNotionConnectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>
+        }
+        update: {
+          args: Prisma.ScNotionConnectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ScNotionConnectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScNotionConnectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScNotionConnectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ScNotionConnectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScNotionConnectionPayload>
+        }
+        aggregate: {
+          args: Prisma.ScNotionConnectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScNotionConnection>
+        }
+        groupBy: {
+          args: Prisma.ScNotionConnectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScNotionConnectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScNotionConnectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScNotionConnectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScDriveConnection: {
+      payload: Prisma.$ScDriveConnectionPayload<ExtArgs>
+      fields: Prisma.ScDriveConnectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScDriveConnectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScDriveConnectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>
+        }
+        findFirst: {
+          args: Prisma.ScDriveConnectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScDriveConnectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>
+        }
+        findMany: {
+          args: Prisma.ScDriveConnectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>[]
+        }
+        create: {
+          args: Prisma.ScDriveConnectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>
+        }
+        createMany: {
+          args: Prisma.ScDriveConnectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScDriveConnectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>[]
+        }
+        delete: {
+          args: Prisma.ScDriveConnectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>
+        }
+        update: {
+          args: Prisma.ScDriveConnectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ScDriveConnectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScDriveConnectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScDriveConnectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ScDriveConnectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScDriveConnectionPayload>
+        }
+        aggregate: {
+          args: Prisma.ScDriveConnectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScDriveConnection>
+        }
+        groupBy: {
+          args: Prisma.ScDriveConnectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScDriveConnectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScDriveConnectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScDriveConnectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScSource: {
+      payload: Prisma.$ScSourcePayload<ExtArgs>
+      fields: Prisma.ScSourceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScSourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScSourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>
+        }
+        findFirst: {
+          args: Prisma.ScSourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScSourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>
+        }
+        findMany: {
+          args: Prisma.ScSourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>[]
+        }
+        create: {
+          args: Prisma.ScSourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>
+        }
+        createMany: {
+          args: Prisma.ScSourceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScSourceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>[]
+        }
+        delete: {
+          args: Prisma.ScSourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>
+        }
+        update: {
+          args: Prisma.ScSourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>
+        }
+        deleteMany: {
+          args: Prisma.ScSourceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScSourceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScSourceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>[]
+        }
+        upsert: {
+          args: Prisma.ScSourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourcePayload>
+        }
+        aggregate: {
+          args: Prisma.ScSourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScSource>
+        }
+        groupBy: {
+          args: Prisma.ScSourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScSourceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScSourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScSourceCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScSourceVersion: {
+      payload: Prisma.$ScSourceVersionPayload<ExtArgs>
+      fields: Prisma.ScSourceVersionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScSourceVersionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScSourceVersionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>
+        }
+        findFirst: {
+          args: Prisma.ScSourceVersionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScSourceVersionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>
+        }
+        findMany: {
+          args: Prisma.ScSourceVersionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>[]
+        }
+        create: {
+          args: Prisma.ScSourceVersionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>
+        }
+        createMany: {
+          args: Prisma.ScSourceVersionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScSourceVersionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>[]
+        }
+        delete: {
+          args: Prisma.ScSourceVersionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>
+        }
+        update: {
+          args: Prisma.ScSourceVersionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ScSourceVersionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScSourceVersionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScSourceVersionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ScSourceVersionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScSourceVersionPayload>
+        }
+        aggregate: {
+          args: Prisma.ScSourceVersionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScSourceVersion>
+        }
+        groupBy: {
+          args: Prisma.ScSourceVersionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScSourceVersionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScSourceVersionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScSourceVersionCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScMedia: {
+      payload: Prisma.$ScMediaPayload<ExtArgs>
+      fields: Prisma.ScMediaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScMediaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScMediaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>
+        }
+        findFirst: {
+          args: Prisma.ScMediaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScMediaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>
+        }
+        findMany: {
+          args: Prisma.ScMediaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>[]
+        }
+        create: {
+          args: Prisma.ScMediaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>
+        }
+        createMany: {
+          args: Prisma.ScMediaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScMediaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>[]
+        }
+        delete: {
+          args: Prisma.ScMediaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>
+        }
+        update: {
+          args: Prisma.ScMediaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>
+        }
+        deleteMany: {
+          args: Prisma.ScMediaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScMediaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScMediaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>[]
+        }
+        upsert: {
+          args: Prisma.ScMediaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaPayload>
+        }
+        aggregate: {
+          args: Prisma.ScMediaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScMedia>
+        }
+        groupBy: {
+          args: Prisma.ScMediaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScMediaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScMediaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScMediaCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScPublishRequest: {
+      payload: Prisma.$ScPublishRequestPayload<ExtArgs>
+      fields: Prisma.ScPublishRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScPublishRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScPublishRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.ScPublishRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScPublishRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>
+        }
+        findMany: {
+          args: Prisma.ScPublishRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>[]
+        }
+        create: {
+          args: Prisma.ScPublishRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>
+        }
+        createMany: {
+          args: Prisma.ScPublishRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScPublishRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.ScPublishRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>
+        }
+        update: {
+          args: Prisma.ScPublishRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.ScPublishRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScPublishRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScPublishRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.ScPublishRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScPublishRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.ScPublishRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScPublishRequest>
+        }
+        groupBy: {
+          args: Prisma.ScPublishRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScPublishRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScPublishRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScPublishRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScMediaCopy: {
+      payload: Prisma.$ScMediaCopyPayload<ExtArgs>
+      fields: Prisma.ScMediaCopyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScMediaCopyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScMediaCopyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>
+        }
+        findFirst: {
+          args: Prisma.ScMediaCopyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScMediaCopyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>
+        }
+        findMany: {
+          args: Prisma.ScMediaCopyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>[]
+        }
+        create: {
+          args: Prisma.ScMediaCopyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>
+        }
+        createMany: {
+          args: Prisma.ScMediaCopyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScMediaCopyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>[]
+        }
+        delete: {
+          args: Prisma.ScMediaCopyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>
+        }
+        update: {
+          args: Prisma.ScMediaCopyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>
+        }
+        deleteMany: {
+          args: Prisma.ScMediaCopyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScMediaCopyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScMediaCopyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>[]
+        }
+        upsert: {
+          args: Prisma.ScMediaCopyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScMediaCopyPayload>
+        }
+        aggregate: {
+          args: Prisma.ScMediaCopyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScMediaCopy>
+        }
+        groupBy: {
+          args: Prisma.ScMediaCopyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScMediaCopyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScMediaCopyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScMediaCopyCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -14078,6 +14603,7 @@ export const ContentScalarFieldEnum = {
   ideationId: 'ideationId',
   ideaIndex: 'ideaIndex',
   channelId: 'channelId',
+  sourceVersionId: 'sourceVersionId',
   snapshotHash: 'snapshotHash',
   publishedAt: 'publishedAt',
   scheduledAt: 'scheduledAt',
@@ -14990,6 +15516,132 @@ export const MarketingLeadScalarFieldEnum = {
 } as const
 
 export type MarketingLeadScalarFieldEnum = (typeof MarketingLeadScalarFieldEnum)[keyof typeof MarketingLeadScalarFieldEnum]
+
+
+export const ScNotionConnectionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  sourceDataSourceId: 'sourceDataSourceId',
+  requestDataSourceId: 'requestDataSourceId',
+  lastPolledAt: 'lastPolledAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScNotionConnectionScalarFieldEnum = (typeof ScNotionConnectionScalarFieldEnum)[keyof typeof ScNotionConnectionScalarFieldEnum]
+
+
+export const ScDriveConnectionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  serviceAccountEmail: 'serviceAccountEmail',
+  rootId: 'rootId',
+  lastSyncedAt: 'lastSyncedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScDriveConnectionScalarFieldEnum = (typeof ScDriveConnectionScalarFieldEnum)[keyof typeof ScDriveConnectionScalarFieldEnum]
+
+
+export const ScSourceScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  notionPageId: 'notionPageId',
+  title: 'title',
+  driveFolderId: 'driveFolderId',
+  latestVersion: 'latestVersion',
+  lastImportedAt: 'lastImportedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScSourceScalarFieldEnum = (typeof ScSourceScalarFieldEnum)[keyof typeof ScSourceScalarFieldEnum]
+
+
+export const ScSourceVersionScalarFieldEnum = {
+  id: 'id',
+  sourceId: 'sourceId',
+  version: 'version',
+  data: 'data',
+  rawText: 'rawText',
+  contentHash: 'contentHash',
+  createdAt: 'createdAt'
+} as const
+
+export type ScSourceVersionScalarFieldEnum = (typeof ScSourceVersionScalarFieldEnum)[keyof typeof ScSourceVersionScalarFieldEnum]
+
+
+export const ScMediaScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  sourceId: 'sourceId',
+  driveFileId: 'driveFileId',
+  driveFolderId: 'driveFolderId',
+  path: 'path',
+  name: 'name',
+  mimeType: 'mimeType',
+  md5: 'md5',
+  driveModifiedAt: 'driveModifiedAt',
+  takenAt: 'takenAt',
+  width: 'width',
+  height: 'height',
+  caption: 'caption',
+  tags: 'tags',
+  faceStatus: 'faceStatus',
+  allowedByUserId: 'allowedByUserId',
+  allowedAt: 'allowedAt',
+  allowedMd5: 'allowedMd5',
+  describedAt: 'describedAt',
+  describeError: 'describeError',
+  removedAt: 'removedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScMediaScalarFieldEnum = (typeof ScMediaScalarFieldEnum)[keyof typeof ScMediaScalarFieldEnum]
+
+
+export const ScPublishRequestScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  notionPageId: 'notionPageId',
+  snapshot: 'snapshot',
+  revision: 'revision',
+  sourceId: 'sourceId',
+  sourceVersionId: 'sourceVersionId',
+  state: 'state',
+  leaseUntil: 'leaseUntil',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  lastError: 'lastError',
+  contentId: 'contentId',
+  projectedStatus: 'projectedStatus',
+  projectedAt: 'projectedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScPublishRequestScalarFieldEnum = (typeof ScPublishRequestScalarFieldEnum)[keyof typeof ScPublishRequestScalarFieldEnum]
+
+
+export const ScMediaCopyScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  requestId: 'requestId',
+  mediaId: 'mediaId',
+  md5: 'md5',
+  storagePath: 'storagePath',
+  url: 'url',
+  mimeType: 'mimeType',
+  width: 'width',
+  height: 'height',
+  createdAt: 'createdAt'
+} as const
+
+export type ScMediaCopyScalarFieldEnum = (typeof ScMediaCopyScalarFieldEnum)[keyof typeof ScMediaCopyScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -16354,6 +17006,34 @@ export type EnumMarketingLeadStatusFieldRefInput<$PrismaModel> = FieldRefInputTy
 export type ListEnumMarketingLeadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketingLeadStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'ScFaceStatus'
+ */
+export type EnumScFaceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScFaceStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ScFaceStatus[]'
+ */
+export type ListEnumScFaceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScFaceStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ScPublishRequestState'
+ */
+export type EnumScPublishRequestStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScPublishRequestState'>
+    
+
+
+/**
+ * Reference to a field of type 'ScPublishRequestState[]'
+ */
+export type ListEnumScPublishRequestStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScPublishRequestState[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -16607,6 +17287,13 @@ export type GlobalOmitConfig = {
   workerToken?: Prisma.WorkerTokenOmit
   keywordRankSnapshot?: Prisma.KeywordRankSnapshotOmit
   marketingLead?: Prisma.MarketingLeadOmit
+  scNotionConnection?: Prisma.ScNotionConnectionOmit
+  scDriveConnection?: Prisma.ScDriveConnectionOmit
+  scSource?: Prisma.ScSourceOmit
+  scSourceVersion?: Prisma.ScSourceVersionOmit
+  scMedia?: Prisma.ScMediaOmit
+  scPublishRequest?: Prisma.ScPublishRequestOmit
+  scMediaCopy?: Prisma.ScMediaCopyOmit
 }
 
 /* Types for Logging */
