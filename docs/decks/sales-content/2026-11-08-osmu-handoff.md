@@ -18,13 +18,13 @@
 
 - [ ] 노션 내부 통합 「Workdeck」 생성(ameaning 워크스페이스 소유자) → 「콘텐츠 소재」「콘텐츠 발행」 DB를 둘 상위 페이지에 연결
 - [ ] 공유 드라이브에 시험용 행사 폴더 1개 + 사진 업로드
-- [ ] `gcloud auth login hello@kaleos.co.kr --no-activate --no-launch-browser` 재로그인 (기본 계정은 `hello@ameaning.co.kr` 유지)
+- [x] `gcloud auth login hello@kaleos.co.kr --no-activate --no-launch-browser` 재로그인 (기본 계정은 `hello@ameaning.co.kr` 유지)
 
 ## 2. GCP 정리 (재로그인 후, 항상 `--account=hello@kaleos.co.kr`)
 
-- [ ] WIF 공급자 조건 강화: `assertion.project == 'workdeck-app' && assertion.owner == 'eddysangwon-gmailcoms-projects'`
-- [ ] TokenCreator 를 프로젝트 단위 → SA 단위 부여로 전환 (§10)
-- [ ] 스파이크 SA `wd-spike-5219yg@workdeck-drive-photos.iam.gserviceaccount.com` 삭제 + 공유 드라이브 구성원에서 제거
+- [x] WIF 공급자 조건 강화: `assertion.project == 'workdeck-app' && assertion.owner == 'eddysangwon-gmailcoms-projects'`
+- [x] TokenCreator 를 프로젝트 단위 → SA 단위 부여로 전환 (§10) — 2026-11-08 프로젝트 바인딩 제거, principalSet 엔 serviceAccountAdmin 만 남음(SA 단위 부여는 `ensureSpaceServiceAccount` 가 생성 직후 수행)
+- [x] 스파이크 SA `wd-spike-5219yg@…` 삭제(2026-11-08) — [ ] 공유 드라이브 구성원 목록에 남은 삭제 계정 항목은 드라이브 화면에서 사용자가 제거
 - [ ] 스크래치패드 `.devenv`(Vercel dev 환경변수, 비밀값 포함) 삭제 — 2026-11-08 세션에서 자동 모드가 삭제를 막음, 사용자가 직접 삭제
 
 ## 3. P1 개발 — 블로그 OSMU (§8·§10)
