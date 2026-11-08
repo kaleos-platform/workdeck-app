@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react'
 import type { RuleStatus, RuleScope, RuleSource } from '@/generated/prisma/enums'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { OsmuConnections } from './osmu-connections'
 import { ProductList } from '@/components/sc/settings/product-list'
 import { AddProductDialog, type AddProductMode } from '@/components/sc/settings/add-product-dialog'
 import {
@@ -317,7 +318,7 @@ export function SettingsTabsClient({
 }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const VALID_TABS = ['sales-info', 'channels', 'rules'] as const
+  const VALID_TABS = ['sales-info', 'channels', 'sources', 'rules'] as const
   const rawTab = searchParams.get('tab')
   const tab = VALID_TABS.includes(rawTab as (typeof VALID_TABS)[number])
     ? (rawTab as (typeof VALID_TABS)[number])
@@ -339,7 +340,7 @@ export function SettingsTabsClient({
       <div>
         <h1 className="text-2xl font-bold tracking-tight">설정</h1>
         <p className="text-sm text-muted-foreground">
-          세일즈 정보, 채널 계정, 개선 규칙을 통합 관리합니다.
+          세일즈 정보, 채널 계정, 소재 연결, 개선 규칙을 통합 관리합니다.
         </p>
       </div>
 
@@ -347,6 +348,7 @@ export function SettingsTabsClient({
         <TabsList className="mb-4">
           <TabsTrigger value="sales-info">세일즈 정보</TabsTrigger>
           <TabsTrigger value="channels">채널 계정</TabsTrigger>
+          <TabsTrigger value="sources">소재 연결</TabsTrigger>
           <TabsTrigger value="rules">개선 규칙</TabsTrigger>
         </TabsList>
 
@@ -361,6 +363,10 @@ export function SettingsTabsClient({
 
         <TabsContent value="channels">
           <ChannelsTab channels={channels} />
+        </TabsContent>
+
+        <TabsContent value="sources">
+          <OsmuConnections />
         </TabsContent>
 
         <TabsContent value="rules">

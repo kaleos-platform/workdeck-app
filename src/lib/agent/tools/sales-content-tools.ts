@@ -11,6 +11,8 @@ import { idempotencyKeyFor } from './write-tools'
 import { pickDailyMetrics } from '@/lib/sc/metrics-dedup'
 import { redactErrorMessage } from '@/lib/sc/notifications'
 import { ToolUserError } from './errors'
+import { copyRequestPhotos, isPublishable } from '@/lib/sc/osmu/media-copy'
+import type { RequestSnapshot } from '@/lib/sc/osmu/notion-schema'
 import type { ToolDefinition } from './types'
 
 const DECK = 'sales-content'
@@ -320,28 +322,69 @@ const getContent: ToolDefinition = {
   },
 }
 
+// 도구 입력: photos 는 {slot, mediaId} 만 받는다. copyId 는 서버가 storage 복사 후 채운다.
+const proposePostInput = postPublishParams.extend({
+  requestId: z
+    .string()
+    .min(1)
+    .max(100)
+    .optional()
+    .describe('노션 발행 요청에서 온 글이면 sc_list_requests 의 requestId'),
+  photos: z
+    .array(
+      z.object({
+        slot: z.number().int().min(1).max(50).describe('본문 `[사진: …]` 자리 순서(1부터)'),
+        mediaId: z
+          .string()
+          .min(1)
+          .max(100)
+          .describe('sc_get_source 의 media[].id (publishable=true 만)'),
+      })
+    )
+    .max(50)
+    .optional(),
+})
+
 const proposePost: ToolDefinition = {
   name: 'sc_propose_post',
   description:
-    '게시물 1건의 발행을 제안합니다(제목·본문·채널·연결 URL·예약 시각). 즉시 발행되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN)가 한 번 승인하면 콘텐츠가 만들어지고 해당 채널로 발행이 예약됩니다. 블로그·SNS 게시물을 요청받았을 때 결과물을 내는 경로가 이 도구입니다 — 대화에 본문을 붙이는 대신 여기로 올리고, 대화에는 제목과 승인 대기 등록 사실만 알리세요. 본문은 일반 텍스트로 쓰고 `# `·`## `·`### ` 로 시작하는 줄만 소제목이 됩니다(50자 이상). `*굵게*`·`_기울임_`·`**` 같은 마크다운·슬랙 서식은 변환되지 않고 기호가 그대로 게시되니 쓰지 마세요. 상품 사실(구성·대상·효능)은 sc_list_products 결과에 있는 것만 쓰고 지어내지 마세요. 활성 채널이 없으면 제안이 거부되니, 그때는 사용자에게 세일즈 콘텐츠 채널 등록이 필요하다고 알리세요. targetUrl 은 글에서 연결할 상품·랜딩 페이지이고, 클릭 추적용 짧은 링크로 바뀝니다. scheduledAt(ISO 8601)을 비우거나 승인 시점이 이미 지났으면 승인 즉시 발행합니다. 쓰기 전에 sc_list_brands 로 브랜드 톤을, sc_list_channels 로 채널 id 를 확인하세요. 블로그 채널이면 category(블로그 카테고리 이름 그대로)와 tags(핵심 키워드 포함 5~10개, # 없이)를 함께 넣으세요 — 자동 게시 채널은 이 값으로 발행합니다. 본문에 `[사진: 설명]` 줄이 있으면 승인 뒤 담당자가 사진을 채운 다음 게시됩니다.',
-  inputSchema: postPublishParams.shape,
+    '게시물 1건의 발행을 제안합니다(제목·본문·채널·연결 URL·예약 시각). 즉시 발행되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN)가 한 번 승인하면 콘텐츠가 만들어지고 해당 채널로 발행이 예약됩니다. 블로그·SNS 게시물을 요청받았을 때 결과물을 내는 경로가 이 도구입니다 — 대화에 본문을 붙이는 대신 여기로 올리고, 대화에는 제목과 승인 대기 등록 사실만 알리세요. 본문은 일반 텍스트로 쓰고 `# `·`## `·`### ` 로 시작하는 줄만 소제목이 됩니다(50자 이상). `*굵게*`·`_기울임_`·`**` 같은 마크다운·슬랙 서식은 변환되지 않고 기호가 그대로 게시되니 쓰지 마세요. 상품 사실(구성·대상·효능)은 sc_list_products 결과에 있는 것만 쓰고 지어내지 마세요. 활성 채널이 없으면 제안이 거부되니, 그때는 사용자에게 세일즈 콘텐츠 채널 등록이 필요하다고 알리세요. targetUrl 은 글에서 연결할 상품·랜딩 페이지이고, 클릭 추적용 짧은 링크로 바뀝니다. scheduledAt(ISO 8601)을 비우거나 승인 시점이 이미 지났으면 승인 즉시 발행합니다. 쓰기 전에 sc_list_brands 로 브랜드 톤을, sc_list_channels 로 채널 id 를 확인하세요. 블로그 채널이면 category(블로그 카테고리 이름 그대로)와 tags(핵심 키워드 포함 5~10개, # 없이)를 함께 넣으세요 — 자동 게시 채널은 이 값으로 발행합니다. 본문에 `[사진: 설명]` 줄이 있으면 승인 뒤 담당자가 사진을 채운 다음 게시됩니다. 노션 발행 요청으로 쓴 글이면 requestId 를 넣고, 소재 사진은 photos([{slot, mediaId}])로 자리에 지정하세요 — publishable=true 인 사진만 쓸 수 있고, 모든 자리가 차면 승인 즉시 게시 단계로 넘어갑니다. 소재(sc_get_source)의 facts·quotes 에 없는 사실은 쓰지 마세요.',
+  inputSchema: proposePostInput.shape,
   mode: 'write',
   scope: 'sc:write',
   async execute(ctx, params) {
     await requireDeck(ctx.spaceId, DECK)
-    const parsed = postPublishParams.safeParse(params)
+    const parsed = proposePostInput.safeParse(params)
     if (!parsed.success) {
       throw new ToolUserError(
         `입력값 오류: ${parsed.error.issues.map((i) => i.message).join(', ')}`
       )
     }
-    const p = parsed.data
+    const { photos: photoInput, ...rest } = parsed.data
+    if (photoInput?.length && !rest.requestId) {
+      throw new ToolUserError('photos 는 requestId 와 함께만 쓸 수 있습니다')
+    }
+    if (photoInput?.length) {
+      const active = await prisma.salesContentChannel.count({
+        where: { id: rest.channelId, spaceId: ctx.spaceId, isActive: true },
+      })
+      if (!active) throw new ToolUserError('활성 채널을 찾을 수 없습니다(sc_list_channels 로 확인)')
+    }
+    // 제안 시점에 사진을 storage 로 복사해 승인 화면·게시본을 고정한다((requestId, mediaId, md5) 멱등).
+    const photos = rest.requestId
+      ? await copyRequestPhotos({
+          spaceId: ctx.spaceId,
+          requestId: rest.requestId,
+          photos: photoInput ?? [],
+        })
+      : []
+    const p = { ...rest, ...(photos.length && { photos }) }
     // 승인자가 채널을 id 가 아니라 이름으로 보게 요약에 싣는다(없으면 validateCreate 가 거부).
     const channel = await prisma.salesContentChannel.findFirst({
       where: { id: p.channelId, spaceId: ctx.spaceId },
       select: { name: true },
     })
-    return createPendingAction({
+    const action = await createPendingAction({
       spaceId: ctx.spaceId,
       actionType: 'sales-content.post.publish',
       params: p,
@@ -354,6 +397,13 @@ const proposePost: ToolDefinition = {
       // 같은 제안 재시도가 승인 건을 중복으로 만들지 않게.
       idempotencyKey: idempotencyKeyFor('sales-content.post.publish', ctx.spaceId, p),
     })
+    if (p.requestId) {
+      await prisma.scPublishRequest.updateMany({
+        where: { id: p.requestId, spaceId: ctx.spaceId, state: 'READY' },
+        data: { state: 'PROPOSED' },
+      })
+    }
+    return action
   },
 }
 
@@ -425,6 +475,125 @@ const proposeSetup: ToolDefinition = {
   },
 }
 
+const listRequests: ToolDefinition = {
+  name: 'sc_list_requests',
+  description:
+    '노션 「콘텐츠 발행」에서 들어온 발행 요청 목록(제목·유형·관점·희망 발행일·소재·게시 가능 사진 수)을 반환합니다. 기본은 작성 대기(READY)만입니다. 요청 하나를 쓰려면 sc_get_source(requestId) 로 소재·사진을 확인한 뒤 sc_propose_post 에 requestId 와 photos 를 넣어 제안하세요.',
+  inputSchema: {
+    state: z
+      .enum(['RECEIVED', 'NEEDS_INPUT', 'READY', 'PROPOSED', 'APPROVED', 'CANCELED', 'FAILED'])
+      .optional(),
+  },
+  mode: 'read',
+  scope: 'sc:read',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    const state = (params.state as string | undefined) ?? 'READY'
+    const rows = await prisma.scPublishRequest.findMany({
+      where: { spaceId: ctx.spaceId, state: state as never },
+      orderBy: { createdAt: 'asc' },
+      take: 50,
+      select: {
+        id: true,
+        state: true,
+        snapshot: true,
+        lastError: true,
+        createdAt: true,
+        source: { select: { id: true, title: true } },
+      },
+    })
+    const sourceIds = rows.flatMap((r) => (r.source ? [r.source.id] : []))
+    const media = await prisma.scMedia.findMany({
+      where: { spaceId: ctx.spaceId, sourceId: { in: sourceIds }, removedAt: null },
+      select: { sourceId: true, faceStatus: true, md5: true, allowedMd5: true, removedAt: true },
+    })
+    const publishable = new Map<string, number>()
+    for (const m of media) {
+      if (m.sourceId && isPublishable(m))
+        publishable.set(m.sourceId, (publishable.get(m.sourceId) ?? 0) + 1)
+    }
+    return {
+      requests: rows.map((r) => {
+        const s = r.snapshot as unknown as RequestSnapshot
+        return {
+          requestId: r.id,
+          state: r.state,
+          title: s.title,
+          kind: s.kind,
+          brief: s.brief,
+          desiredDate: s.desiredDate,
+          source: r.source?.title ?? null,
+          publishablePhotos: r.source ? (publishable.get(r.source.id) ?? 0) : 0,
+          lastError: r.lastError,
+        }
+      }),
+    }
+  },
+}
+
+const getSource: ToolDefinition = {
+  name: 'sc_get_source',
+  description:
+    '발행 요청 1건의 소재(정규화된 항목·사실·인용과 각 근거 원문)와 소재 사진 목록(설명·태그·촬영 시각·publishable), 같은 소재로 이미 만든 결과물 요약을 반환합니다. 사실은 facts·quotes 에 있는 것만 쓰고, 사진은 publishable=true 인 것만 sc_propose_post photos 에 쓰세요. 같은 소재의 기존 결과물과 관점·구성·사진이 겹치지 않게 쓰세요(네이버는 유사 문서 노출을 낮춥니다).',
+  inputSchema: { requestId: z.string().min(1).max(100) },
+  mode: 'read',
+  scope: 'sc:read',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    const r = await prisma.scPublishRequest.findFirst({
+      where: { id: params.requestId as string, spaceId: ctx.spaceId },
+      select: {
+        id: true,
+        state: true,
+        snapshot: true,
+        sourceId: true,
+        sourceVersion: { select: { version: true, data: true } },
+        source: { select: { title: true } },
+      },
+    })
+    if (!r) throw new ToolUserError('발행 요청을 찾을 수 없습니다(sc_list_requests 로 확인)')
+    if (!r.sourceId || !r.sourceVersion) throw new ToolUserError('소재가 아직 준비되지 않았습니다')
+    const [media, siblings] = await Promise.all([
+      prisma.scMedia.findMany({
+        where: { spaceId: ctx.spaceId, sourceId: r.sourceId, removedAt: null },
+        orderBy: [{ takenAt: 'asc' }, { name: 'asc' }],
+        take: 200,
+      }),
+      prisma.content.findMany({
+        where: { spaceId: ctx.spaceId, sourceVersion: { sourceId: r.sourceId } },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: { id: true, title: true, body: true, status: true },
+      }),
+    ])
+    return {
+      requestId: r.id,
+      state: r.state,
+      request: r.snapshot,
+      source: {
+        title: r.source?.title ?? null,
+        version: r.sourceVersion.version,
+        ...(r.sourceVersion.data as object),
+      },
+      media: media.map((m) => ({
+        id: m.id,
+        name: m.name,
+        path: m.path,
+        caption: m.caption,
+        tags: m.tags,
+        takenAt: m.takenAt,
+        publishable: isPublishable(m),
+      })),
+      existingOutputs: siblings.map((c) => ({
+        contentId: c.id,
+        title: c.title,
+        status: c.status,
+        excerpt: c.body?.slice(0, 300) ?? null,
+      })),
+    }
+  },
+}
+
 export const salesContentTools: ToolDefinition[] = [
   listBrands,
   listProducts,
@@ -432,6 +601,8 @@ export const salesContentTools: ToolDefinition[] = [
   listChannels,
   listContents,
   getContent,
+  listRequests,
+  getSource,
   proposePost,
   proposeSetup,
 ]
