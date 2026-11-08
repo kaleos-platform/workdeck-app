@@ -269,6 +269,8 @@ export function ContentBlockEditor({
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...body, ...(version ? { expectedUpdatedAt: version } : {}) }),
+      }).catch(() => {
+        throw new Error('저장 결과를 확인하지 못했습니다. 연결 상태를 확인하고 다시 저장해 주세요.')
       })
       if (!res.ok) {
         if (res.status === 409 || res.status === 428) {

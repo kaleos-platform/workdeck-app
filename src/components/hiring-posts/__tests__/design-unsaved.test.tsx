@@ -186,3 +186,43 @@ it('이미지 변환 실패는 서버 저장을 호출하지 않고 미저장 �
   expect(screen.getByText('저장하지 않은 변경사항')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: '카드저장' })).toBeEnabled()
 })
+
+it('디자인 저장 중 네트워크 오류는 저장 결과 확인 안내를 표시하고 편집을 유지한다', async () => {
+  const { toast } = jest.requireMock('sonner')
+  toast.error.mockClear()
+  global.fetch = jest.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+  function Cards() {
+    const [contents, setContents] = useState<WizardContentData[]>([
+      {
+        id: 'design',
+        contentType: 'design',
+        title: null,
+        data: null,
+        imagePath: null,
+        sortOrder: 0,
+      },
+    ])
+    return (
+      <ContentBlockEditor
+        postingId="qa"
+        contents={contents}
+        positions={[]}
+        spacePositions={[]}
+        onPositionsChange={() => {}}
+        appliedTemplate={null}
+        onChange={setContents}
+      />
+    )
+  }
+  render(<Cards />)
+  fireEvent.click(screen.getByRole('button', { name: '편집' }))
+  edit()
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '카드저장' })))
+  await waitFor(() =>
+    expect(toast.error).toHaveBeenCalledWith(
+      '저장 결과를 확인하지 못했습니다. 연결 상태를 확인하고 다시 저장해 주세요.'
+    )
+  )
+  expect(screen.getByText('저장하지 않은 변경사항')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '카드저장' })).toBeEnabled()
+})
