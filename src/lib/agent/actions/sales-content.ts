@@ -15,6 +15,7 @@ import { textToDoc } from '@/lib/sc/text-to-doc'
 import { getAppOrigin } from '@/lib/domain'
 import { buildPublishSnapshot, photoSlots, readAsideConfig } from '@/lib/sc/aside-publish'
 import { notifyDeploymentThread } from '@/lib/sc/deployment-notify'
+import { saveAssetPlan } from '@/lib/sc/asset-plan'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
 function def<T>(d: ActionDefinition<T>): ActionDefinition {
@@ -32,8 +33,48 @@ export const postPublishParams = z.object({
   // 자동 게시(Aside) 채널에서 쓰는 블로그 카테고리·태그. 없으면 채널 기본 카테고리.
   category: z.string().trim().min(1).max(100).optional(),
   tags: z.array(z.string().trim().min(1).max(30)).max(30).optional(),
+  // OSMU: 노션 발행 요청(ScPublishRequest) 에서 온 제안이면 그 id. 승인 시 콘텐츠와 1:1 로 연결된다.
+  requestId: z.string().min(1).max(100).optional(),
+  // 사진 자리(본문 `[사진: …]` 순서, 1부터) ← 소재 사진. copyId 는 제안 시점 storage 복사본(서버가 채움).
+  photos: z
+    .array(
+      z.object({
+        slot: z.number().int().min(1).max(50),
+        mediaId: z.string().min(1).max(100),
+        copyId: z.string().min(1).max(100),
+      })
+    )
+    .max(50)
+    .optional(),
 })
 export type PostPublishParams = z.infer<typeof postPublishParams>
+
+/** 요청 연결 제안의 사전 검증: 같은 Space·작성/제안 단계·미연결, 사진 복사본은 그 요청 것만. */
+async function checkRequest(spaceId: string, params: PostPublishParams) {
+  if (params.photos?.length && !params.requestId) {
+    throw new ToolUserError('photos 는 requestId(발행 요청)와 함께만 쓸 수 있습니다')
+  }
+  if (!params.requestId) return
+  const request = await prisma.scPublishRequest.findFirst({
+    where: { id: params.requestId, spaceId },
+    select: { state: true, contentId: true },
+  })
+  if (!request) throw new ToolUserError('발행 요청을 찾을 수 없습니다(sc_list_requests 로 확인)')
+  if (request.contentId || (request.state !== 'READY' && request.state !== 'PROPOSED')) {
+    throw new ToolUserError('작성 대기 상태의 발행 요청이 아닙니다')
+  }
+  const copyIds = (params.photos ?? []).map((p) => p.copyId)
+  if (copyIds.length) {
+    const copies = await prisma.scMediaCopy.findMany({
+      where: { id: { in: copyIds }, spaceId, requestId: params.requestId },
+      select: { id: true, mediaId: true },
+    })
+    const ok = new Map(copies.map((c) => [c.id, c.mediaId]))
+    if (params.photos!.some((p) => ok.get(p.copyId) !== p.mediaId)) {
+      throw new ToolUserError('사진 복사본이 이 요청의 것이 아닙니다')
+    }
+  }
+}
 
 async function activeChannel(spaceId: string, channelId: string) {
   const channel = await prisma.salesContentChannel.findFirst({
@@ -57,7 +98,9 @@ async function activeChannel(spaceId: string, channelId: string) {
  */
 const postPublish: ActionDefinition<PostPublishParams> = {
   // Slack 승인 알림은 값을 300자에서 자른다 — 그보다 긴 본문은 전문을 볼 수 있는 웹에서만 승인한다.
-  requiresWebReview: (params) => params.body.length > 300,
+  // 소재·사진 기반 제안은 썸네일·근거를 봐야 하므로 길이와 무관하게 웹 승인.
+  requiresWebReview: (params) =>
+    params.body.length > 300 || !!params.requestId || !!params.photos?.length,
   actionType: 'sales-content.post.publish',
   deckKey: 'sales-content',
   title: '세일즈 콘텐츠 게시물 발행 예약',
@@ -68,6 +111,7 @@ const postPublish: ActionDefinition<PostPublishParams> = {
   validateCreate: async (ctx, params) => {
     await requireDeck(ctx.spaceId, 'sales-content')
     await activeChannel(ctx.spaceId, params.channelId)
+    await checkRequest(ctx.spaceId, params)
   },
   execute: async (ctx, params) => {
     const { spaceId } = ctx
@@ -91,6 +135,20 @@ const postPublish: ActionDefinition<PostPublishParams> = {
     // claim 해 같은 배포에 PUBLISH 작업이 두 개 생길 수 있다.
     const created = await withSlugRetry(() =>
       prisma.$transaction(async (tx) => {
+        // 요청 연결: 행을 잠가 같은 요청이 두 번 승인돼 콘텐츠가 둘 생기지 않게 한다.
+        let sourceVersionId: string | null = null
+        if (params.requestId) {
+          const locked = await tx.$queryRaw<
+            { contentId: string | null; state: string; sourceVersionId: string | null }[]
+          >`
+            SELECT "contentId", "state"::text AS "state", "sourceVersionId" FROM "ScPublishRequest"
+            WHERE "id" = ${params.requestId} AND "spaceId" = ${spaceId} FOR UPDATE`
+          const r = locked[0]
+          if (!r) throw new ToolUserError('발행 요청을 찾을 수 없습니다')
+          if (r.contentId) throw new ToolUserError('이미 승인된 발행 요청입니다')
+          if (r.state === 'CANCELED') throw new ToolUserError('취소된 발행 요청입니다')
+          sourceVersionId = r.sourceVersionId
+        }
         const content = await tx.content.create({
           data: {
             spaceId,
@@ -103,9 +161,16 @@ const postPublish: ActionDefinition<PostPublishParams> = {
             scheduledAt,
             channelId: channel.id,
             targetKeyword: params.targetKeyword ?? null,
+            sourceVersionId,
           },
           select: { id: true, title: true },
         })
+        if (params.requestId) {
+          await tx.scPublishRequest.update({
+            where: { id: params.requestId },
+            data: { contentId: content.id, state: 'APPROVED', lastError: null },
+          })
+        }
         const data = deploymentData(spaceId, content, channel, {
           targetUrl: params.targetUrl,
           scheduledAt: scheduledAt.toISOString(),
@@ -123,13 +188,46 @@ const postPublish: ActionDefinition<PostPublishParams> = {
           : null
         const slots = snapshot ? photoSlots(snapshot) : []
         const awaitingAssets = slots.length > 0
+        // 제안 때 고른 소재 사진(storage 복사본)을 이 콘텐츠의 에셋으로 만들고 자리를 미리 채운다.
+        const prefilled = new Map<number, string>()
+        if (awaitingAssets && params.photos?.length) {
+          const copies = await tx.scMediaCopy.findMany({
+            where: {
+              id: { in: params.photos.map((p) => p.copyId) },
+              spaceId,
+              requestId: params.requestId,
+            },
+          })
+          const byId = new Map(copies.map((c) => [c.id, c]))
+          const valid = new Set(slots.map((s) => s.index))
+          for (const p of params.photos) {
+            const c = byId.get(p.copyId)
+            if (!c || !valid.has(p.slot - 1) || prefilled.has(p.slot - 1)) continue
+            const asset = await tx.contentAsset.create({
+              data: {
+                spaceId,
+                contentId: content.id,
+                kind: 'IMAGE',
+                url: c.url,
+                storagePath: c.storagePath,
+                mimeType: c.mimeType,
+                width: c.width,
+                height: c.height,
+              },
+              select: { id: true },
+            })
+            prefilled.set(p.slot - 1, asset.id)
+          }
+        }
         const deployment = await tx.contentDeployment.create({
           data: {
             ...data,
             status: awaitingAssets ? 'AWAITING_ASSETS' : 'PUBLISHING',
             publishSnapshot: (snapshot ?? undefined) as never,
             assetPlan: awaitingAssets
-              ? ({ slots: slots.map((s) => ({ index: s.index })) } as never)
+              ? ({
+                  slots: slots.map((s) => ({ index: s.index, assetId: prefilled.get(s.index) })),
+                } as never)
               : undefined,
             notifySlackChannelId: approval?.slackChannelId ?? null,
             notifySlackThreadTs: approval?.slackMessageTs ?? null,
@@ -142,6 +240,7 @@ const postPublish: ActionDefinition<PostPublishParams> = {
             deploymentId: deployment.id,
             jobId: null as string | null,
             photoSlots: slots.length,
+            allPrefilled: prefilled.size === slots.length,
           }
         }
         // enqueueJob(lib/sc/jobs) 과 같은 행 — 트랜잭션 클라이언트로 직접 만든다.
@@ -155,9 +254,36 @@ const postPublish: ActionDefinition<PostPublishParams> = {
           },
           select: { id: true },
         })
-        return { contentId: content.id, deploymentId: deployment.id, jobId: job.id, photoSlots: 0 }
+        return {
+          contentId: content.id,
+          deploymentId: deployment.id,
+          jobId: job.id,
+          photoSlots: 0,
+          allPrefilled: false,
+        }
       })
     )
+    // 제안 사진으로 모든 자리가 찼으면 사람 손 없이 기존 완료 경로(발행 작업 생성)로 넘긴다.
+    if (created.photoSlots > 0 && created.allPrefilled) {
+      const plan = await prisma.contentDeployment.findUnique({
+        where: { id: created.deploymentId },
+        select: { assetPlan: true },
+      })
+      const done = await saveAssetPlan({
+        spaceId,
+        deploymentId: created.deploymentId,
+        plan: plan!.assetPlan as never,
+        complete: true,
+      })
+      if (done.ok) {
+        return {
+          ...created,
+          jobId: done.jobId ?? null,
+          channel: channel.name,
+          scheduledAt: scheduledAt.toISOString(),
+        }
+      }
+    }
     if (created.photoSlots > 0) {
       await notifyDeploymentThread(created.deploymentId, {
         kind: 'assets-needed',
