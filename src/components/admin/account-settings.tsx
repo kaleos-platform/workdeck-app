@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { Eye, EyeOff, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
+import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -121,8 +122,10 @@ function PasswordSection() {
 
   async function onSubmit(data: ResetPasswordInput) {
     setIsLoading(true)
-    const { error } = await supabase.auth.updateUser({ password: data.password })
+    const result = await withAuthTimeout(supabase.auth.updateUser({ password: data.password }))
     setIsLoading(false)
+    if (!result) return void toast.error(AUTH_TIMEOUT_MESSAGE)
+    const { error } = result
 
     if (error) {
       toast.error('비밀번호 변경에 실패했습니다.')
@@ -205,11 +208,15 @@ function EmailSection({ currentEmail }: { currentEmail: string }) {
 
   async function handleConfirm() {
     setIsLoading(true)
-    const { error } = await supabase.auth.updateUser(
-      { email: newEmail },
-      { emailRedirectTo: `${window.location.origin}/auth/confirm?next=/admin/account` }
+    const result = await withAuthTimeout(
+      supabase.auth.updateUser(
+        { email: newEmail },
+        { emailRedirectTo: `${window.location.origin}/auth/confirm?next=/admin/account` }
+      )
     )
     setIsLoading(false)
+    if (!result) return void toast.error(AUTH_TIMEOUT_MESSAGE)
+    const { error } = result
 
     if (error) {
       toast.error('이메일 변경 요청에 실패했습니다.')
@@ -300,7 +307,13 @@ function MfaSection() {
 
   const refresh = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase.auth.mfa.listFactors()
+    const listed = await withAuthTimeout(supabase.auth.mfa.listFactors())
+    if (!listed) {
+      toast.error(AUTH_TIMEOUT_MESSAGE)
+      setLoading(false)
+      return
+    }
+    const { data, error } = listed
     if (error) {
       toast.error('MFA 상태를 불러오지 못했습니다.')
       setLoading(false)
@@ -311,7 +324,7 @@ function MfaSection() {
     // enroll 후 verify 실패/이탈로 남은 unverified factor는 다음 enroll을 막으므로 진입 시 정리한다.
     const unverified = totpFactors.filter((f) => f.status !== 'verified')
     for (const f of unverified) {
-      await supabase.auth.mfa.unenroll({ factorId: f.id })
+      await withAuthTimeout(supabase.auth.mfa.unenroll({ factorId: f.id }))
     }
 
     setVerifiedFactor(totpFactors.find((f) => f.status === 'verified') ?? null)
@@ -327,11 +340,12 @@ function MfaSection() {
 
   async function startEnroll() {
     setBusy(true)
-    const { data, error } = await supabase.auth.mfa.enroll({
-      factorType: 'totp',
-      friendlyName: `admin-${Date.now()}`,
-    })
+    const result = await withAuthTimeout(
+      supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `admin-${Date.now()}` })
+    )
     setBusy(false)
+    if (!result) return void toast.error(AUTH_TIMEOUT_MESSAGE)
+    const { data, error } = result
 
     if (error || !data) {
       toast.error('MFA 등록을 시작하지 못했습니다.')
@@ -344,11 +358,12 @@ function MfaSection() {
   async function verifyEnroll() {
     if (!enrollment) return
     setBusy(true)
-    const { error } = await supabase.auth.mfa.challengeAndVerify({
-      factorId: enrollment.factorId,
-      code,
-    })
+    const result = await withAuthTimeout(
+      supabase.auth.mfa.challengeAndVerify({ factorId: enrollment.factorId, code })
+    )
     setBusy(false)
+    if (!result) return void toast.error(AUTH_TIMEOUT_MESSAGE)
+    const { error } = result
 
     if (error) {
       toast.error('인증 코드가 올바르지 않습니다.')
@@ -365,7 +380,7 @@ function MfaSection() {
 
   async function cancelEnroll() {
     if (enrollment) {
-      await supabase.auth.mfa.unenroll({ factorId: enrollment.factorId })
+      await withAuthTimeout(supabase.auth.mfa.unenroll({ factorId: enrollment.factorId }))
     }
     setEnrollment(null)
     setCode('')
@@ -374,8 +389,12 @@ function MfaSection() {
   async function handleUnenroll() {
     if (!unenrollTarget) return
     setBusy(true)
-    const { error } = await supabase.auth.mfa.unenroll({ factorId: unenrollTarget.id })
+    const result = await withAuthTimeout(
+      supabase.auth.mfa.unenroll({ factorId: unenrollTarget.id })
+    )
     setBusy(false)
+    if (!result) return void toast.error(AUTH_TIMEOUT_MESSAGE)
+    const { error } = result
 
     if (error) {
       toast.error('2단계 인증 해제에 실패했습니다.')
