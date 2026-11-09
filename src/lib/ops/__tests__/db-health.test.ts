@@ -11,6 +11,7 @@ go_memstats_sys_bytes{service_type="db"} 5
 
 test('지표 텍스트에서 필요한 값만 라벨 합산해 읽는다', () => {
   expect(parseMetrics(TEXT)).toEqual({
+    node_cpu_seconds_total: 0,
     node_vmstat_pswpin: 1000,
     node_disk_read_bytes_total: 1000,
     node_memory_SwapTotal_bytes: 1073741824,
@@ -19,6 +20,7 @@ test('지표 텍스트에서 필요한 값만 라벨 합산해 읽는다', () =>
 })
 
 const base = {
+  node_cpu_seconds_total: 0,
   node_vmstat_pswpin: 0,
   node_disk_read_bytes_total: 0,
   node_memory_SwapTotal_bytes: 1024 * 2 ** 20,
