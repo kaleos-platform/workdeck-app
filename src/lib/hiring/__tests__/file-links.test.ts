@@ -20,7 +20,7 @@ jest.mock('../storage', () => ({
   ALLOWED_APPLICANT_MIME: new Set(['application/pdf']),
   MAX_APPLICANT_FILE_BYTES: 1000,
   uploadApplicantFile: jest.fn(async () => ({ path: 'private/mock' })),
-  removeApplicantFiles: jest.fn(),
+  removeApplicantFiles: jest.fn(async () => {}),
 }))
 beforeEach(() => jest.clearAllMocks())
 it('동일 파일명도 항목마다 다른 서버 ID로 연결하고 주입된 ID는 버린다', async () => {
