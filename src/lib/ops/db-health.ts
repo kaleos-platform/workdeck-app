@@ -2,6 +2,7 @@
 // DB 전체가 멈춘 것이었다(평시 swap-in ~4MB/s, 디스크 읽기 ~43MB/s). 그때 알림이 하나도 없었다.
 
 const WATCHED = [
+  'node_cpu_seconds_total', // 항상 증가 — 지표가 갱신됐는지 판별용
   'node_vmstat_pswpin',
   'node_disk_read_bytes_total',
   'node_memory_SwapTotal_bytes',
@@ -40,7 +41,7 @@ export function evaluateDbHealth(input: {
   let swapUsedMB: number | undefined
 
   if (!a || !b) {
-    problems.push('DB 서버 지표를 읽지 못했습니다')
+    problems.push('DB 서버 지표를 읽지 못했거나 갱신이 멈췄습니다')
   } else {
     swapInMBs = ((b.node_vmstat_pswpin - a.node_vmstat_pswpin) * PAGE_BYTES) / MB / dtSec
     diskReadMBs = (b.node_disk_read_bytes_total - a.node_disk_read_bytes_total) / 1e6 / dtSec
