@@ -48,8 +48,14 @@ type CronAuth = 'cron-secret' | 'worker'
  *   워커 체이닝 cron 도 같은 사각지대에 있다(워커가 안 불렀는지, 불렀는데 실패했는지 구별 불가).
  *
  * 이력 기록 실패가 cron 자체를 죽이면 안 되므로 `recordRun`은 절대 throw하지 않는다.
+ * isOk가 false면 HTTP 200과 detail은 유지하고 ok=false, error=null로 기록한다.
  */
-export function withCronRun(path: string, handler: CronHandler, auth: CronAuth = 'cron-secret') {
+export function withCronRun(
+  path: string,
+  handler: CronHandler,
+  auth: CronAuth = 'cron-secret',
+  isOk: (detail: Record<string, unknown>) => boolean = () => true
+) {
   return async function GET(request: NextRequest) {
     let scope: SweepScope = {}
     if (auth === 'worker') {
@@ -71,7 +77,7 @@ export function withCronRun(path: string, handler: CronHandler, auth: CronAuth =
       const detail = await handler(request, scope)
       // Space 토큰 실행은 어느 Space 의 기록인지 남긴다 — 전체 스윕 기록과 섞여 멈춘 Space 가 가려지지 않게.
       const recorded = scope.spaceId ? { ...detail, scopeSpaceId: scope.spaceId } : detail
-      await recordRun({ path, startedAt, ok: true, detail: recorded })
+      await recordRun({ path, startedAt, ok: isOk(detail), detail: recorded })
       return NextResponse.json({ ranAt: startedAt.toISOString(), ...detail })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
