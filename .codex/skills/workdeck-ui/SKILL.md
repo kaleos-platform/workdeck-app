@@ -55,6 +55,36 @@ NEXT_PUBLIC_APP_URL=$U NEXT_PUBLIC_MARKETING_URL=$U npx next dev -H 127.0.0.1 -p
 - 수정 지시: dev 서버에는 `react-grab`이 켜진다. 에디가 요소를 집어 붙인 `in <Component> (at <file>:<line>)` 줄을 그 요소의 위치로 쓴다. 직접 확인할 때는 `window.__REACT_GRAB__.getSource(el)`.
 - 화면 확인은 ego 브라우저로 한다(`ego-browser` 스킬). QA 계정 hello@ameaning.co.kr은 `taskSpace("<에이전트>-workdeck-ui", { profileId: "Profile 4" })`로 연다 — 기본 프로필(Kaleos, hello@kaleos.co.kr)은 Workspace 관리자 세션이라 dev 화면 확인에 쓰지 않는다. Profile 4에 로그인이 없으면 QA 계정 Google 로그인으로 직접 로그인한다. 에디에게 로그인을 부탁하지 않는다.
 
+## 완료 전 자가 확인
+
+UI를 바꿨으면 에디에게 보내기 전에 직접 본다. 라이브 작업대가 떠 있는 상태에서 ego 브라우저로 한다(새 의존성 없음, axe는 `eslint-plugin-jsx-a11y`가 가져온 `node_modules/axe-core`).
+
+```bash
+ego-browser nodejs <<'JS'
+const fs = await import("node:fs/promises");
+const axe = await fs.readFile("<worktree>/node_modules/axe-core/axe.min.js", "utf8");
+const task = await taskSpace("<에이전트>-selfcheck-<topic>", { profileId: "Profile 4" });
+const page = task.page("p1");
+await page.goto("http://127.0.0.1:3210<path>", { timeout: 60000 });
+await page.screenshot({ path: "/tmp/<topic>-desktop.png" });
+await page.cdp("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await page.reload({ timeout: 60000 });
+await page.screenshot({ path: "/tmp/<topic>-mobile.png" });
+await page.evaluate(axe);
+console.log(JSON.stringify(await page.evaluate(async () =>
+  (await window.axe.run(document, { resultTypes: ["violations"] })).violations
+    .map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length })))));
+await page.cdp("Emulation.clearDeviceMetricsOverride");
+await task.finish({ keep: [] });
+JS
+```
+
+1. 데스크톱·모바일(390px) 캡처를 직접 본다: 겹침, 잘림, 넘침, 빈 상태.
+2. axe 위반 중 `serious`·`critical`은 고친다. `moderate` 이하는 보고에 적는다.
+3. 가능하면 변경 diff를 보지 않은 별도 리뷰어(서브에이전트)에게 캡처와 `DESIGN.md`만 주고 어긋난 점을 묻는다.
+4. 수정은 최대 2회. 그래도 남은 문제는 고치지 않고 보고에 남긴다.
+5. 로그인이 필요한 화면은 Profile 4에 QA 계정(hello@ameaning.co.kr)으로 로그인한 상태에서 한다.
+
 ## 검증
 
 작업 완료 전 최소한 다음을 실행한다.
