@@ -60,3 +60,15 @@ test('지표를 못 읽으면 경고(서버 자체가 응답 없음)', () => {
     expect.stringMatching(/지표/),
   ])
 })
+
+test('DB 재시작으로 누적 카운터가 0으로 돌아가면 속도를 계산하지 않는다(음수 금지)', () => {
+  const r = evaluateDbHealth({
+    a: after(1_000_000, 9_000_000_000),
+    b: after(10, 1_000),
+    dtSec: 60,
+    pingMs: 50,
+  })
+  expect(r.swapInMBs).toBeUndefined()
+  expect(r.diskReadMBs).toBeUndefined()
+  expect(r.problems).toEqual([])
+})
