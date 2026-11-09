@@ -4,14 +4,20 @@ import { sendSystemNotification } from '@/lib/slack/send-notification'
 import { evaluateDbHealth, parseMetrics, type MetricValues } from '@/lib/ops/db-health'
 
 export const runtime = 'nodejs'
-export const maxDuration = 300
+export const maxDuration = 120
 
 const PATH = '/api/cron/db-health'
 // Supabase 지표는 약 60초마다 갱신된다 — 고정 간격 두 샘플은 같은 값이라 속도가 0으로 나온다.
+// 연속한 두 값은 정확히 한 수집 주기 차이라, 갱신 한 번만 기다리고 주기(60초)로 나눈다.
+const SCRAPE_INTERVAL_SEC = 60
 const POLL_MS = 5_000
 const CHANGE_WAIT_MS = 90_000
 const STEP_TIMEOUT_MS = 8_000
 const RENOTIFY_WINDOW_MS = 60 * 60 * 1000
+
+// 중복 억제 1차 저장소 — DB 장애 땐 CronRun 이력을 못 읽어 10분마다 재알림하게 된다.
+// ponytail: 인스턴스 메모리라 콜드 스타트마다 비지만, 장애 중 재알림이 몇 번 늘 뿐이다.
+let lastNotifiedAt = 0
 
 /** 제한 시간 안에 끝나지 않거나 실패하면 null — DB 가 멈춰도 cron 자체는 끝까지 돈다. */
 async function within<T>(work: Promise<T>, ms = STEP_TIMEOUT_MS): Promise<T | null> {
@@ -52,6 +58,14 @@ async function nextRefresh(prev: MetricValues): Promise<{ v: MetricValues; at: n
   return null
 }
 
+/** 첫 조회 실패는 한 번 다시 — 일시 오류로 「지표 못 읽음」 오탐을 내지 않는다. */
+async function firstSample(): Promise<MetricValues | null> {
+  const v = await sampleMetrics()
+  if (v) return v
+  await sleep(POLL_MS)
+  return sampleMetrics()
+}
+
 async function pingDb(): Promise<number | null> {
   const started = Date.now()
   const ok = await within(prisma.$queryRaw`SELECT 1 AS ok`)
@@ -60,23 +74,24 @@ async function pingDb(): Promise<number | null> {
 
 /**
  * GET /api/cron/db-health — 10분마다 운영 DB 서버의 swap·응답 지연을 보고 기준을 넘으면 알린다.
- * 한 번 실행에 지표 갱신 두 번을 기다리므로 1~3분 걸린다.
- * 시스템 알림은 Slack 채널·토큰을 DB 에서 읽어 DB 장애 때는 못 나간다 → OPS_SLACK_WEBHOOK_URL 로 한 번 더.
+ * 지표 갱신을 한 번 기다리므로 실행에 최대 약 1분 걸린다.
+ * 시스템 알림은 Slack 채널·토큰을 DB 에서 읽어 DB 장애 때는 못 나간다 → 웹훅으로 한 번 더.
  */
 export const GET = withCronRun(PATH, async () => {
-  const [first, pingMs] = await Promise.all([sampleMetrics(), pingDb()])
-  // 속도는 연속 두 갱신 사이(약 60초)로 잰다 — 첫 샘플은 갱신 주기 중간일 수 있어 기준점으로 못 쓴다.
-  const s1 = first && (await nextRefresh(first))
-  const s2 = s1 && (await nextRefresh(s1.v))
+  const [first, pingMs] = await Promise.all([firstSample(), pingDb()])
+  const next = first && (await nextRefresh(first))
   const health = evaluateDbHealth({
-    a: s1?.v ?? null,
-    b: s2?.v ?? null,
-    dtSec: s1 && s2 ? (s2.at - s1.at) / 1000 : 0,
+    a: first,
+    b: next?.v ?? null,
+    dtSec: SCRAPE_INTERVAL_SEC,
     pingMs,
   })
 
   if (health.problems.length === 0) return { ...health, notified: false }
 
+  if (Date.now() - lastNotifiedAt < RENOTIFY_WINDOW_MS) {
+    return { ...health, notified: false, deduped: true }
+  }
   const recent = await within(
     prisma.cronRun.findFirst({
       where: {
@@ -100,7 +115,8 @@ export const GET = withCronRun(PATH, async () => {
   let notified = await within(
     sendSystemNotification({ blocks: [{ type: 'section', text: { type: 'mrkdwn', text } }], text })
   )
-  const webhook = process.env.OPS_SLACK_WEBHOOK_URL
+  // 운영 전용 웹훅이 없으면 도입 신청 알림 웹훅(운영자 채널, DB 비의존)으로 보낸다.
+  const webhook = process.env.OPS_SLACK_WEBHOOK_URL ?? process.env.LEAD_SLACK_WEBHOOK_URL
   if (!notified && webhook) {
     const res = await within(
       fetch(webhook, {
@@ -111,5 +127,6 @@ export const GET = withCronRun(PATH, async () => {
     )
     notified = Boolean(res?.ok)
   }
+  if (notified) lastNotifiedAt = Date.now()
   return { ...health, notified: Boolean(notified) }
 })
