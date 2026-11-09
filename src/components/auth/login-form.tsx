@@ -10,6 +10,7 @@ import type { AuthError } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { X, MailCheck, CheckCircle2, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { resolveRedirectPath } from '@/lib/auth-redirect'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
@@ -41,8 +42,6 @@ function getAuthErrorMessage(error: AuthError): string {
   }
   return '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
 }
-
-const SIGN_IN_TIMEOUT_MS = 20_000
 
 interface LoginFormProps {
   isVerifyPending?: boolean
@@ -78,17 +77,15 @@ export function LoginForm({
     setIsLoading(true)
     setAuthError(null)
 
-    // 인증 서버가 응답하지 않으면(supabase-js 요청엔 타임아웃이 없다) 버튼이 영구히 「로그인 중...」에 멈춘다.
-    const result = await Promise.race([
+    const result = await withAuthTimeout(
       supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
-      }),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), SIGN_IN_TIMEOUT_MS)),
-    ])
+      })
+    )
 
     if (!result) {
-      setAuthError('로그인 서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.')
+      setAuthError(AUTH_TIMEOUT_MESSAGE)
       setIsLoading(false)
       return
     }

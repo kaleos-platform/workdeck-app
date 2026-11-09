@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,11 +38,20 @@ export function ResetPasswordForm() {
     setIsLoading(true)
     setError(null)
 
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: data.password,
-      data: { password_set: true },
-    })
+    const result = await withAuthTimeout(
+      supabase.auth.updateUser({
+        password: data.password,
+        data: { password_set: true },
+      })
+    )
 
+    if (!result) {
+      setError(AUTH_TIMEOUT_MESSAGE)
+      setIsLoading(false)
+      return
+    }
+
+    const { error: updateError } = result
     if (updateError) {
       setError('비밀번호 변경에 실패했습니다. 링크가 만료되었을 수 있습니다. 다시 시도해주세요.')
       setIsLoading(false)
@@ -49,7 +59,7 @@ export function ResetPasswordForm() {
     }
 
     toast.success('비밀번호가 성공적으로 변경되었습니다.')
-    await supabase.auth.signOut()
+    await withAuthTimeout(supabase.auth.signOut())
     router.push('/login?reset=success')
   }
 

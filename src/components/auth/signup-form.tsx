@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { resolveRedirectPath, sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { signupSourceFromSearch } from '@/lib/marketing/signup-source'
 import { signupSchema, type SignupInput } from '@/lib/validations/auth'
@@ -48,19 +49,28 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
   async function onSubmit(data: SignupInput) {
     setIsLoading(true)
 
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?type=email&next=${encodeURIComponent(nextPath)}`,
-        data: {
-          name: data.name || '',
-          // 다른 기기에서 메일 인증해도 유입 경로가 남도록 user_metadata 에 싣는다
-          signup_source: signupSourceFromSearch(new URLSearchParams(window.location.search)),
+    const result = await withAuthTimeout(
+      supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?type=email&next=${encodeURIComponent(nextPath)}`,
+          data: {
+            name: data.name || '',
+            // 다른 기기에서 메일 인증해도 유입 경로가 남도록 user_metadata 에 싣는다
+            signup_source: signupSourceFromSearch(new URLSearchParams(window.location.search)),
+          },
         },
-      },
-    })
+      })
+    )
 
+    if (!result) {
+      toast.error(AUTH_TIMEOUT_MESSAGE)
+      setIsLoading(false)
+      return
+    }
+
+    const { error } = result
     if (error) {
       toast.error(error.message)
       setIsLoading(false)
