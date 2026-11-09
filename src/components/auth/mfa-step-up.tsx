@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { isMfaFresh } from '@/lib/auth/mfa-policy'
 import { Button } from '@/components/ui/button'
@@ -23,10 +24,11 @@ const UNVERIFIED_GRACE_MS = 10 * 60 * 1000
 type EnrollResult = { id: string; qrCode: string; secret: string } | { message: string }
 
 async function enrollTotp(supabase: ReturnType<typeof createClient>): Promise<EnrollResult> {
-  const { data, error } = await supabase.auth.mfa.enroll({
-    factorType: 'totp',
-    friendlyName: `workdeck-${Date.now()}`,
-  })
+  const result = await withAuthTimeout(
+    supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `workdeck-${Date.now()}` })
+  )
+  if (!result) return { message: AUTH_TIMEOUT_MESSAGE }
+  const { data, error } = result
   if (error || !data) {
     return {
       message:
@@ -60,8 +62,13 @@ export function MfaStepUp() {
     // StrictMode 이중 마운트 등으로 정리된 실행은 등록까지 가지 않게 막는다(중복 enroll 방지).
     let cancelled = false
     void (async () => {
-      const { data, error: listError } = await supabase.auth.mfa.listFactors()
+      const listed = await withAuthTimeout(supabase.auth.mfa.listFactors())
       if (cancelled) return
+      if (!listed) {
+        setError(AUTH_TIMEOUT_MESSAGE)
+        return
+      }
+      const { data, error: listError } = listed
       if (listError) {
         setError('인증 정보를 불러오지 못했습니다. 다시 로그인해 주세요.')
         return
@@ -119,7 +126,13 @@ export function MfaStepUp() {
     if (!factorId) return
     setBusy(true)
     setError(null)
-    const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({ factorId, code })
+    const verified = await withAuthTimeout(supabase.auth.mfa.challengeAndVerify({ factorId, code }))
+    if (!verified) {
+      setBusy(false)
+      setError(AUTH_TIMEOUT_MESSAGE)
+      return
+    }
+    const { error: verifyError } = verified
     if (verifyError) {
       setBusy(false)
       setError('인증 코드가 올바르지 않습니다.')

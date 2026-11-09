@@ -43,10 +43,13 @@ export function evaluateDbHealth(input: {
   if (!a || !b) {
     problems.push('DB 서버 지표를 읽지 못했거나 갱신이 멈췄습니다')
   } else {
-    swapInMBs = ((b.node_vmstat_pswpin - a.node_vmstat_pswpin) * PAGE_BYTES) / MB / dtSec
-    diskReadMBs = (b.node_disk_read_bytes_total - a.node_disk_read_bytes_total) / 1e6 / dtSec
+    // 서버 재시작이면 누적 카운터가 0부터 다시 쌓인다 — 음수 차이는 속도로 쓰지 않는다.
+    const swapDelta = b.node_vmstat_pswpin - a.node_vmstat_pswpin
+    const readDelta = b.node_disk_read_bytes_total - a.node_disk_read_bytes_total
+    if (swapDelta >= 0) swapInMBs = (swapDelta * PAGE_BYTES) / MB / dtSec
+    if (readDelta >= 0) diskReadMBs = readDelta / 1e6 / dtSec
     swapUsedMB = Math.round((b.node_memory_SwapTotal_bytes - b.node_memory_SwapFree_bytes) / MB)
-    if (swapInMBs > SWAP_IN_ALERT_MBS) {
+    if (swapInMBs !== undefined && swapInMBs > SWAP_IN_ALERT_MBS) {
       problems.push(`swap-in ${swapInMBs.toFixed(1)}MB/s (기준 ${SWAP_IN_ALERT_MBS}MB/s)`)
     }
   }
