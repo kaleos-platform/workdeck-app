@@ -12,6 +12,15 @@ import { parseApplicationEntriesSchema } from '@/lib/validations/hiring-applican
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handlePost(req)
+  } catch {
+    console.error('hiring upload session prepare failed')
+    return errorResponse('지원서 제출을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요', 503)
+  }
+}
+
+async function handlePost(req: NextRequest) {
   if (!checkRateLimit(`uploads:${publicRequestKey(req)}`))
     return errorResponse('요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요', 429)
   const parsed = uploadIntentSchema.safeParse(await req.json().catch(() => null))

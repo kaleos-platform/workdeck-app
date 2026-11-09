@@ -333,3 +333,88 @@ it('공고 마감 직전에 완료된 동일 요청은 마감 후에도 원래 �
   expect(response.status).toBe(201)
   expect(await response.json()).toEqual({ uuid: 'original' })
 })
+
+it.each(['posting', 'count'])(
+  '준비 중 %s DB 조회 오류는 안전한 503 JSON을 반환한다',
+  async (query) => {
+    if (query === 'posting')
+      jest.mocked(prisma.hiringPosting.findUnique).mockRejectedValue(Error('secret-db-detail'))
+    else jest.mocked(prisma.hiringUploadSession.count).mockRejectedValue(Error('secret-db-detail'))
+    const response = await initiate(request({ postingUuid: 'qa-post', files: [file] }))
+    expect(response.status).toBe(503)
+    expect(await response.json()).toEqual({
+      message: '지원서 제출을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요',
+    })
+    expect(prisma.hiringUploadSession.create).not.toHaveBeenCalled()
+  }
+)
+
+it.each([
+  'session',
+  'posting',
+  'completed application',
+  'closed posting session',
+  'closed posting application',
+])('완료 중 %s DB 조회 오류는 안전한 503 JSON을 반환한다', async (query) => {
+  const completed = session({
+    completedAt: new Date(),
+    requestHash: submissionHash(payload),
+    applicationId: sessionId,
+  })
+  if (query === 'session')
+    jest.mocked(prisma.hiringUploadSession.findFirst).mockRejectedValue(Error('secret-db-detail'))
+  if (query === 'posting')
+    jest.mocked(prisma.hiringPosting.findUnique).mockRejectedValue(Error('secret-db-detail'))
+  if (query === 'completed application') {
+    jest.mocked(prisma.hiringUploadSession.findFirst).mockResolvedValue(completed as never)
+    jest.mocked(prisma.hiringApplication.findFirst).mockRejectedValue(Error('secret-db-detail'))
+  }
+  if (query.startsWith('closed posting')) {
+    jest.mocked(prisma.hiringPosting.findUnique).mockResolvedValue({ status: 'CLOSED' } as never)
+    if (query === 'closed posting session')
+      jest
+        .mocked(prisma.hiringUploadSession.findFirst)
+        .mockResolvedValueOnce(session() as never)
+        .mockRejectedValueOnce(Error('secret-db-detail'))
+    else {
+      jest
+        .mocked(prisma.hiringUploadSession.findFirst)
+        .mockResolvedValueOnce(session() as never)
+        .mockResolvedValueOnce(completed as never)
+      jest.mocked(prisma.hiringApplication.findFirst).mockRejectedValue(Error('secret-db-detail'))
+    }
+  }
+  const response = await complete(request(payload))
+  expect(response.status).toBe(503)
+  expect(await response.json()).toEqual({
+    message: '지원서 제출 결과를 확인하지 못했습니다. 잠시 후 같은 내용으로 다시 제출하세요',
+  })
+  expect(prisma.hiringApplication.create).not.toHaveBeenCalled()
+})
+
+it.each([
+  [
+    '준비',
+    initiate,
+    { postingUuid: 'qa-post', files: [file] },
+    'hiring upload session prepare failed',
+  ],
+  ['완료', complete, payload, 'hiring upload session complete failed'],
+] as const)(
+  '%s 조회 오류는 민감 정보 없이 고정 로그를 기록한다',
+  async (_stage, handler, body, message) => {
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      if (_stage === '준비')
+        jest.mocked(prisma.hiringPosting.findUnique).mockRejectedValue(Error('secret-db-detail'))
+      else
+        jest
+          .mocked(prisma.hiringUploadSession.findFirst)
+          .mockRejectedValue(Error('secret-db-detail'))
+      await handler(request(body))
+      expect(log.mock.calls).toEqual([[message]])
+    } finally {
+      log.mockRestore()
+    }
+  }
+)
