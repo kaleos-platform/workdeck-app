@@ -9,7 +9,7 @@ export const runtime = 'nodejs'
 const SAFE_AGE_MS = 3 * 60 * 60 * 1000
 const BATCH_SIZE = 50
 
-export const GET = withCronRun('/api/cron/hiring-upload-sweep', async () => {
+const runSweep = async () => {
   const now = new Date()
   const where = {
     completedAt: null,
@@ -71,4 +71,11 @@ export const GET = withCronRun('/api/cron/hiring-upload-sweep', async () => {
   }
   const remaining = await prisma.hiringUploadSession.count({ where })
   return { scanned, deleted, failed, remaining, truncated: remaining > 0 }
-})
+}
+
+export const GET = withCronRun(
+  '/api/cron/hiring-upload-sweep',
+  runSweep,
+  'cron-secret',
+  (detail) => detail.failed === 0
+)
