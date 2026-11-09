@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
+import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { signupSchema } from '@/lib/validations/auth'
 
 type View = 'anonymous' | 'wrong_account' | 'needs_password' | 'ready'
@@ -50,10 +51,17 @@ export function InviteAccept({
     if (!parsed.success) return setError(parsed.error.issues[0].message)
     setPending(true)
     setError(null)
-    const { error: e } = await supabase.auth.updateUser({ password, data: { password_set: true } })
+    const result = await withAuthTimeout(
+      supabase.auth.updateUser({ password, data: { password_set: true } })
+    )
+    if (!result) {
+      setPending(false)
+      return setError(AUTH_TIMEOUT_MESSAGE)
+    }
+    const e = result.error
     if (e?.code === 'same_password') {
       // 이미 같은 비밀번호가 설정돼 있다 — 설정된 것으로 보고 표시만 남긴다.
-      await supabase.auth.updateUser({ data: { password_set: true } })
+      await withAuthTimeout(supabase.auth.updateUser({ data: { password_set: true } }))
     } else if (e) {
       setPending(false)
       return setError('비밀번호를 설정하지 못했습니다. 다시 시도하세요')

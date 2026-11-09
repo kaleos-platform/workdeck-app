@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useHydrated } from '@/hooks/use-hydrated'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -43,6 +43,9 @@ function getAuthErrorMessage(error: AuthError): string {
   return '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
 }
 
+// 로그인 성공 뒤 화면 이동(서버 렌더·세션 확인)이 막히면 버튼이 「로그인 중...」에 머문다 — 이 시간 뒤 풀어준다.
+const NAV_STALL_MS = 15_000
+
 interface LoginFormProps {
   isVerifyPending?: boolean
   isVerifySuccess?: boolean
@@ -61,6 +64,17 @@ export function LoginForm({
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [showBanner, setShowBanner] = useState(isVerifyPending || isVerifySuccess || isResetSuccess)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [navStalled, setNavStalled] = useState(false)
+  const [navigating, setNavigating] = useState(false)
+  useEffect(() => {
+    if (!navigating) return
+    const timer = setTimeout(() => {
+      setNavigating(false)
+      setIsLoading(false)
+      setNavStalled(true)
+    }, NAV_STALL_MS)
+    return () => clearTimeout(timer)
+  }, [navigating])
   const router = useRouter()
   const supabase = createClient()
   const nextPath = resolveRedirectPath(redirectTo)
@@ -76,6 +90,7 @@ export function LoginForm({
   async function onSubmit(data: LoginInput) {
     setIsLoading(true)
     setAuthError(null)
+    setNavStalled(false)
 
     const result = await withAuthTimeout(
       supabase.auth.signInWithPassword({
@@ -100,6 +115,7 @@ export function LoginForm({
     toast.success('로그인 성공!')
     router.push(nextPath)
     router.refresh()
+    setNavigating(true)
   }
 
   async function handleGoogleLogin() {
@@ -268,6 +284,19 @@ export function LoginForm({
             </div>
 
             {/* 로그인 에러 인라인 Alert */}
+            {navStalled && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  로그인은 됐지만 화면 이동이 지연되고 있습니다.{' '}
+                  {/* 전체 페이지 이동 — 막힌 클라이언트 이동을 다시 기다리지 않는다 */}
+                  <a href={nextPath} className="font-medium underline">
+                    바로 이동
+                  </a>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {authError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
