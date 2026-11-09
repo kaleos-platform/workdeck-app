@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
+import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { useAuth } from '@/hooks/use-auth'
 
 const MIN_PASSWORD_LENGTH = 8
@@ -31,11 +32,12 @@ export function AccountSettingsForm() {
     }
 
     setSaving(true)
-    const { error } = await createClient().auth.updateUser({
-      password,
-      data: { password_set: true },
-    })
+    const result = await withAuthTimeout(
+      createClient().auth.updateUser({ password, data: { password_set: true } })
+    )
     setSaving(false)
+    if (!result) return void toast.error(AUTH_TIMEOUT_MESSAGE)
+    const { error } = result
 
     if (error) {
       toast.error(error.message || '비밀번호 변경에 실패했습니다')
