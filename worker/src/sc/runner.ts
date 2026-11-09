@@ -218,7 +218,9 @@ function buildCollectContext(c: ClaimedJob): CollectContext | null {
 
 /** sc 워커 무한 polling 루프. SIGTERM/SIGINT 로 graceful shutdown. */
 export async function runScLoop(options?: { intervalMs?: number }): Promise<void> {
-  const intervalMs = options?.intervalMs ?? 5_000
+  // 30초 — 5초 간격 polling 이 운영 DB 요청의 절반(하루 ~1.76만 회)을 차지했다(2026-11-09 DB 정체 조사).
+  // 발행 job 은 예약 시각 기준이라 최대 30초 늦게 시작돼도 무방하다.
+  const intervalMs = options?.intervalMs ?? 30_000
 
   let stopped = false
   const shutdown = () => {
