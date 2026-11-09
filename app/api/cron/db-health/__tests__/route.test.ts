@@ -36,6 +36,8 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://ref.supabase.co'
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'k'
   delete process.env.OPS_SLACK_WEBHOOK_URL
+  delete process.env.LEAD_SLACK_WEBHOOK_URL
+  clock += 3 * 60 * 60 * 1000 // 테스트마다 3시간 뒤 — 함수 메모리의 60분 중복 억제가 다음 테스트로 새지 않게
   swapPagesPerMin = 1_000_000 // 약 65MB/s — 기준(20MB/s) 초과
   frozen = false
   fetchMock.mockImplementation(async (url: string) =>
@@ -48,15 +50,18 @@ beforeEach(() => {
   notify.mockResolvedValue(true)
 })
 
+let clock = Date.now()
+
 // 지표 갱신 대기(최대 몇 분)는 가짜 타이머로 건너뛴다
 async function run() {
-  jest.useFakeTimers()
+  jest.useFakeTimers({ now: clock })
   try {
     // withCronRun 은 목에서 핸들러를 그대로 돌려주므로 반환값이 detail 객체다
     const p = GET(new NextRequest('http://localhost/api/cron/db-health')) as unknown as Promise<
       Record<string, unknown>
     >
     await jest.advanceTimersByTimeAsync(300_000)
+    clock = Date.now()
     return await p
   } finally {
     jest.useRealTimers()
@@ -73,7 +78,7 @@ test('기준 초과면 시스템 알림을 보내고 notified 를 남긴다', as
   expect(metricsCall[0]).toBe('https://ref.supabase.co/customer/v1/privileged/metrics')
 })
 
-test('정상(swap-in 약 4MB/s)이면 알림 없음 — 속도는 연속 두 갱신 사이로 잰다', async () => {
+test('정상(swap-in 약 4MB/s)이면 알림 없음 — 속도는 지표 갱신 한 번(60초) 차이로 잰다', async () => {
   swapPagesPerMin = 60_000
   const detail = await run()
   expect(notify).not.toHaveBeenCalled()
@@ -107,4 +112,40 @@ test('DB 가 죽어 시스템 알림이 실패하면 webhook 으로 보낸다', 
   expect(hook).toBeTruthy()
   expect(JSON.parse(hook![1].body).text).toMatch(/DB 응답 없음/)
   expect(detail.notified).toBe(true)
+})
+
+test('OPS 웹훅이 없으면 리드 알림 웹훅으로 보낸다', async () => {
+  process.env.LEAD_SLACK_WEBHOOK_URL = 'https://hooks.slack.test/lead'
+  notify.mockResolvedValue(false)
+  const detail = await run()
+  expect(fetchMock.mock.calls.some(([u]) => u === 'https://hooks.slack.test/lead')).toBe(true)
+  expect(detail.notified).toBe(true)
+})
+
+test('DB 가 죽어 이력을 못 읽어도 60분 안 재알림은 함수 메모리로 막는다', async () => {
+  process.env.OPS_SLACK_WEBHOOK_URL = 'https://hooks.slack.test/x'
+  queryRaw.mockRejectedValue(new Error('down'))
+  findFirst.mockRejectedValue(new Error('down'))
+  notify.mockResolvedValue(false)
+  await run()
+  const second = await run() // 10분 남짓 뒤 다음 실행
+  const hooks = fetchMock.mock.calls.filter(([u]) => u === 'https://hooks.slack.test/x')
+  expect(hooks).toHaveLength(1)
+  expect(second.deduped).toBe(true)
+})
+
+test('첫 지표 조회가 한 번 실패해도 재시도해서 오탐하지 않는다', async () => {
+  swapPagesPerMin = 60_000
+  let failed = false
+  fetchMock.mockImplementation(async (url: string) => {
+    if (!url.includes('/customer/v1/privileged/metrics')) return new Response('ok')
+    if (!failed) {
+      failed = true
+      return new Response('err', { status: 503 })
+    }
+    return new Response(metricsNow())
+  })
+  const detail = await run()
+  expect(detail.problems).toEqual([])
+  expect(notify).not.toHaveBeenCalled()
 })
