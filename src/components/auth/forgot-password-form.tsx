@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { MailCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { AUTH_TIMEOUT_MESSAGE, isAuthServerError, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,13 +33,19 @@ export function ForgotPasswordForm() {
   async function onSubmit(data: ForgotPasswordInput) {
     setIsLoading(true)
 
-    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
-    })
+    const result = await withAuthTimeout(
+      supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+      })
+    )
 
     setIsLoading(false)
 
-    if (error) {
+    if (!result || isAuthServerError(result.error)) {
+      toast.error(AUTH_TIMEOUT_MESSAGE)
+      return
+    }
+    if (result.error) {
       toast.error('비밀번호 재설정 이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.')
       return
     }
