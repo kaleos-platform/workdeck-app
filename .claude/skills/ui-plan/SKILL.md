@@ -5,7 +5,7 @@ description: Workdeck 새 화면이나 큰 UI 개편을 구현하기 전에 와�
 
 # UI 시각 계획
 
-글 대신 그림으로 계획하고, 승인된 뒤에 구현한다. 정본은 코드와 `DESIGN.md`이고 와이어프레임은 구조 합의용이다.
+글 대신 그림으로 계획하고, 승인된 뒤에 구현한다. 정본은 코드와 `DESIGN.md`(저장소 루트)이고 와이어프레임은 구조 합의용이다.
 
 ## 절차
 
@@ -60,20 +60,7 @@ description: Workdeck 새 화면이나 큰 UI 개편을 구현하기 전에 와�
 
 ## 라이브 작업대
 
-격리 worktree에서 띄운다. `.env.local`은 dev Supabase여야 한다.
-
-```bash
-U=http://100.77.48.94:8443
-tailscale serve --bg --tcp=8443 tcp://127.0.0.1:3210
-NEXT_PUBLIC_APP_URL=$U NEXT_PUBLIC_MARKETING_URL=$U npx next dev -H 127.0.0.1 -p 3210
-```
-
-- `-H 127.0.0.1`을 빼지 않는다. 빼면 LAN에 열린다.
-- `funnel`을 쓰지 않는다.
-- `NEXT_PUBLIC_ADMIN_URL`은 넣지 않는다. 같은 주소면 모든 요청이 `/admin`으로 간다.
-- 끝나면 dev 서버를 내리고 `tailscale serve --tcp=8443 off`로 닫는다.
-- 수정 지시: dev 서버에는 `react-grab`이 켜진다. 에디가 요소를 집어 붙인 `in <Component> (at <file>:<line>)` 줄을 그 요소의 위치로 쓴다. 직접 확인할 때는 `window.__REACT_GRAB__.getSource(el)`.
-- 로그인 확인은 테스트 계정(Aside u1)으로 직접 한다. 에디에게 로그인을 부탁하지 않는다.
+띄우는 법·보안 주의·화면 확인 계정은 `workdeck-ui` 스킬의 "라이브 작업대" 절을 따른다(`.claude/skills/workdeck-ui/SKILL.md`).
 
 ## 금지
 

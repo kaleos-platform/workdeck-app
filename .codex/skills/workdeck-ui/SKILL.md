@@ -19,7 +19,7 @@ Workdeck UI 작업은 `DESIGN.md`를 최우선 기준으로 삼는다. 외부 UI
 
 - Workdeck은 운영형 SaaS다. 화면은 조용하고 밀도 있게, 반복 작업과 비교가 쉬워야 한다.
 - selection, active, focus 색상은 `DESIGN.md`의 primary/neutral 계열을 사용한다. 임의의 blue/purple 강조색을 새로 만들지 않는다.
-- status 색상은 의미별로 일관되게 쓴다: red=결품/위험, amber=부족/주의, emerald=정상, indigo/blue=과잉 또는 보조 정보.
+- status 색상은 의미별로 일관되게 쓴다: red(또는 `destructive`)=결품/위험, amber=부족/주의, emerald=정상, blue=과잉 또는 보조 정보. 조합과 `dark:` 짝은 `DESIGN.md` §2.2.
 - 테이블은 스캔성과 열 안정성이 우선이다. 고정 열, tabular number, compact row, sticky header를 유지한다.
 - 상태 수량은 불필요한 사각 card grid보다 badge, label, sticker, pill 같은 가벼운 표현을 우선한다.
 - 필터는 데이터가 적용되는 영역 가까이에 둔다. product list 필터는 product panel 안에, table/detail 필터는 detail 영역에 둔다.
@@ -37,16 +37,66 @@ Workdeck UI 작업은 `DESIGN.md`를 최우선 기준으로 삼는다. 외부 UI
 - responsive layout에서 텍스트가 버튼, 탭, 표 셀을 넘치지 않는지 확인한다.
 - loading, empty, no-result 상태를 기존 컴포넌트 스타일로 유지한다.
 
+## 라이브 작업대
+
+기존 화면 수정은 글로 길게 계획하지 않고 라이브 화면을 먼저 띄운 뒤 짧게 고친다. 새 화면·큰 개편은 먼저 `ui-plan` 스킬로 와이어프레임을 승인받는다.
+
+격리 worktree에서 띄운다. `.env.local`은 dev Supabase여야 한다.
+
+```bash
+U=http://100.77.48.94:8443
+tailscale serve --bg --tcp=8443 tcp://127.0.0.1:3210
+NEXT_PUBLIC_APP_URL=$U NEXT_PUBLIC_MARKETING_URL=$U npx next dev -H 127.0.0.1 -p 3210
+```
+
+- `-H 127.0.0.1`을 빼지 않는다. 빼면 LAN에 열린다. `funnel`을 쓰지 않는다.
+- `NEXT_PUBLIC_ADMIN_URL`은 넣지 않는다. 같은 주소면 모든 요청이 `/admin`으로 간다.
+- 끝나면 dev 서버를 내리고 `tailscale serve --tcp=8443 off`로 닫는다.
+- 수정 지시: dev 서버에는 `react-grab`이 켜진다. 에디가 요소를 집어 붙인 `in <Component> (at <file>:<line>)` 줄을 그 요소의 위치로 쓴다. 직접 확인할 때는 `window.__REACT_GRAB__.getSource(el)`.
+- 화면 확인은 ego 브라우저로 한다(`ego-browser` 스킬). QA 계정 hello@ameaning.co.kr은 `taskSpace("<에이전트>-workdeck-ui", { profileId: "Profile 4" })`로 연다 — 기본 프로필(Kaleos, hello@kaleos.co.kr)은 Workspace 관리자 세션이라 dev 화면 확인에 쓰지 않는다. Profile 4에 로그인이 없으면 QA 계정 Google 로그인으로 직접 로그인한다. 에디에게 로그인을 부탁하지 않는다.
+
+## 완료 전 자가 확인
+
+UI를 바꿨으면 에디에게 보내기 전에 직접 본다. 라이브 작업대가 떠 있는 상태에서 ego 브라우저로 한다(새 의존성 없음, axe는 `eslint-plugin-jsx-a11y`가 가져온 `node_modules/axe-core`).
+
+```bash
+ego-browser nodejs <<'JS'
+const fs = await import("node:fs/promises");
+const axe = await fs.readFile("<worktree>/node_modules/axe-core/axe.min.js", "utf8");
+const task = await taskSpace("<에이전트>-selfcheck-<topic>", { profileId: "Profile 4" });
+const page = task.page("p1");
+await page.goto("http://127.0.0.1:3210<path>", { timeout: 60000 });
+await page.screenshot({ path: "/tmp/<topic>-desktop.png" });
+await page.cdp("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await page.reload({ timeout: 60000 });
+await page.screenshot({ path: "/tmp/<topic>-mobile.png" });
+await page.evaluate(axe);
+console.log(JSON.stringify(await page.evaluate(async () =>
+  (await window.axe.run(document, { resultTypes: ["violations"] })).violations
+    .map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length })))));
+await page.cdp("Emulation.clearDeviceMetricsOverride");
+await task.finish({ keep: [] });
+JS
+```
+
+1. 데스크톱·모바일(390px) 캡처를 직접 본다: 겹침, 잘림, 넘침, 빈 상태.
+2. axe 위반 중 `serious`·`critical`은 고친다. `moderate` 이하는 보고에 적는다.
+3. 가능하면 변경 diff를 보지 않은 별도 리뷰어(서브에이전트)에게 캡처와 `DESIGN.md`만 주고 어긋난 점을 묻는다.
+4. 수정은 최대 2회. 그래도 남은 문제는 고치지 않고 보고에 남긴다.
+5. 로그인이 필요한 화면은 Profile 4에 QA 계정(hello@ameaning.co.kr)으로 로그인한 상태에서 한다.
+
 ## 검증
 
 작업 완료 전 최소한 다음을 실행한다.
 
 ```bash
-npm test -- <changed-tests> --runInBand
+npm test -- <changed-tests> --runInBand   # jest. 테스트가 없는 영역이면 생략하고 보고에 적는다
 npm run typecheck
-npm run lint
+npx eslint <changed-files>
 npm run build
 ```
+
+prettier는 바꾼 파일에만 쓴다(`npx prettier --write <files>`). 폴더 단위로 돌리지 않는다.
 
 UI 변경은 가능하면 local dev server에서 대상 화면을 열어 desktop/mobile 폭을 확인한다. 인증이나 외부 데이터 때문에 직접 확인할 수 없으면 어떤 검증이 막혔는지 최종 보고에 명시한다.
 
