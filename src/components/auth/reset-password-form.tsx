@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
+import { AUTH_TIMEOUT_MESSAGE, isAuthServerError, withAuthTimeout } from '@/lib/auth/auth-timeout'
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,7 +53,11 @@ export function ResetPasswordForm() {
 
     const { error: updateError } = result
     if (updateError) {
-      setError('비밀번호 변경에 실패했습니다. 링크가 만료되었을 수 있습니다. 다시 시도해주세요.')
+      setError(
+        isAuthServerError(updateError)
+          ? AUTH_TIMEOUT_MESSAGE
+          : '비밀번호 변경에 실패했습니다. 링크가 만료되었을 수 있습니다. 다시 시도해주세요.'
+      )
       setIsLoading(false)
       return
     }
