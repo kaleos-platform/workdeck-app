@@ -120,6 +120,29 @@ it('완료 응답 유실 후 다시 열면 이전 세션만 확인하고 새 제
   rendered.unmount()
 })
 
+it.each(['completed', 'cancelled'])('완료 503 후 다시 열어 %s 결과를 확인한다', async (status) => {
+  global.fetch = jest
+    .fn()
+    .mockResolvedValueOnce(session())
+    .mockResolvedValueOnce(response(503, { message: '결과 확인 실패' }))
+    .mockResolvedValueOnce(response(200, { status }))
+  const rendered = render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('checkbox'))
+  await act(async () => fireEvent.submit(rendered.container.querySelector('form')!))
+  expect(sessionStorage.getItem('hiring-recovery:qa')).toBe('session-1')
+  rendered.unmount()
+  render(<ApplyForm postingUuid="qa" fields={[]} positions={[]} stores={[]} />)
+  fireEvent.click(screen.getByRole('button', { name: '이전 제출 결과 확인' }))
+  await waitFor(() => expect(sessionStorage.getItem('hiring-recovery:qa')).toBeNull())
+  if (status === 'completed') expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument()
+  else expect(screen.getByText(/이전 제출은 완료되지 않았습니다/)).toBeInTheDocument()
+  expect((fetch as jest.Mock).mock.calls.map(([url]) => url)).toEqual([
+    sessionUrl,
+    completeUrl,
+    '/api/hiring-public/upload-sessions/recover/session-1',
+  ])
+})
+
 it('이전 제출이 취소된 경우 다시 작성할 수 있다', async () => {
   sessionStorage.setItem('hiring-recovery:qa', 'session-1')
   global.fetch = jest.fn().mockResolvedValue(response(200, { status: 'cancelled' }))
@@ -468,14 +491,16 @@ it('최종 완료 응답 유실 후 만료되어도 새 지원을 만들지 않�
   expect(screen.getByText('지원이 완료되었습니다')).toBeInTheDocument()
 })
 
-it.each(['network', 'server', 'conflict'])(
+it.each(['network', 'server', 'unavailable', 'conflict'])(
   '완료 %s 오류 뒤 파일 변경 시 이전 요청 그대로 확인한다',
   async (failure) => {
     const mock = jest.fn().mockResolvedValueOnce(session()).mockResolvedValueOnce(response())
     if (failure === 'network') mock.mockRejectedValueOnce(new Error('응답 유실'))
     else
       mock.mockResolvedValueOnce(
-        response(failure === 'server' ? 500 : 409, { message: '저장 불확실' })
+        response(failure === 'server' ? 500 : failure === 'unavailable' ? 503 : 409, {
+          message: '저장 불확실',
+        })
       )
     global.fetch = mock.mockResolvedValueOnce(response())
     const { submit } = setup()
