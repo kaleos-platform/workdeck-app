@@ -112,3 +112,42 @@ export function driveFolderIdFromUrl(url: string): string | null {
   const m = url.match(/\/folders\/([A-Za-z0-9_-]{10,})/)
   return m ? m[1] : null
 }
+
+// 연결 검사에 쓰는 필수 속성(이름 → 유형). 나머지는 비어 있어도 동작한다.
+const REQUIRED_SOURCE: Record<string, string> = {
+  [SOURCE_PROPS.title]: 'title',
+  [SOURCE_PROPS.mediaFolder]: 'url',
+}
+const REQUIRED_REQUEST: Record<string, string> = {
+  [REQUEST_PROPS.title]: 'title',
+  [REQUEST_PROPS.status]: 'select',
+  [REQUEST_PROPS.source]: 'relation',
+  [REQUEST_PROPS.kind]: 'select',
+}
+
+function missing(schema: Record<string, string>, required: Record<string, string>): string[] {
+  return Object.entries(required)
+    .filter(([name, type]) => schema[name] !== type)
+    .map(([name, type]) => `${name}(${type})`)
+}
+
+/** 두 DB 의 속성을 검사해 사람이 고칠 문구를 돌려준다. 문제 없으면 null. */
+export function connectionSchemaError(
+  source: Record<string, string>,
+  request: Record<string, string>
+): string | null {
+  const s = missing(source, REQUIRED_SOURCE)
+  const r = missing(request, REQUIRED_REQUEST)
+  if (s.length === 0 && r.length === 0) return null
+  // 두 칸이 서로 바뀐 경우를 먼저 알려준다.
+  if (
+    missing(request, REQUIRED_SOURCE).length === 0 &&
+    missing(source, REQUIRED_REQUEST).length === 0
+  ) {
+    return '「콘텐츠 소재」와 「콘텐츠 발행」 링크가 서로 바뀌었습니다'
+  }
+  const parts = []
+  if (s.length) parts.push(`「콘텐츠 소재」 DB에 ${s.join(', ')} 속성이 없습니다`)
+  if (r.length) parts.push(`「콘텐츠 발행」 DB에 ${r.join(', ')} 속성이 없습니다`)
+  return `${parts.join(' / ')} — 링크가 맞는지 확인하세요`
+}
