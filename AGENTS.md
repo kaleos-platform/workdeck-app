@@ -19,7 +19,7 @@ This repository is a Next.js 16 + TypeScript app-router project.
 
 - `app/`: route groups and page/layout entry points (`(auth)`, `(marketing)`, `dashboard`).
 - `src/components/`: feature-level UI (`auth`, `layout`, `marketing`, `providers`).
-- `components/ui/`: shared shadcn-style primitives (button, dialog, tabs, etc.).
+- `src/components/ui/`: shared shadcn-style primitives (button, dialog, tabs, etc.). `@/components/ui` resolves here; root `components/ui/` is legacy — don't add to it.
 - `src/lib/`: Supabase clients, validation schemas, and utilities.
 - `src/hooks/`: reusable React hooks (auth/user state).
 - `prisma/`: database schema and Prisma configuration.
@@ -27,6 +27,12 @@ This repository is a Next.js 16 + TypeScript app-router project.
 - `docs/decks/<deck-id>/`: deck별 문서(PRD·로드맵·가이드 등). deck id는 `src/lib/deck-meta.ts`의 `DeckVariant`를 따른다. **반드시 커밋한다** — untracked면 워크트리에서 소멸한다. QA 스크린샷은 `screenshot/`(gitignore), 영구 이미지는 `assets/`. 컨벤션: `docs/decks/README.md`.
 
 Prefer `@/` imports instead of deep relative paths.
+
+## UI Work
+
+- UI 기준은 루트 `DESIGN.md`(색·상태 색·글꼴·간격·컴포넌트). 화면을 바꾸기 전에 먼저 읽는다.
+- 절차는 `workdeck-ui` 스킬(`.codex/skills/workdeck-ui/SKILL.md`, Claude Code는 `.claude/skills/workdeck-ui`). 새 화면·큰 개편은 `ui-plan` 스킬로 와이어프레임부터.
+- shadcn 컴포넌트·예제는 MCP `shadcn`(버전 고정 3.8.5)으로 찾는다. Codex는 `.codex/config.toml`에 있다. Claude Code는 `.mcp.json`이 개인 토큰 때문에 gitignore라 각자 로컬 `.mcp.json`의 `mcpServers`에 `"shadcn": { "command": "npx", "args": ["shadcn@3.8.5", "mcp"] }`를 넣는다.
 
 ## Build, Test, and Development Commands
 
