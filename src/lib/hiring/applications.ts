@@ -163,8 +163,7 @@ export async function createPublicApplication(params: {
     })
   })
 
-  // 첨부 업로드 + 메타 저장 — 중간 실패 시 지원서 행·기업로드 파일을 보상 삭제해
-  // "첨부 일부만 남은 지원서"가 생기지 않게 한다.
+  // 첨부 업로드와 메타 저장 실패 시 지원서와 업로드된 파일을 보상 삭제한다.
   const uploadedPaths: string[] = []
   try {
     for (const f of linkedFiles) {
@@ -189,8 +188,31 @@ export async function createPublicApplication(params: {
     }
   } catch (err) {
     await Promise.allSettled([
-      removeApplicantFiles(uploadedPaths),
-      prisma.hiringApplication.delete({ where: { id: application.id } }),
+      removeApplicantFiles(uploadedPaths).catch(() => {
+        console.error('legacy application storage compensation failed', {
+          applicationId: application.id,
+        })
+      }),
+      (async () => {
+        try {
+          await prisma.hiringApplication.delete({ where: { id: application.id } })
+        } catch {
+          let hideResult: 'marked' | 'no_match' | 'failed' = 'failed'
+          try {
+            const result = await prisma.hiringApplication.updateMany({
+              where: { id: application.id, spaceId: posting.spaceId, deletedAt: null },
+              data: { deletedAt: new Date() },
+            })
+            hideResult = result.count === 1 ? 'marked' : 'no_match'
+          } catch {
+            // 표시 실패도 보상 실패 로그에 기록한다.
+          }
+          console.error('legacy application database compensation failed', {
+            applicationId: application.id,
+            hideResult,
+          })
+        }
+      })(),
     ])
     throw err instanceof Error ? err : new Error('첨부 업로드에 실패했습니다')
   }
