@@ -4,9 +4,9 @@ import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers
 import { requireAal2 } from '@/lib/auth/mfa'
 import { prisma } from '@/lib/prisma'
 import { loadSpaceCredential, saveSpaceCredential } from '@/lib/agent/integrations/space-credential'
-import { notionIdFromInput, queryDataSource, resolveDataSourceId } from '@/lib/sc/osmu/notion'
+import { getDataSourceSchema, notionIdFromInput, resolveDataSourceId } from '@/lib/sc/osmu/notion'
 import { ensureSpaceServiceAccount } from '@/lib/sc/osmu/drive'
-import { driveFolderIdFromUrl } from '@/lib/sc/osmu/notion-schema'
+import { connectionSchemaError, driveFolderIdFromUrl } from '@/lib/sc/osmu/notion-schema'
 
 export const runtime = 'nodejs'
 
@@ -83,7 +83,16 @@ export async function PUT(req: NextRequest) {
         resolveDataSourceId(token, sourceId),
         resolveDataSourceId(token, requestId),
       ])
-      await queryDataSource(token, requestDataSourceId, undefined, 1)
+      if (sourceDataSourceId === requestDataSourceId) {
+        return errorResponse('「콘텐츠 소재」와 「콘텐츠 발행」에 서로 다른 DB를 넣어주세요', 400)
+      }
+      // 속성 이름·유형으로 DB 를 제대로 넣었는지 확인(cron 이 매번 실패하지 않게).
+      const [sourceSchema, requestSchema] = await Promise.all([
+        getDataSourceSchema(token, sourceDataSourceId),
+        getDataSourceSchema(token, requestDataSourceId),
+      ])
+      const schemaError = connectionSchemaError(sourceSchema, requestSchema)
+      if (schemaError) return errorResponse(schemaError, 400)
       await saveSpaceCredential(spaceId, 'notion', { token }, {})
       await prisma.scNotionConnection.upsert({
         where: { spaceId },

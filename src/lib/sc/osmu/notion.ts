@@ -104,3 +104,15 @@ export async function resolveDataSourceId(token: string, databaseId: string): Pr
   if (!id) throw new NotionError('데이터 소스가 없는 데이터베이스입니다', 400)
   return id
 }
+
+/** data source 의 속성 이름 → 유형. 연결 시 DB 를 잘못 넣었는지 검사용. */
+export async function getDataSourceSchema(
+  token: string,
+  dataSourceId: string
+): Promise<Record<string, string>> {
+  const ds = await call<{ properties: Record<string, { type: string }> }>(
+    token,
+    `/data_sources/${dataSourceId}`
+  )
+  return Object.fromEntries(Object.entries(ds.properties).map(([k, v]) => [k, v.type]))
+}

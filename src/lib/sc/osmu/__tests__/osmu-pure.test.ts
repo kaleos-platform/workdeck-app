@@ -118,3 +118,34 @@ describe('notionIdFromInput', () => {
     expect(notionIdFromInput('없음')).toBeNull()
   })
 })
+
+describe('connectionSchemaError', () => {
+  // 운영 노션에 만든 두 DB 의 실제 속성
+  const source = {
+    제목: 'title',
+    행사일: 'date',
+    '장소/대상': 'rich_text',
+    기관: 'rich_text',
+    '사용 상품': 'multi_select',
+    '미디어 폴더': 'url',
+  }
+  const request = {
+    제목: 'title',
+    소재: 'relation',
+    유형: 'select',
+    '관점·요청 사항': 'rich_text',
+    '희망 발행일': 'date',
+    상태: 'select',
+    '결과 링크': 'url',
+    'Workdeck 링크': 'url',
+    '바탕 결과물': 'relation',
+  }
+  it('정상·바뀜·누락을 구분한다', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { connectionSchemaError } = require('../notion-schema')
+    expect(connectionSchemaError(source, request)).toBeNull()
+    expect(connectionSchemaError(request, source)).toContain('서로 바뀌었습니다')
+    expect(connectionSchemaError(source, source)).toContain('「콘텐츠 발행」 DB에 상태(select)')
+    expect(connectionSchemaError(source, { ...request, 상태: 'status' })).toContain('상태(select)')
+  })
+})
