@@ -9,7 +9,7 @@ export const COMPANY = {
   ceo: '윤태이',
   registrationNumber: '634-81-02756',
   mailOrderNumber: '2026-서울강남-02272',
-  address: '서울특별시 강남구 남부순환로 지하 2814, 지하 2층 203호',
+  address: '서울특별시 강남구 남부순환로 지하 2814, 지하 2층 203호(도곡동, 도곡역)',
   phone: '070-8015-2705',
   privacyOfficer: '윤태이',
   privacyOfficerEmail: CONTACT_EMAIL,
