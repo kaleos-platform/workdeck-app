@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { LockKeyhole } from 'lucide-react'
+import { Eye, EyeOff, LockKeyhole } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -319,6 +319,7 @@ function SecretDialog({
   const replacing = initialName !== ''
   const [name, setName] = useState(initialName)
   const [value, setValue] = useState('')
+  const [showValue, setShowValue] = useState(false)
   // 교체면 기존 설정으로 미리 채운다. 값은 다시 입력해야 한다.
   const [kind, setKind] = useState<'API_KEY' | 'ENV' | 'LOGIN'>(initial?.kind ?? 'API_KEY')
   const cfg = initial?.config && 'baseUrl' in initial.config ? initial.config : undefined
@@ -398,7 +399,9 @@ function SecretDialog({
         <DialogHeader>
           <DialogTitle>{replacing ? `비밀값 교체 — ${initialName}` : '비밀값 등록'}</DialogTitle>
           <DialogDescription>
-            값은 저장 뒤 다시 보려면 MFA 인증이 필요합니다.
+            {kind === 'LOGIN'
+              ? '비밀번호는 저장 뒤 다시 볼 수 없습니다. 잊으면 교체하세요.'
+              : '값은 저장 뒤 다시 보려면 MFA 인증이 필요합니다.'}
             {replacing && ' 교체할 때는 값을 다시 입력하세요. 설정은 기존 값으로 채워져 있습니다.'}
           </DialogDescription>
         </DialogHeader>
@@ -417,12 +420,12 @@ function SecretDialog({
               </select>
             </Field>
           )}
-          <Field label="이름">
+          <Field label="이름" hint="에이전트가 부르는 이름. 영문 소문자·숫자·하이픈(-) 2~63자">
             <Input
               id="secret-name"
               value={name}
               readOnly={replacing}
-              placeholder="my-api-key"
+              placeholder={kind === 'LOGIN' ? 'wekeep-aml' : 'my-api-key'}
               onChange={(e) => setName(e.target.value)}
             />
           </Field>
@@ -444,15 +447,28 @@ function SecretDialog({
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </Field>
-              <Field label="비밀번호">
-                <Input
-                  id="secret-value"
-                  type="password"
-                  autoComplete="new-password"
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                />
-              </Field>
+              <div className="space-y-1.5">
+                <Label htmlFor="secret-value">비밀번호</Label>
+                <div className="relative">
+                  <Input
+                    id="secret-value"
+                    type={showValue ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    className="pr-10"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showValue ? '비밀번호 숨기기' : '비밀번호 표시'}
+                    aria-pressed={showValue}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowValue((v) => !v)}
+                  >
+                    {showValue ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
             </>
           ) : (
             <Field label="값">
@@ -599,15 +615,18 @@ function SecretDialog({
 
 function Field({
   label,
+  hint,
   children,
 }: {
   label: string
+  hint?: string
   children: React.ReactElement<{ id?: string }>
 }) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={children.props.id}>{label}</Label>
       {children}
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   )
 }

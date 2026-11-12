@@ -297,6 +297,10 @@ it('종류를 로그인으로 고르면 URL·아이디·비밀번호 필드가 �
   const pw = screen.getByLabelText('비밀번호')
   expect(pw).toHaveAttribute('type', 'password')
   expect(pw).toHaveAttribute('autocomplete', 'new-password')
+  fireEvent.click(screen.getByRole('button', { name: '비밀번호 표시' }))
+  expect(pw).toHaveAttribute('type', 'text')
+  fireEvent.click(screen.getByRole('button', { name: '비밀번호 숨기기' }))
+  expect(pw).toHaveAttribute('type', 'password')
   fireEvent.change(screen.getByLabelText('이름'), { target: { value: 'wekeep' } })
   fireEvent.change(screen.getByLabelText('로그인 URL'), {
     target: { value: 'https://fbw.wekeep.co.kr/fbw/member/login.do' },
