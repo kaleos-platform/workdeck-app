@@ -15,7 +15,7 @@
  *   OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다. OPENING_WEB_URL 기본 https://opening.work.
  *   --out 은 저장소 밖의 빈 폴더만 허용한다. 이미지 안 글자는 검사하지 못하므로 폴더를 고객 자료로 다룬다.
  *
- * 사람 검토(연락처 적중 해제·이미지 확인):
+ * 사람 검토(연락처 적중 해제·이미지 확인, scene 내장 이미지 포함):
  *   1) prepare ... --review-dir /secure/review  → candidates.json, items/*.json(원문), images/*
  *   2) 내용을 읽고 승인할 것만 담은 파일을 만든다(저장소 밖):
  *      { "sourceSpaceId": "123", "reviewer": "이름", "reviewedAt": "2026-11-01",

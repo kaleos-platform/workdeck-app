@@ -1,6 +1,6 @@
 /** @jest-environment node */
 import { createHash } from 'node:crypto'
-import { mkdtempSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import sharp from 'sharp'
@@ -8,6 +8,8 @@ import type { HiringMigrationRecord } from '@/generated/prisma/client'
 import { decodeMigrationSnapshot, migrationSourceRef } from '../ledger'
 import {
   assertImportTarget,
+  planPosting,
+  planTemplate,
   safeMigrationSummary,
   safeMigrationStatus,
   runOpeningImport,
@@ -16,7 +18,9 @@ import {
 } from '../opening-import'
 import {
   isInMigrationWindow,
+  embeddedImages,
   migrationWindowStart,
+  parseReviewFile,
   postingPacketSchema,
   reviewHash,
   reviewTexts,
@@ -47,6 +51,14 @@ it('stdout 상태는 정해진 상태만 보존한다', () => {
   expect(safeMigrationStatus('APPLIED_PARTIAL')).toBe('APPLIED_PARTIAL')
   expect(safeMigrationStatus('APPLIED')).toBe('APPLIED')
   expect(safeMigrationStatus('privateperson')).toBe('UNKNOWN')
+})
+
+it('자산 소유권 불일치와 미확인을 stdout에서 구분한다', () => {
+  expect(
+    safeMigrationSummary({
+      postings: { reasons: { ASSET_SCOPE_MISMATCH: 1, ASSET_SCOPE_UNKNOWN: 2 } },
+    })
+  ).toMatchObject({ postings: { reasons: { ASSET_SCOPE_MISMATCH: 1, ASSET_SCOPE_UNKNOWN: 2 } } })
 })
 
 it('stdout은 고정 사유와 경고만 출력하고 나머지는 OTHER로 합산한다', () => {
@@ -296,8 +308,8 @@ function fakeSource(rows = sourceRows()) {
       const table: [RegExp, unknown[]][] = [
         [/FROM file/, rows.files],
         [/FROM setting/, [{ setting_value: '[500]' }]],
-        [/SELECT image_key, data FROM detail_template/, rows.sampleTemplates],
-        [/SELECT image_key FROM content/, rows.sampleContents],
+        [/SELECT id::text, status, image_key, data FROM detail_template/, rows.sampleTemplates],
+        [/SELECT id::text, source_id::text, status, image_key FROM content/, rows.sampleContents],
         [/now\(\)/, [{ snapshot_at: snapshotAt }]],
         [/FROM brand/, [{ id: '9', name: '합성브랜드' }]],
         [/status, created_at, updated_at FROM posting/, rows.overview],
@@ -900,9 +912,39 @@ describe('prepare', () => {
       'ASSET_SCOPE_UNKNOWN',
     ])
     Object.assign(shared as object, { owner_brand_id: '8' })
-    rows.sampleTemplates = [{ image_key: '', data: [{ type: 'image', image_key: key }] }]
+    rows.sampleTemplates = [
+      {
+        id: '500',
+        status: 1,
+        image_key: '',
+        data: [{ type: 'image', enabled: true, image_key: key }],
+      },
+    ]
     result = await prepare(rows)
     expect(result.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+  })
+
+  it.each([
+    ['비활성 템플릿', { status: 0, data: [{ type: 'image', enabled: true }] }],
+    ['비활성 섹션', { status: 1, data: [{ type: 'image', enabled: false }] }],
+    ['미참조 content', { status: 1, data: [] }],
+  ])('공용 샘플 %s 자산은 허용하지 않는다', async (_label, sample) => {
+    const rows = sourceRows()
+    const key = 'posting_detail/u/사람이름.png'
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+    rows.sampleTemplates = [
+      {
+        id: '500',
+        image_key: '',
+        ...sample,
+        data: sample.data.map((item) => ({ ...item, image_key: key })),
+      },
+    ]
+    rows.sampleContents = [{ id: '700', source_id: '500', status: 1, image_key: key }]
+    const result = await prepare(rows)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toContain(
+      'ASSET_SCOPE_MISMATCH'
+    )
   })
 
   it('자격증명·서명이 든 URL은 승인할 수 없는 보류로 둔다', async () => {
@@ -922,6 +964,81 @@ describe('prepare', () => {
     expect(manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
       'RESOURCE_SCOPE_MISMATCH',
     ])
+  })
+
+  it.each([
+    ['content_image/a.png', '8', 'ASSET_SCOPE_MISMATCH'],
+    ['content_image/a.png', null, 'ASSET_SCOPE_UNKNOWN'],
+    ['content_data/a.json', '8', 'ASSET_SCOPE_MISMATCH'],
+    ['content_data/a.json', null, 'ASSET_SCOPE_UNKNOWN'],
+  ])(
+    'resource 파일의 소유권이 맞지 않으면 읽기 전에 보류한다: %s / %s',
+    async (key, owner, reason) => {
+      const rows = sourceRows()
+      const asset = rows.files.find((row) => row.file_key === key)!
+      asset.owner_brand_id = owner
+      const reads: string[] = []
+      const result = await prepareOpeningCustomer(
+        fakeSource(rows).client,
+        async (input) => {
+          reads.push(input.key)
+          return readObject(input)
+        },
+        { brandId: '9', webOrigin: 'https://opening.work' }
+      )
+      expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toContain(reason)
+      expect(reads).not.toContain(key)
+    }
+  )
+
+  it('검증된 공통 샘플 resource 이미지는 기존대로 허용한다', async () => {
+    const rows = sourceRows()
+    const key = 'content_image/a.png'
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+    rows.sampleTemplates = [
+      {
+        id: '500',
+        status: 1,
+        image_key: '',
+        data: [{ type: 'content', enabled: true, resource_id: '700' }],
+      },
+    ]
+    rows.sampleContents = [{ id: '700', source_id: '500', status: 1, image_key: key }]
+    const result = await prepare(rows)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+  })
+
+  it.each([
+    ['비활성 content', { status: 0, source_id: '500' }],
+    ['다른 템플릿의 content', { status: 1, source_id: '501' }],
+  ])('공통 샘플의 %s는 허용하지 않는다', async (_label, overrides) => {
+    const rows = sourceRows()
+    const key = 'content_image/a.png'
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+    rows.sampleTemplates = [
+      {
+        id: '500',
+        status: 1,
+        image_key: '',
+        data: [{ type: 'content', enabled: true, resource_id: '700' }],
+      },
+    ]
+    rows.sampleContents = [{ id: '700', image_key: key, ...overrides }]
+    const result = await prepare(rows)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toContain(
+      'ASSET_SCOPE_MISMATCH'
+    )
+  })
+
+  it('공통 샘플 이미지 목록에 들어간 다른 고객의 scene은 허용하지 않는다', async () => {
+    const rows = sourceRows()
+    const key = 'content_data/a.json'
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+    rows.sampleContents = [{ image_key: key }]
+    const result = await prepare(rows)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toContain(
+      'ASSET_SCOPE_MISMATCH'
+    )
   })
 
   it('이미지가 아닌 자산은 복사하지 않고 보류한다', async () => {
@@ -1294,6 +1411,123 @@ describe('사람 검토', () => {
 })
 
 describe('적재 게이트', () => {
+  it.each([
+    'data:image/png;base64,%%%%',
+    'data:image/png;base64,YQ==',
+    'data:image/jpeg;base64,YQ==',
+    'https://example.test/image.png',
+  ])('잘못된 내장 이미지 dataURL은 거부한다: %s', async (dataURL) => {
+    const prepared = await prepare()
+    const content = prepared.postings[0].content
+    const embedded = await sanitizeScene(scene())
+    embedded.files.f.dataURL = dataURL
+    content.resources['70'].scene = embedded
+    expect(() => embeddedImages(content)).toThrow('SCENE_IMAGE_INVALID')
+  })
+
+  it('내장 이미지의 MIME이 실제 PNG와 다르면 거부한다', async () => {
+    const content = (await prepare()).postings[0].content
+    const embedded = await sanitizeScene(scene())
+    embedded.files.f.dataURL = embedded.files.f.dataURL.replace('image/png', 'image/jpeg')
+    embedded.files.f.mimeType = 'image/jpeg'
+    content.resources['70'].scene = embedded
+    expect(() => embeddedImages(content)).toThrow('SCENE_IMAGE_INVALID')
+  })
+
+  it('내장 이미지 검토 파일을 제공하고 바이트 SHA 승인 후에만 적재한다', async () => {
+    const read: OpeningObjectReader = async (input) =>
+      ['content_data/a.json', 'content_data/c.json'].includes(input.key)
+        ? Buffer.from(JSON.stringify(scene()))
+        : readObject(input)
+    const initial = await prepareOpeningCustomer(fakeSource().client, read, {
+      brandId: '9',
+      webOrigin: 'https://opening.work',
+    })
+    const embedded = await sanitizeScene(scene())
+    const bytes = Buffer.from(embedded.files.f.dataURL.split(',')[1], 'base64')
+    const sha256 = createHash('sha256').update(bytes).digest('hex')
+    expect(
+      initial.review.images.filter((image) => image.owners.includes('posting:1')).length
+    ).toBeGreaterThan(1)
+    expect(initial.review.images).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sha256,
+          bytes,
+          owners: expect.arrayContaining(['posting:1', 'template:40']),
+        }),
+      ])
+    )
+    const reviewDir = mkdtempSync(join(tmpdir(), 'embedded-review-'))
+    try {
+      writeReviewDir(reviewDir, initial.review)
+      expect(readFileSync(join(reviewDir, 'images', `${sha256}.png`))).toEqual(bytes)
+      expect(statSync(join(reviewDir, 'images', `${sha256}.png`)).mode & 0o777).toBe(0o600)
+    } finally {
+      rmSync(reviewDir, { recursive: true, force: true })
+    }
+    expect(initial.manifest.postings.find((item) => item.id === '1')?.status).toBe('held')
+    const images = initial.manifest.manualReviewImages.map((image) => image.sha256)
+    const approved = await prepareOpeningCustomer(fakeSource().client, read, {
+      brandId: '9',
+      webOrigin: 'https://opening.work',
+      review: reviewFile({ images }),
+    })
+    expect(approved.manifest.postings.find((item) => item.id === '1')?.status).toBe('included')
+    expect(approved.manifest.templates.find((item) => item.id === '40')?.status).toBe('included')
+    const report = await importSet(fakeDb().db, approved, true, undefined, {
+      review: reviewFile({ images }),
+    })
+    expect(report.issues.refused).toEqual([])
+    const withoutEmbedded = await importSet(fakeDb().db, approved, true, undefined, {
+      review: reviewFile({ images: images.filter((image) => image !== sha256) }),
+    })
+    expect(withoutEmbedded.issues.refused).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'posting',
+          id: '1',
+          code: 'EMBEDDED_IMAGE_REVIEW_REQUIRED',
+        }),
+        expect.objectContaining({
+          kind: 'template',
+          id: '40',
+          code: 'EMBEDDED_IMAGE_REVIEW_REQUIRED',
+        }),
+      ])
+    )
+    const resource = approved.postings[0].content.resources['70']
+    const noBinding = async () => {
+      throw Error('BIND_SHOULD_NOT_RUN')
+    }
+    await expect(planPosting(approved.postings[0], 'space', noBinding)).rejects.toThrow(
+      'EMBEDDED_IMAGE_REVIEW_REQUIRED'
+    )
+    await expect(planTemplate(approved.templates[0], 'space', 'owner', noBinding)).rejects.toThrow(
+      'EMBEDDED_IMAGE_REVIEW_REQUIRED'
+    )
+    resource.scene!.files.f.dataURL = `data:image/png;base64,${Buffer.from(await png(99)).toString('base64')}`
+    await expect(
+      planPosting(
+        approved.postings[0],
+        'space',
+        noBinding,
+        parseReviewFile(reviewFile({ images }), '9')
+      )
+    ).rejects.toThrow('EMBEDDED_IMAGE_REVIEW_REQUIRED')
+    const changed = await importSet(fakeDb().db, approved, true, undefined, {
+      review: reviewFile({ images }),
+    })
+    expect(changed.issues.refused).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'posting',
+          id: '1',
+          code: 'EMBEDDED_IMAGE_REVIEW_REQUIRED',
+        }),
+      ])
+    )
+  })
   it('내장 이미지가 없는 scene이어도 별도 원본 PNG를 검토하고 승인 전 적재하지 않는다', async () => {
     const emptyScene = { type: 'excalidraw', version: 2, elements: [], files: {} }
     const read: OpeningObjectReader = async (input) =>
