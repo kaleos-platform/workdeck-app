@@ -112,7 +112,11 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   const mfaError = await requireAal2()
   if (mfaError) return mfaError
 
-  if (!SECRET_NAME_RE.test(name)) return errorResponse('이름이 올바르지 않습니다', 400)
+  if (!SECRET_NAME_RE.test(name))
+    return errorResponse(
+      '이름은 영문 소문자·숫자·하이픈(-) 2~63자로 입력하세요(예: wekeep-aml)',
+      400
+    )
   const raw = await req.json().catch(() => null)
   // kind를 먼저 본다 — config 모양이 종류마다 달라 스키마 오류가 아니라 이 안내를 받아야 한다.
   const kind = (raw as { kind?: unknown } | null)?.kind
