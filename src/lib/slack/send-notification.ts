@@ -2,7 +2,8 @@
  * 서버측 공용 Slack 발송 헬퍼.
  *  - sendDeckNotification: Deck 단위 알림. DeckInstance.slackNotifyEnabled 토글이 authoritative —
  *    off면 발송하지 않는다. on이면 워크스페이스의 notifications 채널로 발송한다.
- *  - sendSystemNotification: Deck 토글과 무관한 운영 알림. 등록된 모든 notifications 채널로 발송.
+ *  - sendSystemNotification: Deck 토글과 무관한 운영 알림. 기본은 운영 Space(칼레오스) 채널로만,
+ *    특정 Space 데이터에 관한 알림은 spaceId 로 그 Space 채널에만 보낸다.
  *
  * 발송 주체는 워크스페이스 SlackInstallation 봇(workdeck 봇) 하나뿐이다. 전환기에 쓰던
  * 레거시 env(SLACK_BOT_TOKEN/SLACK_CHANNEL_ID, 구 에밀리 봇) 이중 발송은 제거됐다 —
@@ -80,19 +81,25 @@ export async function sendDeckNotification(opts: {
   }
 }
 
+/** 운영사 Space「칼레오스」— 워커 다운·DB 이상 같은 플랫폼 알림의 유일한 수신처(2026-11-12 사용자 결정). */
+export const OPS_SPACE_ID = 'cmv0yy4cr000b06jsp7f5zk7h'
+
 /**
- * Deck 토글과 무관한 운영(시스템) 알림. 등록된 모든 notifications 채널로 발송한다.
+ * Deck 토글과 무관한 운영(시스템) 알림.
+ * 예전엔 모든 Space 의 notifications 채널로 브로드캐스트해 고객 Space 에 운영 알림이 갈 수 있었다.
+ * spaceId 를 주면 그 Space 채널(고객별 알림), 생략하면 운영 Space 채널로만 보낸다.
  * @returns 하나라도 발송에 성공하면 true.
  */
 export async function sendSystemNotification(opts: {
   blocks: unknown[]
   text: string
+  spaceId?: string
 }): Promise<boolean> {
   try {
     const payload: NotificationPayload = { blocks: opts.blocks, text: opts.text }
 
     const channels = await prisma.spaceSlackChannel.findMany({
-      where: { kind: NOTIFICATION_CHANNEL_KIND },
+      where: { kind: NOTIFICATION_CHANNEL_KIND, spaceId: opts.spaceId ?? OPS_SPACE_ID },
       select: {
         channelId: true,
         installation: { select: { botToken: true, botTokenIv: true } },
