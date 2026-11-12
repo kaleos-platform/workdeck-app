@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/admin/leads', label: '도입 신청' },
   { href: '/admin/templates', label: '템플릿' },
   { href: '/admin/recovery', label: '복구 관리' },
+  { href: '/admin/hiring-upload-sweep', label: '첨부 정리 이력' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
