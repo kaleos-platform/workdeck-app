@@ -1411,6 +1411,63 @@ describe('사람 검토', () => {
 })
 
 describe('적재 게이트', () => {
+  it('합성 prepare·사람 검토 후보 파일·승인 후 dry-run은 DB와 Storage를 변경하지 않는다', async () => {
+    const reader: OpeningObjectReader = async (input) =>
+      ['content_data/a.json', 'content_data/c.json'].includes(input.key)
+        ? Buffer.from(JSON.stringify(scene()))
+        : readObject(input)
+    const options = { brandId: '9', webOrigin: 'https://opening.work' }
+    const first = await prepareOpeningCustomer(fakeSource().client, reader, options)
+    expect(first.manifest.postings.find((item) => item.id === '1')?.status).toBe('held')
+    const root = mkdtempSync(join(tmpdir(), 'opening-full-review-'))
+    try {
+      writeReviewDir(root, first.review)
+      const candidates = JSON.parse(readFileSync(join(root, 'candidates.json'), 'utf8')) as {
+        images: { sha256: string }[]
+      }
+      expect(candidates.images.length).toBeGreaterThan(0)
+      const images = candidates.images.map(({ sha256 }) => sha256)
+      const imageFiles = readdirSync(join(root, 'images'))
+      for (const hash of images) {
+        const name = imageFiles.find((file) => file.startsWith(`${hash}.`))
+        expect(name).toBeDefined()
+        expect(
+          createHash('sha256')
+            .update(readFileSync(join(root, 'images', name!)))
+            .digest('hex')
+        ).toBe(hash)
+      }
+      const review = reviewFile({ images })
+      const prepared = await prepareOpeningCustomer(fakeSource().client, reader, {
+        ...options,
+        review,
+      })
+      expect(prepared.manifest.postings.find((item) => item.id === '1')?.status).toBe('included')
+      expect(prepared.manifest.templates.find((item) => item.id === '40')?.status).toBe('included')
+      const target = fakeDb()
+      const storage: TargetStorage = {
+        read: async () => {
+          throw Error('UNEXPECTED_STORAGE_READ')
+        },
+        write: async () => {
+          throw Error('UNEXPECTED_STORAGE_WRITE')
+        },
+      }
+      const report = await importSet(target.db, prepared, false, storage, { review })
+      expect(report.status).toBe('PLANNED')
+      expect(report.issues.refused).toEqual([])
+      expect(
+        target.records.size +
+          target.postings.size +
+          target.templates.size +
+          target.stores.size +
+          target.positions.size
+      ).toBe(0)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
   it.each([
     'data:image/png;base64,%%%%',
     'data:image/png;base64,YQ==',
