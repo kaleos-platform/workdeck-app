@@ -53,6 +53,8 @@ import { HIRING_ASSETS_BUCKET } from '@/lib/hiring/storage'
 import {
   assertImportTarget,
   runOpeningImport,
+  safeMigrationSummary,
+  safeMigrationStatus,
   writeImportIssues,
   type PacketSet,
   type TargetStorage,
@@ -175,7 +177,10 @@ async function prepare(args: string[]) {
     if (outDir) writePacketSet(outDir, prepared)
     if (reviewDir) writeReviewDir(reviewDir, prepared.review)
     console.log(
-      JSON.stringify({ status: outDir ? 'PACKETS_WRITTEN' : 'DRY_RUN', ...prepared.summary })
+      JSON.stringify({
+        status: outDir ? 'PACKETS_WRITTEN' : 'DRY_RUN',
+        ...safeMigrationSummary(prepared.summary),
+      })
     )
   } finally {
     await client.end()
@@ -230,9 +235,15 @@ async function importPackets(args: string[]) {
       review: readReviewFile(values['review-file']),
       skipConflicts: values['skip-conflicts'],
     })
-    const { issues, ...summary } = report
+    const { issues, status, ...summary } = report
     writeImportIssues(packets, issues)
-    console.log(JSON.stringify({ environment, ...summary }))
+    console.log(
+      JSON.stringify({
+        environment,
+        status: safeMigrationStatus(status),
+        ...safeMigrationSummary(summary),
+      })
+    )
     if (report.status === 'CONFLICT_STOPPED') process.exitCode = 1
   } finally {
     await db.$disconnect()

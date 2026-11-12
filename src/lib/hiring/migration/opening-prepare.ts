@@ -7,6 +7,7 @@ import { planPosting, planTemplate, type AssetBinder } from './opening-import'
 import {
   contactCount,
   emptyHits,
+  hasEmbeddedImages,
   isInMigrationWindow,
   kstDate,
   migrationWindowStart,
@@ -862,6 +863,7 @@ async function buildCustomerPackets(
       entry.contactHits = scanContacts(candidate)
       addHits(entry.contactHits, 'postingsHit')
       const packet = parseCandidate(postingPacketSchema, candidate, 'posting')
+      if (hasEmbeddedImages(packet.content)) throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
       const images = unreadImages(packet.content, [packet.content.detailImage])
       gateContacts('posting', entry, packet, images)
       // 적재기와 같은 계획기로 미리 통과시켜 적재 단계에서 막힐 공고를 여기서 보류한다.
@@ -904,6 +906,7 @@ async function buildCustomerPackets(
       entry.contactHits = scanContacts(candidate)
       addHits(entry.contactHits, 'templatesHit')
       const packet = parseCandidate(templatePacketSchema, candidate, 'template')
+      if (hasEmbeddedImages(packet)) throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
       const images = unreadImages(packet, [packet.cover])
       gateContacts('template', entry, packet, images)
       await planTemplate(packet, PLACEHOLDER_SPACE, PLACEHOLDER_SPACE, placeholderBind, review)
