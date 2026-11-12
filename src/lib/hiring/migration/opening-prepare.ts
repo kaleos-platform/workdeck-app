@@ -7,7 +7,7 @@ import { planPosting, planTemplate, type AssetBinder } from './opening-import'
 import {
   contactCount,
   emptyHits,
-  hasEmbeddedImages,
+  embeddedImages,
   isInMigrationWindow,
   kstDate,
   migrationWindowStart,
@@ -217,23 +217,39 @@ export async function readOpeningSource(client: OpeningSourceClient, brandId: st
     )
     const sampleIds = parseSampleIds(sampleSetting?.setting_value)
     const sampleTemplates = await select<Row>(
-      'SELECT image_key, data FROM detail_template WHERE id = ANY($1::bigint[])',
+      'SELECT id::text, status, image_key, data FROM detail_template WHERE id = ANY($1::bigint[]) AND status = 1',
       [sampleIds]
     )
     const sampleContents = await select<Row>(
-      `SELECT image_key FROM content
-      WHERE source_type = 'detail_template' AND source_id = ANY($1::bigint[])`,
+      `SELECT id::text, source_id::text, status, image_key FROM content
+      WHERE source_type = 'detail_template' AND source_id = ANY($1::bigint[]) AND status = 1`,
       [sampleIds]
     )
-    const sharedKeys = new Set(
-      [
-        ...sampleTemplates.flatMap((row) => [
-          row.image_key,
-          ...(Array.isArray(row.data) ? (row.data as Row[]).map((item) => item?.image_key) : []),
-        ]),
-        ...sampleContents.map((row) => row.image_key),
-      ].filter((key): key is string => typeof key === 'string' && key.length > 0)
-    )
+    const sharedKeys = new Set<string>()
+    for (const template of sampleTemplates) {
+      if (template.status !== 1 || !sampleIds.includes(String(template.id))) continue
+      if (typeof template.image_key === 'string' && template.image_key)
+        sharedKeys.add(template.image_key)
+      for (const section of Array.isArray(template.data) ? (template.data as Row[]) : []) {
+        if (
+          !section ||
+          section.enabled !== true ||
+          !['image', 'content', 'content_link'].includes(String(section.type))
+        )
+          continue
+        if (typeof section.image_key === 'string' && section.image_key)
+          sharedKeys.add(section.image_key)
+        if (section.type === 'image') continue
+        const content = sampleContents.find(
+          (row) =>
+            row.status === 1 &&
+            String(row.id) === String(section.resource_id) &&
+            String(row.source_id) === String(template.id)
+        )
+        if (content && typeof content.image_key === 'string' && content.image_key)
+          sharedKeys.add(content.image_key)
+      }
+    }
     await client.query('COMMIT')
     return {
       snapshotAt,
@@ -463,7 +479,7 @@ async function buildCustomerPackets(
   }
 
   const objects = new Map<string, Promise<Uint8Array>>()
-  async function readFile(key: string, targetTypes: string[], owned = false) {
+  async function readFile(key: string, targetTypes: string[], owned = false, allowShared = true) {
     const candidates = filesByKey.get(key) ?? []
     if (candidates.length !== 1) throw Error('ASSET_FILE_MISSING')
     const [file] = candidates
@@ -475,7 +491,7 @@ async function buildCustomerPackets(
     )
       throw Error('ASSET_FILE_REJECTED')
     // 섹션이 직접 가리키는 키는 다른 고객 파일일 수 있어 소유를 확인한다.
-    if (owned && file.owner_brand_id !== brand.id && !source.sharedKeys.has(key))
+    if (owned && file.owner_brand_id !== brand.id && !(allowShared && source.sharedKeys.has(key)))
       throw Error(file.owner_brand_id ? 'ASSET_SCOPE_MISMATCH' : 'ASSET_SCOPE_UNKNOWN')
     if (!objects.has(key)) objects.set(key, readObject({ bucket: file.storage, key }))
     return (objects.get(key) as Promise<Uint8Array>).catch(() => {
@@ -509,7 +525,9 @@ async function buildCustomerPackets(
   async function readScene(key: string) {
     let scene: Row
     try {
-      scene = JSON.parse(Buffer.from(await readFile(key, ['content_data'])).toString('utf8'))
+      scene = JSON.parse(
+        Buffer.from(await readFile(key, ['content_data'], true, false)).toString('utf8')
+      )
     } catch (error) {
       if (reasonOf(error).startsWith('ASSET_')) throw error
       throw Error('SCENE_INVALID')
@@ -649,7 +667,7 @@ async function buildCustomerPackets(
       if (!row) throw Error('CONTENT_MISSING_RESOURCE')
       if (row.status !== 1 || row.content_type !== 'excalidraw') throw Error('RESOURCE_UNSUPPORTED')
       if (row.owner_brand_id !== brand.id) throw Error('RESOURCE_SCOPE_MISMATCH')
-      const asset = await readAsset(row.image_key, ['content_image'])
+      const asset = await readAsset(row.image_key, ['content_image'], true)
       const sceneKey = text(row.file_key)
       if (type === 'content' && !sceneKey) throw Error('CONTENT_MISSING_SCENE')
       resources[id] = {
@@ -863,8 +881,19 @@ async function buildCustomerPackets(
       entry.contactHits = scanContacts(candidate)
       addHits(entry.contactHits, 'postingsHit')
       const packet = parseCandidate(postingPacketSchema, candidate, 'posting')
-      if (hasEmbeddedImages(packet.content)) throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
-      const images = unreadImages(packet.content, [packet.content.detailImage])
+      const embedded = embeddedImages(packet.content)
+      for (const image of embedded) assets.set(image.sha256, image.bytes)
+      if (embedded.some((image) => !review?.images.has(image.sha256))) {
+        noteImages(`posting:${row.id}`, [
+          ...unreadImages(packet.content, [packet.content.detailImage]),
+          ...embedded.map((image) => image.sha256),
+        ])
+        throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
+      }
+      const images = [
+        ...unreadImages(packet.content, [packet.content.detailImage]),
+        ...embedded.map((image) => image.sha256),
+      ]
       gateContacts('posting', entry, packet, images)
       // 적재기와 같은 계획기로 미리 통과시켜 적재 단계에서 막힐 공고를 여기서 보류한다.
       await planPosting(packet, PLACEHOLDER_SPACE, placeholderBind, review)
@@ -906,8 +935,19 @@ async function buildCustomerPackets(
       entry.contactHits = scanContacts(candidate)
       addHits(entry.contactHits, 'templatesHit')
       const packet = parseCandidate(templatePacketSchema, candidate, 'template')
-      if (hasEmbeddedImages(packet)) throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
-      const images = unreadImages(packet, [packet.cover])
+      const embedded = embeddedImages(packet)
+      for (const image of embedded) assets.set(image.sha256, image.bytes)
+      if (embedded.some((image) => !review?.images.has(image.sha256))) {
+        noteImages(`template:${id}`, [
+          ...unreadImages(packet, [packet.cover]),
+          ...embedded.map((image) => image.sha256),
+        ])
+        throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
+      }
+      const images = [
+        ...unreadImages(packet, [packet.cover]),
+        ...embedded.map((image) => image.sha256),
+      ]
       gateContacts('template', entry, packet, images)
       await planTemplate(packet, PLACEHOLDER_SPACE, PLACEHOLDER_SPACE, placeholderBind, review)
       entry.status = 'included'

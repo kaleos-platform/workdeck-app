@@ -1,6 +1,8 @@
 import { z } from 'zod'
+import { createHash } from 'node:crypto'
 import { postingPositionSchema, storeSchema, positionSchema } from '@/lib/validations/hiring-posts'
 import { migrationHash } from './ledger'
+import { sniffImage } from './opening-sanitize'
 
 // 법인이 달라 개인정보를 옮기지 않는 신규 이전 packet. 모든 깊이에서 허용 필드만 통과시킨다.
 // 담당자·작성자·지원서·rawSnapshot·원본 파일 키 필드는 스키마에 없어서 들어오면 거부된다.
@@ -288,10 +290,24 @@ export const reviewHash = (packet: { sourceSnapshotAt: string }) =>
   migrationHash(JSON.parse(JSON.stringify({ ...packet, sourceSnapshotAt: null })))
 
 type Asset = z.output<typeof assetSchema>
-// 내장 이미지는 별도 PNG의 검토 승인으로 확인할 수 없다.
-export function hasEmbeddedImages(content: Pick<PostingPacket['content'], 'resources'>): boolean {
-  return Object.values(content.resources).some(
-    (resource) => resource.scene && Object.keys(resource.scene.files).length > 0
+// 승인 여부는 packet에 적힌 값이 아니라 실제 내장 바이트의 해시로 확인한다.
+export function embeddedImages(content: Pick<PostingPacket['content'], 'resources'>) {
+  return Object.values(content.resources).flatMap((resource) =>
+    Object.values(resource.scene?.files ?? {}).map((file) => {
+      const match = /^data:(image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$/.exec(
+        file.dataURL
+      )
+      if (!match || match[1] !== file.mimeType) throw Error('SCENE_IMAGE_INVALID')
+      const bytes = Buffer.from(match[2], 'base64')
+      if (
+        !bytes.length ||
+        bytes.length > 10 * 1024 * 1024 ||
+        bytes.toString('base64') !== match[2] ||
+        sniffImage(bytes) !== file.mimeType
+      )
+        throw Error('SCENE_IMAGE_INVALID')
+      return { sha256: createHash('sha256').update(bytes).digest('hex'), bytes }
+    })
   )
 }
 // scene과 별도로 보존하는 원본 이미지도 사람이 검토한다.

@@ -13,7 +13,7 @@ import {
 import {
   OPENING_TRANSFORM_VERSION,
   contactCount,
-  hasEmbeddedImages,
+  embeddedImages,
   isInMigrationWindow,
   orgPacketSchema,
   parseReviewFile,
@@ -113,7 +113,8 @@ export async function planPosting(
   review?: ReviewApprovals
 ) {
   const packet = parsePacket(postingPacketSchema, raw)
-  if (hasEmbeddedImages(packet.content)) throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
+  if (embeddedImages(packet.content).some((image) => !review?.images.has(image.sha256)))
+    throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
   assertClean(packet, {
     review,
     key: `posting:${packet.sourcePostingId}`,
@@ -171,7 +172,8 @@ export async function planTemplate(
   review?: ReviewApprovals
 ) {
   const packet = parsePacket(templatePacketSchema, raw)
-  if (hasEmbeddedImages(packet)) throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
+  if (embeddedImages(packet).some((image) => !review?.images.has(image.sha256)))
+    throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
   assertClean(packet, {
     review,
     key: `template:${packet.sourceTemplateId}`,
@@ -456,6 +458,8 @@ export function safeMigrationSummary(summary: object) {
     'DESIGN_TOO_LARGE',
     'ASSET_FILE_MISSING',
     'ASSET_FILE_REJECTED',
+    'ASSET_SCOPE_MISMATCH',
+    'ASSET_SCOPE_UNKNOWN',
     'ASSET_READ_FAILED',
     'ASSET_KEY_MISSING',
     'ASSET_TOO_LARGE',
@@ -569,7 +573,7 @@ export async function runOpeningImport(
   const postings: PostingPlan[] = []
   for (const raw of set.postings) {
     const packet = parsePacket(postingPacketSchema, raw)
-    if (hasEmbeddedImages(packet.content)) {
+    if (embeddedImages(packet.content).some((image) => !review?.images.has(image.sha256))) {
       issues.refused.push({
         kind: 'posting',
         id: packet.sourcePostingId,
@@ -584,7 +588,7 @@ export async function runOpeningImport(
   const templates: TemplatePlan[] = []
   for (const raw of set.templates) {
     const packet = parsePacket(templatePacketSchema, raw)
-    if (hasEmbeddedImages(packet)) {
+    if (embeddedImages(packet).some((image) => !review?.images.has(image.sha256))) {
       issues.refused.push({
         kind: 'template',
         id: packet.sourceTemplateId,
