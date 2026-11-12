@@ -2,11 +2,17 @@
  * Opening → Workdeck 고객 1곳 비PII 이전. 공고·템플릿·매장·직무만 옮기고 지원서·첨부·회원·담당자는 읽지 않는다.
  *
  * 준비(원본 읽기 전용, 기본 집계만 출력):
- *   OPENING_SOURCE_URL=... npx tsx scripts/opening-migrate.ts prepare --brand-id 123
- *   OPENING_SOURCE_URL=... npx tsx scripts/opening-migrate.ts prepare --brand-id 123 \
+ *   OPENING_CA_FILE=/secure/rds-ca.pem npx tsx scripts/opening-migrate.ts prepare --brand-id 123
+ *   OPENING_CA_FILE=/secure/rds-ca.pem npx tsx scripts/opening-migrate.ts prepare --brand-id 123 \
  *     --out /secure/dir --write-packets
- *   OPENING_CA_FILE에 원본 DB CA 파일을 지정한다. 대상 CA는 MIGRATION_CA_FILE로 지정할 수 있다.
- *   DB URL의 SSL 관련 옵션은 거부한다. OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다.
+ *   OPENING_SOURCE_URL은 명령 기록에 남지 않도록 안전한 환경에서 미리 주입한다.
+ *   OPENING_CA_FILE에는 원본 RDS의 신뢰할 CA PEM 파일을 지정한다. 상대 경로는 현재 디렉터리 기준이다.
+ *   대상 DB는 기본 시스템 CA를 사용하며 MIGRATION_CA_FILE을 지정하면 해당 PEM을 사용한다.
+ *   대상 인증서 발급자에 맞는 CA를 확인한다. 인증서·호스트 불일치는 연결 실패로 처리한다.
+ *   DB URL의 SSL 관련 옵션, host, hostaddr, uselibpqcompat는 거부한다. sslmode=require도 제거해야 한다.
+ *   DIRECT_URL이 DATABASE_URL보다 우선하며 둘 중 하나가 환경에 있으면 .env.local을 읽지 않는다.
+ *   이 경우 OPENING_CA_FILE 등 필요한 값도 환경에 직접 제공한다. 접속 정보는 출력하지 않는다.
+ *   OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다. OPENING_WEB_URL 기본 https://opening.work.
  *   --out 은 저장소 밖의 빈 폴더만 허용한다. 이미지 안 글자는 검사하지 못하므로 폴더를 고객 자료로 다룬다.
  *
  * 사람 검토(연락처 적중 해제·이미지 확인):
@@ -156,7 +162,9 @@ async function prepare(args: string[]) {
   const connectionString = process.env.OPENING_SOURCE_URL
   if (!connectionString) throw Error('OPENING_SOURCE_URL_REQUIRED')
   if (!process.env.OPENING_CA_FILE) throw Error('OPENING_CA_FILE_REQUIRED')
-  const client = new Client(openingTlsConfig(connectionString, readFileSync(process.env.OPENING_CA_FILE, 'utf8')))
+  const client = new Client(
+    openingTlsConfig(connectionString, readFileSync(process.env.OPENING_CA_FILE, 'utf8'))
+  )
   await client.connect()
   try {
     const prepared = await prepareOpeningCustomer(client, readS3, {
@@ -203,8 +211,14 @@ async function importPackets(args: string[]) {
   })
   const connectionString = (process.env.DIRECT_URL || process.env.DATABASE_URL) as string
   const db = new PrismaClient({
-    adapter: new PrismaPg(openingTlsConfig(connectionString,
-      process.env.MIGRATION_CA_FILE ? readFileSync(process.env.MIGRATION_CA_FILE, 'utf8') : undefined)),
+    adapter: new PrismaPg(
+      openingTlsConfig(
+        connectionString,
+        process.env.MIGRATION_CA_FILE
+          ? readFileSync(process.env.MIGRATION_CA_FILE, 'utf8')
+          : undefined
+      )
+    ),
   })
   try {
     const report = await runOpeningImport(db, readPacketSet(packets), {
