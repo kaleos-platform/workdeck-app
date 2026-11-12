@@ -5,6 +5,7 @@ import { buildRequest, filterResponse } from '@/lib/agent/secrets/call'
 import { SecretHttpError, secretRequest } from '@/lib/agent/secrets/http-client'
 import {
   assertSecretUsable,
+  loadLoginForUse,
   loadSecretForUse,
   recordSecretError,
   recordSecretUsed,
@@ -137,4 +138,25 @@ const httpPropose: ToolDefinition = {
   },
 }
 
-export const secretTools: ToolDefinition[] = [httpRead, httpPropose]
+// 반환값(비밀번호)은 runTool이 감사에 싣지 않는다(finishToolAudit에는 outcome·오류·id만 전달).
+const loginGet: ToolDefinition = {
+  name: 'secret_login_get',
+  description:
+    '등록된 로그인(ID/PW) 비밀값의 loginUrl·username·password를 돌려줍니다. 브라우저 로그인 전용입니다. 값을 출력·저장·전달하지 마세요(로그인 폼에 입력하는 용도로만 사용).',
+  inputSchema: { secret: secretName },
+  mode: 'read',
+  scope: 'secret:read',
+  async execute(ctx, p) {
+    await underRate(ctx.spaceId, ctx.actor.id, 'secret_login_get', 10)
+    const sec = await loadLoginForUse(
+      ctx.spaceId,
+      p.secret as string,
+      ctx.actor,
+      ctx.decryptedCredentialIds
+    )
+    await recordSecretUsed(sec.id)
+    return { loginUrl: sec.loginUrl, username: sec.username, password: sec.password }
+  },
+}
+
+export const secretTools: ToolDefinition[] = [httpRead, httpPropose, loginGet]

@@ -22,6 +22,8 @@ import {
   loadSecretForApproval,
   loadSecretForUse,
   saveApiKeySecret,
+  saveLoginSecret,
+  loadLoginForUse,
 } from '../store'
 
 const KEY = 'SK_TEST_0123456789abcdef'
@@ -345,5 +347,54 @@ describe('saveEnvSecret', () => {
     const args = upsert.mock.calls[0][0]
     expect(args.create).toMatchObject({ kind: 'ENV', config: cfg })
     expect(JSON.stringify(args)).not.toContain('SK_TEST')
+  })
+})
+
+describe('LOGIN', () => {
+  const LCFG = { loginUrl: 'https://fbw.wekeep.co.kr/login', username: 'seller01' }
+  const LROW = { ...ROW, kind: 'LOGIN', config: LCFG }
+
+  it('저장 데이터에 평문 비밀번호가 없고 kind=LOGIN, 교체는 revision+1', async () => {
+    upsert.mockResolvedValue({ id: 's1', revision: 1 })
+    await saveLoginSecret('sp1', 'wekeep', 'PW_PLAIN_1', LCFG, ['a1'], 'u1')
+    const args = upsert.mock.calls[0][0]
+    expect(JSON.stringify(args)).not.toContain('PW_PLAIN_1')
+    expect(args.create).toMatchObject({ kind: 'LOGIN', config: LCFG })
+    expect(args.update).toMatchObject({ revision: { increment: 1 }, lastError: null })
+  })
+
+  it('허용된 agent·integration은 loginUrl·username·비밀번호를 받고 audit에 id가 남는다', async () => {
+    findUnique.mockResolvedValue({ ...LROW, allowedAgentIds: ['a1', 'i1'] })
+    for (const type of ['agent', 'integration'] as const) {
+      const audit: string[] = []
+      await expect(
+        loadLoginForUse('sp1', 'wekeep', { type, id: type === 'agent' ? 'a1' : 'i1' }, audit)
+      ).resolves.toEqual({ id: 's1', ...LCFG, password: KEY })
+      expect(audit).toEqual(['secret:s1'])
+    }
+  })
+
+  it('허용 밖 actor·user·system은 같은 메시지로 거부하고 복호화하지 않는다', async () => {
+    findUnique.mockResolvedValue(LROW)
+    for (const actor of [
+      { type: 'agent', id: 'other' },
+      { type: 'user', id: 'a1' },
+      { type: 'system', id: 'a1' },
+    ] as const) {
+      await expect(loadLoginForUse('sp1', 'wekeep', actor, [])).rejects.toThrow(DENIED)
+    }
+    expect(decryptField).not.toHaveBeenCalled()
+  })
+
+  it('kind 불일치(API_KEY)·없는 이름도 같은 메시지로 거부', async () => {
+    findUnique.mockResolvedValue(ROW)
+    await expect(loadLoginForUse('sp1', 'x', { type: 'agent', id: 'a1' }, [])).rejects.toThrow(
+      DENIED
+    )
+    findUnique.mockResolvedValue(null)
+    await expect(loadLoginForUse('sp1', 'x', { type: 'agent', id: 'a1' }, [])).rejects.toThrow(
+      DENIED
+    )
+    expect(decryptField).not.toHaveBeenCalled()
   })
 })

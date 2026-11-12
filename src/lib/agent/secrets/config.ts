@@ -138,6 +138,24 @@ export const envConfigInputSchema = z.object({
   }),
 })
 
+// LOGIN 비밀값 config — 비밀이 아니다(목록에 표시). 비밀번호는 encryptedPayload에만 있다.
+export type LoginConfig = { loginUrl: string; username: string }
+
+export const loginConfigSchema = z.object({
+  loginUrl: z
+    .string()
+    .max(500)
+    .refine((s) => {
+      try {
+        const u = new URL(s)
+        return u.protocol === 'https:' && !u.username && !u.password
+      } catch {
+        return false
+      }
+    }, 'loginUrl은 https URL만 허용합니다'),
+  username: z.string().min(1).max(200),
+})
+
 // 입력 그대로 반환한다(디코딩 안 함). 우회 가능성이 있는 형태는 모두 거부한다.
 export function normalizePath(path: string): string {
   const bad = () => new ToolUserError('허용되지 않는 path입니다')

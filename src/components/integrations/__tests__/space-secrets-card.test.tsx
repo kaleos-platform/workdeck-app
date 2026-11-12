@@ -288,3 +288,56 @@ it('OWNER에게만 wd run 허용 스위치가 보이고 토글은 PATCH 결과�
   await screen.findByText('「Space A」 비밀값')
   expect(screen.queryByRole('switch')).not.toBeInTheDocument()
 })
+
+it('종류를 로그인으로 고르면 URL·아이디·비밀번호 필드가 나오고 LOGIN body로 PUT한다', async () => {
+  render(<SpaceSecretsCard />)
+  await openRegister()
+  fireEvent.change(await screen.findByLabelText('종류'), { target: { value: 'LOGIN' } })
+  expect(screen.queryByLabelText('baseUrl')).not.toBeInTheDocument()
+  const pw = screen.getByLabelText('비밀번호')
+  expect(pw).toHaveAttribute('type', 'password')
+  expect(pw).toHaveAttribute('autocomplete', 'new-password')
+  fireEvent.change(screen.getByLabelText('이름'), { target: { value: 'wekeep' } })
+  fireEvent.change(screen.getByLabelText('로그인 URL'), {
+    target: { value: 'https://fbw.wekeep.co.kr/fbw/member/login.do' },
+  })
+  fireEvent.change(screen.getByLabelText('아이디'), { target: { value: 'seller01' } })
+  fireEvent.change(pw, { target: { value: 'pw-1234' } })
+  fireEvent.click(await screen.findByLabelText('연동 D'))
+  fireEvent.click(screen.getByRole('button', { name: '저장' }))
+  await waitFor(() => expect(putCall()).toBeDefined())
+  expect(JSON.parse(putCall()![1].body)).toEqual({
+    kind: 'LOGIN',
+    value: 'pw-1234',
+    config: { loginUrl: 'https://fbw.wekeep.co.kr/fbw/member/login.do', username: 'seller01' },
+    allowedAgentIds: ['ag4'],
+  })
+})
+
+it('LOGIN 행은 아이디 · URL 호스트를 보이고 보기 버튼이 없다', async () => {
+  const base = fetchMock.getMockImplementation()!
+  fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+    url === '/api/spaces/sp-1/secrets'
+      ? res({
+          secrets: [
+            {
+              ...secret,
+              name: 'wekeep',
+              kind: 'LOGIN',
+              config: {
+                loginUrl: 'https://fbw.wekeep.co.kr/fbw/member/login.do',
+                username: 'seller01',
+              },
+              baseUrl: null,
+              readOpIds: [],
+              lastError: null,
+            },
+          ],
+        })
+      : base(url, init)
+  )
+  render(<SpaceSecretsCard />)
+  expect(await screen.findByText('seller01')).toBeInTheDocument()
+  expect(screen.getByText('fbw.wekeep.co.kr')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '보기' })).not.toBeInTheDocument()
+})
