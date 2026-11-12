@@ -571,7 +571,7 @@ export function Sidebar({
                 <section className="rounded-xl bg-white/[0.02] px-3 py-3">
                   <div className="mb-3 px-1">
                     <SpaceSwitcher fallbackName={workspaceName} />
-                    <p className="mt-1 text-[11px] text-zinc-500">사용 중인 업무 빠른 진입</p>
+                    <p className="mt-1 text-[11px] text-zinc-400">사용 중인 업무 빠른 진입</p>
                   </div>
                   {isMyDeckMode && activeDecks.length > 0 ? (
                     <div className="space-y-1">
@@ -595,7 +595,7 @@ export function Sidebar({
                       })}
                     </div>
                   ) : (
-                    <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
+                    <p className="rounded-md px-1 py-2 text-xs text-zinc-400">
                       사용 중인 업무가 없습니다
                     </p>
                   )}
@@ -758,12 +758,12 @@ export function Sidebar({
                         캠페인
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-zinc-500">광고 유형별 캠페인 관리</p>
+                    <p className="mt-1 text-[11px] text-zinc-400">광고 유형별 캠페인 관리</p>
                   </div>
 
                   <div className="space-y-3">
                     {groupedCampaigns.length === 0 ? (
-                      <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
+                      <p className="rounded-md px-1 py-2 text-xs text-zinc-400">
                         업로드된 캠페인이 없습니다
                       </p>
                     ) : (
