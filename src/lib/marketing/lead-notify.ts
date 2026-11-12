@@ -2,7 +2,7 @@ import 'server-only'
 import { buildAdminUrl } from '@/lib/domain'
 
 // 도입 신청 알림 — 실패해도 신청 접수는 성공이어야 하므로 호출 측에서 allSettled 로 묶는다.
-// sendSystemNotification 은 모든 Space 의 Slack 으로 브로드캐스트되므로 쓰지 않는다.
+// 리드는 전용 웹훅 채널로 보낸다(sendSystemNotification 은 운영 Space 채널용).
 
 export type LeadNotifyInput = {
   deck: string

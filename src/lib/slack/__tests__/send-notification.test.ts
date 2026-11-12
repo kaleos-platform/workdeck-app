@@ -126,7 +126,31 @@ describe('sendSystemNotification', () => {
     process.env = { ...OLD_ENV }
   })
 
-  it('등록된 모든 notifications 채널로 발송', async () => {
+  it('운영 알림은 운영 Space(칼레오스) 채널로만 — 고객 Space 로 퍼지지 않는다', async () => {
+    findManyChannel.mockResolvedValue([
+      { channelId: 'C-ops', installation: { botToken: 'e1', botTokenIv: 'i1' } },
+    ])
+
+    await sendSystemNotification({ blocks: [], text: 't' })
+
+    expect(findManyChannel.mock.calls[0][0].where).toEqual({
+      kind: 'notifications',
+      spaceId: 'cmv0yy4cr000b06jsp7f5zk7h', // 운영 Space「칼레오스」
+    })
+  })
+
+  it('특정 Space 의 알림은 그 Space 채널로만', async () => {
+    findManyChannel.mockResolvedValue([])
+
+    await sendSystemNotification({ blocks: [], text: 't', spaceId: 'space-customer' })
+
+    expect(findManyChannel.mock.calls[0][0].where).toEqual({
+      kind: 'notifications',
+      spaceId: 'space-customer',
+    })
+  })
+
+  it('조회된 notifications 채널 모두로 발송', async () => {
     findManyChannel.mockResolvedValue([
       { channelId: 'C1', installation: { botToken: 'e1', botTokenIv: 'i1' } },
       { channelId: 'C2', installation: { botToken: 'e2', botTokenIv: 'i2' } },
