@@ -215,7 +215,7 @@ export type AutoReconciliationIssue =
  * 자동 재고 대조(cron)에서 사람 개입이 필요한 상황만 알린다.
  * 정상 완료는 무음 — 매일 발송되면 알림 피로로 진짜 이상 신호를 놓친다.
  *
- * 운영자 대상이므로 Deck 토글에 걸리지 않는 시스템 알림으로 보낸다.
+ * Deck 토글에 걸리지 않는 시스템 알림으로, 해당 Space 의 notifications 채널에만 보낸다.
  */
 export async function notifyAutoReconciliation(params: {
   spaceId: string
@@ -280,6 +280,7 @@ export async function notifyAutoReconciliation(params: {
   return sendSystemNotification({
     blocks,
     text: `자동 재고 대조 확인 필요 (${params.issues.map((i) => i.kind).join(', ')})`,
+    spaceId: params.spaceId, // 그 Space 의 재고 문제 — 운영 Space 가 아니라 해당 Space 채널로
   })
 }
 
