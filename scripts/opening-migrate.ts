@@ -5,7 +5,8 @@
  *   OPENING_SOURCE_URL=... npx tsx scripts/opening-migrate.ts prepare --brand-id 123
  *   OPENING_SOURCE_URL=... npx tsx scripts/opening-migrate.ts prepare --brand-id 123 \
  *     --out /secure/dir --write-packets
- *   OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다. OPENING_WEB_URL 기본 https://opening.work.
+ *   OPENING_CA_FILE에 원본 DB CA 파일을 지정한다. 대상 CA는 MIGRATION_CA_FILE로 지정할 수 있다.
+ *   DB URL의 SSL 관련 옵션은 거부한다. OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다.
  *   --out 은 저장소 밖의 빈 폴더만 허용한다. 이미지 안 글자는 검사하지 못하므로 폴더를 고객 자료로 다룬다.
  *
  * 사람 검토(연락처 적중 해제·이미지 확인):
@@ -30,6 +31,7 @@
  * 출력은 건수와 고정 코드뿐이다. 원문·id·접속 정보는 stdout/stderr에 남기지 않는다.
  */
 import { config } from 'dotenv'
+import { openingTlsConfig } from '@/lib/hiring/migration/opening-tls'
 // 대상을 프로세스 환경변수로 지정하면 .env.local을 읽지 않는다. 개발 키가 운영 실행에 섞이지 않게 한다.
 if (!process.env.DATABASE_URL && !process.env.DIRECT_URL) config({ path: '.env.local' })
 
@@ -153,10 +155,8 @@ async function prepare(args: string[]) {
   const review = readReviewFile(values['review-file'])
   const connectionString = process.env.OPENING_SOURCE_URL
   if (!connectionString) throw Error('OPENING_SOURCE_URL_REQUIRED')
-  const client = new Client({
-    connectionString,
-    ssl: /sslmode=disable/.test(connectionString) ? false : { rejectUnauthorized: false },
-  })
+  if (!process.env.OPENING_CA_FILE) throw Error('OPENING_CA_FILE_REQUIRED')
+  const client = new Client(openingTlsConfig(connectionString, readFileSync(process.env.OPENING_CA_FILE, 'utf8')))
   await client.connect()
   try {
     const prepared = await prepareOpeningCustomer(client, readS3, {
@@ -203,7 +203,8 @@ async function importPackets(args: string[]) {
   })
   const connectionString = (process.env.DIRECT_URL || process.env.DATABASE_URL) as string
   const db = new PrismaClient({
-    adapter: new PrismaPg({ connectionString, ssl: { rejectUnauthorized: false } }),
+    adapter: new PrismaPg(openingTlsConfig(connectionString,
+      process.env.MIGRATION_CA_FILE ? readFileSync(process.env.MIGRATION_CA_FILE, 'utf8') : undefined)),
   })
   try {
     const report = await runOpeningImport(db, readPacketSet(packets), {
