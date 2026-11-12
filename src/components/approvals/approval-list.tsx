@@ -64,6 +64,8 @@ export function ApprovalList() {
   const [sourceFilter, setSourceFilter] = useState('all')
   const [actions, setActions] = useState<AgentPendingActionDTO[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  // 조회 실패(배포 중·네트워크 오류)를 "대기 없음"과 구분한다 — 빈 목록으로 보이면 승인을 놓친다.
+  const [loadFailed, setLoadFailed] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [canDecide, setCanDecide] = useState(false)
@@ -74,6 +76,7 @@ export function ApprovalList() {
 
   const fetchActions = useCallback(async () => {
     setIsLoading(true)
+    setLoadFailed(false)
     try {
       const params = new URLSearchParams()
       if (deckFilter !== 'all') params.set('deck', deckFilter)
@@ -85,6 +88,7 @@ export function ApprovalList() {
       if (!res.ok) {
         setActions([])
         setCanDecide(false)
+        setLoadFailed(true)
         return
       }
       const data: { actions: AgentPendingActionDTO[]; role?: string } = await res.json()
@@ -95,6 +99,7 @@ export function ApprovalList() {
       setViewerRole(data.role ?? null)
     } catch {
       setActions([])
+      setLoadFailed(true)
     } finally {
       setIsLoading(false)
     }
@@ -200,6 +205,13 @@ export function ApprovalList() {
       {isLoading ? (
         <div className="rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">
           불러오는 중...
+        </div>
+      ) : loadFailed ? (
+        <div className="flex flex-col items-center gap-3 rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">
+          <p role="alert">목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요.</p>
+          <Button size="sm" variant="outline" onClick={() => fetchActions()}>
+            다시 시도
+          </Button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">

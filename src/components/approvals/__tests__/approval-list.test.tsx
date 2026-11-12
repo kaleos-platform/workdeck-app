@@ -79,3 +79,29 @@ it('PATCH 403이면 서버가 준 사유를 그대로 보여준다', async () =>
 
   await waitFor(() => expect(toast.error).toHaveBeenCalledWith(message))
 })
+
+it('목록 조회가 실패하면 "대기 없음" 대신 오류와 다시 시도를 보여준다', async () => {
+  let listCalls = 0
+  global.fetch = jest.fn(async (url: string) =>
+    String(url).startsWith('/api/agent/actions?') && listCalls++ === 0
+      ? res(503, {})
+      : res(200, { actions: [action], role: 'OWNER' })
+  ) as unknown as typeof fetch
+  render(<ApprovalList />)
+
+  expect(await screen.findByText(/목록을 불러오지 못했습니다/)).toBeInTheDocument()
+  expect(screen.queryByText('승인 대기 중인 액션이 없습니다')).toBeNull()
+
+  fireEvent.click(screen.getByRole('button', { name: '다시 시도' }))
+  expect(await screen.findByText('캠페인 예산 변경')).toBeInTheDocument()
+})
+
+it('네트워크 오류도 "대기 없음"으로 보이지 않는다', async () => {
+  global.fetch = jest
+    .fn()
+    .mockRejectedValue(new TypeError('fetch failed')) as unknown as typeof fetch
+  render(<ApprovalList />)
+
+  expect(await screen.findByText(/목록을 불러오지 못했습니다/)).toBeInTheDocument()
+  expect(screen.queryByText('승인 대기 중인 액션이 없습니다')).toBeNull()
+})
