@@ -26,11 +26,12 @@ type SecretConfig = {
   readOps: unknown[]
 }
 type EnvSecretConfig = { envName: string; scopeNote: string; expiresAt: string }
+type LoginSecretConfig = { loginUrl: string; username: string }
 type SecretMeta = {
   name: string
-  kind: 'API_KEY' | 'ENV'
+  kind: 'API_KEY' | 'ENV' | 'LOGIN'
   // 비밀이 아닌 설정 — 교체 대화상자를 미리 채운다(값은 오지 않는다).
-  config: SecretConfig | EnvSecretConfig | null
+  config: SecretConfig | EnvSecretConfig | LoginSecretConfig | null
   baseUrl: string | null
   readOpIds: string[]
   allowedAgentIds: string[]
@@ -45,6 +46,13 @@ const fmt = (d: string | null) => (d ? new Date(d).toLocaleString('ko-KR') : '-'
 // 만료일은 KST 기준 날짜로 보인다(저장은 그날 23:59:59 KST).
 const kstDate = (iso: string) =>
   new Date(iso).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
+const hostOf = (url: string) => {
+  try {
+    return new URL(url).host
+  } catch {
+    return url
+  }
+}
 const secretPath = (spaceId: string, name: string) =>
   `/api/spaces/${spaceId}/secrets/${encodeURIComponent(name)}`
 
@@ -172,9 +180,9 @@ export function SpaceSecretsCard() {
           {spaceName ? `「${spaceName}」 비밀값` : '비밀값'}
         </CardTitle>
         <CardDescription>
-          에이전트가 외부 API를 호출할 때 쓰는 키를 암호화해 보관합니다. API 키는 에이전트가 값을
-          보지 못하고 등록된 조회 operation만 호출합니다. 개발 키(wd run)는 허용된 에이전트의 명령
-          실행 환경에 값이 그대로 전달되므로 읽기 전용·대상 한정 키만 등록하세요.
+          에이전트가 외부 API를 호출할 때 쓰는 키와 로그인(ID/PW)을 암호화해 보관합니다. API 키는
+          에이전트가 값을 보지 못하고 등록된 조회 operation만 호출합니다. 개발 키(wd run)는 허용된
+          에이전트의 명령 실행 환경에 값이 그대로 전달되므로 읽기 전용·대상 한정 키만 등록하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 text-sm">
@@ -201,14 +209,17 @@ export function SpaceSecretsCard() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-mono font-medium">{s.name}</span>
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => reveal(s.name)}
-                  disabled={pending}
-                >
-                  보기
-                </Button>
+                {/* 로그인 비밀번호는 다시 보여주지 않는다 — 잊으면 교체한다. */}
+                {s.kind !== 'LOGIN' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => reveal(s.name)}
+                    disabled={pending}
+                  >
+                    보기
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -221,7 +232,12 @@ export function SpaceSecretsCard() {
                 </Button>
               </div>
             </div>
-            {s.kind === 'ENV' && s.config && 'envName' in s.config ? (
+            {s.kind === 'LOGIN' && s.config && 'loginUrl' in s.config ? (
+              <p className="text-muted-foreground">
+                <span>{s.config.username}</span> · <span>{hostOf(s.config.loginUrl)}</span> · 마지막
+                사용 {fmt(s.lastUsedAt)}
+              </p>
+            ) : s.kind === 'ENV' && s.config && 'envName' in s.config ? (
               <p className="text-muted-foreground">
                 <span className="font-mono">{s.config.envName}</span> ·{' '}
                 <span>만료 {kstDate(s.config.expiresAt)}</span>
@@ -297,9 +313,12 @@ function SecretDialog({
   const [name, setName] = useState(initialName)
   const [value, setValue] = useState('')
   // 교체면 기존 설정으로 미리 채운다. 값은 다시 입력해야 한다.
-  const [kind, setKind] = useState<'API_KEY' | 'ENV'>(initial?.kind ?? 'API_KEY')
+  const [kind, setKind] = useState<'API_KEY' | 'ENV' | 'LOGIN'>(initial?.kind ?? 'API_KEY')
   const cfg = initial?.config && 'baseUrl' in initial.config ? initial.config : undefined
   const envCfg = initial?.config && 'envName' in initial.config ? initial.config : undefined
+  const loginCfg = initial?.config && 'loginUrl' in initial.config ? initial.config : undefined
+  const [loginUrl, setLoginUrl] = useState(loginCfg?.loginUrl ?? '')
+  const [username, setUsername] = useState(loginCfg?.username ?? '')
   const [envName, setEnvName] = useState(envCfg?.envName ?? '')
   const [scopeNote, setScopeNote] = useState(envCfg?.scopeNote ?? '')
   const [expiresDate, setExpiresDate] = useState(envCfg ? kstDate(envCfg.expiresAt) : '')
@@ -321,6 +340,16 @@ function SecretDialog({
 
   async function submit() {
     setError(null)
+    if (kind === 'LOGIN') {
+      const message = await onSave(name.trim(), {
+        kind: 'LOGIN',
+        value,
+        config: { loginUrl: loginUrl.trim(), username: username.trim() },
+        allowedAgentIds: allowed,
+      })
+      if (message !== null) setError(message)
+      return
+    }
     if (kind === 'ENV') {
       const message = await onSave(name.trim(), {
         kind: 'ENV',
@@ -373,10 +402,11 @@ function SecretDialog({
                 id="secret-kind"
                 className="h-9 w-full rounded-md border bg-transparent px-2"
                 value={kind}
-                onChange={(e) => setKind(e.target.value as 'API_KEY' | 'ENV')}
+                onChange={(e) => setKind(e.target.value as 'API_KEY' | 'ENV' | 'LOGIN')}
               >
                 <option value="API_KEY">API 키</option>
                 <option value="ENV">개발 키(wd run)</option>
+                <option value="LOGIN">로그인(ID/PW)</option>
               </select>
             </Field>
           )}
@@ -389,16 +419,46 @@ function SecretDialog({
               onChange={(e) => setName(e.target.value)}
             />
           </Field>
-          <Field label="값">
-            <Input
-              id="secret-value"
-              type="password"
-              autoComplete="off"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-            />
-          </Field>
-          {kind === 'API_KEY' ? (
+          {kind === 'LOGIN' ? (
+            <>
+              <Field label="로그인 URL">
+                <Input
+                  id="secret-loginurl"
+                  placeholder="https://example.com/login"
+                  value={loginUrl}
+                  onChange={(e) => setLoginUrl(e.target.value)}
+                />
+              </Field>
+              <Field label="아이디">
+                <Input
+                  id="secret-username"
+                  autoComplete="off"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </Field>
+              <Field label="비밀번호">
+                <Input
+                  id="secret-value"
+                  type="password"
+                  autoComplete="new-password"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                />
+              </Field>
+            </>
+          ) : (
+            <Field label="값">
+              <Input
+                id="secret-value"
+                type="password"
+                autoComplete="off"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+              />
+            </Field>
+          )}
+          {kind === 'LOGIN' ? null : kind === 'API_KEY' ? (
             <>
               <Field label="baseUrl">
                 <Input
@@ -517,6 +577,7 @@ function SecretDialog({
               pending ||
               !name.trim() ||
               !value ||
+              (kind === 'LOGIN' && (!loginUrl.trim() || !username.trim())) ||
               (kind === 'ENV' &&
                 (!envName.trim() || !scopeNote.trim() || !expiresDate || !confirmed))
             }
