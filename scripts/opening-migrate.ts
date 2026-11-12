@@ -34,7 +34,7 @@
  *   충돌이 있으면 쓰기 없이 멈추고 conflicts.json 을 남긴다. --skip-conflicts 를 주면 그 항목만 빼고 진행한다.
  *   --apply 는 SUPABASE_SERVICE_ROLE_KEY(Storage)와 ENCRYPTION_KEY*(원장 스냅샷 암호화)를 쓴다.
  *
- * 출력은 건수와 고정 코드뿐이다. 원문·id·접속 정보는 stdout/stderr에 남기지 않는다.
+ * 출력은 건수·고정 코드와 import의 대상 Space 이름뿐이다. 원문·id·접속 정보는 stdout/stderr에 남기지 않는다.
  */
 import { config } from 'dotenv'
 import { openingTlsConfig } from '@/lib/hiring/migration/opening-tls'
@@ -240,6 +240,8 @@ async function importPackets(args: string[]) {
     console.log(
       JSON.stringify({
         environment,
+        // 다른 고객 Space id를 잘못 넣고 --confirm-prod도 같이 반복하는 실수를 운영자가 눈으로 잡게 한다.
+        targetSpaceName: report.targetSpaceName,
         status: safeMigrationStatus(status),
         ...safeMigrationSummary(summary),
       })
