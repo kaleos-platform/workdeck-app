@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { encryptField, decryptField } from '@/lib/crypto/field-crypto'
 import type { Actor } from '@/lib/agent/identity/principal'
 import { ToolUserError } from '@/lib/agent/tools/errors'
-import type { ApiKeyConfig, EnvConfig } from './config'
+import type { ApiKeyConfig, EnvConfig, LoginConfig } from './config'
 
 export const SECRET_NAME_RE = /^[a-z0-9][a-z0-9-]{1,62}$/
 
@@ -80,6 +80,40 @@ export async function saveEnvSecret(
   })
 }
 
+/** 로그인(ID/PW) 비밀값 저장(upsert). config={loginUrl,username}, 암호문은 비밀번호만. 규칙은 saveApiKeySecret과 같다. */
+export async function saveLoginSecret(
+  spaceId: string,
+  name: string,
+  password: string,
+  config: LoginConfig,
+  allowedAgentIds: string[],
+  userId: string
+): Promise<{ id: string; revision: number }> {
+  const { encrypted: encryptedPayload, iv } = encryptField('space-secret', password)
+  return prisma.spaceSecret.upsert({
+    where: { spaceId_name: { spaceId, name } },
+    create: {
+      spaceId,
+      name,
+      kind: 'LOGIN',
+      encryptedPayload,
+      iv,
+      config,
+      allowedAgentIds,
+      createdById: userId,
+    },
+    update: {
+      encryptedPayload,
+      iv,
+      config,
+      allowedAgentIds,
+      revision: { increment: 1 },
+      lastError: null,
+    },
+    select: { id: true, revision: true },
+  })
+}
+
 /** 발급 불가 비밀값. secretName은 비밀값 이름(값 아님). */
 export class SecretUnavailableError extends ToolUserError {
   constructor(readonly secretName: string) {
@@ -138,7 +172,12 @@ export async function loadEnvSecretsForIssue(
   })
 }
 
-async function findUsable(spaceId: string, name: string, actor: Actor, kind: 'API_KEY' | 'ENV') {
+async function findUsable(
+  spaceId: string,
+  name: string,
+  actor: Actor,
+  kind: 'API_KEY' | 'ENV' | 'LOGIN'
+) {
   const row = await prisma.spaceSecret.findUnique({
     where: { spaceId_name: { spaceId, name } },
     select: {
@@ -174,6 +213,20 @@ export async function loadSecretForUse(
   const value = decryptField('space-secret', row.encryptedPayload, row.iv)
   audit.push('secret:' + row.id)
   return { id: row.id, revision: row.revision, value, config: row.config as ApiKeyConfig }
+}
+
+/** 브라우저 로그인용: 허용된 agent·연동 계정만 비밀번호를 복호화해 받는다. audit 배열에 비밀값 id를 넣는다. */
+export async function loadLoginForUse(
+  spaceId: string,
+  name: string,
+  actor: Actor,
+  audit: string[]
+): Promise<{ id: string; loginUrl: string; username: string; password: string }> {
+  const row = await findUsable(spaceId, name, actor, 'LOGIN')
+  const cfg = row.config as LoginConfig
+  const password = decryptField('space-secret', row.encryptedPayload, row.iv)
+  audit.push('secret:' + row.id)
+  return { id: row.id, loginUrl: cfg.loginUrl, username: cfg.username, password }
 }
 
 /**
@@ -331,8 +384,9 @@ export async function revealSecretValue(
 ): Promise<{ id: string; value: string } | null> {
   const row = await prisma.spaceSecret.findUnique({
     where: { spaceId_name: { spaceId, name } },
-    select: { id: true, encryptedPayload: true, iv: true },
+    select: { id: true, kind: true, encryptedPayload: true, iv: true },
   })
-  if (!row) return null
+  // LOGIN 비밀번호는 화면에서 다시 보지 않는다 — 허용된 에이전트(secret_login_get)만 꺼낸다.
+  if (!row || row.kind === 'LOGIN') return null
   return { id: row.id, value: decryptField('space-secret', row.encryptedPayload, row.iv) }
 }

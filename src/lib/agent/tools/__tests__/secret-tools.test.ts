@@ -22,6 +22,7 @@ import { finishToolAudit, startToolAudit } from '@/lib/agent/audit'
 import { SecretHttpError, secretRequest } from '@/lib/agent/secrets/http-client'
 import * as store from '@/lib/agent/secrets/store'
 import { runTool, ToolScopeError } from '../run-tool'
+import { ToolUserError } from '../errors'
 import { secretTools } from '../secret-tools'
 import type { McpToolContext } from '../types'
 
@@ -226,5 +227,67 @@ describe('secret_http_propose', () => {
     })
     expect(JSON.stringify(arg)).not.toContain(KEY)
     expect(store.loadSecretForUse).not.toHaveBeenCalled()
+  })
+})
+
+describe('secret_login_get', () => {
+  const login = secretTools.find((t) => t.name === 'secret_login_get')!
+  const PW = 'PW_PLAIN_9z!'
+  const loginArgs = { secret: 'wekeep' }
+
+  beforeEach(() => {
+    ;(store.loadLoginForUse as jest.Mock).mockResolvedValue({
+      id: 's9',
+      loginUrl: 'https://fbw.wekeep.co.kr/login',
+      username: 'seller01',
+      password: PW,
+    })
+  })
+
+  it('성공하면 loginUrl·username·password를 돌려주고 사용 시각을 남기며 감사에는 비밀번호가 없다', async () => {
+    await expect(runTool(login, ctx(['secret:read']), loginArgs)).resolves.toEqual({
+      loginUrl: 'https://fbw.wekeep.co.kr/login',
+      username: 'seller01',
+      password: PW,
+    })
+    expect(store.recordSecretUsed).toHaveBeenCalledWith('s9')
+    expect(assertUnderRate).toHaveBeenCalledWith(
+      expect.objectContaining({ tools: ['secret_login_get'], limit: 11 })
+    )
+    const audited = JSON.stringify([
+      (startToolAudit as jest.Mock).mock.calls,
+      (finishToolAudit as jest.Mock).mock.calls,
+    ])
+    expect(audited).not.toContain(PW)
+  })
+
+  it('secret:read가 없으면 ToolScopeError', async () => {
+    await expect(runTool(login, ctx(['secret:write']), loginArgs)).rejects.toThrow(
+      new ToolScopeError('secret:read')
+    )
+    expect(store.loadLoginForUse).not.toHaveBeenCalled()
+  })
+
+  it('허용 밖이면 거부 메시지만 나가고 비밀번호는 없다', async () => {
+    ;(store.loadLoginForUse as jest.Mock).mockRejectedValue(
+      new ToolUserError('사용할 수 없는 비밀값입니다')
+    )
+    await expect(runTool(login, ctx(['secret:read']), loginArgs)).rejects.toThrow(
+      '사용할 수 없는 비밀값입니다'
+    )
+    expect(store.recordSecretUsed).not.toHaveBeenCalled()
+  })
+
+  it('분당 10회 초과면 값을 읽지 않고 거부', async () => {
+    ;(assertUnderRate as jest.Mock).mockRejectedValue(new RateLimitedError())
+    await expect(runTool(login, ctx(['secret:read']), loginArgs)).rejects.toThrow(
+      '호출이 너무 많습니다'
+    )
+    expect(store.loadLoginForUse).not.toHaveBeenCalled()
+  })
+
+  it('description에 로그인 전용·출력 금지 문구', () => {
+    expect(login.description).toContain('브라우저 로그인 전용')
+    expect(login.description).toContain('출력·저장·전달하지 마세요')
   })
 })

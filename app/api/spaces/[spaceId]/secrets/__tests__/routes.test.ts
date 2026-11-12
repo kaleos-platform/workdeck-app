@@ -17,6 +17,7 @@ jest.mock('@/lib/agent/secrets/store', () => ({
   findSecretForUpdate: jest.fn(),
   saveApiKeySecret: jest.fn(async () => ({ id: 's1', revision: 1 })),
   saveEnvSecret: jest.fn(async () => ({ id: 's1', revision: 1 })),
+  saveLoginSecret: jest.fn(async () => ({ id: 's1', revision: 1 })),
   deleteSecret: jest.fn(async () => true),
   revealSecretValue: jest.fn(async () => ({ id: 's1', value: 'SK_TEST_0123456789abcdef' })),
 }))
@@ -114,8 +115,8 @@ it('다른 Space의 agent id는 400', async () => {
   expect(store.saveApiKeySecret).not.toHaveBeenCalled()
 })
 
-it('kind가 API_KEY가 아니면 400, 기존 행 kind가 다르면 409', async () => {
-  expect((await put({ ...BODY, kind: 'LOGIN' })).status).toBe(400)
+it('kind가 알 수 없으면 400, 기존 행 kind가 다르면 409', async () => {
+  expect((await put({ ...BODY, kind: 'WHAT' })).status).toBe(400)
   ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue({
     kind: 'LOGIN',
     config: {},
@@ -156,10 +157,62 @@ it('reveal: 감사 시작 실패면 503이고 값을 읽지도 내보내지도 �
   expect(store.revealSecretValue).not.toHaveBeenCalled()
 })
 
-it('kind가 LOGIN이고 config가 {}여도 API_KEY 안내 메시지로 400', async () => {
-  const res = await put({ kind: 'LOGIN', value: 'x', config: {}, allowedAgentIds: [] })
-  expect(res.status).toBe(400)
-  expect(await res.text()).toContain('이 단계에서는 API_KEY·ENV만 등록할 수 있습니다')
+const LOGIN_BODY = {
+  kind: 'LOGIN',
+  value: 'pw secret!한글',
+  config: { loginUrl: 'https://fbw.wekeep.co.kr/fbw/member/login.do', username: 'seller01' },
+  allowedAgentIds: ['a1'],
+}
+
+describe('LOGIN', () => {
+  it('저장 200, 응답에 비밀번호 없음, saveLoginSecret 호출', async () => {
+    const res = await put(LOGIN_BODY)
+    expect(res.status).toBe(200)
+    const text = await res.text()
+    expect(text).not.toContain('pw secret')
+    expect(store.saveLoginSecret).toHaveBeenCalledWith(
+      'sp1',
+      'cafe24-admin',
+      LOGIN_BODY.value,
+      LOGIN_BODY.config,
+      ['a1'],
+      'u1'
+    )
+    expect(JSON.stringify((startToolAudit as jest.Mock).mock.calls)).not.toContain('pw secret')
+  })
+
+  it.each([
+    ['http URL', { config: { ...LOGIN_BODY.config, loginUrl: 'http://x.com/login' } }],
+    ['잘못된 URL', { config: { ...LOGIN_BODY.config, loginUrl: 'not a url' } }],
+    ['빈 비밀번호', { value: '' }],
+    ['빈 아이디', { config: { ...LOGIN_BODY.config, username: '' } }],
+  ])('%s는 400', async (_n, patch) => {
+    const res = await put({ ...LOGIN_BODY, ...patch })
+    expect(res.status).toBe(400)
+    expect(store.saveLoginSecret).not.toHaveBeenCalled()
+  })
+
+  it('GET 목록은 loginUrl·username만 싣고 비밀번호는 없다', async () => {
+    ;(store.listSecretMeta as jest.Mock).mockResolvedValue([
+      { name: 'wekeep', kind: 'LOGIN', config: LOGIN_BODY.config, allowedAgentIds: ['a1'] },
+    ])
+    const res = await GET(new Request('http://t/x'), {
+      params: Promise.resolve({ spaceId: 'sp1' }),
+    })
+    const text = await res.text()
+    expect(JSON.parse(text).secrets[0].config).toEqual(LOGIN_BODY.config)
+    expect(text).not.toMatch(/pw secret|encryptedPayload|"iv"/)
+  })
+
+  it('기존 행이 다른 kind면 409', async () => {
+    ;(store.findSecretForUpdate as jest.Mock).mockResolvedValue({
+      kind: 'API_KEY',
+      config: {},
+      allowedAgentIds: [],
+    })
+    expect((await put(LOGIN_BODY)).status).toBe(409)
+    expect(store.saveLoginSecret).not.toHaveBeenCalled()
+  })
 })
 
 it('allowedAgentIds는 ACTIVE 에이전트만 센다', async () => {
@@ -365,12 +418,6 @@ describe('ENV 등록', () => {
     expect((await put(ENV_BODY)).status).toBe(409)
     expect(store.saveApiKeySecret).not.toHaveBeenCalled()
     expect(store.saveEnvSecret).not.toHaveBeenCalled()
-  })
-
-  it('LOGIN은 여전히 400 안내', async () => {
-    const res = await put({ ...ENV_BODY, kind: 'LOGIN' })
-    expect(res.status).toBe(400)
-    expect(await res.text()).toContain('API_KEY·ENV만')
   })
 
   it('ENV 저장 성공 시 감사 args에 값·envName 외 비밀 없음', async () => {
