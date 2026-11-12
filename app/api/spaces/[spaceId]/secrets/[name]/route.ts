@@ -1,6 +1,6 @@
 /**
  * PUT — 비밀값 등록·교체, DELETE — 삭제(ADMIN 이상 + MFA aal2). 본문은 권한·MFA 검사 뒤에 읽는다.
- * 평문은 요청 본문으로만 받고 응답에 돌려주지 않는다. 이 단계에서는 API_KEY·ENV만 받는다.
+ * 평문은 요청 본문으로만 받고 응답에 돌려주지 않는다. API_KEY·ENV·LOGIN을 받는다(LOGIN: value=비밀번호, config={loginUrl,username}).
  * 감사는 reveal과 같이 fail-closed — 시작 행을 못 남기면 503이고 쓰지 않는다. args에 값은 없다.
  */
 import { isDeepStrictEqual } from 'node:util'
@@ -15,7 +15,9 @@ import { newWorkId } from '@/lib/agent/work-id'
 import {
   apiKeyConfigSchema,
   envConfigInputSchema,
+  loginConfigSchema,
   type EnvConfig,
+  type LoginConfig,
 } from '@/lib/agent/secrets/config'
 import {
   SECRET_NAME_RE,
@@ -23,6 +25,7 @@ import {
   findSecretForUpdate,
   saveApiKeySecret,
   saveEnvSecret,
+  saveLoginSecret,
 } from '@/lib/agent/secrets/store'
 
 type Ctx = { params: Promise<{ spaceId: string; name: string }> }
@@ -82,6 +85,12 @@ const bodySchemas = {
     config: apiKeyConfigSchema,
     allowedAgentIds: z.array(z.string()).max(100),
   }),
+  // 비밀번호는 ASCII 제한 없이 1~500자(공백·비ASCII 허용). 메시지에 값을 싣지 않는다.
+  LOGIN: z.object({
+    value: z.string().min(1, VALUE_RULE).max(500, VALUE_RULE),
+    config: loginConfigSchema,
+    allowedAgentIds: z.array(z.string()).max(100),
+  }),
   ENV: z.object({
     value: valueSchema,
     config: envConfigInputSchema,
@@ -105,10 +114,10 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 
   if (!SECRET_NAME_RE.test(name)) return errorResponse('이름이 올바르지 않습니다', 400)
   const raw = await req.json().catch(() => null)
-  // kind를 먼저 본다 — LOGIN은 config 모양이 달라 스키마 오류가 아니라 이 안내를 받아야 한다.
+  // kind를 먼저 본다 — config 모양이 종류마다 달라 스키마 오류가 아니라 이 안내를 받아야 한다.
   const kind = (raw as { kind?: unknown } | null)?.kind
-  if (kind !== 'API_KEY' && kind !== 'ENV') {
-    return errorResponse('이 단계에서는 API_KEY·ENV만 등록할 수 있습니다', 400)
+  if (kind !== 'API_KEY' && kind !== 'ENV' && kind !== 'LOGIN') {
+    return errorResponse('종류는 API_KEY·ENV·LOGIN만 등록할 수 있습니다', 400)
   }
   const parsed = bodySchemas[kind].safeParse(raw)
   if (!parsed.success) {
@@ -180,14 +189,23 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
               allowedAgentIds,
               auth.userId
             )
-          : await saveApiKeySecret(
-              spaceId,
-              name,
-              value,
-              config as z.infer<typeof apiKeyConfigSchema>,
-              allowedAgentIds,
-              auth.userId
-            )
+          : kind === 'LOGIN'
+            ? await saveLoginSecret(
+                spaceId,
+                name,
+                value,
+                config as LoginConfig,
+                allowedAgentIds,
+                auth.userId
+              )
+            : await saveApiKeySecret(
+                spaceId,
+                name,
+                value,
+                config as z.infer<typeof apiKeyConfigSchema>,
+                allowedAgentIds,
+                auth.userId
+              )
       return {
         res: NextResponse.json(
           { name, revision: saved.revision },
