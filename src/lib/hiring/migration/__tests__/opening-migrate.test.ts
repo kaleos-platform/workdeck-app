@@ -8,6 +8,8 @@ import type { HiringMigrationRecord } from '@/generated/prisma/client'
 import { decodeMigrationSnapshot, migrationSourceRef } from '../ledger'
 import {
   assertImportTarget,
+  safeMigrationSummary,
+  safeMigrationStatus,
   runOpeningImport,
   writeImportIssues,
   type TargetStorage,
@@ -39,6 +41,53 @@ function crc32(data: Buffer) {
   return ~crc >>> 0
 }
 
+it('stdout 상태는 정해진 상태만 보존한다', () => {
+  expect(safeMigrationStatus('PLANNED')).toBe('PLANNED')
+  expect(safeMigrationStatus('CONFLICT_STOPPED')).toBe('CONFLICT_STOPPED')
+  expect(safeMigrationStatus('APPLIED_PARTIAL')).toBe('APPLIED_PARTIAL')
+  expect(safeMigrationStatus('APPLIED')).toBe('APPLIED')
+  expect(safeMigrationStatus('privateperson')).toBe('UNKNOWN')
+})
+
+it('stdout은 고정 사유와 경고만 출력하고 나머지는 OTHER로 합산한다', () => {
+  const result = safeMigrationSummary({
+    postings: {
+      reasons: { EMBEDDED_IMAGE_REVIEW_REQUIRED: 2, PRIVATE_NAME: 3, OTHER_PRIVATE: 4 },
+      warnings: { OPENING_URL_REMAINS: 1, PRIVATE_WARNING: 2 },
+    },
+    templates: { reasons: { HELD_CONTACT_PATTERN: 2, PRIVATE_NAME: 1 } },
+    stores: { heldReasons: { FORMAT: 1, PRIVATE_NAME: 2 } },
+    positions: { heldReasons: { CONTACT_PATTERN: 1 } },
+  })
+  expect(result.postings).toMatchObject({
+    reasons: { EMBEDDED_IMAGE_REVIEW_REQUIRED: 2, OTHER: 7 },
+    warnings: { OPENING_URL_REMAINS: 1, OTHER: 2 },
+  })
+  expect(result.templates).toMatchObject({ reasons: { HELD_CONTACT_PATTERN: 2, OTHER: 1 } })
+  expect(result.stores).toMatchObject({ heldReasons: { FORMAT: 1, OTHER: 2 } })
+  expect(JSON.stringify(result)).not.toMatch(/PRIVATE_NAME|OTHER_PRIVATE|PRIVATE_WARNING/)
+})
+
+it('stdout 사유 합계가 안전 정수 범위를 넘으면 중단한다', () => {
+  expect(() =>
+    safeMigrationSummary({ postings: { reasons: { A: Number.MAX_SAFE_INTEGER, B: 1 } } })
+  ).toThrow('SUMMARY_COUNT_OVERFLOW')
+  expect(() =>
+    safeMigrationSummary({ postings: { reasons: { A: Number.MAX_SAFE_INTEGER + 1 } } })
+  ).toThrow('SUMMARY_COUNT_OVERFLOW')
+})
+
+it('stdout 사유는 상속 키와 잘못된 숫자를 집계하지 않는다', () => {
+  const reasons = Object.assign(Object.create({ PRIVATE_INHERITED: 8 }), {
+    EMBEDDED_IMAGE_REVIEW_REQUIRED: 1,
+    PRIVATE_NEGATIVE: -1,
+    PRIVATE_FRACTION: 1.5,
+    PRIVATE_INFINITY: Infinity,
+  })
+  const result = safeMigrationSummary({ postings: { reasons } })
+  expect(result.postings.reasons).toEqual({ EMBEDDED_IMAGE_REVIEW_REQUIRED: 1 })
+})
+
 const snapshotAt = new Date('2026-10-31T03:00:00.000Z')
 const recent = new Date('2026-09-01T00:00:00.000Z')
 const old = new Date('2024-01-01T00:00:00.000Z')
@@ -69,6 +118,12 @@ const scene = (text = '합성 안내') => ({
     f: { id: 'f', mimeType: 'image/png', dataURL: embeddedPng, lastRetrieved: 1 },
     orphan: { id: 'orphan', mimeType: 'image/png', dataURL: embeddedPng },
   },
+})
+const textScene = (text = '합성 안내') => ({
+  type: 'excalidraw',
+  version: 2,
+  elements: [{ id: 'a', type: 'text', text }],
+  files: {},
 })
 const body = (id: string, overrides: Record<string, unknown> = {}) => ({
   id,
@@ -260,10 +315,10 @@ function fakeSource(rows = sourceRows()) {
   return { client, queries }
 }
 const readObject: OpeningObjectReader = async ({ key }) => {
-  if (key === 'content_data/a.json') return Buffer.from(JSON.stringify(scene()))
+  if (key === 'content_data/a.json') return Buffer.from(JSON.stringify(textScene()))
   if (key === 'content_data/b.json')
-    return Buffer.from(JSON.stringify(scene('담당 010-1234-5678 / hr@synthetic.test')))
-  if (key === 'content_data/c.json') return Buffer.from(JSON.stringify(scene()))
+    return Buffer.from(JSON.stringify(textScene('담당 010-1234-5678 / hr@synthetic.test')))
+  if (key === 'content_data/c.json') return Buffer.from(JSON.stringify(textScene()))
   return png([...key].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 200)
 }
 const prepare = (rows = sourceRows(), review?: unknown) =>
@@ -680,6 +735,36 @@ describe('prepare', () => {
 
   it('포함·제외·보류 사유와 updated_at 전용 군집을 집계한다', async () => {
     const { summary, manifest, postings } = await prepare()
+    expect(safeMigrationSummary(summary)).not.toHaveProperty('sourceSpaceId')
+    expect(safeMigrationSummary(summary)).not.toHaveProperty('schemaIssues')
+    expect(safeMigrationSummary(summary)).not.toHaveProperty('sceneImageDiag')
+    expect(safeMigrationSummary(summary)).not.toHaveProperty('assetImageDiag')
+    expect(
+      safeMigrationSummary({
+        ...summary,
+        extraCustomerIdentifier: 'privateperson',
+        postings: {
+          ...summary.postings,
+          unexpected: 'privateperson',
+          reasons: { privateperson: 1 },
+        },
+        updatedOnly: { count: 1, byDate: { '2026-01-01': 1 } },
+      })
+    ).toMatchObject({ postings: { total: summary.postings.total }, updatedOnly: { count: 1 } })
+    expect(
+      JSON.stringify(
+        safeMigrationSummary({
+          ...summary,
+          extraCustomerIdentifier: 'privateperson',
+          postings: {
+            ...summary.postings,
+            unexpected: 'privateperson',
+            reasons: { privateperson: 1 },
+          },
+          updatedOnly: { count: 1, byDate: { '2026-01-01': 1 } },
+        })
+      )
+    ).not.toMatch(/privateperson|2026-01-01/)
     expect(summary.postings).toMatchObject({ total: 7, included: 2, held: 3, excluded: 2 })
     expect(summary.postings.reasons).toEqual({
       HELD_CONTACT_PATTERN: 2,
@@ -1209,6 +1294,82 @@ describe('사람 검토', () => {
 })
 
 describe('적재 게이트', () => {
+  it('내장 이미지가 없는 scene이어도 별도 원본 PNG를 검토하고 승인 전 적재하지 않는다', async () => {
+    const emptyScene = { type: 'excalidraw', version: 2, elements: [], files: {} }
+    const read: OpeningObjectReader = async (input) =>
+      input.key === 'content_data/a.json'
+        ? Buffer.from(JSON.stringify(emptyScene))
+        : readObject(input)
+    const prepared = await prepareOpeningCustomer(fakeSource().client, read, {
+      brandId: '9',
+      webOrigin: 'https://opening.work',
+    })
+    const resource = prepared.postings.find((item) => item.sourcePostingId === '1')?.content
+      .resources['70']
+    expect(resource?.scene?.files).toEqual({})
+    expect(prepared.manifest.manualReviewImages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sha256: resource?.sha256,
+          owners: expect.arrayContaining(['posting:1']),
+        }),
+      ])
+    )
+    const images = prepared.manifest.manualReviewImages
+      .map((image) => image.sha256)
+      .filter((sha) => sha !== resource?.sha256)
+    const report = await importSet(fakeDb().db, prepared, true, undefined, {
+      review: reviewFile({ images }),
+    })
+    expect(report.issues.refused).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'posting', id: '1', code: 'IMAGE_REVIEW_REQUIRED' }),
+      ])
+    )
+    const approved = await importSet(fakeDb().db, prepared, true)
+    expect(approved.issues.refused).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ kind: 'posting', id: '1' })])
+    )
+  })
+
+  it('내장 이미지가 있는 scene은 원본 PNG 승인만으로 준비하거나 적재할 수 없다', async () => {
+    const prepared = await prepareOpeningCustomer(
+      fakeSource().client,
+      async (input) =>
+        ['content_data/a.json', 'content_data/c.json'].includes(input.key)
+          ? Buffer.from(JSON.stringify(scene()))
+          : readObject(input),
+      { brandId: '9', webOrigin: 'https://opening.work' }
+    )
+    expect(prepared.manifest.postings.find((item) => item.id === '1')).toMatchObject({
+      status: 'held',
+      reasons: expect.arrayContaining(['EMBEDDED_IMAGE_REVIEW_REQUIRED']),
+    })
+    expect(prepared.manifest.templates.find((item) => item.id === '40')).toMatchObject({
+      status: 'held',
+      reasons: expect.arrayContaining(['EMBEDDED_IMAGE_REVIEW_REQUIRED']),
+    })
+    const changed = await prepare()
+    const embedded = await sanitizeScene(scene())
+    changed.postings[0].content.resources['70'].scene = embedded
+    changed.templates[0].resources['72'].scene = embedded
+    const report = await importSet(fakeDb().db, changed, true)
+    expect(report.issues.refused).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'posting',
+          id: '1',
+          code: 'EMBEDDED_IMAGE_REVIEW_REQUIRED',
+        }),
+        expect.objectContaining({
+          kind: 'template',
+          id: '40',
+          code: 'EMBEDDED_IMAGE_REVIEW_REQUIRED',
+        }),
+      ])
+    )
+  })
+
   it('--apply는 검토 파일 없이 시작하지 않는다', async () => {
     const prepared = await prepare()
     await expect(
@@ -1242,7 +1403,7 @@ describe('적재 게이트', () => {
     const report = await importSet(fakeDb().db, prepared, false, undefined, { review: undefined })
     expect(report.status).toBe('PLANNED')
     expect(report.refused.postings).toBe(2)
-    expect(report.targetSpaceName).toBe('합성 고객 공간')
+    expect(safeMigrationSummary(report)).not.toHaveProperty('targetSpaceName')
   })
 
   it('packet의 고객과 --brand-id가 다르면 거부한다', async () => {
@@ -1366,5 +1527,74 @@ describe('대상 환경 가드', () => {
     expect(
       assertImportTarget({ DATABASE_URL: dev, NEXT_PUBLIC_SUPABASE_URL: devStorage }, scope)
     ).toBe('development')
+  })
+
+  it.each([
+    [
+      '비밀번호',
+      `postgresql://postgres.${prod}:tumkfkfgzkmisguyaghn@aws-1.pooler.supabase.com:5432/postgres`,
+    ],
+    ['쿼리', `${pooler}?application_name=tumkfkfgzkmisguyaghn`],
+    ['host 쿼리 덮어쓰기', `${dev}?host=db.${prod}.supabase.co`],
+    ['user 쿼리 덮어쓰기', `${dev}?user=postgres.${prod}`],
+  ])(
+    'DB %s에 개발 ref가 있어도 실제 개발 프로젝트가 아니면 개발로 취급하지 않는다',
+    (_name, db) => {
+      expect(() =>
+        assertImportTarget({ DATABASE_URL: db, NEXT_PUBLIC_SUPABASE_URL: devStorage }, scope)
+      ).toThrow()
+    }
+  )
+
+  it('Storage URL의 경로에 개발 ref가 있어도 개발 프로젝트로 취급하지 않는다', () => {
+    expect(() =>
+      assertImportTarget(
+        {
+          DATABASE_URL: dev,
+          NEXT_PUBLIC_SUPABASE_URL: `https://${prod}.supabase.co/tumkfkfgzkmisguyaghn`,
+        },
+        scope
+      )
+    ).toThrow()
+  })
+
+  it('실제 DB host가 아닌 곳의 개발 ref만으로 개발 프로젝트를 식별하지 않는다', () => {
+    expect(() =>
+      assertImportTarget(
+        {
+          DATABASE_URL: 'postgresql://postgres.tumkfkfgzkmisguyaghn:p@other.example/postgres',
+          NEXT_PUBLIC_SUPABASE_URL: devStorage,
+        },
+        scope
+      )
+    ).toThrow()
+  })
+
+  it('연결 대상 덮어쓰기 쿼리는 운영 확인값이 있어도 거부한다', () => {
+    expect(() =>
+      assertImportTarget(
+        { DATABASE_URL: `${dev}?host=db.${prod}.supabase.co` },
+        { ...scope, confirmProd: '9:s1' }
+      )
+    ).toThrow('TARGET_PROJECT_MISMATCH')
+  })
+  it('미확인 프로젝트도 DB와 Storage의 ref가 다르면 운영 확인값이 있어도 거부한다', () => {
+    const database = 'postgresql://postgres:p@db.aaaaaaaaaaaaaaaaaaaa.supabase.co:5432/postgres'
+    const storage = 'https://bbbbbbbbbbbbbbbbbbbb.supabase.co'
+    expect(() =>
+      assertImportTarget(
+        { DATABASE_URL: database, NEXT_PUBLIC_SUPABASE_URL: storage },
+        { ...scope, confirmProd: '9:s1' }
+      )
+    ).toThrow('TARGET_PROJECT_MISMATCH')
+  })
+
+  it('동일한 미확인 프로젝트는 운영 확인값을 요구한다', () => {
+    const env = {
+      DATABASE_URL: 'postgresql://postgres:p@db.aaaaaaaaaaaaaaaaaaaa.supabase.co:5432/postgres',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://aaaaaaaaaaaaaaaaaaaa.supabase.co',
+    }
+    expect(() => assertImportTarget(env, scope)).toThrow('PRODUCTION_CONFIRM_REQUIRED')
+    expect(assertImportTarget(env, { ...scope, confirmProd: '9:s1' })).toBe('unidentified')
   })
 })

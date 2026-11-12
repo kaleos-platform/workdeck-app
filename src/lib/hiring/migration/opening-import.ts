@@ -13,6 +13,7 @@ import {
 import {
   OPENING_TRANSFORM_VERSION,
   contactCount,
+  hasEmbeddedImages,
   isInMigrationWindow,
   orgPacketSchema,
   parseReviewFile,
@@ -112,6 +113,7 @@ export async function planPosting(
   review?: ReviewApprovals
 ) {
   const packet = parsePacket(postingPacketSchema, raw)
+  if (hasEmbeddedImages(packet.content)) throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
   assertClean(packet, {
     review,
     key: `posting:${packet.sourcePostingId}`,
@@ -169,6 +171,7 @@ export async function planTemplate(
   review?: ReviewApprovals
 ) {
   const packet = parsePacket(templatePacketSchema, raw)
+  if (hasEmbeddedImages(packet)) throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
   assertClean(packet, {
     review,
     key: `template:${packet.sourceTemplateId}`,
@@ -408,6 +411,106 @@ function dryBinder(spaceId: string, readAsset: (sha256: string) => Promise<Uint8
 type ImportIssue = { kind: string; id: string; code: string }
 type ImportIssues = { conflicts: ImportIssue[]; refused: ImportIssue[] }
 
+export function safeMigrationStatus(status: string) {
+  return ['PLANNED', 'CONFLICT_STOPPED', 'APPLIED_PARTIAL', 'APPLIED'].includes(status)
+    ? status
+    : 'UNKNOWN'
+}
+
+export function safeMigrationSummary(summary: object) {
+  const input = summary as Record<string, unknown>
+  const safe: Record<string, Record<string, number | Record<string, number>>> = {}
+  const fields: Record<string, string[]> = {
+    postings: ['total', 'included', 'held', 'excluded', 'created', 'skipped', 'conflict'],
+    templates: ['total', 'included', 'held', 'created', 'skipped', 'conflict'],
+    stores: ['active', 'historical', 'held', 'created', 'skipped', 'conflict'],
+    positions: ['active', 'historical', 'held', 'created', 'skipped', 'conflict'],
+    updatedOnly: ['count'],
+    contactHits: ['phone', 'email', 'keyword', 'url', 'postingsHit', 'templatesHit'],
+    images: ['total', 'manualReview', 'pendingReview'],
+    assets: ['total', 'created', 'skipped'],
+    review: ['released', 'stale', 'pendingItems'],
+    removedSections: ['managerSections', 'disabledSections', 'templateDynamicSections'],
+    refused: ['postings', 'templates'],
+    sameNameInTarget: ['stores', 'positions'],
+  }
+  for (const [group, keys] of Object.entries(fields)) {
+    const source = input[group]
+    if (!source || typeof source !== 'object' || Array.isArray(source)) continue
+    const counts: Record<string, number | Record<string, number>> = {}
+    for (const key of keys) {
+      const value = (source as Record<string, unknown>)[key]
+      if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0)
+        counts[key] = value
+    }
+    safe[group] = counts
+  }
+  const reasons = [
+    'EMBEDDED_IMAGE_REVIEW_REQUIRED',
+    'HELD_CONTACT_PATTERN',
+    'HELD_SENSITIVE_URL',
+    'STORE_UNAVAILABLE',
+    'POSITION_UNAVAILABLE',
+    'PACKET_SCHEMA_REJECTED',
+    'PLAN_BLOCKED',
+    'DESIGN_TOO_LARGE',
+    'ASSET_FILE_MISSING',
+    'ASSET_FILE_REJECTED',
+    'ASSET_READ_FAILED',
+    'ASSET_KEY_MISSING',
+    'ASSET_TOO_LARGE',
+    'ASSET_UNSUPPORTED_TYPE',
+    'SVG_EXTERNAL_REF',
+    'SCENE_INVALID',
+    'SCENE_IMAGE_MALFORMED',
+    'CONTENT_INVALID_DETAIL',
+    'CONTENT_INVALID_SECTION',
+    'CONTENT_UNSUPPORTED_ATTRIBUTE',
+    'CONTENT_UNSUPPORTED_SECTION',
+    'CONTENT_MISSING_RESOURCE',
+    'CONTENT_MISSING_SCENE',
+    'RESOURCE_UNSUPPORTED',
+    'RESOURCE_SCOPE_MISMATCH',
+    'TEMPLATE_UNSUPPORTED_SECTION',
+    'DELETED',
+    'OUT_OF_WINDOW',
+    'NO_TITLE',
+  ]
+  const warningCodes = [
+    'OPENING_URL_REMAINS',
+    'JOB_TYPE_UNMAPPED',
+    'PAY_FREQUENCY_UNMAPPED',
+    'EXPERIENCE_UNMAPPED',
+    'EDUCATION_UNMAPPED',
+    'WORK_DAYS_UNMAPPED',
+  ]
+  const addCodes = (group: string, field: string, allowed: string[]) => {
+    const source = input[group]
+    if (!source || typeof source !== 'object' || Array.isArray(source)) return
+    const values = (source as Record<string, unknown>)[field]
+    if (!values || typeof values !== 'object' || Array.isArray(values)) return
+    const result: Record<string, number> = {}
+    let other = 0
+    for (const [key, value] of Object.entries(values)) {
+      if (typeof value === 'number' && Number.isFinite(value) && value > Number.MAX_SAFE_INTEGER)
+        throw Error('SUMMARY_COUNT_OVERFLOW')
+      if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) continue
+      if (allowed.includes(key)) result[key] = value
+      else {
+        other += value
+        if (!Number.isSafeInteger(other)) throw Error('SUMMARY_COUNT_OVERFLOW')
+      }
+    }
+    if (other) result.OTHER = other
+    ;(safe[group] ??= {})[field] = result
+  }
+  for (const group of ['postings', 'templates']) addCodes(group, 'reasons', reasons)
+  addCodes('postings', 'warnings', warningCodes)
+  for (const group of ['stores', 'positions'])
+    addCodes(group, 'heldReasons', ['SENSITIVE_URL', 'CONTACT_PATTERN', 'FORMAT'])
+  return safe
+}
+
 // id는 stdout에 남기지 않고 packet 폴더에만 쓴다. 지난 실행 결과가 남지 않게 지운다.
 export function writeImportIssues(dir: string, issues: ImportIssues) {
   for (const [name, list] of Object.entries(issues)) {
@@ -466,6 +569,14 @@ export async function runOpeningImport(
   const postings: PostingPlan[] = []
   for (const raw of set.postings) {
     const packet = parsePacket(postingPacketSchema, raw)
+    if (hasEmbeddedImages(packet.content)) {
+      issues.refused.push({
+        kind: 'posting',
+        id: packet.sourcePostingId,
+        code: 'EMBEDDED_IMAGE_REVIEW_REQUIRED',
+      })
+      continue
+    }
     const images = unreadImages(packet.content, [packet.content.detailImage])
     if (refuseUnreviewed('posting', packet.sourcePostingId, images)) continue
     postings.push(await planPosting(packet, spaceId, bind, review))
@@ -473,6 +584,14 @@ export async function runOpeningImport(
   const templates: TemplatePlan[] = []
   for (const raw of set.templates) {
     const packet = parsePacket(templatePacketSchema, raw)
+    if (hasEmbeddedImages(packet)) {
+      issues.refused.push({
+        kind: 'template',
+        id: packet.sourceTemplateId,
+        code: 'EMBEDDED_IMAGE_REVIEW_REQUIRED',
+      })
+      continue
+    }
     const images = unreadImages(packet, [packet.cover])
     if (refuseUnreviewed('template', packet.sourceTemplateId, images)) continue
     templates.push(await planTemplate(packet, spaceId, owner.userId, bind, review))
@@ -664,19 +783,59 @@ export async function runOpeningImport(
 const PRODUCTION_REF = 'duyteczbadcuvfeawlzu'
 const DEVELOPMENT_REF = 'tumkfkfgzkmisguyaghn'
 
-// 개발 프로젝트로 확인되지 않으면 전부 운영으로 본다. pooler URL은 ref가 사용자명에 있어 URL 전체를 본다.
+// DB의 실제 host·pooler 사용자명과 Storage host만 프로젝트 식별에 사용한다.
 export function assertImportTarget(
   env: Record<string, string | undefined>,
   options: { brandId: string; targetSpace: string; confirmProd?: string }
 ) {
   if (!env.DATABASE_URL && !env.DIRECT_URL) throw Error('TARGET_DATABASE_REQUIRED')
-  const urls = [env.DATABASE_URL, env.DIRECT_URL, env.NEXT_PUBLIC_SUPABASE_URL]
+  const databaseProject = (value: string) => {
+    try {
+      const url = new URL(value)
+      if (!['postgres:', 'postgresql:'].includes(url.protocol)) return undefined
+      // pg-connection-string은 URL의 host/user보다 동명 쿼리 매개변수를 우선한다.
+      if (url.searchParams.has('host') || url.searchParams.has('user')) return 'invalid'
+      const direct = /^db\.([a-z0-9]+)\.supabase\.co$/.exec(url.hostname)
+      if (direct) return direct[1]
+      if (!/^[a-z0-9-]+\.pooler\.supabase\.com$/.test(url.hostname)) return undefined
+      return /^postgres\.([a-z0-9]+)$/.exec(decodeURIComponent(url.username))?.[1]
+    } catch {
+      return undefined
+    }
+  }
+  const storageProject = (value: string) => {
+    try {
+      const url = new URL(value)
+      if (
+        url.protocol !== 'https:' ||
+        url.username ||
+        url.password ||
+        url.port ||
+        url.pathname !== '/' ||
+        url.search ||
+        url.hash
+      )
+        return undefined
+      return /^([a-z0-9]+)\.supabase\.co$/.exec(url.hostname)?.[1]
+    } catch {
+      return undefined
+    }
+  }
+  const refs = [env.DATABASE_URL, env.DIRECT_URL]
     .filter((value): value is string => !!value)
-    .map((url) => url.toLowerCase())
-  const hasDev = urls.some((url) => url.includes(DEVELOPMENT_REF))
-  if (urls.every((url) => url.includes(DEVELOPMENT_REF))) return 'development' as const
-  const hasProd = urls.some((url) => url.includes(PRODUCTION_REF))
-  if (hasDev || (hasProd && !urls.every((url) => url.includes(PRODUCTION_REF))))
+    .map(databaseProject)
+  if (env.NEXT_PUBLIC_SUPABASE_URL) refs.push(storageProject(env.NEXT_PUBLIC_SUPABASE_URL))
+  if (refs.includes('invalid')) throw Error('TARGET_PROJECT_MISMATCH')
+  if (new Set(refs.filter((ref) => ref !== undefined)).size > 1)
+    throw Error('TARGET_PROJECT_MISMATCH')
+  const hasDev = refs.includes(DEVELOPMENT_REF)
+  const hasProd = refs.includes(PRODUCTION_REF)
+  if (hasDev && refs.every((ref) => ref === DEVELOPMENT_REF) && env.NEXT_PUBLIC_SUPABASE_URL)
+    return 'development' as const
+  if (
+    (hasDev && refs.some((ref) => ref !== DEVELOPMENT_REF)) ||
+    (hasProd && refs.some((ref) => ref !== PRODUCTION_REF))
+  )
     throw Error('TARGET_PROJECT_MISMATCH')
   if (options.confirmProd !== `${options.brandId}:${options.targetSpace}`)
     throw Error('PRODUCTION_CONFIRM_REQUIRED')

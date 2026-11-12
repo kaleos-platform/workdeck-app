@@ -288,7 +288,13 @@ export const reviewHash = (packet: { sourceSnapshotAt: string }) =>
   migrationHash(JSON.parse(JSON.stringify({ ...packet, sourceSnapshotAt: null })))
 
 type Asset = z.output<typeof assetSchema>
-// OCR이 없어 글자를 읽지 못한 이미지는 사람이 본다. 내장 이미지 없는 scene의 내보내기만 예외다.
+// 내장 이미지는 별도 PNG의 검토 승인으로 확인할 수 없다.
+export function hasEmbeddedImages(content: Pick<PostingPacket['content'], 'resources'>): boolean {
+  return Object.values(content.resources).some(
+    (resource) => resource.scene && Object.keys(resource.scene.files).length > 0
+  )
+}
+// scene과 별도로 보존하는 원본 이미지도 사람이 검토한다.
 export function unreadImages(
   content: Pick<PostingPacket['content'], 'resources' | 'images'>,
   extra: (Asset | undefined)[] = []
@@ -296,9 +302,7 @@ export function unreadImages(
   const unread = [
     ...extra.filter((asset) => !!asset),
     ...Object.values(content.images),
-    ...Object.values(content.resources).filter(
-      (resource) => !resource.scene || Object.keys(resource.scene.files).length > 0
-    ),
+    ...Object.values(content.resources),
   ]
   return [...new Set(unread.map((asset) => asset.sha256))]
 }
