@@ -1,6 +1,15 @@
 /** @jest-environment node */
 import { createHash } from 'node:crypto'
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import sharp from 'sharp'
@@ -30,6 +39,8 @@ import {
 import { cleanImage, sanitizeScene, stripImageMetadata } from '../opening-sanitize'
 import {
   assertOutDir,
+  assertSafePath,
+  assertSeparateOutDirs,
   prepareOpeningCustomer,
   writeReviewDir,
   type OpeningObjectReader,
@@ -1404,6 +1415,74 @@ describe('사람 검토', () => {
       for (const path of paths) expect(statSync(join(dir, path)).mode & 0o777).toBe(0o600)
       for (const path of ['.', 'items', 'images'])
         expect(statSync(join(dir, path)).mode & 0o777).toBe(0o700)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('symlink를 통한 저장소 내부 경로와 끊어진 symlink를 거부한다', () => {
+    const root = mkdtempSync(join(tmpdir(), 'opening-path-'))
+    try {
+      const repo = join(root, 'repo')
+      mkdirSync(repo)
+      symlinkSync(repo, join(root, 'repo-link'))
+      symlinkSync(join(root, 'missing-target'), join(root, 'broken-link'))
+      expect(() => assertOutDir(join(root, 'repo-link', 'new', 'nested'), repo)).toThrow(
+        'OUT_DIR_INSIDE_REPO'
+      )
+      expect(() => assertOutDir(join(root, 'broken-link', 'new'), repo)).toThrow('OUT_DIR_INVALID')
+      expect(assertOutDir(join(root, 'outside', 'new', 'nested'), repo)).toBe(
+        join(root, 'outside', 'new', 'nested')
+      )
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('packet 경로는 비어 있지 않아도 외부는 허용하고 모든 Git 작업 트리와 .git 내부는 거부한다', () => {
+    const root = mkdtempSync(join(tmpdir(), 'opening-git-path-'))
+    try {
+      const repo = join(root, 'repo')
+      const other = join(root, 'other-worktree')
+      const external = join(root, 'packets')
+      const separateGitDir = join(root, 'separate-git-dir')
+      mkdirSync(join(repo, '.git', 'worktrees'), { recursive: true })
+      mkdirSync(other)
+      mkdirSync(external)
+      mkdirSync(join(separateGitDir, 'objects'), { recursive: true })
+      mkdirSync(join(separateGitDir, 'refs'))
+      writeFileSync(join(separateGitDir, 'HEAD'), 'ref: refs/heads/main\n')
+      writeFileSync(join(other, '.git'), 'gitdir: /fake')
+      writeFileSync(join(external, 'manifest.json'), '{}')
+      symlinkSync(other, join(root, 'other-link'))
+      expect(assertSafePath(external, repo)).toBe(external)
+      for (const path of [
+        repo,
+        join(repo, '.git'),
+        join(repo, '.git', 'worktrees'),
+        other,
+        join(other, '.git'),
+        join(root, 'other-link', 'new'),
+        separateGitDir,
+        join(separateGitDir, 'objects', 'new'),
+      ])
+        expect(() => assertSafePath(path, repo)).toThrow('OUT_DIR_INSIDE_REPO')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('packet과 검토 출력 디렉터리는 실제 경로가 같거나 중첩되면 안 된다', () => {
+    const root = mkdtempSync(join(tmpdir(), 'opening-overlap-'))
+    try {
+      const folder = join(root, 'packets')
+      mkdirSync(folder)
+      symlinkSync(folder, join(root, 'alias'))
+      expect(() => assertSeparateOutDirs(folder, join(root, 'alias'))).toThrow('OUT_DIR_OVERLAP')
+      expect(() => assertSeparateOutDirs(folder, join(root, 'alias', 'new', 'child'))).toThrow(
+        'OUT_DIR_OVERLAP'
+      )
+      expect(() => assertSeparateOutDirs(folder, join(root, 'other'))).not.toThrow()
     } finally {
       rmSync(root, { recursive: true, force: true })
     }

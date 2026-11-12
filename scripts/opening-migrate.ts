@@ -61,6 +61,8 @@ import {
 } from '@/lib/hiring/migration/opening-import'
 import {
   assertOutDir,
+  assertSafePath,
+  assertSeparateOutDirs,
   prepareOpeningCustomer,
   writeReviewDir,
   type OpeningObjectReader,
@@ -160,6 +162,7 @@ async function prepare(args: string[]) {
   // 원본을 읽기 전에 거부한다.
   const outDir = values['write-packets'] ? assertOutDir(values.out as string, repoRoot) : null
   const reviewDir = values['review-dir'] ? assertOutDir(values['review-dir'], repoRoot) : null
+  if (outDir && reviewDir) assertSeparateOutDirs(outDir, reviewDir)
   const review = readReviewFile(values['review-file'])
   const connectionString = process.env.OPENING_SOURCE_URL
   if (!connectionString) throw Error('OPENING_SOURCE_URL_REQUIRED')
@@ -209,6 +212,7 @@ async function importPackets(args: string[]) {
     !/^[A-Za-z0-9_-]+$/.test(targetSpace ?? '')
   )
     throw Error('EXPLICIT_SCOPE_REQUIRED')
+  const packetDir = assertSafePath(packets, repoRoot)
   const environment = assertImportTarget(process.env, {
     brandId: brandId as string,
     targetSpace: targetSpace as string,
@@ -226,17 +230,17 @@ async function importPackets(args: string[]) {
     ),
   })
   try {
-    const report = await runOpeningImport(db, readPacketSet(packets), {
+    const report = await runOpeningImport(db, readPacketSet(packetDir), {
       spaceId: targetSpace as string,
       brandId: brandId as string,
       apply,
       storage: apply ? supabaseStorage() : undefined,
-      readAsset: async (sha256) => readFileSync(join(packets, 'assets', sha256)),
+      readAsset: async (sha256) => readFileSync(join(packetDir, 'assets', sha256)),
       review: readReviewFile(values['review-file']),
       skipConflicts: values['skip-conflicts'],
     })
     const { issues, status, ...summary } = report
-    writeImportIssues(packets, issues)
+    writeImportIssues(packetDir, issues)
     console.log(
       JSON.stringify({
         environment,

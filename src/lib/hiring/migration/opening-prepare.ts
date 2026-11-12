@@ -1,6 +1,15 @@
 import { createHash } from 'node:crypto'
-import { chmodSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
-import { join, resolve, sep } from 'node:path'
+import {
+  chmodSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readdirSync,
+  realpathSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
+import { basename, dirname, join, resolve, sep } from 'node:path'
 import type { z } from 'zod'
 import { planOpeningForm } from '@/lib/hiring/opening-form-migration'
 import { planPosting, planTemplate, type AssetBinder } from './opening-import'
@@ -1045,10 +1054,75 @@ async function buildCustomerPackets(
 }
 export type PreparedCustomer = Awaited<ReturnType<typeof prepareOpeningCustomer>>
 
-// 고객 자료가 저장소에 섞이지 않게, 지난 실행 결과가 섞이지 않게 저장소 밖 빈 폴더만 받는다.
-export function assertOutDir(out: string, repoRoot: string) {
+// 없는 경로도 가장 가까운 기존 조상을 실제 경로로 바꾼다. 확인 후 경로 교체는 막지 못한다.
+function canonicalPath(path: string) {
+  let current = resolve(path)
+  const suffix: string[] = []
+  while (true) {
+    try {
+      lstatSync(current)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw Error('OUT_DIR_INVALID')
+      const parent = dirname(current)
+      if (parent === current) throw Error('OUT_DIR_INVALID')
+      suffix.unshift(basename(current))
+      current = parent
+      continue
+    }
+    try {
+      return resolve(realpathSync(current), ...suffix)
+    } catch {
+      // 끊어진 symlink는 누락 경로로 보지 않는다.
+      throw Error('OUT_DIR_INVALID')
+    }
+  }
+}
+
+export function assertSafePath(out: string, repoRoot: string) {
   const root = resolve(out)
-  if (root === repoRoot || root.startsWith(repoRoot + sep)) throw Error('OUT_DIR_INSIDE_REPO')
+  const realRoot = canonicalPath(root)
+  const realRepo = canonicalPath(repoRoot)
+  if (realRoot === realRepo || realRoot.startsWith(realRepo + sep))
+    throw Error('OUT_DIR_INSIDE_REPO')
+  for (const path of [root, realRoot]) {
+    let current = path
+    while (true) {
+      if (basename(current) === '.git') throw Error('OUT_DIR_INSIDE_REPO')
+      try {
+        lstatSync(join(current, '.git'))
+        throw Error('OUT_DIR_INSIDE_REPO')
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code
+        if (code !== 'ENOENT' && code !== 'ENOTDIR') throw error
+      }
+      try {
+        if (
+          statSync(join(current, 'HEAD')).isFile() &&
+          statSync(join(current, 'objects')).isDirectory() &&
+          statSync(join(current, 'refs')).isDirectory()
+        )
+          throw Error('OUT_DIR_INSIDE_REPO')
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code
+        if (code !== 'ENOENT' && code !== 'ENOTDIR') throw error
+      }
+      const parent = dirname(current)
+      if (parent === current) break
+      current = parent
+    }
+  }
+  return root
+}
+
+export function assertSeparateOutDirs(first: string, second: string) {
+  const a = canonicalPath(first)
+  const b = canonicalPath(second)
+  if (a === b || a.startsWith(b + sep) || b.startsWith(a + sep)) throw Error('OUT_DIR_OVERLAP')
+}
+
+// 출력은 저장소 밖 빈 폴더만 받고, packet 입력은 별도로 비어 있지 않아도 허용한다.
+export function assertOutDir(out: string, repoRoot: string) {
+  const root = assertSafePath(out, repoRoot)
   if (existsSync(root) && readdirSync(root).length) throw Error('OUT_DIR_NOT_EMPTY')
   return root
 }
