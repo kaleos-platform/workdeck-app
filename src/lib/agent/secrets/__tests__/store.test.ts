@@ -24,6 +24,7 @@ import {
   saveApiKeySecret,
   saveLoginSecret,
   loadLoginForUse,
+  revealSecretValue,
 } from '../store'
 
 const KEY = 'SK_TEST_0123456789abcdef'
@@ -396,5 +397,17 @@ describe('LOGIN', () => {
       DENIED
     )
     expect(decryptField).not.toHaveBeenCalled()
+  })
+})
+
+test('revealSecretValue: LOGIN 비밀번호는 화면 보기로 복호화하지 않는다', async () => {
+  ;(decryptField as jest.Mock).mockClear()
+  findUnique.mockResolvedValueOnce({ id: 's1', kind: 'LOGIN', encryptedPayload: 'e', iv: 'i' })
+  expect(await revealSecretValue('sp', 'wekeep-kreamd')).toBeNull()
+  expect(decryptField).not.toHaveBeenCalled()
+  findUnique.mockResolvedValueOnce({ id: 's2', kind: 'API_KEY', encryptedPayload: 'e', iv: 'i' })
+  expect(await revealSecretValue('sp', 'k')).toEqual({
+    id: 's2',
+    value: 'SK_TEST_0123456789abcdef',
   })
 })

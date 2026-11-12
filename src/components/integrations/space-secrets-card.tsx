@@ -431,7 +431,7 @@ function SecretDialog({
               <Field label="로그인 URL">
                 <Input
                   id="secret-loginurl"
-                  placeholder="https://fbw.wekeep.co.kr/fbw/member/login.do"
+                  placeholder="https://example.com/login"
                   value={loginUrl}
                   onChange={(e) => setLoginUrl(e.target.value)}
                 />

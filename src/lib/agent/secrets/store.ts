@@ -384,8 +384,9 @@ export async function revealSecretValue(
 ): Promise<{ id: string; value: string } | null> {
   const row = await prisma.spaceSecret.findUnique({
     where: { spaceId_name: { spaceId, name } },
-    select: { id: true, encryptedPayload: true, iv: true },
+    select: { id: true, kind: true, encryptedPayload: true, iv: true },
   })
-  if (!row) return null
+  // LOGIN 비밀번호는 화면에서 다시 보지 않는다 — 허용된 에이전트(secret_login_get)만 꺼낸다.
+  if (!row || row.kind === 'LOGIN') return null
   return { id: row.id, value: decryptField('space-secret', row.encryptedPayload, row.iv) }
 }
