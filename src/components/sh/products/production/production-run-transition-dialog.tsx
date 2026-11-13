@@ -35,8 +35,14 @@ type Location = {
   id: string
   name: string
   type: string
+  externalSource?: string | null
   isActive: boolean
 }
+
+// 외부 물류 위치 판정 — reorder-engine/isExternalLogisticsLocation 와 동일 규칙
+// (해당 모듈은 prisma 를 import 해 클라이언트 번들에 못 쓴다)
+const isExternalLoc = (l?: Location) =>
+  !!l && (l.type === 'THIRD_PARTY' || l.externalSource != null)
 
 type RunItem = {
   optionId: string
@@ -196,6 +202,15 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
     // runItems 는 runId 가 같으면 동일 차수 → 의도적으로 deps 제외 (부모 재렌더 시 입력 보존)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isStockIn, runId])
+
+  // 선택된 입고 위치 중 외부 물류 위치가 있는지 — 재고 미반영 안내용
+  const hasExternalSelected = useMemo(() => {
+    const byId = new Map(locations.map((l) => [l.id, l]))
+    if (isSetRun) return isExternalLoc(byId.get(stockInLocationId))
+    return Object.values(allocByOption).some((rows) =>
+      rows.some((r) => r.quantity > 0 && isExternalLoc(byId.get(r.locationId)))
+    )
+  }, [locations, isSetRun, stockInLocationId, allocByOption])
 
   // 옵션별 합계 + 일치 여부
   const optionSums = useMemo(() => {
@@ -600,6 +615,13 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
             </div>
           )}
         </div>
+
+        {isStockIn && hasExternalSelected && (
+          <p className="rounded-md border border-amber-200 bg-amber-50/60 px-3 py-2 text-xs text-amber-700">
+            외부 물류 위치는 입고완료로 재고가 늘지 않습니다. 다음 재고 대조에서 반영되고, 그
+            전까지는 생산 중으로 계산됩니다.
+          </p>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>

@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@/generated/prisma/client'
 import { productionRunStatusTransitionSchema } from '@/lib/sh/schemas'
 import { applyBatchInbound, MovementError } from '@/lib/inv/movement-processor'
+import { isExternalLogisticsLocation } from '@/lib/inv/reorder-engine'
 
 type Params = { params: Promise<{ runId: string }> }
 
@@ -161,7 +163,15 @@ export async function POST(req: NextRequest, { params }: Params) {
     // claim → applyBatchInbound → item/set 갱신이 하나의 tx 안에서 all-or-nothing 처리됨.
     // 상태 선점(updateMany where status=existing.status)으로 동시 요청을 직렬화해 이중 입고를 방지한다.
     const brandPart = existing.brand?.name ? ` · ${existing.brand.name}` : ''
-    const batchItems = allocations.map((a) => {
+    // 외부 물류 위치(3PL·쿠팡)는 외부 파일 대조로만 재고가 반영된다 — INBOUND 하지 않고
+    // externalStockIns 로 기록해 대조 전까지 "생산 중"으로 계산한다 (이중 계상 방지).
+    const ownAllocations = allocations.filter(
+      (a) => !isExternalLogisticsLocation(locationById.get(a.locationId)!)
+    )
+    const externalStockIns = allocations.filter((a) =>
+      isExternalLogisticsLocation(locationById.get(a.locationId)!)
+    )
+    const batchItems = ownAllocations.map((a) => {
       const it = itemByOptionId.get(a.optionId)!
       const loc = locationById.get(a.locationId)!
       const productName = it.option.product.internalName ?? it.option.product.name
@@ -187,6 +197,7 @@ export async function POST(req: NextRequest, { params }: Params) {
               stockedInAt: transitionDate,
               completedAt: transitionDate, // 레거시 호환
               stockInLocationId: distinctLocationIds.length === 1 ? distinctLocationIds[0] : null,
+              externalStockIns: externalStockIns.length > 0 ? externalStockIns : Prisma.DbNull,
             },
           })
           if (claimed.count !== 1) {
@@ -196,7 +207,11 @@ export async function POST(req: NextRequest, { params }: Params) {
             )
           }
 
-          const results = await applyBatchInbound(tx, resolved.space.id, batchItems, transitionDate)
+          // 전부 외부 위치면 자체 INBOUND 없음 — 빈 목록으로 호출하지 않는다
+          const results =
+            batchItems.length > 0
+              ? await applyBatchInbound(tx, resolved.space.id, batchItems, transitionDate)
+              : []
 
           // 모든 옵션에 실입고량 기록 (분배 없는 옵션 = 0)
           for (const it of existing.items) {
