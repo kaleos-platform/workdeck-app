@@ -8,6 +8,8 @@ import { DECK_LANDINGS } from '@/lib/marketing/decks'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 import { buildMarketingMetadata, orgJsonLd, websiteJsonLd } from '@/lib/marketing/seo'
 import { JsonLd } from '@/components/marketing/json-ld'
+import { Badge } from '@/components/ui/badge'
+import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 
 export function generateMetadata(): Metadata {
   return buildMarketingMetadata({
@@ -25,7 +27,8 @@ const trustPoints = [
   '실제 셀러·운영팀 워크플로우를 기반으로 설계',
 ]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const releasedIds = await getReleasedDeckIds()
   return (
     <div className="w-full">
       <JsonLd data={orgJsonLd()} />
@@ -80,10 +83,13 @@ export default function HomePage() {
                   href={`/${slug}`}
                   className="group flex flex-col gap-4 rounded-xl border bg-card p-6 transition-colors hover:border-foreground/20"
                 >
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${meta.gradient}`}
-                  >
-                    <Icon className="h-5 w-5 text-white" aria-hidden />
+                  <div className="flex items-center justify-between">
+                    <div
+                      className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${meta.gradient}`}
+                    >
+                      <Icon className="h-5 w-5 text-white" aria-hidden />
+                    </div>
+                    {releasedIds.includes(slug) ? null : <Badge variant="secondary">준비중</Badge>}
                   </div>
                   <div className="space-y-1.5">
                     <h3 className="font-semibold break-keep">{meta.name}</h3>

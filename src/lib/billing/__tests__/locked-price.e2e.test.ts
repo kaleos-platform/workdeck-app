@@ -15,6 +15,9 @@ config({ path: path.resolve(process.cwd(), '.env.local') })
 const mockCharge = jest.fn()
 const mockIssue = jest.fn()
 const mockLookup = jest.fn()
+// 준비중(released) 가드는 deck-release·subscription-release-guard 단위 테스트가 검증한다.
+// 공유 dev DB 의 공개 상태를 바꾸지 않도록 여기선 모든 업무를 열어 둔다.
+jest.mock('@/lib/billing/deck-release', () => ({ findClosedDecks: async () => [] }))
 jest.mock('@/lib/billing/providers/toss', () => ({
   getBillingProvider: () => ({
     id: 'toss',

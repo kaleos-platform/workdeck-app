@@ -19,6 +19,7 @@ import {
 } from './pricing'
 import { DECK_CATALOG_DEFAULTS } from './catalog-defaults'
 import { isCheckoutPausedFor } from './entitlement'
+import { findClosedDecks } from './deck-release'
 
 // dunning: 결제일 경과 +1·+3·+5일에 재시도, 3회 실패 시 EXPIRED
 const RETRY_OFFSETS_DAYS = [1, 3, 5]
@@ -196,7 +197,11 @@ async function createOrReclaimCharge(data: Prisma.BillingChargeUncheckedCreateIn
     : null
 }
 
-async function loadProducts(deckIds: string[]) {
+async function loadProducts(spaceId: string, deckIds: string[]) {
+  // 준비중 업무는 신규 구독 불가 — 이미 설치·구독 중인 공간은 예외 (URL 직접 호출 우회 차단)
+  if ((await findClosedDecks(spaceId, deckIds)).length > 0) {
+    throw new BillingError('준비중인 업무는 구독할 수 없습니다', 403)
+  }
   const products = await prisma.billingDeckProduct.findMany({
     where: { id: { in: deckIds }, isActive: true },
   })
@@ -326,7 +331,7 @@ export async function removeBillingMethod(spaceId: string, methodId: string | nu
 export async function startSubscription(spaceId: string, deckIds: string[]) {
   assertCheckoutOpen(spaceId)
   if (deckIds.length === 0) throw new BillingError('구독할 업무를 선택하세요', 400)
-  const products = await loadProducts(deckIds)
+  const products = await loadProducts(spaceId, deckIds)
   const method = await loadDefaultMethod(spaceId)
   const provider = getBillingProvider()
 
@@ -447,7 +452,7 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
 
 // deck 중도 추가: 일할 즉시결제 → 즉시 활성
 export async function addDeck(spaceId: string, deckAppId: string) {
-  const [product] = await loadProducts([deckAppId])
+  const [product] = await loadProducts(spaceId, [deckAppId])
   const method = await loadDefaultMethod(spaceId)
   const provider = getBillingProvider()
 

@@ -3,6 +3,7 @@ import { errorResponse, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { seedFinanceCategories, ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { canUseDeck, ensureTrialStarted } from '@/lib/billing/entitlement'
+import { findClosedDecks } from '@/lib/billing/deck-release'
 
 type CreateDeckRequest = {
   deckAppId?: string
@@ -23,6 +24,12 @@ export async function POST(request: NextRequest) {
   })
   if (!deckApp || !deckApp.isActive) {
     return errorResponse('사용 가능한 업무가 아닙니다', 404)
+  }
+
+  // 준비중 업무는 신규 추가 불가 (이미 설치·구독 이력이 있는 공간은 예외).
+  // Trial lazy-start 보다 먼저 막아야 준비중 업무 클릭으로 평생 1회 Trial 이 소모되지 않는다.
+  if ((await findClosedDecks(resolved.space.id, [deckAppId])).length > 0) {
+    return errorResponse('준비중인 업무입니다', 403)
   }
 
   // 유료 deck 첫 사용 시도 → Trial lazy-start (평생 1회, 이력 있으면 no-op)

@@ -12,6 +12,8 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 jest.mock('../providers/toss', () => ({ getBillingProvider: jest.fn() }))
+// 준비중 가드는 별도 테스트(subscription-release-guard)에서 검증 — 여기선 전부 열림
+jest.mock('../deck-release', () => ({ findClosedDecks: jest.fn().mockResolvedValue([]) }))
 
 const mock = prisma as unknown as {
   billingMethod: { findFirst: jest.Mock; updateMany: jest.Mock; delete: jest.Mock }

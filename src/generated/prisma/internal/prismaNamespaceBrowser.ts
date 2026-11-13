@@ -2817,6 +2817,7 @@ export const BillingDeckProductScalarFieldEnum = {
   monthlyPrice: 'monthlyPrice',
   paidActivatedAt: 'paidActivatedAt',
   isActive: 'isActive',
+  released: 'released',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
