@@ -1,10 +1,10 @@
 import type { DeckLandingContent, DeckLandingFeature } from '../types'
 
-// 아래 두 기능은 개발 중이다. 운영 배포 뒤에만 true로 바꾼다(표시=실제).
+// 랜딩 공개 스위치. 운영에서 실제 동작을 확인한 뒤에만 true로 바꾼다(표시=실제).
 // false면 데이터에서 빠지므로 화면·JSON-LD·llms.txt·요금 페이지 어디에도 나가지 않는다.
-// 공개 PR에서 문구를 배포된 동작(MCP 도구 스키마 포함)과 다시 대조한다.
+// 이메일: 운영 배포됨(#1369), 사용자 실발송 확인 후 공개. AI: MCP 도구(#1375) 기준으로 문구 대조 완료.
 const RECRUITING_EMAIL_LIVE = false
-const RECRUITING_AI_LIVE = false
+const RECRUITING_AI_LIVE = true
 
 const OPENING_MIGRATION_NOTICE_URL =
   'https://workdeck-work.notion.site/40982f170039814c9eb1dcc3ad51d800'
@@ -22,7 +22,7 @@ const AI_FEATURE: DeckLandingFeature = {
   title: 'AI 연동',
   headline: '쓰던 AI에게 채용 현황을 물어보세요',
   description:
-    'Claude 같은 AI에서 공고와 지원 현황을 조회하고 공고 초안을 제안받습니다. 초안은 워크덱에서 승인해야 반영되고, 지원자 개인정보는 AI에 보내지 않습니다.',
+    'Claude처럼 MCP를 지원하는 AI를 연결하면 공고 목록과 지원 현황 집계를 조회하고, 새 공고 초안을 제안받을 수 있습니다. 초안은 관리자가 승인해야 「작성 중」 공고로 만들어지고 게시는 직접 합니다. 지원자 이름·연락처 같은 개인정보는 AI에 보내지 않습니다.',
 }
 
 const NEW_APPLICANT_ALERT_ROW = RECRUITING_EMAIL_LIVE
