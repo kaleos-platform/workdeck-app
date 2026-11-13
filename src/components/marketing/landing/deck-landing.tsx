@@ -3,6 +3,9 @@ import type { DeckLandingContent, DeckLandingLeadForm } from '@/lib/marketing/ty
 import { HeroSection } from './hero-section'
 import { PainPoints } from './pain-points'
 import { FeatureGrid } from './feature-grid'
+import { FeatureRows } from './feature-rows'
+import { IndustryChips } from './industry-chips'
+import { MigrationComparison, MigrationNotice } from './migration-sections'
 import { WorkflowSection } from './workflow-section'
 import { ScreenshotShowcase } from './screenshot-showcase'
 import { FaqSection } from './faq-section'
@@ -57,11 +60,23 @@ export function DeckLanding({
         badge={released ? undefined : '준비중'}
       />
 
+      {content.migration ? <MigrationNotice migration={content.migration} /> : null}
+
       {content.painPoints && content.painPoints.length > 0 ? (
         <PainPoints points={content.painPoints} />
       ) : null}
 
-      <FeatureGrid features={content.features} gradient={meta.gradient} />
+      {content.featureStyle === 'rows' ? (
+        <FeatureRows features={content.features} gradient={meta.gradient} />
+      ) : (
+        <FeatureGrid features={content.features} gradient={meta.gradient} />
+      )}
+
+      {content.migration ? <MigrationComparison migration={content.migration} /> : null}
+
+      {content.industries && content.industries.length > 0 ? (
+        <IndustryChips industries={content.industries} />
+      ) : null}
 
       {content.workflow && content.workflow.length > 0 ? (
         <WorkflowSection steps={content.workflow} gradient={meta.gradient} />

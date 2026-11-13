@@ -1,0 +1,1119 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "frame",
+   "x": -16,
+   "y": -56,
+   "width": 932,
+   "height": 3128,
+   "backgroundColor": "transparent",
+   "strokeColor": "#111827"
+  },
+  {
+   "type": "text",
+   "id": "e1",
+   "x": 24,
+   "y": -40,
+   "text": "/recruiting 모집 관리 랜딩 개편 — 데스크톱 900 (노란 점선 = 숨김, 기능 배포 후 공개)",
+   "fontSize": 16
+  },
+  {
+   "type": "rectangle",
+   "id": "e2",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 230,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e3",
+   "x": 24,
+   "y": 16,
+   "text": "① Hero — HeroSection (헤드라인 유지)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e4",
+   "x": 24,
+   "y": 44,
+   "text": "채용 시간은 줄이고. 지원자는 더 많이.",
+   "fontSize": 28
+  },
+  {
+   "type": "text",
+   "id": "e5",
+   "x": 24,
+   "y": 92,
+   "text": "생산직·인력파견처럼 반복되는 대규모 채용을 공고 제작부터 지원자 관리, 결과 안내까지 한 곳에서.",
+   "fontSize": 14
+  },
+  {
+   "type": "rectangle",
+   "id": "e6",
+   "x": 24,
+   "y": 130,
+   "width": 160,
+   "height": 40,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "무료 이용 신청 — Button",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e7",
+   "x": 196,
+   "y": 130,
+   "width": 140,
+   "height": 40,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "바로 시작하기 — Button outline",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "e8",
+   "x": 24,
+   "y": 188,
+   "text": "Badge: 7일 무료 체험 · 월 22,000원(VAT 포함)",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "e9",
+   "x": 0,
+   "y": 254,
+   "width": 900,
+   "height": 190,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e10",
+   "x": 24,
+   "y": 266,
+   "text": "② 오프닝워크 이전 안내 — Card (12/11 신청 마감까지 노출, 이후 PR로 제거)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e11",
+   "x": 24,
+   "y": 290,
+   "text": "오프닝워크를 쓰고 계셨나요? 12월 19일 종료 전에 그대로 옮겨 오세요.",
+   "fontSize": 18
+  },
+  {
+   "type": "text",
+   "id": "e12",
+   "x": 24,
+   "y": 326,
+   "text": "· 월 13,500원(VAT 포함) 계속 보장 — 정가 22,000원\n· 최근 1년 공고·템플릿·매장·직무·브랜드를 옮겨 드립니다 (지원자·계정은 제외)\n· 7일 무료 체험 후 결정 · 이전 신청은 12월 11일까지",
+   "fontSize": 14
+  },
+  {
+   "type": "rectangle",
+   "id": "e13",
+   "x": 24,
+   "y": 394,
+   "width": 150,
+   "height": 36,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "이전 안내 보기 — Button",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e14",
+   "x": 186,
+   "y": 394,
+   "width": 130,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "이전 신청 — Button",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e15",
+   "x": 0,
+   "y": 468,
+   "width": 900,
+   "height": 150,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e16",
+   "x": 24,
+   "y": 480,
+   "text": "③ 이런 점이 번거로우셨죠 — PainPoints (3개로 축약, 업종은 ⑥으로)",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "e17",
+   "x": 24,
+   "y": 508,
+   "width": 272,
+   "height": 90,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "공고 올릴 때마다\n새로 디자인 — Card",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e18",
+   "x": 312,
+   "y": 508,
+   "width": 272,
+   "height": 90,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "지원자가 플랫폼·엑셀에\n흩어짐 — Card",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e19",
+   "x": 600,
+   "y": 508,
+   "width": 272,
+   "height": 90,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "결과 안내·재지원자\n확인이 번거로움 — Card",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e20",
+   "x": 0,
+   "y": 642,
+   "width": 900,
+   "height": 200,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e21",
+   "x": 24,
+   "y": 656,
+   "text": "④a 공고 제작 — 기능 상세 행 (신규)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e22",
+   "x": 24,
+   "y": 686,
+   "text": "디자인을 몰라도 공고를 빠르게",
+   "fontSize": 20
+  },
+  {
+   "type": "text",
+   "id": "e23",
+   "x": 24,
+   "y": 726,
+   "text": "디자인 블록·상세 템플릿으로 꾸미고,\n다른 도구로 만든 이미지도 그대로 넣습니다.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "e24",
+   "x": 470,
+   "y": 662,
+   "width": 406,
+   "height": 160,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "화면 예시 이미지 (데모 데이터) — img",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e25",
+   "x": 0,
+   "y": 866,
+   "width": 900,
+   "height": 200,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e26",
+   "x": 470,
+   "y": 880,
+   "text": "④b 공고 링크·간편 지원서 — 기능 상세 행 (신규)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e27",
+   "x": 470,
+   "y": 910,
+   "text": "공고마다 링크와 지원서가 바로",
+   "fontSize": 20
+  },
+  {
+   "type": "text",
+   "id": "e28",
+   "x": 470,
+   "y": 950,
+   "text": "공개 링크·HTML 코드로 어느 채용 채널에든 올리고,\n공고별 지원서로 지원자를 한 곳에 모읍니다.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "e29",
+   "x": 24,
+   "y": 886,
+   "width": 406,
+   "height": 160,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "화면 예시 이미지 (데모 데이터) — img",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e30",
+   "x": 0,
+   "y": 1090,
+   "width": 900,
+   "height": 200,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e31",
+   "x": 24,
+   "y": 1104,
+   "text": "④c 지원자 통합 관리 — 기능 상세 행 (신규)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e32",
+   "x": 24,
+   "y": 1134,
+   "text": "모든 지원자를 한눈에",
+   "fontSize": 20
+  },
+  {
+   "type": "text",
+   "id": "e33",
+   "x": 24,
+   "y": 1174,
+   "text": "근무지·직무·채용 단계·기간으로 보고 일괄 처리.\n메모·엑셀 다운로드·블랙리스트 확인.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "e34",
+   "x": 470,
+   "y": 1110,
+   "width": 406,
+   "height": 160,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "화면 예시 이미지 (데모 데이터) — img",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e35",
+   "x": 0,
+   "y": 1314,
+   "width": 900,
+   "height": 200,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e36",
+   "x": 470,
+   "y": 1328,
+   "text": "④d 결과 안내 — 기능 상세 행 (신규)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e37",
+   "x": 470,
+   "y": 1358,
+   "text": "안내 문구는 템플릿으로, 결과는 링크로",
+   "fontSize": 20
+  },
+  {
+   "type": "text",
+   "id": "e38",
+   "x": 470,
+   "y": 1398,
+   "text": "면접·합격·불합격 템플릿 + 지원자별 결과 확인 링크.\n복사해 문자·메신저로 보냅니다.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "e39",
+   "x": 24,
+   "y": 1334,
+   "width": 406,
+   "height": 160,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "화면 예시 이미지 (데모 데이터) — img",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e40",
+   "x": 0,
+   "y": 1538,
+   "width": 900,
+   "height": 200,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#d97706",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "text",
+   "id": "e41",
+   "x": 24,
+   "y": 1552,
+   "text": "④e 이메일 알림 [숨김] — 기능 상세 행 (신규)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e42",
+   "x": 24,
+   "y": 1582,
+   "text": "새 지원자 소식을 메일로",
+   "fontSize": 20
+  },
+  {
+   "type": "text",
+   "id": "e43",
+   "x": 24,
+   "y": 1622,
+   "text": "지원자: 접수 완료 메일(지원서에 이메일 항목이 있을 때)\n담당자: 매일 아침 새 지원자 요약 메일",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "e44",
+   "x": 470,
+   "y": 1558,
+   "width": 406,
+   "height": 160,
+   "backgroundColor": "#fde68a",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "예시 이미지 / 아이콘 — img",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e45",
+   "x": 0,
+   "y": 1762,
+   "width": 900,
+   "height": 200,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#d97706",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "text",
+   "id": "e46",
+   "x": 470,
+   "y": 1776,
+   "text": "④f AI 연동 [숨김] — 기능 상세 행 (신규)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e47",
+   "x": 470,
+   "y": 1806,
+   "text": "쓰던 AI에게 채용 현황을 물어보세요",
+   "fontSize": 20
+  },
+  {
+   "type": "text",
+   "id": "e48",
+   "x": 470,
+   "y": 1846,
+   "text": "Claude 등 AI에서 공고·지원 현황 조회, 공고 초안 제안\n→ 워크덱에서 승인해야 반영. 지원자 개인정보는 AI에 보내지 않습니다.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "e49",
+   "x": 24,
+   "y": 1782,
+   "width": 406,
+   "height": 160,
+   "backgroundColor": "#fde68a",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "예시 이미지 / 아이콘 — img",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e50",
+   "x": 0,
+   "y": 1986,
+   "width": 900,
+   "height": 342,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e51",
+   "x": 24,
+   "y": 1998,
+   "text": "⑤ 하던 일, 여기서는 이렇게 — Table (신규, 다른 점도 숨기지 않음)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "e52",
+   "x": 24,
+   "y": 2020,
+   "text": "오프닝워크에서 하던 일, 워크덱에서는",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "e53",
+   "x": 24,
+   "y": 2050,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "오프닝워크",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e54",
+   "x": 324,
+   "y": 2050,
+   "width": 420,
+   "height": 34,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "워크덱 모집 관리",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e55",
+   "x": 744,
+   "y": 2050,
+   "width": 132,
+   "height": 34,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "차이",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e56",
+   "x": 24,
+   "y": 2084,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "공고 디자인 에디터·템플릿",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e57",
+   "x": 324,
+   "y": 2084,
+   "width": 420,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "공고 디자인 에디터·상세 템플릿",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e58",
+   "x": 744,
+   "y": 2084,
+   "width": 132,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "그대로",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e59",
+   "x": 24,
+   "y": 2118,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "공고 HTML 코드 · 공고 링크",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e60",
+   "x": 324,
+   "y": 2118,
+   "width": 420,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "HTML 복사 · 공개 링크",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e61",
+   "x": 744,
+   "y": 2118,
+   "width": 132,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "그대로",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e62",
+   "x": 24,
+   "y": 2152,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "간편 지원서",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e63",
+   "x": 324,
+   "y": 2152,
+   "width": 420,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "공고별 지원서 양식",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e64",
+   "x": 744,
+   "y": 2152,
+   "width": 132,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "그대로",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e65",
+   "x": 24,
+   "y": 2186,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "지원자 통합 관리·메모·다운로드",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e66",
+   "x": 324,
+   "y": 2186,
+   "width": 420,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "같음 + 블랙리스트",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e67",
+   "x": 744,
+   "y": 2186,
+   "width": 132,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "그대로",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e68",
+   "x": 24,
+   "y": 2220,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "팀원 초대",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e69",
+   "x": 324,
+   "y": 2220,
+   "width": 420,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "멤버 초대",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e70",
+   "x": 744,
+   "y": 2220,
+   "width": 132,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "그대로",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e71",
+   "x": 24,
+   "y": 2254,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "자주 쓰는 메시지 (휴대폰 문자앱)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e72",
+   "x": 324,
+   "y": 2254,
+   "width": 420,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "메시지 템플릿 + 결과 링크 복사",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e73",
+   "x": 744,
+   "y": 2254,
+   "width": 132,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "방식 다름",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e74",
+   "x": 24,
+   "y": 2288,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "신규 지원자 접수 알림 (카카오톡)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e75",
+   "x": 324,
+   "y": 2288,
+   "width": 420,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "지원 완료 화면 (이메일 알림은 준비 중 → 공개 시 교체)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e76",
+   "x": 744,
+   "y": 2288,
+   "width": 132,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "다름",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e77",
+   "x": 0,
+   "y": 2352,
+   "width": 900,
+   "height": 110,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af"
+  },
+  {
+   "type": "text",
+   "id": "e78",
+   "x": 24,
+   "y": 2364,
+   "text": "⑥ 이런 현장에서 씁니다 — Badge 칩 (painPoints 4번째 카드에서 분리)",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "e79",
+   "x": 24,
+   "y": 2402,
+   "width": 100,
+   "height": 32,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "인력파견·도급",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e80",
+   "x": 132,
+   "y": 2402,
+   "width": 100,
+   "height": 32,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "물류 센터",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e81",
+   "x": 240,
+   "y": 2402,
+   "width": 100,
+   "height": 32,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "생산 공장",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e82",
+   "x": 348,
+   "y": 2402,
+   "width": 100,
+   "height": 32,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "매장 관리",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e83",
+   "x": 456,
+   "y": 2402,
+   "width": 100,
+   "height": 32,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "콜센터",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e84",
+   "x": 564,
+   "y": 2402,
+   "width": 100,
+   "height": 32,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "F&B",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e85",
+   "x": 672,
+   "y": 2402,
+   "width": 100,
+   "height": 32,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "배달·운송",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e86",
+   "x": 780,
+   "y": 2402,
+   "width": 100,
+   "height": 32,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "숙박·리조트",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e87",
+   "x": 0,
+   "y": 2486,
+   "width": 900,
+   "height": 100,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "⑦ 시작 3단계 — WorkflowSection (유지)",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e88",
+   "x": 0,
+   "y": 2610,
+   "width": 900,
+   "height": 140,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "⑧ 무료 이용 신청 폼 #apply — LeadFormSection (유지)",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e89",
+   "x": 0,
+   "y": 2774,
+   "width": 900,
+   "height": 150,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "⑨ FAQ — Accordion (오프닝 이전·알림 질문 추가, 결제 문구 정리)",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e90",
+   "x": 0,
+   "y": 2948,
+   "width": 900,
+   "height": 100,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#9ca3af",
+   "label": {
+    "text": "⑩ 최종 CTA + 관련 업무 — CtaSection·DeckCrossLinks (유지)",
+    "fontSize": 14
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

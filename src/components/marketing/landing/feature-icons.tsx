@@ -25,6 +25,8 @@ import {
   Calculator,
   ShoppingBag,
   Sparkles,
+  Mail,
+  Bot,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -58,6 +60,8 @@ export const FEATURE_ICONS: Record<string, LucideIcon> = {
   package: Package,
   'trending-up': TrendingUp,
   calculator: Calculator,
+  mail: Mail,
+  bot: Bot,
   'shopping-bag': ShoppingBag,
 }
 
