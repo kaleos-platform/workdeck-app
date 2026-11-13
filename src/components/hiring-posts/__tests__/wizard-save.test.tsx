@@ -19,6 +19,7 @@ const data: WizardData = {
     status: 'DRAFT',
     closingDate: null,
     notificationEnabled: false,
+    applicantReceiptEmail: true,
     positions: [],
     storeIds: [],
     contents: [],
@@ -110,7 +111,6 @@ it('마감일 저장 실패 시 이동을 막고 최신 날짜로 재시도한�
   expect(screen.getByText('본문 편집')).toBeInTheDocument()
   expect(JSON.parse((fetch as jest.Mock).mock.calls[1][1].body)).toEqual({
     closingDate: '2099-12-31',
-    notificationEnabled: false,
   })
 })
 

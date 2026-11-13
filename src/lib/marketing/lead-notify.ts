@@ -1,5 +1,6 @@
 import 'server-only'
 import { buildAdminUrl } from '@/lib/domain'
+import { escapeHtml, sendEmail } from '@/lib/email/send'
 
 // 도입 신청 알림 — 실패해도 신청 접수는 성공이어야 하므로 호출 측에서 allSettled 로 묶는다.
 // 리드는 전용 웹훅 채널로 보낸다(sendSystemNotification 은 운영 Space 채널용).
@@ -22,15 +23,6 @@ const ENV_PREFIX =
   process.env.VERCEL_ENV === 'production'
     ? ''
     : `[${(process.env.VERCEL_ENV ?? 'local').toUpperCase()}] `
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
 
 function escapeSlack(value: string) {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -62,8 +54,6 @@ export async function notifySlack(lead: LeadNotifyInput) {
 }
 
 export async function notifyEmail(lead: LeadNotifyInput) {
-  const key = process.env.RESEND_API_KEY
-  if (!key) return
   const rows: Array<[string, string]> = [
     ['업무', lead.deckName],
     ['회사명', lead.companyName],
@@ -76,16 +66,10 @@ export async function notifyEmail(lead: LeadNotifyInput) {
   const html = `<table>${rows
     .map(([k, v]) => `<tr><th align="left">${escapeHtml(k)}</th><td>${escapeHtml(v)}</td></tr>`)
     .join('')}</table><p><a href="${ADMIN_LEADS_URL}">${ADMIN_LEADS_URL}</a></p>`
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: process.env.LEAD_NOTIFY_FROM ?? 'Workdeck <noreply@workdeck.work>',
-      to: process.env.LEAD_NOTIFY_TO ?? 'hello@workdeck.work',
-      subject: `${ENV_PREFIX}[도입 신청] ${lead.companyName} (${lead.deckName})`,
-      html,
-    }),
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+  await sendEmail({
+    from: process.env.LEAD_NOTIFY_FROM ?? 'Workdeck <noreply@workdeck.work>',
+    to: process.env.LEAD_NOTIFY_TO ?? 'hello@workdeck.work',
+    subject: `${ENV_PREFIX}[도입 신청] ${lead.companyName} (${lead.deckName})`,
+    html,
   })
-  if (!res.ok) throw new Error(`resend ${res.status}`)
 }
