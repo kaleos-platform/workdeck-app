@@ -4522,6 +4522,10 @@ model BillingDeckProduct {
   monthlyPrice    Int // 공급가 KRW (FREE_BETA 중에도 예정가 보관)
   paidActivatedAt DateTime? // 유료 전환 시각 — 기존 사용 Space 유예(14일) 판정 기준
   isActive        Boolean         @default(true)
+  // 신규 고객 공개 여부. false=「준비중」 — 새로 추가·구독 불가, 마케팅에 가격 미표시.
+  // 이미 설치된 공간(DeckInstance 있음)은 영향 없음. 새 업무는 기본 준비중으로 시작해
+  // 운영사 어드민에서 공개로 전환한다. 판정은 src/lib/billing/deck-release.ts 단일 출처.
+  released        Boolean         @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

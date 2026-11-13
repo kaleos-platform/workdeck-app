@@ -11,6 +11,7 @@ import { DECK_META } from '@/lib/deck-meta'
 import { COMPANY, CONTACT_EMAIL } from '@/lib/marketing/company'
 import { DECK_LANDINGS } from '@/lib/marketing/decks'
 import { DECK_PRICING_BY_SLUG } from '@/lib/marketing/pricing-data'
+import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 import { MARKETING_DECK_SLUGS, type MarketingDeckSlugString } from '@/lib/marketing/routes'
 import { buildMarketingMetadata, breadcrumbJsonLd, productJsonLd } from '@/lib/marketing/seo'
 
@@ -31,21 +32,27 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!isDeckSlug(slug)) return {}
 
   const row = DECK_PRICING_BY_SLUG[slug]
+  const released = (await getReleasedDeckIds()).includes(slug)
   return buildMarketingMetadata({
     title: `${row.name} 구독 — Workdeck`,
-    description: `${row.name} 업무 모듈 월 ${row.totalPrice.toLocaleString('ko-KR')}원(VAT 포함). ${row.summary}`,
+    description: released
+      ? `${row.name} 업무 모듈 월 ${row.totalPrice.toLocaleString('ko-KR')}원(VAT 포함). ${row.summary}`
+      : `${row.name} 업무 모듈 출시 준비중. ${row.summary}`,
     path: `/pricing/${slug}`,
     keywords: [`${row.name} 요금`, `${row.name} 구독`, 'Workdeck 구독'],
   })
 }
 
 /** 상품 필수 표기 — 전자상거래법·PG 심사 항목과 1:1 대응 */
-function buildSpecs(price: number) {
+function buildSpecs(price: number | null) {
   return [
     { label: '상품 종류', value: '온라인 소프트웨어(SaaS) 이용권 — 월 구독' },
     {
       label: '판매 가격',
-      value: `월 ${price.toLocaleString('ko-KR')}원 (부가세 포함)`,
+      value:
+        price === null
+          ? '준비중 — 출시 후 안내드립니다'
+          : `월 ${price.toLocaleString('ko-KR')}원 (부가세 포함)`,
     },
     { label: '이용 기간', value: '결제일로부터 1개월. 해지 신청 전까지 매월 자동 갱신' },
     {
@@ -67,18 +74,22 @@ export default async function DeckProductPage({ params }: ProductPageProps) {
   const landing = DECK_LANDINGS[slug]
   const meta = DECK_META[slug]
   const Icon = meta.icon
-  const specs = buildSpecs(row.totalPrice)
+  // 준비중 업무는 판매하지 않는다 — 가격·구매 버튼·상품 구조화 데이터 미노출
+  const released = (await getReleasedDeckIds()).includes(slug)
+  const specs = buildSpecs(released ? row.totalPrice : null)
 
   return (
     <div className="w-full">
-      <JsonLd
-        data={productJsonLd({
-          slug,
-          name: `${row.name} 구독`,
-          description: row.summary,
-          price: row.totalPrice,
-        })}
-      />
+      {released ? (
+        <JsonLd
+          data={productJsonLd({
+            slug,
+            name: `${row.name} 구독`,
+            description: row.summary,
+            price: row.totalPrice,
+          })}
+        />
+      ) : null}
       <JsonLd
         data={breadcrumbJsonLd([
           { name: '요금제', path: '/pricing' },
@@ -96,9 +107,13 @@ export default async function DeckProductPage({ params }: ProductPageProps) {
               >
                 <Icon className="h-6 w-6 text-white" aria-hidden />
               </div>
-              <Badge variant="outline" className="text-emerald-600">
-                판매 중
-              </Badge>
+              {released ? (
+                <Badge variant="outline" className="text-emerald-600">
+                  판매 중
+                </Badge>
+              ) : (
+                <Badge variant="secondary">준비중</Badge>
+              )}
             </div>
             <div className="space-y-3">
               <h1 className="text-3xl font-bold tracking-tight break-keep sm:text-4xl">
@@ -141,26 +156,44 @@ export default async function DeckProductPage({ params }: ProductPageProps) {
           </div>
 
           {/* 구매 카드 */}
-          <div className="h-fit space-y-4 rounded-xl border bg-card p-6">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">월 구독료 (부가세 포함)</p>
-              <p className="text-3xl font-bold">{row.totalPrice.toLocaleString('ko-KR')}원</p>
-              <p className="text-sm text-muted-foreground">
-                공급가 {row.supplyPrice.toLocaleString('ko-KR')}원 + 부가세{' '}
-                {(row.totalPrice - row.supplyPrice).toLocaleString('ko-KR')}원
+          {released ? (
+            <div className="h-fit space-y-4 rounded-xl border bg-card p-6">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">월 구독료 (부가세 포함)</p>
+                <p className="text-3xl font-bold">{row.totalPrice.toLocaleString('ko-KR')}원</p>
+                <p className="text-sm text-muted-foreground">
+                  공급가 {row.supplyPrice.toLocaleString('ko-KR')}원 + 부가세{' '}
+                  {(row.totalPrice - row.supplyPrice).toLocaleString('ko-KR')}원
+                </p>
+              </div>
+              <Link href={buildAppUrl('/settings/billing')} className="block">
+                <Button size="lg" className="w-full gap-2">
+                  구독 신청하기
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Button>
+              </Link>
+              <p className="text-xs break-keep text-muted-foreground">
+                구독 신청은 워크스페이스 로그인 후 [설정 &gt; 결제] 에서 진행됩니다. 결제 수단(카드)
+                등록 후 즉시 이용할 수 있습니다.
               </p>
             </div>
-            <Link href={buildAppUrl('/settings/billing')} className="block">
-              <Button size="lg" className="w-full gap-2">
-                구독 신청하기
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Button>
-            </Link>
-            <p className="text-xs break-keep text-muted-foreground">
-              구독 신청은 워크스페이스 로그인 후 [설정 &gt; 결제] 에서 진행됩니다. 결제 수단(카드)
-              등록 후 즉시 이용할 수 있습니다.
-            </p>
-          </div>
+          ) : (
+            <div className="h-fit space-y-4 rounded-xl border bg-card p-6">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">월 구독료</p>
+                <p className="text-3xl font-bold">준비중</p>
+                <p className="text-sm break-keep text-muted-foreground">
+                  출시를 준비하고 있는 업무입니다. 출시되면 요금과 함께 안내드립니다.
+                </p>
+              </div>
+              <Link href={`/${slug}#apply`} className="block">
+                <Button size="lg" variant="outline" className="w-full gap-2">
+                  출시 알림 받기
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

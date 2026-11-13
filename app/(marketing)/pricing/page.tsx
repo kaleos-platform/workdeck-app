@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { buildAppUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { DECK_PRICING_ROWS } from '@/lib/marketing/pricing-data'
+import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 import { buildMarketingMetadata, faqJsonLd } from '@/lib/marketing/seo'
 import { JsonLd } from '@/components/marketing/json-ld'
 import { FaqSection } from '@/components/marketing/landing/faq-section'
@@ -44,7 +45,8 @@ const faq: DeckLandingFaqItem[] = [
   },
 ]
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const releasedIds = await getReleasedDeckIds()
   return (
     <div className="w-full">
       <JsonLd data={faqJsonLd(faq)} />
@@ -71,6 +73,8 @@ export default function PricingPage() {
             {DECK_PRICING_ROWS.map((row) => {
               const meta = DECK_META[row.slug]
               const Icon = meta.icon
+              // 준비중 업무는 판매 상품이 아니다 — 가격·구매 링크 대신 출시 알림
+              const released = releasedIds.includes(row.slug)
               return (
                 <div key={row.slug} className="flex flex-col gap-4 rounded-xl border bg-card p-6">
                   <div className="flex items-center justify-between">
@@ -79,27 +83,38 @@ export default function PricingPage() {
                     >
                       <Icon className="h-5 w-5 text-white" aria-hidden />
                     </div>
-                    <Badge variant="outline" className="text-emerald-600">
-                      판매 중
-                    </Badge>
+                    {released ? (
+                      <Badge variant="outline" className="text-emerald-600">
+                        판매 중
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">준비중</Badge>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <h3 className="font-semibold break-keep">{meta.name}</h3>
                     <p className="text-sm break-keep text-muted-foreground">{row.summary}</p>
                   </div>
                   <div className="mt-auto space-y-2 border-t pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      <span className="text-lg font-semibold text-foreground">
-                        월 {row.totalPrice.toLocaleString('ko-KR')}원
-                      </span>{' '}
-                      (VAT 포함 / 공급가 {row.supplyPrice.toLocaleString('ko-KR')}원)
-                    </p>
+                    {released ? (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="text-lg font-semibold text-foreground">
+                          월 {row.totalPrice.toLocaleString('ko-KR')}원
+                        </span>{' '}
+                        (VAT 포함 / 공급가 {row.supplyPrice.toLocaleString('ko-KR')}원)
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="text-lg font-semibold text-foreground">준비중</span> 출시
+                        후 요금을 안내드립니다
+                      </p>
+                    )}
                     <div className="flex items-center gap-4">
                       <Link
-                        href={`/pricing/${row.slug}`}
+                        href={released ? `/pricing/${row.slug}` : `/${row.slug}#apply`}
                         className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:gap-1.5"
                       >
-                        상품 상세·구매
+                        {released ? '상품 상세·구매' : '출시 알림 받기'}
                         <ArrowRight className="h-3.5 w-3.5 transition-transform" aria-hidden />
                       </Link>
                       <Link

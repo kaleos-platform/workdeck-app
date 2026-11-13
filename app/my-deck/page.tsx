@@ -5,6 +5,7 @@ import { MyDeckClient } from '@/components/my-deck/my-deck-client'
 import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
 import { effectivePrice } from '@/lib/billing/pricing'
+import { findClosedDecks } from '@/lib/billing/deck-release'
 
 function findMembership(where: { userId: string; spaceId?: string }) {
   return prisma.spaceMember.findFirst({
@@ -97,12 +98,19 @@ export default async function MyDeckPage({
     select: { id: true, name: true, description: true },
     orderBy: { name: 'asc' },
   })
+  // 준비중 업무 — 카드는 보여주되 추가 버튼 대신 「준비중」 (서버 API 도 같은 판정으로 막는다)
+  const closed = new Set(
+    await findClosedDecks(
+      space.id,
+      availableDecks.map((d) => d.id)
+    )
+  )
 
   return (
     <MyDeckClient
       spaceName={space.name}
       activeDecks={space.deckInstances.map((instance) => instance.deckApp)}
-      availableDecks={availableDecks}
+      availableDecks={availableDecks.map((d) => ({ ...d, comingSoon: closed.has(d.id) }))}
       subscribedDeckIds={subscribedDeckIds}
       isOwner={membership.role === 'OWNER'}
       cardSummary={billingMethod?.cardSummary ?? null}

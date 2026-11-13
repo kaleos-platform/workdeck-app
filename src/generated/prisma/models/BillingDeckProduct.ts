@@ -41,6 +41,7 @@ export type BillingDeckProductMinAggregateOutputType = {
   monthlyPrice: number | null
   paidActivatedAt: Date | null
   isActive: boolean | null
+  released: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -52,6 +53,7 @@ export type BillingDeckProductMaxAggregateOutputType = {
   monthlyPrice: number | null
   paidActivatedAt: Date | null
   isActive: boolean | null
+  released: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -63,6 +65,7 @@ export type BillingDeckProductCountAggregateOutputType = {
   monthlyPrice: number
   paidActivatedAt: number
   isActive: number
+  released: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,6 +87,7 @@ export type BillingDeckProductMinAggregateInputType = {
   monthlyPrice?: true
   paidActivatedAt?: true
   isActive?: true
+  released?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -95,6 +99,7 @@ export type BillingDeckProductMaxAggregateInputType = {
   monthlyPrice?: true
   paidActivatedAt?: true
   isActive?: true
+  released?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +111,7 @@ export type BillingDeckProductCountAggregateInputType = {
   monthlyPrice?: true
   paidActivatedAt?: true
   isActive?: true
+  released?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -204,6 +210,7 @@ export type BillingDeckProductGroupByOutputType = {
   monthlyPrice: number
   paidActivatedAt: Date | null
   isActive: boolean
+  released: boolean
   createdAt: Date
   updatedAt: Date
   _count: BillingDeckProductCountAggregateOutputType | null
@@ -238,6 +245,7 @@ export type BillingDeckProductWhereInput = {
   monthlyPrice?: Prisma.IntFilter<"BillingDeckProduct"> | number
   paidActivatedAt?: Prisma.DateTimeNullableFilter<"BillingDeckProduct"> | Date | string | null
   isActive?: Prisma.BoolFilter<"BillingDeckProduct"> | boolean
+  released?: Prisma.BoolFilter<"BillingDeckProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"BillingDeckProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BillingDeckProduct"> | Date | string
 }
@@ -249,6 +257,7 @@ export type BillingDeckProductOrderByWithRelationInput = {
   monthlyPrice?: Prisma.SortOrder
   paidActivatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  released?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -263,6 +272,7 @@ export type BillingDeckProductWhereUniqueInput = Prisma.AtLeast<{
   monthlyPrice?: Prisma.IntFilter<"BillingDeckProduct"> | number
   paidActivatedAt?: Prisma.DateTimeNullableFilter<"BillingDeckProduct"> | Date | string | null
   isActive?: Prisma.BoolFilter<"BillingDeckProduct"> | boolean
+  released?: Prisma.BoolFilter<"BillingDeckProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"BillingDeckProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BillingDeckProduct"> | Date | string
 }, "id">
@@ -274,6 +284,7 @@ export type BillingDeckProductOrderByWithAggregationInput = {
   monthlyPrice?: Prisma.SortOrder
   paidActivatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  released?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.BillingDeckProductCountOrderByAggregateInput
@@ -293,6 +304,7 @@ export type BillingDeckProductScalarWhereWithAggregatesInput = {
   monthlyPrice?: Prisma.IntWithAggregatesFilter<"BillingDeckProduct"> | number
   paidActivatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BillingDeckProduct"> | Date | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"BillingDeckProduct"> | boolean
+  released?: Prisma.BoolWithAggregatesFilter<"BillingDeckProduct"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BillingDeckProduct"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BillingDeckProduct"> | Date | string
 }
@@ -304,6 +316,7 @@ export type BillingDeckProductCreateInput = {
   monthlyPrice: number
   paidActivatedAt?: Date | string | null
   isActive?: boolean
+  released?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -315,6 +328,7 @@ export type BillingDeckProductUncheckedCreateInput = {
   monthlyPrice: number
   paidActivatedAt?: Date | string | null
   isActive?: boolean
+  released?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -326,6 +340,7 @@ export type BillingDeckProductUpdateInput = {
   monthlyPrice?: Prisma.IntFieldUpdateOperationsInput | number
   paidActivatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  released?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -337,6 +352,7 @@ export type BillingDeckProductUncheckedUpdateInput = {
   monthlyPrice?: Prisma.IntFieldUpdateOperationsInput | number
   paidActivatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  released?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -348,6 +364,7 @@ export type BillingDeckProductCreateManyInput = {
   monthlyPrice: number
   paidActivatedAt?: Date | string | null
   isActive?: boolean
+  released?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -359,6 +376,7 @@ export type BillingDeckProductUpdateManyMutationInput = {
   monthlyPrice?: Prisma.IntFieldUpdateOperationsInput | number
   paidActivatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  released?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -370,6 +388,7 @@ export type BillingDeckProductUncheckedUpdateManyInput = {
   monthlyPrice?: Prisma.IntFieldUpdateOperationsInput | number
   paidActivatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  released?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -381,6 +400,7 @@ export type BillingDeckProductCountOrderByAggregateInput = {
   monthlyPrice?: Prisma.SortOrder
   paidActivatedAt?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  released?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -396,6 +416,7 @@ export type BillingDeckProductMaxOrderByAggregateInput = {
   monthlyPrice?: Prisma.SortOrder
   paidActivatedAt?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  released?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -407,6 +428,7 @@ export type BillingDeckProductMinOrderByAggregateInput = {
   monthlyPrice?: Prisma.SortOrder
   paidActivatedAt?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  released?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -428,6 +450,7 @@ export type BillingDeckProductSelect<ExtArgs extends runtime.Types.Extensions.In
   monthlyPrice?: boolean
   paidActivatedAt?: boolean
   isActive?: boolean
+  released?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["billingDeckProduct"]>
@@ -439,6 +462,7 @@ export type BillingDeckProductSelectCreateManyAndReturn<ExtArgs extends runtime.
   monthlyPrice?: boolean
   paidActivatedAt?: boolean
   isActive?: boolean
+  released?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["billingDeckProduct"]>
@@ -450,6 +474,7 @@ export type BillingDeckProductSelectUpdateManyAndReturn<ExtArgs extends runtime.
   monthlyPrice?: boolean
   paidActivatedAt?: boolean
   isActive?: boolean
+  released?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["billingDeckProduct"]>
@@ -461,11 +486,12 @@ export type BillingDeckProductSelectScalar = {
   monthlyPrice?: boolean
   paidActivatedAt?: boolean
   isActive?: boolean
+  released?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BillingDeckProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "pricingMode" | "monthlyPrice" | "paidActivatedAt" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["billingDeckProduct"]>
+export type BillingDeckProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "pricingMode" | "monthlyPrice" | "paidActivatedAt" | "isActive" | "released" | "createdAt" | "updatedAt", ExtArgs["result"]["billingDeckProduct"]>
 
 export type $BillingDeckProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "BillingDeckProduct"
@@ -477,6 +503,7 @@ export type $BillingDeckProductPayload<ExtArgs extends runtime.Types.Extensions.
     monthlyPrice: number
     paidActivatedAt: Date | null
     isActive: boolean
+    released: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["billingDeckProduct"]>
@@ -908,6 +935,7 @@ export interface BillingDeckProductFieldRefs {
   readonly monthlyPrice: Prisma.FieldRef<"BillingDeckProduct", 'Int'>
   readonly paidActivatedAt: Prisma.FieldRef<"BillingDeckProduct", 'DateTime'>
   readonly isActive: Prisma.FieldRef<"BillingDeckProduct", 'Boolean'>
+  readonly released: Prisma.FieldRef<"BillingDeckProduct", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"BillingDeckProduct", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BillingDeckProduct", 'DateTime'>
 }

@@ -172,7 +172,7 @@ export function SubscriptionSettingsClient() {
     if (target.length === 0) return
     const isAddition = data.subscription?.status === 'ACTIVE'
     const decks = data.products
-      .filter((p) => target.includes(p.id) && p.pricingMode === 'SUBSCRIPTION')
+      .filter((p) => target.includes(p.id) && p.pricingMode === 'SUBSCRIPTION' && !p.comingSoon)
       .map((p) => ({
         id: p.id,
         name: p.name,
@@ -187,7 +187,7 @@ export function SubscriptionSettingsClient() {
   }, [subscribeParam, data])
 
   const subscribableProducts = useMemo(
-    () => data?.products.filter((p) => p.pricingMode === 'SUBSCRIPTION') ?? [],
+    () => data?.products.filter((p) => p.pricingMode === 'SUBSCRIPTION' && !p.comingSoon) ?? [],
     [data]
   )
 
@@ -364,7 +364,11 @@ export function SubscriptionSettingsClient() {
                       </div>
                     </div>
 
-                    {product.pricingMode === 'FREE_BETA' ? (
+                    {product.comingSoon ? (
+                      <Badge variant="secondary" className="w-fit">
+                        준비중
+                      </Badge>
+                    ) : product.pricingMode === 'FREE_BETA' ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Badge variant="secondary" className="w-fit">
