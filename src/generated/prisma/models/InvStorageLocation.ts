@@ -32,6 +32,9 @@ export type InvStorageLocationMinAggregateOutputType = {
   isActive: boolean | null
   externalSource: string | null
   externalIntegrationKey: string | null
+  syncProvider: string | null
+  syncSecretName: string | null
+  autoReconcileWeekly: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +47,9 @@ export type InvStorageLocationMaxAggregateOutputType = {
   isActive: boolean | null
   externalSource: string | null
   externalIntegrationKey: string | null
+  syncProvider: string | null
+  syncSecretName: string | null
+  autoReconcileWeekly: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +62,9 @@ export type InvStorageLocationCountAggregateOutputType = {
   isActive: number
   externalSource: number
   externalIntegrationKey: number
+  syncProvider: number
+  syncSecretName: number
+  autoReconcileWeekly: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -70,6 +79,9 @@ export type InvStorageLocationMinAggregateInputType = {
   isActive?: true
   externalSource?: true
   externalIntegrationKey?: true
+  syncProvider?: true
+  syncSecretName?: true
+  autoReconcileWeekly?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +94,9 @@ export type InvStorageLocationMaxAggregateInputType = {
   isActive?: true
   externalSource?: true
   externalIntegrationKey?: true
+  syncProvider?: true
+  syncSecretName?: true
+  autoReconcileWeekly?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +109,9 @@ export type InvStorageLocationCountAggregateInputType = {
   isActive?: true
   externalSource?: true
   externalIntegrationKey?: true
+  syncProvider?: true
+  syncSecretName?: true
+  autoReconcileWeekly?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -179,6 +197,9 @@ export type InvStorageLocationGroupByOutputType = {
   isActive: boolean
   externalSource: string | null
   externalIntegrationKey: string | null
+  syncProvider: string | null
+  syncSecretName: string | null
+  autoReconcileWeekly: boolean
   createdAt: Date
   updatedAt: Date
   _count: InvStorageLocationCountAggregateOutputType | null
@@ -212,6 +233,9 @@ export type InvStorageLocationWhereInput = {
   isActive?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   externalSource?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
   externalIntegrationKey?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  syncProvider?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  syncSecretName?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  autoReconcileWeekly?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -235,6 +259,9 @@ export type InvStorageLocationOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   externalSource?: Prisma.SortOrderInput | Prisma.SortOrder
   externalIntegrationKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncProvider?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncSecretName?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoReconcileWeekly?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -262,6 +289,9 @@ export type InvStorageLocationWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   externalSource?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
   externalIntegrationKey?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  syncProvider?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  syncSecretName?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  autoReconcileWeekly?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -285,6 +315,9 @@ export type InvStorageLocationOrderByWithAggregationInput = {
   isActive?: Prisma.SortOrder
   externalSource?: Prisma.SortOrderInput | Prisma.SortOrder
   externalIntegrationKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncProvider?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncSecretName?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoReconcileWeekly?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InvStorageLocationCountOrderByAggregateInput
@@ -303,6 +336,9 @@ export type InvStorageLocationScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"InvStorageLocation"> | boolean
   externalSource?: Prisma.StringNullableWithAggregatesFilter<"InvStorageLocation"> | string | null
   externalIntegrationKey?: Prisma.StringNullableWithAggregatesFilter<"InvStorageLocation"> | string | null
+  syncProvider?: Prisma.StringNullableWithAggregatesFilter<"InvStorageLocation"> | string | null
+  syncSecretName?: Prisma.StringNullableWithAggregatesFilter<"InvStorageLocation"> | string | null
+  autoReconcileWeekly?: Prisma.BoolWithAggregatesFilter<"InvStorageLocation"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvStorageLocation"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvStorageLocation"> | Date | string
 }
@@ -314,6 +350,9 @@ export type InvStorageLocationCreateInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -337,6 +376,9 @@ export type InvStorageLocationUncheckedCreateInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -358,6 +400,9 @@ export type InvStorageLocationUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -381,6 +426,9 @@ export type InvStorageLocationUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -403,6 +451,9 @@ export type InvStorageLocationCreateManyInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -414,6 +465,9 @@ export type InvStorageLocationUpdateManyMutationInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -426,6 +480,9 @@ export type InvStorageLocationUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -453,6 +510,9 @@ export type InvStorageLocationCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   externalSource?: Prisma.SortOrder
   externalIntegrationKey?: Prisma.SortOrder
+  syncProvider?: Prisma.SortOrder
+  syncSecretName?: Prisma.SortOrder
+  autoReconcileWeekly?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -465,6 +525,9 @@ export type InvStorageLocationMaxOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   externalSource?: Prisma.SortOrder
   externalIntegrationKey?: Prisma.SortOrder
+  syncProvider?: Prisma.SortOrder
+  syncSecretName?: Prisma.SortOrder
+  autoReconcileWeekly?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -477,6 +540,9 @@ export type InvStorageLocationMinOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   externalSource?: Prisma.SortOrder
   externalIntegrationKey?: Prisma.SortOrder
+  syncProvider?: Prisma.SortOrder
+  syncSecretName?: Prisma.SortOrder
+  autoReconcileWeekly?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -694,6 +760,9 @@ export type InvStorageLocationCreateWithoutSpaceInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutLocationInput
@@ -715,6 +784,9 @@ export type InvStorageLocationUncheckedCreateWithoutSpaceInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -766,6 +838,9 @@ export type InvStorageLocationScalarWhereInput = {
   isActive?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   externalSource?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
   externalIntegrationKey?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  syncProvider?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  syncSecretName?: Prisma.StringNullableFilter<"InvStorageLocation"> | string | null
+  autoReconcileWeekly?: Prisma.BoolFilter<"InvStorageLocation"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvStorageLocation"> | Date | string
 }
@@ -777,6 +852,9 @@ export type InvStorageLocationCreateWithoutMovementsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -799,6 +877,9 @@ export type InvStorageLocationUncheckedCreateWithoutMovementsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -824,6 +905,9 @@ export type InvStorageLocationCreateWithoutIncomingTransfersInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -846,6 +930,9 @@ export type InvStorageLocationUncheckedCreateWithoutIncomingTransfersInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -882,6 +969,9 @@ export type InvStorageLocationUpdateWithoutMovementsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -904,6 +994,9 @@ export type InvStorageLocationUncheckedUpdateWithoutMovementsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -935,6 +1028,9 @@ export type InvStorageLocationUpdateWithoutIncomingTransfersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -957,6 +1053,9 @@ export type InvStorageLocationUncheckedUpdateWithoutIncomingTransfersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -977,6 +1076,9 @@ export type InvStorageLocationCreateWithoutStockLevelsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -999,6 +1101,9 @@ export type InvStorageLocationUncheckedCreateWithoutStockLevelsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
@@ -1035,6 +1140,9 @@ export type InvStorageLocationUpdateWithoutStockLevelsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -1057,6 +1165,9 @@ export type InvStorageLocationUncheckedUpdateWithoutStockLevelsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
@@ -1077,6 +1188,9 @@ export type InvStorageLocationCreateWithoutReconciliationsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -1099,6 +1213,9 @@ export type InvStorageLocationUncheckedCreateWithoutReconciliationsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -1135,6 +1252,9 @@ export type InvStorageLocationUpdateWithoutReconciliationsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -1157,6 +1277,9 @@ export type InvStorageLocationUncheckedUpdateWithoutReconciliationsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -1177,6 +1300,9 @@ export type InvStorageLocationCreateWithoutLocationMappingsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -1199,6 +1325,9 @@ export type InvStorageLocationUncheckedCreateWithoutLocationMappingsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -1235,6 +1364,9 @@ export type InvStorageLocationUpdateWithoutLocationMappingsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -1257,6 +1389,9 @@ export type InvStorageLocationUncheckedUpdateWithoutLocationMappingsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -1277,6 +1412,9 @@ export type InvStorageLocationCreateWithoutReconExcludedCodesInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -1299,6 +1437,9 @@ export type InvStorageLocationUncheckedCreateWithoutReconExcludedCodesInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -1335,6 +1476,9 @@ export type InvStorageLocationUpdateWithoutReconExcludedCodesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -1357,6 +1501,9 @@ export type InvStorageLocationUncheckedUpdateWithoutReconExcludedCodesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -1377,6 +1524,9 @@ export type InvStorageLocationCreateWithoutSettingsDefaultInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -1399,6 +1549,9 @@ export type InvStorageLocationUncheckedCreateWithoutSettingsDefaultInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -1435,6 +1588,9 @@ export type InvStorageLocationUpdateWithoutSettingsDefaultInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -1457,6 +1613,9 @@ export type InvStorageLocationUncheckedUpdateWithoutSettingsDefaultInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -1477,6 +1636,9 @@ export type InvStorageLocationCreateWithoutShippingMethodsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -1499,6 +1661,9 @@ export type InvStorageLocationUncheckedCreateWithoutShippingMethodsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -1535,6 +1700,9 @@ export type InvStorageLocationUpdateWithoutShippingMethodsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -1557,6 +1725,9 @@ export type InvStorageLocationUncheckedUpdateWithoutShippingMethodsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -1577,6 +1748,9 @@ export type InvStorageLocationCreateWithoutProductionRunStockInsInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -1599,6 +1773,9 @@ export type InvStorageLocationUncheckedCreateWithoutProductionRunStockInsInput =
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -1635,6 +1812,9 @@ export type InvStorageLocationUpdateWithoutProductionRunStockInsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -1657,6 +1837,9 @@ export type InvStorageLocationUncheckedUpdateWithoutProductionRunStockInsInput =
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -1677,6 +1860,9 @@ export type InvStorageLocationCreateWithoutReorderPlansInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
@@ -1699,6 +1885,9 @@ export type InvStorageLocationUncheckedCreateWithoutReorderPlansInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
@@ -1735,6 +1924,9 @@ export type InvStorageLocationUpdateWithoutReorderPlansInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
@@ -1757,6 +1949,9 @@ export type InvStorageLocationUncheckedUpdateWithoutReorderPlansInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -1777,6 +1972,9 @@ export type InvStorageLocationCreateManySpaceInput = {
   isActive?: boolean
   externalSource?: string | null
   externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1788,6 +1986,9 @@ export type InvStorageLocationUpdateWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUpdateManyWithoutLocationNestedInput
@@ -1809,6 +2010,9 @@ export type InvStorageLocationUncheckedUpdateWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
@@ -1830,6 +2034,9 @@ export type InvStorageLocationUncheckedUpdateManyWithoutSpaceInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1954,6 +2161,9 @@ export type InvStorageLocationSelect<ExtArgs extends runtime.Types.Extensions.In
   isActive?: boolean
   externalSource?: boolean
   externalIntegrationKey?: boolean
+  syncProvider?: boolean
+  syncSecretName?: boolean
+  autoReconcileWeekly?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1978,6 +2188,9 @@ export type InvStorageLocationSelectCreateManyAndReturn<ExtArgs extends runtime.
   isActive?: boolean
   externalSource?: boolean
   externalIntegrationKey?: boolean
+  syncProvider?: boolean
+  syncSecretName?: boolean
+  autoReconcileWeekly?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1991,6 +2204,9 @@ export type InvStorageLocationSelectUpdateManyAndReturn<ExtArgs extends runtime.
   isActive?: boolean
   externalSource?: boolean
   externalIntegrationKey?: boolean
+  syncProvider?: boolean
+  syncSecretName?: boolean
+  autoReconcileWeekly?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -2004,11 +2220,14 @@ export type InvStorageLocationSelectScalar = {
   isActive?: boolean
   externalSource?: boolean
   externalIntegrationKey?: boolean
+  syncProvider?: boolean
+  syncSecretName?: boolean
+  autoReconcileWeekly?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvStorageLocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "type" | "isActive" | "externalSource" | "externalIntegrationKey" | "createdAt" | "updatedAt", ExtArgs["result"]["invStorageLocation"]>
+export type InvStorageLocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "type" | "isActive" | "externalSource" | "externalIntegrationKey" | "syncProvider" | "syncSecretName" | "autoReconcileWeekly" | "createdAt" | "updatedAt", ExtArgs["result"]["invStorageLocation"]>
 export type InvStorageLocationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   stockLevels?: boolean | Prisma.InvStorageLocation$stockLevelsArgs<ExtArgs>
@@ -2053,6 +2272,9 @@ export type $InvStorageLocationPayload<ExtArgs extends runtime.Types.Extensions.
     isActive: boolean
     externalSource: string | null
     externalIntegrationKey: string | null
+    syncProvider: string | null
+    syncSecretName: string | null
+    autoReconcileWeekly: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["invStorageLocation"]>
@@ -2496,6 +2718,9 @@ export interface InvStorageLocationFieldRefs {
   readonly isActive: Prisma.FieldRef<"InvStorageLocation", 'Boolean'>
   readonly externalSource: Prisma.FieldRef<"InvStorageLocation", 'String'>
   readonly externalIntegrationKey: Prisma.FieldRef<"InvStorageLocation", 'String'>
+  readonly syncProvider: Prisma.FieldRef<"InvStorageLocation", 'String'>
+  readonly syncSecretName: Prisma.FieldRef<"InvStorageLocation", 'String'>
+  readonly autoReconcileWeekly: Prisma.FieldRef<"InvStorageLocation", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"InvStorageLocation", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvStorageLocation", 'DateTime'>
 }

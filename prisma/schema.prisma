@@ -1648,6 +1648,11 @@ model InvStorageLocation {
   externalSource         String?
   externalIntegrationKey String?
 
+  // 3PL 재고 연동(위킵 등): 연결된 LOGIN 비밀값 이름 + 주간 자동 조정 여부
+  syncProvider        String? // 'wekeep'
+  syncSecretName      String?
+  autoReconcileWeekly Boolean @default(false)
+
   space                 Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   stockLevels           InvStockLevel[]
   movements             InvMovement[]           @relation("MovementLocation")
