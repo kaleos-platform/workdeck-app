@@ -141,3 +141,29 @@ describe('parseCoupangHealth — 상품등급(반품 구분)', () => {
     expect(res.rows[0].externalGrade).toBeUndefined()
   })
 })
+
+describe('parseInventoryList — 하자재고 분리', () => {
+  const H = ['SKU번호', '상품명', '옵션1', '가용재고', '유보재고', '하자재고']
+
+  function buildList(rows: (string | number)[][]): ArrayBuffer {
+    const ws = XLSX.utils.aoa_to_sheet([H, ...rows])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '재고목록')
+    return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
+  }
+
+  it('quantity = 가용+유보, 하자는 defectQuantity 로 분리한다', () => {
+    const buf = buildList([['SKU1', '상품', '누드 XL', 5, 1, 2]])
+    const res = parseReconciliationFile(buf, 'inventory_list.xlsx')
+    expect(res.format).toBe('inventory_list')
+    expect(res.rows[0].quantity).toBe(6)
+    expect(res.rows[0].defectQuantity).toBe(2)
+  })
+
+  it('하자가 없으면 defectQuantity 를 싣지 않는다', () => {
+    const buf = buildList([['SKU1', '상품', '누드 XL', 5, 1, '']])
+    const res = parseReconciliationFile(buf, 'inventory_list.xlsx')
+    expect(res.rows[0].quantity).toBe(6)
+    expect(res.rows[0].defectQuantity).toBeUndefined()
+  })
+})

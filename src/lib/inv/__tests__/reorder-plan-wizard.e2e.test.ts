@@ -107,6 +107,18 @@ d('POST /reorder/plan — dryRun · optionFinalOverrides (dev DB)', () => {
       expect(typeof o.optionName).toBe('string')
       expect(typeof o.finalQty).toBe('number')
       expect(o.rocketBaselineQty).toBeNull() // 비레이어드
+      // 판매 이력 없는 새 옵션 → 수동 수량(미입력 0)
+      expect(o.isNewOption).toBe(true)
+      expect(o.selectedModel).toBe('MANUAL')
+      expect(o.finalQty).toBe(0)
+      expect(o.targetCoverDays).toBe(30)
+      expect(Object.keys(o.models).sort()).toEqual([
+        'CROSTON',
+        'MA30',
+        'MA90',
+        'MA_BLEND',
+        'SES_TREND',
+      ])
     }
     // persist 없음
     const after = await prisma.reorderPlan.count({ where: { spaceId: SPACE_ID } })
@@ -136,5 +148,81 @@ d('POST /reorder/plan — dryRun · optionFinalOverrides (dev DB)', () => {
     expect(plan?.totalFinalQty).toBe(110) // 77 + 33
     expect(plan?.productId).toBe(productId)
     expect(plan?.locationId).toBeNull()
+
+    // 새 옵션 = MANUAL — enum 컬럼·modelForecasts 저장, 설정 모델 고정은 안 함
+    const saved = await prisma.reorderPlanItem.findFirst({
+      where: { planId: json.planId, optionId: optAId },
+      select: { forecastModel: true, modelForecasts: true },
+    })
+    expect(saved?.forecastModel).toBe('MANUAL')
+    expect(saved?.modelForecasts).toEqual(
+      expect.objectContaining({ selected: 'MANUAL', horizonDays: 50, leadTimeDays: 20 })
+    )
+    const cfg = await prisma.invReorderConfig.findUnique({ where: { productId } })
+    expect(cfg?.forecastModel ?? null).toBeNull()
+  })
+
+  test('manualQtyByOption — 새 옵션 수동 수량 반영', async () => {
+    const res = (await POST(
+      post({ productId, dryRun: true, manualQtyByOption: { [optAId]: 12 } })
+    ))!
+    const json = await res.json()
+    const a = json.options.find((o: { optionId: string }) => o.optionId === optAId)
+    expect(a.finalQty).toBe(12)
+  })
+
+  test('추천·설정 모델은 설정에 저장하지 않고, modelByProduct 지정 모델만 저장', async () => {
+    const group = await prisma.invProductGroup.findFirstOrThrow({ where: { spaceId: SPACE_ID } })
+    const old = await prisma.invProduct.create({
+      data: { spaceId: SPACE_ID, name: 'E2E 기존상품', groupId: group.id, status: 'ACTIVE' },
+    })
+    const oldOpt = await prisma.invProductOption.create({
+      data: {
+        productId: old.id,
+        name: '기존옵션',
+        safetyStockQty: 0,
+        createdAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
+      },
+    })
+
+    const r1 = await (await POST(post({ productId: old.id })))!.json()
+    const it1 = r1.items.find((i: { optionId: string }) => i.optionId === oldOpt.id)
+    expect(it1.isNewOption).toBe(false)
+    expect(it1.selectedModel).not.toBe('MANUAL')
+    const cfg1 = await prisma.invReorderConfig.findUnique({ where: { productId: old.id } })
+    expect(cfg1?.forecastModel ?? null).toBeNull()
+
+    const r2 = await (await POST(
+      post({ productId: old.id, modelByProduct: { [old.id]: 'MA90' } })
+    ))!.json()
+    expect(r2.items[0].selectedModel).toBe('MA90')
+    const cfg2 = await prisma.invReorderConfig.findUnique({ where: { productId: old.id } })
+    expect(cfg2?.forecastModel).toBe('MA90')
+    expect(cfg2?.leadTimeDays).toBe(20)
+
+    // 자동(AUTO) → 고정 해제, 계산은 추천 모델 사용
+    const r3 = await (await POST(
+      post({ productId: old.id, modelByProduct: { [old.id]: 'AUTO' } })
+    ))!.json()
+    expect(r3.items[0].selectedModel).toBe(r3.items[0].recommendedModel)
+    const cfg3 = await prisma.invReorderConfig.findUnique({ where: { productId: old.id } })
+    expect(cfg3?.forecastModel ?? null).toBeNull()
+  })
+
+  test('excludeFromForecast 상품 → 생성 거부(422)', async () => {
+    await prisma.invReorderConfig.upsert({
+      where: { productId },
+      update: { excludeFromForecast: true },
+      create: { productId, excludeFromForecast: true, leadTimeDays: 20 },
+    })
+    try {
+      const res = (await POST(post({ productId, dryRun: true })))!
+      expect(res.status).toBe(422)
+    } finally {
+      await prisma.invReorderConfig.update({
+        where: { productId },
+        data: { excludeFromForecast: false },
+      })
+    }
   })
 })

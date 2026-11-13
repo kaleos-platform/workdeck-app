@@ -13933,7 +13933,10 @@ export const InvReorderConfigScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
   leadTimeDays: 'leadTimeDays',
-  analysisWindowDays: 'analysisWindowDays'
+  analysisWindowDays: 'analysisWindowDays',
+  targetCoverDays: 'targetCoverDays',
+  excludeFromForecast: 'excludeFromForecast',
+  forecastModel: 'forecastModel'
 } as const
 
 export type InvReorderConfigScalarFieldEnum = (typeof InvReorderConfigScalarFieldEnum)[keyof typeof InvReorderConfigScalarFieldEnum]
@@ -14238,6 +14241,7 @@ export const ProductionRunScalarFieldEnum = {
   costMode: 'costMode',
   memo: 'memo',
   reorderPlanId: 'reorderPlanId',
+  externalStockIns: 'externalStockIns',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -15002,6 +15006,7 @@ export const ReorderPlanItemScalarFieldEnum = {
   biasAdjustFactor: 'biasAdjustFactor',
   confidenceScore: 'confidenceScore',
   inputsSnapshot: 'inputsSnapshot',
+  modelForecasts: 'modelForecasts',
   rocketGrossQty: 'rocketGrossQty',
   directGrossQty: 'directGrossQty',
   confirmedDailyAvgForecast: 'confirmedDailyAvgForecast',
@@ -15029,7 +15034,8 @@ export const ReorderPlanAccuracyScalarFieldEnum = {
   overstockDays: 'overstockDays',
   validity: 'validity',
   evaluationStatus: 'evaluationStatus',
-  biasSourcePlanId: 'biasSourcePlanId'
+  biasSourcePlanId: 'biasSourcePlanId',
+  modelWape: 'modelWape'
 } as const
 
 export type ReorderPlanAccuracyScalarFieldEnum = (typeof ReorderPlanAccuracyScalarFieldEnum)[keyof typeof ReorderPlanAccuracyScalarFieldEnum]

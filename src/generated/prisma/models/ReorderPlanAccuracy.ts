@@ -96,6 +96,7 @@ export type ReorderPlanAccuracyCountAggregateOutputType = {
   validity: number
   evaluationStatus: number
   biasSourcePlanId: number
+  modelWape: number
   _all: number
 }
 
@@ -170,6 +171,7 @@ export type ReorderPlanAccuracyCountAggregateInputType = {
   validity?: true
   evaluationStatus?: true
   biasSourcePlanId?: true
+  modelWape?: true
   _all?: true
 }
 
@@ -275,6 +277,7 @@ export type ReorderPlanAccuracyGroupByOutputType = {
   validity: $Enums.ReorderAccuracyValidity
   evaluationStatus: $Enums.ReorderEvaluationStatus
   biasSourcePlanId: string | null
+  modelWape: runtime.JsonValue | null
   _count: ReorderPlanAccuracyCountAggregateOutputType | null
   _avg: ReorderPlanAccuracyAvgAggregateOutputType | null
   _sum: ReorderPlanAccuracySumAggregateOutputType | null
@@ -316,6 +319,7 @@ export type ReorderPlanAccuracyWhereInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFilter<"ReorderPlanAccuracy"> | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFilter<"ReorderPlanAccuracy"> | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.StringNullableFilter<"ReorderPlanAccuracy"> | string | null
+  modelWape?: Prisma.JsonNullableFilter<"ReorderPlanAccuracy">
   plan?: Prisma.XOR<Prisma.ReorderPlanScalarRelationFilter, Prisma.ReorderPlanWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
 }
@@ -336,6 +340,7 @@ export type ReorderPlanAccuracyOrderByWithRelationInput = {
   validity?: Prisma.SortOrder
   evaluationStatus?: Prisma.SortOrder
   biasSourcePlanId?: Prisma.SortOrderInput | Prisma.SortOrder
+  modelWape?: Prisma.SortOrderInput | Prisma.SortOrder
   plan?: Prisma.ReorderPlanOrderByWithRelationInput
   option?: Prisma.InvProductOptionOrderByWithRelationInput
 }
@@ -360,6 +365,7 @@ export type ReorderPlanAccuracyWhereUniqueInput = Prisma.AtLeast<{
   validity?: Prisma.EnumReorderAccuracyValidityFilter<"ReorderPlanAccuracy"> | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFilter<"ReorderPlanAccuracy"> | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.StringNullableFilter<"ReorderPlanAccuracy"> | string | null
+  modelWape?: Prisma.JsonNullableFilter<"ReorderPlanAccuracy">
   plan?: Prisma.XOR<Prisma.ReorderPlanScalarRelationFilter, Prisma.ReorderPlanWhereInput>
   option?: Prisma.XOR<Prisma.InvProductOptionScalarRelationFilter, Prisma.InvProductOptionWhereInput>
 }, "id" | "planId_optionId">
@@ -380,6 +386,7 @@ export type ReorderPlanAccuracyOrderByWithAggregationInput = {
   validity?: Prisma.SortOrder
   evaluationStatus?: Prisma.SortOrder
   biasSourcePlanId?: Prisma.SortOrderInput | Prisma.SortOrder
+  modelWape?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ReorderPlanAccuracyCountOrderByAggregateInput
   _avg?: Prisma.ReorderPlanAccuracyAvgOrderByAggregateInput
   _max?: Prisma.ReorderPlanAccuracyMaxOrderByAggregateInput
@@ -406,6 +413,7 @@ export type ReorderPlanAccuracyScalarWhereWithAggregatesInput = {
   validity?: Prisma.EnumReorderAccuracyValidityWithAggregatesFilter<"ReorderPlanAccuracy"> | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusWithAggregatesFilter<"ReorderPlanAccuracy"> | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.StringNullableWithAggregatesFilter<"ReorderPlanAccuracy"> | string | null
+  modelWape?: Prisma.JsonNullableWithAggregatesFilter<"ReorderPlanAccuracy">
 }
 
 export type ReorderPlanAccuracyCreateInput = {
@@ -422,6 +430,7 @@ export type ReorderPlanAccuracyCreateInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   plan: Prisma.ReorderPlanCreateNestedOneWithoutAccuraciesInput
   option: Prisma.InvProductOptionCreateNestedOneWithoutReorderAccuraciesInput
 }
@@ -442,6 +451,7 @@ export type ReorderPlanAccuracyUncheckedCreateInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyUpdateInput = {
@@ -458,6 +468,7 @@ export type ReorderPlanAccuracyUpdateInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   plan?: Prisma.ReorderPlanUpdateOneRequiredWithoutAccuraciesNestedInput
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutReorderAccuraciesNestedInput
 }
@@ -478,6 +489,7 @@ export type ReorderPlanAccuracyUncheckedUpdateInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyCreateManyInput = {
@@ -496,6 +508,7 @@ export type ReorderPlanAccuracyCreateManyInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyUpdateManyMutationInput = {
@@ -512,6 +525,7 @@ export type ReorderPlanAccuracyUpdateManyMutationInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyUncheckedUpdateManyInput = {
@@ -530,6 +544,7 @@ export type ReorderPlanAccuracyUncheckedUpdateManyInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyListRelationFilter = {
@@ -563,6 +578,7 @@ export type ReorderPlanAccuracyCountOrderByAggregateInput = {
   validity?: Prisma.SortOrder
   evaluationStatus?: Prisma.SortOrder
   biasSourcePlanId?: Prisma.SortOrder
+  modelWape?: Prisma.SortOrder
 }
 
 export type ReorderPlanAccuracyAvgOrderByAggregateInput = {
@@ -725,6 +741,7 @@ export type ReorderPlanAccuracyCreateWithoutOptionInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   plan: Prisma.ReorderPlanCreateNestedOneWithoutAccuraciesInput
 }
 
@@ -743,6 +760,7 @@ export type ReorderPlanAccuracyUncheckedCreateWithoutOptionInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyCreateOrConnectWithoutOptionInput = {
@@ -790,6 +808,7 @@ export type ReorderPlanAccuracyScalarWhereInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFilter<"ReorderPlanAccuracy"> | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFilter<"ReorderPlanAccuracy"> | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.StringNullableFilter<"ReorderPlanAccuracy"> | string | null
+  modelWape?: Prisma.JsonNullableFilter<"ReorderPlanAccuracy">
 }
 
 export type ReorderPlanAccuracyCreateWithoutPlanInput = {
@@ -806,6 +825,7 @@ export type ReorderPlanAccuracyCreateWithoutPlanInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   option: Prisma.InvProductOptionCreateNestedOneWithoutReorderAccuraciesInput
 }
 
@@ -824,6 +844,7 @@ export type ReorderPlanAccuracyUncheckedCreateWithoutPlanInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyCreateOrConnectWithoutPlanInput = {
@@ -867,6 +888,7 @@ export type ReorderPlanAccuracyCreateManyOptionInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyUpdateWithoutOptionInput = {
@@ -883,6 +905,7 @@ export type ReorderPlanAccuracyUpdateWithoutOptionInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   plan?: Prisma.ReorderPlanUpdateOneRequiredWithoutAccuraciesNestedInput
 }
 
@@ -901,6 +924,7 @@ export type ReorderPlanAccuracyUncheckedUpdateWithoutOptionInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyUncheckedUpdateManyWithoutOptionInput = {
@@ -918,6 +942,7 @@ export type ReorderPlanAccuracyUncheckedUpdateManyWithoutOptionInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyCreateManyPlanInput = {
@@ -935,6 +960,7 @@ export type ReorderPlanAccuracyCreateManyPlanInput = {
   validity?: $Enums.ReorderAccuracyValidity
   evaluationStatus?: $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyUpdateWithoutPlanInput = {
@@ -951,6 +977,7 @@ export type ReorderPlanAccuracyUpdateWithoutPlanInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   option?: Prisma.InvProductOptionUpdateOneRequiredWithoutReorderAccuraciesNestedInput
 }
 
@@ -969,6 +996,7 @@ export type ReorderPlanAccuracyUncheckedUpdateWithoutPlanInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanInput = {
@@ -986,6 +1014,7 @@ export type ReorderPlanAccuracyUncheckedUpdateManyWithoutPlanInput = {
   validity?: Prisma.EnumReorderAccuracyValidityFieldUpdateOperationsInput | $Enums.ReorderAccuracyValidity
   evaluationStatus?: Prisma.EnumReorderEvaluationStatusFieldUpdateOperationsInput | $Enums.ReorderEvaluationStatus
   biasSourcePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelWape?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 
@@ -1006,6 +1035,7 @@ export type ReorderPlanAccuracySelect<ExtArgs extends runtime.Types.Extensions.I
   validity?: boolean
   evaluationStatus?: boolean
   biasSourcePlanId?: boolean
+  modelWape?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlanAccuracy"]>
@@ -1026,6 +1056,7 @@ export type ReorderPlanAccuracySelectCreateManyAndReturn<ExtArgs extends runtime
   validity?: boolean
   evaluationStatus?: boolean
   biasSourcePlanId?: boolean
+  modelWape?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlanAccuracy"]>
@@ -1046,6 +1077,7 @@ export type ReorderPlanAccuracySelectUpdateManyAndReturn<ExtArgs extends runtime
   validity?: boolean
   evaluationStatus?: boolean
   biasSourcePlanId?: boolean
+  modelWape?: boolean
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reorderPlanAccuracy"]>
@@ -1066,9 +1098,10 @@ export type ReorderPlanAccuracySelectScalar = {
   validity?: boolean
   evaluationStatus?: boolean
   biasSourcePlanId?: boolean
+  modelWape?: boolean
 }
 
-export type ReorderPlanAccuracyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "optionId" | "evaluatedAt" | "periodStart" | "periodEnd" | "actualOutbound" | "forecastOutbound" | "wape" | "bias" | "stockoutDays" | "overstockDays" | "validity" | "evaluationStatus" | "biasSourcePlanId", ExtArgs["result"]["reorderPlanAccuracy"]>
+export type ReorderPlanAccuracyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "optionId" | "evaluatedAt" | "periodStart" | "periodEnd" | "actualOutbound" | "forecastOutbound" | "wape" | "bias" | "stockoutDays" | "overstockDays" | "validity" | "evaluationStatus" | "biasSourcePlanId" | "modelWape", ExtArgs["result"]["reorderPlanAccuracy"]>
 export type ReorderPlanAccuracyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -1104,6 +1137,7 @@ export type $ReorderPlanAccuracyPayload<ExtArgs extends runtime.Types.Extensions
     validity: $Enums.ReorderAccuracyValidity
     evaluationStatus: $Enums.ReorderEvaluationStatus
     biasSourcePlanId: string | null
+    modelWape: runtime.JsonValue | null
   }, ExtArgs["result"]["reorderPlanAccuracy"]>
   composites: {}
 }
@@ -1544,6 +1578,7 @@ export interface ReorderPlanAccuracyFieldRefs {
   readonly validity: Prisma.FieldRef<"ReorderPlanAccuracy", 'ReorderAccuracyValidity'>
   readonly evaluationStatus: Prisma.FieldRef<"ReorderPlanAccuracy", 'ReorderEvaluationStatus'>
   readonly biasSourcePlanId: Prisma.FieldRef<"ReorderPlanAccuracy", 'String'>
+  readonly modelWape: Prisma.FieldRef<"ReorderPlanAccuracy", 'Json'>
 }
     
 

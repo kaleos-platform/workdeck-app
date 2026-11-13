@@ -5,8 +5,13 @@
  * GROSS 수량 — 기간별 취소/반품 데이터는 스키마에 없어 순판매 분리는 불가, missingFields 참조).
  * 로켓그로스 재고는 발주 계획과 같은 규칙으로 반품 등급 재고를 차감한다.
  *
- * 권장 수량은 단순 이동평균(velocity) 기반 추정치다 — 발주 플랜(예측모델·레이어드·반올림)과
- * 다를 수 있으며, 실제 발주 확정은 발주 플랜 경로를 쓴다.
+ * 생산 판단은 발주 계획과 같은 엔진 공식이다(@/lib/inv/reorder-engine):
+ *   일률 = 상품 선택 모델(없으면 MA_BLEND)의 일률 — max(periodDays, 상품 분석 기간 ?? 90)일 KST 마감 시계열,
+ *          품절일 제외, 전 판매채널 (표시 지표 salesQty·dailyVelocity 는 periodDays)
+ *   권장 생산량 = computeOrderQty — 일률×(리드타임+목표 커버일수)+안전재고−(재고+생산 중), 라운딩 없음
+ *   재고·생산 중 = loadReorderStockInputs (반품 등급 차감, 외부 물류 입고 대기분 포함)
+ * 발주 계획과 다를 수 있는 부분: 모델 미설정 상품은 백테스트 추천 대신 MA_BLEND, 라운딩·레이어드 없음.
+ * 로켓 이동(보충) 판단과 dailyVelocity 등 표시 지표는 단순 평균(기간 판매 ÷ 일수)이다.
  */
 
 import { prisma } from '@/lib/prisma'
@@ -17,8 +22,17 @@ import {
   type DemandChannel,
 } from '@/lib/inv/option-demand'
 import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
-import { sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { isExternalLogisticsLocation } from '@/lib/inv/location-kind'
+import {
+  computeOrderQty,
+  DEFAULT_PLAN_WINDOW_DAYS,
+  isModelKey,
+  loadNetByDate,
+  loadReorderStockInputs,
+  optionDailyRate,
+  type ModelKey,
+} from '@/lib/inv/reorder-engine'
 import { costExVat } from '@/lib/sh/cost'
 import { addDaysYmd, lastClosedDateKst } from '@/lib/sh/sales-analytics'
 
@@ -28,6 +42,9 @@ const DEFAULT_PERIOD_DAYS = 30
 const DEFAULT_TARGET_COVER_DAYS = 30
 /** 로켓그로스 이동(FC 입고) 리드타임. 생산 리드타임은 상품별 InvReorderConfig 를 쓴다. */
 const DEFAULT_LEAD_TIME_DAYS = 7
+/** 생산 일률 모델 — 상품 발주 설정에 선택 모델이 없을 때 */
+const DEFAULT_FORECAST_MODEL: ModelKey = 'MA_BLEND'
+const DAY_MS = 24 * 60 * 60 * 1000
 
 export type StatusThresholds = {
   outOfStockRiskDays: number
@@ -49,6 +66,7 @@ export type ProductionStatus =
   | 'NO_SALES'
   | 'CHECK_STOCK'
   | 'DISCONTINUED'
+  | 'EXCLUDED'
 export type VelocitySortBy = 'rocket' | 'production' | 'stockValue'
 
 /**
@@ -66,6 +84,7 @@ export interface QueryOptionSalesVelocityParams {
   q?: string | null
   /** 채널 id 또는 이름. 미지정=로켓그로스 연동 채널, 'all'=활성 판매채널 전체. */
   channel?: string | null
+  /** 지정하면 모든 상품에 적용, 미지정이면 로켓 이동은 30일·생산은 상품 발주 설정(기본 30) */
   targetCoverDays?: number | null
   /** 로켓그로스 이동 리드타임. 생산 계산에는 쓰지 않는다. */
   leadTimeDays?: number | null
@@ -135,7 +154,7 @@ export function suggestReplenishQty(input: {
   return need > 0 ? Math.ceil(need) : 0
 }
 
-/** 전사(로켓+3PL+사무실+입고예정) 재고가 총수요 대비 부족할 때의 생산 발주 필요량. */
+/** 생산 발주 필요량 — 발주 엔진 computeOrderQty(라운딩 없음). 음수 재고는 0 으로 본다. */
 export function suggestProductionQty(input: {
   totalDailyVelocityRaw: number
   targetCoverDays: number
@@ -144,12 +163,15 @@ export function suggestProductionQty(input: {
   totalAvailableQty: number
   incomingQty: number
 }): number {
-  const need =
-    input.totalDailyVelocityRaw * (input.targetCoverDays + input.leadTimeDays) +
-    input.safetyStockQty -
-    input.totalAvailableQty -
-    input.incomingQty
-  return need > 0 ? Math.ceil(need) : 0
+  return computeOrderQty({
+    dailyRate: input.totalDailyVelocityRaw,
+    leadTimeDays: input.leadTimeDays,
+    targetCoverDays: input.targetCoverDays,
+    safetyStockQty: input.safetyStockQty,
+    onHandQty: input.totalAvailableQty,
+    incomingQty: input.incomingQty,
+    roundUnit: 1,
+  }).suggestedQty
 }
 
 /**
@@ -157,9 +179,12 @@ export function suggestProductionQty(input: {
  * PRODUCE_SOON 은 suggestedProductionQty>0 과 같은 조건(리드타임+목표재고일 미달)이다.
  * 재고 음수(기록 없이 출고)는 생산 필요인지 재고 미관리인지 알 수 없어 CHECK_STOCK 으로 분리한다.
  * 단종 옵션은 판매·재고와 무관하게 DISCONTINUED — 생산하지 않는다(남은 재고 판매·로켓 이동은 별개).
+ * 발주 예측 제외 상품은 EXCLUDED — 권장량 0.
+ * 소진일 = computeOrderQty.coverDays(재고+생산 중−안전재고 ÷ 일률), 0.1일 반올림·0 바닥.
  */
 export function judgeProductionStatus(input: {
   discontinued?: boolean
+  excluded?: boolean
   totalDailyVelocityRaw: number
   totalAvailableQty: number
   incomingQty: number
@@ -175,18 +200,33 @@ export function judgeProductionStatus(input: {
       daysOfCoverWithIncoming: null,
     }
   }
+  if (input.excluded) {
+    return {
+      status: 'EXCLUDED',
+      reason: '발주 예측 제외 상품 — 생산 권장 없음',
+      daysOfCoverWithIncoming: null,
+    }
+  }
   if (input.totalDailyVelocityRaw <= 0) {
     return { status: 'NO_SALES', reason: '기간 내 판매 0', daysOfCoverWithIncoming: null }
   }
-  if (input.totalAvailableQty < 0) {
+  const calc = computeOrderQty({
+    dailyRate: input.totalDailyVelocityRaw,
+    leadTimeDays: input.productionLeadTimeDays,
+    targetCoverDays: input.targetCoverDays,
+    safetyStockQty: input.safetyStockQty,
+    onHandQty: input.totalAvailableQty,
+    incomingQty: input.incomingQty,
+    roundUnit: 1,
+  })
+  if (calc.checkStock) {
     return {
       status: 'CHECK_STOCK',
       reason: `재고 음수 ${input.totalAvailableQty} — 재고 기록 없이 출고됨, 생산 판단 전 재고 확인 필요`,
       daysOfCoverWithIncoming: null,
     }
   }
-  const usable = Math.max(0, input.totalAvailableQty + input.incomingQty - input.safetyStockQty)
-  const cover = Math.round((usable / input.totalDailyVelocityRaw) * 10) / 10
+  const cover = Math.max(0, Math.round((calc.coverDays ?? 0) * 10) / 10)
   const lt = input.productionLeadTimeDays
   if (cover < lt) {
     return {
@@ -209,6 +249,47 @@ export function judgeProductionStatus(input: {
   }
 }
 
+/** 생산 판단 한 번에 — 권장량(단종·제외 = 0) + 상태·소진일. 재고현황 등급과 같은 소진일 공식. */
+export function decideProduction(input: {
+  discontinued?: boolean
+  excluded?: boolean
+  dailyRate: number
+  onHandQty: number
+  incomingQty: number
+  safetyStockQty: number
+  productionLeadTimeDays: number
+  targetCoverDays: number
+}): {
+  suggestedProductionQty: number
+  status: ProductionStatus
+  reason: string
+  daysOfCoverWithIncoming: number | null
+} {
+  const suggestedProductionQty =
+    input.discontinued || input.excluded
+      ? 0
+      : suggestProductionQty({
+          totalDailyVelocityRaw: input.dailyRate,
+          targetCoverDays: input.targetCoverDays,
+          leadTimeDays: input.productionLeadTimeDays,
+          safetyStockQty: input.safetyStockQty,
+          totalAvailableQty: input.onHandQty,
+          incomingQty: input.incomingQty,
+        })
+  const judged = judgeProductionStatus({
+    discontinued: input.discontinued,
+    excluded: input.excluded,
+    totalDailyVelocityRaw: input.dailyRate,
+    totalAvailableQty: input.onHandQty,
+    incomingQty: input.incomingQty,
+    safetyStockQty: input.safetyStockQty,
+    productionLeadTimeDays: input.productionLeadTimeDays,
+    targetCoverDays: input.targetCoverDays,
+    suggestedProductionQty,
+  })
+  return { suggestedProductionQty, ...judged }
+}
+
 function round2(n: number): number {
   return Math.round(n * 100) / 100
 }
@@ -221,10 +302,10 @@ export async function queryOptionSalesVelocity(
     180,
     Math.max(7, Math.floor(params.periodDays ?? DEFAULT_PERIOD_DAYS))
   )
-  const targetCoverDays = Math.max(
-    0,
-    Math.floor(params.targetCoverDays ?? DEFAULT_TARGET_COVER_DAYS)
-  )
+  // 호출자 지정값은 모든 상품에 적용, 미지정이면 생산은 상품 발주 설정값
+  const targetCoverOverride =
+    params.targetCoverDays != null ? Math.max(0, Math.floor(params.targetCoverDays)) : null
+  const targetCoverDays = targetCoverOverride ?? DEFAULT_TARGET_COVER_DAYS
   const leadTimeDays = Math.max(0, Math.floor(params.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS))
   const defaultProductionLeadTimeDays = Math.max(
     0,
@@ -276,19 +357,15 @@ export async function queryOptionSalesVelocity(
     return emptyResult({ from, to, periodDays, prevFrom, prevTo, page, pageSize, offset, reason })
   }
 
-  // 로켓 지표는 선택 채널과 무관하게 항상 분리 제공 → 수요는 합집합으로 1회 로드.
+  // 로켓 지표는 선택 채널과 무관하게 항상 분리 제공, 생산 일률은 전 판매채널(발주 계획과 같은 수요)
+  // → 수요는 합집합으로 1회 로드.
   const demandChannelMap = new Map<string, DemandChannel>()
-  for (const c of [...selectedChannels, ...rocketChannels]) demandChannelMap.set(c.id, c)
+  for (const c of [...selectedChannels, ...rocketChannels, ...salesChannels])
+    demandChannelMap.set(c.id, c)
   const demandChannels = [...demandChannelMap.values()]
   const selectedChannelIds = new Set(selectedChannels.map((c) => c.id))
   const rocketChannelIds = new Set(rocketChannels.map((c) => c.id))
-
-  const demandRows = await loadOptionDemand(
-    spaceId,
-    new Date(`${prevFrom}T00:00:00+09:00`),
-    new Date(`${to}T23:59:59.999+09:00`),
-    demandChannels
-  )
+  const salesChannelIds = new Set(salesChannels.map((c) => c.id))
 
   // ── 옵션 카탈로그 + 위치별 재고
   const optionWhere = {
@@ -327,7 +404,15 @@ export async function queryOptionSalesVelocity(
             id: true,
             name: true,
             internalName: true,
-            reorderConfig: { select: { leadTimeDays: true } },
+            reorderConfig: {
+              select: {
+                leadTimeDays: true,
+                analysisWindowDays: true,
+                targetCoverDays: true,
+                excludeFromForecast: true,
+                forecastModel: true,
+              },
+            },
           },
         },
         stockLevels: { select: { locationId: true, quantity: true } },
@@ -339,13 +424,14 @@ export async function queryOptionSalesVelocity(
     }),
   ])
 
+  // 로켓그로스 외 외부 물류 위치(3PL·기타 연동)는 3PL 로 본다
   const locationKind = new Map<string, 'rocket' | 'thirdParty' | 'office'>()
   for (const l of locations) {
     locationKind.set(
       l.id,
       l.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH
         ? 'rocket'
-        : l.type === 'THIRD_PARTY'
+        : isExternalLogisticsLocation(l)
           ? 'thirdParty'
           : 'office'
     )
@@ -354,30 +440,47 @@ export async function queryOptionSalesVelocity(
   const optionIds = options.map((o) => o.id)
   const optionIdSet = new Set(optionIds)
 
-  // ── 반품 등급 재고(발주 계획과 동일 규칙: 로켓 가용에서 제외) + 입고예정
-  const [returnStock, pendingRuns] = await Promise.all([
+  // 생산 일률 시계열 창 = 발주 계획과 같은 분석 기간(상품 설정, 기본 90) — 표시 기간(periodDays)과 별개.
+  // MA_BLEND(30일 0.6 + 90일 0.4)가 계획·재고현황 등급과 같은 값이 되도록 한다.
+  const productionWindowOf = (analysisWindowDays: number | null | undefined) =>
+    Math.max(periodDays, analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS)
+  const maxProductionWindow = Math.max(
+    productionWindowOf(null),
+    ...options.map((o) => productionWindowOf(o.product.reorderConfig?.analysisWindowDays))
+  )
+  const productionFrom = addDaysYmd(to, -(maxProductionWindow - 1))
+  const demandFrom = productionFrom < prevFrom ? productionFrom : prevFrom
+
+  const demandRows = await loadOptionDemand(
+    spaceId,
+    new Date(`${demandFrom}T00:00:00+09:00`),
+    new Date(`${to}T23:59:59.999+09:00`),
+    demandChannels
+  )
+
+  // ── 반품 등급 재고(로켓 가용에서 제외) + 생산 판단 재고 입력(발주 계획과 같은 loader)
+  // + 품절일 판정용 재고 순증감
+  const now = new Date()
+  const [returnStock, stockInputs, netByOption] = await Promise.all([
     getCoupangReturnStockByOption(spaceId),
-    optionIds.length
-      ? prisma.productionRun.findMany({
-          where: { spaceId, status: 'ORDERED', items: { some: { optionId: { in: optionIds } } } },
-          select: {
-            status: true,
-            items: {
-              where: { optionId: { in: optionIds } },
-              select: { optionId: true, quantity: true },
-            },
-          },
-        })
-      : Promise.resolve([]),
+    loadReorderStockInputs(spaceId, optionIds, now),
+    loadNetByDate(spaceId, optionIds, new Date(now.getTime() - maxProductionWindow * DAY_MS)),
   ])
-  const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
 
   // ── 수요 분할: (현재|직전) × (선택 채널|로켓)
   const salesByOption = new Map<string, number>()
   const prevSalesByOption = new Map<string, number>()
   const rocketSalesByOption = new Map<string, number>()
+  // 생산 일률 시계열 — 전 판매채널 일별 수요
+  const productionDailyByOption = new Map<string, Record<string, number>>()
   for (const row of demandRows) {
     if (!optionIdSet.has(row.optionId)) continue
+    // 창 절단·zero-fill 은 buildClosedSeries 가 상품별 창으로 한다
+    if (row.date <= to && salesChannelIds.has(row.channelId)) {
+      const byDate = productionDailyByOption.get(row.optionId) ?? {}
+      byDate[row.date] = (byDate[row.date] ?? 0) + row.quantity
+      productionDailyByOption.set(row.optionId, byDate)
+    }
     const isCurrent = row.date >= from && row.date <= to
     const isPrev = row.date >= prevFrom && row.date <= prevTo
     if (selectedChannelIds.has(row.channelId)) {
@@ -412,7 +515,10 @@ export async function queryOptionSalesVelocity(
     // 스냅샷 시점 차이로 반품량이 현재고를 넘을 수 있다 — 음수 재고를 만들지 않는다.
     const rocketGrowthQty = Math.max(0, rocketRaw - returnGradeQty)
     const totalAvailableQty = rocketGrowthQty + thirdPartyQty + officeQty
-    const incomingQty = incomingByOption.get(o.id) ?? 0
+    const stock = stockInputs.get(o.id)
+    // 생산 판단 재고 = 전 위치 − 반품 등급(음수 보존), 생산 중 = 계획 차수 + 외부 물류 입고 대기분
+    const productionOnHandQty = stock?.onHandQty ?? 0
+    const incomingQty = stock?.incomingQty ?? 0
     const safetyStockQty = o.safetyStockQty
 
     const salesQty = salesByOption.get(o.id) ?? 0
@@ -447,27 +553,30 @@ export async function queryOptionSalesVelocity(
     const configLeadTime = o.product.reorderConfig?.leadTimeDays
     const productionLeadTimeDays = configLeadTime ?? defaultProductionLeadTimeDays
     const leadTimeSource: 'config' | 'default' = configLeadTime != null ? 'config' : 'default'
-    const discontinued = o.status === 'DISCONTINUED'
-    const suggestedProductionQty = discontinued
-      ? 0
-      : suggestProductionQty({
-          totalDailyVelocityRaw: salesQty / periodDays,
-          targetCoverDays,
-          leadTimeDays: productionLeadTimeDays,
-          safetyStockQty,
-          totalAvailableQty,
-          incomingQty,
-        })
-    const production = judgeProductionStatus({
-      discontinued,
-      totalDailyVelocityRaw: salesQty / periodDays,
-      totalAvailableQty,
+    const productionTargetCoverDays =
+      targetCoverOverride ?? o.product.reorderConfig?.targetCoverDays ?? DEFAULT_TARGET_COVER_DAYS
+    const storedModel = o.product.reorderConfig?.forecastModel
+    const forecastModel: ModelKey = isModelKey(storedModel) ? storedModel : DEFAULT_FORECAST_MODEL
+    const productionDailyRate = optionDailyRate({
+      qtyByDate: productionDailyByOption.get(o.id) ?? {},
+      netByDate: netByOption.get(o.id) ?? {},
+      currentStock: productionOnHandQty + (stock?.returnGradeQty ?? 0),
+      windowDays: productionWindowOf(o.product.reorderConfig?.analysisWindowDays),
+      horizonDays: productionLeadTimeDays + productionTargetCoverDays,
+      model: forecastModel,
+      now,
+    })
+    const production = decideProduction({
+      discontinued: o.status === 'DISCONTINUED',
+      excluded: o.product.reorderConfig?.excludeFromForecast === true,
+      dailyRate: productionDailyRate,
+      onHandQty: productionOnHandQty,
       incomingQty,
       safetyStockQty,
       productionLeadTimeDays,
-      targetCoverDays,
-      suggestedProductionQty,
+      targetCoverDays: productionTargetCoverDays,
     })
+    const suggestedProductionQty = production.suggestedProductionQty
     const unitCost = costExVat(o.costPrice == null ? null : Number(o.costPrice), o.costVatIncluded)
 
     const { status, reason } = judgeReplenishmentStatus({
@@ -517,6 +626,9 @@ export async function queryOptionSalesVelocity(
       statusReason: reason,
       // 생산 판단 (전사 판매·재고 기준)
       daysOfCoverWithIncoming: production.daysOfCoverWithIncoming,
+      forecastModel,
+      productionDailyRate: round2(productionDailyRate),
+      productionTargetCoverDays,
       productionLeadTimeDays,
       leadTimeSource,
       productionStatus: production.status,
@@ -527,7 +639,12 @@ export async function queryOptionSalesVelocity(
 
   // 판매·재고 모두 0인 옵션은 판단 대상이 아니다 — 노이즈 제거.
   let filtered = builtRows.filter(
-    (r) => r.salesQty > 0 || r.prevSalesQty > 0 || r.totalAvailableQty > 0 || r.incomingQty > 0
+    (r) =>
+      r.salesQty > 0 ||
+      r.prevSalesQty > 0 ||
+      r.productionDailyRate > 0 ||
+      r.totalAvailableQty > 0 ||
+      r.incomingQty > 0
   )
   if (params.onlyNeedsReplenishment) {
     filtered = filtered.filter(
@@ -575,9 +692,13 @@ export async function queryOptionSalesVelocity(
     NO_SALES: 0,
     CHECK_STOCK: 0,
     DISCONTINUED: 0,
+    EXCLUDED: 0,
   }
   for (const r of filtered) productionStatusCounts[r.productionStatus] += 1
-  const negativeStockSkuCount = filtered.filter((r) => r.totalAvailableQty < 0).length
+  // 표시 재고 음수 + CHECK_STOCK(반품 등급 차감 전사 재고 음수) 모두 센다
+  const negativeStockSkuCount = filtered.filter(
+    (r) => r.totalAvailableQty < 0 || r.productionStatus === 'CHECK_STOCK'
+  ).length
 
   let rows = filtered.slice(offset, offset + pageSize)
   let truncatedForSize = false
@@ -661,6 +782,7 @@ function emptyResult(input: {
         NO_SALES: 0,
         CHECK_STOCK: 0,
         DISCONTINUED: 0,
+        EXCLUDED: 0,
       },
       truncatedForSize: false,
       returned: 0,

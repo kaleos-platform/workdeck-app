@@ -1,5 +1,6 @@
 import {
   DEFAULT_STATUS_THRESHOLDS,
+  decideProduction,
   judgeProductionStatus,
   judgeReplenishmentStatus,
   suggestProductionQty,
@@ -200,5 +201,34 @@ describe('judgeProductionStatus', () => {
         suggestedProductionQty: qty,
       }).status
     ).toBe('PRODUCE_SOON')
+  })
+})
+
+describe('decideProduction — 발주 엔진 공식', () => {
+  const base = {
+    dailyRate: 2,
+    productionLeadTimeDays: 20,
+    targetCoverDays: 30,
+    safetyStockQty: 10,
+    onHandQty: 40,
+    incomingQty: 0,
+  }
+
+  it('일률 2 · 리드타임 20 · 커버 30 · 가용 40 · 안전 10 → 권장 70 (라운딩 없음)', () => {
+    const r = decideProduction(base)
+    expect(r.suggestedProductionQty).toBe(70)
+    // (40 − 10) / 2 = 15일 < 리드타임 20 → 지금 생산
+    expect(r.status).toBe('PRODUCE_NOW')
+    expect(r.daysOfCoverWithIncoming).toBe(15)
+  })
+
+  it('발주 예측 제외 상품 → EXCLUDED, 권장 0', () => {
+    const r = decideProduction({ ...base, excluded: true })
+    expect(r.status).toBe('EXCLUDED')
+    expect(r.suggestedProductionQty).toBe(0)
+  })
+
+  it('재고 음수 → CHECK_STOCK 유지', () => {
+    expect(decideProduction({ ...base, onHandQty: -5 }).status).toBe('CHECK_STOCK')
   })
 })

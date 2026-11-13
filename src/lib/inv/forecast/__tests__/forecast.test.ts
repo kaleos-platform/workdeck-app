@@ -8,6 +8,7 @@ import { forecastBayesian } from '../bayesian'
 import { computeBiasAdjust } from '../bias-adjust'
 import { buildDailySeries, forecastOption } from '../index'
 import type { DailyOutbound } from '../types'
+import { computeModelWape } from '../accuracy'
 
 // ── 헬퍼 ──────────────────────────────────────────────────────────────────────
 
@@ -222,5 +223,25 @@ describe('forecastOption 라우팅', () => {
     const r = forecastOption({ history: h, leadTimeDays: 7 })
     expect(r.debug).toHaveProperty('profile')
     expect(r.debug).toHaveProperty('historyLength', 60)
+  })
+})
+
+describe('computeModelWape', () => {
+  const mf = {
+    rates: { MA30: 2, MA90: 1 },
+    selected: 'MA30',
+    onHandQty: 0,
+    incomingQty: 0,
+    safetyStockQty: 0,
+    horizonDays: 10,
+    leadTimeDays: 10,
+  }
+  it('모델별 오차·USER 채점', () => {
+    expect(computeModelWape(mf, 20, 20)).toEqual({ MA30: 0, MA90: 0.5, USER: 0 })
+    expect(computeModelWape(mf, 20, null)).toEqual({ MA30: 0, MA90: 0.5 })
+  })
+  it('null/actual 0 → null', () => {
+    expect(computeModelWape(null, 20, 1)).toBeNull()
+    expect(computeModelWape(mf, 0, 1)).toBeNull()
   })
 })
