@@ -14,10 +14,16 @@ export function isCheckoutPaused(): boolean {
   return process.env.BILLING_CHECKOUT_PAUSED === '1'
 }
 
+// 중지 중에도 결제를 여는 업무 — 모집 관리는 신규 가입·오프닝 이전 고객이 바로 결제한다(2026-11-14).
+// 이 업무는 결제가 열려 있으니 체험이 끝나면 잠긴다(PAUSED 보류 없음).
+export const CHECKOUT_OPEN_DECKS: readonly string[] = ['recruiting']
+
 // BILLING_CHECKOUT_ALLOW_SPACES(쉼표 구분 spaceId) 공간은 중지 중에도 결제가 열린 공간으로 본다 — 토스 심사용.
 // 결제 차단과 잠금 보류가 같이 풀려야 업무 추가 → 구독 결제 흐름이 실제와 같다.
-export function isCheckoutPausedFor(spaceId: string): boolean {
+// deckIds 가 모두 CHECKOUT_OPEN_DECKS 면 중지가 아니다. 섞여 있으면 중지(닫힌 업무가 결제되지 않게).
+export function isCheckoutPausedFor(spaceId: string, deckIds: readonly string[]): boolean {
   if (!isCheckoutPaused()) return false
+  if (deckIds.length > 0 && deckIds.every((id) => CHECKOUT_OPEN_DECKS.includes(id))) return false
   const allowed = (process.env.BILLING_CHECKOUT_ALLOW_SPACES ?? '')
     .split(',')
     .map((s) => s.trim())
@@ -79,7 +85,7 @@ export async function resolveEntitlement(spaceId: string): Promise<SpaceEntitlem
       subscription: subInput,
       deckInstanceCreatedAt: instanceMap.get(product.id) ?? null,
       now,
-      checkoutPaused: isCheckoutPausedFor(spaceId),
+      checkoutPaused: isCheckoutPausedFor(spaceId, [product.id]),
     })
     decks[product.id] = access
     if (access.allowed) allowedDecks.push(product.id)

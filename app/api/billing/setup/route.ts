@@ -5,6 +5,7 @@ import {
   BillingError,
   ensureCustomerKey,
 } from '@/lib/billing/subscription-service'
+import { CHECKOUT_OPEN_DECKS } from '@/lib/billing/entitlement'
 
 // POST /api/billing/setup — 카드 등록 SDK 호출 전 customerKey 선발급 (OWNER 전용)
 export async function POST() {
@@ -14,7 +15,8 @@ export async function POST() {
   if (roleError) return roleError
 
   try {
-    assertCheckoutOpen(resolved.space.id)
+    // 카드 등록은 업무와 무관 — 결제가 열린 업무가 하나라도 있으면 허용
+    assertCheckoutOpen(resolved.space.id, CHECKOUT_OPEN_DECKS)
   } catch (e) {
     if (e instanceof BillingError) return errorResponse(e.message, e.status)
     throw e
