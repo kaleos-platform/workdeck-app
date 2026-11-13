@@ -63,9 +63,10 @@ describe('findClosedDecks', () => {
     expect(p.deckInstance.findMany.mock.calls[0][0].where).not.toHaveProperty('isActive')
   })
 
-  it('끝나지 않은 구독 아이템이 있으면 연다', async () => {
+  it('구독 이력(종료 포함)이 있으면 연다', async () => {
     p.subscriptionItem.findMany.mockResolvedValue([{ deckAppId: 'seller-hub' }])
     await expect(findClosedDecks('s1', ['seller-hub'])).resolves.toEqual([])
+    expect(p.subscriptionItem.findMany.mock.calls[0][0].where).not.toHaveProperty('status')
   })
 
   it('빈 목록은 조회 없이 빈 결과', async () => {

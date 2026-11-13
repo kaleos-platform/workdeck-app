@@ -352,10 +352,13 @@ export function SubscriptionSettingsClient() {
                         <div className="truncate text-sm font-medium">
                           {meta?.name ?? product.name}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          월 {formatWon(Math.round(product.effectivePrice * 1.1))}
-                          <span className="ml-1">(VAT 포함)</span>
-                        </div>
+                        {/* 준비중 업무는 판매 상품이 아니므로 가격을 보이지 않는다 */}
+                        {!product.comingSoon && (
+                          <div className="text-xs text-muted-foreground">
+                            월 {formatWon(Math.round(product.effectivePrice * 1.1))}
+                            <span className="ml-1">(VAT 포함)</span>
+                          </div>
+                        )}
                         {discountNote(product.monthlyPrice, product.effectivePrice) && (
                           <div className="text-xs text-primary">
                             {discountNote(product.monthlyPrice, product.effectivePrice)}
