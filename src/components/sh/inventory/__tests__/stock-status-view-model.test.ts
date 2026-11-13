@@ -89,6 +89,13 @@ describe('stock status view model', () => {
     expect(Math.round(scoped[0].daysOfCover!)).toBe(75)
   })
 
+  it('등급 커버 일수는 gradeQty(반품 등급 제외 계획재고)가 있으면 그것으로 계산한다', () => {
+    const scoped = scopeStockStatusRows([{ ...rows[0], gradeQty: 2 }], null)
+    // 표시 수량은 그대로, 커버는 2 / 0.133 = 15일
+    expect(scoped[0].displayQty).toBe(10)
+    expect(Math.round(scoped[0].daysOfCover!)).toBe(15)
+  })
+
   it('출고량 정렬에서 30일 출고량 내림차순 → 재고 내림차순으로 정렬한다', () => {
     // 출고 0 · 재고 9999 상품을 추가 → 출고량 있는 상품보다 뒤로 밀려야 한다
     const deadStock: StockMatrixRow = {

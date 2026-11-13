@@ -18,11 +18,7 @@ import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
 import { getTodayStrKst } from '@/lib/date-range'
 import { startOfMonth, prevRange, pctChange, last30DaysRange } from '@/lib/sh/sales-analytics'
 import { healthRatioBySku, statusForSku, type SkuFact, type StatusLabel } from '@/lib/inv/metrics'
-import {
-  INCOMING_PRODUCTION_STATUSES,
-  plannedStockQty,
-  sumIncomingProductionQtyByOption,
-} from '@/lib/inv/planned-stock'
+import { plannedStockQty } from '@/lib/inv/planned-stock'
 import { productDisplayName } from '@/lib/sh/product-display'
 import { loadRocketDailyOptionQty } from '@/lib/inv/coupang-sales-to-movement'
 import { readStockGradeSettings } from '@/lib/sh/stock-grade-settings'
@@ -31,6 +27,7 @@ import {
   DEFAULT_PLAN_WINDOW_DAYS,
   isModelKey,
   loadNetByDate,
+  loadReorderStockInputs,
   optionDailyRate,
 } from '@/lib/inv/reorder-engine'
 
@@ -396,22 +393,6 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     outbound90dAgg.map((a) => [a.optionId, Math.abs(a._sum.quantity ?? 0)])
   )
 
-  // 입고예정 집계 (진행중 상태의 ProductionRun 미입고분)
-  // groupBy에서 relation 필터 미지원 → findMany + items include 방식으로 집계
-  const pendingRuns = await prisma.productionRun.findMany({
-    where: {
-      spaceId,
-      status: { in: [...INCOMING_PRODUCTION_STATUSES] },
-    },
-    select: {
-      status: true,
-      items: {
-        select: { optionId: true, quantity: true },
-      },
-    },
-  })
-  const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
-
   // 그룹 → 상품 → 옵션 + 재고 + 브랜드 트리 조회
   const groups = await prisma.invProductGroup.findMany({
     where: { spaceId },
@@ -467,6 +448,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
   // ───────────────────────────────────────────────────────────────────
   const now = new Date()
   const allOptionIds = groups.flatMap((g) => g.products.flatMap((p) => p.options.map((o) => o.id)))
+  // 재고·입고예정은 발주 엔진·MCP velocity 와 같은 입력(반품 등급 제외 · 진행 차수 + 외부 입고 대기분)
+  const engineStock = await loadReorderStockInputs(spaceId, allOptionIds, now)
   const maxWindowDays = Math.max(
     DEFAULT_PLAN_WINDOW_DAYS,
     ...groups.flatMap((g) =>
@@ -539,6 +522,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     totalQty: number
     totalValue: number
     incomingQty: number
+    /** 등급용 계획재고(반품 등급 제외) */
+    gradeQty: number
     /** 상품별 발주 리드타임(일). 설정 없으면 기본 7. */
     leadTimeDays: number
     out30d: number
@@ -570,7 +555,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
         const returnQty = returnStock?.byOption.get(o.id) ?? 0
         const returnQtyByLocation =
           returnQty > 0 && returnStock ? { [returnStock.locationId]: returnQty } : undefined
-        const incomingQty = incomingByOption.get(o.id) ?? 0
+        const stockInput = engineStock.get(o.id)
+        const incomingQty = stockInput?.incomingQty ?? 0
         // 단종 + 남은 재고·입고예정 없음 → 관리 대상이 아니다(KPI·품절 집계에서도 빠진다).
         // 재고 음수는 정리가 필요하므로 계속 보인다.
         if (
@@ -582,6 +568,11 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           continue
         }
         const totalQty = plannedStockQty({ onHandQty: currentQty, incomingQty })
+        // 등급 커버 일수용 — 반품 등급을 뺀 엔진 입력(velocity daysOfCoverWithIncoming 과 동일)
+        const gradeQty = plannedStockQty({
+          onHandQty: stockInput?.onHandQty ?? currentQty,
+          incomingQty,
+        })
         const costPrice = decimalToNumber(o.costPrice)
         const totalValue = costPrice !== null ? Math.round(costPrice * totalQty) : 0
         const out30d = outbound30dByOption.get(o.id) ?? 0
@@ -591,7 +582,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
         const dailyRate = optionDailyRate({
           qtyByDate: demandByOption.get(o.id) ?? {},
           netByDate: netByOption.get(o.id) ?? {},
-          currentStock: currentQty,
+          currentStock: stockInput?.onHandQty ?? currentQty,
           windowDays: p.reorderConfig?.analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS,
           horizonDays: leadTimeDays + (p.reorderConfig?.targetCoverDays ?? 30),
           model: isModelKey(storedModel) ? storedModel : 'MA_BLEND',
@@ -620,6 +611,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           safetyStockQty: o.safetyStockQty,
           currentQty,
           totalQty,
+          gradeQty,
           totalValue,
           incomingQty,
           out30d,

@@ -86,6 +86,8 @@ export type StockMatrixRow = {
   leadTimeDays: number
   currentQty: number
   totalQty: number
+  /** 등급용 계획재고(반품 등급 제외). 없으면 totalQty */
+  gradeQty?: number
   totalValue: number
   byLocation: Record<string, number>
   /**

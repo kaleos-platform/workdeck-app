@@ -163,7 +163,7 @@ export function scopeStockStatusRows(
   if (!locationId) {
     return rows.map((row) => {
       const { grade, daysOfCover } = gradeStock(
-        row.totalQty,
+        row.gradeQty ?? row.totalQty,
         row.dailyRate,
         row.leadTimeDays,
         settings,
