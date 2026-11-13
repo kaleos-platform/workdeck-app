@@ -161,6 +161,16 @@ describe('발주 위저드 Step ④ — 모델 비교·신상품·재고 확인'
     expect(planBodies()[4].modelByProduct).toEqual({ p1: 'AUTO' })
   })
 
+  it('재계산해도 사용자가 고친 최종수량은 유지하고 손대지 않은 옵션만 새 기본값으로 갱신한다', async () => {
+    await gotoCalcStep()
+    fireEvent.change(screen.getByLabelText('블랙 최종수량'), { target: { value: '77' } })
+    fireEvent.click(screen.getByRole('radio', { name: '이동평균 90일 선택' }))
+    await waitFor(() => expect(planBodies()).toHaveLength(2))
+    await waitFor(() => expect(screen.getByLabelText('블랙 최종수량')).toHaveValue(77))
+    // 손대지 않은 신상품 옵션은 서버 기본값(0) 그대로
+    expect(screen.getByLabelText('화이트 최종수량')).toHaveValue(0)
+  })
+
   it('신상품 옵션 수량 입력은 manualQtyByOption 으로 전송된다', async () => {
     await gotoCalcStep()
     fireEvent.change(screen.getByLabelText('화이트 최종수량'), { target: { value: '15' } })

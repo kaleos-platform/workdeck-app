@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ArrowLeft, HelpCircle, Loader2, MapPinIcon, PackageIcon, PlusIcon } from 'lucide-react'
@@ -145,6 +145,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   const [locationsLoading, setLocationsLoading] = useState(false)
   // 옵션별 편집 최종수량(문자열 — 입력 중 빈값 허용). 미리보기 로드 시 finalQty 로 초기화.
   const [finalByOption, setFinalByOption] = useState<Record<string, string>>({})
+  // 사용자가 직접 고친 옵션 — 재계산(모델·커버일수·계산 다시 적용) 시 이 값은 유지하고 나머지만 새 기본값으로 갱신
+  const editedOptionsRef = useRef<Set<string>>(new Set())
   const [leadTimeInput, setLeadTimeInput] = useState('')
   const [demandAdjustInput, setDemandAdjustInput] = useState(
     initialDemandAdjust != null ? String(initialDemandAdjust) : '1'
@@ -234,9 +236,14 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
         lead: String(overrides.leadTimeDaysOverride ?? data.options[0]?.leadTimeDays ?? ''),
         adjust: String(overrides.demandAdjustFactorOverride ?? 1),
       })
-      const init: Record<string, string> = {}
-      for (const o of data.options) init[o.optionId] = String(o.finalQty)
-      setFinalByOption(init)
+      setFinalByOption((prev) => {
+        const init: Record<string, string> = {}
+        for (const o of data.options) {
+          const kept = editedOptionsRef.current.has(o.optionId) ? prev[o.optionId] : undefined
+          init[o.optionId] = kept != null && kept.trim() !== '' ? kept : String(o.finalQty)
+        }
+        return init
+      })
     } catch (err) {
       console.error(err)
       const msg = err instanceof Error ? err.message : '미리보기를 불러오지 못했습니다'
@@ -319,6 +326,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     setDemandAdjustInput(defaultDemandAdjust)
     setModelByProduct({})
     setFinalByOption({})
+    editedOptionsRef.current.clear()
     setPreview(null)
     void loadLinkedLocations()
     void (async () => {
@@ -336,6 +344,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     setPreview(null)
     setPreviewError(null)
     setFinalByOption({})
+    editedOptionsRef.current.clear()
     setModelByProduct({})
     setCoverDaysInput('')
     setExcluded(false)
@@ -1323,12 +1332,13 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                             className="ml-auto h-8 w-24 text-right font-mono font-semibold tabular-nums"
                             aria-label={`${o.optionName} 최종수량`}
                             value={finalByOption[o.optionId] ?? ''}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              editedOptionsRef.current.add(o.optionId)
                               setFinalByOption((prev) => ({
                                 ...prev,
                                 [o.optionId]: e.target.value,
                               }))
-                            }
+                            }}
                             onBlur={(e) =>
                               setFinalByOption((prev) => ({
                                 ...prev,
