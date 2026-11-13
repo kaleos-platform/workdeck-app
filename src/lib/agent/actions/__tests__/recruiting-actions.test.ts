@@ -1,7 +1,7 @@
 /** @jest-environment node */
 const tx = {
   hiringPosting: { updateMany: jest.fn() },
-  hiringPostingPosition: { createMany: jest.fn(), deleteMany: jest.fn() },
+  hiringPostingPosition: { create: jest.fn(), deleteMany: jest.fn(), findMany: jest.fn() },
 }
 jest.mock('@/lib/prisma', () => ({
   prisma: {
@@ -37,6 +37,7 @@ beforeEach(() => {
   db.hiringPosting.findFirst.mockResolvedValue({ status: 'DRAFT', publishedAt: null })
   db.hiringMigrationRecord.findFirst.mockResolvedValue(null)
   tx.hiringPosting.updateMany.mockResolvedValue({ count: 1 })
+  tx.hiringPostingPosition.findMany.mockResolvedValue([])
 })
 
 it('승인 시 DRAFT 공고로 만들고 작성자는 승인한 구성원', async () => {
@@ -52,8 +53,8 @@ it('승인 시 DRAFT 공고로 만들고 작성자는 승인한 구성원', asyn
     title: '홀 매니저',
     closingDate: null,
   })
-  expect(tx.hiringPostingPosition.createMany).toHaveBeenCalledWith({
-    data: [{ spaceId: 'sp-1', postingId: 'new', name: '홀', workDays: [0, 6] }],
+  expect(tx.hiringPostingPosition.create).toHaveBeenCalledWith({
+    data: { spaceId: 'sp-1', postingId: 'new', name: '홀', workDays: [0, 6] },
   })
   expect(r).toMatchObject({ postingId: 'new', status: 'DRAFT' })
 })
@@ -118,4 +119,21 @@ it('직무 목록을 주면 DRAFT 를 유지한 채 통째로 교체', async () 
     where: { postingId: 'p1', spaceId: 'sp-1' },
   })
   expect(r).toMatchObject({ status: 'DRAFT' })
+})
+
+it('직무만 바꿔도 공고 행 UPDATE 로 잠근다(빈 data 금지)', async () => {
+  await update.execute(ctx, update.paramsSchema.parse({ postingId: 'p1', positions: [] }))
+  expect(tx.hiringPosting.updateMany.mock.calls[0][0].data).toEqual({ publishedAt: null })
+})
+
+it('직무 교체 시 같은 이름의 웹 기준정보 연결을 유지하고 순서대로 만든다', async () => {
+  tx.hiringPostingPosition.findMany.mockResolvedValue([{ name: '홀', positionId: 'pos-hall' }])
+  await update.execute(
+    ctx,
+    update.paramsSchema.parse({ postingId: 'p1', positions: [{ name: '주방' }, { name: '홀' }] })
+  )
+  const created = tx.hiringPostingPosition.create.mock.calls.map((c) => c[0].data)
+  expect(created.map((d) => d.name)).toEqual(['주방', '홀'])
+  expect(created[0]).not.toHaveProperty('positionId')
+  expect(created[1].positionId).toBe('pos-hall')
 })

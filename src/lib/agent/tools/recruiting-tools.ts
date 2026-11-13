@@ -19,6 +19,7 @@ import type { ToolDefinition } from './types'
 
 const DECK = 'recruiting'
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000
+const STATS_ROW_LIMIT = 50_000
 const STATUSES = ['DRAFT', 'ACTIVE', 'CLOSED', 'ARCHIVED'] as const
 
 const iso = (d: Date | null) => d?.toISOString() ?? null
@@ -91,7 +92,10 @@ const getPosting: ToolDefinition = {
         closingDate: true,
         publishedAt: true,
         applicationEntries: true,
-        positions: { where: { spaceId: ctx.spaceId }, orderBy: { createdAt: 'asc' } },
+        positions: {
+          where: { spaceId: ctx.spaceId },
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        },
         stores: {
           where: { store: { spaceId: ctx.spaceId } },
           select: { store: { select: { name: true } } },
@@ -156,8 +160,11 @@ const getApplicationStats: ToolDefinition = {
         ...(postingId && { postingId }),
       },
       select: { createdAt: true, postingId: true, stage: true, hiringStage: true },
-      take: 50_000,
+      take: STATS_ROW_LIMIT + 1,
     })
+    // ponytail: 메모리 집계 — 5만 건 넘으면 truncated 표시. 그 규모면 groupBy·date_trunc 로 바꾼다
+    const truncated = rows.length > STATS_ROW_LIMIT
+    if (truncated) rows.length = STATS_ROW_LIMIT
     const byStage: Record<string, number> = {}
     const byHiringStage: Record<string, number> = {}
     const daily = new Map<string, number>()
@@ -180,6 +187,7 @@ const getApplicationStats: ToolDefinition = {
       from: kstDate(from),
       to: kstDate(new Date()),
       total: rows.length,
+      truncated,
       byStage,
       byHiringStage,
       daily: [...daily.entries()]
@@ -227,7 +235,11 @@ async function propose(
     requesterSlackUserId: ctx.requesterSlackUserId,
     workId: ctx.workId,
     actorTokenId: ctx.actorTokenId,
-    idempotencyKey: idempotencyKeyFor(actionType, ctx.spaceId, actionParams),
+    // 같은 날 같은 내용만 중복으로 본다 — 다음 달 같은 제목 초안·A→B→A 되돌리기는 새 제안
+    idempotencyKey: idempotencyKeyFor(actionType, ctx.spaceId, {
+      params: actionParams,
+      day: new Date(Date.now() + KST_OFFSET_MS).toISOString().slice(0, 10),
+    }),
   })
 }
 
@@ -259,7 +271,7 @@ const proposeDraft: ToolDefinition = {
 const proposeUpdate: ToolDefinition = {
   name: 'hiring_propose_posting_update',
   description:
-    '「작성 중(DRAFT)」이고 한 번도 발행되지 않은 공고의 제목·마감일·모집 직무 수정을 제안합니다. positions 를 주면 기존 직무 전체를 이 목록으로 바꿉니다. 승인 대기에 올라가며 관리자(ADMIN) 승인 후 반영되고, 공고는 계속 DRAFT 입니다. 발행된 적 있는 공고는 수정할 수 없으니 hiring_propose_posting_draft 로 새 초안을 제안하세요.',
+    '「작성 중(DRAFT)」이고 한 번도 발행되지 않은 공고의 제목·마감일·모집 직무 수정을 제안합니다. positions 를 주면 기존 직무 전체를 이 목록으로 바꿉니다(같은 이름 직무의 기준정보 연결은 유지). 승인 대기에 올라가며 관리자(ADMIN) 승인 후 반영되고, 공고는 계속 DRAFT 입니다. 발행된 적 있는 공고는 수정할 수 없으니 hiring_propose_posting_draft 로 새 초안을 제안하세요.',
   inputSchema: {
     postingId: z.string(),
     title: z.string().optional(),
@@ -276,11 +288,16 @@ const proposeUpdate: ToolDefinition = {
       p.closingDate !== undefined && '마감일',
       p.positions !== undefined && `직무 ${p.positions.length}개`,
     ].filter(Boolean)
+    const current = await prisma.hiringPosting.findFirst({
+      where: { id: p.postingId, spaceId: ctx.spaceId },
+      select: { title: true },
+    })
+    if (!current) throw new ToolUserError('공고를 찾을 수 없습니다(hiring_list_postings 로 확인)')
     return propose(
       ctx,
       'recruiting.posting.update_draft',
       p,
-      `채용 공고 초안 수정(${changed.join('·')}) — ${p.postingId}`
+      `채용 공고 「${current.title}」 초안 수정(${changed.join('·')})`
     )
   },
 }

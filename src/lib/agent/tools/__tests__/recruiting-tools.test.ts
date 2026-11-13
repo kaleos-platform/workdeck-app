@@ -101,6 +101,7 @@ const statsSchema = z
     from: z.string(),
     to: z.string(),
     total: z.number(),
+    truncated: z.boolean(),
     byStage: z.record(z.string(), z.number()),
     byHiringStage: z.record(z.string(), z.number()),
     daily: z.array(z.object({ date: z.string(), count: z.number() }).strict()),
@@ -264,6 +265,31 @@ it('hiring_propose_posting_update: 바꿀 항목이 없으면 거부', async () 
     tool('hiring_propose_posting_update').execute(ctx, { postingId: 'p1' })
   ).rejects.toThrow('하나 이상')
   expect(createPendingAction).not.toHaveBeenCalled()
+})
+
+it('hiring_propose_posting_update: 승인 카드에 공고 제목을 보여준다', async () => {
+  db.hiringPosting.findFirst.mockResolvedValue({ title: '홀 매니저' })
+  await tool('hiring_propose_posting_update').execute(ctx, { postingId: 'p1', title: '새 제목' })
+  const draft = (createPendingAction as jest.Mock).mock.calls[0][0]
+  expect(draft.summary).toContain('「홀 매니저」')
+  expect(db.hiringPosting.findFirst.mock.calls[0][0].where).toEqual({ id: 'p1', spaceId: 'sp-1' })
+})
+
+it('같은 내용 재제안은 하루 단위로만 중복 처리(다음 날엔 새 제안)', async () => {
+  jest.useFakeTimers({ now: new Date('2026-11-13T03:00:00Z') })
+  try {
+    const args = { title: '홀 아르바이트' }
+    await tool('hiring_propose_posting_draft').execute(ctx, args)
+    jest.setSystemTime(new Date('2026-11-13T14:00:00Z')) // KST 23시 — 같은 날
+    await tool('hiring_propose_posting_draft').execute(ctx, args)
+    jest.setSystemTime(new Date('2026-12-13T03:00:00Z'))
+    await tool('hiring_propose_posting_draft').execute(ctx, args)
+    const keys = (createPendingAction as jest.Mock).mock.calls.map((c) => c[0].idempotencyKey)
+    expect(keys[0]).toBe(keys[1])
+    expect(keys[2]).not.toBe(keys[0])
+  } finally {
+    jest.useRealTimers()
+  }
 })
 
 it('잘못된 마감일 형식은 제안하지 않는다', async () => {

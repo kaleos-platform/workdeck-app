@@ -64,17 +64,22 @@ async function createPositions(
   tx: Prisma.TransactionClient,
   spaceId: string,
   postingId: string,
-  positions: PositionInput[]
+  positions: PositionInput[],
+  linkByName = new Map<string, string>()
 ) {
-  if (!positions.length) return
-  await tx.hiringPostingPosition.createMany({
-    data: positions.map(({ workDays, ...rest }) => ({
-      spaceId,
-      postingId,
-      ...(workDays ? { workDays } : {}),
-      ...rest,
-    })),
-  })
+  // 순차 create — createdAt 순서가 제안 순서와 같도록(createMany 는 같은 시각)
+  for (const { workDays, ...rest } of positions) {
+    const positionId = linkByName.get(rest.name)
+    await tx.hiringPostingPosition.create({
+      data: {
+        spaceId,
+        postingId,
+        ...(positionId && { positionId }),
+        ...(workDays ? { workDays } : {}),
+        ...rest,
+      },
+    })
+  }
 }
 
 function editUrl(postingId: string) {
@@ -94,7 +99,7 @@ async function assertEditableDraft(spaceId: string, postingId: string) {
     )
   // 오프닝 이관 공고는 행이 바뀌면 남은 지원서 이관이 막힌다
   const migrated = await prisma.hiringMigrationRecord.findFirst({
-    where: { targetModel: 'HiringPosting', targetId: postingId },
+    where: { spaceId, targetModel: 'HiringPosting', targetId: postingId },
     select: { id: true },
   })
   if (migrated) throw new ToolUserError('이전(이관) 중인 공고는 에이전트가 수정할 수 없습니다')
@@ -147,7 +152,10 @@ const updateDraft = def<PostingUpdateParams>({
       select: {
         title: true,
         closingDate: true,
-        positions: { where: { spaceId: ctx.spaceId }, orderBy: { createdAt: 'asc' } },
+        positions: {
+          where: { spaceId: ctx.spaceId },
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        },
       },
     })
   },
@@ -160,16 +168,24 @@ const updateDraft = def<PostingUpdateParams>({
       const locked = await tx.hiringPosting.updateMany({
         where: { id: params.postingId, spaceId: ctx.spaceId, status: 'DRAFT', publishedAt: null },
         data: {
+          // 바꿀 칼럼이 없어도 UPDATE 가 실행돼 행이 잠기도록 항상 쓴다(withUnpublishedPosting 과 동일)
+          publishedAt: null,
           ...(params.title !== undefined && { title: params.title }),
           ...(closingDate !== undefined && { closingDate }),
         },
       })
       if (locked.count !== 1) throw new ToolUserError('공고가 이미 발행되어 수정하지 않았습니다')
       if (params.positions) {
+        // 웹에서 연결한 직무 기준정보는 같은 이름의 직무에 그대로 이어 붙인다
+        const existing = await tx.hiringPostingPosition.findMany({
+          where: { postingId: params.postingId, spaceId: ctx.spaceId, positionId: { not: null } },
+          select: { name: true, positionId: true },
+        })
+        const linkByName = new Map(existing.map((e) => [e.name, e.positionId!]))
         await tx.hiringPostingPosition.deleteMany({
           where: { postingId: params.postingId, spaceId: ctx.spaceId },
         })
-        await createPositions(tx, ctx.spaceId, params.postingId, params.positions)
+        await createPositions(tx, ctx.spaceId, params.postingId, params.positions, linkByName)
       }
     })
     return { postingId: params.postingId, status: 'DRAFT', editUrl: editUrl(params.postingId) }
