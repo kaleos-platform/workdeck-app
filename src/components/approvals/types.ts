@@ -44,6 +44,7 @@ export const DECK_LABELS: Record<string, string> = {
   'google-marketing': '구글 마케팅',
   'sales-content': '세일즈 콘텐츠',
   secrets: '비밀값',
+  recruiting: '모집 관리',
 }
 
 export const SOURCE_LABELS: Record<AgentActionSourceValue, string> = {
