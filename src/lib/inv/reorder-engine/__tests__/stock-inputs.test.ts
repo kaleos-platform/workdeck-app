@@ -132,4 +132,54 @@ describe('loadReorderStockInputs', () => {
       returnGradeQty: 30,
     })
   })
+
+  const extRun = (locationId: string) => ({
+    status: 'STOCKED_IN',
+    stockedInAt: new Date('2026-11-12T00:00:00Z'),
+    externalStockIns: [{ optionId: 'o1', locationId, quantity: 40 }],
+    items: [],
+  })
+  const setup = (run: unknown, recons: unknown[]) => {
+    p.invStockLevel.groupBy.mockResolvedValue([])
+    p.invStorageLocation.findMany.mockResolvedValue([
+      { id: 'R', type: 'OWN', externalSource: 'coupang_rocket_growth' },
+      { id: 'H', type: 'OWN', externalSource: null },
+    ])
+    ;(getCoupangReturnStockByOption as jest.Mock).mockResolvedValue(null)
+    p.productionRun.findMany.mockResolvedValue([run])
+    p.invReconciliation.findMany.mockResolvedValue(recons)
+  }
+  const now = new Date('2026-11-13T00:00:00Z')
+
+  it('입고 이후 확정 대조가 있으면 외부 대기분 제외', async () => {
+    setup(extRun('R'), [
+      {
+        locationId: 'R',
+        confirmedAt: new Date('2026-11-12T12:00:00Z'),
+        createdAt: new Date('2026-11-12T11:00:00Z'),
+      },
+    ])
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')?.incomingQty).toBe(0)
+  })
+
+  it('내부(OWN) 위치 입고는 대기분 제외', async () => {
+    setup(extRun('H'), [])
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')?.incomingQty).toBe(0)
+  })
+
+  it('반품 차감 후 onHand 음수는 clamp 하지 않는다', async () => {
+    setup(extRun('R'), [])
+    p.invStockLevel.groupBy.mockResolvedValue([
+      { optionId: 'o1', locationId: 'R', _sum: { quantity: 10 } },
+    ])
+    ;(getCoupangReturnStockByOption as jest.Mock).mockResolvedValue({
+      locationId: 'R',
+      snapshotDate: now,
+      byOption: new Map([['o1', 30]]),
+    })
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')).toMatchObject({ onHandQty: -20, rocketOnHandQty: 0 })
+  })
 })

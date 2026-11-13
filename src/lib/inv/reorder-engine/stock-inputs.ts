@@ -131,10 +131,11 @@ export async function loadReorderStockInputs(
     locations.filter(isExternalLogisticsLocation).map((l) => l.id)
   )
   // 외부 물류 위치로 간 입고분만 대기분 대상
+  const optionIdSet = new Set(optionIds)
   const pendingRuns = runs.map((r) => ({
     stockedInAt: r.stockedInAt,
     externalStockIns: parseExternalStockIns(r.externalStockIns).filter(
-      (e) => externalLocationIds.has(e.locationId) && optionIds.includes(e.optionId)
+      (e) => externalLocationIds.has(e.locationId) && optionIdSet.has(e.optionId)
     ),
   }))
   const pendingExternal = pendingExternalQtyByOption(pendingRuns, lastReconAt, now)
@@ -146,8 +147,8 @@ export async function loadReorderStockInputs(
     const total = totalByOption.get(optionId) ?? 0
     const rocket = rocketByOption.get(optionId) ?? 0
     result.set(optionId, {
-      onHandQty:
-        returnQty > 0 && totalByOption.has(optionId) ? Math.max(0, total - returnQty) : total,
+      // 음수도 그대로 둔다 — computeOrderQty 가 checkStock 으로 처리한다.
+      onHandQty: total - returnQty,
       rocketOnHandQty:
         returnQty > 0 && rocketByOption.has(optionId) ? Math.max(0, rocket - returnQty) : rocket,
       incomingQty: (incomingRuns.get(optionId) ?? 0) + (pendingExternal.get(optionId) ?? 0),
