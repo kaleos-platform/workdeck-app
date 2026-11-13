@@ -624,7 +624,12 @@ export async function queryOptionSalesVelocity(
 
   // 판매·재고 모두 0인 옵션은 판단 대상이 아니다 — 노이즈 제거.
   let filtered = builtRows.filter(
-    (r) => r.salesQty > 0 || r.prevSalesQty > 0 || r.totalAvailableQty > 0 || r.incomingQty > 0
+    (r) =>
+      r.salesQty > 0 ||
+      r.prevSalesQty > 0 ||
+      r.productionDailyRate > 0 ||
+      r.totalAvailableQty > 0 ||
+      r.incomingQty > 0
   )
   if (params.onlyNeedsReplenishment) {
     filtered = filtered.filter(
@@ -675,7 +680,10 @@ export async function queryOptionSalesVelocity(
     EXCLUDED: 0,
   }
   for (const r of filtered) productionStatusCounts[r.productionStatus] += 1
-  const negativeStockSkuCount = filtered.filter((r) => r.totalAvailableQty < 0).length
+  // 표시 재고 음수 + CHECK_STOCK(반품 등급 차감 전사 재고 음수) 모두 센다
+  const negativeStockSkuCount = filtered.filter(
+    (r) => r.totalAvailableQty < 0 || r.productionStatus === 'CHECK_STOCK'
+  ).length
 
   let rows = filtered.slice(offset, offset + pageSize)
   let truncatedForSize = false
