@@ -717,6 +717,16 @@ export type HiringPosition = Prisma.HiringPositionModel
  */
 export type HiringPosting = Prisma.HiringPostingModel
 /**
+ * Model HiringPostingMailSetting
+ * 
+ */
+export type HiringPostingMailSetting = Prisma.HiringPostingMailSettingModel
+/**
+ * Model HiringDailyDigestLog
+ * 
+ */
+export type HiringDailyDigestLog = Prisma.HiringDailyDigestLogModel
+/**
  * Model HiringPostingPosition
  * 
  */

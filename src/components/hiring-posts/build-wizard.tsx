@@ -22,6 +22,7 @@ import { PostingStatusBadge } from './status-badge'
 import { WizardStepper, WIZARD_STEPS, type WizardStepKey } from './wizard-stepper'
 import { StepBasic, type StepBasicHandle } from './step-basic'
 import { StepFormSettings } from './step-form-settings'
+import { PostingMailSettings } from './posting-mail-settings'
 import { StepPositions } from './step-positions'
 import { StepStores } from './step-stores'
 import { useWizardNavigation } from './use-wizard-navigation'
@@ -73,7 +74,6 @@ export function BuildWizard({ data }: { data: WizardData }) {
   const [state, setState] = useState<WizardState>(() => ({
     title: data.posting.title,
     closingDate: toDateInput(data.posting.closingDate),
-    notificationEnabled: data.posting.notificationEnabled,
     positions: data.posting.positions,
     stores: data.spaceStores,
     storeIds: data.posting.storeIds,
@@ -270,7 +270,6 @@ export function BuildWizard({ data }: { data: WizardData }) {
                       postingId={data.posting.id}
                       value={{
                         closingDate: state.closingDate,
-                        notificationEnabled: state.notificationEnabled,
                       }}
                       onChange={patch}
                     />
@@ -290,6 +289,15 @@ export function BuildWizard({ data }: { data: WizardData }) {
                   지원서 설정은 읽기 전용입니다. 기존 항목은 미리보기에서 확인할 수 있습니다.
                 </p>
               )}
+              <Section title="메일 알림">
+                <PostingMailSettings
+                  postingId={data.posting.id}
+                  initial={{
+                    notificationEnabled: data.posting.notificationEnabled,
+                    applicantReceiptEmail: data.posting.applicantReceiptEmail,
+                  }}
+                />
+              </Section>
             </div>
             <div
               className={`space-y-3 lg:sticky ${TOP_BAR_OFFSET} ${RIGHT_COL_MAX_H} lg:self-start lg:overflow-y-auto`}

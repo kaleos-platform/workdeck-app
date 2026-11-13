@@ -18,6 +18,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
       contents: {
         where: { postingId: id, spaceId: resolved.space.id },
       },
+      mailSetting: true,
     },
   })
   if (!source) return errorResponse('공고를 찾을 수 없습니다', 404)
@@ -37,6 +38,14 @@ export async function POST(_req: NextRequest, { params }: Params) {
       },
       select: { id: true },
     })
+    if (source.mailSetting)
+      await tx.hiringPostingMailSetting.create({
+        data: {
+          postingId: newPosting.id,
+          applicantReceiptEmail: source.mailSetting.applicantReceiptEmail,
+          dailyDigestEmail: source.mailSetting.dailyDigestEmail,
+        },
+      })
 
     if (source.positions.length > 0) {
       await tx.hiringPostingPosition.createMany({

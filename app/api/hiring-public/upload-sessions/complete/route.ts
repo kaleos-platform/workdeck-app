@@ -17,6 +17,7 @@ import {
 } from '@/lib/hiring/upload-protocol'
 import { inspectApplicantUpload, ALLOWED_APPLICANT_MIME } from '@/lib/hiring/storage'
 import { parseApplicationEntriesSchema } from '@/lib/validations/hiring-applicants'
+import { queueApplicantReceipt } from '@/lib/hiring/mail'
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
@@ -143,6 +144,8 @@ async function handlePost(req: NextRequest) {
   }
   try {
     const { columns, sanitizedEntries } = buildApplicationPii(entries)
+    // 이번 요청이 새로 만든 지원서만 접수 메일 대상(재시도 응답 재생은 제외)
+    let createdId: string | null = null
     const result = await prisma.$transaction(async (tx) => {
       // 마감·삭제와 완료가 같은 공고 행에서 직렬화된다.
       try {
@@ -222,8 +225,10 @@ async function handlePost(req: NextRequest) {
         where: { id: session.id },
         data: { applicationId: app.id, completedAt: new Date() },
       })
+      createdId = app.id
       return app
     })
+    if (createdId) queueApplicantReceipt(createdId)
     return NextResponse.json({ uuid: result.uuid }, { status: 201 })
   } catch (error) {
     if (error instanceof PostingClosedError)
