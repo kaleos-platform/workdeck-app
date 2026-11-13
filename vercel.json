@@ -38,6 +38,10 @@
   },
   "crons": [
     {
+      "path": "/api/cron/wekeep-weekly-reconcile",
+      "schedule": "0 0 * * 1"
+    },
+    {
       "path": "/api/cron/billing-charge",
       "schedule": "0 0 * * *"
     },
