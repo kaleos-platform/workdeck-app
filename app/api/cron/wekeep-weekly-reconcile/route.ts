@@ -36,22 +36,24 @@ async function run() {
     out.processed++
     const notify = (text: string) => sendSpaceNotification({ spaceId: loc.spaceId, text })
     try {
-      await prisma.invReconciliation.updateMany({
-        where: {
-          spaceId: loc.spaceId,
-          locationId: loc.id,
-          status: 'PENDING',
-          fileName: { startsWith: AUTO_FILE_PREFIX },
-        },
-        data: { status: 'CANCELLED' },
-      })
-
       const parsed = await getWekeepInventoryRows(loc.spaceId, loc.id)
       const core = await runReconciliationMatch({
         spaceId: loc.spaceId,
         parsed,
         locationId: loc.id,
         fileName: `${AUTO_FILE_PREFIX}${kstDate})`,
+      })
+
+      // 새 대조 생성에 성공한 뒤에만 이전 자동 PENDING 을 취소한다(로그인 실패 시 지난주 보류분 유지).
+      await prisma.invReconciliation.updateMany({
+        where: {
+          spaceId: loc.spaceId,
+          locationId: loc.id,
+          status: 'PENDING',
+          fileName: { startsWith: AUTO_FILE_PREFIX },
+          id: { not: core.reconciliationId },
+        },
+        data: { status: 'CANCELLED' },
       })
 
       // 옵션 단위 합산 후 판단 — 같은 옵션을 여러 SKU 가 가리키면 합계가 일치할 수 있다.
@@ -62,7 +64,7 @@ async function run() {
       }
       const reasons: string[] = []
       if ([...diffs.values()].some((d) => Math.abs(d) > MAX_OPTION_DIFF)) {
-        reasons.push(`옵션 차이 ${MAX_OPTION_DIFF}개 초과`)
+        reasons.push(`수량 차이 ${MAX_OPTION_DIFF} 초과 옵션 있음`)
       }
       if (diffs.size > MAX_DIFF_OPTIONS) reasons.push(`차이 옵션 ${MAX_DIFF_OPTIONS}건 초과`)
       const fileOnly = entries.filter((e) => e.status === 'file-only' && e.row.quantity > 0).length
@@ -83,6 +85,15 @@ async function run() {
         // 수동 확정 경로 — 차이 전량 반영 + CONFIRMED 잠금(system-only 0 처리는 하지 않는다).
         finalize: true,
       })
+      const failedCount = confirmed.failed?.length ?? 0
+      if (failedCount > 0 || confirmed.status !== 'CONFIRMED') {
+        out.failed++
+        await notify(
+          `[위킵 주간 재고 조정] ${loc.name}: 일부 조정 실패 — ${confirmed.adjustedCount}건 반영, ` +
+            `${failedCount}건 실패. 재고 조정 화면에서 확인해 주세요: ${RECON_LINK}`
+        )
+        continue
+      }
       out.confirmed++
       await notify(
         `[위킵 주간 재고 조정] ${loc.name}: 조정 ${confirmed.adjustedCount}건 반영했습니다. ${RECON_LINK}`
@@ -96,8 +107,11 @@ async function run() {
         known ? (err as Error).name : 'unexpected'
       )
       await notify(
-        `[위킵 주간 재고 조정] ${loc.name}: 자동 조정에 실패했습니다. ` +
-          `위치 관리에서 위킵 로그인 비밀값을 확인해 주세요. ${RECON_LINK}`
+        known
+          ? `[위킵 주간 재고 조정] ${loc.name}: 자동 조정에 실패했습니다. ` +
+              `위치 관리에서 위킵 로그인 비밀값을 확인해 주세요. ${RECON_LINK}`
+          : `[위킵 주간 재고 조정] ${loc.name}: 위킵 주간 자동 조정 중 오류가 발생했습니다. ` +
+              `재고 조정 화면에서 수동 연동해 주세요. ${RECON_LINK}`
       )
     }
   }

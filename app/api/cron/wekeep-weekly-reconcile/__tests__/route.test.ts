@@ -72,6 +72,7 @@ test('가드 통과 → 이전 자동 PENDING 취소 + confirm + 반영 알림',
       locationId: 'L1',
       status: 'PENDING',
       fileName: { startsWith: '위킵 재고 (자동 ' },
+      id: { not: 'R1' },
     },
     data: { status: 'CANCELLED' },
   })
@@ -119,4 +120,28 @@ test('위킵 실패 → 실패 알림 후 다음 위치 계속 처리', async ()
 test('CRON_SECRET bearer 없으면 401', async () => {
   expect((await call('')).status).toBe(401)
   expect(findMany).not.toHaveBeenCalled()
+})
+
+test('로그인 실패 시 이전 자동 PENDING 은 취소하지 않는다', async () => {
+  getRows.mockRejectedValueOnce(new WekeepError('LOGIN_FAILED'))
+  await call()
+  expect(updateMany).not.toHaveBeenCalled()
+})
+
+test('알 수 없는 오류 → 일반 오류 문구', async () => {
+  getRows.mockRejectedValueOnce(new Error('boom'))
+  await call()
+  expect(notify.mock.calls[0][0].text).toContain('수동 연동')
+})
+
+test('confirm 일부 실패 → failed 집계 + 일부 실패 알림', async () => {
+  match([diff('o1', 1, 2), diff('o2', 1, 2)])
+  confirm.mockResolvedValue({
+    adjustedCount: 1,
+    status: 'PARTIAL',
+    failed: [{ optionId: 'o2', locationId: 'L1', reason: 'x' }],
+  })
+  const body = await (await call()).json()
+  expect(notify.mock.calls[0][0].text).toContain('일부 조정 실패 — 1건 반영, 1건 실패')
+  expect(body).toMatchObject({ confirmed: 0, failed: 1 })
 })
