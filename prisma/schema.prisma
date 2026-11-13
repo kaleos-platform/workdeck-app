@@ -131,6 +131,10 @@ enum ReorderForecastModel {
   CROSTON // Croston/SBA (간헐적 수요)
   BAYES // Bayesian Poisson-Gamma (콜드스타트)
   MANUAL // 사용자 직접 입력
+  MA30 // 30일 이동평균
+  MA90 // 90일 이동평균
+  MA_BLEND // MA30/MA90 혼합
+  SES_TREND // 지수평활 + 추세
 }
 
 // ─── 셀러 허브 열거형 ─────────────────────────────────────────────────────────
@@ -1720,10 +1724,13 @@ model InvStockLevel {
 // 상품별 발주 예측 설정 — 한 상품의 모든 옵션이 동일한 리드타임/분석기간을 공유.
 // 안전재고는 옵션 단위(InvProductOption.safetyStockQty)에서 관리한다.
 model InvReorderConfig {
-  id                 String @id @default(cuid())
-  productId          String @unique
-  leadTimeDays       Int    @default(7)
-  analysisWindowDays Int    @default(90)
+  id                  String  @id @default(cuid())
+  productId           String  @unique
+  leadTimeDays        Int     @default(7)
+  analysisWindowDays  Int     @default(90)
+  targetCoverDays     Int     @default(30) // 목표 커버일수
+  excludeFromForecast Boolean @default(false) // 발주 예측 제외
+  forecastModel       String? // 고정 모델 키 (null=자동 추천)
 
   product InvProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -2226,7 +2233,8 @@ model ProductionRun {
   memo               String?
 
   // 발주 계획 연계 (ReorderPlan.finalize 시 brandId별 분할 생성 가능 → 1:N)
-  reorderPlanId String?
+  reorderPlanId    String?
+  externalStockIns Json? // [{ optionId, locationId, quantity }] 외부 물류 직입고
 
   space           Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   brand           Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
@@ -3624,6 +3632,7 @@ model ReorderPlanItem {
   biasAdjustFactor Decimal  @db.Decimal(6, 4) // 적용된 bias 보정 계수 (1.0 = 보정 없음)
   confidenceScore  Decimal? @db.Decimal(6, 4) // 예측 신뢰도 (0~1, null = 미산출)
   inputsSnapshot   Json // 예측 재현 가능 입력값 스냅샷 (초안 생성 당시 입력)
+  modelForecasts   Json? // { [ModelKey]: dailyRate, selected: ModelKey|'MANUAL' }
 
   // 레이어드 발주(연동 세트 + 직접 배송) 전용 — 레이어별 GROSS(현재고·안전재고 차감 전, float).
   // 옵션 수요가 진실이므로 로켓/직접 raw GROSS를 각각 보관하고, 최종 = max(0, ceil(로켓+직접+safety−stock)).
@@ -3673,6 +3682,7 @@ model ReorderPlanAccuracy {
   evaluationStatus ReorderEvaluationStatus @default(MEASURED) // 옵션별 평가 진행 상태
   // provenance — 이 계획 예측에 입력으로 쓰인 bias 출처(어느 정산 계획에서 학습됐는지)
   biasSourcePlanId String?
+  modelWape        Json? // { [ModelKey|'USER']: wape }
 
   plan   ReorderPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
   option InvProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
