@@ -120,8 +120,9 @@ describe('발주 위저드 Step ④ — 모델 비교·신상품·재고 확인'
     expect(within(blendRow).getByText('12.3%')).toBeInTheDocument()
     const sesRow = screen.getByText('지수평활+추세').closest('tr')!
     expect(within(sesRow).getByText('—')).toBeInTheDocument()
-    // 추천이 기본 선택
-    expect(screen.getByRole('radio', { name: '혼합 이동평균 선택' })).toBeChecked()
+    // 고정이 없으면 자동(추천)이 기본 선택
+    expect(screen.getByRole('radio', { name: '자동(추천) 선택' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '혼합 이동평균 선택' })).not.toBeChecked()
     // 신상품 옵션은 발주량 합계에서 빠진다 (o1 만: MA90 qty 20)
     expect(
       within(screen.getByText('이동평균 90일').closest('tr')!).getByText('20')
@@ -144,6 +145,20 @@ describe('발주 위저드 Step ④ — 모델 비교·신상품·재고 확인'
     const create = planBodies().at(-1)
     expect(create.dryRun).toBeUndefined()
     expect(create.modelByProduct).toEqual({ p1: 'MA90' })
+  })
+
+  it('자동(추천)·추천과 같은 모델 선택은 AUTO 로 보내 고정하지 않는다', async () => {
+    await gotoCalcStep()
+    fireEvent.click(screen.getByRole('radio', { name: '이동평균 90일 선택' }))
+    await waitFor(() => expect(planBodies()).toHaveLength(2))
+    fireEvent.click(screen.getByRole('radio', { name: '자동(추천) 선택' }))
+    await waitFor(() => expect(planBodies()).toHaveLength(3))
+    expect(planBodies()[2].modelByProduct).toEqual({ p1: 'AUTO' })
+    fireEvent.click(screen.getByRole('radio', { name: '이동평균 90일 선택' }))
+    await waitFor(() => expect(planBodies()).toHaveLength(4))
+    fireEvent.click(screen.getByRole('radio', { name: '혼합 이동평균 선택' }))
+    await waitFor(() => expect(planBodies()).toHaveLength(5))
+    expect(planBodies()[4].modelByProduct).toEqual({ p1: 'AUTO' })
   })
 
   it('신상품 옵션 수량 입력은 manualQtyByOption 으로 전송된다', async () => {

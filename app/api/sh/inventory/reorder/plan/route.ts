@@ -139,9 +139,10 @@ export async function POST(req: NextRequest) {
   }
 
   // 상품별 모델 지정(MANUAL 포함) — 유효 키만 통과
-  const modelByProduct = new Map<string, SelectedModel>()
+  // 'AUTO' = 고정 해제(설정 모델 무시, 추천 사용)
+  const modelByProduct = new Map<string, SelectedModel | 'AUTO'>()
   for (const [pid, m] of Object.entries(body.modelByProduct ?? {})) {
-    if (isModelKey(m) || m === 'MANUAL') modelByProduct.set(pid, m)
+    if (isModelKey(m) || m === 'MANUAL' || m === 'AUTO') modelByProduct.set(pid, m)
   }
   // 신상품 옵션 수동 수량 — 0 이상 유한수만
   const manualQtyByOption: Record<string, number> = {}
@@ -446,7 +447,8 @@ export async function POST(req: NextRequest) {
     const windowDays = p.reorderConfig?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
     const targetCoverDays = p.reorderConfig?.targetCoverDays ?? DEFAULT_TARGET_COVER_DAYS
     const storedModel = p.reorderConfig?.forecastModel
-    const configModel = isModelKey(storedModel) ? storedModel : null
+    const modelChoice = modelByProduct.get(p.id)
+    const configModel = modelChoice !== 'AUTO' && isModelKey(storedModel) ? storedModel : null
 
     const optionInputs = optionInputsByProduct.get(p.id) ?? []
 
@@ -458,7 +460,7 @@ export async function POST(req: NextRequest) {
         roundUnit,
         windowDays,
         configModel,
-        overrideModel: modelByProduct.get(p.id),
+        overrideModel: modelChoice === 'AUTO' ? undefined : modelChoice,
         realized: realizedByProduct.get(p.id),
         layered: isLayered,
       },
@@ -797,13 +799,22 @@ export async function POST(req: NextRequest) {
     // 선택 모델을 상품 발주 설정에 고정(다음 계획 기본값). 설정 행이 없으면 기본값으로 만든다 —
     // 스키마 기본 리드타임(7)이 아니라 라우트 기본값(20)을 넣어 리드타임이 바뀌지 않게 한다.
     // 사용자가 modelByProduct 로 직접 고른 모델만 고정한다(추천·기존 설정값은 저장하지 않음 → 추천이 계속 갱신).
+    // 'AUTO' 이거나 추천 모델과 같은 선택이면 고정 해제(forecastModel = null).
     const planProductIds = new Set(products.map((p) => p.id))
-    for (const [productId, forecastModel] of modelByProduct) {
-      if (forecastModel === 'MANUAL' || !planProductIds.has(productId)) continue
+    for (const [productId, choice] of modelByProduct) {
+      if (choice === 'MANUAL' || !planProductIds.has(productId)) continue
+      const recommended = itemInputs.find((it) => it.productId === productId)?.plan.recommendedModel
+      if (choice === 'AUTO' || choice === recommended) {
+        await tx.invReorderConfig.updateMany({
+          where: { productId },
+          data: { forecastModel: null },
+        })
+        continue
+      }
       await tx.invReorderConfig.upsert({
         where: { productId },
-        update: { forecastModel },
-        create: { productId, forecastModel, leadTimeDays: DEFAULT_LEAD_TIME_DAYS },
+        update: { forecastModel: choice },
+        create: { productId, forecastModel: choice, leadTimeDays: DEFAULT_LEAD_TIME_DAYS },
       })
     }
 

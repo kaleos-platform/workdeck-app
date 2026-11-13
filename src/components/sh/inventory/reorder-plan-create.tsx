@@ -88,7 +88,7 @@ type Preview = {
 
 type PickedProduct = { productId: string; productName: string; brandName: string | null }
 type EngineInputs = {
-  modelByProduct: Record<string, ModelKey>
+  modelByProduct: Record<string, ModelKey | 'AUTO'>
   manualQtyByOption: Record<string, number>
 }
 type LinkedLocation = { id: string; name: string; externalSource: string | null; isActive: boolean }
@@ -157,7 +157,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   // 발주 수량 0인 세트까지 펼쳐 볼지 (세트가 수십 종인 상품이 많다)
   const [showZeroSets, setShowZeroSets] = useState(false)
   // 사용자가 직접 고른 상품별 모델만 담는다 — 응답의 추천값으로 채우면 생성 시 설정에 고정돼 버린다.
-  const [modelByProduct, setModelByProduct] = useState<Record<string, ModelKey>>({})
+  const [modelByProduct, setModelByProduct] = useState<Record<string, ModelKey | 'AUTO'>>({})
   // 상품 발주 설정(목표 커버일수·예측 제외) — 변경 즉시 config PATCH
   const [coverDaysInput, setCoverDaysInput] = useState('')
   const [excluded, setExcluded] = useState(false)
@@ -403,9 +403,14 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   }
 
   // 모델 라디오 변경 → 바뀐 선택으로 즉시 재계산
-  const handleSelectModel = (productId: string, model: ModelKey) => {
+  // 'AUTO' 또는 추천 모델과 같은 선택은 고정하지 않는다(서버도 같은 규칙으로 고정 해제).
+  const handleSelectModel = (
+    productId: string,
+    model: ModelKey | 'AUTO',
+    recommended?: ModelKey
+  ) => {
     if (!picked) return
-    const next = { ...modelByProduct, [productId]: model }
+    const next = { ...modelByProduct, [productId]: model === recommended ? 'AUTO' : model }
     setModelByProduct(next)
     void fetchPreview(picked.productId, !includeRocket, selectedLinkedLocationIds, undefined, {
       modelByProduct: next,
@@ -687,8 +692,12 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     const est = options.filter((o) => o.productId === pid && !o.isNewOption)
     const head = est[0]
     if (!head) return null
-    const selected =
-      modelByProduct[pid] ?? (head.selectedModel !== 'MANUAL' ? head.selectedModel : null)
+    // 자동 = 추천 사용(고정 없음). 서버 응답의 선택 모델이 추천과 다르면 설정에 고정된 상태.
+    const selected: ModelKey | 'AUTO' =
+      modelByProduct[pid] ??
+      (head.selectedModel !== 'MANUAL' && head.selectedModel !== head.recommendedModel
+        ? head.selectedModel
+        : 'AUTO')
     return (
       <Panel
         key={pid}
@@ -707,6 +716,36 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
             </TableRow>
           </TableHeader>
           <TableBody>
+            <TableRow data-state={selected === 'AUTO' ? 'selected' : undefined}>
+              <TableCell className="text-sm">
+                자동(추천)
+                <span className="ml-1.5 text-xs text-muted-foreground">
+                  ({MODEL_KEY_LABEL[head.recommendedModel]})
+                </span>
+              </TableCell>
+              <TableCell className="text-right font-mono tabular-nums">
+                {est.reduce((s, o) => s + o.models[head.recommendedModel].dailyRate, 0).toFixed(2)}
+              </TableCell>
+              <TableCell className="text-right font-mono tabular-nums">
+                {fmtQty(est.reduce((s, o) => s + o.models[head.recommendedModel].qty, 0))}
+              </TableCell>
+              <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                {head.backtestWape[head.recommendedModel] != null
+                  ? `${(head.backtestWape[head.recommendedModel]! * 100).toFixed(1)}%`
+                  : '—'}
+              </TableCell>
+              <TableCell className="text-center">
+                <input
+                  type="radio"
+                  name={`reorder-model-${pid}`}
+                  className="h-4 w-4 accent-primary"
+                  aria-label="자동(추천) 선택"
+                  checked={selected === 'AUTO'}
+                  disabled={previewLoading}
+                  onChange={() => handleSelectModel(pid, 'AUTO')}
+                />
+              </TableCell>
+            </TableRow>
             {MODEL_KEYS.map((k) => {
               const rate = est.reduce((s, o) => s + o.models[k].dailyRate, 0)
               const qty = est.reduce((s, o) => s + o.models[k].qty, 0)
@@ -739,7 +778,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                       aria-label={`${MODEL_KEY_LABEL[k]} 선택`}
                       checked={selected === k}
                       disabled={previewLoading}
-                      onChange={() => handleSelectModel(pid, k)}
+                      onChange={() => handleSelectModel(pid, k, head.recommendedModel)}
                     />
                   </TableCell>
                 </TableRow>

@@ -199,6 +199,14 @@ d('POST /reorder/plan — dryRun · optionFinalOverrides (dev DB)', () => {
     const cfg2 = await prisma.invReorderConfig.findUnique({ where: { productId: old.id } })
     expect(cfg2?.forecastModel).toBe('MA90')
     expect(cfg2?.leadTimeDays).toBe(20)
+
+    // 자동(AUTO) → 고정 해제, 계산은 추천 모델 사용
+    const r3 = await (await POST(
+      post({ productId: old.id, modelByProduct: { [old.id]: 'AUTO' } })
+    ))!.json()
+    expect(r3.items[0].selectedModel).toBe(r3.items[0].recommendedModel)
+    const cfg3 = await prisma.invReorderConfig.findUnique({ where: { productId: old.id } })
+    expect(cfg3?.forecastModel ?? null).toBeNull()
   })
 
   test('excludeFromForecast 상품 → 생성 거부(422)', async () => {
