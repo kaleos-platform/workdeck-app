@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import {
-  calculateReorder,
-  DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS,
-} from '@/lib/inv/reorder-calculator'
+import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
 import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
-import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
+import { plannedStockQty } from '@/lib/inv/planned-stock'
 import {
-  INCOMING_PRODUCTION_STATUSES,
-  plannedStockQty,
-  sumIncomingProductionQtyByOption,
-} from '@/lib/inv/planned-stock'
+  computeOrderQty,
+  isModelKey,
+  loadNetByDate,
+  loadReorderStockInputs,
+  optionDailyRate,
+} from '@/lib/inv/reorder-engine'
 import { formatDateToYmdKst } from '@/lib/date-range'
 
 // KST 기준 YYYY-MM-DD — loadOptionDemand의 toKstDateKey 키와 타임존 일치.
@@ -19,6 +18,11 @@ import { formatDateToYmdKst } from '@/lib/date-range'
 const toDateStr = formatDateToYmdKst
 
 const DEFAULT_WINDOW_DAYS = 90
+const DEFAULT_TARGET_COVER_DAYS = 30
+const DEFAULT_FORECAST_MODEL = 'MA_BLEND'
+
+const round1 = (n: number) => Math.round(n * 10) / 10
+const round2 = (n: number) => Math.round(n * 100) / 100
 
 /**
  * 발주 예측 — 옵션 단위 행.
@@ -71,52 +75,9 @@ export async function GET(req: NextRequest) {
 
   const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
 
-  // 옵션별 현재 재고
-  const stockGroups = optionIds.length
-    ? await prisma.invStockLevel.groupBy({
-        by: ['optionId'],
-        where: { spaceId, optionId: { in: optionIds } },
-        _sum: { quantity: true },
-      })
-    : []
-  const stockByOption = new Map<string, number>()
-  for (const g of stockGroups) {
-    stockByOption.set(g.optionId, g._sum.quantity ?? 0)
-  }
-
-  // 반품 등급 재고 차감 — 쿠팡이 고객 반품품을 별도 상품으로 재등록한 재고는 반품
-  // 전용 리스팅에서만 팔려 정상 상품 수요를 메우지 못한다. 재고 현황에는 실물이므로
-  // 포함하되 발주 계산에서는 가용재고로 세지 않는다. plan/route.ts 와 같은 규칙.
-  const returnStock = await getCoupangReturnStockByOption(spaceId)
-  const returnQtyByOption = new Map<string, number>()
-  if (returnStock && returnStock.byOption.size > 0) {
-    for (const optionId of optionIds) {
-      const returnQty = returnStock.byOption.get(optionId) ?? 0
-      if (returnQty <= 0) continue
-      returnQtyByOption.set(optionId, returnQty)
-      const total = stockByOption.get(optionId)
-      // 스냅샷 시점 차이로 반품량이 현재고를 넘을 수 있다 — 음수 재고를 만들지 않는다.
-      if (total != null) stockByOption.set(optionId, Math.max(0, total - returnQty))
-    }
-  }
-
-  const pendingRuns = optionIds.length
-    ? await prisma.productionRun.findMany({
-        where: {
-          spaceId,
-          status: { in: [...INCOMING_PRODUCTION_STATUSES] },
-          items: { some: { optionId: { in: optionIds } } },
-        },
-        select: {
-          status: true,
-          items: {
-            where: { optionId: { in: optionIds } },
-            select: { optionId: true, quantity: true },
-          },
-        },
-      })
-    : []
-  const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
+  // 재고·입고예정 — 발주 엔진·재고현황과 같은 입력(전 위치 − 반품 등급, 진행 차수 + 외부 입고 대기분).
+  // 반품 등급은 반품 전용 리스팅에서만 팔려 정상 수요를 메우지 못하므로 가용재고에서 뺀다.
+  const stockInputs = await loadReorderStockInputs(spaceId, optionIds)
 
   // 수요 신호 = 옵션별 주문수요 합(수동채널 DelOrderItem + 로켓 VENDOR). 발주 plan 생성과
   // 판매분석이 공유하는 loadOptionDemand 를 써 세 화면이 정의상 같은 수요를 본다.
@@ -127,9 +88,11 @@ export async function GET(req: NextRequest) {
     for (const o of p.options) windowDaysByOption.set(o.id, wd)
   }
 
+  const now = new Date()
   const outboundByOption = new Map<string, number>()
+  const dailyByOption = new Map<string, Record<string, number>>()
+  let netByOption = new Map<string, Record<string, number>>()
   if (optionIds.length > 0) {
-    const now = new Date()
     const maxWindowDays = Math.max(DEFAULT_WINDOW_DAYS, ...windowDaysByOption.values())
     const since = new Date(now.getTime() - maxWindowDays * 24 * 60 * 60 * 1000)
     const optionIdSet = new Set(optionIds)
@@ -139,7 +102,6 @@ export async function GET(req: NextRequest) {
     const demandRows = await loadOptionDemand(spaceId, since, now, activeChannels)
 
     // 옵션별 일별 수요 → windowDays 절단 합산 (옵션마다 분석기간 다를 수 있음).
-    const dailyByOption = new Map<string, Record<string, number>>()
     for (const id of optionIds) dailyByOption.set(id, {})
     for (const row of demandRows) {
       if (!optionIdSet.has(row.optionId)) continue
@@ -156,6 +118,7 @@ export async function GET(req: NextRequest) {
       }
       outboundByOption.set(id, sum)
     }
+    netByOption = await loadNetByDate(spaceId, optionIds, since)
   }
 
   // 옵션 단위 행 생성
@@ -165,19 +128,44 @@ export async function GET(req: NextRequest) {
     const leadTimeDays = cfg?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
 
     const displayName = p.internalName && p.internalName.trim().length > 0 ? p.internalName : p.name
+    const targetCoverDays = cfg?.targetCoverDays ?? DEFAULT_TARGET_COVER_DAYS
+    const model = isModelKey(cfg?.forecastModel) ? cfg.forecastModel : DEFAULT_FORECAST_MODEL
     return p.options.map((o) => {
-      const onHandStock = stockByOption.get(o.id) ?? 0
-      const incomingQty = incomingByOption.get(o.id) ?? 0
+      const stock = stockInputs.get(o.id)
+      const onHandStock = stock?.onHandQty ?? 0
+      const returnGradeQty = stock?.returnGradeQty ?? 0
+      const incomingQty = stock?.incomingQty ?? 0
       const currentStock = plannedStockQty({ onHandQty: onHandStock, incomingQty })
       const totalOutbound = outboundByOption.get(o.id) ?? 0
       const safetyStockQty = o.safetyStockQty
-      const calc = calculateReorder({
-        totalOutbound,
+      // 발주 엔진과 같은 일률·발주량 공식(리드타임 + 목표 커버일수). 반올림 단위는 카드에서 쓰지 않아 1.
+      const dailyRate = optionDailyRate({
+        qtyByDate: dailyByOption.get(o.id) ?? {},
+        netByDate: netByOption.get(o.id) ?? {},
+        currentStock: onHandStock + returnGradeQty, // 원재고(반품 등급 포함) — 품절일 판정용
         windowDays,
-        leadTimeDays,
-        safetyStockQty,
-        currentStock,
+        horizonDays: leadTimeDays + targetCoverDays,
+        model,
+        now,
       })
+      const order = computeOrderQty({
+        dailyRate,
+        leadTimeDays,
+        targetCoverDays,
+        safetyStockQty,
+        onHandQty: onHandStock,
+        incomingQty,
+        roundUnit: 1,
+      })
+      const estimatedDepletionDays =
+        currentStock > 0 && dailyRate > 0 ? round1(currentStock / dailyRate) : null
+      const calc = {
+        dailyAvgOutbound: round2(dailyRate),
+        neededStock: Math.ceil(order.gross + safetyStockQty),
+        reorderQty: order.suggestedQty,
+        estimatedDepletionDays,
+        isUrgent: estimatedDepletionDays !== null && estimatedDepletionDays < 7,
+      }
       return {
         productId: p.id,
         // 내부 표시용 — 관리명 우선, 없으면 공식명
@@ -190,7 +178,7 @@ export async function GET(req: NextRequest) {
         sku: o.sku ?? null,
         currentStock,
         onHandStock,
-        returnQty: returnQtyByOption.get(o.id),
+        returnQty: returnGradeQty > 0 ? returnGradeQty : undefined,
         incomingQty,
         totalOutbound,
         windowDays,

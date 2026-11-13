@@ -582,7 +582,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
         const dailyRate = optionDailyRate({
           qtyByDate: demandByOption.get(o.id) ?? {},
           netByDate: netByOption.get(o.id) ?? {},
-          currentStock: stockInput?.onHandQty ?? currentQty,
+          currentStock: currentQty, // 원재고(반품 등급 포함) — 품절일 판정용
           windowDays: p.reorderConfig?.analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS,
           horizonDays: leadTimeDays + (p.reorderConfig?.targetCoverDays ?? 30),
           model: isModelKey(storedModel) ? storedModel : 'MA_BLEND',
