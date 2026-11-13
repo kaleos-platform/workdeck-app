@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { isExpiringSoon } from '@/lib/integrations/attention'
 
 type SecretConfig = {
   baseUrl: string
@@ -56,7 +57,7 @@ const hostOf = (url: string) => {
 const secretPath = (spaceId: string, name: string) =>
   `/api/spaces/${spaceId}/secrets/${encodeURIComponent(name)}`
 
-export function SpaceSecretsCard() {
+export function SpaceSecretsCard({ onChanged }: { onChanged?: () => void }) {
   const [spaceId, setSpaceId] = useState<string | null>(null)
   const [spaceName, setSpaceName] = useState<string | null>(null)
   const [secrets, setSecrets] = useState<SecretMeta[]>([])
@@ -134,6 +135,7 @@ export function SpaceSecretsCard() {
     if (!r.ok) return r.message ?? ''
     setEdit(null)
     await load()
+    onChanged?.()
     return null
   }
 
@@ -168,7 +170,12 @@ export function SpaceSecretsCard() {
     if (!r.ok) return r.message && setError(r.message)
     if (revealed?.name === name) clearReveal()
     await load()
+    onChanged?.()
   }
+
+  const expiresSoon = (s: (typeof secrets)[number]) =>
+    !!s.config && 'expiresAt' in s.config && isExpiringSoon(s.config.expiresAt)
+  const sortedSecrets = [...secrets].sort((a, b) => Number(expiresSoon(b)) - Number(expiresSoon(a)))
 
   const agentName = (id: string) => agents.find((a) => a.id === id)?.name ?? id
 
@@ -204,7 +211,7 @@ export function SpaceSecretsCard() {
           )}
         </div>
         {secrets.length === 0 && <p className="text-muted-foreground">등록된 비밀값이 없습니다.</p>}
-        {secrets.map((s) => (
+        {sortedSecrets.map((s) => (
           <div key={s.name} className="space-y-2 rounded-md border p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-mono font-medium">{s.name}</span>

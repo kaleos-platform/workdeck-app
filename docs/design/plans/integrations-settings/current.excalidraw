@@ -1,0 +1,307 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "e1",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 900,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e2",
+   "x": 24,
+   "y": 20,
+   "text": "연동 설정",
+   "fontSize": 24,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e3",
+   "x": 24,
+   "y": 56,
+   "text": "Slack 연결과 워크덱 에이전트, 외부 MCP 클라이언트 연동을 관리하세요.",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e4",
+   "x": 24,
+   "y": 96,
+   "width": 852,
+   "height": 110,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e5",
+   "x": 44,
+   "y": 110,
+   "text": "Slack 연결",
+   "fontSize": 16,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e6",
+   "x": 44,
+   "y": 138,
+   "text": "채널 목록·추가·해제",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e7",
+   "x": 24,
+   "y": 218,
+   "width": 852,
+   "height": 130,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e8",
+   "x": 44,
+   "y": 232,
+   "text": "쿠팡 Open API 연동",
+   "fontSize": 16,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e9",
+   "x": 44,
+   "y": 260,
+   "text": "자격증명·IP 허용목록·연결 테스트",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e10",
+   "x": 24,
+   "y": 360,
+   "width": 852,
+   "height": 90,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e11",
+   "x": 44,
+   "y": 374,
+   "text": "workdeck 에이전트",
+   "fontSize": 16,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e12",
+   "x": 44,
+   "y": 402,
+   "text": "활성화 Switch·오늘 사용량",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e13",
+   "x": 24,
+   "y": 462,
+   "width": 852,
+   "height": 150,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e14",
+   "x": 44,
+   "y": 476,
+   "text": "에이전트·토큰 관리",
+   "fontSize": 16,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e15",
+   "x": 44,
+   "y": 504,
+   "text": "에이전트별 권한·토큰 표",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e16",
+   "x": 24,
+   "y": 624,
+   "width": 852,
+   "height": 120,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e17",
+   "x": 44,
+   "y": 638,
+   "text": "비밀값",
+   "fontSize": 16,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e18",
+   "x": 44,
+   "y": 666,
+   "text": "등록·교체·허용 에이전트",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e19",
+   "x": 24,
+   "y": 756,
+   "width": 852,
+   "height": 110,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e20",
+   "x": 44,
+   "y": 770,
+   "text": "내 에이전트 연결(MCP)",
+   "fontSize": 16,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e21",
+   "x": 44,
+   "y": 798,
+   "text": "클라이언트별 Tabs 가이드",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e22",
+   "x": 844,
+   "y": 20,
+   "width": 26,
+   "height": 26,
+   "strokeColor": "#111827",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#111827",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "①",
+    "fontSize": 13,
+    "strokeColor": "#ffffff"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e23",
+   "x": 600,
+   "y": 24,
+   "text": "카드 6개가 세로로 쌓임",
+   "fontSize": 13,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e24",
+   "x": 844,
+   "y": 300,
+   "width": 26,
+   "height": 26,
+   "strokeColor": "#111827",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#111827",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "②",
+    "fontSize": 13,
+    "strokeColor": "#ffffff"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e25",
+   "x": 610,
+   "y": 304,
+   "text": "상태를 보려면 끝까지 스크롤",
+   "fontSize": 13,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

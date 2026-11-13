@@ -1,0 +1,55 @@
+name: UI smoke (non-blocking)
+
+# 로그인 없는 화면의 스크린샷 비교 + axe(serious·critical).
+# 비차단: continue-on-error. 필수 체크로 바꾸는 것은 2주 운영 뒤 판단한다.
+# 실제 백엔드 없이 더미 공개 환경변수로 빌드·실행한다(QA 계정·비밀값을 쓰지 않는다).
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - 'app/**'
+      - 'src/components/**'
+      - 'components/**'
+      - 'e2e/visual-smoke.spec.ts'
+      - 'e2e/visual-smoke.spec.ts-snapshots/**'
+      - 'package-lock.json'
+      - '.github/workflows/ui-smoke.yml'
+
+jobs:
+  visual-smoke:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 30
+    container:
+      # @playwright/test 버전(package-lock.json)과 맞춘다. 기준 스크린샷도 이 이미지로 만든다.
+      image: mcr.microsoft.com/playwright:v1.58.2-jammy
+      options: --ipc=host
+    env:
+      CI: '1'
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key
+      DATABASE_URL: postgresql://u:p@127.0.0.1:5432/db
+      DIRECT_URL: postgresql://u:p@127.0.0.1:5432/db
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      # npm 11은 설치 스크립트를 막을 수 있어 postinstall(prisma generate + patch-package)을 명시 실행
+      - run: npm run postinstall
+      # 컨테이너 Node 24 기본 힙으로는 타입 검사가 OOM(2026-11-09 로컬 재현) → 힙 6GB
+      - run: npx next build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+      - name: Start app
+        run: |
+          npx next start -H 127.0.0.1 -p 3000 > /tmp/next.log 2>&1 &
+          timeout 90 bash -c 'until curl -sf -o /dev/null http://127.0.0.1:3000/login; do sleep 2; done'
+      - run: npx playwright test e2e/visual-smoke.spec.ts --reporter=line
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-smoke-results
+          path: test-results/
+          retention-days: 7
