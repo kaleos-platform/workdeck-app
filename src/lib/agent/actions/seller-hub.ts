@@ -2,21 +2,14 @@ import { z } from 'zod'
 import type { ActionDefinition } from './types'
 import { prisma } from '@/lib/prisma'
 import { ToolUserError } from '@/lib/agent/tools/errors'
-import { forecastOption, buildDailySeries } from '@/lib/inv/forecast'
-import { computeBiasAdjust } from '@/lib/inv/forecast/bias-adjust'
-import { roundUp } from '@/lib/inv/round'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
-import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
+import { computeProductPlan, isModelKey, loadPlanOptionInputs } from '@/lib/inv/reorder-engine'
 import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
 import { readTargetKeywords, applyKeywordsToTarget } from '@/lib/sh/keyword-apply'
 import { applyKeywordOps } from '@/lib/sh/keyword-review'
 import { lastChangeAt, isMeasuring, MEASURE_DAYS } from '@/lib/sh/keyword-review-query'
 import { keywordListSchema } from '@/lib/sh/schemas'
-import {
-  INCOMING_PRODUCTION_STATUSES,
-  plannedStockQty,
-  sumIncomingProductionQtyByOption,
-} from '@/lib/inv/planned-stock'
+import { plannedStockQty } from '@/lib/inv/planned-stock'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
 function def<T>(d: ActionDefinition<T>): ActionDefinition {
@@ -24,21 +17,20 @@ function def<T>(d: ActionDefinition<T>): ActionDefinition {
 }
 
 const DEFAULT_WINDOW_DAYS = 90
+const DEFAULT_TARGET_COVER_DAYS = 30
 
-// ─── 3) seller-hub.reorder.plan.create (최소 구현) ──────────────────────────
-// ⚠️ 원본 app/api/sh/inventory/reorder/plan/route.ts POST는 730줄 인라인 모놀리스로
-//   레이어드(로켓 세트)·optionFinalOverrides·LLM rationale·bias 정산(settleEligiblePlans)·
-//   P2002 재시도를 포함한 위저드다. route 파일 수정은 스코프 밖이고 전체 흐름을 감싼
-//   재사용 가능한 lib 함수가 없으므로, 이 액션은 **상품 단위·비레이어드 실생성 핵심만**
-//   재현한다(공유 예측 primitive 직접 호출 = 기계적 재사용).
+// ─── 3) seller-hub.reorder.plan.create ───────────────────────────────────────
+// 발주 계획 라우트(app/api/sh/inventory/reorder/plan/route.ts)와 같은 입력 로더(loadPlanOptionInputs)와
+// 같은 상품 단위 계산(computeProductPlan)을 쓴다 — 수량 공식·모델 선택·bias 가 화면 생성과 같다.
+// 모델 = 상품 발주 설정의 선택 모델, 없으면 백테스트 추천 모델.
 //
-// 의도적으로 생략(전부 반환 report에 명시):
-//   - 레이어드/로켓 세트 감지 (setSpecs, rocketChannel)
-//   - optionFinalOverrides / excludeRocketLayer / dryRun
-//   - LLM rationale (결정론적 폴백 텍스트만 저장)
-//   - bias 정산(settleEligiblePlans) 및 직전 계획 bias 로드 → computeBiasAdjust(null)=1.0
+// 의도적으로 생략(라우트 위저드 전용):
+//   - 레이어드/로켓 세트 감지 (setSpecs, rocketChannel) — 비레이어드 상품 계획만 만든다
+//   - optionFinalOverrides / excludeRocketLayer / dryRun / 모델 지정(modelByProduct)
+//   - 신상품 옵션(이력 60일 미만) 수동 수량 입력 — 입력 수단이 없어 MANUAL·수량 0 으로 저장된다
+//   - LLM rationale (결정론적 텍스트만 저장)
+//   - bias 정산 실행(settleEligiblePlans) — 이미 정산된 계획의 bias 는 로더가 반영한다
 //   - P2002 planNo 충돌 재시도 (generatePlanNo 1회)
-//   - reorderPlanSet 라인 (세트 모드 전용)
 const reorderPlanParams = z.object({
   productId: z.string(),
   optionIds: z.array(z.string()).optional(),
@@ -55,10 +47,12 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
   validateCreate: async (ctx, params) => {
     const product = await prisma.invProduct.findFirst({
       where: { id: params.productId, spaceId: ctx.spaceId, status: 'ACTIVE' },
-      select: { id: true },
+      select: { id: true, reorderConfig: { select: { excludeFromForecast: true } } },
     })
     if (!product)
       throw new ToolUserError(`이 Space 에서 활성 상품을 찾을 수 없습니다: ${params.productId}`)
+    if (product.reorderConfig?.excludeFromForecast)
+      throw new ToolUserError('발주 예측에서 제외된 상품입니다. 발주 설정에서 제외를 해제하세요.')
   },
   execute: async (ctx, params) => {
     const spaceId = ctx.spaceId
@@ -69,7 +63,7 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
     const selectedOptionIds =
       Array.isArray(params.optionIds) && params.optionIds.length > 0 ? params.optionIds : null
 
-    // ── 1) 상품 + 옵션 + 예측 설정 로드 (활성 상품만) ──
+    // ── 1) 상품 + 옵션 + 발주 설정 로드 (활성 상품만) ──
     const product = await prisma.invProduct.findFirst({
       where: { spaceId, status: 'ACTIVE', id: params.productId },
       select: {
@@ -82,97 +76,76 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
             status: 'ACTIVE',
             ...(selectedOptionIds ? { id: { in: selectedOptionIds } } : {}),
           },
-          select: { id: true, safetyStockQty: true },
+          select: { id: true, safetyStockQty: true, createdAt: true },
         },
-        reorderConfig: { select: { leadTimeDays: true, analysisWindowDays: true } },
+        reorderConfig: {
+          select: {
+            leadTimeDays: true,
+            analysisWindowDays: true,
+            targetCoverDays: true,
+            excludeFromForecast: true,
+            forecastModel: true,
+          },
+        },
       },
     })
     if (!product) {
       throw new Error('선택한 상품을 찾을 수 없습니다 (활성 상태가 아니거나 권한 없음)')
     }
+    if (product.reorderConfig?.excludeFromForecast) {
+      throw new Error('발주 예측에서 제외된 상품입니다. 발주 설정에서 제외를 해제하세요.')
+    }
     if (product.options.length === 0) throw new Error('선택된 옵션이 없습니다')
 
-    const optionIds = product.options.map((o) => o.id)
-    const optionIdSet = new Set(optionIds)
     const leadTimeDays = product.reorderConfig?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
     const windowDays = product.reorderConfig?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
+    const targetCoverDays = product.reorderConfig?.targetCoverDays ?? DEFAULT_TARGET_COVER_DAYS
     const roundUnit = product.reorderRoundUnit ?? 10
-
-    // ── 2) 현재 재고 + 입고 예정(생산 중) ──
-    const stockGroups = await prisma.invStockLevel.groupBy({
-      by: ['optionId'],
-      where: { spaceId, optionId: { in: optionIds } },
-      _sum: { quantity: true },
-    })
-    const stockByOption = new Map<string, number>()
-    for (const g of stockGroups) stockByOption.set(g.optionId, g._sum.quantity ?? 0)
-
-    const pendingRuns = await prisma.productionRun.findMany({
-      where: {
-        spaceId,
-        status: { in: [...INCOMING_PRODUCTION_STATUSES] },
-        items: { some: { optionId: { in: optionIds } } },
-      },
-      select: {
-        status: true,
-        items: {
-          where: { optionId: { in: optionIds } },
-          select: { optionId: true, quantity: true },
-        },
-      },
-    })
-    const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
-
-    // ── 3) 주문수요 로드(활성 채널 전수) → 옵션별 일별 집계 ──
+    const storedModel = product.reorderConfig?.forecastModel
     const now = new Date()
-    const since = new Date(
-      now.getTime() - Math.max(DEFAULT_WINDOW_DAYS, windowDays) * 24 * 60 * 60 * 1000
-    )
-    const activeChannels = await loadSalesDemandChannels(spaceId)
-    const demandRows = await loadOptionDemand(spaceId, since, now, activeChannels)
-    const dailyByOption = new Map<string, Record<string, number>>()
-    for (const id of optionIds) dailyByOption.set(id, {})
-    for (const row of demandRows) {
-      if (!optionIdSet.has(row.optionId)) continue
-      const byDate = dailyByOption.get(row.optionId)!
-      byDate[row.date] = (byDate[row.date] ?? 0) + row.quantity
-    }
 
-    // ── 4) 옵션별 예측 + 수량 계산 (bias=1.0 폴백) ──
-    const itemInputs = product.options.map((o) => {
-      const history = buildDailySeries(dailyByOption.get(o.id) ?? {}, windowDays, now)
-      const forecastResult = forecastOption({ history, leadTimeDays })
-      const biasAdjustFactor = computeBiasAdjust(null) // 직전 계획 bias 미로드 → 1.0
-
-      const onHandStock = stockByOption.get(o.id) ?? 0
-      const incomingQty = incomingByOption.get(o.id) ?? 0
-      const currentStock = plannedStockQty({ onHandQty: onHandStock, incomingQty })
-      const safetyStockQty = o.safetyStockQty
-
-      const rawQty =
-        forecastResult.dailyAvg * biasAdjustFactor * leadTimeDays + safetyStockQty - currentStock
-      const suggestedQty = Math.max(0, Math.ceil(rawQty))
-      const roundedSuggestedQty = suggestedQty > 0 ? roundUp(suggestedQty, roundUnit) : 0
-
+    // ── 2) 입력 로드 + 상품 단위 계산 (발주 계획 라우트와 공용) ──
+    const { optionInputsByProduct, realizedByProduct } = await loadPlanOptionInputs({
+      spaceId,
+      products: [product],
+      now,
+      rocketChannelId: null,
+    })
+    const optionInputs = optionInputsByProduct.get(product.id) ?? []
+    const results = computeProductPlan({
+      options: optionInputs,
+      product: {
+        leadTimeDays,
+        targetCoverDays,
+        roundUnit,
+        windowDays,
+        configModel: isModelKey(storedModel) ? storedModel : null,
+        realized: realizedByProduct.get(product.id),
+        layered: false,
+      },
+      now,
+    })
+    const itemInputs = results.map((plan, idx) => {
+      const input = optionInputs[idx]
       return {
-        optionId: o.id,
-        forecastResult,
-        biasAdjustFactor,
-        currentStock,
-        onHandStock,
-        incomingQty,
-        safetyStockQty,
-        suggestedQty,
-        roundedSuggestedQty,
+        plan,
+        biasAdjustFactor: input.biasFactor,
+        safetyStockQty: input.safetyStockQty,
+        onHandStock: input.stock.onHandQty,
+        incomingQty: input.stock.incomingQty,
+        currentStock: plannedStockQty({
+          onHandQty: input.stock.onHandQty,
+          incomingQty: input.stock.incomingQty,
+        }),
       }
     })
 
-    // ── 5) 트랜잭션 저장 (LLM 없이 결정론적 rationale) ──
+    // ── 3) 트랜잭션 저장 (LLM 없이 결정론적 rationale) ──
     const planId = await prisma.$transaction(async (tx) => {
       const planNo = await generatePlanNo(spaceId, tx)
-      const totalSuggestedQty = itemInputs.reduce((s, i) => s + i.roundedSuggestedQty, 0)
+      const totalSuggestedQty = itemInputs.reduce((s, i) => s + i.plan.roundedSuggestedQty, 0)
       const biasAdjustApplied: Record<string, number> = {}
-      for (const item of itemInputs) biasAdjustApplied[item.optionId] = item.biasAdjustFactor
+      for (const item of itemInputs) biasAdjustApplied[item.plan.optionId] = item.biasAdjustFactor
 
       const plan = await tx.reorderPlan.create({
         data: {
@@ -194,25 +167,28 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
       await tx.reorderPlanItem.createMany({
         data: itemInputs.map((item) => ({
           planId: plan.id,
-          optionId: item.optionId,
+          optionId: item.plan.optionId,
           productId: params.productId,
           currentStock: item.currentStock,
-          dailyAvgForecast: item.forecastResult.dailyAvg,
-          forecastModel: item.forecastResult.model,
+          dailyAvgForecast: item.plan.dailyRate,
+          forecastModel: item.plan.selectedModel,
+          modelForecasts: item.plan.modelForecasts,
           leadTimeDays,
           safetyStockQty: item.safetyStockQty,
-          suggestedQty: item.suggestedQty,
-          roundedSuggestedQty: item.roundedSuggestedQty,
-          finalQty: item.roundedSuggestedQty,
+          suggestedQty: item.plan.suggestedQty,
+          roundedSuggestedQty: item.plan.roundedSuggestedQty,
+          finalQty: item.plan.finalQty,
           roundUnit,
           // 결정론적 rationale — LLM 미사용(승인 큐 액션은 동기 실행, 외부 호출 최소화).
-          rationale: `${item.forecastResult.model} 예측 일평균 ${item.forecastResult.dailyAvg.toFixed(2)}개, 리드타임 ${leadTimeDays}일 + 안전재고 ${item.safetyStockQty}개 (현재재고 ${item.currentStock}개).`,
+          rationale: `${item.plan.selectedModel} 모델 일평균 ${item.plan.dailyRate.toFixed(2)}개 × (리드타임 ${leadTimeDays}일 + 목표 커버 ${targetCoverDays}일) + 안전재고 ${item.safetyStockQty}개 − 현재고·생산 중 ${item.currentStock}개.`,
           biasAdjustFactor: item.biasAdjustFactor,
-          confidenceScore: item.forecastResult.confidence,
+          confidenceScore: null,
           inputsSnapshot: JSON.parse(
             JSON.stringify({
-              profile: item.forecastResult.debug.profile ?? null,
-              forecastDebug: item.forecastResult.debug,
+              selectedModel: item.plan.selectedModel,
+              recommendedModel: item.plan.recommendedModel,
+              targetCoverDays,
+              isNewOption: item.plan.isNewOption,
               biasAdjustFactor: item.biasAdjustFactor,
               windowDays,
               leadTimeDays,

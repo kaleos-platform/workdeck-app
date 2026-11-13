@@ -152,6 +152,8 @@ export function StockStatusGradePopover({ settings, onSaved }: Props) {
             </p>
           </div>
 
+          {/* avgWindow 는 등급 계산에 더 이상 쓰이지 않는다 — 일평균은 발주 엔진 모델(상품 선택 모델,
+              없으면 MA_BLEND)이 정한다. 설정 UI 는 Task 9 범위상 유지(정리는 후속). */}
           <div className="space-y-1">
             <Label className="text-xs">일평균 기준 기간</Label>
             <Select

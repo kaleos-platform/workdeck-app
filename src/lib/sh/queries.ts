@@ -26,6 +26,13 @@ import {
 import { productDisplayName } from '@/lib/sh/product-display'
 import { loadRocketDailyOptionQty } from '@/lib/inv/coupang-sales-to-movement'
 import { readStockGradeSettings } from '@/lib/sh/stock-grade-settings'
+import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
+import {
+  DEFAULT_PLAN_WINDOW_DAYS,
+  isModelKey,
+  loadNetByDate,
+  optionDailyRate,
+} from '@/lib/inv/reorder-engine'
 
 // ────────────────────────────────────────────────────────────────────────────
 // sales-summary
@@ -421,7 +428,15 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           code: true,
           brand: { select: { id: true, name: true, logoUrl: true } },
           // 커버 일수 등급(화면 전용)의 임계 기준 — 발주 계획과 동일한 상품별 리드타임.
-          reorderConfig: { select: { leadTimeDays: true } },
+          // 일률은 발주 엔진과 같은 모델·분석 기간·목표 커버일수(SES_TREND horizon)로 계산한다.
+          reorderConfig: {
+            select: {
+              leadTimeDays: true,
+              analysisWindowDays: true,
+              targetCoverDays: true,
+              forecastModel: true,
+            },
+          },
           options: {
             // 삭제된 옵션(생산 차수 등 참조가 있어 soft-delete 된 건)은 제외
             where: { deletedAt: null },
@@ -445,6 +460,33 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     },
     orderBy: { name: 'asc' },
   })
+
+  // ───────────────────────────────────────────────────────────────────
+  // 0. 등급용 일평균 — 발주 엔진 일률(판매 수요 · 품절일 제외 · 상품 선택 모델, 없으면 MA_BLEND)
+  //    OUTBOUND 장부(out30d/out90d)는 상태(status)·KPI 용으로 그대로 둔다.
+  // ───────────────────────────────────────────────────────────────────
+  const now = new Date()
+  const allOptionIds = groups.flatMap((g) => g.products.flatMap((p) => p.options.map((o) => o.id)))
+  const maxWindowDays = Math.max(
+    DEFAULT_PLAN_WINDOW_DAYS,
+    ...groups.flatMap((g) =>
+      g.products.map((p) => p.reorderConfig?.analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS)
+    )
+  )
+  const demandSince = new Date(now.getTime() - maxWindowDays * 24 * 3600 * 1000)
+  const [demandRows, netByOption] = await Promise.all([
+    loadSalesDemandChannels(spaceId).then((channels) =>
+      loadOptionDemand(spaceId, demandSince, now, channels)
+    ),
+    // ponytail: 전 옵션 분석 기간 이동 내역을 읽는다 — 느려지면 KST 일자 groupBy raw SQL 로
+    loadNetByDate(spaceId, allOptionIds, demandSince),
+  ])
+  const demandByOption = new Map<string, Record<string, number>>()
+  for (const row of demandRows) {
+    const byDate = demandByOption.get(row.optionId) ?? {}
+    byDate[row.date] = (byDate[row.date] ?? 0) + row.quantity
+    demandByOption.set(row.optionId, byDate)
+  }
 
   // ───────────────────────────────────────────────────────────────────
   // 1. legacy shaped 응답 (기존 UI 호환)
@@ -501,6 +543,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     leadTimeDays: number
     out30d: number
     out90d: number
+    /** 등급용 일평균 — 발주 엔진 일률 */
+    dailyRate: number
     byLocation: Record<string, number>
     /** 위치별 반품 등급 보유량. includeReturnStock 일 때만, 쿠팡 위치만 채워진다 */
     returnQtyByLocation?: Record<string, number>
@@ -542,6 +586,17 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
         const totalValue = costPrice !== null ? Math.round(costPrice * totalQty) : 0
         const out30d = outbound30dByOption.get(o.id) ?? 0
         const out90d = outbound90dByOption.get(o.id) ?? 0
+        const leadTimeDays = p.reorderConfig?.leadTimeDays ?? gradeSettings.defaultLeadTimeDays
+        const storedModel = p.reorderConfig?.forecastModel
+        const dailyRate = optionDailyRate({
+          qtyByDate: demandByOption.get(o.id) ?? {},
+          netByDate: netByOption.get(o.id) ?? {},
+          currentStock: currentQty,
+          windowDays: p.reorderConfig?.analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS,
+          horizonDays: leadTimeDays + (p.reorderConfig?.targetCoverDays ?? 30),
+          model: isModelKey(storedModel) ? storedModel : 'MA_BLEND',
+          now,
+        })
         const externalCodeByLocation: Record<string, string> = {}
         const optionMap = externalCodeByOptionLocation.get(o.id)
         if (optionMap) {
@@ -559,7 +614,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           brandName: p.brand?.name ?? null,
           groupId: g.id,
           groupName: g.name,
-          leadTimeDays: p.reorderConfig?.leadTimeDays ?? gradeSettings.defaultLeadTimeDays,
+          leadTimeDays,
           costPrice,
           retailPrice: decimalToNumber(o.retailPrice),
           safetyStockQty: o.safetyStockQty,
@@ -569,6 +624,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           incomingQty,
           out30d,
           out90d,
+          dailyRate,
           byLocation,
           ...(returnQtyByLocation ? { returnQtyByLocation } : {}),
           externalCodeByLocation,

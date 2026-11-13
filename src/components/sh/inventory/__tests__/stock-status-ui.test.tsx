@@ -72,6 +72,7 @@ const rows: StockMatrixRow[] = [
     incomingQty: 5,
     out30d: 12,
     out90d: 37,
+    dailyRate: 12 / 30,
     status: 'LOW',
   },
 ]

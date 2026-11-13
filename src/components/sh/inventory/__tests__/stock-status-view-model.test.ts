@@ -8,6 +8,7 @@ import {
   stockStatusDisplayName,
   summarizeStockStatus,
 } from '../stock-status-view-model'
+import { decideProduction } from '@/lib/sh/option-velocity-query'
 import type { StockLocation } from '../stock-status.types'
 import type { StockMatrixRow } from '../stock-status.types'
 
@@ -36,6 +37,7 @@ const rows: StockMatrixRow[] = [
     incomingQty: 0,
     out30d: 4,
     out90d: 8,
+    dailyRate: 4 / 30,
     status: 'OK',
   },
   {
@@ -62,6 +64,7 @@ const rows: StockMatrixRow[] = [
     incomingQty: 0,
     out30d: 2,
     out90d: 5,
+    dailyRate: 2 / 30,
     status: 'OK',
   },
 ]
@@ -98,6 +101,7 @@ describe('stock status view model', () => {
       byLocation: { 'loc-2': 9999 },
       out30d: 0,
       out90d: 0,
+      dailyRate: 0,
     }
     const products = filterStockStatusProducts(
       buildStockStatusProducts([...rows, deadStock], null),
@@ -163,27 +167,27 @@ describe('stock status view model', () => {
 
   it('재고가 0 이하여도 출고 이력이 없으면 미입고(출고없음)로 본다', () => {
     // 등록만 하고 입고한 적 없는 옵션이 '위험'으로 잡혀 조치 카운트를 부풀리면 안 된다
-    expect(gradeStock(0, 0, 0, 7)).toEqual({ grade: 'NO_OUTBOUND', daysOfCover: null })
-    expect(gradeStock(40, 0, 0, 7)).toEqual({ grade: 'NO_OUTBOUND', daysOfCover: null })
+    expect(gradeStock(0, 0, 7)).toEqual({ grade: 'NO_OUTBOUND', daysOfCover: null })
+    expect(gradeStock(40, 0, 7)).toEqual({ grade: 'NO_OUTBOUND', daysOfCover: null })
   })
 
   it('출고가 있는데 재고가 0 이하면 재고없음이다', () => {
-    expect(gradeStock(0, 190, 190, 7).grade).toBe('NO_STOCK')
-    expect(gradeStock(-190, 190, 190, 7).grade).toBe('NO_STOCK')
+    expect(gradeStock(0, 190 / 30, 7).grade).toBe('NO_STOCK')
+    expect(gradeStock(-190, 190 / 30, 7).grade).toBe('NO_STOCK')
   })
 
-  it('최근 30일 출고가 없으면 90일 평균으로 폴백한다', () => {
-    // 90일 90개 → 일평균 1 → 재고 5 = 5일치, 리드타임 7일 미만이므로 위험
-    const result = gradeStock(5, 0, 90, 7)
+  it('일평균은 발주 엔진 일률(dailyRate)이다', () => {
+    // 일률 1 → 재고 5 = 5일치, 리드타임 7일 미만이므로 위험
+    const result = gradeStock(5, 1, 7)
     expect(result.grade).toBe('RISK')
     expect(result.daysOfCover).toBeCloseTo(5)
   })
 
   it('리드타임을 넘고 2배 미만이면 발주시기다', () => {
     // 일평균 1 → 재고 10 = 10일치, 리드타임 7 → 7 ≤ 10 < 14
-    expect(gradeStock(10, 30, 90, 7).grade).toBe('REORDER')
+    expect(gradeStock(10, 1, 7).grade).toBe('REORDER')
     // 같은 10일치라도 리드타임이 30일이면 위험
-    expect(gradeStock(10, 30, 90, 30).grade).toBe('RISK')
+    expect(gradeStock(10, 1, 30).grade).toBe('RISK')
   })
 
   it('상품 카드 등급은 가장 급한 옵션을 따른다', () => {
@@ -196,6 +200,7 @@ describe('stock status view model', () => {
       byLocation: { 'loc-1': 1 },
       out30d: 30,
       out90d: 60,
+      dailyRate: 1,
     }
     const [card] = buildStockStatusProducts([rows[0], urgent], null)
 
@@ -216,6 +221,7 @@ describe('stock status view model', () => {
       byLocation: { 'loc-2': 0 },
       out30d: 30,
       out90d: 60,
+      dailyRate: 1,
     }
     const summary = summarizeStockStatus(buildStockStatusProducts([...rows, noStock], null))
 
@@ -231,45 +237,53 @@ describe('stock status view model', () => {
 
     it('안전재고 반영은 분자에만 — 재고가 안전재고보다 적어도 재고없음이 아니다', () => {
       // 재고 5 · 안전재고 10 · 일평균 1 → 커버 0일이지만 실재고는 남아 있다
-      const result = gradeStock(5, 30, 90, 7, settings({ applySafetyStock: true }), 10)
+      const result = gradeStock(5, 1, 7, settings({ applySafetyStock: true }), 10)
       expect(result.grade).toBe('RISK')
       expect(result.grade).not.toBe('NO_STOCK')
       expect(result.daysOfCover).toBe(0)
     })
 
     it('안전재고를 끄면 실재고 기준으로 커버 일수를 계산한다', () => {
-      const result = gradeStock(5, 30, 90, 7, settings({ applySafetyStock: false }), 10)
+      const result = gradeStock(5, 1, 7, settings({ applySafetyStock: false }), 10)
       expect(result.daysOfCover).toBeCloseTo(5)
     })
 
-    it('일평균 90일 고정이면 30일 출고를 쓰지 않는다', () => {
-      // 30일 300개(일평균 10) vs 90일 90개(일평균 1) → 90일 고정이면 커버가 길어진다
-      const auto = gradeStock(100, 300, 390, 7, settings({ avgWindow: 'auto' }))
-      const fixed90 = gradeStock(100, 300, 390, 7, settings({ avgWindow: 90 }))
+    it('일평균 기준 기간(avgWindow) 설정은 등급에 영향 없다 — 일률은 엔진 모델이 정한다', () => {
+      const auto = gradeStock(100, 10, 7, settings({ avgWindow: 'auto' }))
+      const fixed90 = gradeStock(100, 10, 7, settings({ avgWindow: 90 }))
+      expect(auto).toEqual(fixed90)
       expect(auto.daysOfCover).toBeCloseTo(10)
-      expect(fixed90.daysOfCover).toBeCloseTo(100 / (390 / 90))
     })
 
-    it('30일 기준이어도 30일 출고가 없으면 90일 평균으로 폴백한다', () => {
-      const result = gradeStock(30, 0, 90, 7, settings({ avgWindow: 30 }))
-      expect(result.grade).not.toBe('NO_OUTBOUND')
-      expect(result.daysOfCover).toBeCloseTo(30)
+    it('같은 입력이면 커버 일수가 MCP velocity daysOfCoverWithIncoming 과 같다', () => {
+      // 현재고 40 + 생산 중 13 · 안전재고 10 · 일률 2 → (53 − 10) / 2 = 21.5일
+      const velocity = decideProduction({
+        dailyRate: 2,
+        productionLeadTimeDays: 20,
+        targetCoverDays: 30,
+        safetyStockQty: 10,
+        onHandQty: 40,
+        incomingQty: 13,
+      })
+      const grade = gradeStock(40 + 13, 2, 20, settings({ applySafetyStock: true }), 10)
+      expect(velocity.daysOfCoverWithIncoming).toBe(21.5)
+      expect(Math.round(grade.daysOfCover! * 10) / 10).toBe(velocity.daysOfCoverWithIncoming)
     })
 
     it('배수를 바꾸면 등급 경계가 함께 움직인다', () => {
       // 일평균 1 · 재고 10 = 10일치, 리드타임 7
-      expect(gradeStock(10, 30, 90, 7).grade).toBe('REORDER')
-      expect(gradeStock(10, 30, 90, 7, settings({ riskMultiplier: 1.5 })).grade).toBe('RISK')
+      expect(gradeStock(10, 1, 7).grade).toBe('REORDER')
+      expect(gradeStock(10, 1, 7, settings({ riskMultiplier: 1.5 })).grade).toBe('RISK')
       expect(
-        gradeStock(10, 30, 90, 7, settings({ riskMultiplier: 0.5, reorderMultiplier: 1 })).grade
+        gradeStock(10, 1, 7, settings({ riskMultiplier: 0.5, reorderMultiplier: 1 })).grade
       ).toBe('HEALTHY')
     })
 
     it('경계값은 미만(<)이다 — 정확히 임계면 다음 등급', () => {
       // 일평균 1 · 재고 7 = 7일치 = 리드타임 × 1 → 위험이 아니라 발주시기
-      expect(gradeStock(7, 30, 90, 7).grade).toBe('REORDER')
+      expect(gradeStock(7, 1, 7).grade).toBe('REORDER')
       // 14일치 = 리드타임 × 2 → 여유
-      expect(gradeStock(14, 30, 90, 7).grade).toBe('HEALTHY')
+      expect(gradeStock(14, 1, 7).grade).toBe('HEALTHY')
     })
   })
 
