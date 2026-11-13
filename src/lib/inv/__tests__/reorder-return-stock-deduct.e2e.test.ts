@@ -190,7 +190,13 @@ d('POST /reorder/plan — 반품 등급 재고 차감 (dev DB)', () => {
     const res = (await POST(post({ productId, dryRun: true })))!
     expect(res.status).toBe(200)
     const json = await res.json()
-    type OptRow = { optionId: string; onHandStock: number; returnQty?: number }
+    type OptRow = {
+      optionId: string
+      onHandStock: number
+      returnQty?: number
+      checkStock: boolean
+      finalQty: number
+    }
     const byOpt = new Map<string, OptRow>((json.options as OptRow[]).map((o) => [o.optionId, o]))
 
     // 1) 반품 4 차감 → 10 - 4 = 6
@@ -203,9 +209,11 @@ d('POST /reorder/plan — 반품 등급 재고 차감 (dev DB)', () => {
     expect(clean.onHandStock).toBe(10)
     expect(clean.returnQty).toBeUndefined()
 
-    // 3) 반품 9 > 현재고 3 → 음수 아닌 0
+    // 3) 반품 9 > 현재고 3 → 음수 보존(-6) + 재고 확인 표시. 발주 계산은 0 으로 본다.
     const over = byOpt.get(optOver)!
-    expect(over.onHandStock).toBe(0)
+    expect(over.onHandStock).toBe(-6)
     expect(over.returnQty).toBe(9)
+    expect(over.checkStock).toBe(true)
+    expect(over.finalQty).toBeGreaterThanOrEqual(0)
   })
 })
