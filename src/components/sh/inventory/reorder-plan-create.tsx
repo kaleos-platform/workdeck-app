@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ArrowLeft, HelpCircle, Loader2, MapPinIcon, PackageIcon, PlusIcon } from 'lucide-react'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -31,6 +32,7 @@ import {
   fmtWon,
   type WizardStep,
 } from './reorder-ui'
+import { MODEL_KEYS, MODEL_KEY_LABEL, type ModelKey } from './reorder-plan-types'
 
 // dryRun 미리보기(POST /reorder/plan { dryRun:true }) 응답 — 생성과 동일 코드 경로라 drift 없음.
 type PreviewOption = {
@@ -59,6 +61,15 @@ type PreviewOption = {
   linkedLocationCurrentStockQty: number | null // 로켓그로스 현재 재고.
   linkedLocationIncomingQty: number | null // 로켓그로스 입고 예정 수량.
   finalQty: number // 기본 최종수량 = 연동 위치 입고분 + 나머지 입고분
+  // 발주 엔진 v2 — 모델 비교·추천·선택
+  models: Record<ModelKey, { dailyRate: number; qty: number }>
+  backtestWape: Record<ModelKey, number | null> // 상품 단위(모든 옵션 동일)
+  recommendedModel: ModelKey
+  selectedModel: ModelKey | 'MANUAL'
+  targetCoverDays: number
+  checkStock: boolean // 실재고 음수 — 권장량은 0으로 보고 계산됨
+  isNewOption: boolean // 이력 60일 미만 → 수동 수량
+  siblingAvgRate: number | null // 같은 상품 기존 옵션 평균 일률
 }
 type PreviewSet = {
   listingId: string
@@ -76,6 +87,10 @@ type Preview = {
 }
 
 type PickedProduct = { productId: string; productName: string; brandName: string | null }
+type EngineInputs = {
+  modelByProduct: Record<string, ModelKey>
+  manualQtyByOption: Record<string, number>
+}
 type LinkedLocation = { id: string; name: string; externalSource: string | null; isActive: boolean }
 
 // 상품 선택 후 순차 단계. 프로토타입 IA를 따라 외부 연동 / 자체 출고 / 수량 계산 / 검토로 분리한다.
@@ -141,6 +156,13 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   )
   // 발주 수량 0인 세트까지 펼쳐 볼지 (세트가 수십 종인 상품이 많다)
   const [showZeroSets, setShowZeroSets] = useState(false)
+  // 사용자가 직접 고른 상품별 모델만 담는다 — 응답의 추천값으로 채우면 생성 시 설정에 고정돼 버린다.
+  const [modelByProduct, setModelByProduct] = useState<Record<string, ModelKey>>({})
+  // 상품 발주 설정(목표 커버일수·예측 제외) — 변경 즉시 config PATCH
+  const [coverDaysInput, setCoverDaysInput] = useState('')
+  const [excluded, setExcluded] = useState(false)
+  const [savingConfig, setSavingConfig] = useState(false)
+  const [previewError, setPreviewError] = useState<string | null>(null)
 
   const defaultDemandAdjust = initialDemandAdjust != null ? String(initialDemandAdjust) : '1'
 
@@ -176,9 +198,12 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     overrides: {
       leadTimeDaysOverride?: number
       demandAdjustFactorOverride?: number
-    } = getPreviewOverrides()
+    } = getPreviewOverrides(),
+    // 상태 갱신 직후 호출되면 클로저가 이전 값을 보므로, 바뀐 값은 호출부에서 넘긴다.
+    engine: EngineInputs = { modelByProduct, manualQtyByOption: manualQtyFrom(finalByOption) }
   ) => {
     setPreviewLoading(true)
+    setPreviewError(null)
     try {
       const res = await fetch('/api/sh/inventory/reorder/plan', {
         method: 'POST',
@@ -189,6 +214,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
           excludeRocketLayer: excludeRocket,
           linkedLocationIds,
           ...overrides,
+          ...engine,
         }),
       })
       if (!res.ok) {
@@ -200,6 +226,9 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
       if (leadTimeInput.trim() === '' && data.options[0]) {
         setLeadTimeInput(String(data.options[0].leadTimeDays))
       }
+      if (coverDaysInput.trim() === '' && data.options[0]) {
+        setCoverDaysInput(String(data.options[0].targetCoverDays))
+      }
       // 이번 응답에 실제로 반영된 계산 변수 기록 (override 미지정이면 서버 기본값)
       setAppliedOverrides({
         lead: String(overrides.leadTimeDaysOverride ?? data.options[0]?.leadTimeDays ?? ''),
@@ -210,10 +239,47 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
       setFinalByOption(init)
     } catch (err) {
       console.error(err)
-      toast.error(err instanceof Error ? err.message : '미리보기를 불러오지 못했습니다')
+      const msg = err instanceof Error ? err.message : '미리보기를 불러오지 못했습니다'
+      toast.error(msg)
       setPreview(null)
+      setPreviewError(msg)
     } finally {
       setPreviewLoading(false)
+    }
+  }
+
+  // 신상품 옵션(MANUAL)은 최종수량 입력값이 곧 수동 발주 수량이다.
+  function manualQtyFrom(finals: Record<string, string>): Record<string, number> {
+    const out: Record<string, number> = {}
+    for (const o of preview?.options ?? []) {
+      if (!o.isNewOption) continue
+      const v = Number(finals[o.optionId])
+      if (Number.isFinite(v) && v >= 0 && (finals[o.optionId] ?? '').trim() !== '') {
+        out[o.optionId] = Math.floor(v)
+      }
+    }
+    return out
+  }
+
+  const patchConfig = async (productId: string, patch: Record<string, unknown>) => {
+    const res = await fetch(`/api/sh/inventory/reorder/config/${productId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    })
+    if (!res.ok) {
+      const b = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(b.message ?? '발주 설정 저장 실패')
+    }
+  }
+
+  const loadProductConfig = async (productId: string) => {
+    try {
+      const res = await fetch(`/api/sh/inventory/reorder/config/${productId}`)
+      if (!res.ok) return null
+      return (await res.json()) as { targetCoverDays: number; excludeFromForecast: boolean }
+    } catch {
+      return null
     }
   }
 
@@ -251,14 +317,28 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     setSelectedLinkedLocationIds([])
     setLeadTimeInput('')
     setDemandAdjustInput(defaultDemandAdjust)
+    setModelByProduct({})
+    setFinalByOption({})
+    setPreview(null)
     void loadLinkedLocations()
-    void fetchPreview(productId, false, [], {})
+    void (async () => {
+      const cfg = await loadProductConfig(productId)
+      setCoverDaysInput(cfg ? String(cfg.targetCoverDays) : '')
+      setExcluded(cfg?.excludeFromForecast === true)
+      // 예측 제외 상품은 미리보기(422)를 부르지 않고 해제 안내를 보여 준다.
+      if (cfg?.excludeFromForecast) return
+      void fetchPreview(productId, false, [], {}, { modelByProduct: {}, manualQtyByOption: {} })
+    })()
   }
 
   const resetToPicker = () => {
     setPicked(null)
     setPreview(null)
+    setPreviewError(null)
     setFinalByOption({})
+    setModelByProduct({})
+    setCoverDaysInput('')
+    setExcluded(false)
     setSelectedLinkedLocationIds([])
     setLeadTimeInput('')
     setDemandAdjustInput(defaultDemandAdjust)
@@ -291,7 +371,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     void fetchPreview(picked.productId, true, [])
   }
 
-  const handleApplyForecastSettings = () => {
+  const handleApplyForecastSettings = async () => {
     if (!picked) return
     const overrides = getPreviewOverrides()
     if (overrides.leadTimeDaysOverride == null) {
@@ -302,7 +382,56 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
       toast.error('보정계수는 0보다 크게 입력하세요')
       return
     }
+    // 목표 커버일수는 상품 발주 설정값 — 바뀌었으면 저장 후 재계산한다.
+    if (coverDaysInput.trim() !== '' && coverDirty) {
+      const cover = Math.floor(Number(coverDaysInput))
+      if (!Number.isFinite(cover) || cover < 1 || cover > 365) {
+        toast.error('목표 커버일수는 1~365일로 입력하세요')
+        return
+      }
+      setSavingConfig(true)
+      try {
+        await patchConfig(picked.productId, { targetCoverDays: cover })
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '목표 커버일수 저장에 실패했습니다')
+        return
+      } finally {
+        setSavingConfig(false)
+      }
+    }
     void fetchPreview(picked.productId, !includeRocket, selectedLinkedLocationIds, overrides)
+  }
+
+  // 모델 라디오 변경 → 바뀐 선택으로 즉시 재계산
+  const handleSelectModel = (productId: string, model: ModelKey) => {
+    if (!picked) return
+    const next = { ...modelByProduct, [productId]: model }
+    setModelByProduct(next)
+    void fetchPreview(picked.productId, !includeRocket, selectedLinkedLocationIds, undefined, {
+      modelByProduct: next,
+      manualQtyByOption: manualQtyFrom(finalByOption),
+    })
+  }
+
+  // 발주 예측 제외 토글 — 켜면 이 상품은 발주 계획 대상에서 빠진다(생성 422).
+  const handleToggleExclude = async (next: boolean) => {
+    if (!picked) return
+    setSavingConfig(true)
+    try {
+      await patchConfig(picked.productId, { excludeFromForecast: next })
+      setExcluded(next)
+      toast.success(next ? '발주 예측에서 제외했습니다' : '발주 예측 제외를 해제했습니다')
+      if (!next) {
+        void fetchPreview(picked.productId, !includeRocket, selectedLinkedLocationIds, undefined, {
+          modelByProduct,
+          manualQtyByOption: {},
+        })
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '발주 설정 저장에 실패했습니다')
+    } finally {
+      setSavingConfig(false)
+    }
   }
 
   // 빈값/음수 정리(≥0). baseline 미만도 허용 — 재고가 수요를 덮으면 final < baseline 이 정상.
@@ -338,6 +467,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
           linkedLocationIds: includeRocket ? selectedLinkedLocationIds : [],
           optionFinalOverrides,
           ...forecastOverrides,
+          modelByProduct,
+          manualQtyByOption: manualQtyFrom(finalByOption),
         }),
       })
       if (!res.ok) {
@@ -373,11 +504,19 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   const totalSetQty = (preview?.sets ?? []).reduce((s, x) => s + x.finalSetQty, 0)
   // 계산 변수를 바꾼 뒤 "계산 다시 적용"을 누르지 않으면 화면 수량과 생성될 수량이 어긋난다.
   // 문자열 비교 금지 — 적용값은 Math.floor 후 저장되므로 '30' vs '30.0'이 영구 dirty가 된다.
+  const appliedCover = options[0]?.targetCoverDays
+  const coverDirty =
+    appliedCover != null &&
+    coverDaysInput.trim() !== '' &&
+    Math.floor(Number(coverDaysInput)) !== appliedCover
   const settingsDirty =
-    appliedOverrides != null &&
-    (Number(appliedOverrides.lead) !== Math.floor(Number(leadTimeInput)) ||
-      Number(appliedOverrides.adjust) !== Number(demandAdjustInput))
-  const horizonDays = Number(leadTimeInput) || options[0]?.leadTimeDays || 0
+    (appliedOverrides != null &&
+      (Number(appliedOverrides.lead) !== Math.floor(Number(leadTimeInput)) ||
+        Number(appliedOverrides.adjust) !== Number(demandAdjustInput))) ||
+    coverDirty
+  const leadDays = Number(leadTimeInput) || options[0]?.leadTimeDays || 0
+  // 엔진 계산 기간 = 리드타임 + 목표 커버일수
+  const horizonDays = leadDays + (appliedCover ?? 0)
 
   // 외부 연동 / 자체 출고 소계 — 비연동 계획이면 전체 수요를 자체 출고로 본다.
   const externalBySku = new Map(options.map((o) => [o.optionId, o.rocketBaselineQty ?? 0]))
@@ -388,12 +527,20 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   const ownTotal = options.reduce((s, o) => s + (ownBySku.get(o.optionId) ?? 0), 0)
 
   // ── 공용 블록 ───────────────────────────────────────────────────────────────
-  const loadingBlock = (
-    <div className="flex items-center justify-center gap-2 rounded-lg border py-12 text-sm text-muted-foreground">
-      <Loader2 className="h-4 w-4 animate-spin" />
-      수요·예측 미리보기를 불러오는 중...
-    </div>
-  )
+  const loadingBlock =
+    previewError && !previewLoading ? (
+      <div className="flex flex-col items-center gap-3 rounded-lg border py-12 text-sm">
+        <p className="text-destructive">{previewError}</p>
+        <Button variant="outline" size="sm" onClick={resetToPicker}>
+          다른 상품 선택
+        </Button>
+      </div>
+    ) : (
+      <div className="flex items-center justify-center gap-2 rounded-lg border py-12 text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        수요·예측 미리보기를 불러오는 중...
+      </div>
+    )
 
   const productHeader = picked && (
     <Panel padded={false}>
@@ -416,7 +563,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
             unit="일"
             size="sm"
           />
-          <Kpi label="리드타임" value={horizonDays || '—'} unit="일" size="sm" />
+          <Kpi label="리드타임" value={leadDays || '—'} unit="일" size="sm" />
           <Button variant="outline" size="sm" className="gap-1.5" onClick={resetToPicker}>
             <ArrowLeft className="h-3.5 w-3.5" />
             다른 상품 선택
@@ -466,8 +613,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
         계산 다시 적용
       </Button>
       <p className="text-xs text-muted-foreground sm:col-span-3">
-        예측 소진량 = 90일 판매 이력 기반 예측 일평균 × 리드타임 × 보정계수입니다. 보정계수 1.0은
-        기본 예측을 그대로 사용합니다.
+        예측 소진량 = 판매 이력 기반 예측 일평균 × (리드타임 + 목표 커버일수) × 보정계수입니다.
+        보정계수 1.0은 기본 예측을 그대로 사용합니다.
       </p>
     </div>
   )
@@ -534,6 +681,76 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     )
   }
 
+  // 상품별 예측 모델 비교표 — 신상품 옵션(수동 수량)은 합계에서 뺀다.
+  const productIds = Array.from(new Set(options.map((o) => o.productId)))
+  const modelTables = productIds.map((pid) => {
+    const est = options.filter((o) => o.productId === pid && !o.isNewOption)
+    const head = est[0]
+    if (!head) return null
+    const selected =
+      modelByProduct[pid] ?? (head.selectedModel !== 'MANUAL' ? head.selectedModel : null)
+    return (
+      <Panel
+        key={pid}
+        title={isMultiProduct ? `예측 모델 — ${head.productName}` : '예측 모델'}
+        desc="과거 오차가 가장 작은 모델을 추천합니다. 바꾸면 수량을 다시 계산합니다."
+        padded={false}
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>모델</TableHead>
+              <TableHead className="text-right">하루 예상 판매</TableHead>
+              <TableHead className="text-right">발주량 합계</TableHead>
+              <TableHead className="text-right">과거 오차</TableHead>
+              <TableHead className="w-16 text-center">선택</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {MODEL_KEYS.map((k) => {
+              const rate = est.reduce((s, o) => s + o.models[k].dailyRate, 0)
+              const qty = est.reduce((s, o) => s + o.models[k].qty, 0)
+              const wape = head.backtestWape[k]
+              return (
+                <TableRow key={k} data-state={selected === k ? 'selected' : undefined}>
+                  <TableCell className="text-sm">
+                    {MODEL_KEY_LABEL[k]}
+                    {head.recommendedModel === k && (
+                      <Badge
+                        variant="outline"
+                        className="ml-1.5 border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
+                      >
+                        추천
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">
+                    {rate.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{fmtQty(qty)}</TableCell>
+                  <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                    {wape != null ? `${(wape * 100).toFixed(1)}%` : '—'}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <input
+                      type="radio"
+                      name={`reorder-model-${pid}`}
+                      className="h-4 w-4 accent-primary"
+                      aria-label={`${MODEL_KEY_LABEL[k]} 선택`}
+                      checked={selected === k}
+                      disabled={previewLoading}
+                      onChange={() => handleSelectModel(pid, k)}
+                    />
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </Panel>
+    )
+  })
+
   const summaryBar = (actions: ReactNode) => (
     <PlanSummaryBar
       stats={[
@@ -571,6 +788,30 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
           onPickProduct={handlePickProduct}
           contextLabel="발주 계획"
         />
+      </div>
+    )
+  }
+
+  // ── 발주 예측 제외 상품 — 계획 대상이 아니므로 해제 안내만 ───────────────────
+  if (excluded) {
+    return (
+      <div className="space-y-4">
+        <StepBar steps={STEPS} current={stepIdx} reached={reached} onGo={goStep} />
+        {productHeader}
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed bg-muted/20 py-12">
+          <p className="text-sm font-medium">발주 예측에서 제외된 상품입니다</p>
+          <p className="text-xs text-muted-foreground">
+            제외를 해제하면 판매 이력으로 발주 수량을 다시 계산합니다.
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={resetToPicker}>
+              다른 상품 선택
+            </Button>
+            <Button size="sm" disabled={savingConfig} onClick={() => handleToggleExclude(false)}>
+              제외 해제
+            </Button>
+          </div>
+        </div>
       </div>
     )
   }
@@ -824,6 +1065,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
         <StepBar steps={STEPS} current={STEP_CALC} reached={reached} onGo={goStep} />
         {productHeader}
 
+        {preview && modelTables}
+
         <div className="grid items-start gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
           <Panel title="계산 변수" desc="적용하면 우측 표가 다시 계산됩니다" padded={false}>
             <div className="space-y-4 px-5 pt-4 pb-5">
@@ -844,6 +1087,30 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">발주 → 입고까지 걸리는 일수</p>
+              </div>
+
+              <div className="space-y-1.5 border-b pb-3">
+                <div className="flex items-center justify-between gap-3">
+                  <label htmlFor="reorder-cover-days" className="text-sm font-medium">
+                    목표 커버일수
+                  </label>
+                  <span className="flex items-center gap-1.5">
+                    <Input
+                      id="reorder-cover-days"
+                      type="number"
+                      min={1}
+                      max={365}
+                      inputMode="numeric"
+                      className="h-8 w-20 text-right font-mono tabular-nums"
+                      value={coverDaysInput}
+                      onChange={(e) => setCoverDaysInput(e.target.value)}
+                    />
+                    <span className="text-xs text-muted-foreground">일</span>
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  입고 후 버틸 일수 · 상품 발주 설정에 저장됩니다
+                </p>
               </div>
 
               <div className="space-y-2 border-b pb-3">
@@ -872,7 +1139,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                 className="w-full"
                 variant={settingsDirty ? 'default' : 'outline'}
                 onClick={handleApplyForecastSettings}
-                disabled={previewLoading}
+                disabled={previewLoading || savingConfig}
               >
                 계산 다시 적용
               </Button>
@@ -886,11 +1153,26 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground">계산식</div>
                 <div className="rounded-md bg-muted px-3 py-2.5 font-mono text-[11px] leading-relaxed">
-                  예측 일평균 × 보정 × {horizonDays || '리드타임'}일
+                  예측 일평균 × 보정 × ({leadDays || '리드타임'} + {appliedCover ?? '커버'})일
                   <br />+ 안전재고 − 현재고 − 입고예정
                   <br />→ 발주 단위 반올림
                 </div>
               </div>
+
+              <label className="flex items-center justify-between gap-3 border-t pt-3">
+                <span>
+                  <span className="block text-sm font-medium">발주 예측 제외</span>
+                  <span className="block text-xs text-muted-foreground">
+                    켜면 이 상품은 발주 계획에서 빠집니다
+                  </span>
+                </span>
+                <Switch
+                  checked={excluded}
+                  disabled={savingConfig}
+                  onCheckedChange={(v) => handleToggleExclude(v === true)}
+                  aria-label="발주 예측 제외"
+                />
+              </label>
             </div>
           </Panel>
 
@@ -941,6 +1223,14 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                             </div>
                           )}
                           <span>{o.optionName}</span>
+                          {o.isNewOption && (
+                            <Badge
+                              variant="outline"
+                              className="ml-1.5 border-blue-200 bg-blue-50 text-[10px] text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400"
+                            >
+                              신상품
+                            </Badge>
+                          )}
                           {o.sku && (
                             <div className="font-mono text-[11px] text-muted-foreground">
                               {o.sku}
@@ -963,6 +1253,17 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                         <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
                           {fmtQty(o.onHandStock)}
                           {o.incomingQty > 0 ? ` / +${fmtQty(o.incomingQty)}` : ' / —'}
+                          {o.checkStock && (
+                            <div>
+                              <Badge
+                                variant="outline"
+                                className="border-amber-200 bg-amber-50 text-[10px] text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400"
+                                title="실재고가 음수입니다. 권장량은 음수 재고를 0으로 보고 계산했습니다. 재고 현황을 확인하세요."
+                              >
+                                재고 확인 필요
+                              </Badge>
+                            </div>
+                          )}
                           {o.returnQty ? (
                             <div
                               className="text-[11px] font-normal text-muted-foreground/70"
@@ -981,6 +1282,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                             min={0}
                             inputMode="numeric"
                             className="ml-auto h-8 w-24 text-right font-mono font-semibold tabular-nums"
+                            aria-label={`${o.optionName} 최종수량`}
                             value={finalByOption[o.optionId] ?? ''}
                             onChange={(e) =>
                               setFinalByOption((prev) => ({
@@ -995,10 +1297,18 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                               }))
                             }
                           />
-                          <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                            제안 {fmtQty(o.roundedSuggestedQty)}
-                            {roundDelta > 0.5 ? ` (라운딩 +${fmtQty(roundDelta)})` : ''}
-                          </div>
+                          {o.isNewOption ? (
+                            <div className="mt-0.5 text-[11px] text-muted-foreground">
+                              {o.siblingAvgRate != null
+                                ? `같은 상품 평균 하루 ${o.siblingAvgRate.toFixed(1)}개`
+                                : '판매 이력 부족 · 직접 입력'}
+                            </div>
+                          ) : (
+                            <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                              제안 {fmtQty(o.roundedSuggestedQty)}
+                              {roundDelta > 0.5 ? ` (라운딩 +${fmtQty(roundDelta)})` : ''}
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="font-mono text-sm tabular-nums">
@@ -1206,7 +1516,11 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
               <div className="space-y-1.5 border-t pt-3 text-xs text-muted-foreground">
                 <div className="flex justify-between">
                   <span>리드타임</span>
-                  <span className="font-mono tabular-nums">{horizonDays}일</span>
+                  <span className="font-mono tabular-nums">{leadDays}일</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>목표 커버일수</span>
+                  <span className="font-mono tabular-nums">{appliedCover ?? '—'}일</span>
                 </div>
                 <div className="flex justify-between">
                   <span>보정계수</span>

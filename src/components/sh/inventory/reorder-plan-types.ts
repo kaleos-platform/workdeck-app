@@ -2,7 +2,21 @@
 
 export type ReorderPlanStatus = 'DRAFT' | 'FINALIZED' | 'CONSUMED'
 
-export type ForecastModel = 'SMA' | 'WMA' | 'HW' | 'CROSTON' | 'BAYES' | 'MANUAL'
+// 발주 엔진 v2 모델 키 (src/lib/inv/reorder-engine/models.ts ModelKey 와 동일)
+export type ModelKey = 'MA30' | 'MA90' | 'MA_BLEND' | 'SES_TREND' | 'CROSTON'
+
+export const MODEL_KEYS: ModelKey[] = ['MA30', 'MA90', 'MA_BLEND', 'SES_TREND', 'CROSTON']
+
+export const MODEL_KEY_LABEL: Record<ModelKey, string> = {
+  MA30: '이동평균 30일',
+  MA90: '이동평균 90일',
+  MA_BLEND: '혼합 이동평균',
+  SES_TREND: '지수평활+추세',
+  CROSTON: '간헐 수요',
+}
+
+// 레거시(SMA·WMA·HW·BAYES) 계획 + v2 모델 키
+export type ForecastModel = 'SMA' | 'WMA' | 'HW' | 'BAYES' | 'MANUAL' | ModelKey
 
 export type ReorderPlan = {
   id: string
@@ -82,6 +96,8 @@ export type ReorderPlanItem = {
   // 최종 finalQty = max(0, ceil(rocketGross + directGross + safety − currentStock)). 세트는 옵션 발주의 역산 표시(파생).
   rocketGross?: number | null
   directGross?: number | null
+  // v2 모델별 원본 일률 스냅샷 (레거시 계획 = null)
+  modelForecasts?: { rates?: Partial<Record<ModelKey, number>> } | null
   // JSON 스냅샷 — 구조는 번스타인이 확정 예정
   inputsSnapshot: {
     profile?: 'FAST' | 'INTERMITTENT' | 'COLD_START'
