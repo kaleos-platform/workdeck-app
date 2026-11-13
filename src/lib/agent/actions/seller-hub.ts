@@ -154,7 +154,8 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
           productId: params.productId,
           locationId: null,
           status: 'DRAFT',
-          windowDays: DEFAULT_WINDOW_DAYS,
+          // 단일 상품 계획 — 상품 분석 기간 그대로 기록
+          windowDays,
           createdById: userId,
           totalSuggestedQty,
           totalFinalQty: 0,
@@ -204,7 +205,23 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
       return plan.id
     })
 
-    return { planId, itemCount: itemInputs.length }
+    // 신상품 옵션(이력 60일 미만)은 수동 수량 입력 수단이 없어 0 으로 저장된다 — 결과에 알린다
+    const manualOptionIds = itemInputs
+      .filter((i) => i.plan.selectedModel === 'MANUAL')
+      .map((i) => i.plan.optionId)
+    if (manualOptionIds.length === 0) return { planId, itemCount: itemInputs.length }
+    const manualOptions = await prisma.invProductOption.findMany({
+      where: { id: { in: manualOptionIds } },
+      select: { id: true, name: true, sku: true },
+    })
+    return {
+      planId,
+      itemCount: itemInputs.length,
+      manualOptions: manualOptions.map((o) => ({ optionId: o.id, name: o.name, sku: o.sku })),
+      note: `판매 이력 60일 미만 — 수량 0으로 저장, 발주 화면에서 직접 입력 필요: ${manualOptions
+        .map((o) => o.name)
+        .join(', ')}`,
+    }
   },
 }
 

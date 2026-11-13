@@ -6,7 +6,8 @@
  * 로켓그로스 재고는 발주 계획과 같은 규칙으로 반품 등급 재고를 차감한다.
  *
  * 생산 판단은 발주 계획과 같은 엔진 공식이다(@/lib/inv/reorder-engine):
- *   일률 = 상품 선택 모델(없으면 MA_BLEND)의 일률 — periodDays 창 KST 마감 시계열, 품절일 제외, 전 판매채널
+ *   일률 = 상품 선택 모델(없으면 MA_BLEND)의 일률 — max(periodDays, 상품 분석 기간 ?? 90)일 KST 마감 시계열,
+ *          품절일 제외, 전 판매채널 (표시 지표 salesQty·dailyVelocity 는 periodDays)
  *   권장 생산량 = computeOrderQty — 일률×(리드타임+목표 커버일수)+안전재고−(재고+생산 중), 라운딩 없음
  *   재고·생산 중 = loadReorderStockInputs (반품 등급 차감, 외부 물류 입고 대기분 포함)
  * 발주 계획과 다를 수 있는 부분: 모델 미설정 상품은 백테스트 추천 대신 MA_BLEND, 라운딩·레이어드 없음.
@@ -25,6 +26,7 @@ import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-source
 import { isExternalLogisticsLocation } from '@/lib/inv/location-kind'
 import {
   computeOrderQty,
+  DEFAULT_PLAN_WINDOW_DAYS,
   isModelKey,
   loadNetByDate,
   loadReorderStockInputs,
@@ -365,13 +367,6 @@ export async function queryOptionSalesVelocity(
   const rocketChannelIds = new Set(rocketChannels.map((c) => c.id))
   const salesChannelIds = new Set(salesChannels.map((c) => c.id))
 
-  const demandRows = await loadOptionDemand(
-    spaceId,
-    new Date(`${prevFrom}T00:00:00+09:00`),
-    new Date(`${to}T23:59:59.999+09:00`),
-    demandChannels
-  )
-
   // ── 옵션 카탈로그 + 위치별 재고
   const optionWhere = {
     deletedAt: null,
@@ -412,6 +407,7 @@ export async function queryOptionSalesVelocity(
             reorderConfig: {
               select: {
                 leadTimeDays: true,
+                analysisWindowDays: true,
                 targetCoverDays: true,
                 excludeFromForecast: true,
                 forecastModel: true,
@@ -444,13 +440,31 @@ export async function queryOptionSalesVelocity(
   const optionIds = options.map((o) => o.id)
   const optionIdSet = new Set(optionIds)
 
+  // 생산 일률 시계열 창 = 발주 계획과 같은 분석 기간(상품 설정, 기본 90) — 표시 기간(periodDays)과 별개.
+  // MA_BLEND(30일 0.6 + 90일 0.4)가 계획·재고현황 등급과 같은 값이 되도록 한다.
+  const productionWindowOf = (analysisWindowDays: number | null | undefined) =>
+    Math.max(periodDays, analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS)
+  const maxProductionWindow = Math.max(
+    productionWindowOf(null),
+    ...options.map((o) => productionWindowOf(o.product.reorderConfig?.analysisWindowDays))
+  )
+  const productionFrom = addDaysYmd(to, -(maxProductionWindow - 1))
+  const demandFrom = productionFrom < prevFrom ? productionFrom : prevFrom
+
+  const demandRows = await loadOptionDemand(
+    spaceId,
+    new Date(`${demandFrom}T00:00:00+09:00`),
+    new Date(`${to}T23:59:59.999+09:00`),
+    demandChannels
+  )
+
   // ── 반품 등급 재고(로켓 가용에서 제외) + 생산 판단 재고 입력(발주 계획과 같은 loader)
   // + 품절일 판정용 재고 순증감
   const now = new Date()
   const [returnStock, stockInputs, netByOption] = await Promise.all([
     getCoupangReturnStockByOption(spaceId),
     loadReorderStockInputs(spaceId, optionIds, now),
-    loadNetByDate(spaceId, optionIds, new Date(now.getTime() - periodDays * DAY_MS)),
+    loadNetByDate(spaceId, optionIds, new Date(now.getTime() - maxProductionWindow * DAY_MS)),
   ])
 
   // ── 수요 분할: (현재|직전) × (선택 채널|로켓)
@@ -461,7 +475,8 @@ export async function queryOptionSalesVelocity(
   const productionDailyByOption = new Map<string, Record<string, number>>()
   for (const row of demandRows) {
     if (!optionIdSet.has(row.optionId)) continue
-    if (row.date >= from && row.date <= to && salesChannelIds.has(row.channelId)) {
+    // 창 절단·zero-fill 은 buildClosedSeries 가 상품별 창으로 한다
+    if (row.date <= to && salesChannelIds.has(row.channelId)) {
       const byDate = productionDailyByOption.get(row.optionId) ?? {}
       byDate[row.date] = (byDate[row.date] ?? 0) + row.quantity
       productionDailyByOption.set(row.optionId, byDate)
@@ -546,7 +561,7 @@ export async function queryOptionSalesVelocity(
       qtyByDate: productionDailyByOption.get(o.id) ?? {},
       netByDate: netByOption.get(o.id) ?? {},
       currentStock: productionOnHandQty + (stock?.returnGradeQty ?? 0),
-      windowDays: periodDays,
+      windowDays: productionWindowOf(o.product.reorderConfig?.analysisWindowDays),
       horizonDays: productionLeadTimeDays + productionTargetCoverDays,
       model: forecastModel,
       now,

@@ -7,17 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import {
   DEFAULT_STOCK_GRADE_SETTINGS,
-  type StockAvgWindow,
   type StockGradeSettings,
 } from '@/lib/sh/stock-grade-settings'
 import { STOCK_GRADE_LABEL } from './stock-status-view-model'
@@ -25,13 +17,6 @@ import { STOCK_GRADE_LABEL } from './stock-status-view-model'
 type Props = {
   settings: StockGradeSettings
   onSaved: () => void
-}
-
-// '30' 은 폴백 동작이 auto 와 같아 선택지에서 뺐다(고르면 아무 변화가 없어 오해를 준다).
-// 과거에 저장된 30 값은 readStockGradeSettings 가 그대로 읽고 auto 와 동일하게 동작한다.
-const AVG_WINDOW_LABEL: Record<string, string> = {
-  auto: '30일 우선 (없으면 90일)',
-  '90': '90일 기준',
 }
 
 /** 등급 기준 안내 + 편집. 값이 바뀌면 화면 등급이 즉시 다시 계산된다. */
@@ -152,35 +137,10 @@ export function StockStatusGradePopover({ settings, onSaved }: Props) {
             </p>
           </div>
 
-          {/* avgWindow 는 등급 계산에 더 이상 쓰이지 않는다 — 일평균은 발주 엔진 모델(상품 선택 모델,
-              없으면 MA_BLEND)이 정한다. 설정 UI 는 Task 9 범위상 유지(정리는 후속). */}
-          <div className="space-y-1">
-            <Label className="text-xs">일평균 기준 기간</Label>
-            <Select
-              value={draft.avgWindow === 90 ? '90' : 'auto'}
-              onValueChange={(v) =>
-                setDraft((d) => ({
-                  ...d,
-                  avgWindow: (v === 'auto' ? 'auto' : Number(v)) as StockAvgWindow,
-                }))
-              }
-            >
-              <SelectTrigger className="h-8 w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(AVG_WINDOW_LABEL).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-[11px] text-muted-foreground">
-              고른 기간에 출고가 없으면 더 긴 기간으로 대체합니다. 비수기 상품이 갑자기
-              &lsquo;출고없음&rsquo;으로 빠지지 않게 하기 위함입니다.
-            </p>
-          </div>
+          {/* avgWindow 설정 값은 저장·타입에 남겨 두되 등급에 쓰지 않아 UI 는 숨긴다 */}
+          <p className="text-[11px] text-muted-foreground">
+            일평균은 상품별 발주 예측 모델(설정 없으면 혼합 이동평균)을 따릅니다.
+          </p>
 
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-0.5">
