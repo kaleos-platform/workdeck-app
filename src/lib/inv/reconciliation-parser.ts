@@ -16,6 +16,11 @@ export type ParsedRow = {
    * 구버전 matchResults JSON 에는 없다 — undefined = 정상(비반품)으로 취급한다.
    */
   externalGrade?: string
+  /**
+   * 판매불가 하자재고 수량(위킵 inventory_list 의 '하자재고'). quantity 에는 넣지 않는다 — 판매가능 재고만 대조한다.
+   * 0 또는 undefined = 하자 없음. 구버전 matchResults JSON 에는 없다.
+   */
+  defectQuantity?: number
   quantity: number
 }
 
@@ -220,7 +225,8 @@ function parseGeneric(rawData: unknown[][]): ParsedRow[] {
 // ─── 메인 파서 ─────────────────────────────────────────────
 
 // 외부 WMS/채널 재고현황 '목록' export (SKU번호 기반)
-// SKU번호 → externalCode 매칭. 실재고 = 가용재고 + 유보재고 + 하자재고 (안전재고=임계값 제외).
+// SKU번호 → externalCode 매칭. 판매가능 재고 = 가용재고 + 유보재고 (미기입=0).
+// 하자재고는 판매불가라 quantity 에서 빼고 defectQuantity 로 따로 싣는다 (안전재고=임계값 제외).
 function parseInventoryList(rawData: unknown[][]): ParsedRow[] {
   const headers = ((rawData[0] as unknown[]) ?? []).map((v) => String(v ?? '').trim())
   const dataRows = rawData.slice(1)
@@ -230,11 +236,8 @@ function parseInventoryList(rawData: unknown[][]): ParsedRow[] {
     const rec = rowToRecord(headers, raw as unknown[])
     const externalCode = parseStr(rec['SKU번호'])
     if (!externalCode) continue
-    // 물리 총재고 = 가용 + 유보 + 하자 (미기입=0)
-    const qty =
-      (parseInt_(rec['가용재고']) ?? 0) +
-      (parseInt_(rec['유보재고']) ?? 0) +
-      (parseInt_(rec['하자재고']) ?? 0)
+    const qty = (parseInt_(rec['가용재고']) ?? 0) + (parseInt_(rec['유보재고']) ?? 0)
+    const defectQty = parseInt_(rec['하자재고']) ?? 0
     // 옵션 조합(옵션1 [+옵션2]) — externalCode 미매칭 시 상품명+옵션명 폴백 매칭용
     const opt1 = parseStr(rec['옵션1'])
     const opt2 = parseStr(rec['옵션2'])
@@ -244,6 +247,8 @@ function parseInventoryList(rawData: unknown[][]): ParsedRow[] {
       externalName: parseStr(rec['상품명']),
       externalOptionName: optionName,
       quantity: qty,
+      // 하자가 없으면 필드를 생략한다 (matchResults JSON 크기·구버전 호환)
+      ...(defectQty > 0 ? { defectQuantity: defectQty } : {}),
     })
   }
   return rows
@@ -323,7 +328,7 @@ export function parseReconciliationFile(buffer: ArrayBuffer, fileName: string): 
   }
 
   // 5) 재고 현황 '목록' export(외부 WMS/채널): SKU번호 + 가용재고
-  //    SKU번호 → externalCode 매칭, 실재고 = 가용+유보+하자
+  //    SKU번호 → externalCode 매칭, 판매가능 = 가용+유보 (하자는 defectQuantity)
   if (headerStr0.includes('SKU번호') && headerStr0.includes('가용재고')) {
     const rows = parseInventoryList(rawData as unknown[][])
     if (rows.length === 0) {
