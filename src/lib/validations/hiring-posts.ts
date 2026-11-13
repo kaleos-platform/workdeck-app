@@ -53,6 +53,14 @@ export const updatePostingSchema = z.object({
 })
 export type UpdatePostingInput = z.infer<typeof updatePostingSchema>
 
+// 메일 알림 설정 — 발행 후에도 변경 가능
+export const postingMailSettingsSchema = z
+  .object({
+    notificationEnabled: z.boolean().optional(),
+    applicantReceiptEmail: z.boolean().optional(),
+  })
+  .strict()
+
 // 발행/마감/재개 액션
 export const postingActionSchema = z.object({
   action: z.enum(['publish', 'close', 'reopen', 'archive']),

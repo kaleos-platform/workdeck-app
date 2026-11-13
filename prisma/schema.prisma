@@ -4159,19 +4159,47 @@ model HiringPosting {
   appliedTemplateId   String? // 마지막 저장/적용 템플릿 id (덮어쓰기 대상 — FK 미연결 스냅샷)
   appliedTemplateAt   DateTime? // 마지막 저장/적용 시각 (표시용)
 
-  space          Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space          Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   positions      HiringPostingPosition[]
   stores         HiringPostingStore[]
   managers       HiringPostingManager[]
   contents       HiringContent[]
   applications   HiringApplication[]
   uploadSessions HiringUploadSession[]
+  mailSetting    HiringPostingMailSetting?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([spaceId, status])
   @@index([spaceId, createdAt])
+}
+
+// 공고별 메일 알림 설정 (행 없음 = 기본값).
+// HiringPosting 에 컬럼을 추가하면 이관 원장 targetHash(공고 전체 스칼라 해시)가 달라져
+// 이미 이관된 공고의 지원서 이관이 막히므로 별도 1:1 테이블로 둔다.
+model HiringPostingMailSetting {
+  postingId             String   @id
+  applicantReceiptEmail Boolean  @default(true) // 지원자 「지원 접수 완료」 메일
+  dailyDigestEmail      Boolean? // 담당자 일일 요약 — null 이면 HiringPosting.notificationEnabled 를 따른다(공고 행 수정 회피)
+
+  posting HiringPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+}
+
+// 담당자 일일 새 지원자 요약 메일 발송 기록 — (수신자, 집계일) 당 1회 보장
+model HiringDailyDigestLog {
+  id               String    @id @default(cuid())
+  userId           String // 수신 담당자 (Supabase user id)
+  digestDate       String // 집계 대상일 KST 'YYYY-MM-DD'
+  postingCount     Int
+  applicationCount Int
+  sentAt           DateTime? // null = 발송 중(선점) — 실패 시 행 삭제
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, digestDate])
 }
 
 // 공고 × 직무 상세 (근무조건 스냅샷 — opening PostingPosition)

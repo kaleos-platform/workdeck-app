@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { POST } from '../route'
 import { prisma } from '@/lib/prisma'
 import { createPublicApplication } from '@/lib/hiring/applications'
+import { queueApplicantReceipt } from '@/lib/hiring/mail'
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
@@ -17,8 +18,9 @@ jest.mock('@/lib/sc/utm', () => ({ hashIp: () => 'test' }))
 jest.mock('@/lib/hiring/applications', () => ({
   checkRateLimit: () => true,
   MAX_APPLICANT_FILES: 3,
-  createPublicApplication: jest.fn(async () => ({ uuid: 'qa' })),
+  createPublicApplication: jest.fn(async () => ({ uuid: 'qa', id: 'qa-id' })),
 }))
+jest.mock('@/lib/hiring/mail', () => ({ queueApplicantReceipt: jest.fn() }))
 jest.mock('@/lib/hiring/storage', () => ({
   ALLOWED_APPLICANT_MIME: new Set(['application/pdf']),
   MAX_APPLICANT_FILE_BYTES: 1000,
@@ -55,6 +57,7 @@ it('이전 제출 API는 잘못 연결된 다른 고객의 근무지와 직무�
     })
   )
   expect(response.status).toBe(201)
+  expect(queueApplicantReceipt).toHaveBeenCalledWith('qa-id')
   expect(createPublicApplication).toHaveBeenCalledWith(
     expect.objectContaining({ postingPositionId: null, storeIds: [] })
   )

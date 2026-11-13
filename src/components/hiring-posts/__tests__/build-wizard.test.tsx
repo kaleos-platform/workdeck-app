@@ -26,6 +26,7 @@ const data: WizardData = {
     status: 'DRAFT',
     closingDate: null,
     notificationEnabled: false,
+    applicantReceiptEmail: true,
     positions: [],
     storeIds: [],
     contents: [],
