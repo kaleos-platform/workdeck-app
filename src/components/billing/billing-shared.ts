@@ -27,6 +27,8 @@ export interface BillingProduct {
   effectivePrice: number
   paidActivatedAt: string | null
   isActive: boolean
+  /** 준비중 — 이 공간에서 새로 구독·추가할 수 없다 (설치·구독 이력이 있으면 false) */
+  comingSoon: boolean
 }
 
 export interface SubscriptionItemDto {

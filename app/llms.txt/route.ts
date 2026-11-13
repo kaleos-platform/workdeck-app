@@ -4,10 +4,11 @@ import { DECK_LANDINGS } from '@/lib/marketing/decks'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 import { DECK_PRICING_ROWS } from '@/lib/marketing/pricing-data'
 import { getAllPosts } from '@/lib/marketing/blog'
+import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 
 export const dynamic = 'force-static'
 
-function buildLlmsTxt(): string {
+function buildLlmsTxt(releasedIds: string[]): string {
   const lines: string[] = []
 
   lines.push('# Workdeck')
@@ -18,7 +19,7 @@ function buildLlmsTxt(): string {
   )
   lines.push('')
   lines.push(
-    '현재 모든 업무가 베타 기간 동안 무료이며, 필요한 업무만 골라 쓰고 언제든 추가할 수 있습니다.'
+    '필요한 업무만 골라 월 단위로 구독하고 언제든 추가할 수 있습니다. 일부 업무는 출시 준비중입니다.'
   )
   lines.push('')
 
@@ -42,11 +43,13 @@ function buildLlmsTxt(): string {
 
   lines.push('## Pricing')
   lines.push('')
-  lines.push('현재 모든 업무 베타 무료. 아래는 정식 전환 시 예정가(월, VAT 포함)입니다.')
+  lines.push('업무별 월 구독료(VAT 포함)입니다. 준비중 업무는 출시 후 요금을 안내합니다.')
   lines.push('')
   for (const row of DECK_PRICING_ROWS) {
     lines.push(
-      `- ${row.name}: 베타 무료 (예정가 월 ${row.totalPrice.toLocaleString('ko-KR')}원, VAT 포함)`
+      releasedIds.includes(row.slug)
+        ? `- ${row.name}: 월 ${row.totalPrice.toLocaleString('ko-KR')}원 (VAT 포함)`
+        : `- ${row.name}: 준비중`
     )
   }
   lines.push('')
@@ -78,7 +81,7 @@ function buildLlmsTxt(): string {
 }
 
 export async function GET() {
-  return new Response(buildLlmsTxt(), {
+  return new Response(buildLlmsTxt(await getReleasedDeckIds()), {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
     },

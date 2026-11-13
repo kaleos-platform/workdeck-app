@@ -15,7 +15,7 @@ export function LeadFormSection({
           {leadForm.headline}
         </h2>
         <p className="mb-8 text-center break-keep text-muted-foreground">{leadForm.subcopy}</p>
-        <LeadForm deck={deck} />
+        <LeadForm deck={deck} doneMessage={leadForm.doneMessage} />
       </div>
     </section>
   )

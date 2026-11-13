@@ -4,13 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -44,6 +38,8 @@ type BillingDeckProduct = {
   monthlyPrice: number
   paidActivatedAt: string | null
   isActive: boolean
+  /** 신규 고객 공개 여부 — false=준비중 */
+  released: boolean
 }
 
 type SubscriptionRow = {
@@ -111,6 +107,7 @@ export function BillingDashboard() {
   const [pastDueOnly, setPastDueOnly] = useState(false)
   const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({})
   const [pendingModeChange, setPendingModeChange] = useState<BillingDeckProduct | null>(null)
+  const [pendingRelease, setPendingRelease] = useState<BillingDeckProduct | null>(null)
   const [exemptDialog, setExemptDialog] = useState<SubscriptionRow | null>(null)
   const [exemptNoteDraft, setExemptNoteDraft] = useState('')
   const [busy, setBusy] = useState(false)
@@ -190,6 +187,29 @@ export function BillingDashboard() {
     }
   }
 
+  async function confirmReleaseChange() {
+    if (!pendingRelease) return
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/admin/billing/products/${pendingRelease.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ released: !pendingRelease.released }),
+      })
+      if (!res.ok) {
+        const json = (await res.json().catch(() => null)) as { message?: string } | null
+        throw new Error(json?.message ?? '공개 상태 변경에 실패했습니다')
+      }
+      setPendingRelease(null)
+      await load()
+    } catch (e) {
+      setPendingRelease(null)
+      setError(e instanceof Error ? e.message : '공개 상태 변경에 실패했습니다')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function submitExempt(exempt: boolean) {
     if (!exemptDialog) return
     setBusy(true)
@@ -253,13 +273,17 @@ export function BillingDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Deck 과금 상품</CardTitle>
-          <CardDescription>과금 모드와 월 공급가(VAT 별도)를 관리합니다</CardDescription>
+          <CardDescription>
+            공개 여부, 과금 모드, 월 공급가(VAT 별도)를 관리합니다. 준비중 업무는 신규 고객이
+            추가·구독할 수 없고 이미 쓰는 공간은 그대로 이용합니다
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>이름</TableHead>
+                <TableHead>공개</TableHead>
                 <TableHead>과금 모드</TableHead>
                 <TableHead>월 공급가</TableHead>
                 <TableHead>유료 전환일</TableHead>
@@ -271,6 +295,19 @@ export function BillingDashboard() {
                   <TableCell className="font-medium">
                     {p.name}
                     <span className="ml-2 text-xs text-muted-foreground">{p.id}</span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={p.released}
+                        onCheckedChange={() => setPendingRelease(p)}
+                        disabled={busy}
+                        aria-label={`${p.name} 공개 여부`}
+                      />
+                      <Badge variant={p.released ? 'default' : 'secondary'}>
+                        {p.released ? '공개' : '준비중'}
+                      </Badge>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Select
@@ -438,21 +475,24 @@ export function BillingDashboard() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!pendingModeChange} onOpenChange={(open) => !open && setPendingModeChange(null)}>
+      <Dialog
+        open={!!pendingModeChange}
+        onOpenChange={(open) => !open && setPendingModeChange(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>과금 모드 변경</DialogTitle>
             <DialogDescription>
               {pendingModeChange?.pricingMode === 'FREE_BETA' ? (
                 <>
-                  <strong>{pendingModeChange?.name}</strong>을(를) SUBSCRIPTION으로 전환합니다.
-                  전환 즉시 유료화 유예 14일이 시작됩니다. 기존 사용 Space를 면제하려면 전환 전에{' '}
+                  <strong>{pendingModeChange?.name}</strong>을(를) SUBSCRIPTION으로 전환합니다. 전환
+                  즉시 유료화 유예 14일이 시작됩니다. 기존 사용 Space를 면제하려면 전환 전에{' '}
                   <code>exempt-all-existing</code> 백필을 먼저 실행했는지 확인하세요.
                 </>
               ) : (
                 <>
-                  <strong>{pendingModeChange?.name}</strong>을(를) FREE_BETA로 되돌립니다.
-                  유료 전환일(paidActivatedAt)은 유예 14일 재시작을 막기 위해 보존됩니다.
+                  <strong>{pendingModeChange?.name}</strong>을(를) FREE_BETA로 되돌립니다. 유료
+                  전환일(paidActivatedAt)은 유예 14일 재시작을 막기 위해 보존됩니다.
                 </>
               )}
             </DialogDescription>
@@ -462,6 +502,38 @@ export function BillingDashboard() {
               취소
             </Button>
             <Button onClick={confirmModeChange} disabled={busy}>
+              변경 확인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!pendingRelease} onOpenChange={(open) => !open && setPendingRelease(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {pendingRelease?.released ? '준비중으로 전환' : '공개로 전환'} —{' '}
+              {pendingRelease?.name}
+            </DialogTitle>
+            <DialogDescription>
+              {pendingRelease?.released ? (
+                <>
+                  신규 고객이 이 업무를 추가·구독할 수 없게 되고, 마케팅 사이트에는 가격 대신
+                  「준비중」과 출시 알림 신청이 표시됩니다. 이미 사용 중인 공간은 그대로 이용합니다.
+                </>
+              ) : (
+                <>
+                  누구나 이 업무를 추가·구독할 수 있게 되고, 마케팅 사이트 소개·요금 페이지에 가격과
+                  구독 버튼이 표시됩니다. 결제 금액(월 공급가)을 먼저 확인하세요.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingRelease(null)} disabled={busy}>
+              취소
+            </Button>
+            <Button onClick={confirmReleaseChange} disabled={busy}>
               변경 확인
             </Button>
           </DialogFooter>

@@ -68,7 +68,8 @@ export function websiteJsonLd() {
 }
 
 /** SoftwareApplication JSON-LD — deck 랜딩 페이지에 사용 */
-export function softwareAppJsonLd(content: DeckLandingContent, monthlyPrice: number) {
+/** monthlyPrice=null 이면 준비중 — 판매 정보(offers) 없이 내보낸다 */
+export function softwareAppJsonLd(content: DeckLandingContent, monthlyPrice: number | null) {
   return {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -77,12 +78,16 @@ export function softwareAppJsonLd(content: DeckLandingContent, monthlyPrice: num
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     url: buildMarketingUrl(`/${content.slug}`),
-    offers: {
-      '@type': 'Offer',
-      price: String(monthlyPrice),
-      priceCurrency: 'KRW',
-      availability: 'https://schema.org/InStock',
-    },
+    ...(monthlyPrice === null
+      ? {}
+      : {
+          offers: {
+            '@type': 'Offer',
+            price: String(monthlyPrice),
+            priceCurrency: 'KRW',
+            availability: 'https://schema.org/InStock',
+          },
+        }),
   }
 }
 

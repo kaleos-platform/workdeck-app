@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { LucideIcon } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { buildAppUrl } from '@/lib/domain'
 import type { DeckLandingHero } from '@/lib/marketing/types'
@@ -9,9 +10,11 @@ interface HeroSectionProps {
   deckName: string
   gradient: string
   icon: LucideIcon
+  /** 덱 이름 옆 상태 배지 (예: 준비중) */
+  badge?: string
 }
 
-export function HeroSection({ hero, deckName, gradient, icon: Icon }: HeroSectionProps) {
+export function HeroSection({ hero, deckName, gradient, icon: Icon, badge }: HeroSectionProps) {
   return (
     <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-8 text-center">
@@ -22,6 +25,7 @@ export function HeroSection({ hero, deckName, gradient, icon: Icon }: HeroSectio
             <Icon className="h-4 w-4 text-white" />
           </div>
           <span className="text-sm font-medium text-muted-foreground">{deckName}</span>
+          {badge ? <Badge variant="secondary">{badge}</Badge> : null}
         </div>
 
         <h1 className="text-4xl font-bold tracking-tight break-keep sm:text-5xl lg:text-6xl">
