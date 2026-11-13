@@ -5,10 +5,12 @@ import {
 import type { StockLocation, StockMatrixRow } from './stock-status.types'
 
 /**
- * 화면 전용 재고 등급 — 커버 일수(재고 ÷ 일평균 출고)를 상품별 리드타임과 비교한다.
+ * 화면 전용 재고 등급 — 커버 일수(재고 ÷ 일평균)를 상품별 리드타임과 비교한다.
+ * 일평균 = 발주 엔진 일률(row.dailyRate — 상품 선택 모델, 없으면 MA_BLEND, 판매 수요 기준).
+ * 발주 계획·MCP 생산 판단과 같은 일률이라 커버 일수가 MCP daysOfCoverWithIncoming 과 맞는다.
  * API의 `status`(OK/LOW/OUT/OVER)는 발주 계획·MCP 에이전트가 함께 쓰므로 건드리지 않는다.
  *
- *   NO_OUTBOUND : 30·90일 출고가 모두 0 (부자재·미입고 신규 옵션) — 조치 카운트에서 제외
+ *   NO_OUTBOUND : 엔진 일률 0 (분석 기간 판매 없음 — 부자재·미입고 신규 옵션) — 조치 카운트에서 제외
  *   NO_STOCK    : 출고는 있는데 재고 ≤ 0 (음수면 장부 이상)
  *   RISK        : 커버 일수 < 리드타임   (지금 발주해도 늦음)
  *   REORDER     : 커버 일수 < 리드타임×2 (발주할 시기)
@@ -40,33 +42,17 @@ export type StockGradeResult = {
 }
 
 /**
- * 일평균 출고 — 설정된 기준 기간을 먼저 보고, 그 기간 출고가 0이면 더 긴 기간으로 폴백한다.
- * 폴백을 두는 이유: 30일 고정으로 두면 계절성 상품이 비수기에 '출고없음'으로 빠져
- * 조치 목록에서 사라진다. out30d/out90d 는 `channelId != null` OUTBOUND 만 집계되므로
- * 부자재·포장재는 어느 기간이든 0이다.
+ * settings.avgWindow 는 등급에 쓰지 않는다 — 일평균은 발주 엔진 모델이 정한다(설정 값은 호환용으로 유지).
  */
-export function dailyAvgOutbound(
-  out30d: number,
-  out90d: number,
-  avgWindow: StockGradeSettings['avgWindow'] = 'auto'
-): number {
-  if (avgWindow === 90) return out90d > 0 ? out90d / 90 : 0
-  // 'auto' 와 30 은 같은 동작 — 30일을 먼저 보고 없으면 90일로 폴백한다.
-  if (out30d > 0) return out30d / 30
-  if (out90d > 0) return out90d / 90
-  return 0
-}
-
 export function gradeStock(
   qty: number,
-  out30d: number,
-  out90d: number,
+  dailyRate: number,
   leadTimeDays: number,
   settings: StockGradeSettings = DEFAULT_STOCK_GRADE_SETTINGS,
   safetyStockQty = 0
 ): StockGradeResult {
-  const avg = dailyAvgOutbound(out30d, out90d, settings.avgWindow)
-  // 출고 이력이 없으면 커버 일수를 만들 수 없다. 재고 0 이어도 '품절'이 아니라 '미입고'다.
+  const avg = dailyRate
+  // 판매 이력이 없으면 커버 일수를 만들 수 없다. 재고 0 이어도 '품절'이 아니라 '미입고'다.
   if (avg <= 0) return { grade: 'NO_OUTBOUND', daysOfCover: null }
   // 재고없음 판정은 **실재고 기준**이다. 안전재고를 빼고 판정하면 재고가 남아 있는데도
   // '재고없음'이 되어 요약의 재고없음 카운트가 부풀고 음수 경고와도 어긋난다.
@@ -177,9 +163,8 @@ export function scopeStockStatusRows(
   if (!locationId) {
     return rows.map((row) => {
       const { grade, daysOfCover } = gradeStock(
-        row.totalQty,
-        row.out30d,
-        row.out90d,
+        row.gradeQty ?? row.totalQty,
+        row.dailyRate,
         row.leadTimeDays,
         settings,
         row.safetyStockQty

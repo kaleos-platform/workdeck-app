@@ -1,7 +1,7 @@
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '../planned-stock'
 
 describe('sumIncomingProductionQtyByOption', () => {
-  it('진행중 생산차수 수량만 입고예정에 포함한다', () => {
+  it('PLANNED·ORDERED 생산차수 수량을 입고예정에 포함한다', () => {
     const incoming = sumIncomingProductionQtyByOption([
       {
         status: 'PLANNED',
@@ -23,8 +23,8 @@ describe('sumIncomingProductionQtyByOption', () => {
       },
     ])
 
-    expect(incoming.get('option-1')).toBe(3)
-    expect(incoming.get('option-2')).toBe(4)
+    expect(incoming.get('option-1')).toBe(13)
+    expect(incoming.get('option-2')).toBe(11)
   })
 })
 

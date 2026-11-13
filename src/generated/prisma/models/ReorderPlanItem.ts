@@ -137,6 +137,7 @@ export type ReorderPlanItemCountAggregateOutputType = {
   biasAdjustFactor: number
   confidenceScore: number
   inputsSnapshot: number
+  modelForecasts: number
   rocketGrossQty: number
   directGrossQty: number
   confirmedDailyAvgForecast: number
@@ -259,6 +260,7 @@ export type ReorderPlanItemCountAggregateInputType = {
   biasAdjustFactor?: true
   confidenceScore?: true
   inputsSnapshot?: true
+  modelForecasts?: true
   rocketGrossQty?: true
   directGrossQty?: true
   confirmedDailyAvgForecast?: true
@@ -374,6 +376,7 @@ export type ReorderPlanItemGroupByOutputType = {
   biasAdjustFactor: runtime.Decimal
   confidenceScore: runtime.Decimal | null
   inputsSnapshot: runtime.JsonValue
+  modelForecasts: runtime.JsonValue | null
   rocketGrossQty: runtime.Decimal | null
   directGrossQty: runtime.Decimal | null
   confirmedDailyAvgForecast: runtime.Decimal | null
@@ -425,6 +428,7 @@ export type ReorderPlanItemWhereInput = {
   biasAdjustFactor?: Prisma.DecimalFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonFilter<"ReorderPlanItem">
+  modelForecasts?: Prisma.JsonNullableFilter<"ReorderPlanItem">
   rocketGrossQty?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -456,6 +460,7 @@ export type ReorderPlanItemOrderByWithRelationInput = {
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrderInput | Prisma.SortOrder
   inputsSnapshot?: Prisma.SortOrder
+  modelForecasts?: Prisma.SortOrderInput | Prisma.SortOrder
   rocketGrossQty?: Prisma.SortOrderInput | Prisma.SortOrder
   directGrossQty?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedDailyAvgForecast?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -491,6 +496,7 @@ export type ReorderPlanItemWhereUniqueInput = Prisma.AtLeast<{
   biasAdjustFactor?: Prisma.DecimalFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonFilter<"ReorderPlanItem">
+  modelForecasts?: Prisma.JsonNullableFilter<"ReorderPlanItem">
   rocketGrossQty?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -522,6 +528,7 @@ export type ReorderPlanItemOrderByWithAggregationInput = {
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrderInput | Prisma.SortOrder
   inputsSnapshot?: Prisma.SortOrder
+  modelForecasts?: Prisma.SortOrderInput | Prisma.SortOrder
   rocketGrossQty?: Prisma.SortOrderInput | Prisma.SortOrder
   directGrossQty?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedDailyAvgForecast?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -558,6 +565,7 @@ export type ReorderPlanItemScalarWhereWithAggregatesInput = {
   biasAdjustFactor?: Prisma.DecimalWithAggregatesFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.DecimalNullableWithAggregatesFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonWithAggregatesFilter<"ReorderPlanItem">
+  modelForecasts?: Prisma.JsonNullableWithAggregatesFilter<"ReorderPlanItem">
   rocketGrossQty?: Prisma.DecimalNullableWithAggregatesFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.DecimalNullableWithAggregatesFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.DecimalNullableWithAggregatesFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -583,6 +591,7 @@ export type ReorderPlanItemCreateInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -614,6 +623,7 @@ export type ReorderPlanItemUncheckedCreateInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -639,6 +649,7 @@ export type ReorderPlanItemUpdateInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -670,6 +681,7 @@ export type ReorderPlanItemUncheckedUpdateInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -698,6 +710,7 @@ export type ReorderPlanItemCreateManyInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -723,6 +736,7 @@ export type ReorderPlanItemUpdateManyMutationInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -751,6 +765,7 @@ export type ReorderPlanItemUncheckedUpdateManyInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -794,6 +809,7 @@ export type ReorderPlanItemCountOrderByAggregateInput = {
   biasAdjustFactor?: Prisma.SortOrder
   confidenceScore?: Prisma.SortOrder
   inputsSnapshot?: Prisma.SortOrder
+  modelForecasts?: Prisma.SortOrder
   rocketGrossQty?: Prisma.SortOrder
   directGrossQty?: Prisma.SortOrder
   confirmedDailyAvgForecast?: Prisma.SortOrder
@@ -1045,6 +1061,7 @@ export type ReorderPlanItemCreateWithoutProductInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1074,6 +1091,7 @@ export type ReorderPlanItemUncheckedCreateWithoutProductInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1131,6 +1149,7 @@ export type ReorderPlanItemScalarWhereInput = {
   biasAdjustFactor?: Prisma.DecimalFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonFilter<"ReorderPlanItem">
+  modelForecasts?: Prisma.JsonNullableFilter<"ReorderPlanItem">
   rocketGrossQty?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.DecimalNullableFilter<"ReorderPlanItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1156,6 +1175,7 @@ export type ReorderPlanItemCreateWithoutOptionInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1185,6 +1205,7 @@ export type ReorderPlanItemUncheckedCreateWithoutOptionInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1236,6 +1257,7 @@ export type ReorderPlanItemCreateWithoutPlanInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1265,6 +1287,7 @@ export type ReorderPlanItemUncheckedCreateWithoutPlanInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1318,6 +1341,7 @@ export type ReorderPlanItemCreateManyProductInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1343,6 +1367,7 @@ export type ReorderPlanItemUpdateWithoutProductInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1372,6 +1397,7 @@ export type ReorderPlanItemUncheckedUpdateWithoutProductInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1399,6 +1425,7 @@ export type ReorderPlanItemUncheckedUpdateManyWithoutProductInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1426,6 +1453,7 @@ export type ReorderPlanItemCreateManyOptionInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1451,6 +1479,7 @@ export type ReorderPlanItemUpdateWithoutOptionInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1480,6 +1509,7 @@ export type ReorderPlanItemUncheckedUpdateWithoutOptionInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1507,6 +1537,7 @@ export type ReorderPlanItemUncheckedUpdateManyWithoutOptionInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1534,6 +1565,7 @@ export type ReorderPlanItemCreateManyPlanInput = {
   biasAdjustFactor: runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1559,6 +1591,7 @@ export type ReorderPlanItemUpdateWithoutPlanInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1588,6 +1621,7 @@ export type ReorderPlanItemUncheckedUpdateWithoutPlanInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1615,6 +1649,7 @@ export type ReorderPlanItemUncheckedUpdateManyWithoutPlanInput = {
   biasAdjustFactor?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   confidenceScore?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   inputsSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  modelForecasts?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   rocketGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   directGrossQty?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   confirmedDailyAvgForecast?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1645,6 +1680,7 @@ export type ReorderPlanItemSelect<ExtArgs extends runtime.Types.Extensions.Inter
   biasAdjustFactor?: boolean
   confidenceScore?: boolean
   inputsSnapshot?: boolean
+  modelForecasts?: boolean
   rocketGrossQty?: boolean
   directGrossQty?: boolean
   confirmedDailyAvgForecast?: boolean
@@ -1676,6 +1712,7 @@ export type ReorderPlanItemSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   biasAdjustFactor?: boolean
   confidenceScore?: boolean
   inputsSnapshot?: boolean
+  modelForecasts?: boolean
   rocketGrossQty?: boolean
   directGrossQty?: boolean
   confirmedDailyAvgForecast?: boolean
@@ -1707,6 +1744,7 @@ export type ReorderPlanItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   biasAdjustFactor?: boolean
   confidenceScore?: boolean
   inputsSnapshot?: boolean
+  modelForecasts?: boolean
   rocketGrossQty?: boolean
   directGrossQty?: boolean
   confirmedDailyAvgForecast?: boolean
@@ -1738,6 +1776,7 @@ export type ReorderPlanItemSelectScalar = {
   biasAdjustFactor?: boolean
   confidenceScore?: boolean
   inputsSnapshot?: boolean
+  modelForecasts?: boolean
   rocketGrossQty?: boolean
   directGrossQty?: boolean
   confirmedDailyAvgForecast?: boolean
@@ -1747,7 +1786,7 @@ export type ReorderPlanItemSelectScalar = {
   snapshotSource?: boolean
 }
 
-export type ReorderPlanItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "optionId" | "productId" | "currentStock" | "dailyAvgForecast" | "forecastModel" | "leadTimeDays" | "safetyStockQty" | "suggestedQty" | "roundedSuggestedQty" | "finalQty" | "roundUnit" | "rationale" | "userNote" | "biasAdjustFactor" | "confidenceScore" | "inputsSnapshot" | "rocketGrossQty" | "directGrossQty" | "confirmedDailyAvgForecast" | "confirmedLeadTimeDays" | "confirmedSafetyStockQty" | "confirmedFinalQty" | "snapshotSource", ExtArgs["result"]["reorderPlanItem"]>
+export type ReorderPlanItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "optionId" | "productId" | "currentStock" | "dailyAvgForecast" | "forecastModel" | "leadTimeDays" | "safetyStockQty" | "suggestedQty" | "roundedSuggestedQty" | "finalQty" | "roundUnit" | "rationale" | "userNote" | "biasAdjustFactor" | "confidenceScore" | "inputsSnapshot" | "modelForecasts" | "rocketGrossQty" | "directGrossQty" | "confirmedDailyAvgForecast" | "confirmedLeadTimeDays" | "confirmedSafetyStockQty" | "confirmedFinalQty" | "snapshotSource", ExtArgs["result"]["reorderPlanItem"]>
 export type ReorderPlanItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   plan?: boolean | Prisma.ReorderPlanDefaultArgs<ExtArgs>
   option?: boolean | Prisma.InvProductOptionDefaultArgs<ExtArgs>
@@ -1790,6 +1829,7 @@ export type $ReorderPlanItemPayload<ExtArgs extends runtime.Types.Extensions.Int
     biasAdjustFactor: runtime.Decimal
     confidenceScore: runtime.Decimal | null
     inputsSnapshot: runtime.JsonValue
+    modelForecasts: runtime.JsonValue | null
     rocketGrossQty: runtime.Decimal | null
     directGrossQty: runtime.Decimal | null
     confirmedDailyAvgForecast: runtime.Decimal | null
@@ -2241,6 +2281,7 @@ export interface ReorderPlanItemFieldRefs {
   readonly biasAdjustFactor: Prisma.FieldRef<"ReorderPlanItem", 'Decimal'>
   readonly confidenceScore: Prisma.FieldRef<"ReorderPlanItem", 'Decimal'>
   readonly inputsSnapshot: Prisma.FieldRef<"ReorderPlanItem", 'Json'>
+  readonly modelForecasts: Prisma.FieldRef<"ReorderPlanItem", 'Json'>
   readonly rocketGrossQty: Prisma.FieldRef<"ReorderPlanItem", 'Decimal'>
   readonly directGrossQty: Prisma.FieldRef<"ReorderPlanItem", 'Decimal'>
   readonly confirmedDailyAvgForecast: Prisma.FieldRef<"ReorderPlanItem", 'Decimal'>

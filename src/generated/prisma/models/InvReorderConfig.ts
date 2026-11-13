@@ -29,11 +29,13 @@ export type AggregateInvReorderConfig = {
 export type InvReorderConfigAvgAggregateOutputType = {
   leadTimeDays: number | null
   analysisWindowDays: number | null
+  targetCoverDays: number | null
 }
 
 export type InvReorderConfigSumAggregateOutputType = {
   leadTimeDays: number | null
   analysisWindowDays: number | null
+  targetCoverDays: number | null
 }
 
 export type InvReorderConfigMinAggregateOutputType = {
@@ -41,6 +43,9 @@ export type InvReorderConfigMinAggregateOutputType = {
   productId: string | null
   leadTimeDays: number | null
   analysisWindowDays: number | null
+  targetCoverDays: number | null
+  excludeFromForecast: boolean | null
+  forecastModel: string | null
 }
 
 export type InvReorderConfigMaxAggregateOutputType = {
@@ -48,6 +53,9 @@ export type InvReorderConfigMaxAggregateOutputType = {
   productId: string | null
   leadTimeDays: number | null
   analysisWindowDays: number | null
+  targetCoverDays: number | null
+  excludeFromForecast: boolean | null
+  forecastModel: string | null
 }
 
 export type InvReorderConfigCountAggregateOutputType = {
@@ -55,6 +63,9 @@ export type InvReorderConfigCountAggregateOutputType = {
   productId: number
   leadTimeDays: number
   analysisWindowDays: number
+  targetCoverDays: number
+  excludeFromForecast: number
+  forecastModel: number
   _all: number
 }
 
@@ -62,11 +73,13 @@ export type InvReorderConfigCountAggregateOutputType = {
 export type InvReorderConfigAvgAggregateInputType = {
   leadTimeDays?: true
   analysisWindowDays?: true
+  targetCoverDays?: true
 }
 
 export type InvReorderConfigSumAggregateInputType = {
   leadTimeDays?: true
   analysisWindowDays?: true
+  targetCoverDays?: true
 }
 
 export type InvReorderConfigMinAggregateInputType = {
@@ -74,6 +87,9 @@ export type InvReorderConfigMinAggregateInputType = {
   productId?: true
   leadTimeDays?: true
   analysisWindowDays?: true
+  targetCoverDays?: true
+  excludeFromForecast?: true
+  forecastModel?: true
 }
 
 export type InvReorderConfigMaxAggregateInputType = {
@@ -81,6 +97,9 @@ export type InvReorderConfigMaxAggregateInputType = {
   productId?: true
   leadTimeDays?: true
   analysisWindowDays?: true
+  targetCoverDays?: true
+  excludeFromForecast?: true
+  forecastModel?: true
 }
 
 export type InvReorderConfigCountAggregateInputType = {
@@ -88,6 +107,9 @@ export type InvReorderConfigCountAggregateInputType = {
   productId?: true
   leadTimeDays?: true
   analysisWindowDays?: true
+  targetCoverDays?: true
+  excludeFromForecast?: true
+  forecastModel?: true
   _all?: true
 }
 
@@ -182,6 +204,9 @@ export type InvReorderConfigGroupByOutputType = {
   productId: string
   leadTimeDays: number
   analysisWindowDays: number
+  targetCoverDays: number
+  excludeFromForecast: boolean
+  forecastModel: string | null
   _count: InvReorderConfigCountAggregateOutputType | null
   _avg: InvReorderConfigAvgAggregateOutputType | null
   _sum: InvReorderConfigSumAggregateOutputType | null
@@ -212,6 +237,9 @@ export type InvReorderConfigWhereInput = {
   productId?: Prisma.StringFilter<"InvReorderConfig"> | string
   leadTimeDays?: Prisma.IntFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntFilter<"InvReorderConfig"> | number
+  targetCoverDays?: Prisma.IntFilter<"InvReorderConfig"> | number
+  excludeFromForecast?: Prisma.BoolFilter<"InvReorderConfig"> | boolean
+  forecastModel?: Prisma.StringNullableFilter<"InvReorderConfig"> | string | null
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
 }
 
@@ -220,6 +248,9 @@ export type InvReorderConfigOrderByWithRelationInput = {
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
+  targetCoverDays?: Prisma.SortOrder
+  excludeFromForecast?: Prisma.SortOrder
+  forecastModel?: Prisma.SortOrderInput | Prisma.SortOrder
   product?: Prisma.InvProductOrderByWithRelationInput
 }
 
@@ -231,6 +262,9 @@ export type InvReorderConfigWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.InvReorderConfigWhereInput | Prisma.InvReorderConfigWhereInput[]
   leadTimeDays?: Prisma.IntFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntFilter<"InvReorderConfig"> | number
+  targetCoverDays?: Prisma.IntFilter<"InvReorderConfig"> | number
+  excludeFromForecast?: Prisma.BoolFilter<"InvReorderConfig"> | boolean
+  forecastModel?: Prisma.StringNullableFilter<"InvReorderConfig"> | string | null
   product?: Prisma.XOR<Prisma.InvProductScalarRelationFilter, Prisma.InvProductWhereInput>
 }, "id" | "productId">
 
@@ -239,6 +273,9 @@ export type InvReorderConfigOrderByWithAggregationInput = {
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
+  targetCoverDays?: Prisma.SortOrder
+  excludeFromForecast?: Prisma.SortOrder
+  forecastModel?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.InvReorderConfigCountOrderByAggregateInput
   _avg?: Prisma.InvReorderConfigAvgOrderByAggregateInput
   _max?: Prisma.InvReorderConfigMaxOrderByAggregateInput
@@ -254,12 +291,18 @@ export type InvReorderConfigScalarWhereWithAggregatesInput = {
   productId?: Prisma.StringWithAggregatesFilter<"InvReorderConfig"> | string
   leadTimeDays?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
   analysisWindowDays?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
+  targetCoverDays?: Prisma.IntWithAggregatesFilter<"InvReorderConfig"> | number
+  excludeFromForecast?: Prisma.BoolWithAggregatesFilter<"InvReorderConfig"> | boolean
+  forecastModel?: Prisma.StringNullableWithAggregatesFilter<"InvReorderConfig"> | string | null
 }
 
 export type InvReorderConfigCreateInput = {
   id?: string
   leadTimeDays?: number
   analysisWindowDays?: number
+  targetCoverDays?: number
+  excludeFromForecast?: boolean
+  forecastModel?: string | null
   product: Prisma.InvProductCreateNestedOneWithoutReorderConfigInput
 }
 
@@ -268,12 +311,18 @@ export type InvReorderConfigUncheckedCreateInput = {
   productId: string
   leadTimeDays?: number
   analysisWindowDays?: number
+  targetCoverDays?: number
+  excludeFromForecast?: boolean
+  forecastModel?: string | null
 }
 
 export type InvReorderConfigUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  targetCoverDays?: Prisma.IntFieldUpdateOperationsInput | number
+  excludeFromForecast?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  forecastModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   product?: Prisma.InvProductUpdateOneRequiredWithoutReorderConfigNestedInput
 }
 
@@ -282,6 +331,9 @@ export type InvReorderConfigUncheckedUpdateInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  targetCoverDays?: Prisma.IntFieldUpdateOperationsInput | number
+  excludeFromForecast?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  forecastModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InvReorderConfigCreateManyInput = {
@@ -289,12 +341,18 @@ export type InvReorderConfigCreateManyInput = {
   productId: string
   leadTimeDays?: number
   analysisWindowDays?: number
+  targetCoverDays?: number
+  excludeFromForecast?: boolean
+  forecastModel?: string | null
 }
 
 export type InvReorderConfigUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  targetCoverDays?: Prisma.IntFieldUpdateOperationsInput | number
+  excludeFromForecast?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  forecastModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InvReorderConfigUncheckedUpdateManyInput = {
@@ -302,6 +360,9 @@ export type InvReorderConfigUncheckedUpdateManyInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  targetCoverDays?: Prisma.IntFieldUpdateOperationsInput | number
+  excludeFromForecast?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  forecastModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InvReorderConfigNullableScalarRelationFilter = {
@@ -314,11 +375,15 @@ export type InvReorderConfigCountOrderByAggregateInput = {
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
+  targetCoverDays?: Prisma.SortOrder
+  excludeFromForecast?: Prisma.SortOrder
+  forecastModel?: Prisma.SortOrder
 }
 
 export type InvReorderConfigAvgOrderByAggregateInput = {
   leadTimeDays?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
+  targetCoverDays?: Prisma.SortOrder
 }
 
 export type InvReorderConfigMaxOrderByAggregateInput = {
@@ -326,6 +391,9 @@ export type InvReorderConfigMaxOrderByAggregateInput = {
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
+  targetCoverDays?: Prisma.SortOrder
+  excludeFromForecast?: Prisma.SortOrder
+  forecastModel?: Prisma.SortOrder
 }
 
 export type InvReorderConfigMinOrderByAggregateInput = {
@@ -333,11 +401,15 @@ export type InvReorderConfigMinOrderByAggregateInput = {
   productId?: Prisma.SortOrder
   leadTimeDays?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
+  targetCoverDays?: Prisma.SortOrder
+  excludeFromForecast?: Prisma.SortOrder
+  forecastModel?: Prisma.SortOrder
 }
 
 export type InvReorderConfigSumOrderByAggregateInput = {
   leadTimeDays?: Prisma.SortOrder
   analysisWindowDays?: Prisma.SortOrder
+  targetCoverDays?: Prisma.SortOrder
 }
 
 export type InvReorderConfigCreateNestedOneWithoutProductInput = {
@@ -376,12 +448,18 @@ export type InvReorderConfigCreateWithoutProductInput = {
   id?: string
   leadTimeDays?: number
   analysisWindowDays?: number
+  targetCoverDays?: number
+  excludeFromForecast?: boolean
+  forecastModel?: string | null
 }
 
 export type InvReorderConfigUncheckedCreateWithoutProductInput = {
   id?: string
   leadTimeDays?: number
   analysisWindowDays?: number
+  targetCoverDays?: number
+  excludeFromForecast?: boolean
+  forecastModel?: string | null
 }
 
 export type InvReorderConfigCreateOrConnectWithoutProductInput = {
@@ -404,12 +482,18 @@ export type InvReorderConfigUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  targetCoverDays?: Prisma.IntFieldUpdateOperationsInput | number
+  excludeFromForecast?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  forecastModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InvReorderConfigUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   leadTimeDays?: Prisma.IntFieldUpdateOperationsInput | number
   analysisWindowDays?: Prisma.IntFieldUpdateOperationsInput | number
+  targetCoverDays?: Prisma.IntFieldUpdateOperationsInput | number
+  excludeFromForecast?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  forecastModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -419,6 +503,9 @@ export type InvReorderConfigSelect<ExtArgs extends runtime.Types.Extensions.Inte
   productId?: boolean
   leadTimeDays?: boolean
   analysisWindowDays?: boolean
+  targetCoverDays?: boolean
+  excludeFromForecast?: boolean
+  forecastModel?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
 
@@ -427,6 +514,9 @@ export type InvReorderConfigSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   productId?: boolean
   leadTimeDays?: boolean
   analysisWindowDays?: boolean
+  targetCoverDays?: boolean
+  excludeFromForecast?: boolean
+  forecastModel?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
 
@@ -435,6 +525,9 @@ export type InvReorderConfigSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   productId?: boolean
   leadTimeDays?: boolean
   analysisWindowDays?: boolean
+  targetCoverDays?: boolean
+  excludeFromForecast?: boolean
+  forecastModel?: boolean
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invReorderConfig"]>
 
@@ -443,9 +536,12 @@ export type InvReorderConfigSelectScalar = {
   productId?: boolean
   leadTimeDays?: boolean
   analysisWindowDays?: boolean
+  targetCoverDays?: boolean
+  excludeFromForecast?: boolean
+  forecastModel?: boolean
 }
 
-export type InvReorderConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "leadTimeDays" | "analysisWindowDays", ExtArgs["result"]["invReorderConfig"]>
+export type InvReorderConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "leadTimeDays" | "analysisWindowDays" | "targetCoverDays" | "excludeFromForecast" | "forecastModel", ExtArgs["result"]["invReorderConfig"]>
 export type InvReorderConfigInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
 }
@@ -466,6 +562,9 @@ export type $InvReorderConfigPayload<ExtArgs extends runtime.Types.Extensions.In
     productId: string
     leadTimeDays: number
     analysisWindowDays: number
+    targetCoverDays: number
+    excludeFromForecast: boolean
+    forecastModel: string | null
   }, ExtArgs["result"]["invReorderConfig"]>
   composites: {}
 }
@@ -894,6 +993,9 @@ export interface InvReorderConfigFieldRefs {
   readonly productId: Prisma.FieldRef<"InvReorderConfig", 'String'>
   readonly leadTimeDays: Prisma.FieldRef<"InvReorderConfig", 'Int'>
   readonly analysisWindowDays: Prisma.FieldRef<"InvReorderConfig", 'Int'>
+  readonly targetCoverDays: Prisma.FieldRef<"InvReorderConfig", 'Int'>
+  readonly excludeFromForecast: Prisma.FieldRef<"InvReorderConfig", 'Boolean'>
+  readonly forecastModel: Prisma.FieldRef<"InvReorderConfig", 'String'>
 }
     
 

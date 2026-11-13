@@ -1,4 +1,5 @@
-export const INCOMING_PRODUCTION_STATUS = 'ORDERED' as const
+// 계획(PLANNED)·발주(ORDERED) 차수 모두 입고 예정으로 센다(발주 v2 결정).
+export const INCOMING_PRODUCTION_STATUSES = ['PLANNED', 'ORDERED'] as const
 
 export type ProductionRunForIncomingStock = {
   status: string
@@ -14,7 +15,7 @@ export function sumIncomingProductionQtyByOption(
   const incomingByOption = new Map<string, number>()
 
   for (const run of runs) {
-    if (run.status !== INCOMING_PRODUCTION_STATUS) continue
+    if (!(INCOMING_PRODUCTION_STATUSES as readonly string[]).includes(run.status)) continue
     for (const item of run.items) {
       incomingByOption.set(
         item.optionId,
