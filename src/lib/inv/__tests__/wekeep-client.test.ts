@@ -91,3 +91,16 @@ describe('fetchWekeepInventory', () => {
   it('네트워크 오류 → BLOCKED (원인 메시지에 비밀번호 없음)', () =>
     fails(jest.fn().mockRejectedValue(new Error(`boom ${PW}`)), 'BLOCKED'))
 })
+
+describe('fetchWekeepInventory 페이지 상한', () => {
+  it('50페이지 상한에서 덜 모았으면 UNEXPECTED', async () => {
+    const f = jest.fn().mockResolvedValueOnce(loginOk())
+    f.mockImplementation(async () => {
+      if (f.mock.calls.length === 1) return loginOk()
+      return json({ result: true, data: { inventoryCnt: 99999, inventoryList: [item(1)] } })
+    })
+    const err = await fetchWekeepInventory(cred, f).catch((e) => e)
+    expect(err).toBeInstanceOf(WekeepError)
+    expect(err.code).toBe('UNEXPECTED')
+  })
+})

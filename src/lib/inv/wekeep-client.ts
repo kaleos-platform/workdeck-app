@@ -113,5 +113,7 @@ export async function fetchWekeepInventory(
       })
     }
   }
+  // 페이지 상한으로 끝났는데 아직 덜 모았으면 부분 재고로 대조하지 않는다.
+  if (rows.length < total) throw new WekeepError('UNEXPECTED')
   return rows
 }

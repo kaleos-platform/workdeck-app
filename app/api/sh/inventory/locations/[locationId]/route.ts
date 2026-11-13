@@ -125,7 +125,8 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   // 외부 연동(위킵) 설정 — 3PL 위치 + 같은 Space의 LOGIN 비밀값만 허용
   const sync = resolveSyncState(body, location, data.type ?? location.type)
   if (!sync.ok) return errorResponse(sync.message, 400)
-  if (sync.secretToCheck) {
+  // 이름을 바꾸는 요청일 때만 존재 확인 — 연결 비밀값이 나중에 삭제된 위치의 다른 수정은 막지 않는다.
+  if (sync.secretToCheck && sync.secretToCheck !== location.syncSecretName) {
     const secret = await prisma.spaceSecret.findFirst({
       where: { spaceId: resolved.space.id, name: sync.secretToCheck, kind: 'LOGIN' },
       select: { id: true },

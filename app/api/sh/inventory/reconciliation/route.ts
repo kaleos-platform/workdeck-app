@@ -3,9 +3,14 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { resolveSpaceCoupangWorkspaceId } from '@/lib/inv/resolve-coupang-workspace'
 import { parseReconciliationFile, type ParseResult } from '@/lib/inv/reconciliation-parser'
-import { getCoupangInventoryRows } from '@/lib/inv/reconciliation-sources'
+import {
+  getCoupangInventoryRows,
+  getWekeepInventoryRows,
+  WekeepSourceError,
+} from '@/lib/inv/reconciliation-sources'
 import { runReconciliationMatch, ReconciliationCoreError } from '@/lib/inv/reconciliation-core'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { WekeepError } from '@/lib/inv/wekeep-client'
 import { ensureCoupangSalesChannel } from '@/lib/inv/coupang-channel-pairing'
 
 // GET /api/inv/reconciliation — 히스토리 목록
@@ -42,7 +47,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/inv/reconciliation — 데이터 소스 → 파싱 → 매칭 → PENDING 생성
 // - multipart/form-data: file, locationId, snapshotDate?           (파일 업로드)
-// - application/json: { source: 'coupang', locationId, snapshotDate? } (Deck 연동)
+// - application/json: { source: 'coupang'|'wekeep', locationId, snapshotDate? } (연동)
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
@@ -156,6 +161,25 @@ export async function POST(req: NextRequest) {
 
       const sd = parsed.snapshotDate
       fileName = `쿠팡 로켓그로스 재고${sd ? ` (스냅샷 ${sd.toISOString().slice(0, 10)})` : ''}`
+    } else if (body.source === 'wekeep') {
+      if (!locationId) return errorResponse('위킵 연동 위치를 선택해 주세요.', 400)
+      try {
+        parsed = await getWekeepInventoryRows(resolved.space.id, locationId)
+      } catch (err) {
+        // 비밀번호가 담길 수 있는 원본 에러는 로그·응답에 싣지 않는다 — 고정 문구만.
+        if (err instanceof WekeepSourceError) return errorResponse(err.message, 400)
+        if (err instanceof WekeepError) {
+          // 로그인 실패는 사용자가 고칠 수 있는 입력(400), 그 외 외부 장애는 502
+          return errorResponse(err.message, err.code === 'LOGIN_FAILED' ? 400 : 502)
+        }
+        console.error('[reconciliation POST] wekeep 소스 조회 실패')
+        return errorResponse('위킵 재고 데이터를 불러오지 못했습니다', 502)
+      }
+      if (parsed.rows.length === 0) {
+        return errorResponse('위킵에서 가져온 재고 행이 없습니다.', 400)
+      }
+      const kst = new Date(Date.now() + 9 * 3600 * 1000).toISOString()
+      fileName = `위킵 재고 (연동 ${kst.slice(0, 10)} ${kst.slice(11, 16)} KST)`
     } else {
       return errorResponse('지원하지 않는 연동 소스입니다', 400)
     }
