@@ -143,3 +143,36 @@ function toDateStr(d: Date): string {
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
 }
+
+// 정산 시 모델별·사용자 선택 채점. modelForecasts(계획 생성 시 저장 JSON) 없거나 actual ≤ 0이면 null.
+// wape_k = |rate_k × lead − actual| / actual, USER는 확정 수량으로 역산한 일률로 같은 식.
+export function computeModelWape(
+  modelForecasts: unknown,
+  actual: number,
+  confirmedFinalQty: number | null
+): Record<string, number> | null {
+  if (!modelForecasts || typeof modelForecasts !== 'object' || !(actual > 0)) return null
+  const mf = modelForecasts as Record<string, unknown>
+  const { rates, leadTimeDays } = mf
+  if (!rates || typeof rates !== 'object' || typeof leadTimeDays !== 'number') return null
+  const score = (rate: number) =>
+    Math.round((Math.abs(rate * leadTimeDays - actual) / actual) * 1e4) / 1e4
+  const out: Record<string, number> = {}
+  for (const [k, r] of Object.entries(rates as Record<string, unknown>)) {
+    if (typeof r === 'number' && Number.isFinite(r)) out[k] = score(r)
+  }
+  const { onHandQty, incomingQty, safetyStockQty, horizonDays } = mf
+  if (
+    confirmedFinalQty !== null &&
+    typeof onHandQty === 'number' &&
+    typeof incomingQty === 'number' &&
+    typeof safetyStockQty === 'number' &&
+    typeof horizonDays === 'number' &&
+    horizonDays > 0
+  ) {
+    out.USER = score(
+      (confirmedFinalQty + Math.max(onHandQty, 0) + incomingQty - safetyStockQty) / horizonDays
+    )
+  }
+  return out
+}
