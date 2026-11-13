@@ -31,7 +31,7 @@ function collectUtm() {
   return Object.keys(utm).length ? utm : undefined
 }
 
-export function LeadForm({ deck }: { deck: string }) {
+export function LeadForm({ deck, doneMessage }: { deck: string; doneMessage?: string }) {
   const [done, setDone] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const {
@@ -88,7 +88,8 @@ export function LeadForm({ deck }: { deck: string }) {
       <div className="flex flex-col items-center gap-3 py-10 text-center" role="status">
         <CheckCircle2 className="h-10 w-10 text-emerald-600" aria-hidden />
         <p className="text-lg font-medium break-keep">
-          신청이 완료되었습니다. 담당자가 확인 후 24시간 안에 이메일로 안내드릴게요.
+          {doneMessage ??
+            '신청이 완료되었습니다. 담당자가 확인 후 24시간 안에 이메일로 안내드릴게요.'}
         </p>
       </div>
     )

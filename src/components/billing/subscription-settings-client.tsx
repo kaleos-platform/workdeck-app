@@ -172,7 +172,7 @@ export function SubscriptionSettingsClient() {
     if (target.length === 0) return
     const isAddition = data.subscription?.status === 'ACTIVE'
     const decks = data.products
-      .filter((p) => target.includes(p.id) && p.pricingMode === 'SUBSCRIPTION')
+      .filter((p) => target.includes(p.id) && p.pricingMode === 'SUBSCRIPTION' && !p.comingSoon)
       .map((p) => ({
         id: p.id,
         name: p.name,
@@ -187,7 +187,7 @@ export function SubscriptionSettingsClient() {
   }, [subscribeParam, data])
 
   const subscribableProducts = useMemo(
-    () => data?.products.filter((p) => p.pricingMode === 'SUBSCRIPTION') ?? [],
+    () => data?.products.filter((p) => p.pricingMode === 'SUBSCRIPTION' && !p.comingSoon) ?? [],
     [data]
   )
 
@@ -352,10 +352,13 @@ export function SubscriptionSettingsClient() {
                         <div className="truncate text-sm font-medium">
                           {meta?.name ?? product.name}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          월 {formatWon(Math.round(product.effectivePrice * 1.1))}
-                          <span className="ml-1">(VAT 포함)</span>
-                        </div>
+                        {/* 준비중 업무는 판매 상품이 아니므로 가격을 보이지 않는다 */}
+                        {!product.comingSoon && (
+                          <div className="text-xs text-muted-foreground">
+                            월 {formatWon(Math.round(product.effectivePrice * 1.1))}
+                            <span className="ml-1">(VAT 포함)</span>
+                          </div>
+                        )}
                         {discountNote(product.monthlyPrice, product.effectivePrice) && (
                           <div className="text-xs text-primary">
                             {discountNote(product.monthlyPrice, product.effectivePrice)}
@@ -364,7 +367,11 @@ export function SubscriptionSettingsClient() {
                       </div>
                     </div>
 
-                    {product.pricingMode === 'FREE_BETA' ? (
+                    {product.comingSoon ? (
+                      <Badge variant="secondary" className="w-fit">
+                        준비중
+                      </Badge>
+                    ) : product.pricingMode === 'FREE_BETA' ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Badge variant="secondary" className="w-fit">

@@ -3,6 +3,7 @@ import { resolveSpaceContext, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
 import { effectivePrice } from '@/lib/billing/pricing'
+import { findClosedDecks } from '@/lib/billing/deck-release'
 
 // GET /api/billing/overview — 구독 업무 관리 페이지 데이터 (ADMIN 이상 조회)
 export async function GET() {
@@ -56,6 +57,14 @@ export async function GET() {
     }),
   ])
 
+  // 준비중이면서 이 공간에 설치·구독 이력이 없는 업무 — 구독·추가 버튼 대신 「준비중」
+  const closed = new Set(
+    await findClosedDecks(
+      spaceId,
+      products.map((p) => p.id)
+    )
+  )
+
   // 이 Space 에 실제 청구될 월 공급가: 구독 중이면 청구 기준(priceSnapshot), 아니면 보장가 적용가
   const effectivePrices = new Map(deckItems.map((i) => [i.deckAppId, i] as const))
   const productsWithPrice = products.map((p) => {
@@ -66,6 +75,7 @@ export async function GET() {
       (subscription?.status === 'ACTIVE' || subscription?.status === 'PAST_DUE')
     return {
       ...p,
+      comingSoon: closed.has(p.id),
       effectivePrice: billed
         ? item.priceSnapshot
         : effectivePrice(item?.lockedPrice, p.monthlyPrice),

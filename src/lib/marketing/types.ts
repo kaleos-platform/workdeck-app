@@ -59,6 +59,8 @@ export interface DeckLandingFinalCta {
 export interface DeckLandingLeadForm {
   headline: string
   subcopy: string
+  /** 제출 완료 문구 (없으면 기본 도입 신청 안내) */
+  doneMessage?: string
 }
 
 export interface DeckLandingContent {

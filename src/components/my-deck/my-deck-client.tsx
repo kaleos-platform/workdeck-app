@@ -35,7 +35,8 @@ type DeckSummary = {
 type MyDeckClientProps = {
   spaceName: string
   activeDecks: DeckSummary[]
-  availableDecks: DeckSummary[]
+  /** comingSoon=준비중 — 이 공간에서 새로 추가할 수 없는 업무 */
+  availableDecks: Array<DeckSummary & { comingSoon: boolean }>
   /** 과금 중(SubscriptionItem ACTIVE)인 deck — 이 업무는 구독 해지, 나머지는 사용 중지 */
   subscribedDeckIds: string[]
   isOwner: boolean
@@ -252,6 +253,10 @@ export function MyDeckClient({
     window.history.replaceState(null, '', window.location.pathname)
     const deck = availableDecks.find((d) => d.id === subscribeParam)
     if (!deck) return
+    if (deck.comingSoon) {
+      toast.info(`${deck.name}은(는) 준비중인 업무입니다. 출시되면 안내드릴게요.`)
+      return
+    }
     openDeck(deck)
   }, [subscribeParam, availableDecks, openDeck])
 
@@ -413,7 +418,11 @@ export function MyDeckClient({
                 <CardHeader className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <DeckCardTitle deck={deck} />
-                    <Badge variant="outline">미사용</Badge>
+                    {deck.comingSoon ? (
+                      <Badge variant="secondary">준비중</Badge>
+                    ) : (
+                      <Badge variant="outline">미사용</Badge>
+                    )}
                   </div>
                   <CardDescription className="min-h-10">
                     {toDeckMeta(deck.id)?.description ??
@@ -423,15 +432,21 @@ export function MyDeckClient({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => openDeck(deck)}
-                    aria-label={`${deck.name} 추가 확인 열기`}
-                  >
-                    <PlusCircle className="h-4 w-4" />
-                    추가하기
-                  </Button>
+                  {deck.comingSoon ? (
+                    <Button variant="outline" className="w-full" disabled>
+                      준비중
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => openDeck(deck)}
+                      aria-label={`${deck.name} 추가 확인 열기`}
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      추가하기
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}

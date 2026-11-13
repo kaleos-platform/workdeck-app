@@ -9,6 +9,8 @@ export interface DeckCatalogDefault {
   id: string
   name: string
   monthlyPrice: number
+  /** 신규 고객 공개 여부 시드값 (운영값은 어드민이 관리, 시드는 create 때만 사용) */
+  released: boolean
 }
 
 /**
@@ -22,9 +24,9 @@ export interface DeckCatalogDefault {
  *   Opus급으로 월 40건 생성되면 마진이 30%까지 떨어진다.
  */
 export const DECK_CATALOG_DEFAULTS: DeckCatalogDefault[] = [
-  { id: 'seller-hub', name: '브랜드 운영', monthlyPrice: 50000 },
-  { id: 'finance', name: '재무 관리', monthlyPrice: 40000 },
-  { id: 'coupang-ads', name: '쿠팡 광고 관리', monthlyPrice: 30000 },
-  { id: 'sales-content', name: '세일즈 콘텐츠', monthlyPrice: 20000 },
-  { id: 'recruiting', name: '모집 관리', monthlyPrice: 20000 },
+  { id: 'seller-hub', name: '브랜드 운영', monthlyPrice: 50000, released: false },
+  { id: 'finance', name: '재무 관리', monthlyPrice: 40000, released: false },
+  { id: 'coupang-ads', name: '쿠팡 광고 관리', monthlyPrice: 30000, released: false },
+  { id: 'sales-content', name: '세일즈 콘텐츠', monthlyPrice: 20000, released: false },
+  { id: 'recruiting', name: '모집 관리', monthlyPrice: 20000, released: true },
 ]

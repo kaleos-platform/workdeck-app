@@ -11,6 +11,7 @@ jest.mock('@/lib/prisma', () => ({
 }))
 jest.mock('@/lib/spaces/current-space', () => ({ resolveCurrentMembership: jest.fn() }))
 jest.mock('@/lib/billing/entitlement', () => ({ resolveEntitlement: jest.fn() }))
+jest.mock('@/lib/billing/deck-release', () => ({ findClosedDecks: jest.fn() }))
 jest.mock('@/components/my-deck/my-deck-client', () => ({ MyDeckClient: () => null }))
 jest.mock('next/navigation', () => ({
   redirect: (path: string) => {
@@ -21,6 +22,7 @@ import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
+import { findClosedDecks } from '@/lib/billing/deck-release'
 import MyDeckPage from '../page'
 
 const findFirst = prisma.spaceMember.findFirst as jest.Mock
@@ -38,6 +40,7 @@ beforeEach(() => {
   jest.mocked(prisma.billingMethod.findFirst).mockResolvedValue(null)
   jest.mocked(prisma.deckApp.findMany).mockResolvedValue([])
   jest.mocked(resolveEntitlement).mockResolvedValue({ decks: {} } as never)
+  jest.mocked(findClosedDecks).mockResolvedValue([])
 })
 
 const resolve = resolveCurrentMembership as jest.Mock
@@ -61,4 +64,22 @@ it('?spaceId의 구성원이 아니면(forbidden) 기본 Space로 돌아간다',
 it('멤버십 없으면 /workspace-setup', async () => {
   resolve.mockResolvedValue(null)
   await expect(render()).rejects.toThrow('redirect:/workspace-setup')
+})
+
+it('준비중 업무는 추가할 수 있는 업무에 comingSoon 으로 표시된다', async () => {
+  resolve.mockResolvedValue(cur('sp-1'))
+  findFirst.mockImplementation(({ where }) => Promise.resolve(member(where.spaceId)))
+  jest.mocked(prisma.deckApp.findMany).mockResolvedValue([
+    { id: 'recruiting', name: '모집 관리', description: null },
+    { id: 'finance', name: '재무 관리', description: null },
+  ] as never)
+  jest.mocked(findClosedDecks).mockResolvedValue(['finance'])
+  const page = (await MyDeckPage({ searchParams: Promise.resolve({}) })) as unknown as {
+    props: { availableDecks: Array<{ id: string; comingSoon: boolean }> }
+  }
+  expect(findClosedDecks).toHaveBeenCalledWith('sp-1', ['recruiting', 'finance'])
+  expect(page.props.availableDecks.map((d) => [d.id, d.comingSoon])).toEqual([
+    ['recruiting', false],
+    ['finance', true],
+  ])
 })
