@@ -2,8 +2,8 @@
 // DRAFT 발주 계획 생성
 //
 // 흐름:
-//  1) 옵션별 history(주문수요 — loadOptionDemand) + 재고 입력(loadReorderStockInputs) + config 로드
-//  2) 직전 FINALIZED 계획의 accuracy bias → biasAdjust 계수 계산
+//  1) config 로드 + 입고 완료 계획 정산(settleEligiblePlans)
+//  2) loadPlanOptionInputs — 주문수요·재고·품절일·직전 정산 bias·모델 실적 (MCP 발주 액션과 공용)
 //  3) computeProductPlan — 품절일 제외 시계열 → 모델 비교·백테스트 추천·상품 단위 선택
 //     → 발주량 = 일률 × (리드타임 + 목표 커버일수) + 안전재고 − 현재고 − 입고 예정
 //  4) LLM rationale 생성 (실패 시 결정론적 폴백 텍스트)
@@ -13,23 +13,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { Prisma } from '@/generated/prisma/client'
-import { computeBiasAdjust } from '@/lib/inv/forecast'
 import { generateTextForSpace } from '@/lib/ai/resolve'
 import { mapWithConcurrency } from '@/lib/concurrency'
 import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
-import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
 import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
 import { plannedStockQty } from '@/lib/inv/planned-stock'
 import { computeSetAvailable } from '@/lib/sh/set-plan-calc'
 import {
   computeProductPlan,
   isModelKey,
-  kstYesterday,
-  loadReorderStockInputs,
-  toKstDateKey,
-  type ModelKey,
+  loadPlanOptionInputs,
   type PlanOptionResult,
   type SelectedModel,
 } from '@/lib/inv/reorder-engine'
@@ -37,7 +31,6 @@ import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-source
 
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_TARGET_COVER_DAYS = 30
-const DAY_MS = 24 * 60 * 60 * 1000
 
 // planNo 생성은 @/lib/inv/reorder-seq 의 generatePlanNo 공유 (revert/generate-run 과 동일)
 
@@ -402,93 +395,10 @@ export async function POST(req: NextRequest) {
 
   const now = new Date()
 
-  // ── 2) 재고 입력 — 엔진 공용 loader ───────────────────────────────────────
-  // onHandQty = 전 위치 재고 − 쿠팡 반품 등급 재고(반품 전용 리스팅에서만 팔려 정상 수요를 못 메운다).
-  // 음수도 보존 → computeOrderQty 가 0 으로 보고 checkStock 표시. incomingQty = 계획 차수 + 외부 물류 입고 대기분.
-  // 레이어드 연동 위치 = 사용자가 고른 연동 위치 전체(로켓그로스 외 외부 위치 포함) →
-  // rocketOnHandQty(반품 등급 차감)·rocketIncomingQty(그 위치로 올 계획 차수 + 외부 입고 대기분)가 이 위치 기준.
-  const stockInputs = await loadReorderStockInputs(
-    spaceId,
-    optionIds,
-    now,
-    linkedLocationIdsForCalc.length > 0 ? linkedLocationIdsForCalc : undefined
-  )
-
-  // ── 3) 분석 기간별 주문수요 집계 ──────────────────────────────────────────
-  // 수요 신호 = 옵션×일자 주문수요(수동채널 DelOrderItem + 로켓 VENDOR). 판매분석과
-  // 동일한 loadOptionDemand 를 공유해 두 화면이 정의상 같은 수요를 본다.
-  // (OUTBOUND 장부 대신 주문수요 — OUTBOUND 는 재고차감 전용.)
-  const windowDaysByOption = new Map<string, number>()
-  for (const p of products) {
-    const wd = p.reorderConfig?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
-    for (const o of p.options) {
-      windowDaysByOption.set(o.id, wd)
-    }
-  }
-
-  // 활성 채널 전체(발주는 채널 무관 전수 수요). 최대 window 한 번 로드 후 옵션별로 자른다
-  // (buildClosedSeries 가 옵션별 windowDays 로 zero-fill·절단).
-  const maxWindowDays = Math.max(DEFAULT_WINDOW_DAYS, ...windowDaysByOption.values())
-  const since = new Date(now.getTime() - maxWindowDays * DAY_MS)
-  const optionIdSet = new Set(optionIds)
-  const yesterday = kstYesterday(now)
-  const windowStartKey = (wd: number) =>
-    new Date(Date.parse(`${yesterday}T00:00:00Z`) - (wd - 1) * DAY_MS).toISOString().slice(0, 10)
-
-  const activeChannels = await loadSalesDemandChannels(spaceId)
-  const demandRows = await loadOptionDemand(spaceId, since, now, activeChannels)
-
-  // 옵션별 일별 수요(채널 합산) + 첫 수요일 + 창 내 로켓/전체 판매량(레이어드 비중)
-  const dailyDemandByOption = new Map<string, Record<string, number>>()
-  const firstDemandDateByOption = new Map<string, string>()
-  const rocketQtyInWindowByOption = new Map<string, number>()
-  const totalQtyInWindowByOption = new Map<string, number>()
-  for (const id of optionIds) dailyDemandByOption.set(id, {})
-  for (const row of demandRows) {
-    if (!optionIdSet.has(row.optionId)) continue
-    const byDate = dailyDemandByOption.get(row.optionId)!
-    byDate[row.date] = (byDate[row.date] ?? 0) + row.quantity
-    const first = firstDemandDateByOption.get(row.optionId)
-    if (!first || row.date < first) firstDemandDateByOption.set(row.optionId, row.date)
-    const wd = windowDaysByOption.get(row.optionId) ?? DEFAULT_WINDOW_DAYS
-    if (row.date < windowStartKey(wd) || row.date > yesterday) continue
-    totalQtyInWindowByOption.set(
-      row.optionId,
-      (totalQtyInWindowByOption.get(row.optionId) ?? 0) + row.quantity
-    )
-    if (isLayered && row.channelId === rocketChannelId) {
-      rocketQtyInWindowByOption.set(
-        row.optionId,
-        (rocketQtyInWindowByOption.get(row.optionId) ?? 0) + row.quantity
-      )
-    }
-  }
-
-  // 품절일 판정 입력 — 옵션×KST일 재고 순증감(전 위치 합, 오늘분 포함).
-  // 입고·반품 +, 출고 −, 조정은 저장된 부호(delta), 위치 이동은 전 위치 합 0.
-  const movements = await prisma.invMovement.findMany({
-    where: {
-      spaceId,
-      optionId: { in: optionIds },
-      type: { not: 'TRANSFER' },
-      movementDate: { gte: new Date(since.getTime() - DAY_MS) },
-    },
-    select: { optionId: true, type: true, quantity: true, movementDate: true },
-  })
-  const netByOption = new Map<string, Record<string, number>>()
-  for (const m of movements) {
-    const delta = m.type === 'OUTBOUND' ? -m.quantity : m.quantity
-    const key = toKstDateKey(m.movementDate)
-    const net = netByOption.get(m.optionId) ?? {}
-    net[key] = (net[key] ?? 0) + delta
-    netByOption.set(m.optionId, net)
-  }
-
-  // ── 4) 직전 입고분 자동 정산(lazy) + 정산된 계획의 bias 로드 ──────────────
-  // cron 대신 발주 계획 생성 시점에 입고 완료된 FINALIZED 계획을 즉시 정산한다.
+  // ── 2) 직전 입고분 자동 정산(lazy) ──────────────────────────────────────
+  // cron 대신 발주 계획 생성 시점에 입고 완료된 FINALIZED 계획을 즉시 정산한다(bias 로드 전).
   // 정산 실패는 무시하고 진행 → bias가 없으면 computeBiasAdjust(null)=1.0 폴백.
   // dryRun(미리보기)은 write side-effect 금지 — 위저드가 상품선택·토글마다 호출하므로 settle 반복 write 방지.
-  // 실제 생성 시에만 정산. settle 이 seconds 내 새 eligible 을 만들 일은 사실상 없어 미리보기 정합에 영향 없음.
   if (!body.dryRun) {
     try {
       await settleEligiblePlans(spaceId)
@@ -497,63 +407,20 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ACTIVE accuracy가 채워진 가장 최근 확정 계획의 bias를 사용.
-  // validity=ACTIVE만 — revert로 SUPERSEDED/INVALIDATED된 측정값은 학습에서 제외.
-  const lastSettled = await prisma.reorderPlan.findFirst({
-    where: { spaceId, accuracies: { some: { validity: 'ACTIVE' } } },
-    orderBy: { confirmedAt: 'desc' },
-    select: {
-      id: true,
-      accuracies: {
-        where: { validity: 'ACTIVE' },
-        select: { optionId: true, bias: true },
-      },
-    },
-  })
-  // provenance — 이 계획 예측에 입력된 bias의 출처(어느 정산 계획). 새 계획의 accuracy
-  // settle 시점에 ReorderPlanAccuracy.biasSourcePlanId로 기록됨(향후 settle 경로에서 연결).
-  const biasByOption = new Map<string, number>()
-  if (lastSettled) {
-    for (const acc of lastSettled.accuracies) {
-      biasByOption.set(acc.optionId, Number(acc.bias))
-    }
-  }
+  // ── 3) 입력 로드 — 재고·주문수요·품절일·bias·모델 실적 (MCP 발주 액션과 공용) ──
+  // 레이어드 연동 위치 = 사용자가 고른 연동 위치 전체(로켓그로스 외 외부 위치 포함) →
+  // rocketOnHandQty·rocketIncomingQty 가 이 위치 기준.
+  const { stockInputs, optionInputsByProduct, realizedByProduct, windowDaysByOption } =
+    await loadPlanOptionInputs({
+      spaceId,
+      products,
+      now,
+      linkedLocationIds: linkedLocationIdsForCalc.length > 0 ? linkedLocationIdsForCalc : undefined,
+      rocketChannelId: isLayered ? rocketChannelId : null,
+      demandAdjustFactor: demandAdjustFactorOverride ?? 1,
+    })
 
-  // 모델 실적 — 상품의 최근 정산 계획(ACTIVE·MEASURED) 3건 modelWape 평균 → 추천 점수에 반영
-  const accuracyRows = await prisma.reorderPlanAccuracy.findMany({
-    where: {
-      optionId: { in: optionIds },
-      plan: { spaceId },
-      validity: 'ACTIVE',
-      evaluationStatus: 'MEASURED',
-      modelWape: { not: Prisma.AnyNull },
-    },
-    orderBy: { evaluatedAt: 'desc' },
-    select: { planId: true, optionId: true, modelWape: true },
-  })
-  const realizedFor = (
-    productOptionIds: Set<string>
-  ): Partial<Record<ModelKey | 'USER', number>> | undefined => {
-    // 최신순 정렬된 행에서 이 상품의 최근 정산 계획 3건을 고르고, 그 계획들의 옵션 행을 모두 쓴다
-    const productRows = accuracyRows.filter((r) => productOptionIds.has(r.optionId))
-    const planIds = new Set(Array.from(new Set(productRows.map((r) => r.planId))).slice(0, 3))
-    const rows = productRows.filter((r) => planIds.has(r.planId))
-    const sum: Record<string, { s: number; n: number }> = {}
-    for (const r of rows) {
-      const w = r.modelWape
-      if (w == null || typeof w !== 'object' || Array.isArray(w)) continue
-      for (const [k, v] of Object.entries(w)) {
-        if (typeof v !== 'number' || !Number.isFinite(v)) continue
-        if (!isModelKey(k) && k !== 'USER') continue
-        sum[k] = { s: (sum[k]?.s ?? 0) + v, n: (sum[k]?.n ?? 0) + 1 }
-      }
-    }
-    const keys = Object.keys(sum)
-    if (keys.length === 0) return undefined
-    return Object.fromEntries(keys.map((k) => [k, sum[k].s / sum[k].n]))
-  }
-
-  // ── 5) 상품 단위 예측 + 수량 계산 (computeProductPlan) ──────────────────────
+  // ── 4) 상품 단위 예측 + 수량 계산 (computeProductPlan) ──────────────────────
   const itemInputs: Array<{
     productId: string
     optionId: string
@@ -581,36 +448,7 @@ export async function POST(req: NextRequest) {
     const storedModel = p.reorderConfig?.forecastModel
     const configModel = isModelKey(storedModel) ? storedModel : null
 
-    const optionInputs = p.options.map((o) => {
-      // 이력 시작 = 창 내 첫 수요일과 옵션 생성일(KST) 중 이른 날. 창 밖 판매만 있던 옵션도
-      // 생성일이 오래면 신상품으로 보지 않는다.
-      const createdKey = toKstDateKey(o.createdAt)
-      const firstDemand = firstDemandDateByOption.get(o.id)
-      const startKey = firstDemand && firstDemand < createdKey ? firstDemand : createdKey
-      const historyDays =
-        Math.round(
-          (Date.parse(`${yesterday}T00:00:00Z`) - Date.parse(`${startKey}T00:00:00Z`)) / DAY_MS
-        ) + 1
-      const biasFactor =
-        computeBiasAdjust(biasByOption.get(o.id) ?? null) * (demandAdjustFactorOverride ?? 1)
-      return {
-        optionId: o.id,
-        qtyByDate: dailyDemandByOption.get(o.id) ?? {},
-        netByDate: netByOption.get(o.id) ?? {},
-        rocketQtyInWindow: rocketQtyInWindowByOption.get(o.id) ?? 0,
-        totalQtyInWindow: totalQtyInWindowByOption.get(o.id) ?? 0,
-        historyDays,
-        safetyStockQty: o.safetyStockQty,
-        stock: stockInputs.get(o.id) ?? {
-          onHandQty: 0,
-          rocketOnHandQty: 0,
-          incomingQty: 0,
-          rocketIncomingQty: 0,
-          returnGradeQty: 0,
-        },
-        biasFactor,
-      }
-    })
+    const optionInputs = optionInputsByProduct.get(p.id) ?? []
 
     const results = computeProductPlan({
       options: optionInputs,
@@ -621,7 +459,7 @@ export async function POST(req: NextRequest) {
         windowDays,
         configModel,
         overrideModel: modelByProduct.get(p.id),
-        realized: realizedFor(new Set(p.options.map((o) => o.id))),
+        realized: realizedByProduct.get(p.id),
         layered: isLayered,
       },
       manualQtyByOption,

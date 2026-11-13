@@ -4,7 +4,7 @@ import { computeLayeredRoundedSplit } from '@/lib/sh/set-plan-calc'
 import { backtestProduct, recommendModel } from './backtest'
 import { forecastRates, type ModelKey } from './models'
 import { computeOrderQty } from './order-qty'
-import { buildClosedSeries, stockoutDates, type DayPoint } from './series'
+import { buildForecastSeries } from './series'
 import type { ReorderStockInput } from './stock-inputs'
 
 export const MODEL_KEYS: ModelKey[] = ['MA30', 'MA90', 'MA_BLEND', 'SES_TREND', 'CROSTON']
@@ -91,14 +91,13 @@ export function computeProductPlan(input: {
   const horizonDays = product.leadTimeDays + product.targetCoverDays
 
   const prepared = options.map((o) => {
-    const dates = buildClosedSeries({}, product.windowDays, now).map((p) => p.date)
-    const out = stockoutDates({
-      currentStock: o.stock.onHandQty + o.stock.returnGradeQty,
+    const series = buildForecastSeries({
+      qtyByDate: o.qtyByDate,
       netByDate: o.netByDate,
-      salesByDate: o.qtyByDate,
-      dates,
+      currentStock: o.stock.onHandQty + o.stock.returnGradeQty,
+      windowDays: product.windowDays,
+      now,
     })
-    const series: DayPoint[] = buildClosedSeries(o.qtyByDate, product.windowDays, now, out)
     return {
       o,
       series,

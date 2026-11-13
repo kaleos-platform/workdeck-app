@@ -1,7 +1,7 @@
 // 예측 모델 5종 — 품절일 제외 후 일률(≥0)
 
 import { forecastCroston } from '@/lib/inv/forecast/croston'
-import type { DayPoint } from './series'
+import { buildForecastSeries, type DayPoint } from './series'
 
 export type ModelKey = 'MA30' | 'MA90' | 'MA_BLEND' | 'SES_TREND' | 'CROSTON'
 
@@ -50,4 +50,11 @@ export function forecastRates(series: DayPoint[], horizonDays: number): Record<M
       forecastCroston(valid.map((p) => ({ date: p.date, qty: p.qty }))).dailyAvg
     ),
   }
+}
+
+/** 옵션 하나의 선택 모델 일률 — buildForecastSeries → forecastRates */
+export function optionDailyRate(
+  i: Parameters<typeof buildForecastSeries>[0] & { horizonDays: number; model: ModelKey }
+): number {
+  return forecastRates(buildForecastSeries(i), i.horizonDays)[i.model]
 }

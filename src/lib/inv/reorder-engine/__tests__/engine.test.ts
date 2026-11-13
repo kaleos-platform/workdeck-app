@@ -3,6 +3,7 @@ import {
   computeOrderQty,
   forecastRates,
   kstYesterday,
+  optionDailyRate,
   stockoutDates,
   type DayPoint,
 } from '../index'
@@ -94,5 +95,22 @@ describe('computeOrderQty', () => {
   })
   it('rate 0 → coverDays null', () => {
     expect(computeOrderQty({ ...base, dailyRate: 0 }).coverDays).toBeNull()
+  })
+})
+
+describe('optionDailyRate', () => {
+  it('품절일을 빼고 선택 모델 일률을 낸다 (computeProductPlan 과 같은 시계열)', () => {
+    const now = new Date('2026-11-13T03:00:00Z')
+    // 11-10·11-11 판매 4개씩, 11-12 판매 0 + 재고 0 → 품절일(제외)
+    const rate = optionDailyRate({
+      qtyByDate: { '2026-11-10': 4, '2026-11-11': 4 },
+      netByDate: { '2026-11-11': -4 },
+      currentStock: 0,
+      windowDays: 3,
+      horizonDays: 50,
+      model: 'MA30',
+      now,
+    })
+    expect(rate).toBe(4)
   })
 })

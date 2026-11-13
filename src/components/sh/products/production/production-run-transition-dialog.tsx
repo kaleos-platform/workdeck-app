@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { isExternalLogisticsLocation } from '@/lib/inv/location-kind'
 
 export type TransitionTarget = 'PLANNED' | 'ORDERED' | 'STOCKED_IN'
 
@@ -39,10 +40,7 @@ type Location = {
   isActive: boolean
 }
 
-// 외부 물류 위치 판정 — reorder-engine/isExternalLogisticsLocation 와 동일 규칙
-// (해당 모듈은 prisma 를 import 해 클라이언트 번들에 못 쓴다)
-const isExternalLoc = (l?: Location) =>
-  !!l && (l.type === 'THIRD_PARTY' || l.externalSource != null)
+const isExternalLoc = (l?: Location) => !!l && isExternalLogisticsLocation(l)
 
 type RunItem = {
   optionId: string

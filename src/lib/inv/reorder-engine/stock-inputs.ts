@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { isExternalLogisticsLocation } from '@/lib/inv/location-kind'
 import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import {
@@ -10,12 +11,7 @@ import {
 const EXTERNAL_PENDING_MAX_DAYS = 30
 const DAY_MS = 24 * 60 * 60 * 1000
 
-export function isExternalLogisticsLocation(loc: {
-  type: string
-  externalSource: string | null
-}): boolean {
-  return loc.type === 'THIRD_PARTY' || loc.externalSource != null
-}
+export { isExternalLogisticsLocation }
 
 type ExternalStockIn = { optionId: string; locationId: string; quantity: number }
 

@@ -54,3 +54,23 @@ export function stockoutDates(input: {
   }
   return result
 }
+
+/** 예측 입력 시계열 — 품절일 표시된 KST 마감 시계열 (발주 계획·MCP·재고현황 공용) */
+export function buildForecastSeries(i: {
+  qtyByDate: Record<string, number>
+  /** KST 일자별 재고 순증감(전 위치 합) */
+  netByDate: Record<string, number>
+  /** 원재고(반품 등급 포함 전 위치 합) */
+  currentStock: number
+  windowDays: number
+  now: Date
+}): DayPoint[] {
+  const dates = buildClosedSeries({}, i.windowDays, i.now).map((p) => p.date)
+  const out = stockoutDates({
+    currentStock: i.currentStock,
+    netByDate: i.netByDate,
+    salesByDate: i.qtyByDate,
+    dates,
+  })
+  return buildClosedSeries(i.qtyByDate, i.windowDays, i.now, out)
+}
