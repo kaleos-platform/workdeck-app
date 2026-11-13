@@ -7,7 +7,11 @@ import {
 } from '@/lib/inv/reorder-calculator'
 import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
 import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
-import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
+import {
+  INCOMING_PRODUCTION_STATUSES,
+  plannedStockQty,
+  sumIncomingProductionQtyByOption,
+} from '@/lib/inv/planned-stock'
 import { formatDateToYmdKst } from '@/lib/date-range'
 
 // KST 기준 YYYY-MM-DD — loadOptionDemand의 toKstDateKey 키와 타임존 일치.
@@ -100,7 +104,7 @@ export async function GET(req: NextRequest) {
     ? await prisma.productionRun.findMany({
         where: {
           spaceId,
-          status: 'ORDERED',
+          status: { in: [...INCOMING_PRODUCTION_STATUSES] },
           items: { some: { optionId: { in: optionIds } } },
         },
         select: {

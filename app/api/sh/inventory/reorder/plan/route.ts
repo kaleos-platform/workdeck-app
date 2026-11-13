@@ -21,7 +21,11 @@ import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
 import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
 import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
-import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
+import {
+  INCOMING_PRODUCTION_STATUSES,
+  plannedStockQty,
+  sumIncomingProductionQtyByOption,
+} from '@/lib/inv/planned-stock'
 import { computeSetAvailable, computeLayeredRoundedSplit } from '@/lib/sh/set-plan-calc'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 
@@ -403,7 +407,7 @@ export async function POST(req: NextRequest) {
   const pendingRuns = await prisma.productionRun.findMany({
     where: {
       spaceId,
-      status: 'ORDERED',
+      status: { in: [...INCOMING_PRODUCTION_STATUSES] },
       items: { some: { optionId: { in: optionIds } } },
     },
     select: {

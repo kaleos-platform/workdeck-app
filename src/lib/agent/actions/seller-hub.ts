@@ -12,7 +12,11 @@ import { readTargetKeywords, applyKeywordsToTarget } from '@/lib/sh/keyword-appl
 import { applyKeywordOps } from '@/lib/sh/keyword-review'
 import { lastChangeAt, isMeasuring, MEASURE_DAYS } from '@/lib/sh/keyword-review-query'
 import { keywordListSchema } from '@/lib/sh/schemas'
-import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
+import {
+  INCOMING_PRODUCTION_STATUSES,
+  plannedStockQty,
+  sumIncomingProductionQtyByOption,
+} from '@/lib/inv/planned-stock'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
 function def<T>(d: ActionDefinition<T>): ActionDefinition {
@@ -104,7 +108,11 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
     for (const g of stockGroups) stockByOption.set(g.optionId, g._sum.quantity ?? 0)
 
     const pendingRuns = await prisma.productionRun.findMany({
-      where: { spaceId, status: 'ORDERED', items: { some: { optionId: { in: optionIds } } } },
+      where: {
+        spaceId,
+        status: { in: [...INCOMING_PRODUCTION_STATUSES] },
+        items: { some: { optionId: { in: optionIds } } },
+      },
       select: {
         status: true,
         items: {

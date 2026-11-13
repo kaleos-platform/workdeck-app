@@ -17,7 +17,10 @@ import {
   type DemandChannel,
 } from '@/lib/inv/option-demand'
 import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
-import { sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
+import {
+  INCOMING_PRODUCTION_STATUSES,
+  sumIncomingProductionQtyByOption,
+} from '@/lib/inv/planned-stock'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { costExVat } from '@/lib/sh/cost'
 import { addDaysYmd, lastClosedDateKst } from '@/lib/sh/sales-analytics'
@@ -359,7 +362,11 @@ export async function queryOptionSalesVelocity(
     getCoupangReturnStockByOption(spaceId),
     optionIds.length
       ? prisma.productionRun.findMany({
-          where: { spaceId, status: 'ORDERED', items: { some: { optionId: { in: optionIds } } } },
+          where: {
+            spaceId,
+            status: { in: [...INCOMING_PRODUCTION_STATUSES] },
+            items: { some: { optionId: { in: optionIds } } },
+          },
           select: {
             status: true,
             items: {

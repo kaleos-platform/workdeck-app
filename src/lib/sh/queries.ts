@@ -18,7 +18,11 @@ import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
 import { getTodayStrKst } from '@/lib/date-range'
 import { startOfMonth, prevRange, pctChange, last30DaysRange } from '@/lib/sh/sales-analytics'
 import { healthRatioBySku, statusForSku, type SkuFact, type StatusLabel } from '@/lib/inv/metrics'
-import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
+import {
+  INCOMING_PRODUCTION_STATUSES,
+  plannedStockQty,
+  sumIncomingProductionQtyByOption,
+} from '@/lib/inv/planned-stock'
 import { productDisplayName } from '@/lib/sh/product-display'
 import { loadRocketDailyOptionQty } from '@/lib/inv/coupang-sales-to-movement'
 import { readStockGradeSettings } from '@/lib/sh/stock-grade-settings'
@@ -390,7 +394,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
   const pendingRuns = await prisma.productionRun.findMany({
     where: {
       spaceId,
-      status: 'ORDERED',
+      status: { in: [...INCOMING_PRODUCTION_STATUSES] },
     },
     select: {
       status: true,
