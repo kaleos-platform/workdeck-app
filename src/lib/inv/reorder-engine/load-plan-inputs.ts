@@ -136,7 +136,10 @@ export async function loadPlanOptionInputs(args: {
     },
   })
   const biasByOption = new Map<string, number>()
-  for (const acc of lastSettled?.accuracies ?? []) biasByOption.set(acc.optionId, Number(acc.bias))
+  for (const acc of lastSettled?.accuracies ?? []) {
+    if (acc.bias == null) continue // bias 없음(수동 수량 등) → 보정 없음
+    biasByOption.set(acc.optionId, Number(acc.bias))
+  }
 
   // 모델 실적 — 상품의 최근 정산 계획(ACTIVE·MEASURED) 3건 modelWape 평균 → 추천 점수에 반영
   const accuracyRows = await prisma.reorderPlanAccuracy.findMany({

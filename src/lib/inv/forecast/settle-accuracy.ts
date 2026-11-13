@@ -54,6 +54,7 @@ export async function settlePlanAccuracy(planId: string, spaceId: string): Promi
           confirmedSafetyStockQty: true,
           snapshotSource: true,
           modelForecasts: true,
+          forecastModel: true,
         },
       },
     },
@@ -103,6 +104,10 @@ export async function settlePlanAccuracy(planId: string, spaceId: string): Promi
       item.confirmedFinalQty ?? item.finalQty
     )
 
+    // 수동 지정(MANUAL) 수량은 모델 편향이 아니므로 다음 계획의 bias 보정에 쓰이지 않게 0(=보정 없음)으로 둔다.
+    // modelWape 는 모델별 채점이라 그대로 계산한다.
+    const bias = item.forecastModel === 'MANUAL' ? 0 : accuracy.bias
+
     const accuracyData = {
       modelWape: modelWape ?? Prisma.DbNull,
       evaluatedAt,
@@ -111,7 +116,7 @@ export async function settlePlanAccuracy(planId: string, spaceId: string): Promi
       actualOutbound: accuracy.actualOutbound,
       forecastOutbound: accuracy.forecastOutbound,
       wape: accuracy.wape,
-      bias: accuracy.bias,
+      bias,
       stockoutDays: accuracy.stockoutDays,
       overstockDays: accuracy.overstockDays,
       validity: 'ACTIVE' as const,
@@ -127,7 +132,7 @@ export async function settlePlanAccuracy(planId: string, spaceId: string): Promi
     return {
       optionId: item.optionId,
       wape: accuracy.wape,
-      bias: accuracy.bias,
+      bias,
       stockoutDays: accuracy.stockoutDays,
       overstockDays: accuracy.overstockDays,
     }
