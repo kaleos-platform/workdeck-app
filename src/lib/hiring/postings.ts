@@ -25,6 +25,62 @@ export function formHasRequiredStandardFields(fields: FormFieldInput[]): boolean
   return keys.has('name') && keys.has('phone')
 }
 
+// ─── 공고 생성 ─────────────────────────────────────────────────────────────────
+
+/** KST 오늘 + 14일 (UTC 자정 DateTime — PATCH 의 'YYYY-MM-DD' 저장과 동일 규약) */
+export function defaultClosingDate(now = new Date()): Date {
+  const todayKst = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(now)
+  const date = new Date(`${todayKst}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + 14)
+  return date
+}
+
+/**
+ * DRAFT 공고 생성 + 기본 블록(제목 텍스트·직무 정보) 시드. 웹 「새 공고」와 에이전트 초안 승인이 공유한다.
+ * closingDate 미지정이면 기본 마감일, null 이면 상시 모집.
+ */
+export async function createDraftPosting(
+  tx: Prisma.TransactionClient,
+  input: { spaceId: string; authorUserId: string | null; title: string; closingDate?: Date | null }
+) {
+  const created = await tx.hiringPosting.create({
+    data: {
+      spaceId: input.spaceId,
+      title: input.title,
+      status: 'DRAFT',
+      authorUserId: input.authorUserId,
+      applicationEntries: DEFAULT_FORM_FIELDS,
+      closingDate: input.closingDate === undefined ? defaultClosingDate() : input.closingDate,
+    },
+    select: { id: true, uuid: true, title: true, status: true },
+  })
+  await tx.hiringContent.create({
+    data: {
+      spaceId: input.spaceId,
+      postingId: created.id,
+      sourceType: 'POSTING_DETAIL',
+      contentType: 'text',
+      sortOrder: 0,
+      data: {
+        type: 'doc',
+        content: [
+          { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: input.title }] },
+        ],
+      },
+    },
+  })
+  await tx.hiringContent.create({
+    data: {
+      spaceId: input.spaceId,
+      postingId: created.id,
+      sourceType: 'POSTING_DETAIL',
+      contentType: 'positions',
+      sortOrder: 1,
+    },
+  })
+  return created
+}
+
 // ─── 공고 목록/상세 조회 ───────────────────────────────────────────────────────
 export type PostingListStatus = 'DRAFT' | 'ACTIVE' | 'CLOSED' | 'ARCHIVED'
 

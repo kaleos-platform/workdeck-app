@@ -191,6 +191,28 @@ describe('runDailyDigest', () => {
     expect(result).toMatchObject({ date: '2026-11-12', sent: 1, skipped: 0, failed: 0 })
   })
 
+  it('전날 새 지원자가 없으면 아무에게도 보내지 않는다', async () => {
+    p.hiringApplication.groupBy.mockResolvedValue([])
+    const result = await runDailyDigest(now)
+    expect(p.hiringPosting.findMany).not.toHaveBeenCalled()
+    expect(p.hiringDailyDigestLog.create).not.toHaveBeenCalled()
+    expect(send).not.toHaveBeenCalled()
+    expect(result).toMatchObject({ recipients: 0, sent: 0 })
+  })
+
+  it('새 지원자가 있는 공고의 담당자에게만 보낸다(0명 공고 담당자 제외)', async () => {
+    // 집계(groupBy)에는 지원이 있는 공고 p1 만 나온다 — p2(담당자 u2)는 0명
+    p.hiringApplication.groupBy.mockResolvedValue([{ postingId: 'p1', _count: { _all: 1 } }])
+    p.hiringPosting.findMany.mockResolvedValue([
+      { id: 'p1', title: 'A 공고', spaceId: 's1', authorUserId: 'u1' },
+    ])
+    await runDailyDigest(now)
+    expect(p.hiringPosting.findMany.mock.calls[0][0].where).toEqual({ id: { in: ['p1'] } })
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(send.mock.calls[0][0].to).toBe('manager@brand.kr')
+    expect(send.mock.calls[0][0].text).not.toContain('0명')
+  })
+
   it('이미 발송 기록이 있으면 건너뛴다', async () => {
     p.hiringDailyDigestLog.create.mockRejectedValue({ code: 'P2002' })
     p.hiringDailyDigestLog.updateMany.mockResolvedValue({ count: 0 })
