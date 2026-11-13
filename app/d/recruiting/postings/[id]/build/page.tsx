@@ -3,6 +3,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getPostingDetail, DEFAULT_FORM_FIELDS } from '@/lib/hiring/postings'
 import { BuildWizard } from '@/components/hiring-posts/build-wizard'
+import { getPostingMailSettings } from '@/lib/hiring/mail-settings'
 import type { WizardData } from '@/components/hiring-posts/build-types'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 
@@ -17,7 +18,7 @@ export default async function BuildPage({ params }: PageProps) {
   const posting = await getPostingDetail(resolved.space.id, id)
   if (!posting) notFound()
 
-  const [spaceStores, spacePositions] = await Promise.all([
+  const [spaceStores, spacePositions, mailSetting] = await Promise.all([
     prisma.hiringStore.findMany({
       where: { spaceId: resolved.space.id, isActive: true },
       orderBy: { name: 'asc' },
@@ -28,6 +29,7 @@ export default async function BuildPage({ params }: PageProps) {
       orderBy: { name: 'asc' },
       select: { id: true, name: true, category: true },
     }),
+    getPostingMailSettings(posting.id),
   ])
 
   const formFields = Array.isArray(posting.applicationEntries)
@@ -42,7 +44,7 @@ export default async function BuildPage({ params }: PageProps) {
       status: posting.status,
         publishedAt: posting.publishedAt?.toISOString() ?? null,
       closingDate: posting.closingDate ? posting.closingDate.toISOString() : null,
-      notificationEnabled: posting.notificationEnabled,
+      ...mailSetting,
       positions: posting.positions.map((p) => ({
         id: p.id,
         positionId: p.positionId,

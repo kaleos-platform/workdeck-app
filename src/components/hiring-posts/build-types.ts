@@ -54,6 +54,7 @@ export type WizardPosting = {
   status: PostingStatus
   closingDate: string | null
   notificationEnabled: boolean
+  applicantReceiptEmail: boolean
   positions: WizardPositionData[]
   storeIds: string[]
   contents: WizardContentData[]
@@ -96,7 +97,6 @@ export const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'] as con
 export type WizardState = {
   title: string
   closingDate: string // date input 용 'YYYY-MM-DD' (없으면 '')
-  notificationEnabled: boolean
   positions: WizardPositionData[]
   stores: WizardStore[] // 매장 전체 목록(신규 생성 시 확장) — 미리보기 이름/주소 참조용
   storeIds: string[]

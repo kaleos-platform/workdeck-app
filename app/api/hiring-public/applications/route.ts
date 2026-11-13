@@ -20,6 +20,7 @@ import {
 } from '@/lib/hiring/applications'
 import { ALLOWED_APPLICANT_MIME, MAX_APPLICANT_FILE_BYTES } from '@/lib/hiring/storage'
 import type { ApplicationEntryValue } from '@/lib/hiring/pii'
+import { queueApplicantReceipt } from '@/lib/hiring/mail'
 
 export const runtime = 'nodejs'
 
@@ -197,6 +198,7 @@ export async function POST(req: NextRequest) {
       fileFields: parseApplicationEntriesSchema(posting.applicationEntries),
       privacyAgreed: payload.privacyAgreed,
     })
+    queueApplicantReceipt(result.id)
     // 블랙리스트/중복 여부는 응답에 노출하지 않는다(비공개 성공 응답 고정).
     return NextResponse.json({ ok: true, uuid: result.uuid }, { status: 201 })
   } catch (err) {
