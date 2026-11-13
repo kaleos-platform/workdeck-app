@@ -5,7 +5,7 @@ export type DayPoint = { date: string; qty: number; stockout: boolean }
 const DAY_MS = 24 * 60 * 60 * 1000
 
 // option-demand.ts toKstDateKey 와 동일 규칙 (+9h 후 UTC 슬라이스)
-function toKstDateKey(d: Date): string {
+export function toKstDateKey(d: Date): string {
   return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
 }
 

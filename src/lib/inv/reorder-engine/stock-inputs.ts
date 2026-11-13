@@ -58,13 +58,20 @@ export type ReorderStockInput = {
   onHandQty: number
   rocketOnHandQty: number
   incomingQty: number
+  /** 연동 위치로 들어올 예정 수량(계획 차수 입고 위치 + 외부 입고 대기분). incomingQty 에 포함된 일부 */
+  rocketIncomingQty: number
   returnGradeQty: number
 }
 
+/**
+ * linkedLocationIds = 연동(레이어드) 위치. 미지정이면 쿠팡 로켓그로스 위치.
+ * rocketOnHandQty·rocketIncomingQty 는 이 위치들 기준이다.
+ */
 export async function loadReorderStockInputs(
   spaceId: string,
   optionIds: string[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  linkedLocationIds?: string[]
 ): Promise<Map<string, ReorderStockInput>> {
   const result = new Map<string, ReorderStockInput>()
   if (optionIds.length === 0) return result
@@ -90,6 +97,7 @@ export async function loadReorderStockInputs(
       },
       select: {
         status: true,
+        stockInLocationId: true,
         stockedInAt: true,
         externalStockIns: true,
         items: {
@@ -105,9 +113,10 @@ export async function loadReorderStockInputs(
   ])
 
   const rocketLocationIds = new Set(
-    locations
-      .filter((l) => l.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH)
-      .map((l) => l.id)
+    linkedLocationIds ??
+      locations
+        .filter((l) => l.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH)
+        .map((l) => l.id)
   )
 
   const totalByOption = new Map<string, number>()
@@ -140,6 +149,18 @@ export async function loadReorderStockInputs(
   }))
   const pendingExternal = pendingExternalQtyByOption(pendingRuns, lastReconAt, now)
   const incomingRuns = sumIncomingProductionQtyByOption(runs)
+  // 연동 위치분 — 그 위치로 입고될 계획 차수 + 그 위치로 들어간 외부 대기분
+  const rocketPending = pendingExternalQtyByOption(
+    pendingRuns.map((r) => ({
+      stockedInAt: r.stockedInAt,
+      externalStockIns: r.externalStockIns.filter((e) => rocketLocationIds.has(e.locationId)),
+    })),
+    lastReconAt,
+    now
+  )
+  const rocketIncomingRuns = sumIncomingProductionQtyByOption(
+    runs.filter((r) => r.stockInLocationId != null && rocketLocationIds.has(r.stockInLocationId))
+  )
 
   for (const optionId of optionIds) {
     // 반품 등급은 로켓그로스 위치에만 있다. 스냅샷 시점 차이로 현재고를 넘으면 0 으로 바닥.
@@ -152,6 +173,8 @@ export async function loadReorderStockInputs(
       rocketOnHandQty:
         returnQty > 0 && rocketByOption.has(optionId) ? Math.max(0, rocket - returnQty) : rocket,
       incomingQty: (incomingRuns.get(optionId) ?? 0) + (pendingExternal.get(optionId) ?? 0),
+      rocketIncomingQty:
+        (rocketIncomingRuns.get(optionId) ?? 0) + (rocketPending.get(optionId) ?? 0),
       returnGradeQty: returnQty,
     })
   }

@@ -28,7 +28,7 @@ export type PlanOptionInput = {
   historyDays: number
   safetyStockQty: number
   /** onHandQty 는 반품 등급 차감 후(음수 가능). 원재고 = onHandQty + returnGradeQty */
-  stock: ReorderStockInput & { rocketIncomingQty?: number }
+  stock: ReorderStockInput
   biasFactor: number
 }
 
@@ -176,7 +176,7 @@ export function computeProductPlan(input: {
           linkedLocationSafetyStockQty: rocketSafetyStock,
           // computeOrderQty 와 같은 기준(음수 현재고는 0)
           totalPlannedStock: Math.max(o.stock.onHandQty, 0) + o.stock.incomingQty,
-          rocketPlannedStock: o.stock.rocketOnHandQty + (o.stock.rocketIncomingQty ?? 0),
+          rocketPlannedStock: o.stock.rocketOnHandQty + o.stock.rocketIncomingQty,
           roundUnit: product.roundUnit,
         })
         finalQty = split.finalQty

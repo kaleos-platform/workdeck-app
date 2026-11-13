@@ -21,17 +21,14 @@ import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand, loadSalesDemandChannels } from '@/lib/inv/option-demand'
 import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
-import {
-  INCOMING_PRODUCTION_STATUSES,
-  plannedStockQty,
-  sumIncomingProductionQtyByOption,
-} from '@/lib/inv/planned-stock'
+import { plannedStockQty } from '@/lib/inv/planned-stock'
 import { computeSetAvailable } from '@/lib/sh/set-plan-calc'
 import {
   computeProductPlan,
   isModelKey,
   kstYesterday,
   loadReorderStockInputs,
+  toKstDateKey,
   type ModelKey,
   type PlanOptionResult,
   type SelectedModel,
@@ -41,11 +38,6 @@ import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-source
 const DEFAULT_WINDOW_DAYS = 90
 const DEFAULT_TARGET_COVER_DAYS = 30
 const DAY_MS = 24 * 60 * 60 * 1000
-
-// option-demand.ts toKstDateKey 와 동일 규칙 (+9h 후 UTC 슬라이스)
-function toKstDateKey(d: Date): string {
-  return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
-}
 
 // planNo 생성은 @/lib/inv/reorder-seq 의 generatePlanNo 공유 (revert/generate-run 과 동일)
 
@@ -413,46 +405,14 @@ export async function POST(req: NextRequest) {
   // ── 2) 재고 입력 — 엔진 공용 loader ───────────────────────────────────────
   // onHandQty = 전 위치 재고 − 쿠팡 반품 등급 재고(반품 전용 리스팅에서만 팔려 정상 수요를 못 메운다).
   // 음수도 보존 → computeOrderQty 가 0 으로 보고 checkStock 표시. incomingQty = 계획 차수 + 외부 물류 입고 대기분.
-  const stockInputs = await loadReorderStockInputs(spaceId, optionIds, now)
-
-  // 레이어드 연동 위치 재고·입고 예정 — 사용자가 고른 연동 위치 전체(로켓그로스 외 외부 위치 포함)라
-  // loader 의 rocketOnHandQty(로켓그로스 전용) 대신 여기서 계산한다. 반품 등급은 연동 위치 재고에서도 뺀다.
-  const rocketStockByOption = new Map<string, number>()
-  let rocketIncomingByOption = new Map<string, number>()
-  if (linkedLocationIdsForCalc.length > 0) {
-    const [rocketStockGroups, linkedRuns] = await Promise.all([
-      prisma.invStockLevel.groupBy({
-        by: ['optionId'],
-        where: {
-          spaceId,
-          locationId: { in: linkedLocationIdsForCalc },
-          optionId: { in: optionIds },
-        },
-        _sum: { quantity: true },
-      }),
-      prisma.productionRun.findMany({
-        where: {
-          spaceId,
-          status: { in: [...INCOMING_PRODUCTION_STATUSES] },
-          stockInLocationId: { in: linkedLocationIdsForCalc },
-          items: { some: { optionId: { in: optionIds } } },
-        },
-        select: {
-          status: true,
-          items: {
-            where: { optionId: { in: optionIds } },
-            select: { optionId: true, quantity: true },
-          },
-        },
-      }),
-    ])
-    for (const g of rocketStockGroups) {
-      const q = g._sum.quantity ?? 0
-      const returnQty = stockInputs.get(g.optionId)?.returnGradeQty ?? 0
-      rocketStockByOption.set(g.optionId, returnQty > 0 ? Math.max(0, q - returnQty) : q)
-    }
-    rocketIncomingByOption = sumIncomingProductionQtyByOption(linkedRuns)
-  }
+  // 레이어드 연동 위치 = 사용자가 고른 연동 위치 전체(로켓그로스 외 외부 위치 포함) →
+  // rocketOnHandQty(반품 등급 차감)·rocketIncomingQty(그 위치로 올 계획 차수 + 외부 입고 대기분)가 이 위치 기준.
+  const stockInputs = await loadReorderStockInputs(
+    spaceId,
+    optionIds,
+    now,
+    linkedLocationIdsForCalc.length > 0 ? linkedLocationIdsForCalc : undefined
+  )
 
   // ── 3) 분석 기간별 주문수요 집계 ──────────────────────────────────────────
   // 수요 신호 = 옵션×일자 주문수요(수동채널 DelOrderItem + 로켓 VENDOR). 판매분석과
@@ -559,7 +519,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 모델 실적 — 상품 옵션의 최근 정산(ACTIVE·MEASURED) 3건 modelWape 평균 → 추천 점수에 반영
+  // 모델 실적 — 상품의 최근 정산 계획(ACTIVE·MEASURED) 3건 modelWape 평균 → 추천 점수에 반영
   const accuracyRows = await prisma.reorderPlanAccuracy.findMany({
     where: {
       optionId: { in: optionIds },
@@ -569,12 +529,15 @@ export async function POST(req: NextRequest) {
       modelWape: { not: Prisma.AnyNull },
     },
     orderBy: { evaluatedAt: 'desc' },
-    select: { optionId: true, modelWape: true },
+    select: { planId: true, optionId: true, modelWape: true },
   })
   const realizedFor = (
     productOptionIds: Set<string>
   ): Partial<Record<ModelKey | 'USER', number>> | undefined => {
-    const rows = accuracyRows.filter((r) => productOptionIds.has(r.optionId)).slice(0, 3)
+    // 최신순 정렬된 행에서 이 상품의 최근 정산 계획 3건을 고르고, 그 계획들의 옵션 행을 모두 쓴다
+    const productRows = accuracyRows.filter((r) => productOptionIds.has(r.optionId))
+    const planIds = new Set(Array.from(new Set(productRows.map((r) => r.planId))).slice(0, 3))
+    const rows = productRows.filter((r) => planIds.has(r.planId))
     const sum: Record<string, { s: number; n: number }> = {}
     for (const r of rows) {
       const w = r.modelWape
@@ -608,8 +571,6 @@ export async function POST(req: NextRequest) {
     roundedSuggestedQty: number
     plan: PlanOptionResult
   }> = []
-  // 비 dryRun 생성 시 상품 설정에 고정할 선택 모델(MANUAL 제외)
-  const selectedModelByProduct = new Map<string, ModelKey>()
 
   for (const p of products) {
     const leadTimeDays =
@@ -640,15 +601,12 @@ export async function POST(req: NextRequest) {
         totalQtyInWindow: totalQtyInWindowByOption.get(o.id) ?? 0,
         historyDays,
         safetyStockQty: o.safetyStockQty,
-        stock: {
-          ...(stockInputs.get(o.id) ?? {
-            onHandQty: 0,
-            rocketOnHandQty: 0,
-            incomingQty: 0,
-            returnGradeQty: 0,
-          }),
-          rocketOnHandQty: rocketStockByOption.get(o.id) ?? 0,
-          rocketIncomingQty: rocketIncomingByOption.get(o.id) ?? 0,
+        stock: stockInputs.get(o.id) ?? {
+          onHandQty: 0,
+          rocketOnHandQty: 0,
+          incomingQty: 0,
+          rocketIncomingQty: 0,
+          returnGradeQty: 0,
         },
         biasFactor,
       }
@@ -672,7 +630,6 @@ export async function POST(req: NextRequest) {
 
     results.forEach((plan, idx) => {
       const input = optionInputs[idx]
-      if (plan.selectedModel !== 'MANUAL') selectedModelByProduct.set(p.id, plan.selectedModel)
       itemInputs.push({
         productId: p.id,
         optionId: plan.optionId,
@@ -875,10 +832,10 @@ export async function POST(req: NextRequest) {
             ? Math.ceil(rocketNeedByOption.get(it.optionId) ?? 0)
             : null,
           linkedLocationCurrentStockQty: rocketGrossByOption
-            ? (rocketStockByOption.get(it.optionId) ?? 0)
+            ? (stockInputs.get(it.optionId)?.rocketOnHandQty ?? 0)
             : null,
           linkedLocationIncomingQty: rocketGrossByOption
-            ? (rocketIncomingByOption.get(it.optionId) ?? 0)
+            ? (stockInputs.get(it.optionId)?.rocketIncomingQty ?? 0)
             : null,
           finalQty: optionFinalQtyOverride
             ? (optionFinalQtyOverride.get(it.optionId) ?? 0)
@@ -1001,7 +958,10 @@ export async function POST(req: NextRequest) {
 
     // 선택 모델을 상품 발주 설정에 고정(다음 계획 기본값). 설정 행이 없으면 기본값으로 만든다 —
     // 스키마 기본 리드타임(7)이 아니라 라우트 기본값(20)을 넣어 리드타임이 바뀌지 않게 한다.
-    for (const [productId, forecastModel] of selectedModelByProduct) {
+    // 사용자가 modelByProduct 로 직접 고른 모델만 고정한다(추천·기존 설정값은 저장하지 않음 → 추천이 계속 갱신).
+    const planProductIds = new Set(products.map((p) => p.id))
+    for (const [productId, forecastModel] of modelByProduct) {
+      if (forecastModel === 'MANUAL' || !planProductIds.has(productId)) continue
       await tx.invReorderConfig.upsert({
         where: { productId },
         update: { forecastModel },

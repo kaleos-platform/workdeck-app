@@ -171,6 +171,36 @@ d('POST /reorder/plan — dryRun · optionFinalOverrides (dev DB)', () => {
     expect(a.finalQty).toBe(12)
   })
 
+  test('추천·설정 모델은 설정에 저장하지 않고, modelByProduct 지정 모델만 저장', async () => {
+    const group = await prisma.invProductGroup.findFirstOrThrow({ where: { spaceId: SPACE_ID } })
+    const old = await prisma.invProduct.create({
+      data: { spaceId: SPACE_ID, name: 'E2E 기존상품', groupId: group.id, status: 'ACTIVE' },
+    })
+    const oldOpt = await prisma.invProductOption.create({
+      data: {
+        productId: old.id,
+        name: '기존옵션',
+        safetyStockQty: 0,
+        createdAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
+      },
+    })
+
+    const r1 = await (await POST(post({ productId: old.id })))!.json()
+    const it1 = r1.items.find((i: { optionId: string }) => i.optionId === oldOpt.id)
+    expect(it1.isNewOption).toBe(false)
+    expect(it1.selectedModel).not.toBe('MANUAL')
+    const cfg1 = await prisma.invReorderConfig.findUnique({ where: { productId: old.id } })
+    expect(cfg1?.forecastModel ?? null).toBeNull()
+
+    const r2 = await (await POST(
+      post({ productId: old.id, modelByProduct: { [old.id]: 'MA90' } })
+    ))!.json()
+    expect(r2.items[0].selectedModel).toBe('MA90')
+    const cfg2 = await prisma.invReorderConfig.findUnique({ where: { productId: old.id } })
+    expect(cfg2?.forecastModel).toBe('MA90')
+    expect(cfg2?.leadTimeDays).toBe(20)
+  })
+
   test('excludeFromForecast 상품 → 생성 거부(422)', async () => {
     await prisma.invReorderConfig.upsert({
       where: { productId },

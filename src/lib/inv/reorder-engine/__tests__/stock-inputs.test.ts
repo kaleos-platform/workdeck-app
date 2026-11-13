@@ -129,6 +129,7 @@ describe('loadReorderStockInputs', () => {
       onHandQty: 90,
       rocketOnHandQty: 70,
       incomingQty: 50,
+      rocketIncomingQty: 40,
       returnGradeQty: 30,
     })
   })
@@ -167,6 +168,37 @@ describe('loadReorderStockInputs', () => {
     setup(extRun('H'), [])
     const r = await loadReorderStockInputs('s1', ['o1'], now)
     expect(r.get('o1')?.incomingQty).toBe(0)
+  })
+
+  it('linkedLocationIds 지정 시 그 위치 재고·입고 예정(계획 차수 + 외부 대기분)이 rocket 값', async () => {
+    p.invStockLevel.groupBy.mockResolvedValue([
+      { optionId: 'o1', locationId: 'T', _sum: { quantity: 8 } },
+      { optionId: 'o1', locationId: 'R', _sum: { quantity: 5 } },
+    ])
+    p.invStorageLocation.findMany.mockResolvedValue([
+      { id: 'R', type: 'OWN', externalSource: 'coupang_rocket_growth' },
+      { id: 'T', type: 'THIRD_PARTY', externalSource: null },
+    ])
+    ;(getCoupangReturnStockByOption as jest.Mock).mockResolvedValue(null)
+    p.productionRun.findMany.mockResolvedValue([
+      { ...extRun('T'), stockInLocationId: null },
+      { ...extRun('R'), stockInLocationId: null },
+      {
+        status: 'ORDERED',
+        stockInLocationId: 'T',
+        stockedInAt: null,
+        externalStockIns: null,
+        items: [{ optionId: 'o1', quantity: 5 }],
+      },
+    ])
+    p.invReconciliation.findMany.mockResolvedValue([])
+    const r = await loadReorderStockInputs('s1', ['o1'], now, ['T'])
+    expect(r.get('o1')).toMatchObject({
+      onHandQty: 13,
+      rocketOnHandQty: 8,
+      incomingQty: 85,
+      rocketIncomingQty: 45,
+    })
   })
 
   it('반품 차감 후 onHand 음수는 clamp 하지 않는다', async () => {

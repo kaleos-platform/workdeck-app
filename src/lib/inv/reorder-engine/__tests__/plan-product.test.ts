@@ -22,7 +22,13 @@ function opt(over: Partial<PlanOptionInput> & { optionId: string }): PlanOptionI
     totalQtyInWindow: 180,
     historyDays: 90,
     safetyStockQty: 0,
-    stock: { onHandQty: 0, rocketOnHandQty: 0, incomingQty: 0, returnGradeQty: 0 },
+    stock: {
+      onHandQty: 0,
+      rocketOnHandQty: 0,
+      incomingQty: 0,
+      rocketIncomingQty: 0,
+      returnGradeQty: 0,
+    },
     biasFactor: 1,
     ...over,
   }
@@ -44,7 +50,13 @@ describe('computeProductPlan', () => {
         opt({
           optionId: 'a',
           safetyStockQty: 10,
-          stock: { onHandQty: 40, rocketOnHandQty: 0, incomingQty: 0, returnGradeQty: 0 },
+          stock: {
+            onHandQty: 40,
+            rocketOnHandQty: 0,
+            incomingQty: 0,
+            rocketIncomingQty: 0,
+            returnGradeQty: 0,
+          },
         }),
       ],
       product: { ...product, overrideModel: 'MA30' },
@@ -81,7 +93,13 @@ describe('computeProductPlan', () => {
         opt({
           optionId: 'a',
           safetyStockQty: 5,
-          stock: { onHandQty: 12, rocketOnHandQty: 0, incomingQty: 3, returnGradeQty: 0 },
+          stock: {
+            onHandQty: 12,
+            rocketOnHandQty: 0,
+            incomingQty: 3,
+            rocketIncomingQty: 0,
+            returnGradeQty: 0,
+          },
         }),
       ],
       now: NOW,
@@ -97,6 +115,33 @@ describe('computeProductPlan', () => {
     expect(layered.layered!.linkedLocationQty).toBe(0)
     expect(layered.finalQty).toBe(single.finalQty)
     expect(layered.layered!.remainingQty).toBe(single.finalQty)
+  })
+
+  it('(c-2) 연동 위치로 입고 대기 100 → 로켓 gross 100 상쇄, 레이어드 = 단일 = 0', () => {
+    const input = {
+      options: [
+        opt({
+          optionId: 'a',
+          rocketQtyInWindow: 180,
+          totalQtyInWindow: 180,
+          stock: {
+            onHandQty: 0,
+            rocketOnHandQty: 0,
+            incomingQty: 100,
+            rocketIncomingQty: 100,
+            returnGradeQty: 0,
+          },
+        }),
+      ],
+      now: NOW,
+    }
+    const p = { ...product, overrideModel: 'MA30' as const }
+    const [single] = computeProductPlan({ ...input, product: p })
+    const [layered] = computeProductPlan({ ...input, product: { ...p, layered: true } })
+    expect(layered.layered!.rocketExpectedSales).toBeCloseTo(100)
+    expect(single.finalQty).toBe(0)
+    expect(layered.layered!.linkedLocationNeedQty).toBe(0)
+    expect(layered.finalQty).toBe(0)
   })
 
   it('(d) 이력 30일 옵션 → MANUAL, siblingAvgRate = 형제 선택 모델 일률 평균, 수량 = 수동값', () => {
