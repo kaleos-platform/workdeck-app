@@ -14,7 +14,7 @@ const EMAIL_FEATURE: DeckLandingFeature = {
   title: '이메일 알림',
   headline: '새 지원 소식을 메일로',
   description:
-    '지원자에게는 접수 완료 메일이, 담당자에게는 매일 아침 새 지원자 요약 메일이 갑니다. 접수 완료 메일은 지원서에 이메일 항목이 있는 공고에만 발송됩니다.',
+    '지원자가 이메일을 입력하면 제출 직후 접수 완료 메일이 가고, 회신하면 공고 담당자에게 전달됩니다. 담당자는 전날 새 지원자가 있으면 매일 오전 9시에 공고별 새 지원자 수를 요약 메일로 받습니다(지원자 개인정보는 담지 않습니다). 두 메일 모두 공고별로 끌 수 있습니다.',
 }
 
 const AI_FEATURE: DeckLandingFeature = {
@@ -28,7 +28,7 @@ const AI_FEATURE: DeckLandingFeature = {
 const NEW_APPLICANT_ALERT_ROW = RECRUITING_EMAIL_LIVE
   ? {
       before: '신규 지원자 접수 알림 (카카오톡)',
-      after: '이메일 알림 (지원자 접수 완료·담당자 일일 요약)',
+      after: '이메일 알림 (지원자 접수 완료·담당자 매일 요약)',
       diff: '채널 다름',
       same: false,
     }
@@ -40,7 +40,7 @@ const NEW_APPLICANT_ALERT_ROW = RECRUITING_EMAIL_LIVE
     }
 
 const NOTIFICATION_FAQ_ANSWER = RECRUITING_EMAIL_LIVE
-  ? '지원서에 이메일 항목이 있는 공고는 지원자에게 접수 완료 메일이 가고, 담당자는 매일 새 지원자 요약 메일을 받습니다. 결과 안내는 메시지 템플릿과 결과 확인 링크로 빠르게 전달합니다.'
+  ? '지원자가 이메일을 입력하면 접수 완료 메일이 가고, 담당자는 전날 새 지원자가 있을 때 매일 오전 9시에 요약 메일을 받습니다. 공고별로 끌 수 있습니다. 결과 안내는 메시지 템플릿과 결과 확인 링크로 빠르게 전달합니다. 카카오톡 알림은 제공하지 않습니다.'
   : '지원서를 제출하면 지원 완료 화면이 바로 표시됩니다. 결과 안내는 메시지 템플릿과 지원자별 결과 확인 링크를 만들어 문자나 메신저로 빠르게 전달합니다. 카카오톡 알림은 제공하지 않습니다.'
 
 export const recruitingLanding: DeckLandingContent = {
