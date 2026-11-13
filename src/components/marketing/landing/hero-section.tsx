@@ -67,6 +67,8 @@ export function HeroSection({ hero, deckName, gradient, icon: Icon, badge }: Her
             </Link>
           ) : null}
         </div>
+
+        {hero.note ? <p className="text-sm break-keep text-muted-foreground">{hero.note}</p> : null}
       </div>
     </section>
   )
