@@ -5,6 +5,7 @@ import { POST as complete } from '../complete/route'
 import { prisma } from '@/lib/prisma'
 import { inspectApplicantUpload, createApplicantUploadUrl } from '@/lib/hiring/storage'
 import { submissionHash } from '@/lib/hiring/upload-protocol'
+import { queueApplicantReceipt } from '@/lib/hiring/mail'
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
@@ -31,6 +32,7 @@ jest.mock('@/lib/api-helpers', () => ({
   errorResponse: (message: string, status: number) => Response.json({ message }, { status }),
 }))
 jest.mock('@/lib/hiring/applications', () => ({ checkRateLimit: () => true }))
+jest.mock('@/lib/hiring/mail', () => ({ queueApplicantReceipt: jest.fn() }))
 jest.mock('@/lib/hiring/public-request', () => ({ publicRequestKey: () => 'qa' }))
 jest.mock('@/lib/hiring/pii', () => ({
   buildApplicationPii: (entries: unknown[]) => ({ columns: {}, sanitizedEntries: entries }),
@@ -242,6 +244,7 @@ it('완료 시 객체를 확인하고 세션과 첨부를 한 트랜잭션에 �
   expect(prisma.hiringUploadSession.update).toHaveBeenCalledWith(
     expect.objectContaining({ data: expect.objectContaining({ applicationId: sessionId }) })
   )
+  expect(queueApplicantReceipt).toHaveBeenCalledWith(sessionId)
 })
 it.each([null, session({ expiresAt: new Date(0) }), session({ postingId: null })])(
   '없는 권한·만료·삭제된 공고는 저장하지 않는다',
@@ -298,6 +301,8 @@ it('동시 완료 claim을 놓쳐도 먼저 저장된 같은 지원서를 반환
   ;(prisma.hiringApplication.findUniqueOrThrow as jest.Mock).mockResolvedValue({ uuid: 'original' })
   expect(await (await complete(request(payload))).json()).toEqual({ uuid: 'original' })
   expect(prisma.hiringApplication.create).not.toHaveBeenCalled()
+  // 재시도 응답 재생은 접수 메일을 다시 보내지 않는다
+  expect(queueApplicantReceipt).not.toHaveBeenCalled()
 })
 
 it('마감일이 지난 공고에는 업로드 URL이나 제출을 허용하지 않는다', async () => {

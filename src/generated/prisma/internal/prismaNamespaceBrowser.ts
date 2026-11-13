@@ -186,6 +186,8 @@ export const ModelName = {
   HiringStore: 'HiringStore',
   HiringPosition: 'HiringPosition',
   HiringPosting: 'HiringPosting',
+  HiringPostingMailSetting: 'HiringPostingMailSetting',
+  HiringDailyDigestLog: 'HiringDailyDigestLog',
   HiringPostingPosition: 'HiringPostingPosition',
   HiringPostingStore: 'HiringPostingStore',
   HiringPostingManager: 'HiringPostingManager',
@@ -2551,6 +2553,29 @@ export const HiringPostingScalarFieldEnum = {
 } as const
 
 export type HiringPostingScalarFieldEnum = (typeof HiringPostingScalarFieldEnum)[keyof typeof HiringPostingScalarFieldEnum]
+
+
+export const HiringPostingMailSettingScalarFieldEnum = {
+  postingId: 'postingId',
+  applicantReceiptEmail: 'applicantReceiptEmail',
+  dailyDigestEmail: 'dailyDigestEmail',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringPostingMailSettingScalarFieldEnum = (typeof HiringPostingMailSettingScalarFieldEnum)[keyof typeof HiringPostingMailSettingScalarFieldEnum]
+
+
+export const HiringDailyDigestLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  digestDate: 'digestDate',
+  postingCount: 'postingCount',
+  applicationCount: 'applicationCount',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringDailyDigestLogScalarFieldEnum = (typeof HiringDailyDigestLogScalarFieldEnum)[keyof typeof HiringDailyDigestLogScalarFieldEnum]
 
 
 export const HiringPostingPositionScalarFieldEnum = {

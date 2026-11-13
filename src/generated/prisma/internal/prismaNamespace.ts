@@ -519,6 +519,8 @@ export const ModelName = {
   HiringStore: 'HiringStore',
   HiringPosition: 'HiringPosition',
   HiringPosting: 'HiringPosting',
+  HiringPostingMailSetting: 'HiringPostingMailSetting',
+  HiringDailyDigestLog: 'HiringDailyDigestLog',
   HiringPostingPosition: 'HiringPostingPosition',
   HiringPostingStore: 'HiringPostingStore',
   HiringPostingManager: 'HiringPostingManager',
@@ -564,7 +566,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -10558,6 +10560,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HiringPostingMailSetting: {
+      payload: Prisma.$HiringPostingMailSettingPayload<ExtArgs>
+      fields: Prisma.HiringPostingMailSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringPostingMailSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringPostingMailSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringPostingMailSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringPostingMailSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>
+        }
+        findMany: {
+          args: Prisma.HiringPostingMailSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>[]
+        }
+        create: {
+          args: Prisma.HiringPostingMailSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>
+        }
+        createMany: {
+          args: Prisma.HiringPostingMailSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringPostingMailSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringPostingMailSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>
+        }
+        update: {
+          args: Prisma.HiringPostingMailSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringPostingMailSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringPostingMailSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringPostingMailSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringPostingMailSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringPostingMailSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringPostingMailSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringPostingMailSetting>
+        }
+        groupBy: {
+          args: Prisma.HiringPostingMailSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingMailSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringPostingMailSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringPostingMailSettingCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringDailyDigestLog: {
+      payload: Prisma.$HiringDailyDigestLogPayload<ExtArgs>
+      fields: Prisma.HiringDailyDigestLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringDailyDigestLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringDailyDigestLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringDailyDigestLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringDailyDigestLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>
+        }
+        findMany: {
+          args: Prisma.HiringDailyDigestLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>[]
+        }
+        create: {
+          args: Prisma.HiringDailyDigestLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>
+        }
+        createMany: {
+          args: Prisma.HiringDailyDigestLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringDailyDigestLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringDailyDigestLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>
+        }
+        update: {
+          args: Prisma.HiringDailyDigestLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringDailyDigestLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringDailyDigestLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringDailyDigestLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringDailyDigestLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringDailyDigestLogPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringDailyDigestLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringDailyDigestLog>
+        }
+        groupBy: {
+          args: Prisma.HiringDailyDigestLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringDailyDigestLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringDailyDigestLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringDailyDigestLogCountAggregateOutputType> | number
+        }
+      }
+    }
     HiringPostingPosition: {
       payload: Prisma.$HiringPostingPositionPayload<ExtArgs>
       fields: Prisma.HiringPostingPositionFieldRefs
@@ -15136,6 +15286,29 @@ export const HiringPostingScalarFieldEnum = {
 export type HiringPostingScalarFieldEnum = (typeof HiringPostingScalarFieldEnum)[keyof typeof HiringPostingScalarFieldEnum]
 
 
+export const HiringPostingMailSettingScalarFieldEnum = {
+  postingId: 'postingId',
+  applicantReceiptEmail: 'applicantReceiptEmail',
+  dailyDigestEmail: 'dailyDigestEmail',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HiringPostingMailSettingScalarFieldEnum = (typeof HiringPostingMailSettingScalarFieldEnum)[keyof typeof HiringPostingMailSettingScalarFieldEnum]
+
+
+export const HiringDailyDigestLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  digestDate: 'digestDate',
+  postingCount: 'postingCount',
+  applicationCount: 'applicationCount',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringDailyDigestLogScalarFieldEnum = (typeof HiringDailyDigestLogScalarFieldEnum)[keyof typeof HiringDailyDigestLogScalarFieldEnum]
+
+
 export const HiringPostingPositionScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -17264,6 +17437,8 @@ export type GlobalOmitConfig = {
   hiringStore?: Prisma.HiringStoreOmit
   hiringPosition?: Prisma.HiringPositionOmit
   hiringPosting?: Prisma.HiringPostingOmit
+  hiringPostingMailSetting?: Prisma.HiringPostingMailSettingOmit
+  hiringDailyDigestLog?: Prisma.HiringDailyDigestLogOmit
   hiringPostingPosition?: Prisma.HiringPostingPositionOmit
   hiringPostingStore?: Prisma.HiringPostingStoreOmit
   hiringPostingManager?: Prisma.HiringPostingManagerOmit

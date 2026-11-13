@@ -81,6 +81,7 @@
       "path": "/api/cron/sc-osmu-intake",
       "schedule": "*/10 * * * *"
     },
-    { "path": "/api/cron/db-health", "schedule": "*/10 * * * *" }
+    { "path": "/api/cron/db-health", "schedule": "*/10 * * * *" },
+    { "path": "/api/cron/hiring-daily-digest", "schedule": "0 0 * * *" }
   ]
 }
