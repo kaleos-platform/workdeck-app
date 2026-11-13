@@ -152,7 +152,11 @@ export const ReorderForecastModel = {
   HW: 'HW',
   CROSTON: 'CROSTON',
   BAYES: 'BAYES',
-  MANUAL: 'MANUAL'
+  MANUAL: 'MANUAL',
+  MA30: 'MA30',
+  MA90: 'MA90',
+  MA_BLEND: 'MA_BLEND',
+  SES_TREND: 'SES_TREND'
 } as const
 
 export type ReorderForecastModel = (typeof ReorderForecastModel)[keyof typeof ReorderForecastModel]

@@ -45,6 +45,8 @@ type ParsedRow = {
   externalCode: string
   externalName?: string
   externalOptionName?: string
+  /** 위킵 하자재고(판매불가). 0/undefined = 없음 */
+  defectQuantity?: number
   quantity: number
 }
 
@@ -1296,6 +1298,12 @@ export function ReconciliationPreview({
                       >
                         {/* 병합 행의 수량은 옵션 목표 수량(Σ 멤버 기여분) — 확정이 실제로 쓰는 값 */}
                         {isMerged ? entry.targetQty : entry.fileRowQty}
+                        {/* 위킵 하자재고 — 판매가능 수량에서 제외된 값이라 참고용으로만 작게 */}
+                        {!isMerged && (entry.row?.defectQuantity ?? 0) > 0 ? (
+                          <div className="text-[11px] font-normal text-muted-foreground/70">
+                            하자 {entry.row?.defectQuantity}
+                          </div>
+                        ) : null}
                         {entry.groupReturnQuantity ? (
                           <div className="text-[11px] font-normal text-muted-foreground/70">
                             반품등급 {entry.groupReturnQuantity} 포함
@@ -1371,6 +1379,11 @@ export function ReconciliationPreview({
                           </TableCell>
                           <TableCell className={`text-right tabular-nums ${fileCellClass}`}>
                             <div>{m.fileRowQty}</div>
+                            {(m.row?.defectQuantity ?? 0) > 0 ? (
+                              <div className="text-[11px] font-normal text-muted-foreground/70">
+                                하자 {m.row?.defectQuantity}
+                              </div>
+                            ) : null}
                             {m.mapItemQuantity > 1 && (
                               <div className="text-xs text-muted-foreground">
                                 × {m.mapItemQuantity} = {m.targetQty}

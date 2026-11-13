@@ -171,6 +171,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       biasAdjustFactor: Number(item.biasAdjustFactor),
       confidenceScore: item.confidenceScore ? Number(item.confidenceScore) : null,
       inputsSnapshot: item.inputsSnapshot,
+      // v2 모델별 일률 스냅샷 — 상세 화면 모델 툴팁용 (레거시 계획 = null)
+      modelForecasts: item.modelForecasts,
       // 레이어드 분해 표시용 — 로켓/직접 raw GROSS(컬럼). 비레이어드 = null.
       rocketGross: item.rocketGrossQty != null ? Number(item.rocketGrossQty) : null,
       directGross: item.directGrossQty != null ? Number(item.directGrossQty) : null,

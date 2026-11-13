@@ -39,15 +39,18 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { ReorderPlanRationalePopover } from './reorder-plan-rationale-popover'
-import type {
-  ForecastModel,
-  PlanDetailResponse,
-  ReorderPlan,
-  ReorderPlanItem,
-  ReorderPlanSet,
-  ProductInfo,
-  ProductionRunSummary,
-  PlanDetailAccuracy,
+import {
+  MODEL_KEYS,
+  MODEL_KEY_LABEL,
+  type ForecastModel,
+  type ModelKey,
+  type PlanDetailResponse,
+  type ReorderPlan,
+  type ReorderPlanItem,
+  type ReorderPlanSet,
+  type ProductInfo,
+  type ProductionRunSummary,
+  type PlanDetailAccuracy,
 } from './reorder-plan-types'
 import type { SafetyStockSuggestion } from '@/lib/inv/forecast/safety-stock-suggestion'
 import { ProductionRunFormDialog } from '@/components/sh/products/production/production-run-form-dialog'
@@ -70,15 +73,20 @@ const MODEL_BADGE: Record<ForecastModel, string> = {
   CROSTON: 'border-orange-200 bg-orange-50 text-orange-700',
   BAYES: 'border-purple-200 bg-purple-50 text-purple-700',
   MANUAL: 'border-gray-200 bg-gray-50 text-gray-700',
+  // v2 모델 — 정보성 배지는 단일 중립 톤 (DESIGN.md: 임의 강조색 금지)
+  MA30: 'border-gray-200 bg-gray-50 text-gray-700',
+  MA90: 'border-gray-200 bg-gray-50 text-gray-700',
+  MA_BLEND: 'border-gray-200 bg-gray-50 text-gray-700',
+  SES_TREND: 'border-gray-200 bg-gray-50 text-gray-700',
 }
 
 const MODEL_LABEL: Record<ForecastModel, string> = {
   SMA: 'SMA',
   WMA: 'WMA',
   HW: 'H-W',
-  CROSTON: 'Croston',
   BAYES: 'Bayes',
   MANUAL: '수동',
+  ...MODEL_KEY_LABEL,
 }
 
 const QTY = new Intl.NumberFormat('ko-KR')
@@ -88,11 +96,37 @@ function isColdStart(item: ReorderPlanItem) {
   return item.forecastModel === 'BAYES'
 }
 
-function ModelBadge({ model }: { model: ForecastModel }) {
-  return (
-    <Badge variant="outline" className={`text-[10px] ${MODEL_BADGE[model]}`}>
-      {MODEL_LABEL[model]}
+function ModelBadge({
+  model,
+  rates,
+}: {
+  model: ForecastModel
+  rates?: Partial<Record<ModelKey, number>>
+}) {
+  const badge = (
+    <Badge variant="outline" className={`text-[10px] ${MODEL_BADGE[model] ?? ''}`}>
+      {MODEL_LABEL[model] ?? model}
     </Badge>
+  )
+  if (!rates) return badge
+  // v2 계획: 모델별 일률(하루 예상 판매) 비교 툴팁
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="cursor-help">{badge}</span>
+        </TooltipTrigger>
+        <TooltipContent side="top" align="start" className="space-y-0.5 text-left">
+          <p className="mb-1 font-medium">모델별 하루 예상 판매</p>
+          {MODEL_KEYS.map((k) => (
+            <p key={k} className="flex justify-between gap-4 tabular-nums">
+              <span>{MODEL_KEY_LABEL[k]}</span>
+              <span>{rates[k] != null ? `${rates[k]!.toFixed(2)}개` : '—'}</span>
+            </p>
+          ))}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
@@ -1044,7 +1078,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                         )}
                       </TableCell>
                       <TableCell>
-                        <ModelBadge model={item.forecastModel} />
+                        <ModelBadge model={item.forecastModel} rates={item.modelForecasts?.rates} />
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground tabular-nums">
                         {item.leadTimeDays}일

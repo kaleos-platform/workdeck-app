@@ -86,6 +86,8 @@ export type StockMatrixRow = {
   leadTimeDays: number
   currentQty: number
   totalQty: number
+  /** 등급용 계획재고(반품 등급 제외). 없으면 totalQty */
+  gradeQty?: number
   totalValue: number
   byLocation: Record<string, number>
   /**
@@ -97,6 +99,8 @@ export type StockMatrixRow = {
   incomingQty: number
   out30d: number
   out90d: number
+  /** 등급용 일평균 — 발주 엔진 일률(상품 선택 모델, 없으면 MA_BLEND · 판매 수요 · 품절일 제외) */
+  dailyRate: number
   status: SkuStatus
   /** 옵션 상태 — 단종이면 생산·발주에서 빠진다. 재고 0 단종은 응답에서 빠져 있다(단종 포함 제외) */
   optionStatus?: 'ACTIVE' | 'DISCONTINUED'
