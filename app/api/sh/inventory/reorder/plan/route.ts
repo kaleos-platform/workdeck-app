@@ -541,7 +541,7 @@ export async function POST(req: NextRequest) {
     const onHandByOption = new Map<string, number>()
     optionFinalQtyOverride = new Map<string, number>()
     for (const it of itemInputs) {
-      onHandByOption.set(it.optionId, it.onHandStock)
+      onHandByOption.set(it.optionId, Math.max(0, it.onHandStock)) // 세트 역산은 음수 재고를 0으로
       optionFinalQtyOverride.set(it.optionId, it.roundedSuggestedQty)
     }
 
@@ -559,7 +559,7 @@ export async function POST(req: NextRequest) {
     rocketSafetyStockByOption = new Map<string, number>()
     for (const it of itemInputs) {
       const l = it.plan.layered!
-      onHandByOption.set(it.optionId, it.onHandStock)
+      onHandByOption.set(it.optionId, Math.max(0, it.onHandStock)) // 세트 역산은 음수 재고를 0으로
       optionFinalQtyOverride.set(it.optionId, it.plan.finalQty)
       rocketExpectedSalesByOption.set(it.optionId, l.rocketExpectedSales)
       rocketSafetyStockByOption.set(it.optionId, l.rocketSafetyStock)
@@ -592,7 +592,7 @@ export async function POST(req: NextRequest) {
     // 세트 역산(planSetsData)을 override된 최종수량으로 재계산 (표시 정합)
     if (setSpecs) {
       const onHandByOption = new Map<string, number>()
-      for (const it of itemInputs) onHandByOption.set(it.optionId, it.onHandStock)
+      for (const it of itemInputs) onHandByOption.set(it.optionId, Math.max(0, it.onHandStock)) // 세트 역산은 음수 재고를 0으로
       planSetsData = buildReadOnlySetLines(optionFinalQtyOverride, onHandByOption)
     }
   }

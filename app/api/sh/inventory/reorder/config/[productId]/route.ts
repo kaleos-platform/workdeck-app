@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
+import { isModelKey } from '@/lib/inv/reorder-engine'
 
 const DEFAULTS = {
   leadTimeDays: DEFAULT_PRODUCTION_LEAD_TIME_DAYS,
   analysisWindowDays: 90,
   targetCoverDays: 30,
 }
-
-const FORECAST_MODELS = ['MA30', 'MA90', 'MA_BLEND', 'SES_TREND', 'CROSTON']
 
 async function assertProductInSpace(productId: string, spaceId: string) {
   const product = await prisma.invProduct.findFirst({
@@ -89,7 +88,7 @@ export async function PATCH(
 
   let forecastModel: string | null | undefined
   if (body.forecastModel !== undefined) {
-    if (body.forecastModel !== null && !FORECAST_MODELS.includes(body.forecastModel as string)) {
+    if (body.forecastModel !== null && !isModelKey(body.forecastModel)) {
       return errorResponse('forecastModel이 유효하지 않습니다', 400)
     }
     forecastModel = body.forecastModel as string | null

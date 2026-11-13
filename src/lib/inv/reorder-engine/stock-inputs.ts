@@ -135,7 +135,9 @@ export async function loadReorderStockInputs(
   const externalLocationIds = new Set(
     locations.filter(isExternalLogisticsLocation).map((l) => l.id)
   )
-  // 외부 물류 위치로 간 입고분만 대기분 대상
+  // 외부 물류 위치(THIRD_PARTY 또는 externalSource 보유)로 간 입고분만 대기분 대상이다.
+  // stockedInAt 은 날짜(UTC 00:00 = KST 09:00)라, 같은 날 그 이후에 확정된 대조는 대기분을 비운다 —
+  // 대조가 이미 입고를 재고에 반영했다고 보는 의도된 동작(11-12 사고 정합).
   const optionIdSet = new Set(optionIds)
   const pendingRuns = runs.map((r) => ({
     stockedInAt: r.stockedInAt,
@@ -166,8 +168,11 @@ export async function loadReorderStockInputs(
     result.set(optionId, {
       // 음수도 그대로 둔다 — computeOrderQty 가 checkStock 으로 처리한다.
       onHandQty: total - returnQty,
-      rocketOnHandQty:
-        returnQty > 0 && rocketByOption.has(optionId) ? Math.max(0, rocket - returnQty) : rocket,
+      // 연동 위치 재고는 반품 등급을 뺀 뒤에도, 반품 등급이 없어도 0 미만으로 내려가지 않게 바닥 처리
+      rocketOnHandQty: Math.max(
+        0,
+        returnQty > 0 && rocketByOption.has(optionId) ? rocket - returnQty : rocket
+      ),
       incomingQty: (incomingRuns.get(optionId) ?? 0) + (pendingExternal.get(optionId) ?? 0),
       rocketIncomingQty:
         (rocketIncomingRuns.get(optionId) ?? 0) + (rocketPending.get(optionId) ?? 0),
