@@ -56,7 +56,11 @@ describe('PATCH released — 공개/준비중 토글', () => {
   })
 
   it('마지막 공개 업무는 준비중으로 바꿀 수 없다 (판매 상품 1개 이상 유지)', async () => {
-    p.billingDeckProduct.findUnique.mockResolvedValue({ id: 'recruiting', released: true })
+    p.billingDeckProduct.findUnique.mockResolvedValue({
+      id: 'recruiting',
+      released: true,
+      isActive: true,
+    })
     p.billingDeckProduct.count.mockResolvedValue(1)
     const res = await patch('recruiting', { released: false })
     expect(res.status).toBe(409)

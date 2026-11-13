@@ -36,7 +36,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ de
   if (!before) return errorResponse(`deck ${deckId}를 찾을 수 없습니다`, 404)
 
   // 판매 상품이 0개가 되면 PG 심사·마케팅 요금 페이지가 깨진다 — 마지막 공개 업무는 내리지 못한다
-  if (released === false && before.released) {
+  if (released === false && before.released && before.isActive) {
     const releasedCount = await prisma.billingDeckProduct.count({
       where: { released: true, isActive: true },
     })

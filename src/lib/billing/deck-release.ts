@@ -9,7 +9,7 @@ import { DECK_CATALOG_DEFAULTS } from './catalog-defaults'
  *
  * - 공개(released=true): 누구나 추가·구독 가능, 마케팅에 가격·구독 CTA 노출.
  * - 준비중(released=false 또는 과금 상품 행 없음): 신규 추가·구독 차단, 마케팅은 출시 알림만.
- * - 이미 설치된 공간(DeckInstance 행 존재, 비활성 포함) 또는 끝나지 않은 구독 아이템이 있는
+ * - 이미 설치된 공간(DeckInstance 행 존재, 비활성 포함) 또는 구독 이력(종료 포함)이 있는
  *   공간은 공개 여부와 무관하게 계속 쓴다. 사용·쓰기·MCP·정기결제(entitlement)는 이 플래그를
  *   보지 않는다 — 신규 진입 경로만 막는다.
  */
@@ -39,7 +39,8 @@ export async function findClosedDecks(spaceId: string, deckIds: string[]): Promi
       select: { deckAppId: true },
     }),
     prisma.subscriptionItem.findMany({
-      where: { subscription: { spaceId }, deckAppId: { in: deckIds }, status: { not: 'ENDED' } },
+      // 종료된 구독 이력(보장가 lockedPrice 보존)도 기존 고객으로 본다
+      where: { subscription: { spaceId }, deckAppId: { in: deckIds } },
       select: { deckAppId: true },
     }),
   ])
