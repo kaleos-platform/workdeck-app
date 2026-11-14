@@ -634,6 +634,14 @@ export async function POST(req: NextRequest) {
       const horizonDays = head ? head.leadTimeDays + head.plan.targetCoverDays : 0
       const result = allocateLinkedSkus(skuInputs.skus, budget, horizonDays)
       const allocByCode = new Map(result.skus.map((a) => [a.code, a]))
+      // SKU 로 묶이지 않은 낱개는 연동 위치로 보내지 않고 자체·3PL 몫으로 옮긴다(사용자 결정 11-15).
+      // rocketGross/directGross 가 입고 분배(stockin-split)·화면 소계·저장값의 단일 원천이다.
+      for (const [optionId, qty] of result.looseByOption) {
+        const linked = rocketGrossByOption.get(optionId) ?? 0
+        const moved = Math.min(qty, Math.ceil(linked))
+        rocketGrossByOption.set(optionId, Math.max(0, Math.ceil(linked) - moved))
+        directGrossByOption?.set(optionId, (directGrossByOption.get(optionId) ?? 0) + moved)
+      }
       const loc = await prisma.invStorageLocation.findUnique({
         where: { id: skuInputs.locationId },
         select: { name: true },

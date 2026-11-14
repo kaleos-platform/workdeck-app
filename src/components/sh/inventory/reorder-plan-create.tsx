@@ -578,6 +578,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   )
   const externalTotal = options.reduce((s, o) => s + (externalBySku.get(o.optionId) ?? 0), 0)
   const ownTotal = options.reduce((s, o) => s + (ownBySku.get(o.optionId) ?? 0), 0)
+  const linkedNeedTotal = options.reduce((s, o) => s + (o.linkedLocationNeedQty ?? 0), 0)
 
   // ── 공용 블록 ───────────────────────────────────────────────────────────────
   const loadingBlock =
@@ -929,6 +930,11 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                       unit="개"
                       size="md"
                       className="text-right"
+                      sub={
+                        linkedNeedTotal > externalTotal
+                          ? `SKU 미배분 ${fmtQty(linkedNeedTotal - externalTotal)}개는 자체·3PL로`
+                          : undefined
+                      }
                     />
                   }
                 >

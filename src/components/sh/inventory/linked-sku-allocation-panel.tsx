@@ -119,9 +119,9 @@ export function LinkedSkuAllocationPanel({
       )}
       {allocation.loose.length > 0 && (
         <p className="border-t px-5 py-3 text-xs text-amber-700">
-          세트로 나누어지지 않은 연동 위치 몫:{' '}
+          SKU로 나누어지지 않아 자체·3PL 위치로 옮긴 수량:{' '}
           {allocation.loose.map((l) => `${optionLabel(l.optionId)} ${fmtQty(l.qty)}개`).join(', ')}{' '}
-          — 1장 SKU가 없거나 판매 이력이 없어 낱개로 둡니다.
+          — 1장 SKU가 없거나 판매 이력이 없어 연동 위치로 보내지 않습니다.
         </p>
       )}
     </Panel>
