@@ -45,6 +45,23 @@ function serviceClient(): SupabaseClient {
   return cached
 }
 
+type ImageMime = 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif'
+
+export function sniffImage(bytes: Uint8Array): ImageMime | null {
+  const head = Buffer.from(bytes.subarray(0, 12))
+  if (head.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))) return 'image/png'
+  if (head.subarray(0, 3).equals(Buffer.from('ffd8ff', 'hex'))) return 'image/jpeg'
+  if (head.subarray(0, 4).toString('latin1') === 'GIF8') return 'image/gif'
+  if (head.subarray(0, 4).toString() === 'RIFF' && head.subarray(8, 12).toString() === 'WEBP')
+    return 'image/webp'
+  return null
+}
+
+// 디자인 저장은 형식을 보내지 않는다(편집기 내보내기가 PNG→JPEG로 바뀜). 실제 바이트가 우선이다.
+export function resolveUploadMime(bytes: Uint8Array, declared: string | undefined): string {
+  return sniffImage(bytes) ?? declared ?? 'image/png'
+}
+
 export function extFromMime(mime: string): string {
   if (/png/i.test(mime)) return 'png'
   if (/jpeg|jpg/i.test(mime)) return 'jpg'

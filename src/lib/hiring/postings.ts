@@ -4,7 +4,7 @@
  */
 import type { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
-import { uploadPostingAsset } from '@/lib/hiring/storage'
+import { resolveUploadMime, uploadPostingAsset } from '@/lib/hiring/storage'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 
 // ─── 지원서 폼 기본값 ──────────────────────────────────────────────────────────
@@ -180,14 +180,14 @@ export async function uploadContentImage(params: {
   imageBase64: string
   mimeType?: string
 }): Promise<string> {
-  const { spaceId, postingId, imageBase64, mimeType = 'image/png' } = params
+  const { spaceId, postingId, imageBase64, mimeType } = params
   const base64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64
   const buffer = Buffer.from(base64, 'base64')
   const { path } = await uploadPostingAsset({
     spaceId,
     postingId,
     data: buffer,
-    mimeType,
+    mimeType: resolveUploadMime(buffer, mimeType),
   })
   return path
 }

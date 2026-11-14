@@ -1,16 +1,9 @@
 import sharp from 'sharp'
 
-type ImageMime = 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif'
+import { sniffImage } from '@/lib/hiring/storage'
 
-export function sniffImage(bytes: Uint8Array): ImageMime | null {
-  const head = Buffer.from(bytes.subarray(0, 12))
-  if (head.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))) return 'image/png'
-  if (head.subarray(0, 3).equals(Buffer.from('ffd8ff', 'hex'))) return 'image/jpeg'
-  if (head.subarray(0, 4).toString('latin1') === 'GIF8') return 'image/gif'
-  if (head.subarray(0, 4).toString() === 'RIFF' && head.subarray(8, 12).toString() === 'WEBP')
-    return 'image/webp'
-  return null
-}
+export { sniffImage }
+type ImageMime = NonNullable<ReturnType<typeof sniffImage>>
 
 // sharp 오류 문구는 경로·값을 담을 수 있어 종류만 남긴다.
 function decodeFailureClass(error: unknown) {
@@ -70,6 +63,29 @@ export async function cleanImage(bytes: Uint8Array): Promise<CleanImage> {
   throw Error('ASSET_UNSUPPORTED_TYPE')
 }
 
+// 디자인 편집기 저장 한도(scene + 내보낸 이미지 4 MiB) 안에 들도록 해상도는 두고 손실 압축한다.
+// scene 내장 이미지는 투명도를 지키는 WebP, 내보낸 이미지는 편집기 저장 형식과 같은 흰 배경 JPEG.
+// GIF(움직임)·이미 작은 이미지는 그대로 둔다.
+export async function lossyCompress(clean: CleanImage, to: 'webp' | 'jpeg'): Promise<CleanImage> {
+  if (clean.mimeType !== 'image/png' && clean.mimeType !== 'image/jpeg') return clean
+  try {
+    const image = sharp(clean.bytes)
+    const output =
+      to === 'webp'
+        ? image.webp({ quality: 85 })
+        : image.flatten({ background: '#ffffff' }).jpeg({ quality: 85, mozjpeg: true })
+    const bytes = new Uint8Array(await output.toBuffer())
+    return bytes.byteLength < clean.bytes.byteLength
+      ? { bytes, mimeType: `image/${to}` as ImageMime }
+      : clean
+  } catch (error) {
+    throw undecodable(error)
+  }
+}
+
+export const compressDesignExport = async (bytes: Uint8Array) =>
+  lossyCompress(await cleanImage(bytes), 'jpeg')
+
 export const sniffLabel = (bytes: Uint8Array) =>
   sniffImage(bytes)?.replace('image/', '') ?? (isSvg(bytes) ? 'svg' : 'unknown')
 
@@ -123,7 +139,7 @@ async function cleanSceneFile(id: string, file: Row, diag: (key: string) => void
   }
   const sniffed = sniffLabel(parsed.bytes)
   try {
-    const clean = await cleanImage(parsed.bytes)
+    const clean = await lossyCompress(await cleanImage(parsed.bytes), 'webp')
     diag(imageDiagKey(declared, sniffed, sniffed === 'svg' ? 'CONVERTED' : 'OK'))
     const { created } = file
     return {
