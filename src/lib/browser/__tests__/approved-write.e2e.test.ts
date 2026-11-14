@@ -5,6 +5,7 @@ import {
   claimBrowserWrite,
   enqueueBrowserWrite,
   reportBrowserWrite,
+  recoverUnstartedBrowserWrite,
 } from '../approved-write'
 
 // 운영·공유 개발 DB에서 실행하지 않는다. 이 테스트는 throwaway 로컬 PostgreSQL 전용이다.
@@ -113,6 +114,93 @@ suite('승인 브라우저 작업의 실제 DB 경합·격리', () => {
     expect(await claimBrowserWrite(spaceId, 'token-1')).toBeNull()
     expect((await prisma.browserWriteJob.findUnique({ where: { id: jobId } }))?.status).toBe(
       'EXPIRED'
+    )
+  })
+
+  it('동시 미시작 복구는 한 번만 성공하고 원본 승인·만료·이력을 보존한다', async () => {
+    const approved = await action('APPROVED')
+    const { jobId } = await enqueueBrowserWrite(spaceId, approved.id, params)
+    await prisma.agentPendingAction.update({
+      where: { id: approved.id },
+      data: { status: 'EXECUTED' },
+    })
+    const original = await claimBrowserWrite(spaceId, 'token-1')
+    expect(original?.recoveryAttempt).toBe(0)
+    const aborted = {
+      claimId: original!.claimId!,
+      outcome: 'ABORTED',
+      taskSpaceId: null,
+      taskSpaceFinished: true,
+    }
+    await reportBrowserWrite(spaceId, 'token-1', jobId, aborted)
+    await expect(
+      recoverUnstartedBrowserWrite(spaceId, 'token-2', jobId, { claimId: aborted.claimId })
+    ).rejects.toThrow()
+    await expect(
+      recoverUnstartedBrowserWrite('other-space', 'token-1', jobId, { claimId: aborted.claimId })
+    ).rejects.toThrow()
+    const results = await Promise.allSettled(
+      Array.from({ length: 8 }, () =>
+        recoverUnstartedBrowserWrite(spaceId, 'token-1', jobId, { claimId: aborted.claimId })
+      )
+    )
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    const pending = await prisma.browserWriteJob.findUniqueOrThrow({ where: { id: jobId } })
+    expect(pending).toMatchObject({
+      status: 'PENDING',
+      actionId: approved.id,
+      payload: params,
+      expiresAt: original!.expiresAt,
+      claimedAt: null,
+      claimedByTokenId: null,
+      claimId: null,
+      report: {
+        ...aborted,
+        recovery: {
+          attempt: 1,
+          previousReport: aborted,
+          tokenId: 'token-1',
+          claimId: aborted.claimId,
+        },
+      },
+    })
+    const second = await claimBrowserWrite(spaceId, 'token-1')
+    expect(second?.recoveryAttempt).toBe(1)
+    expect(second?.claimId).not.toBe(original!.claimId)
+    await reportBrowserWrite(spaceId, 'token-1', jobId, { ...aborted, claimId: second!.claimId })
+    const final = await prisma.browserWriteJob.findUniqueOrThrow({ where: { id: jobId } })
+    expect(final.report).toMatchObject({
+      claimId: second!.claimId,
+      recovery: (pending.report as { recovery: unknown }).recovery,
+    })
+    await expect(
+      recoverUnstartedBrowserWrite(spaceId, 'token-1', jobId, { claimId: second!.claimId })
+    ).rejects.toThrow()
+    expect(
+      (await prisma.agentPendingAction.findUniqueOrThrow({ where: { id: approved.id } })).status
+    ).toBe('EXECUTED')
+  })
+
+  it('최초 만료 시각 이후에는 미시작 중단도 복구하지 않는다', async () => {
+    const approved = await action('APPROVED')
+    const { jobId } = await enqueueBrowserWrite(spaceId, approved.id, params)
+    await prisma.agentPendingAction.update({
+      where: { id: approved.id },
+      data: { status: 'EXECUTED' },
+    })
+    const claimed = await claimBrowserWrite(spaceId, 'token-1')
+    await reportBrowserWrite(spaceId, 'token-1', jobId, {
+      claimId: claimed!.claimId,
+      outcome: 'ABORTED',
+      taskSpaceId: null,
+      taskSpaceFinished: true,
+    })
+    await prisma.browserWriteJob.update({ where: { id: jobId }, data: { expiresAt: new Date(0) } })
+    await expect(
+      recoverUnstartedBrowserWrite(spaceId, 'token-1', jobId, { claimId: claimed!.claimId })
+    ).rejects.toThrow()
+    expect((await prisma.browserWriteJob.findUniqueOrThrow({ where: { id: jobId } })).status).toBe(
+      'ABORTED'
     )
   })
 
