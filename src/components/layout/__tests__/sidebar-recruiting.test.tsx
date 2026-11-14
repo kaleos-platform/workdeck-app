@@ -8,7 +8,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ signOut: jest.fn() }) }))
 
 it('모집 관리 사이드바는 모집·설정 섹션으로 묶고 현재 섹션을 펼친다', () => {
-  render(<Sidebar workspaceName="합성 공간" variant="recruiting" mobile />)
+  render(<Sidebar variant="recruiting" mobile />)
   expect(screen.getByRole('button', { name: '모집' })).toHaveAttribute('aria-expanded', 'true')
   expect(screen.getByRole('button', { name: '설정' })).toHaveAttribute('aria-expanded', 'false')
   expect(screen.getByRole('link', { name: '공고 관리' })).toHaveAttribute(

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { MyDeckClient } from '@/components/my-deck/my-deck-client'
-import { resolveCurrentMembership } from '@/lib/spaces/current-space'
+import { listMemberships, resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
 import { effectivePrice } from '@/lib/billing/pricing'
 import { findClosedDecks } from '@/lib/billing/deck-release'
@@ -43,7 +43,7 @@ export default async function MyDeckPage({
   if (!user) redirect('/login')
 
   // 초대 수락 후 /my-deck?spaceId=… 로 들어온다 — 그 Space 구성원이면 그 Space를 보여준다.
-  // 구성원이 아니면 기존처럼 첫 멤버십. (여러 Space 선택 UI는 후속)
+  // 구성원이 아니면 현재 Space. 초대 수락은 쿠키도 맞춰 /my-deck 로 오며, 이 query 는 옛 링크 호환용이다.
   const { spaceId } = await searchParams
   const requested = typeof spaceId === 'string' && spaceId ? spaceId : undefined
   // 비구성원 요청(forbidden)은 403 대신 기본 Space로 돌아간다.
@@ -109,6 +109,19 @@ export default async function MyDeckPage({
   return (
     <MyDeckClient
       spaceName={space.name}
+      spaces={(await listMemberships(user.id)).map((m) => ({
+        id: m.space.id,
+        name: m.space.name,
+        role: m.role,
+      }))}
+      // 칩은 사이드바와 같은 현재 작업 공간(쿠키) 기준 — 옛 ?spaceId 링크로 다른 공간을 보고 있으면 그 칩을 눌러 전환한다.
+      currentSpaceId={
+        requested
+          ? ((await resolveCurrentMembership(user.id).then((m) =>
+              m && !('forbidden' in m) ? m.space.id : null
+            )) ?? space.id)
+          : space.id
+      }
       activeDecks={space.deckInstances.map((instance) => instance.deckApp)}
       availableDecks={availableDecks.map((d) => ({ ...d, comingSoon: closed.has(d.id) }))}
       subscribedDeckIds={subscribedDeckIds}
