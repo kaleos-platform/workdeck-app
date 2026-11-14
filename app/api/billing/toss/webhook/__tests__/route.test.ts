@@ -41,7 +41,8 @@ const tx = {
   $queryRaw: jest.fn(),
   billingCharge: { findUnique: jest.fn(), findMany: jest.fn(), updateMany: jest.fn() },
   spaceSubscription: { findUnique: jest.fn(), update: jest.fn() },
-  subscriptionItem: { updateMany: jest.fn(), count: jest.fn() },
+  subscriptionItem: { updateMany: jest.fn(), findMany: jest.fn() },
+  spaceDeckAccess: { findMany: jest.fn() },
 }
 const provider = { id: 'toss', parseWebhook: jest.fn(), fetchPaymentStatus: jest.fn() }
 const req = (secret = 'test-secret') =>
@@ -65,7 +66,7 @@ beforeEach(() => {
   tx.billingCharge.findUnique.mockResolvedValue(charge)
   tx.billingCharge.findMany.mockResolvedValue([])
   tx.spaceSubscription.findUnique.mockResolvedValue(sub)
-  tx.subscriptionItem.count.mockResolvedValue(0)
+  tx.subscriptionItem.findMany.mockResolvedValue([])
 })
 test('검증된 전액 취소는 해당 업무를 종료하고 해지 예정일을 제거한다', async () => {
   expect((await POST(req())).status).toBe(200)
@@ -102,10 +103,24 @@ test('부분 취소는 전액 환불이나 즉시 구독 종료로 처리하지 
   expect(tx.subscriptionItem.updateMany).not.toHaveBeenCalled()
 })
 test('다른 유료 업무가 남으면 전체 구독을 종료하지 않는다', async () => {
-  tx.subscriptionItem.count.mockResolvedValue(1)
+  tx.subscriptionItem.findMany.mockResolvedValue([
+    { deckAppId: 'finance', status: 'ACTIVE', awaitingTrialEnd: false, addedAt: start },
+  ])
   await POST(req())
   expect(tx.subscriptionItem.updateMany).toHaveBeenCalled()
   expect(tx.spaceSubscription.update).not.toHaveBeenCalled()
+})
+test('체험 예약만 남으면 구독을 끝내지 않고 결제일을 체험 종료일로 맞춘다', async () => {
+  const trialEnd = new Date('2026-11-20T00:00:00Z')
+  tx.subscriptionItem.findMany.mockResolvedValue([
+    { deckAppId: 'finance', status: 'ACTIVE', awaitingTrialEnd: true, addedAt: start },
+  ])
+  tx.spaceDeckAccess.findMany.mockResolvedValue([{ deckAppId: 'finance', trialEndsAt: trialEnd }])
+  await POST(req())
+  expect(tx.spaceSubscription.update).toHaveBeenCalledWith({
+    where: { id: 'sub' },
+    data: { status: 'ACTIVE', currentPeriodEnd: trialEnd, retryCount: 0 },
+  })
 })
 test('새 결제가 같은 업무의 이용 기간을 보장하면 종료하지 않는다', async () => {
   tx.billingCharge.findMany.mockResolvedValue([

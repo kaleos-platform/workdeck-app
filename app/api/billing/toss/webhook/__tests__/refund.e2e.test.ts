@@ -101,6 +101,33 @@ suite('전액 환불 실 DB 동기화', () => {
     expect(result.items.find((i) => i.deckAppId === 'finance')?.status).toBe('ACTIVE')
     expect(result.items.find((i) => i.deckAppId === 'recruiting')?.status).toBe('ENDED')
   })
+  test('혼합 시작 환불: 결제 업무만 끝나고 체험 예약은 남아 결제일이 체험 종료일로 바뀐다', async () => {
+    const s = await prisma.spaceSubscription.findUniqueOrThrow({ where: { spaceId } })
+    const trialEnd = new Date(start.getTime() + 5 * 86400000)
+    await prisma.spaceDeckAccess.create({
+      data: { spaceId, deckAppId: 'finance', trialEndsAt: trialEnd },
+    })
+    await prisma.subscriptionItem.create({
+      data: {
+        subscriptionId: s.id,
+        deckAppId: 'finance',
+        priceSnapshot: 20000,
+        addedAt: start,
+        awaitingTrialEnd: true,
+      },
+    })
+    expect((await POST(request())).status).toBe(200)
+    const result = await prisma.spaceSubscription.findUniqueOrThrow({
+      where: { spaceId },
+      include: { items: true },
+    })
+    expect(result.status).toBe('ACTIVE')
+    expect(result.currentPeriodEnd).toEqual(trialEnd)
+    const finance = result.items.find((i) => i.deckAppId === 'finance')!
+    expect(finance.status).toBe('ACTIVE')
+    expect(finance.awaitingTrialEnd).toBe(true)
+    expect(result.items.find((i) => i.deckAppId === 'recruiting')?.status).toBe('ENDED')
+  })
   test('부분 취소는 PAID 결제와 유료 이용 상태를 유지한다', async () => {
     await prisma.billingCharge.update({
       where: { orderId: 'refund-e2e-order' },

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { resolveSpaceContext, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { resolveEntitlement } from '@/lib/billing/entitlement'
+import { isCheckoutPausedFor, resolveEntitlement } from '@/lib/billing/entitlement'
 import { effectivePrice } from '@/lib/billing/pricing'
 import { findClosedDecks } from '@/lib/billing/deck-release'
 
@@ -89,5 +89,7 @@ export async function GET() {
     method,
     charges,
     entitlement,
+    // 결제 일시 중지 — 구독 버튼을 비활성화하고 안내한다(서버 API 도 503 으로 막는다)
+    checkoutPaused: isCheckoutPausedFor(spaceId),
   })
 }

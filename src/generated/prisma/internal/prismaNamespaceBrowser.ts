@@ -2929,7 +2929,9 @@ export const SubscriptionItemScalarFieldEnum = {
   lockedPrice: 'lockedPrice',
   status: 'status',
   addedAt: 'addedAt',
-  endedAt: 'endedAt'
+  endedAt: 'endedAt',
+  awaitingTrialEnd: 'awaitingTrialEnd',
+  billingRetryCount: 'billingRetryCount'
 } as const
 
 export type SubscriptionItemScalarFieldEnum = (typeof SubscriptionItemScalarFieldEnum)[keyof typeof SubscriptionItemScalarFieldEnum]

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { SubscriptionSettingsClient } from '../subscription-settings-client'
 
 let mockSubscribeParam = ''
@@ -117,4 +117,81 @@ test('전액 환불로 종료된 구독은 해지 예정일 대신 환불 완료
     await screen.findByText(/마지막 결제가 전액 취소되어 유료 구독이 종료되었습니다/)
   ).toBeInTheDocument()
   expect(screen.queryByText(/이후 구독이 종료됩니다/)).not.toBeInTheDocument()
+})
+
+function overview(extra: Record<string, unknown>) {
+  return {
+    role: 'OWNER',
+    products: [{ ...product, id: 'trial-deck' }],
+    subscription: {
+      status: 'TRIALING',
+      trialEndsAt: null,
+      currentPeriodEnd: null,
+      exemptFlag: false,
+      items: [],
+    },
+    method: { cardSummary: '신한 1234', createdAt: '2026-11-01T00:00:00Z' },
+    charges: [],
+    entitlement: {
+      allowedDecks: ['trial-deck'],
+      lockedDecks: [],
+      decks: {
+        'trial-deck': {
+          allowed: true,
+          reason: 'TRIAL',
+          trialEndsAt: new Date(Date.now() + 10 * 86400000).toISOString(),
+          exempt: false,
+        },
+      },
+    },
+    ...extra,
+  }
+}
+
+test('구독 버튼은 담기 없이 바로 구독(예약) 확인 모달을 연다', async () => {
+  mockSubscribeParam = ''
+  global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => overview({}) })
+  render(<SubscriptionSettingsClient />)
+  fireEvent.click(await screen.findByRole('button', { name: '구독' }))
+  expect(screen.getByRole('dialog')).toHaveTextContent('구독을 예약할까요?')
+  expect(screen.queryByText('빼기')).not.toBeInTheDocument()
+  expect(screen.queryByText('구독 시작')).not.toBeInTheDocument()
+  expect(screen.getByText(/^D-\d+$/)).toBeInTheDocument()
+})
+
+test('해지는 확인 후에만 요청하고, 예약 업무는 예약 취소로 안내한다', async () => {
+  mockSubscribeParam = ''
+  const data = overview({
+    subscription: {
+      status: 'ACTIVE',
+      trialEndsAt: null,
+      currentPeriodEnd: new Date(Date.now() + 10 * 86400000).toISOString(),
+      exemptFlag: false,
+      items: [
+        {
+          id: 'i1',
+          deckAppId: 'trial-deck',
+          priceSnapshot: 10000,
+          status: 'ACTIVE',
+          awaitingTrialEnd: true,
+        },
+      ],
+    },
+  })
+  const fetchMock = jest.fn().mockResolvedValue({ ok: true, json: async () => data })
+  global.fetch = fetchMock
+  render(<SubscriptionSettingsClient />)
+  expect(await screen.findAllByText('구독 예약')).not.toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '예약 취소' }))
+  expect(screen.getByRole('dialog')).toHaveTextContent('구독 예약을 취소할까요?')
+  expect(fetchMock).toHaveBeenCalledTimes(1) // overview 만, 해지 요청은 아직 없음
+})
+
+test('결제 일시 중지 중에는 구독 버튼을 비활성화한다', async () => {
+  mockSubscribeParam = ''
+  global.fetch = jest
+    .fn()
+    .mockResolvedValue({ ok: true, json: async () => overview({ checkoutPaused: true }) })
+  render(<SubscriptionSettingsClient />)
+  expect(await screen.findByRole('button', { name: '결제 준비 중' })).toBeDisabled()
 })

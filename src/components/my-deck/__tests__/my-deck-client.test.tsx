@@ -14,6 +14,9 @@ const base = {
   activeDecks: [],
   availableDecks: [{ ...deck, comingSoon: false }],
   subscribedDeckIds: [],
+  reservedDeckIds: [],
+  reservationOnly: false,
+  checkoutPaused: false,
   isOwner: true,
   cardSummary: null,
   hasActiveSubscription: false,
@@ -79,4 +82,85 @@ test('만료된 체험은 신규 체험 대신 유료 구독 확인을 표시한
   fireEvent.click(screen.getByRole('button', { name: '모집 관리 추가 확인 열기' }))
   expect(screen.queryByRole('button', { name: '무료 체험 시작' })).not.toBeInTheDocument()
   expect(screen.getByRole('dialog')).toHaveTextContent('카드')
+})
+
+const inDays = (days: number) => new Date(Date.now() + days * 86400000).toISOString()
+
+test('체험 중 업무에 D-Day 와 구독하기를 보이고, 누르면 구독 예약 확인을 연다', () => {
+  render(
+    <MyDeckClient
+      {...base}
+      cardSummary="신한 1234"
+      activeDecks={[deck]}
+      availableDecks={[]}
+      billing={[{ ...bill, reason: 'TRIAL', trialEndsAt: inDays(10) }]}
+    />
+  )
+  expect(screen.getByText(/^D-\d+$/)).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '모집 관리 유료 구독하기' }))
+  const dialog = screen.getByRole('dialog')
+  expect(dialog).toHaveTextContent('구독을 예약할까요?')
+  expect(dialog).toHaveTextContent('오늘 결제 금액')
+  expect(screen.getByRole('button', { name: '구독 예약' })).toBeInTheDocument()
+})
+
+test('체험 종료 3일 이내면 종료 임박으로 강조한다', () => {
+  render(
+    <MyDeckClient
+      {...base}
+      activeDecks={[deck]}
+      availableDecks={[]}
+      billing={[{ ...bill, reason: 'TRIAL', trialEndsAt: inDays(1) }]}
+    />
+  )
+  expect(screen.getByText(/체험 종료 임박 · D-/)).toBeInTheDocument()
+})
+
+test('결제 일시 중지 중에는 구독하기를 비활성화한다', () => {
+  render(
+    <MyDeckClient
+      {...base}
+      checkoutPaused
+      activeDecks={[deck]}
+      availableDecks={[]}
+      billing={[{ ...bill, reason: 'TRIAL', trialEndsAt: inDays(10) }]}
+    />
+  )
+  expect(screen.getByRole('button', { name: '모집 관리 유료 구독하기' })).toBeDisabled()
+  expect(screen.getByText('결제 준비 중')).toBeInTheDocument()
+})
+
+test('구독 예약한 업무는 예약 표시와 예약 취소만 보인다', () => {
+  render(
+    <MyDeckClient
+      {...base}
+      activeDecks={[deck]}
+      availableDecks={[]}
+      subscribedDeckIds={['recruiting']}
+      reservedDeckIds={['recruiting']}
+      billing={[{ ...bill, reason: 'SUBSCRIBED', trialEndsAt: inDays(10) }]}
+    />
+  )
+  expect(screen.getByText('구독 예약')).toBeInTheDocument()
+  expect(screen.getByText(/후 유료 전환/)).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '모집 관리 유료 구독하기' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '모집 관리 구독 예약 취소 확인 열기' }))
+  expect(screen.getByRole('dialog')).toHaveTextContent('결제되지 않으며')
+})
+
+test('체험 예약만 있는 구독에 체험 끝난 업무를 더하면 일할이 아닌 구독 시작으로 안내한다', () => {
+  render(
+    <MyDeckClient
+      {...base}
+      cardSummary="신한 1234"
+      hasActiveSubscription
+      subscribedDeckIds={['finance']}
+      reservedDeckIds={['finance']}
+      reservationOnly
+      billing={[{ ...bill, allowed: false, reason: 'LOCKED', trialEndsAt: '2026-01-01T00:00:00Z' }]}
+    />
+  )
+  fireEvent.click(screen.getByRole('button', { name: '모집 관리 추가 확인 열기' }))
+  expect(screen.getByRole('dialog')).not.toHaveTextContent('일할')
+  expect(screen.getByRole('button', { name: '구독 시작' })).toBeInTheDocument()
 })
