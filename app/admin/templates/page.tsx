@@ -1,3 +1,4 @@
+import { AdminDeckContext } from '@/components/admin/admin-deck-context'
 import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/admin/auth'
@@ -24,8 +25,9 @@ export default async function AdminTemplatesPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <AdminDeckContext deck="recruiting" />
       <div>
-        <h1 className="text-lg font-semibold">모집 샘플 템플릿</h1>
+        <h1 className="text-2xl font-bold tracking-tight break-words">모집 샘플 템플릿</h1>
         <p className="text-sm text-muted-foreground">
           전 워크스페이스에 공유되는 글로벌 샘플 템플릿을 관리합니다.
         </p>

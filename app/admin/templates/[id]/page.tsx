@@ -1,3 +1,4 @@
+import { AdminDeckContext } from '@/components/admin/admin-deck-context'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
@@ -38,6 +39,7 @@ export default async function AdminTemplateDetailPage({ params }: Params) {
 
   return (
     <div className="flex flex-col gap-6">
+      <AdminDeckContext deck="recruiting" />
       <div>
         <Link
           href="/admin/templates"
@@ -45,7 +47,7 @@ export default async function AdminTemplateDetailPage({ params }: Params) {
         >
           <ArrowLeft className="size-3.5" /> 템플릿 목록
         </Link>
-        <h1 className="text-lg font-semibold">{template.name}</h1>
+        <h1 className="text-2xl font-bold tracking-tight break-words">{template.name}</h1>
       </div>
       <TemplateBlockEditor
         templateId={template.id}
