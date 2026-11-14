@@ -248,6 +248,7 @@ export type InvStorageLocationWhereInput = {
   settingsDefault?: Prisma.InvSettingsListRelationFilter
   productionRunStockIns?: Prisma.ProductionRunListRelationFilter
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanListRelationFilter
   shippingMethods?: Prisma.DelShippingMethodListRelationFilter
 }
 
@@ -274,6 +275,7 @@ export type InvStorageLocationOrderByWithRelationInput = {
   settingsDefault?: Prisma.InvSettingsOrderByRelationAggregateInput
   productionRunStockIns?: Prisma.ProductionRunOrderByRelationAggregateInput
   reorderPlans?: Prisma.ReorderPlanOrderByRelationAggregateInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanOrderByRelationAggregateInput
   shippingMethods?: Prisma.DelShippingMethodOrderByRelationAggregateInput
 }
 
@@ -304,6 +306,7 @@ export type InvStorageLocationWhereUniqueInput = Prisma.AtLeast<{
   settingsDefault?: Prisma.InvSettingsListRelationFilter
   productionRunStockIns?: Prisma.ProductionRunListRelationFilter
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanListRelationFilter
   shippingMethods?: Prisma.DelShippingMethodListRelationFilter
 }, "id" | "spaceId_externalSource">
 
@@ -365,6 +368,7 @@ export type InvStorageLocationCreateInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -390,6 +394,7 @@ export type InvStorageLocationUncheckedCreateInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -415,6 +420,7 @@ export type InvStorageLocationUpdateInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -440,6 +446,7 @@ export type InvStorageLocationUncheckedUpdateInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -743,6 +750,12 @@ export type InvStorageLocationCreateNestedOneWithoutReorderPlansInput = {
   connect?: Prisma.InvStorageLocationWhereUniqueInput
 }
 
+export type InvStorageLocationCreateNestedOneWithoutReorderPlansOwnStockInInput = {
+  create?: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReorderPlansOwnStockInInput, Prisma.InvStorageLocationUncheckedCreateWithoutReorderPlansOwnStockInInput>
+  connectOrCreate?: Prisma.InvStorageLocationCreateOrConnectWithoutReorderPlansOwnStockInInput
+  connect?: Prisma.InvStorageLocationWhereUniqueInput
+}
+
 export type InvStorageLocationUpdateOneWithoutReorderPlansNestedInput = {
   create?: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReorderPlansInput, Prisma.InvStorageLocationUncheckedCreateWithoutReorderPlansInput>
   connectOrCreate?: Prisma.InvStorageLocationCreateOrConnectWithoutReorderPlansInput
@@ -751,6 +764,16 @@ export type InvStorageLocationUpdateOneWithoutReorderPlansNestedInput = {
   delete?: Prisma.InvStorageLocationWhereInput | boolean
   connect?: Prisma.InvStorageLocationWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.InvStorageLocationUpdateToOneWithWhereWithoutReorderPlansInput, Prisma.InvStorageLocationUpdateWithoutReorderPlansInput>, Prisma.InvStorageLocationUncheckedUpdateWithoutReorderPlansInput>
+}
+
+export type InvStorageLocationUpdateOneWithoutReorderPlansOwnStockInNestedInput = {
+  create?: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReorderPlansOwnStockInInput, Prisma.InvStorageLocationUncheckedCreateWithoutReorderPlansOwnStockInInput>
+  connectOrCreate?: Prisma.InvStorageLocationCreateOrConnectWithoutReorderPlansOwnStockInInput
+  upsert?: Prisma.InvStorageLocationUpsertWithoutReorderPlansOwnStockInInput
+  disconnect?: Prisma.InvStorageLocationWhereInput | boolean
+  delete?: Prisma.InvStorageLocationWhereInput | boolean
+  connect?: Prisma.InvStorageLocationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvStorageLocationUpdateToOneWithWhereWithoutReorderPlansOwnStockInInput, Prisma.InvStorageLocationUpdateWithoutReorderPlansOwnStockInInput>, Prisma.InvStorageLocationUncheckedUpdateWithoutReorderPlansOwnStockInInput>
 }
 
 export type InvStorageLocationCreateWithoutSpaceInput = {
@@ -774,6 +797,7 @@ export type InvStorageLocationCreateWithoutSpaceInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -798,6 +822,7 @@ export type InvStorageLocationUncheckedCreateWithoutSpaceInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -866,6 +891,7 @@ export type InvStorageLocationCreateWithoutMovementsInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -890,6 +916,7 @@ export type InvStorageLocationUncheckedCreateWithoutMovementsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -919,6 +946,7 @@ export type InvStorageLocationCreateWithoutIncomingTransfersInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -943,6 +971,7 @@ export type InvStorageLocationUncheckedCreateWithoutIncomingTransfersInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -983,6 +1012,7 @@ export type InvStorageLocationUpdateWithoutMovementsInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1007,6 +1037,7 @@ export type InvStorageLocationUncheckedUpdateWithoutMovementsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -1042,6 +1073,7 @@ export type InvStorageLocationUpdateWithoutIncomingTransfersInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1066,6 +1098,7 @@ export type InvStorageLocationUncheckedUpdateWithoutIncomingTransfersInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -1090,6 +1123,7 @@ export type InvStorageLocationCreateWithoutStockLevelsInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -1114,6 +1148,7 @@ export type InvStorageLocationUncheckedCreateWithoutStockLevelsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -1154,6 +1189,7 @@ export type InvStorageLocationUpdateWithoutStockLevelsInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1178,6 +1214,7 @@ export type InvStorageLocationUncheckedUpdateWithoutStockLevelsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -1202,6 +1239,7 @@ export type InvStorageLocationCreateWithoutReconciliationsInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -1226,6 +1264,7 @@ export type InvStorageLocationUncheckedCreateWithoutReconciliationsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -1266,6 +1305,7 @@ export type InvStorageLocationUpdateWithoutReconciliationsInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1290,6 +1330,7 @@ export type InvStorageLocationUncheckedUpdateWithoutReconciliationsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -1314,6 +1355,7 @@ export type InvStorageLocationCreateWithoutLocationMappingsInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -1338,6 +1380,7 @@ export type InvStorageLocationUncheckedCreateWithoutLocationMappingsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -1378,6 +1421,7 @@ export type InvStorageLocationUpdateWithoutLocationMappingsInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1402,6 +1446,7 @@ export type InvStorageLocationUncheckedUpdateWithoutLocationMappingsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -1426,6 +1471,7 @@ export type InvStorageLocationCreateWithoutReconExcludedCodesInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -1450,6 +1496,7 @@ export type InvStorageLocationUncheckedCreateWithoutReconExcludedCodesInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -1490,6 +1537,7 @@ export type InvStorageLocationUpdateWithoutReconExcludedCodesInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1514,6 +1562,7 @@ export type InvStorageLocationUncheckedUpdateWithoutReconExcludedCodesInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -1538,6 +1587,7 @@ export type InvStorageLocationCreateWithoutSettingsDefaultInput = {
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -1562,6 +1612,7 @@ export type InvStorageLocationUncheckedCreateWithoutSettingsDefaultInput = {
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -1602,6 +1653,7 @@ export type InvStorageLocationUpdateWithoutSettingsDefaultInput = {
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1626,6 +1678,7 @@ export type InvStorageLocationUncheckedUpdateWithoutSettingsDefaultInput = {
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -1651,6 +1704,7 @@ export type InvStorageLocationCreateWithoutShippingMethodsInput = {
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
 }
 
 export type InvStorageLocationUncheckedCreateWithoutShippingMethodsInput = {
@@ -1675,6 +1729,7 @@ export type InvStorageLocationUncheckedCreateWithoutShippingMethodsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
 }
 
 export type InvStorageLocationCreateOrConnectWithoutShippingMethodsInput = {
@@ -1715,6 +1770,7 @@ export type InvStorageLocationUpdateWithoutShippingMethodsInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
 }
 
 export type InvStorageLocationUncheckedUpdateWithoutShippingMethodsInput = {
@@ -1739,6 +1795,7 @@ export type InvStorageLocationUncheckedUpdateWithoutShippingMethodsInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
 }
 
 export type InvStorageLocationCreateWithoutProductionRunStockInsInput = {
@@ -1762,6 +1819,7 @@ export type InvStorageLocationCreateWithoutProductionRunStockInsInput = {
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -1786,6 +1844,7 @@ export type InvStorageLocationUncheckedCreateWithoutProductionRunStockInsInput =
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
@@ -1826,6 +1885,7 @@ export type InvStorageLocationUpdateWithoutProductionRunStockInsInput = {
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1850,6 +1910,7 @@ export type InvStorageLocationUncheckedUpdateWithoutProductionRunStockInsInput =
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -1874,6 +1935,7 @@ export type InvStorageLocationCreateWithoutReorderPlansInput = {
   reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
 }
 
@@ -1898,12 +1960,68 @@ export type InvStorageLocationUncheckedCreateWithoutReorderPlansInput = {
   reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
   settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutOwnLocationInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
 }
 
 export type InvStorageLocationCreateOrConnectWithoutReorderPlansInput = {
   where: Prisma.InvStorageLocationWhereUniqueInput
   create: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReorderPlansInput, Prisma.InvStorageLocationUncheckedCreateWithoutReorderPlansInput>
+}
+
+export type InvStorageLocationCreateWithoutReorderPlansOwnStockInInput = {
+  id?: string
+  name: string
+  type?: $Enums.InvStorageLocationType
+  isActive?: boolean
+  externalSource?: string | null
+  externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutInvLocationsInput
+  stockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutLocationInput
+  movements?: Prisma.InvMovementCreateNestedManyWithoutLocationInput
+  incomingTransfers?: Prisma.InvMovementCreateNestedManyWithoutToLocationInput
+  locationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutLocationInput
+  reconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutLocationInput
+  settingsDefault?: Prisma.InvSettingsCreateNestedManyWithoutDefaultLocationInput
+  productionRunStockIns?: Prisma.ProductionRunCreateNestedManyWithoutStockInLocationInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutLocationInput
+  shippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutLocationInput
+}
+
+export type InvStorageLocationUncheckedCreateWithoutReorderPlansOwnStockInInput = {
+  id?: string
+  spaceId: string
+  name: string
+  type?: $Enums.InvStorageLocationType
+  isActive?: boolean
+  externalSource?: string | null
+  externalIntegrationKey?: string | null
+  syncProvider?: string | null
+  syncSecretName?: string | null
+  autoReconcileWeekly?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  stockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutLocationInput
+  movements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutLocationInput
+  incomingTransfers?: Prisma.InvMovementUncheckedCreateNestedManyWithoutToLocationInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutLocationInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutLocationInput
+  reconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutLocationInput
+  settingsDefault?: Prisma.InvSettingsUncheckedCreateNestedManyWithoutDefaultLocationInput
+  productionRunStockIns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutStockInLocationInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutLocationInput
+  shippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutLocationInput
+}
+
+export type InvStorageLocationCreateOrConnectWithoutReorderPlansOwnStockInInput = {
+  where: Prisma.InvStorageLocationWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReorderPlansOwnStockInInput, Prisma.InvStorageLocationUncheckedCreateWithoutReorderPlansOwnStockInInput>
 }
 
 export type InvStorageLocationUpsertWithoutReorderPlansInput = {
@@ -1938,6 +2056,7 @@ export type InvStorageLocationUpdateWithoutReorderPlansInput = {
   reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -1962,6 +2081,68 @@ export type InvStorageLocationUncheckedUpdateWithoutReorderPlansInput = {
   reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
+  shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
+}
+
+export type InvStorageLocationUpsertWithoutReorderPlansOwnStockInInput = {
+  update: Prisma.XOR<Prisma.InvStorageLocationUpdateWithoutReorderPlansOwnStockInInput, Prisma.InvStorageLocationUncheckedUpdateWithoutReorderPlansOwnStockInInput>
+  create: Prisma.XOR<Prisma.InvStorageLocationCreateWithoutReorderPlansOwnStockInInput, Prisma.InvStorageLocationUncheckedCreateWithoutReorderPlansOwnStockInInput>
+  where?: Prisma.InvStorageLocationWhereInput
+}
+
+export type InvStorageLocationUpdateToOneWithWhereWithoutReorderPlansOwnStockInInput = {
+  where?: Prisma.InvStorageLocationWhereInput
+  data: Prisma.XOR<Prisma.InvStorageLocationUpdateWithoutReorderPlansOwnStockInInput, Prisma.InvStorageLocationUncheckedUpdateWithoutReorderPlansOwnStockInInput>
+}
+
+export type InvStorageLocationUpdateWithoutReorderPlansOwnStockInInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutInvLocationsNestedInput
+  stockLevels?: Prisma.InvStockLevelUpdateManyWithoutLocationNestedInput
+  movements?: Prisma.InvMovementUpdateManyWithoutLocationNestedInput
+  incomingTransfers?: Prisma.InvMovementUpdateManyWithoutToLocationNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutLocationNestedInput
+  reconciliations?: Prisma.InvReconciliationUpdateManyWithoutLocationNestedInput
+  settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
+  productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
+}
+
+export type InvStorageLocationUncheckedUpdateWithoutReorderPlansOwnStockInInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInvStorageLocationTypeFieldUpdateOperationsInput | $Enums.InvStorageLocationType
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalIntegrationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncSecretName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoReconcileWeekly?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutLocationNestedInput
+  movements?: Prisma.InvMovementUncheckedUpdateManyWithoutLocationNestedInput
+  incomingTransfers?: Prisma.InvMovementUncheckedUpdateManyWithoutToLocationNestedInput
+  locationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutLocationNestedInput
+  reconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutLocationNestedInput
+  reconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutLocationNestedInput
+  settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
+  productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -2000,6 +2181,7 @@ export type InvStorageLocationUpdateWithoutSpaceInput = {
   settingsDefault?: Prisma.InvSettingsUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutLocationNestedInput
 }
 
@@ -2024,6 +2206,7 @@ export type InvStorageLocationUncheckedUpdateWithoutSpaceInput = {
   settingsDefault?: Prisma.InvSettingsUncheckedUpdateManyWithoutDefaultLocationNestedInput
   productionRunStockIns?: Prisma.ProductionRunUncheckedUpdateManyWithoutStockInLocationNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutLocationNestedInput
+  reorderPlansOwnStockIn?: Prisma.ReorderPlanUncheckedUpdateManyWithoutOwnLocationNestedInput
   shippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutLocationNestedInput
 }
 
@@ -2056,6 +2239,7 @@ export type InvStorageLocationCountOutputType = {
   settingsDefault: number
   productionRunStockIns: number
   reorderPlans: number
+  reorderPlansOwnStockIn: number
   shippingMethods: number
 }
 
@@ -2069,6 +2253,7 @@ export type InvStorageLocationCountOutputTypeSelect<ExtArgs extends runtime.Type
   settingsDefault?: boolean | InvStorageLocationCountOutputTypeCountSettingsDefaultArgs
   productionRunStockIns?: boolean | InvStorageLocationCountOutputTypeCountProductionRunStockInsArgs
   reorderPlans?: boolean | InvStorageLocationCountOutputTypeCountReorderPlansArgs
+  reorderPlansOwnStockIn?: boolean | InvStorageLocationCountOutputTypeCountReorderPlansOwnStockInArgs
   shippingMethods?: boolean | InvStorageLocationCountOutputTypeCountShippingMethodsArgs
 }
 
@@ -2148,6 +2333,13 @@ export type InvStorageLocationCountOutputTypeCountReorderPlansArgs<ExtArgs exten
 /**
  * InvStorageLocationCountOutputType without action
  */
+export type InvStorageLocationCountOutputTypeCountReorderPlansOwnStockInArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReorderPlanWhereInput
+}
+
+/**
+ * InvStorageLocationCountOutputType without action
+ */
 export type InvStorageLocationCountOutputTypeCountShippingMethodsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.DelShippingMethodWhereInput
 }
@@ -2176,6 +2368,7 @@ export type InvStorageLocationSelect<ExtArgs extends runtime.Types.Extensions.In
   settingsDefault?: boolean | Prisma.InvStorageLocation$settingsDefaultArgs<ExtArgs>
   productionRunStockIns?: boolean | Prisma.InvStorageLocation$productionRunStockInsArgs<ExtArgs>
   reorderPlans?: boolean | Prisma.InvStorageLocation$reorderPlansArgs<ExtArgs>
+  reorderPlansOwnStockIn?: boolean | Prisma.InvStorageLocation$reorderPlansOwnStockInArgs<ExtArgs>
   shippingMethods?: boolean | Prisma.InvStorageLocation$shippingMethodsArgs<ExtArgs>
   _count?: boolean | Prisma.InvStorageLocationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invStorageLocation"]>
@@ -2239,6 +2432,7 @@ export type InvStorageLocationInclude<ExtArgs extends runtime.Types.Extensions.I
   settingsDefault?: boolean | Prisma.InvStorageLocation$settingsDefaultArgs<ExtArgs>
   productionRunStockIns?: boolean | Prisma.InvStorageLocation$productionRunStockInsArgs<ExtArgs>
   reorderPlans?: boolean | Prisma.InvStorageLocation$reorderPlansArgs<ExtArgs>
+  reorderPlansOwnStockIn?: boolean | Prisma.InvStorageLocation$reorderPlansOwnStockInArgs<ExtArgs>
   shippingMethods?: boolean | Prisma.InvStorageLocation$shippingMethodsArgs<ExtArgs>
   _count?: boolean | Prisma.InvStorageLocationCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -2262,6 +2456,7 @@ export type $InvStorageLocationPayload<ExtArgs extends runtime.Types.Extensions.
     settingsDefault: Prisma.$InvSettingsPayload<ExtArgs>[]
     productionRunStockIns: Prisma.$ProductionRunPayload<ExtArgs>[]
     reorderPlans: Prisma.$ReorderPlanPayload<ExtArgs>[]
+    reorderPlansOwnStockIn: Prisma.$ReorderPlanPayload<ExtArgs>[]
     shippingMethods: Prisma.$DelShippingMethodPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -2681,6 +2876,7 @@ export interface Prisma__InvStorageLocationClient<T, Null = never, ExtArgs exten
   settingsDefault<T extends Prisma.InvStorageLocation$settingsDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$settingsDefaultArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productionRunStockIns<T extends Prisma.InvStorageLocation$productionRunStockInsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$productionRunStockInsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reorderPlans<T extends Prisma.InvStorageLocation$reorderPlansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$reorderPlansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reorderPlansOwnStockIn<T extends Prisma.InvStorageLocation$reorderPlansOwnStockInArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$reorderPlansOwnStockInArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   shippingMethods<T extends Prisma.InvStorageLocation$shippingMethodsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvStorageLocation$shippingMethodsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DelShippingMethodPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3314,6 +3510,30 @@ export type InvStorageLocation$productionRunStockInsArgs<ExtArgs extends runtime
  * InvStorageLocation.reorderPlans
  */
 export type InvStorageLocation$reorderPlansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReorderPlan
+   */
+  select?: Prisma.ReorderPlanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReorderPlan
+   */
+  omit?: Prisma.ReorderPlanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReorderPlanInclude<ExtArgs> | null
+  where?: Prisma.ReorderPlanWhereInput
+  orderBy?: Prisma.ReorderPlanOrderByWithRelationInput | Prisma.ReorderPlanOrderByWithRelationInput[]
+  cursor?: Prisma.ReorderPlanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReorderPlanScalarFieldEnum | Prisma.ReorderPlanScalarFieldEnum[]
+}
+
+/**
+ * InvStorageLocation.reorderPlansOwnStockIn
+ */
+export type InvStorageLocation$reorderPlansOwnStockInArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the ReorderPlan
    */

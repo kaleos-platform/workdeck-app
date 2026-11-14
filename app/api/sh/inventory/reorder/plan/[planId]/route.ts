@@ -16,6 +16,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
     where: { id: planId },
     include: {
       product: { select: { name: true, internalName: true } },
+      ownLocation: { select: { id: true, name: true } },
       items: {
         include: {
           option: {
@@ -147,6 +148,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       sourcePlanId: plan.sourcePlanId,
       biasAdjustApplied: plan.biasAdjustApplied,
       linkedSkuAllocation: plan.linkedSkuAllocation,
+      ownLocation: plan.ownLocation,
       totalSuggestedQty: plan.totalSuggestedQty,
       totalFinalQty: plan.totalFinalQty,
       memo: plan.memo,

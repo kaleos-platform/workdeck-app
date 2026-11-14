@@ -28,6 +28,8 @@ export type ReorderPlan = {
   isLayered?: boolean // 레이어드(상품 + 로켓 세트 + 직접 배송) 계획이면 true
   /** 레이어드: 생성 시점 연동 위치 SKU 배분 스냅샷. 이전 계획 = null */
   linkedSkuAllocation?: LinkedSkuAllocation | null
+  /** 자체·3PL 몫 입고 위치(검토 단계 선택) */
+  ownLocation?: { id: string; name: string } | null
   status: ReorderPlanStatus
   windowDays: number
   finalizedAt: string | null
