@@ -17,6 +17,9 @@
     "app/api/slack/events/route.ts": {
       "maxDuration": 300
     },
+    "app/api/cron/wekeep-weekly-reconcile/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/cron/billing-charge/route.ts": {
       "maxDuration": 300
     },
@@ -37,6 +40,10 @@
     }
   },
   "crons": [
+    {
+      "path": "/api/cron/wekeep-weekly-reconcile",
+      "schedule": "0 0 * * 1"
+    },
     {
       "path": "/api/cron/billing-charge",
       "schedule": "0 0 * * *"

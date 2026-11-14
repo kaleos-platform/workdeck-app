@@ -280,6 +280,68 @@ describe('N배송 매칭', () => {
     expect(names).toEqual(['상품'])
   })
 
+  test('바코드 2개 모두 지정 → bc: alias 2개 + 바코드별 수량 × 피킹 + 커서 초기화', async () => {
+    db.delOrderItem.findFirst.mockResolvedValue({
+      ...item([
+        { nsBarcode: 'NSA', pickingQuantityPerOrder: 1 },
+        { nsBarcode: 'NSB', pickingQuantityPerOrder: 2 },
+      ]),
+      quantity: 2,
+    })
+    db.invProductOption.findMany = jest.fn().mockResolvedValue([{ id: 'a' }, { id: 'b' }])
+    // mode 없이 barcodeOptions 만 보내도 '매칭 해제'로 오인하지 않는다
+    const res = await matchPatch(
+      req({
+        barcodeOptions: [
+          { nsBarcode: 'NSA', optionId: 'a' },
+          { nsBarcode: 'NSB', optionId: 'b' },
+        ],
+      }),
+      c
+    )
+    expect(res.status).toBe(200)
+    expect(bcNames()).toEqual(['bc:nsa', 'bc:nsb'])
+    const upserts = db.channelProductAlias.upsert.mock.calls.map((a) => a[0].update.optionId)
+    expect(upserts).toEqual(['a', 'b'])
+    expect(db.channelProductAliasFulfillment.createMany).not.toHaveBeenCalled()
+    expect(itemFulfillments()).toEqual([
+      { orderItemId: 'i', optionId: 'a', quantity: 2 },
+      { orderItemId: 'i', optionId: 'b', quantity: 4 },
+    ])
+    expect(db.spaceCredential.update).toHaveBeenCalled()
+    expect(recomputeNbaesongOutbound).toHaveBeenCalled()
+  })
+
+  test('바코드 일부만 지정 → 400, 저장 없음', async () => {
+    db.delOrderItem.findFirst.mockResolvedValue(
+      item([
+        { nsBarcode: 'NSA', pickingQuantityPerOrder: 1 },
+        { nsBarcode: 'NSB', pickingQuantityPerOrder: 1 },
+      ])
+    )
+    db.invProductOption.findMany = jest.fn().mockResolvedValue([{ id: 'a' }])
+    const res = await matchPatch(req({ barcodeOptions: [{ nsBarcode: 'NSA', optionId: 'a' }] }), c)
+    expect(res.status).toBe(400)
+    expect((await res.json()).error).toBe('모든 바코드에 옵션을 지정해 주세요')
+    expect(db.channelProductAlias.upsert).not.toHaveBeenCalled()
+  })
+
+  test('바코드 매칭 — 다른 Space 옵션 → 400', async () => {
+    db.delOrderItem.findFirst.mockResolvedValue(
+      item([{ nsBarcode: 'NSA', pickingQuantityPerOrder: 1 }])
+    )
+    db.invProductOption.findMany = jest.fn().mockResolvedValue([])
+    const res = await matchPatch(req({ barcodeOptions: [{ nsBarcode: 'NSA', optionId: 'x' }] }), c)
+    expect(res.status).toBe(400)
+    expect(db.channelProductAlias.upsert).not.toHaveBeenCalled()
+  })
+
+  test('바코드 없는 항목에 barcodeOptions → 400', async () => {
+    db.delOrderItem.findFirst.mockResolvedValue(item(null))
+    const res = await matchPatch(req({ barcodeOptions: [] }), c)
+    expect(res.status).toBe(400)
+  })
+
   test('clear → 400', async () => {
     db.delOrderItem.findFirst.mockResolvedValue(item(null))
     const res = await matchPatch(req({ mode: 'clear' }), c)
