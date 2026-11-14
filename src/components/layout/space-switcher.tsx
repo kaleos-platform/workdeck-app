@@ -1,6 +1,6 @@
 'use client'
 import { useState, useSyncExternalStore } from 'react'
-import { ChevronsUpDown, Loader2 } from 'lucide-react'
+import { ChevronsUpDown, Info, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { Role } from '@/lib/auth/roles'
 import { cn } from '@/lib/utils'
 
@@ -212,10 +213,11 @@ export function SpaceSwitcher({
   )
 }
 
-const CHIP_LIMIT = 5
-
-/** 내 워크덱 홈 — 소속 작업 공간·권한 칩. 6개 이상이면 메뉴로. */
-export function SpaceChips({
+/**
+ * 내 워크덱 홈 제목 위 작업 공간 맥락 줄 — 「작업 공간 › 내 워크덱」 위계.
+ * 권한 설명은 ⓘ 팝오버(클릭·키보드)에, 다른 공간은 「전환」 메뉴에 숨긴다.
+ */
+export function SpaceContext({
   spaces,
   currentSpaceId,
   navigate = defaultNavigate,
@@ -227,60 +229,46 @@ export function SpaceChips({
   const { pending, error, switchTo } = useSwitchSpace(currentSpaceId, navigate)
   const current = spaces.find((s) => s.id === currentSpaceId)
   if (!current) return null
-  const multi = spaces.length > 1
+  const role = ROLE_LABEL[current.role]
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-muted-foreground">
-          {multi ? '소속 작업 공간' : '작업 공간'}
-        </span>
-        {spaces.length > CHIP_LIMIT ? (
+    <div className="space-y-1">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <Initial name={current.name} className="size-6 bg-muted text-xs text-foreground" />
+        <span className="font-semibold">{current.name}</span>
+        <Popover>
+          <PopoverTrigger
+            aria-label={`내 권한 ${role} 안내`}
+            className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground transition hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {role}
+            <Info className="size-3" />
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-64 text-sm">
+            <p className="font-medium">내 권한: {role}</p>
+            <p className="mt-1 text-muted-foreground">{ROLE_HINT[current.role]}</p>
+          </PopoverContent>
+        </Popover>
+        {spaces.length > 1 && (
           <DropdownMenu>
             <DropdownMenuTrigger
               disabled={pending}
-              aria-label={`작업 공간 전환 — 현재 ${current.name} (${ROLE_LABEL[current.role]})`}
-              className="inline-flex items-center gap-1.5 rounded-full border bg-primary px-3 py-1 text-sm font-medium text-primary-foreground disabled:opacity-60"
+              aria-label={`작업 공간 전환 — 현재 ${current.name} (${role})`}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
             >
-              {current.name} · {ROLE_LABEL[current.role]}
-              <ChevronsUpDown className="size-3.5" />
+              {pending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <ChevronsUpDown className="size-3.5" />
+              )}
+              전환
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-72">
               <SpaceMenuItems spaces={spaces} currentSpaceId={currentSpaceId} onSelect={switchTo} />
             </DropdownMenuContent>
           </DropdownMenu>
-        ) : (
-          spaces.map((s) => {
-            const isCurrent = s.id === currentSpaceId
-            return (
-              <button
-                key={s.id}
-                type="button"
-                aria-pressed={isCurrent}
-                disabled={pending || !multi}
-                onClick={() => switchTo(s.id)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition',
-                  isCurrent
-                    ? 'border-primary bg-primary font-medium text-primary-foreground'
-                    : 'bg-background text-foreground hover:bg-muted',
-                  'disabled:cursor-default disabled:opacity-60',
-                  isCurrent && 'disabled:opacity-100'
-                )}
-              >
-                <span className="max-w-48 truncate">{s.name}</span>
-                <span className={cn('text-xs', !isCurrent && 'text-muted-foreground')}>
-                  · {ROLE_LABEL[s.role]}
-                </span>
-              </button>
-            )
-          })
         )}
-        {pending && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
       </div>
-      <p className="text-xs text-muted-foreground">
-        내 권한: {ROLE_LABEL[current.role]} — {ROLE_HINT[current.role]}
-      </p>
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
