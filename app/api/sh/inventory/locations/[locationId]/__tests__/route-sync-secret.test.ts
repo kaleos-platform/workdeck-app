@@ -2,9 +2,12 @@
 import { NextRequest } from 'next/server'
 import { PATCH } from '../route'
 import { prisma } from '@/lib/prisma'
+import { resolveDeckContext } from '@/lib/api-helpers'
 
 jest.mock('@/lib/api-helpers', () => ({
-  resolveDeckContext: jest.fn(async () => ({ space: { id: 'sp' } })),
+  resolveDeckContext: jest.fn(),
+  assertRole: (role: string) =>
+    role === 'MEMBER' ? Response.json({ message: '권한이 없습니다' }, { status: 403 }) : null,
   errorResponse: (message: string, status: number) => Response.json({ message }, { status }),
 }))
 jest.mock('@/lib/prisma', () => ({
@@ -31,6 +34,7 @@ const patch = async (body: object) =>
 describe('PATCH location — 비밀값 존재 확인', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(resolveDeckContext as jest.Mock).mockResolvedValue({ space: { id: 'sp' }, role: 'ADMIN' })
     ;(prisma.invStorageLocation.findFirst as jest.Mock).mockImplementation(
       async (a: { where: { id?: string } }) => (a.where.id === 'l' ? loc : null)
     )
@@ -41,6 +45,34 @@ describe('PATCH location — 비밀값 존재 확인', () => {
     const res = await patch({ name: 'B', syncSecretName: 'wk' })
     expect(res.status).toBe(200)
     expect(prisma.spaceSecret.findFirst).not.toHaveBeenCalled()
+  })
+
+  it('MEMBER 가 비밀값을 바꾸면 403', async () => {
+    ;(resolveDeckContext as jest.Mock).mockResolvedValue({ space: { id: 'sp' }, role: 'MEMBER' })
+    const res = await patch({ syncSecretName: 'other' })
+    expect(res.status).toBe(403)
+    expect(prisma.invStorageLocation.update).not.toHaveBeenCalled()
+  })
+
+  it('MEMBER 가 연동 필드 변경 없이 이름만 바꾸면 200', async () => {
+    ;(resolveDeckContext as jest.Mock).mockResolvedValue({ space: { id: 'sp' }, role: 'MEMBER' })
+    expect((await patch({ name: 'B', syncSecretName: 'wk' })).status).toBe(200)
+  })
+
+  it('ADMIN 이 위킵 도메인이 아닌 비밀값을 연결하면 400', async () => {
+    ;(prisma.spaceSecret.findFirst as jest.Mock).mockResolvedValue({
+      id: 'x',
+      config: { loginUrl: 'https://evil.com/login' },
+    })
+    expect((await patch({ syncSecretName: 'other' })).status).toBe(400)
+  })
+
+  it('ADMIN 이 위킵 비밀값을 연결하면 200', async () => {
+    ;(prisma.spaceSecret.findFirst as jest.Mock).mockResolvedValue({
+      id: 'x',
+      config: { loginUrl: 'https://www.wekeep.co.kr/login' },
+    })
+    expect((await patch({ syncSecretName: 'other' })).status).toBe(200)
   })
 
   it('비밀값 이름을 바꾸면 존재 확인 → 없으면 400', async () => {

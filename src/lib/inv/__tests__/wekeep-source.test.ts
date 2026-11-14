@@ -17,7 +17,12 @@ describe('getWekeepInventoryRows', () => {
 
   it('parseInventoryList 규칙으로 변환한다', async () => {
     findFirst.mockResolvedValue({ syncSecretName: 'wk' })
-    load.mockResolvedValue({ id: 's', loginUrl: 'x', username: 'u', password: 'pw' })
+    load.mockResolvedValue({
+      id: 's',
+      loginUrl: 'https://www.wekeep.co.kr/login',
+      username: 'u',
+      password: 'pw',
+    })
     fetchInv.mockResolvedValue([
       { skuNo: 'A', productName: '상품A', available: 3, reserve: 2, faulty: 1, damage: 1 },
       { skuNo: 'B', productName: '', available: 0, reserve: 0, faulty: 0, damage: 0 },
@@ -50,6 +55,15 @@ describe('getWekeepInventoryRows', () => {
     await expect(getWekeepInventoryRows('sp', 'loc')).rejects.toThrow(
       '위치에 연결된 위킵 로그인 비밀값을 찾을 수 없습니다.'
     )
+    expect(fetchInv).not.toHaveBeenCalled()
+  })
+
+  it('위킵 도메인이 아닌 loginUrl 은 거부하고 fetch 하지 않는다', async () => {
+    findFirst.mockResolvedValue({ syncSecretName: 'wk' })
+    for (const loginUrl of ['https://evil.com/login', 'https://wekeep.co.kr.evil.com/', 'x']) {
+      load.mockResolvedValue({ id: 's', loginUrl, username: 'u', password: 'pw' })
+      await expect(getWekeepInventoryRows('sp', 'loc')).rejects.toBeInstanceOf(WekeepSourceError)
+    }
     expect(fetchInv).not.toHaveBeenCalled()
   })
 })

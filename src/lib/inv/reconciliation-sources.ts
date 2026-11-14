@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { getCoupangGradeIndex } from '@/lib/inv/coupang-return-stock'
 import type { ParseResult } from '@/lib/inv/reconciliation-parser'
 import { fetchWekeepInventory } from '@/lib/inv/wekeep-client'
+import { isWekeepLoginUrl } from '@/lib/inv/location-sync'
 import { loadLoginSecretForSystem } from '@/lib/agent/secrets/store'
 
 export type ReconciliationSource = 'coupang' | 'wekeep'
@@ -39,6 +40,8 @@ export async function getWekeepInventoryRows(
   } catch {
     throw new WekeepSourceError('위치에 연결된 위킵 로그인 비밀값을 찾을 수 없습니다.')
   }
+  if (!isWekeepLoginUrl(secret.loginUrl))
+    throw new WekeepSourceError('위치에 연결된 위킵 로그인 비밀값을 찾을 수 없습니다.')
   const items = await fetchWekeepInventory({ username: secret.username, password: secret.password })
   return {
     format: 'inventory_list',

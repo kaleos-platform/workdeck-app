@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InvStorageLocationType } from '@/generated/prisma/client'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { resolveSyncState } from '@/lib/inv/location-sync'
+import { resolveSyncState, isWekeepLoginUrl } from '@/lib/inv/location-sync'
 import { isExternalSource, EXTERNAL_SOURCE_LABEL } from '@/lib/inv/external-sources'
 
 type RouteContext = { params: Promise<{ locationId: string }> }
@@ -125,13 +125,26 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   // 외부 연동(위킵) 설정 — 3PL 위치 + 같은 Space의 LOGIN 비밀값만 허용
   const sync = resolveSyncState(body, location, data.type ?? location.type)
   if (!sync.ok) return errorResponse(sync.message, 400)
+  // 로그인 비밀값 연결(변경)은 ADMIN 만 — MEMBER 가 다른 비밀값을 위킵 로그인에 물리지 못하게 한다.
+  const st = sync.state
+  if (
+    st &&
+    ((st.syncProvider && st.syncProvider !== location.syncProvider) ||
+      (st.syncSecretName && st.syncSecretName !== location.syncSecretName))
+  ) {
+    const denied = assertRole(resolved.role, 'ADMIN')
+    if (denied) return errorResponse('위킵 로그인 연결은 관리자만 변경할 수 있습니다.', 403)
+  }
   // 이름을 바꾸는 요청일 때만 존재 확인 — 연결 비밀값이 나중에 삭제된 위치의 다른 수정은 막지 않는다.
   if (sync.secretToCheck && sync.secretToCheck !== location.syncSecretName) {
     const secret = await prisma.spaceSecret.findFirst({
       where: { spaceId: resolved.space.id, name: sync.secretToCheck, kind: 'LOGIN' },
-      select: { id: true },
+      select: { id: true, config: true },
     })
     if (!secret) return errorResponse('선택한 로그인 비밀값을 찾을 수 없습니다', 400)
+    if (!isWekeepLoginUrl((secret.config as { loginUrl?: unknown } | null)?.loginUrl)) {
+      return errorResponse('위킵 로그인 주소(wekeep.co.kr)의 비밀값만 연결할 수 있습니다.', 400)
+    }
   }
   if (sync.state) Object.assign(data, sync.state)
 

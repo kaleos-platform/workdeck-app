@@ -2,6 +2,17 @@
 export const SYNC_PROVIDERS = ['wekeep'] as const
 export type SyncProvider = (typeof SYNC_PROVIDERS)[number]
 
+/** 위킵 로그인 주소 검증 — wekeep.co.kr 또는 그 하위 도메인만 허용(비밀번호 외부 유출 방지). */
+export function isWekeepLoginUrl(url: unknown): boolean {
+  if (typeof url !== 'string') return false
+  try {
+    const h = new URL(url).hostname.toLowerCase()
+    return h === 'wekeep.co.kr' || h.endsWith('.wekeep.co.kr')
+  } catch {
+    return false
+  }
+}
+
 export type SyncState = {
   syncProvider: string | null
   syncSecretName: string | null
