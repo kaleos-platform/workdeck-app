@@ -1,0 +1,66 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "agent",
+  "elements": [
+    {
+      "type": "rectangle",
+      "id": "hub",
+      "x": 20,
+      "y": 20,
+      "width": 300,
+      "height": 170,
+      "backgroundColor": "#f3f4f6",
+      "fillStyle": "solid",
+      "label": {
+        "text": "업무 관리 — Card 목록\n모집 관리의 기능 직접 선택"
+      }
+    },
+    {
+      "type": "text",
+      "id": "arrow1",
+      "x": 340,
+      "y": 54,
+      "text": "→",
+      "fontSize": 16
+    },
+    {
+      "type": "rectangle",
+      "id": "templates",
+      "x": 400,
+      "y": 20,
+      "width": 300,
+      "height": 120,
+      "backgroundColor": "#f3f4f6",
+      "fillStyle": "solid",
+      "label": {
+        "text": "샘플 템플릿\n/admin/templates\n④ 업무 관리 > 모집 관리"
+      }
+    },
+    {
+      "type": "text",
+      "id": "arrow2",
+      "x": 340,
+      "y": 204,
+      "text": "→",
+      "fontSize": 16
+    },
+    {
+      "type": "rectangle",
+      "id": "sweep",
+      "x": 400,
+      "y": 170,
+      "width": 300,
+      "height": 120,
+      "backgroundColor": "#f3f4f6",
+      "fillStyle": "solid",
+      "label": {
+        "text": "첨부 정리 이력\n/admin/hiring-upload-sweep\n④ 업무 관리 > 모집 관리"
+      }
+    }
+  ],
+  "appState": {
+    "viewBackgroundColor": "#ffffff"
+  },
+  "files": {}
+}
