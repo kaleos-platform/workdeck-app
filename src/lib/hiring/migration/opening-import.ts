@@ -13,6 +13,7 @@ import {
 import {
   OPENING_TRANSFORM_VERSION,
   contactCount,
+  assertSnapshotTimes,
   embeddedImages,
   isInMigrationWindow,
   orgPacketSchema,
@@ -79,9 +80,9 @@ function assertClean(
 ) {
   const hits = scanContacts(packet)
   if (hits.url) throw Error('HELD_SENSITIVE_URL')
-  if (!contactCount(hits)) return
   const approvedHash = approved?.review?.items.get(approved.key)
-  if (!approved || approvedHash !== approved.hash()) throw Error('HELD_CONTACT_PATTERN')
+  if (!approved || approvedHash !== approved.hash())
+    throw Error(contactCount(hits) ? 'HELD_CONTACT_PATTERN' : 'TEXT_REVIEW_REQUIRED')
 }
 
 const plain = <T>(value: T): T => JSON.parse(JSON.stringify(value))
@@ -113,6 +114,7 @@ export async function planPosting(
   review?: ReviewApprovals
 ) {
   const packet = parsePacket(postingPacketSchema, raw)
+  assertSnapshotTimes(packet, true)
   if (embeddedImages(packet.content).some((image) => !review?.images.has(image.sha256)))
     throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
   assertClean(packet, {
@@ -172,6 +174,7 @@ export async function planTemplate(
   review?: ReviewApprovals
 ) {
   const packet = parsePacket(templatePacketSchema, raw)
+  assertSnapshotTimes(packet, true)
   if (embeddedImages(packet).some((image) => !review?.images.has(image.sha256)))
     throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
   assertClean(packet, {
@@ -448,6 +451,10 @@ export function safeMigrationSummary(summary: object) {
     safe[group] = counts
   }
   const reasons = [
+    'TEXT_REVIEW_REQUIRED',
+    'FUTURE_TIMESTAMP',
+    'UNEXPECTED_DATA_URL',
+    'REVIEW_WINDOW_EXPIRED',
     'EMBEDDED_IMAGE_REVIEW_REQUIRED',
     'HELD_CONTACT_PATTERN',
     'HELD_SENSITIVE_URL',
@@ -543,6 +550,7 @@ export async function runOpeningImport(
   if (apply && !storage) throw Error('TARGET_STORAGE_REQUIRED')
   if (apply && options.review === undefined) throw Error('REVIEW_FILE_REQUIRED')
   const org = parsePacket(orgPacketSchema, set.org)
+  assertSnapshotTimes(org, true)
   // prepare와 같은 기준이다. 조직 이름은 키워드를 보지 않는다.
   const orgHits = scanContacts(org)
   if (orgHits.url) throw Error('HELD_SENSITIVE_URL')
@@ -550,6 +558,7 @@ export async function runOpeningImport(
   if (org.sourceSpaceId !== brandId) throw Error('PACKET_BRAND_MISMATCH')
   const review =
     options.review === undefined ? undefined : parseReviewFile(options.review, org.sourceSpaceId)
+  assertClean(org, { review, key: `org:${org.sourceSpaceId}`, hash: () => reviewHash(org) })
   const space = await db.space.findUnique({
     where: { id: spaceId },
     select: { id: true, name: true },

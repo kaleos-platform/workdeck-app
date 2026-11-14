@@ -7,6 +7,7 @@ import { config } from 'dotenv'
 import { prisma } from '@/lib/prisma'
 import { runOpeningImport, type TargetStorage } from '../opening-import'
 import type { OrgPacket, PostingPacket, TemplatePacket } from '../opening-packet'
+import { reviewHash } from '../opening-packet'
 
 config({ path: '.env.local', override: false })
 
@@ -124,7 +125,19 @@ const run = (set: ReturnType<typeof packets>, apply: boolean) =>
       sourceSpaceId: sourceId(1),
       reviewer: '합성 검토자',
       reviewedAt: '2026-11-01',
-      items: [],
+      items: [
+        { kind: 'org', id: set.org.sourceSpaceId, contentHash: reviewHash(set.org) },
+        ...set.postings.map((packet) => ({
+          kind: 'posting',
+          id: packet.sourcePostingId,
+          contentHash: reviewHash(packet),
+        })),
+        ...set.templates.map((packet) => ({
+          kind: 'template',
+          id: packet.sourceTemplateId,
+          contentHash: reviewHash(packet),
+        })),
+      ],
       images: [asset.sha256],
     },
     readAsset: async () => png,

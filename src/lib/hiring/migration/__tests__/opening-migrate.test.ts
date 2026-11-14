@@ -28,10 +28,12 @@ import {
 import {
   isInMigrationWindow,
   embeddedImages,
+  assertSnapshotTimes,
   migrationWindowStart,
   parseReviewFile,
   postingPacketSchema,
   reviewHash,
+  reviewContent,
   reviewTexts,
   scanContacts,
   type PostingPacket,
@@ -344,7 +346,7 @@ const readObject: OpeningObjectReader = async ({ key }) => {
   if (key === 'content_data/c.json') return Buffer.from(JSON.stringify(textScene()))
   return png([...key].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 200)
 }
-const prepare = (rows = sourceRows(), review?: unknown) =>
+const rawPrepare = (rows = sourceRows(), review?: unknown) =>
   prepareOpeningCustomer(fakeSource(rows).client, readObject, {
     brandId: '9',
     webOrigin: 'https://opening.work',
@@ -358,6 +360,44 @@ const reviewFile = (overrides: Record<string, unknown> = {}) => ({
   images: [] as string[],
   ...overrides,
 })
+const recordedReviews = new WeakMap<object, ReturnType<typeof reviewFile>>()
+const approvePrepared = (prepared: Awaited<ReturnType<typeof rawPrepare>>) =>
+  reviewFile({
+    images: prepared.manifest.manualReviewImages.map((image) => image.sha256),
+    items: [
+      { kind: 'org', id: prepared.org.sourceSpaceId, contentHash: reviewHash(prepared.org) },
+      ...prepared.postings.map((packet) => ({
+        kind: 'posting',
+        id: packet.sourcePostingId,
+        contentHash: reviewHash(packet),
+      })),
+      ...prepared.templates.map((packet) => ({
+        kind: 'template',
+        id: packet.sourceTemplateId,
+        contentHash: reviewHash(packet),
+      })),
+    ],
+  })
+const approveCandidates = (prepared: Awaited<ReturnType<typeof rawPrepare>>) =>
+  reviewFile({
+    images: prepared.review.images.map((image) => image.sha256),
+    items: prepared.review.items.map(({ kind, id, contentHash }) => ({ kind, id, contentHash })),
+  })
+const prepare = async (rows = sourceRows(), review?: unknown) => {
+  if (review !== undefined) {
+    const result = await rawPrepare(rows, review)
+    recordedReviews.set(result, review as ReturnType<typeof reviewFile>)
+    return result
+  }
+  const first = await rawPrepare(rows)
+  const items = first.review.items
+    .filter((item) => item.kind === 'org' || item.id === '1' || item.id === '2' || item.id === '40')
+    .map(({ kind, id, contentHash }) => ({ kind, id, contentHash }))
+  const approved = reviewFile({ items, images: first.review.images.map((image) => image.sha256) })
+  const result = await rawPrepare(rows, approved)
+  recordedReviews.set(result, approved)
+  return result
+}
 
 type Row = { id: string; spaceId: string; [key: string]: unknown }
 function fakeDb() {
@@ -444,22 +484,24 @@ async function importSet(
   storage = memoryStorage().storage,
   extra: { review?: unknown; skipConflicts?: boolean } = {}
 ) {
-  const images = prepared.manifest.manualReviewImages.map((image) => image.sha256)
+  const initialReview = recordedReviews.get(prepared) ?? approvePrepared(prepared)
   return runOpeningImport(db as unknown as FakeDb, prepared, {
     spaceId: 'space',
     brandId: '9',
     apply,
     storage,
     readAsset: async (sha256) => prepared.assets.get(sha256) as Uint8Array,
-    review: reviewFile({ images }),
     ...extra,
+    review: 'review' in extra ? extra.review : initialReview,
   })
 }
 
 beforeEach(() => {
+  jest.useFakeTimers({ now: new Date('2026-10-31T14:00:00.000Z') })
   process.env.ENCRYPTION_KEY = 'ab'.repeat(32)
   process.env.ENCRYPTION_KEY_V1 = 'd'.repeat(64)
 })
+afterEach(() => jest.useRealTimers())
 
 describe('기간·연락처 판정', () => {
   it('C는 T의 KST 날짜 기준 12개월 전 00:00이다', () => {
@@ -529,11 +571,18 @@ describe('기간·연락처 판정', () => {
 
   it('이미지 데이터는 scene.files[*].dataURL만 건너뛴다', () => {
     const dataURL = '010-1234-5678'
-    expect(scanContacts({ files: { f: { dataURL } } }).phone).toBe(0)
-    expect(scanContacts({ scene: { files: { f: { dataURL } } } }).phone).toBe(0)
-    expect(scanContacts({ dataURL }).phone).toBe(1)
-    expect(scanContacts({ elements: [{ dataURL }] }).phone).toBe(1)
-    expect(scanContacts({ a: { b: { files: { f: { dataURL } } } } }).phone).toBe(1)
+    expect(
+      scanContacts({ content: { resources: { '70': { scene: { files: { f: { dataURL } } } } } } })
+        .phone
+    ).toBe(0)
+    expect(
+      scanContacts({ resources: { '70': { scene: { files: { f: { dataURL } } } } } }).phone
+    ).toBe(0)
+    expect(() => scanContacts({ dataURL })).toThrow('UNEXPECTED_DATA_URL')
+    expect(() => scanContacts({ elements: [{ dataURL }] })).toThrow('UNEXPECTED_DATA_URL')
+    expect(() => scanContacts({ a: { b: { files: { f: { dataURL } } } } })).toThrow(
+      'UNEXPECTED_DATA_URL'
+    )
   })
 })
 
@@ -797,7 +846,7 @@ describe('prepare', () => {
     })
     expect(summary.updatedOnly).toEqual({ count: 1, byDate: { '2026-03-02': 1 } })
     expect(summary.contactHits).toMatchObject({ phone: 2, email: 1, postingsHit: 2 })
-    expect(summary.review).toEqual({ released: 0, stale: 0, pendingItems: 2 })
+    expect(summary.review).toEqual({ released: 3, stale: 0, pendingItems: 2 })
     expect(summary.images.manualReview).toBeGreaterThan(0)
     expect(summary.removedSections.managerSections).toBeGreaterThan(0)
     expect(postings.map((p) => p.sourcePostingId)).toEqual(['1', '2'])
@@ -1135,7 +1184,9 @@ describe('import', () => {
     prepared.postings[0].posting.createdAt = old.toISOString()
     prepared.postings[0].posting.updatedAt = old.toISOString()
     const { db, records } = fakeDb()
-    await expect(importSet(db, prepared, true)).rejects.toThrow('OUT_OF_WINDOW')
+    await expect(
+      importSet(db, prepared, true, undefined, { review: approvePrepared(prepared) })
+    ).rejects.toThrow('OUT_OF_WINDOW')
     expect(records.size).toBe(0)
   })
 
@@ -1222,7 +1273,9 @@ describe('import', () => {
     const changed = await prepare()
     changed.postings[0].posting.title = '수정된 합성 공고'
     changed.org.positions.push({ ...changed.org.positions[0], sourceId: '31' })
-    const report = await importSet(db, changed, true)
+    const report = await importSet(db, changed, true, undefined, {
+      review: approvePrepared(changed),
+    })
     expect(report).toMatchObject({ status: 'CONFLICT_STOPPED', postings: { conflict: 1 } })
     expect(positions.size).toBe(1)
   })
@@ -1276,9 +1329,9 @@ describe('import', () => {
   it('공고가 참조하는 매장이 org packet에 없으면 거부한다', async () => {
     const prepared = await prepare()
     prepared.org.stores = prepared.org.stores.slice(1)
-    await expect(importSet(fakeDb().db, prepared, false)).rejects.toThrow(
-      'MIGRATION_REFERENCE_UNMAPPED'
-    )
+    await expect(
+      importSet(fakeDb().db, prepared, false, undefined, { review: approvePrepared(prepared) })
+    ).rejects.toThrow('MIGRATION_REFERENCE_UNMAPPED')
   })
 
   it('apply인데 Storage가 없으면 시작하지 않는다', async () => {
@@ -1296,8 +1349,192 @@ describe('import', () => {
 })
 
 describe('사람 검토', () => {
+  it('scene 요소 안에 위장한 dataURL은 별도 이미지 검토로 숨기지 않고 차단한다', () => {
+    const dataURL = `data:image/png;base64,${Buffer.from('private@example.test').toString('base64')}`
+    const packet = {
+      sourceSnapshotAt: snapshotAt.toISOString(),
+      content: {
+        resources: {
+          '70': {
+            scene: { elements: [{ nested: { scene: { files: { x: { dataURL } } } } }], files: {} },
+          },
+        },
+      },
+    }
+    expect(() => scanContacts(packet)).toThrow('UNEXPECTED_DATA_URL')
+    expect(() => reviewContent(packet)).toThrow('UNEXPECTED_DATA_URL')
+  })
+  it('위장 dataURL은 승인 hash가 있어도 prepare와 import에서 차단한다', async () => {
+    const dataURL = `data:image/png;base64,${Buffer.from('private@example.test').toString('base64')}`
+    const raw = textScene() as Record<string, unknown>
+    ;(raw.elements as Record<string, unknown>[])[0].nested = {
+      scene: { files: { x: { dataURL } } },
+    }
+    const prepared = await prepareOpeningCustomer(
+      fakeSource().client,
+      async (input) =>
+        input.key === 'content_data/a.json' ? Buffer.from(JSON.stringify(raw)) : readObject(input),
+      { brandId: '9', webOrigin: 'https://opening.work' }
+    )
+    expect(prepared.manifest.postings.find((item) => item.id === '1')).toMatchObject({
+      status: 'held',
+      reasons: ['UNEXPECTED_DATA_URL'],
+    })
+    const changed = await prepare()
+    const scene = changed.postings[0].content.resources['70'].scene!
+    ;(scene.elements[0] as Record<string, unknown>).nested = {
+      scene: { files: { x: { dataURL } } },
+    }
+    const { db, records } = fakeDb()
+    await expect(
+      importSet(db, changed, true, undefined, { review: approvePrepared(changed) })
+    ).rejects.toThrow('UNEXPECTED_DATA_URL')
+    expect(records.size).toBe(0)
+  })
+  it('검토 원문에 숫자·boolean·null 및 전체 경로를 보존하고 내장 이미지는 SHA로 연결한다', async () => {
+    const bytes = await png(19)
+    const sha = createHash('sha256').update(bytes).digest('hex')
+    const dataURL = `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`
+    const packet = {
+      sourceSnapshotAt: snapshotAt.toISOString(),
+      form: [{ name: '이름', option: 123, required: false, missing: null }],
+      resources: { '70': { scene: { files: { f: { dataURL } } } } },
+    }
+    expect(reviewContent(packet)).toEqual({
+      reviewWindowStart: migrationWindowStart(snapshotAt).toISOString(),
+      form: [{ name: '이름', option: 123, required: false, missing: null }],
+      resources: { '70': { scene: { files: { f: { dataURL: { imageSha256: sha } } } } } },
+    })
+  })
+  it('동일 KST 날짜는 승인 유지, 날짜 경계와 내용·자산 변경은 재승인한다', () => {
+    const packet = {
+      sourceSnapshotAt: '2026-10-31T03:00:00.000Z',
+      title: '합성',
+      asset: { sha256: 'a'.repeat(64) },
+    }
+    expect(reviewHash({ ...packet, sourceSnapshotAt: '2026-10-31T14:00:00.000Z' })).toBe(
+      reviewHash(packet)
+    )
+    expect(reviewHash({ ...packet, sourceSnapshotAt: '2026-10-31T15:00:00.000Z' })).not.toBe(
+      reviewHash(packet)
+    )
+    const changedTitle = { ...packet, title: '변경' }
+    const changedAsset = { ...packet, asset: { sha256: 'b'.repeat(64) } }
+    expect(reviewHash(changedTitle)).not.toBe(reviewHash(packet))
+    expect(reviewHash(changedAsset)).not.toBe(reviewHash(packet))
+  })
+  it('같은 KST 날짜의 재prepare는 승인되지만 날짜 경계 이후에는 재검토한다', async () => {
+    const first = await rawPrepare()
+    const review = approveCandidates(first)
+    const prepareAt = async (at: Date) => {
+      const { client } = fakeSource()
+      const original = client.query
+      client.query = async (sql, params) =>
+        /now\(\)/.test(sql) ? { rows: [{ snapshot_at: at }] } : original(sql, params)
+      return prepareOpeningCustomer(client, readObject, {
+        brandId: '9',
+        webOrigin: 'https://opening.work',
+        review,
+      })
+    }
+    const sameDay = await prepareAt(new Date('2026-10-31T10:00:00.000Z'))
+    expect(sameDay.manifest.postings.find((entry) => entry.id === '1')?.status).toBe('included')
+    expect(sameDay.review.items).toHaveLength(0)
+    jest.setSystemTime(new Date('2026-10-31T15:00:01.000Z'))
+    const nextDay = await prepareAt(new Date('2026-10-31T15:00:00.000Z'))
+    expect(nextDay.manifest.postings.find((entry) => entry.id === '1')).toMatchObject({
+      status: 'held',
+      warnings: ['REVIEW_STALE'],
+    })
+    expect(nextDay.review.items.some((item) => item.kind === 'org')).toBe(true)
+  })
+  it('미래 snapshot·미래 데이터와 KST 날짜 경계가 지난 승인은 거부한다', () => {
+    expect(() =>
+      assertSnapshotTimes({ sourceSnapshotAt: '2026-10-31T14:00:01.000Z' }, true)
+    ).toThrow('SNAPSHOT_IN_FUTURE')
+    expect(() =>
+      assertSnapshotTimes(
+        { sourceSnapshotAt: snapshotAt.toISOString(), createdAt: '2026-10-31T04:00:00.000Z' } as {
+          sourceSnapshotAt: string
+        },
+        true
+      )
+    ).toThrow('FUTURE_TIMESTAMP')
+    jest.setSystemTime(new Date('2026-10-31T15:00:00.000Z'))
+    expect(() => assertSnapshotTimes({ sourceSnapshotAt: snapshotAt.toISOString() }, true)).toThrow(
+      'REVIEW_WINDOW_EXPIRED'
+    )
+  })
+  it('원본 snapshot보다 미래의 생성·수정 시각은 기간 밖이 아닌 별도 보류로 표시한다', async () => {
+    const rows = sourceRows()
+    rows.overview[0].updated_at = new Date(snapshotAt.getTime() + 1)
+    const prepared = await rawPrepare(rows)
+    expect(prepared.manifest.postings.find((item) => item.id === '1')).toMatchObject({
+      status: 'held',
+      reasons: ['FUTURE_TIMESTAMP'],
+    })
+    expect(prepared.postings.find((item) => item.sourcePostingId === '1')).toBeUndefined()
+  })
+  it('패턴에 걸리지 않는 이름도 조직·공고·템플릿의 전체 검토 및 해시 승인을 요구한다', async () => {
+    const rows = sourceRows()
+    rows.postings[0].title = '홍길동'
+    rows.stores[0].name = '김민수'
+    rows.templates[0].name = 'Alex'
+    const first = await rawPrepare(rows)
+    const org = first.review.items.find((item) => item.kind === 'org')
+    const posting = first.review.items.find((item) => item.kind === 'posting' && item.id === '1')
+    const template = first.review.items.find((item) => item.kind === 'template' && item.id === '40')
+    expect(org?.texts.map((value) => value.text)).toContain('김민수')
+    expect(posting?.texts.map((value) => value.text)).toContain('홍길동')
+    expect(template?.texts.map((value) => value.text)).toContain('Alex')
+    expect(first.postings.find((item) => item.sourcePostingId === '1')).toBeUndefined()
+    expect(first.templates.find((item) => item.sourceTemplateId === '40')).toBeUndefined()
+    const items = first.review.items.map(({ kind, id, contentHash }) => ({ kind, id, contentHash }))
+    const images = first.review.images.map((image) => image.sha256)
+    const review = reviewFile({ items, images })
+    const approved = await prepare(rows, review)
+    expect(approved.postings.find((item) => item.sourcePostingId === '1')).toBeDefined()
+    expect(approved.templates.find((item) => item.sourceTemplateId === '40')).toBeDefined()
+    const target = fakeDb()
+    await expect(
+      importSet(target.db, approved, true, undefined, { review })
+    ).resolves.toMatchObject({ status: 'APPLIED' })
+    const changedPosting = await prepare(rows, review)
+    changedPosting.postings[0].posting.title = '변경된 이름'
+    await expect(
+      importSet(fakeDb().db, changedPosting, true, undefined, { review })
+    ).rejects.toThrow('TEXT_REVIEW_REQUIRED')
+    changedPosting.templates[0].name = '변경된 이름'
+    await expect(
+      planTemplate(
+        changedPosting.templates[0],
+        'space',
+        'owner',
+        async () => {
+          throw Error('UNEXPECTED_BIND')
+        },
+        parseReviewFile(review, '9')
+      )
+    ).rejects.toThrow('TEXT_REVIEW_REQUIRED')
+    const changed = await prepare(rows, review)
+    changed.org.stores[0].name = '변경된 이름'
+    await expect(importSet(fakeDb().db, changed, true, undefined, { review })).rejects.toThrow(
+      'TEXT_REVIEW_REQUIRED'
+    )
+    changed.postings[0].posting.title = '변경된 이름'
+    await expect(
+      planPosting(
+        changed.postings[0],
+        'space',
+        async () => {
+          throw Error('UNEXPECTED_BIND')
+        },
+        parseReviewFile(review, '9')
+      )
+    ).rejects.toThrow('TEXT_REVIEW_REQUIRED')
+  })
   async function approved() {
-    const first = await prepare()
+    const first = await rawPrepare()
     const items = first.review.items.map(({ kind, id, contentHash }) => ({ kind, id, contentHash }))
     const images = first.review.images.map((image) => image.sha256)
     return { first, items, images }
@@ -1305,11 +1542,13 @@ describe('사람 검토', () => {
 
   it('검토 대상은 원문과 이미지까지 내주고 packet에는 넣지 않는다', async () => {
     const { first } = await approved()
-    expect(first.review.items.map((item) => item.id)).toEqual(['5', '6'])
-    const flagged = first.review.items[0].texts.filter((text) => text.flagged)
+    expect(first.review.items.map((item) => item.id)).toEqual(['9', '1', '2', '5', '6', '40'])
+    const flagged = first.review.items
+      .find((item) => item.id === '5')!
+      .texts.filter((text) => text.flagged)
     expect(flagged[0].text).toContain('010-1234-5678')
     expect(first.review.images.length).toBeGreaterThan(0)
-    expect(first.postings.map((p) => p.sourcePostingId)).toEqual(['1', '2'])
+    expect(first.postings.map((p) => p.sourcePostingId)).toEqual([])
   })
 
   it('숫자만 있는 값·키도 검토 원문에 적중으로 나온다', () => {
@@ -1319,22 +1558,24 @@ describe('사람 검토', () => {
       '01012345678',
       '0212345678',
     ])
-    expect(texts.some((text) => text.text === 'abc')).toBe(false)
+    expect(texts.some((text) => text.text === 'abc')).toBe(true)
   })
 
   it('승인하면 보류를 풀고, 같은 검토 파일로 적재할 수 있다', async () => {
     const { first, items, images } = await approved()
     const review = reviewFile({ items, images })
     const released = await prepare(sourceRows(), review)
-    expect(released.summary.review).toEqual({ released: 2, stale: 0, pendingItems: 0 })
+    expect(released.summary.review).toEqual({ released: 5, stale: 0, pendingItems: 0 })
     expect(released.postings.map((p) => p.sourcePostingId)).toEqual(['1', '2', '5', '6'])
     expect(released.manifest.review).toEqual({
       reviewer: '합성 검토자',
       reviewedAt: '2026-11-01',
     })
     expect(released.manifest.postings.find((p) => p.id === '5')?.released).toBe(true)
-    expect(reviewHash(released.postings[2])).toBe(items[0].contentHash)
-    expect(first.review.items).toHaveLength(2)
+    expect(reviewHash(released.postings[2])).toBe(
+      items.find((item) => item.kind === 'posting' && item.id === '5')?.contentHash
+    )
+    expect(first.review.items).toHaveLength(6)
 
     const { db, postings } = fakeDb()
     const report = await importSet(db, released, true, undefined, {
@@ -1358,7 +1599,7 @@ describe('사람 검토', () => {
       },
     ]
     const { summary, manifest, postings } = await prepare(rows, reviewFile({ items, images }))
-    expect(summary.review).toMatchObject({ released: 1, stale: 1, pendingItems: 1 })
+    expect(summary.review).toMatchObject({ released: 4, stale: 1, pendingItems: 1 })
     expect(manifest.postings.find((p) => p.id === '5')?.warnings).toContain('REVIEW_STALE')
     expect(postings.map((p) => p.sourcePostingId)).not.toContain('5')
   })
@@ -1367,7 +1608,11 @@ describe('사람 검토', () => {
     const { items, images } = await approved()
     const released = await prepare(sourceRows(), reviewFile({ items, images }))
     const { db, records } = fakeDb()
-    await expect(importSet(db, released, true)).rejects.toThrow('HELD_CONTACT_PATTERN')
+    await expect(
+      importSet(db, released, true, undefined, {
+        review: reviewFile({ items: items.filter((item) => item.id !== '5'), images }),
+      })
+    ).rejects.toThrow('HELD_CONTACT_PATTERN')
     expect(records.size).toBe(0)
   })
 
@@ -1379,7 +1624,10 @@ describe('사람 검토', () => {
     await expect(
       importSet(db, prepared, true, undefined, {
         review: reviewFile({
-          items: [{ kind: 'posting', id: '1', contentHash: reviewHash(packet) }],
+          items: [
+            { kind: 'org', id: '9', contentHash: reviewHash(prepared.org) },
+            { kind: 'posting', id: '1', contentHash: reviewHash(packet) },
+          ],
           images: prepared.manifest.manualReviewImages.map((image) => image.sha256),
         }),
       })
@@ -1403,7 +1651,7 @@ describe('사람 검토', () => {
         'OUT_DIR_INSIDE_REPO'
       )
       const dir = assertOutDir(join(root, 'review'), join(root, 'repo'))
-      const { review } = await prepare()
+      const { review } = await rawPrepare()
       writeReviewDir(dir, review)
       expect(() => assertOutDir(dir, join(root, 'repo'))).toThrow('OUT_DIR_NOT_EMPTY')
       const paths = [
@@ -1503,6 +1751,7 @@ describe('적재 게이트', () => {
       writeReviewDir(root, first.review)
       const candidates = JSON.parse(readFileSync(join(root, 'candidates.json'), 'utf8')) as {
         images: { sha256: string }[]
+        items: { kind: string; id: string; contentHash: string }[]
       }
       expect(candidates.images.length).toBeGreaterThan(0)
       const images = candidates.images.map(({ sha256 }) => sha256)
@@ -1516,7 +1765,10 @@ describe('적재 게이트', () => {
             .digest('hex')
         ).toBe(hash)
       }
-      const review = reviewFile({ images })
+      const review = reviewFile({
+        images,
+        items: candidates.items.map(({ kind, id, contentHash }) => ({ kind, id, contentHash })),
+      })
       const prepared = await prepareOpeningCustomer(fakeSource().client, reader, {
         ...options,
         review,
@@ -1604,19 +1856,20 @@ describe('적재 게이트', () => {
     }
     expect(initial.manifest.postings.find((item) => item.id === '1')?.status).toBe('held')
     const images = initial.manifest.manualReviewImages.map((image) => image.sha256)
+    const review = approveCandidates(initial)
     const approved = await prepareOpeningCustomer(fakeSource().client, read, {
       brandId: '9',
       webOrigin: 'https://opening.work',
-      review: reviewFile({ images }),
+      review,
     })
     expect(approved.manifest.postings.find((item) => item.id === '1')?.status).toBe('included')
     expect(approved.manifest.templates.find((item) => item.id === '40')?.status).toBe('included')
     const report = await importSet(fakeDb().db, approved, true, undefined, {
-      review: reviewFile({ images }),
+      review,
     })
     expect(report.issues.refused).toEqual([])
     const withoutEmbedded = await importSet(fakeDb().db, approved, true, undefined, {
-      review: reviewFile({ images: images.filter((image) => image !== sha256) }),
+      review: { ...review, images: images.filter((image) => image !== sha256) },
     })
     expect(withoutEmbedded.issues.refused).toEqual(
       expect.arrayContaining([
@@ -1644,15 +1897,10 @@ describe('적재 게이트', () => {
     )
     resource.scene!.files.f.dataURL = `data:image/png;base64,${Buffer.from(await png(99)).toString('base64')}`
     await expect(
-      planPosting(
-        approved.postings[0],
-        'space',
-        noBinding,
-        parseReviewFile(reviewFile({ images }), '9')
-      )
+      planPosting(approved.postings[0], 'space', noBinding, parseReviewFile(review, '9'))
     ).rejects.toThrow('EMBEDDED_IMAGE_REVIEW_REQUIRED')
     const changed = await importSet(fakeDb().db, approved, true, undefined, {
-      review: reviewFile({ images }),
+      review,
     })
     expect(changed.issues.refused).toEqual(
       expect.arrayContaining([
@@ -1670,9 +1918,14 @@ describe('적재 게이트', () => {
       input.key === 'content_data/a.json'
         ? Buffer.from(JSON.stringify(emptyScene))
         : readObject(input)
+    const initial = await prepareOpeningCustomer(fakeSource().client, read, {
+      brandId: '9',
+      webOrigin: 'https://opening.work',
+    })
     const prepared = await prepareOpeningCustomer(fakeSource().client, read, {
       brandId: '9',
       webOrigin: 'https://opening.work',
+      review: approveCandidates(initial),
     })
     const resource = prepared.postings.find((item) => item.sourcePostingId === '1')?.content
       .resources['70']
@@ -1689,7 +1942,7 @@ describe('적재 게이트', () => {
       .map((image) => image.sha256)
       .filter((sha) => sha !== resource?.sha256)
     const report = await importSet(fakeDb().db, prepared, true, undefined, {
-      review: reviewFile({ images }),
+      review: { ...approvePrepared(prepared), images },
     })
     expect(report.issues.refused).toEqual(
       expect.arrayContaining([
@@ -1713,11 +1966,11 @@ describe('적재 게이트', () => {
     )
     expect(prepared.manifest.postings.find((item) => item.id === '1')).toMatchObject({
       status: 'held',
-      reasons: expect.arrayContaining(['EMBEDDED_IMAGE_REVIEW_REQUIRED']),
+      reasons: expect.arrayContaining(['TEXT_REVIEW_REQUIRED']),
     })
     expect(prepared.manifest.templates.find((item) => item.id === '40')).toMatchObject({
       status: 'held',
-      reasons: expect.arrayContaining(['EMBEDDED_IMAGE_REVIEW_REQUIRED']),
+      reasons: expect.arrayContaining(['TEXT_REVIEW_REQUIRED']),
     })
     const changed = await prepare()
     const embedded = await sanitizeScene(scene())
@@ -1758,7 +2011,7 @@ describe('적재 게이트', () => {
     const { db, postings, records } = fakeDb()
     const { objects, storage } = memoryStorage()
     const report = await importSet(db, prepared, true, storage, {
-      review: reviewFile({ images: onlyPosting1 }),
+      review: { ...approvePrepared(prepared), images: onlyPosting1 },
     })
     expect(report.status).toBe('APPLIED_PARTIAL')
     expect(report.issues.refused.length).toBeGreaterThan(0)
@@ -1768,12 +2021,11 @@ describe('적재 게이트', () => {
     expect(objects.size).toBe(report.assets.total)
   })
 
-  it('dry-run은 검토 파일 없이도 거부될 항목 수를 보여 준다', async () => {
+  it('dry-run도 조직 검토 없이 실행하지 않는다', async () => {
     const prepared = await prepare()
-    const report = await importSet(fakeDb().db, prepared, false, undefined, { review: undefined })
-    expect(report.status).toBe('PLANNED')
-    expect(report.refused.postings).toBe(2)
-    expect(safeMigrationSummary(report)).not.toHaveProperty('targetSpaceName')
+    await expect(
+      importSet(fakeDb().db, prepared, false, undefined, { review: undefined })
+    ).rejects.toThrow('TEXT_REVIEW_REQUIRED')
   })
 
   it('packet의 고객과 --brand-id가 다르면 거부한다', async () => {
@@ -1796,14 +2048,19 @@ describe('적재 게이트', () => {
     changed.postings[0].posting.title = '수정된 합성 공고'
     changed.org.positions.push({ ...changed.org.positions[0], sourceId: '31', name: '새 직무' })
 
-    const stopped = await importSet(db, changed, true)
+    const stopped = await importSet(db, changed, true, undefined, {
+      review: approvePrepared(changed),
+    })
     expect(stopped.status).toBe('CONFLICT_STOPPED')
     expect(stopped.issues.conflicts).toEqual([
       { kind: 'posting', id: '1', code: 'Migration source conflict' },
     ])
     expect(positions.size).toBe(1)
 
-    const report = await importSet(db, changed, true, undefined, { skipConflicts: true })
+    const report = await importSet(db, changed, true, undefined, {
+      skipConflicts: true,
+      review: approvePrepared(changed),
+    })
     expect(report).toMatchObject({
       status: 'APPLIED_PARTIAL',
       positions: { created: 1, skipped: 1 },

@@ -15,6 +15,7 @@ import { planOpeningForm } from '@/lib/hiring/opening-form-migration'
 import { planPosting, planTemplate, type AssetBinder } from './opening-import'
 import {
   contactCount,
+  assertSnapshotTimes,
   emptyHits,
   embeddedImages,
   isInMigrationWindow,
@@ -24,6 +25,7 @@ import {
   parseReviewFile,
   postingPacketSchema,
   reviewHash,
+  reviewContent,
   reviewTexts,
   scanContacts,
   templatePacketSchema,
@@ -420,11 +422,12 @@ function issueLabel(issue: z.core.$ZodIssue) {
 }
 
 export type ReviewItem = {
-  kind: 'posting' | 'template'
+  kind: 'org' | 'posting' | 'template'
   id: string
   contentHash: string
   hits: ContactHits
   texts: ReturnType<typeof reviewTexts>
+  content: unknown
 }
 
 // 검증용 경로. 실제 경로는 적재 시 대상 Space로 계산한다.
@@ -578,11 +581,10 @@ async function buildCustomerPackets(
     packet: { sourceSnapshotAt: string },
     images: string[]
   ) {
-    if (entry.contactHits.url) throw Error('HELD_SENSITIVE_URL')
-    if (!contactCount(entry.contactHits)) return
     const contentHash = reviewHash(packet)
     const approved = review?.items.get(`${kind}:${entry.id}`)
     if (approved === contentHash) {
+      if (entry.contactHits.url) throw Error('HELD_SENSITIVE_URL')
       entry.released = true
       reviewCounts.released++
       return
@@ -597,9 +599,11 @@ async function buildCustomerPackets(
       contentHash,
       hits: entry.contactHits,
       texts: reviewTexts(packet),
+      content: reviewContent(packet),
     })
     noteImages(`${kind}:${entry.id}`, images)
-    throw Error('HELD_CONTACT_PATTERN')
+    if (entry.contactHits.url) throw Error('HELD_SENSITIVE_URL')
+    throw Error(contactCount(entry.contactHits) ? 'HELD_CONTACT_PATTERN' : 'TEXT_REVIEW_REQUIRED')
   }
 
   // 원본 섹션을 허용 필드만 남겨 다시 만든다. 비활성·manager 섹션은 싣지 않는다.
@@ -778,6 +782,19 @@ async function buildCustomerPackets(
     stores,
     positions,
   })
+  assertSnapshotTimes(org)
+  const orgHash = reviewHash(org)
+  if (review?.items.get(`org:${brand.id}`) !== orgHash) {
+    if (review?.items.has(`org:${brand.id}`)) reviewCounts.stale++
+    reviewItems.push({
+      kind: 'org',
+      id: brand.id,
+      contentHash: orgHash,
+      hits: scanContacts(org),
+      texts: reviewTexts(org),
+      content: reviewContent(org),
+    })
+  }
 
   const addHits = (hits: ContactHits, bucket: 'postingsHit' | 'templatesHit') => {
     hitTotals.phone += hits.phone
@@ -809,7 +826,14 @@ async function buildCustomerPackets(
     postingEntries.push(entry)
     const body = bodies.get(row.id)
     if (!body) {
-      entry.reasons.push(row.status === 0 ? 'DELETED' : 'OUT_OF_WINDOW')
+      const future = [row.created_at, row.updated_at].some((value) => {
+        const timestamp = new Date(value).getTime()
+        return !Number.isFinite(timestamp) || timestamp > new Date(snapshotAt).getTime()
+      })
+      if (row.status !== 0 && future) entry.status = 'held'
+      entry.reasons.push(
+        row.status === 0 ? 'DELETED' : future ? 'FUTURE_TIMESTAMP' : 'OUT_OF_WINDOW'
+      )
       count(reasonCounts, entry.reasons[0])
       continue
     }
@@ -890,20 +914,18 @@ async function buildCustomerPackets(
       entry.contactHits = scanContacts(candidate)
       addHits(entry.contactHits, 'postingsHit')
       const packet = parseCandidate(postingPacketSchema, candidate, 'posting')
+      assertSnapshotTimes(packet)
       const embedded = embeddedImages(packet.content)
       for (const image of embedded) assets.set(image.sha256, image.bytes)
-      if (embedded.some((image) => !review?.images.has(image.sha256))) {
-        noteImages(`posting:${row.id}`, [
-          ...unreadImages(packet.content, [packet.content.detailImage]),
-          ...embedded.map((image) => image.sha256),
-        ])
-        throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
-      }
       const images = [
         ...unreadImages(packet.content, [packet.content.detailImage]),
         ...embedded.map((image) => image.sha256),
       ]
       gateContacts('posting', entry, packet, images)
+      if (embedded.some((image) => !review?.images.has(image.sha256))) {
+        noteImages(`posting:${row.id}`, images)
+        throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
+      }
       // 적재기와 같은 계획기로 미리 통과시켜 적재 단계에서 막힐 공고를 여기서 보류한다.
       await planPosting(packet, PLACEHOLDER_SPACE, placeholderBind, review)
       entry.status = 'included'
@@ -944,20 +966,18 @@ async function buildCustomerPackets(
       entry.contactHits = scanContacts(candidate)
       addHits(entry.contactHits, 'templatesHit')
       const packet = parseCandidate(templatePacketSchema, candidate, 'template')
+      assertSnapshotTimes(packet)
       const embedded = embeddedImages(packet)
       for (const image of embedded) assets.set(image.sha256, image.bytes)
-      if (embedded.some((image) => !review?.images.has(image.sha256))) {
-        noteImages(`template:${id}`, [
-          ...unreadImages(packet, [packet.cover]),
-          ...embedded.map((image) => image.sha256),
-        ])
-        throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
-      }
       const images = [
         ...unreadImages(packet, [packet.cover]),
         ...embedded.map((image) => image.sha256),
       ]
       gateContacts('template', entry, packet, images)
+      if (embedded.some((image) => !review?.images.has(image.sha256))) {
+        noteImages(`template:${id}`, images)
+        throw Error('EMBEDDED_IMAGE_REVIEW_REQUIRED')
+      }
       await planTemplate(packet, PLACEHOLDER_SPACE, PLACEHOLDER_SPACE, placeholderBind, review)
       entry.status = 'included'
       entry.imageSha256 = usedImages(packet, packet.cover)

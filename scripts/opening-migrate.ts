@@ -4,7 +4,7 @@
  * 준비(원본 읽기 전용, 기본 집계만 출력):
  *   OPENING_CA_FILE=/secure/rds-ca.pem npx tsx scripts/opening-migrate.ts prepare --brand-id 123
  *   OPENING_CA_FILE=/secure/rds-ca.pem npx tsx scripts/opening-migrate.ts prepare --brand-id 123 \
- *     --out /secure/dir --write-packets
+ *     --review-file /secure/review.json --out /secure/dir --write-packets
  *   OPENING_SOURCE_URL은 명령 기록에 남지 않도록 안전한 환경에서 미리 주입한다.
  *   OPENING_CA_FILE에는 원본 RDS의 신뢰할 CA PEM 파일을 지정한다. 상대 경로는 현재 디렉터리 기준이다.
  *   대상 DB는 기본 시스템 CA를 사용하며 MIGRATION_CA_FILE을 지정하면 해당 PEM을 사용한다.
@@ -15,14 +15,23 @@
  *   OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다. OPENING_WEB_URL 기본 https://opening.work.
  *   --out 은 저장소 밖의 빈 폴더만 허용한다. 이미지 안 글자는 검사하지 못하므로 폴더를 고객 자료로 다룬다.
  *
- * 사람 검토(연락처 적중 해제·이미지 확인, scene 내장 이미지 포함):
+ * 사람 검토(조직·공고·템플릿 전체 내용 및 모든 이미지):
  *   1) prepare ... --review-dir /secure/review  → candidates.json, items/*.json(원문), images/*
- *   2) 내용을 읽고 승인할 것만 담은 파일을 만든다(저장소 밖):
+ *   2) 고객의 이전 신청·권한(opt-in)을 별도로 확인한다. 이 파일은 opt-in 증빙이 아니다.
+ *      사람이 이전할 조직·매장·직무와 각 공고·템플릿의 전체 구조 및 텍스트에 개인정보가 없는지 확인한다.
+ *      원본 PNG와 scene 내장 이미지는 각각 확인한다. 불확실한 항목은 승인하지 않는다.
+ *      각 항목을 확인한 뒤 candidates.json의 내용 hash와 확인한 이미지 SHA를 승인 파일에 기록한다:
  *      { "sourceSpaceId": "123", "reviewer": "이름", "reviewedAt": "2026-11-01",
- *        "items": [{ "kind": "template", "id": "40", "contentHash": "<candidates.json 값>" }],
+ *        "items": [{ "kind": "org", "id": "123", "contentHash": "<조직 hash>" },
+ *                  { "kind": "posting", "id": "10", "contentHash": "<공고 hash>" },
+ *                  { "kind": "template", "id": "40", "contentHash": "<템플릿 hash>" }],
  *        "images": ["<sha256>"] }
  *   3) prepare ... --review-file review.json --out /secure/dir --write-packets
- *      승인은 내용 해시에 묶이므로 내용이 바뀌면 다시 검토해야 한다(REVIEW_STALE).
+ *      모든 조직·공고·템플릿에는 각각 내용 hash 승인이, 이미지에는 별도의 SHA 승인이 필요하다.
+ *      조직 미승인 시 packet을 쓰지 않는다. 미승인 공고·템플릿은 보류한다.
+ *      승인은 KST cutoff와 내용 해시에 묶인다. KST 날짜가 바뀌거나 내용이 바뀌면 다시 검토한다.
+ *      적재 시점에도 동일한 KST 날짜여야 하며 미래의 snapshot·생성·수정 시각은 거부한다.
+ *      정확한 원본 snapshot 시각의 진위는 이 승인으로 증명되지 않는다.
  *   검토 폴더에는 연락처 원문이 있다. 소유자 전용(0700/0600)으로 쓰며 끝나면 지운다.
  *
  * 적재(기본 dry-run. DATABASE_URL/DIRECT_URL을 환경변수로 주면 그 환경만 쓰고, 없으면 .env.local):
@@ -30,7 +39,7 @@
  *   npx tsx scripts/opening-migrate.ts import --packets /secure/dir --brand-id 123 --target-space <id> \
  *     --review-file review.json --apply
  *   개발 프로젝트로 확인되지 않는 대상은 --confirm-prod <brandId>:<spaceId> 가 추가로 필요하다.
- *   --apply 는 --review-file 이 필수이고, 승인되지 않은 이미지가 있는 항목은 refused.json 에 남기고 뺀다.
+ *   --review-file 이 필수이며, 승인되지 않은 이미지가 있는 항목은 refused.json 에 남기고 뺀다.
  *   충돌이 있으면 쓰기 없이 멈추고 conflicts.json 을 남긴다. --skip-conflicts 를 주면 그 항목만 빼고 진행한다.
  *   --apply 는 SUPABASE_SERVICE_ROLE_KEY(Storage)와 ENCRYPTION_KEY*(원장 스냅샷 암호화)를 쓴다.
  *
@@ -92,6 +101,7 @@ function readReviewFile(path: string | undefined): unknown {
 }
 
 function writePacketSet(root: string, prepared: PreparedCustomer) {
+  if (prepared.review.items.some((item) => item.kind === 'org')) throw Error('TEXT_REVIEW_REQUIRED')
   for (const dir of ['postings', 'templates', 'assets'])
     mkdirSync(join(root, dir), { recursive: true, mode: 0o700 })
   const write = (path: string, data: string | Uint8Array) =>
@@ -177,8 +187,8 @@ async function prepare(args: string[]) {
       webOrigin: process.env.OPENING_WEB_URL ?? 'https://opening.work',
       review,
     })
-    if (outDir) writePacketSet(outDir, prepared)
     if (reviewDir) writeReviewDir(reviewDir, prepared.review)
+    if (outDir) writePacketSet(outDir, prepared)
     console.log(
       JSON.stringify({
         status: outDir ? 'PACKETS_WRITTEN' : 'DRY_RUN',

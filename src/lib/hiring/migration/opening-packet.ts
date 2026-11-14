@@ -200,8 +200,16 @@ export function isInMigrationWindow(
   snapshotAt: Date
 ): boolean {
   const start = migrationWindowStart(snapshotAt).getTime()
+  const created = new Date(posting.createdAt).getTime()
+  const updated = new Date(posting.updatedAt).getTime()
+  const snapshot = snapshotAt.getTime()
   return (
-    new Date(posting.createdAt).getTime() >= start || new Date(posting.updatedAt).getTime() >= start
+    Number.isFinite(created) &&
+    Number.isFinite(updated) &&
+    Number.isFinite(snapshot) &&
+    created <= snapshot &&
+    updated <= snapshot &&
+    (created >= start || updated >= start)
   )
 }
 
@@ -243,9 +251,18 @@ function scanText(raw: string, hits: ContactHits, trail: string[]) {
   hits.url += (value.match(URL_PATTERN) ?? []).filter(isSensitiveUrl).length
 }
 
-// base64 숫자열 오탐을 막으려고 scene.files[*].dataURL만 건너뛴다. 이미지 안 글자는 수동 검수 대상이다.
-const isSceneImageData = (trail: string[], key: string) =>
-  key === 'dataURL' && trail.at(-2) === 'files' && (trail.length === 2 || trail.at(-3) === 'scene')
+// 실제 resource의 scene.files만 이미지 해시 검토로 넘긴다.
+const isSceneImageData = (trail: string[], key: string) => {
+  if (key !== 'dataURL') return false
+  const parts = trail[0] === 'content' ? trail.slice(1) : trail
+  return (
+    parts.length === 5 &&
+    parts[0] === 'resources' &&
+    /^[1-9]\d{0,18}$/.test(parts[1]) &&
+    parts[2] === 'scene' &&
+    parts[3] === 'files'
+  )
+}
 
 function walkStrings(
   value: unknown,
@@ -257,6 +274,7 @@ function walkStrings(
   else if (value !== null && typeof value === 'object') {
     for (const [key, item] of Object.entries(value)) {
       if (isSceneImageData(trail, key)) continue
+      if (key === 'dataURL') throw Error('UNEXPECTED_DATA_URL')
       visit(key, trail)
       walkStrings(item, visit, [...trail, key])
     }
@@ -277,17 +295,76 @@ export function reviewTexts(value: unknown) {
       const hits = emptyHits()
       scanText(text, hits, trail)
       const flagged = contactCount(hits) + hits.url > 0
-      if (flagged || /[가-힣]|\s|@|https?:/.test(text))
-        texts.push({ path: trail.join('.'), text, flagged })
+      texts.push({ path: trail.join('.'), text, flagged })
     },
     []
   )
   return texts.sort((a, b) => Number(b.flagged) - Number(a.flagged))
 }
 
-// 승인은 내용에 묶인다. T만 달라진 재준비는 다시 검토하지 않아도 된다.
+// 실제 조회 시각 대신 기간 판정을 바꾸는 KST cutoff를 승인에 묶는다.
+function reviewBasis(packet: { sourceSnapshotAt: string }) {
+  const { sourceSnapshotAt, ...content } = packet
+  const snapshot = new Date(sourceSnapshotAt)
+  if (!Number.isFinite(snapshot.getTime())) throw Error('SNAPSHOT_INVALID')
+  return { ...content, reviewWindowStart: migrationWindowStart(snapshot).toISOString() }
+}
 export const reviewHash = (packet: { sourceSnapshotAt: string }) =>
-  migrationHash(JSON.parse(JSON.stringify({ ...packet, sourceSnapshotAt: null })))
+  migrationHash(JSON.parse(JSON.stringify(reviewBasis(packet))))
+
+// snapshot은 미래일 수 없고 각 원본 시각은 조회 시점 이하여야 한다.
+export function assertSnapshotTimes(
+  packet: { sourceSnapshotAt: string },
+  requireCurrentWindow = false
+) {
+  const snapshot = new Date(packet.sourceSnapshotAt).getTime()
+  const now = Date.now()
+  if (!Number.isFinite(snapshot) || snapshot > now) throw Error('SNAPSHOT_IN_FUTURE')
+  if (
+    requireCurrentWindow &&
+    migrationWindowStart(new Date(snapshot)).getTime() !==
+      migrationWindowStart(new Date(now)).getTime()
+  )
+    throw Error('REVIEW_WINDOW_EXPIRED')
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) return value.forEach(walk)
+    if (!value || typeof value !== 'object') return
+    for (const [key, child] of Object.entries(value)) {
+      if ((key === 'createdAt' || key === 'updatedAt') && typeof child === 'string') {
+        const timestamp = new Date(child).getTime()
+        if (!Number.isFinite(timestamp) || timestamp > snapshot || timestamp > now)
+          throw Error('FUTURE_TIMESTAMP')
+      } else walk(child)
+    }
+  }
+  walk(packet)
+}
+
+// 해시 대상의 전체 구조와 scalar를 보여 주고, 바이너리는 별도 검토 이미지의 해시로 연결한다.
+export function reviewContent(packet: { sourceSnapshotAt: string }): unknown {
+  const redact = (value: unknown, trail: string[]): unknown => {
+    if (Array.isArray(value))
+      return value.map((item, index) => redact(item, [...trail, String(index)]))
+    if (value && typeof value === 'object')
+      return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => {
+          if (isSceneImageData(trail, key)) {
+            if (
+              typeof item !== 'string' ||
+              !/^data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/.test(item)
+            )
+              throw Error('SCENE_IMAGE_INVALID')
+            const bytes = Buffer.from(item.slice(item.indexOf(',') + 1), 'base64')
+            return [key, { imageSha256: createHash('sha256').update(bytes).digest('hex') }]
+          }
+          if (key === 'dataURL') throw Error('UNEXPECTED_DATA_URL')
+          return [key, redact(item, [...trail, key])]
+        })
+      )
+    return value
+  }
+  return redact(reviewBasis(packet), [])
+}
 
 type Asset = z.output<typeof assetSchema>
 // 승인 여부는 packet에 적힌 값이 아니라 실제 내장 바이트의 해시로 확인한다.
@@ -329,7 +406,7 @@ const reviewFileSchema = z.strictObject({
   reviewedAt: z.iso.date(),
   items: z.array(
     z.strictObject({
-      kind: z.enum(['posting', 'template']),
+      kind: z.enum(['org', 'posting', 'template']),
       id: sourceId,
       contentHash: sha256,
     })
