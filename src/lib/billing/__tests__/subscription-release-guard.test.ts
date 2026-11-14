@@ -7,6 +7,7 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     billingMethod: { findFirst: jest.fn() },
     billingDeckProduct: { findMany: jest.fn() },
+    spaceDeckAccess: { findFirst: jest.fn().mockResolvedValue(null), findMany: jest.fn().mockResolvedValue([]) },
     spaceSubscription: { findUnique: jest.fn() },
   },
 }))

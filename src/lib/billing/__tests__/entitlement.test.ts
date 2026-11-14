@@ -77,20 +77,14 @@ describe('evaluateDeckAccess', () => {
 
   test('Trial 유효 기간 중 유료 deck 허용', () => {
     const r = evaluate({
-      subscription: sub({
-        status: 'TRIALING',
-        trialEndsAt: new Date('2026-08-10T00:00:00Z'),
-      }),
+      deckAccess: { trialEndsAt: new Date('2026-08-10T00:00:00Z'), exemptFlag: false },
     })
     expect(r).toEqual({ allowed: true, reason: 'TRIAL' })
   })
 
   test('Trial 만료 후 잠금', () => {
     const r = evaluate({
-      subscription: sub({
-        status: 'TRIALING',
-        trialEndsAt: new Date('2026-07-20T00:00:00Z'),
-      }),
+      deckAccess: { trialEndsAt: new Date('2026-07-20T00:00:00Z'), exemptFlag: false },
     })
     expect(r.reason).toBe('LOCKED')
   })
@@ -137,9 +131,36 @@ describe('evaluateDeckAccess', () => {
 
   test('결제 일시 중지는 체험 중·유예 판정보다 뒤 (기존 사유 유지)', () => {
     const r = evaluate({
-      subscription: sub({ status: 'TRIALING', trialEndsAt: new Date('2026-08-05T00:00:00Z') }),
+      deckAccess: { trialEndsAt: new Date('2026-08-05T00:00:00Z'), exemptFlag: false },
       checkoutPaused: true,
     })
     expect(r.reason).toBe('TRIAL')
+  })
+})
+
+describe('업무별 체험·면제 격리', () => {
+  test('다른 업무에서 시작한 공간 체험은 이 업무에 적용하지 않는다', () => {
+    expect(
+      evaluate({ subscription: sub({ trialEndsAt: new Date('2026-09-01T00:00:00Z') }) }).reason
+    ).toBe('LOCKED')
+  })
+  test('해당 업무 면제는 공간이 만료되어도 허용한다', () => {
+    expect(
+      evaluate({
+        subscription: sub({ status: 'EXPIRED' }),
+        deckAccess: { trialEndsAt: null, exemptFlag: true },
+      })
+    ).toEqual({ allowed: true, reason: 'EXEMPT' })
+  })
+  test('업무별 면제를 끄더라도 기존 공간 전체 면제는 유지한다', () => {
+    expect(
+      evaluate({
+        subscription: sub({ exemptFlag: true }),
+        deckAccess: { trialEndsAt: null, exemptFlag: false },
+      }).reason
+    ).toBe('EXEMPT')
+  })
+  test('체험 종료 경계 시각부터 잠긴다', () => {
+    expect(evaluate({ deckAccess: { trialEndsAt: NOW, exemptFlag: false } }).reason).toBe('LOCKED')
   })
 })

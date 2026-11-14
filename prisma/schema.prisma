@@ -566,9 +566,10 @@ model Space {
   workerTokens WorkerToken[]
 
   // ─── 구독·결제 (Billing) ───
-  subscription   SpaceSubscription?
-  billingMethods BillingMethod[]
-  billingCharges BillingCharge[]
+  subscription       SpaceSubscription?
+  billingMethods     BillingMethod[]
+  billingCharges     BillingCharge[]
+  deckAccessPolicies SpaceDeckAccess[]
 }
 
 // 공간 멤버십 + 역할
@@ -4570,8 +4571,26 @@ model BillingDeckProduct {
   // 운영사 어드민에서 공개로 전환한다. 판정은 src/lib/billing/deck-release.ts 단일 출처.
   released        Boolean         @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  accessPolicies SpaceDeckAccess[]
+}
+
+// 체험·운영자 면제는 Space × 업무 단위. 업무를 제거해도 이력을 보존한다.
+model SpaceDeckAccess {
+  id          String    @id @default(cuid())
+  spaceId     String
+  deckAppId   String
+  trialEndsAt DateTime?
+  exemptFlag  Boolean   @default(false)
+  exemptNote  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  space   Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product BillingDeckProduct @relation(fields: [deckAppId], references: [id], onDelete: Restrict)
+
+  @@unique([spaceId, deckAppId])
 }
 
 // Space당 구독 1개. 단일 결제일에 아이템 합산 청구.
@@ -4579,7 +4598,7 @@ model SpaceSubscription {
   id               String             @id @default(cuid())
   spaceId          String             @unique
   status           SubscriptionStatus @default(TRIALING)
-  trialEndsAt      DateTime? // 존재 = Trial 이력 (평생 1회 판정)
+  trialEndsAt      DateTime? // 이전 Space 단위 체험 이력 보존. 권한 판정은 SpaceDeckAccess 사용
   currentPeriodEnd DateTime? // 다음 결제일
   retryCount       Int                @default(0) // dunning 재시도 횟수
   exemptFlag       Boolean            @default(false) // 운영자 수동 면제 (무기한 무료)

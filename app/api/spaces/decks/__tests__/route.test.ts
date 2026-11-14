@@ -8,6 +8,7 @@ import { POST } from '../route'
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    $transaction: jest.fn(),
     deckApp: { findUnique: jest.fn() },
     billingDeckProduct: { findUnique: jest.fn() },
     deckInstance: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
@@ -41,6 +42,11 @@ const req = (deckAppId: string) =>
 
 beforeEach(() => {
   jest.clearAllMocks()
+  jest
+    .mocked(prisma.$transaction)
+    .mockImplementation(async (fn) =>
+      (fn as unknown as (tx: typeof prisma) => Promise<unknown>)(prisma)
+    )
   jest.mocked(resolveSpaceContext).mockResolvedValue({ space: { id: 's1' } } as never)
   p.deckApp.findUnique.mockResolvedValue({ id: 'finance', name: '재무 관리', isActive: true })
   p.billingDeckProduct.findUnique.mockResolvedValue({
@@ -57,7 +63,7 @@ describe('POST /api/spaces/decks — 준비중 가드', () => {
   it('준비중·미설치 업무는 403, Trial 도 시작하지 않는다', async () => {
     jest.mocked(findClosedDecks).mockResolvedValue(['finance'])
     const res = (await POST(req('finance')))!
-    expect(res.status).toBe(403)
+    expect(res?.status).toBe(403)
     expect(findClosedDecks).toHaveBeenCalledWith('s1', ['finance'])
     expect(ensureTrialStarted).not.toHaveBeenCalled()
     expect(p.deckInstance.create).not.toHaveBeenCalled()
@@ -66,6 +72,20 @@ describe('POST /api/spaces/decks — 준비중 가드', () => {
   it('열린 업무는 추가된다', async () => {
     jest.mocked(findClosedDecks).mockResolvedValue([])
     const res = (await POST(req('finance')))!
-    expect(res.status).toBe(201)
+    expect(res?.status).toBe(201)
+  })
+  it('업무 추가 실패는 500으로 반환하고 체험 생성도 설치 transaction 안에서 수행한다', async () => {
+    jest.mocked(findClosedDecks).mockResolvedValue([])
+    p.deckInstance.create.mockRejectedValueOnce(new Error('write failed'))
+    const res = await POST(req('finance'))
+    expect(res?.status).toBe(500)
+    expect(ensureTrialStarted).toHaveBeenCalledWith('s1', 'finance', prisma)
+  })
+  it('체험이 만료된 업무는 402이고 설치하지 않는다', async () => {
+    jest.mocked(findClosedDecks).mockResolvedValue([])
+    jest.mocked(canUseDeck).mockResolvedValueOnce(false)
+    const res = await POST(req('finance'))
+    expect(res?.status).toBe(402)
+    expect(p.deckInstance.create).not.toHaveBeenCalled()
   })
 })
