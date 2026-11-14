@@ -59,7 +59,10 @@ beforeEach(() => {
   jest.clearAllMocks()
   process.env.CRON_SECRET = 's'
   findMany.mockResolvedValue([{ id: 'L1', spaceId: 'sp', name: '위킵창고' }])
-  getRows.mockResolvedValue({ format: 'inventory_list', rows: [] })
+  getRows.mockResolvedValue({
+    format: 'inventory_list',
+    rows: [{ externalCode: 'A', quantity: 1 }],
+  })
   confirm.mockResolvedValue({ adjustedCount: 2, status: 'CONFIRMED' })
 })
 
@@ -144,4 +147,13 @@ test('confirm 일부 실패 → failed 집계 + 일부 실패 알림', async () 
   const body = await (await call()).json()
   expect(notify.mock.calls[0][0].text).toContain('일부 조정 실패 — 1건 반영, 1건 실패')
   expect(body).toMatchObject({ confirmed: 0, failed: 1 })
+})
+
+test('위킵 재고 0건 → 보류(대조·확정 없음) + 보류 알림', async () => {
+  getRows.mockResolvedValue({ format: 'inventory_list', rows: [] })
+  const body = await (await call()).json()
+  expect(runMatch).not.toHaveBeenCalled()
+  expect(confirm).not.toHaveBeenCalled()
+  expect(notify.mock.calls[0][0].text).toContain('0건으로 조회돼 조정을 보류')
+  expect(body).toMatchObject({ held: 1, confirmed: 0, failed: 0 })
 })

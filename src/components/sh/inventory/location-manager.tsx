@@ -106,9 +106,13 @@ export function LocationManager() {
     load()
   }, [load])
 
-  // 3PL 위치 편집 시 LOGIN 비밀값 목록 로드 (한 번)
+  // 3PL 위치 편집 시 LOGIN 비밀값 목록 로드 — 다이얼로그를 열 때마다 새로 가져온다
   useEffect(() => {
-    if (!dialogOpen || typeValue !== 'THIRD_PARTY' || loginSecrets !== null) return
+    if (!dialogOpen) {
+      if (loginSecrets !== null) setLoginSecrets(null)
+      return
+    }
+    if (typeValue !== 'THIRD_PARTY' || loginSecrets !== null) return
     void (async () => {
       try {
         const mr = await fetch('/api/spaces/members')

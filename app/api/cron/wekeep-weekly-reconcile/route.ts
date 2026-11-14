@@ -37,6 +37,13 @@ async function run() {
     const notify = (text: string) => sendSpaceNotification({ spaceId: loc.spaceId, text })
     try {
       const parsed = await getWekeepInventoryRows(loc.spaceId, loc.id)
+      if (parsed.rows.length === 0) {
+        out.held++
+        await notify(
+          `[위킵 주간 재고 조정] ${loc.name}: 위킵 재고가 0건으로 조회돼 조정을 보류했습니다.`
+        )
+        continue
+      }
       const core = await runReconciliationMatch({
         spaceId: loc.spaceId,
         parsed,
@@ -119,4 +126,9 @@ async function run() {
   return out
 }
 
-export const GET = withCronRun('/api/cron/wekeep-weekly-reconcile', run)
+export const GET = withCronRun(
+  '/api/cron/wekeep-weekly-reconcile',
+  run,
+  'cron-secret',
+  (d) => d.failed === 0
+)
