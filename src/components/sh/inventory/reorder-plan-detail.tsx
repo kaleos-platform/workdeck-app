@@ -800,6 +800,11 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                 연동 위치 발주 포함
               </Badge>
             )}
+            {plan.ownLocation && (
+              <Badge variant="outline" className="text-muted-foreground">
+                자체·3PL 입고 위치 · {plan.ownLocation.name}
+              </Badge>
+            )}
           </div>
           <div className="flex flex-wrap items-start gap-x-7 gap-y-2 pt-1.5">
             <Kpi label="예측 창" value={plan.windowDays} unit="일" size="sm" />

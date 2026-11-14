@@ -68,6 +68,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
           sourcePlanId: plan.id,
           biasAdjustApplied: plan.biasAdjustApplied ?? undefined,
           linkedSkuAllocation: plan.linkedSkuAllocation ?? undefined,
+          ownLocationId: plan.ownLocationId,
           totalSuggestedQty: plan.totalSuggestedQty,
           totalFinalQty: plan.totalFinalQty,
           memo: plan.memo,

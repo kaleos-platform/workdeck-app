@@ -146,6 +146,8 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
         type Split = {
           layered: boolean
           rocketLocation: { id: string; name: string } | null
+          /** 발주 계획 검토 단계에서 고른 자체·3PL 입고 위치 */
+          ownLocation?: { id: string; name: string } | null
           options: { optionId: string; baselineQty: number; additionalQty: number }[]
           sets?: {
             listingName: string
@@ -164,10 +166,12 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
         if (cancelled) return
 
         const init: Record<string, AllocRow[]> = {}
+        // 계획에서 고른 자체·3PL 위치가 목록에 있으면 그 위치가 자체 몫 기본값
+        const planOwnLoc = list.find((l) => l.id === split?.ownLocation?.id)?.id
         if (split?.layered && split.rocketLocation) {
           const rocketId = split.rocketLocation.id
           // 추가분 기본 목적지 = 로켓 위치가 아닌 첫 위치(없으면 첫 위치)
-          const otherLoc = list.find((l) => l.id !== rocketId)?.id ?? firstLoc
+          const otherLoc = planOwnLoc ?? list.find((l) => l.id !== rocketId)?.id ?? firstLoc
           const byOpt = new Map(split.options.map((o) => [o.optionId, o]))
           for (const it of runItems ?? []) {
             const s = byOpt.get(it.optionId)
@@ -184,7 +188,7 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
         } else {
           // 기본: 옵션별 1행(전체 수량 → 첫 위치)
           for (const it of runItems ?? []) {
-            init[it.optionId] = [{ locationId: firstLoc, quantity: it.quantity }]
+            init[it.optionId] = [{ locationId: planOwnLoc ?? firstLoc, quantity: it.quantity }]
           }
         }
         setAllocByOption(init)

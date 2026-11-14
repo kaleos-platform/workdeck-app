@@ -106,6 +106,7 @@ export async function POST(req: NextRequest) {
     demandAdjustFactorOverride?: number
     modelByProduct?: Record<string, unknown>
     manualQtyByOption?: Record<string, unknown>
+    ownLocationId?: string | null
   } = {}
   try {
     body = await req.json()
@@ -395,6 +396,19 @@ export async function POST(req: NextRequest) {
   // 레이어드 = 상품 모드(planLocationId 없음)인데 로켓그로스 연동 위치/채널이 감지됨.
   // 세트 환산표(setSpecs)는 있으면 표시용으로만 저장하고, 없더라도 로켓/직접 수요 분리는 수행한다.
   const isLayered = rocketChannelId != null && planLocationId == null
+
+  // 자체·3PL 몫 입고 위치 — 같은 Space 의 활성 위치이고 연동(레이어드) 위치가 아니어야 한다.
+  let ownLocationId: string | null = null
+  if (typeof body.ownLocationId === 'string' && body.ownLocationId) {
+    const loc = await prisma.invStorageLocation.findFirst({
+      where: { id: body.ownLocationId, spaceId, isActive: true },
+      select: { id: true },
+    })
+    if (!loc || (isLayered && linkedLocationIdsForCalc.includes(loc.id))) {
+      return errorResponse('자체·3PL 입고 위치를 확인하세요 (연동 위치는 선택할 수 없습니다).', 422)
+    }
+    ownLocationId = loc.id
+  }
 
   const now = new Date()
 
@@ -733,7 +747,7 @@ export async function POST(req: NextRequest) {
     const linkedIds = new Set(isLayered ? linkedLocationIdsForCalc : [])
     const [levelsByLoc, locs] = await Promise.all([
       prisma.invStockLevel.groupBy({
-        by: ['locationId'],
+        by: ['locationId', 'optionId'],
         where: { spaceId, optionId: { in: optionIds } },
         _sum: { quantity: true },
       }),
@@ -742,11 +756,19 @@ export async function POST(req: NextRequest) {
         select: { id: true, name: true, type: true, isActive: true },
       }),
     ])
-    const qtyByLoc = new Map(levelsByLoc.map((g) => [g.locationId, g._sum.quantity ?? 0]))
+    const qtyByLoc = new Map<string, number>()
+    // 위치 → 옵션 → 재고 (검토 단계 「입고 위치 현재 → 입고 후」)
+    const stockByLocation: Record<string, Record<string, number>> = {}
+    for (const g of levelsByLoc) {
+      const q = g._sum.quantity ?? 0
+      qtyByLoc.set(g.locationId, (qtyByLoc.get(g.locationId) ?? 0) + q)
+      ;(stockByLocation[g.locationId] ??= {})[g.optionId] = q
+    }
     const ownLocations = locs
       .filter((l) => !linkedIds.has(l.id) && (l.isActive || (qtyByLoc.get(l.id) ?? 0) !== 0))
       .map((l) => ({ id: l.id, name: l.name, type: l.type, onHandQty: qtyByLoc.get(l.id) ?? 0 }))
       .sort((a, b) => b.onHandQty - a.onHandQty)
+      .map((l) => ({ ...l, stockByOption: stockByLocation[l.id] ?? {} }))
     return NextResponse.json({
       ownLocations,
       linkedSkuAllocation,
@@ -854,6 +876,7 @@ export async function POST(req: NextRequest) {
         memo: body.memo ?? null,
         biasAdjustApplied,
         linkedSkuAllocation: linkedSkuAllocation ?? undefined,
+        ownLocationId,
       },
     })
 

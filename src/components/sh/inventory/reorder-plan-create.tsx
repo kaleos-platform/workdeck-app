@@ -21,6 +21,13 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { OptionPickerDialog } from '@/components/sh/products/listings/option-picker-dialog'
 import {
   Bar,
@@ -99,7 +106,14 @@ type Preview = {
   /** 연동 위치 몫의 외부 SKU 별 배분(레이어드만) */
   linkedSkuAllocation?: LinkedSkuAllocation | null
   /** 자체·3PL 출고 위치별 현재고(상품 옵션 합) — 연동 위치 제외 */
-  ownLocations?: Array<{ id: string; name: string; type: string; onHandQty: number }>
+  ownLocations?: Array<{
+    id: string
+    name: string
+    type: string
+    onHandQty: number
+    /** 옵션별 이 위치 재고 */
+    stockByOption?: Record<string, number>
+  }>
 }
 
 const LOCATION_TYPE_LABEL: Record<string, string> = {
@@ -180,6 +194,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   )
   // 발주 수량 0인 세트까지 펼쳐 볼지 (세트가 수십 종인 상품이 많다)
   const [showZeroSets, setShowZeroSets] = useState(false)
+  // 자체·3PL 몫 입고 위치 — 비어 있으면 재고가 가장 많은 위치(ownLocations[0])
+  const [ownLocationId, setOwnLocationId] = useState('')
   // 사용자가 직접 고른 상품별 모델만 담는다 — 응답의 추천값으로 채우면 생성 시 설정에 고정돼 버린다.
   const [modelByProduct, setModelByProduct] = useState<Record<string, ModelKey | 'AUTO'>>({})
   // 상품 발주 설정(목표 커버일수·예측 제외) — 변경 즉시 config PATCH
@@ -527,6 +543,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
           ...forecastOverrides,
           modelByProduct,
           manualQtyByOption: manualQtyFrom(finalByOption),
+          ownLocationId: effectiveOwnLocation?.id ?? null,
         }),
       })
       if (!res.ok) {
@@ -589,6 +606,13 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   const externalTotal = options.reduce((s, o) => s + (externalBySku.get(o.optionId) ?? 0), 0)
   const ownTotal = options.reduce((s, o) => s + (ownBySku.get(o.optionId) ?? 0), 0)
   const linkedNeedTotal = options.reduce((s, o) => s + (o.linkedLocationNeedQty ?? 0), 0)
+  const ownLocationList = preview?.ownLocations ?? []
+  const effectiveOwnLocation =
+    ownLocationList.find((l) => l.id === ownLocationId) ?? ownLocationList[0] ?? null
+  // 검토 단계 위치별 분배 — 최종수량 중 연동 위치 몫(엔진 분배, 최종 이하), 나머지는 자체·3PL
+  const rocketQtyOf = (o: PreviewOption) =>
+    showBaseline ? Math.min(finalQtyOf(o), o.rocketBaselineQty ?? 0) : 0
+  const ownQtyOf = (o: PreviewOption) => finalQtyOf(o) - rocketQtyOf(o)
   const windowDays = options[0]?.analysisWindowDays ?? 90
 
   // ── 공용 블록 ───────────────────────────────────────────────────────────────
@@ -1546,11 +1570,116 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
       ) : (
         <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-4">
+            <Panel
+              title="발주 내역 — 옵션 단위"
+              desc={
+                showBaseline
+                  ? `발주 ${options.filter((o) => finalQtyOf(o) > 0).length}종 — 입고되면 ${preview.locationName ?? '연동 위치'} 몫은 아래 SKU(세트)로 묶어 보내고, 나머지는 ${effectiveOwnLocation?.name ?? '자체·3PL 위치'} 재고에 더해집니다.`
+                  : `발주 ${options.filter((o) => finalQtyOf(o) > 0).length}종 — 입고되면 ${effectiveOwnLocation?.name ?? '자체·3PL 위치'} 재고에 더해집니다.`
+              }
+              padded={false}
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>옵션</TableHead>
+                    <TableHead className="text-right">발주 수량</TableHead>
+                    {showBaseline && (
+                      <TableHead className="text-right">
+                        → {preview.locationName ?? '연동 위치'}
+                      </TableHead>
+                    )}
+                    <TableHead className="text-right">
+                      → {effectiveOwnLocation?.name ?? '자체·3PL'}
+                    </TableHead>
+                    {hasCost && <TableHead className="text-right">단가</TableHead>}
+                    {hasCost && <TableHead className="text-right">금액</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {options
+                    .filter((o) => finalQtyOf(o) > 0)
+                    .map((o) => (
+                      <TableRow key={o.optionId}>
+                        <TableCell className="text-sm">
+                          {o.optionName}
+                          {o.sku && (
+                            <span className="ml-1.5 font-mono text-[11px] text-muted-foreground">
+                              {o.sku}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-semibold tabular-nums">
+                          {fmtQty(finalQtyOf(o))}
+                        </TableCell>
+                        {showBaseline && (
+                          <TableCell className="text-right font-mono text-indigo-700 tabular-nums">
+                            {fmtQty(rocketQtyOf(o))}
+                          </TableCell>
+                        )}
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {fmtQty(ownQtyOf(o))}
+                        </TableCell>
+                        {hasCost && (
+                          <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                            {o.costPrice != null ? fmtWon(o.costPrice) : '—'}
+                          </TableCell>
+                        )}
+                        {hasCost && (
+                          <TableCell className="text-right font-mono tabular-nums">
+                            {o.costPrice != null ? fmtWon(finalQtyOf(o) * o.costPrice) : '—'}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell className="text-sm font-medium">합계</TableCell>
+                    <TableCell className="text-right font-mono font-semibold tabular-nums">
+                      {fmtQty(totalFinal)}
+                    </TableCell>
+                    {showBaseline && (
+                      <TableCell className="text-right font-mono font-semibold text-indigo-700 tabular-nums">
+                        {fmtQty(options.reduce((a, o) => a + rocketQtyOf(o), 0))}
+                      </TableCell>
+                    )}
+                    <TableCell className="text-right font-mono font-semibold tabular-nums">
+                      {fmtQty(options.reduce((a, o) => a + ownQtyOf(o), 0))}
+                    </TableCell>
+                    {hasCost && <TableCell />}
+                    {hasCost && (
+                      <TableCell className="text-right font-mono font-semibold tabular-nums">
+                        {fmtWon(totalAmount)}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                </TableFooter>
+              </Table>
+              {options.some((o) => finalQtyOf(o) === 0) && (
+                <div className="flex flex-wrap items-center gap-2 border-t px-4 py-2.5 text-xs text-muted-foreground">
+                  <span>발주 제외</span>
+                  {options
+                    .filter((o) => finalQtyOf(o) === 0)
+                    .map((o) => (
+                      <span
+                        key={o.optionId}
+                        className="inline-flex gap-1.5 rounded-full border px-2 py-0.5"
+                      >
+                        {o.optionName}
+                        <b className="font-mono">재고 {fmtQty(o.currentStock)}개</b>
+                      </span>
+                    ))}
+                  <span>— 커버 기간 내 재고로 충당됩니다</span>
+                </div>
+              )}
+            </Panel>
             {skuAlloc ? (
               <LinkedSkuAllocationPanel
                 allocation={skuAlloc}
                 optionNameById={optionNameById}
-                desc={`외부 연동 소계 ${fmtQty(externalTotal)}개로 SKU 부족분(30일 판매 × ${horizonDays}일 − 재고 − 입고예정)을 먼저 채우고, 남는 몫은 SKU 30일 판매 비중으로 나눕니다. 나머지 ${fmtQty(Math.max(0, totalFinal - externalTotal))}개는 자체·3PL 위치로 입고합니다.`}
+                showAfterStock
+                desc={`${preview.locationName ?? '연동 위치'} 몫 ${fmtQty(externalTotal)}개를 SKU 부족분(30일 판매 × ${horizonDays}일 − 재고 − 입고예정)부터 채우고, 남는 몫은 SKU 30일 판매 비중으로 나눕니다.`}
               />
             ) : sets.length > 0 ? (
               <>
@@ -1617,65 +1746,61 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
             ) : null}
 
             <Panel
-              title="발주 내역 — 옵션 단위"
-              desc={`발주 ${options.filter((o) => finalQtyOf(o) > 0).length}종`}
+              title="자체·3PL 입고"
+              desc="연동 위치 몫을 뺀 나머지를 이 위치에 입고합니다. 생산 입고 화면의 기본 위치가 됩니다."
               padded={false}
+              right={
+                ownLocationList.length > 0 && (
+                  <Select value={effectiveOwnLocation?.id ?? ''} onValueChange={setOwnLocationId}>
+                    <SelectTrigger className="h-8 w-56" aria-label="자체·3PL 입고 위치">
+                      <SelectValue placeholder="입고 위치" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ownLocationList.map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.name} · {LOCATION_TYPE_LABEL[l.type] ?? l.type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )
+              }
             >
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>옵션</TableHead>
-                    <TableHead className="text-right">수량</TableHead>
-                    {hasCost && <TableHead className="text-right">단가</TableHead>}
-                    {hasCost && <TableHead className="text-right">금액</TableHead>}
+                    <TableHead className="text-right">입고 수량</TableHead>
+                    <TableHead className="text-right">
+                      {effectiveOwnLocation?.name ?? '위치'} 재고 (현재 → 입고 후)
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {options
-                    .filter((o) => finalQtyOf(o) > 0)
-                    .map((o) => (
-                      <TableRow key={o.optionId}>
-                        <TableCell className="text-sm">
-                          {o.optionName}
-                          {o.sku && (
-                            <span className="ml-1.5 font-mono text-[11px] text-muted-foreground">
-                              {o.sku}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-mono font-semibold tabular-nums">
-                          {fmtQty(finalQtyOf(o))}
-                        </TableCell>
-                        {hasCost && (
-                          <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
-                            {o.costPrice != null ? fmtWon(o.costPrice) : '—'}
+                    .filter((o) => ownQtyOf(o) > 0)
+                    .map((o) => {
+                      const cur = effectiveOwnLocation?.stockByOption?.[o.optionId] ?? 0
+                      return (
+                        <TableRow key={o.optionId}>
+                          <TableCell className="text-sm">{o.optionName}</TableCell>
+                          <TableCell className="text-right font-mono font-semibold tabular-nums">
+                            {fmtQty(ownQtyOf(o))}
                           </TableCell>
-                        )}
-                        {hasCost && (
                           <TableCell className="text-right font-mono tabular-nums">
-                            {o.costPrice != null ? fmtWon(finalQtyOf(o) * o.costPrice) : '—'}
+                            <span className="text-muted-foreground">{fmtQty(cur)}</span>
+                            {' → '}
+                            <b>{fmtQty(cur + ownQtyOf(o))}</b>
                           </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
+                        </TableRow>
+                      )
+                    })}
                 </TableBody>
               </Table>
-              {options.some((o) => finalQtyOf(o) === 0) && (
-                <div className="flex flex-wrap items-center gap-2 border-t px-4 py-2.5 text-xs text-muted-foreground">
-                  <span>발주 제외</span>
-                  {options
-                    .filter((o) => finalQtyOf(o) === 0)
-                    .map((o) => (
-                      <span
-                        key={o.optionId}
-                        className="inline-flex gap-1.5 rounded-full border px-2 py-0.5"
-                      >
-                        {o.optionName}
-                        <b className="font-mono">재고 {fmtQty(o.currentStock)}개</b>
-                      </span>
-                    ))}
-                  <span>— 커버 기간 내 재고로 충당됩니다</span>
-                </div>
+              {options.every((o) => ownQtyOf(o) <= 0) && (
+                <p className="px-5 py-4 text-sm text-muted-foreground">
+                  자체·3PL 위치로 입고할 수량이 없습니다.
+                </p>
               )}
             </Panel>
           </div>
