@@ -3,6 +3,7 @@ import { Prisma } from '@/generated/prisma/client'
 import { getUser } from '@/hooks/use-user'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
+import { CURRENT_SPACE_COOKIE, CURRENT_SPACE_COOKIE_OPTIONS } from '@/lib/spaces/current-space'
 import { InvitationError, acceptInvitation } from '@/lib/spaces/invitations'
 
 export async function POST(_request: Request, { params }: { params: Promise<{ token: string }> }) {
@@ -24,7 +25,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ to
     await writeAuditLog(user.id, 'space.invitation.accept', 'space_invitation', invitationId, {
       spaceId,
     })
-    return NextResponse.json({ spaceId })
+    // 수락한 Space 를 현재 작업 공간으로 — 홈과 사이드바(쿠키 기준)가 같은 공간을 가리키게.
+    const res = NextResponse.json({ spaceId })
+    res.cookies.set(CURRENT_SPACE_COOKIE, spaceId, CURRENT_SPACE_COOKIE_OPTIONS)
+    return res
   } catch (err) {
     if (err instanceof InvitationError)
       return errorResponse(err.message, err.status, { reason: err.reason })

@@ -9,7 +9,10 @@ jest.mock('@/lib/prisma', () => ({
     deckApp: { findMany: jest.fn() },
   },
 }))
-jest.mock('@/lib/spaces/current-space', () => ({ resolveCurrentMembership: jest.fn() }))
+jest.mock('@/lib/spaces/current-space', () => ({
+  resolveCurrentMembership: jest.fn(),
+  listMemberships: jest.fn(async () => []),
+}))
 jest.mock('@/lib/billing/entitlement', () => ({ resolveEntitlement: jest.fn() }))
 jest.mock('@/lib/billing/deck-release', () => ({ findClosedDecks: jest.fn() }))
 jest.mock('@/components/my-deck/my-deck-client', () => ({ MyDeckClient: () => null }))

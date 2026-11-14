@@ -42,7 +42,8 @@ export function InviteAccept({
       setAlreadyUsed(body?.reason === 'accepted')
       return setError(body?.message ?? '초대를 수락하지 못했습니다')
     }
-    router.replace(`/my-deck?spaceId=${encodeURIComponent(body.spaceId)}`)
+    // 수락 응답이 현재 작업 공간 쿠키를 설정한다 — 홈·사이드바가 같은 공간을 그린다.
+    router.replace('/my-deck')
   }
 
   async function setPasswordAndAccept() {

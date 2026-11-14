@@ -111,13 +111,15 @@ import {
   SETTINGS_MEMBERS_PATH,
 } from '@/lib/deck-routes'
 import { RANK_TRACKING_ENABLED } from '@/components/sh/products/keywords/rank-format'
-import { SpaceSwitcher } from './space-switcher'
+import { SpaceSwitcher, type SpaceItem } from './space-switcher'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { hasRole, type Role } from '@/lib/auth/roles'
 
 export type SidebarProps = {
-  workspaceName: string
+  /** 소속 작업 공간 — 상단 카드에서 현재 공간·권한 표시와 전환 */
+  spaces?: SpaceItem[]
+  currentSpaceId?: string | null
   variant?: DeckVariant
   mode?: 'default' | 'my-deck'
   activeDecks?: Array<{ id: string; name: string }>
@@ -317,7 +319,8 @@ function RailLink({
 }
 
 export function Sidebar({
-  workspaceName,
+  spaces = [],
+  currentSpaceId = null,
   variant = 'workdeck',
   mode = 'default',
   activeDecks = [],
@@ -481,6 +484,8 @@ export function Sidebar({
         )}
       </div>
 
+      <SpaceSwitcher spaces={spaces} currentSpaceId={currentSpaceId} collapsed={collapsed} />
+
       <div
         className={cn(
           'min-h-0 flex-1 overflow-x-hidden overflow-y-auto py-2',
@@ -569,8 +574,8 @@ export function Sidebar({
                 <Separator className="mb-3 bg-white/10" />
                 <section className="rounded-xl bg-white/[0.02] px-3 py-3">
                   <div className="mb-3 px-1">
-                    <SpaceSwitcher fallbackName={workspaceName} />
-                    <p className="mt-1 text-[11px] text-zinc-400">사용 중인 업무 빠른 진입</p>
+                    <p className="text-xs font-semibold text-zinc-200">사용 중인 업무</p>
+                    <p className="mt-1 text-[11px] text-zinc-400">빠르게 진입하기</p>
                   </div>
                   {isMyDeckMode && activeDecks.length > 0 ? (
                     <div className="space-y-1">
