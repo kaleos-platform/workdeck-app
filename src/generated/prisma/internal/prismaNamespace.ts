@@ -13889,6 +13889,9 @@ export const InvStorageLocationScalarFieldEnum = {
   isActive: 'isActive',
   externalSource: 'externalSource',
   externalIntegrationKey: 'externalIntegrationKey',
+  syncProvider: 'syncProvider',
+  syncSecretName: 'syncSecretName',
+  autoReconcileWeekly: 'autoReconcileWeekly',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

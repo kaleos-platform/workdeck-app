@@ -67,6 +67,7 @@ interface OrderItem {
   option?: OrderItemOption | null
   listing?: OrderItemListing | null
   fulfillments?: OrderItemFulfillment[]
+  skuMappings?: Array<{ nsBarcode: string; pickingQuantityPerOrder: number }> | null
 }
 
 function toOrderProducts(items: OrderItem[]): OrderProduct[] {
@@ -202,6 +203,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     rawName: string
     orderQty: number
     channelId: string | null
+    barcodes: Array<{ nsBarcode: string; pickingQuantityPerOrder: number }>
   } | null>(null)
 
   // batchId 변경 시 필터/페이지 초기화
@@ -536,6 +538,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                               rawName: item.name,
                               orderQty: item.quantity,
                               channelId: order.channel?.id ?? null,
+                              barcodes: batchSource === 'NAVER_API' ? (item.skuMappings ?? []) : [],
                             })
                           }}
                           onClearMatch={async (idx) => {
@@ -694,6 +697,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
           channelName={orders.find((o) => o.id === matchTarget.orderId)?.channel?.name ?? null}
           channelSet={!!matchTarget.channelId}
           forceAlias={batchSource === 'NAVER_API'}
+          barcodes={matchTarget.barcodes}
           onMatched={() => {
             setMatchTarget(null)
             // 매칭 결과로 fulfillments가 완전히 교체되므로 전체 재조회가 가장 안전

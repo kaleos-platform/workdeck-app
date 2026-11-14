@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import {
   Dialog,
   DialogContent,
@@ -45,11 +46,25 @@ type LocationRow = {
   type: LocationType
   isActive: boolean
   externalSource: ExternalSource | null
+  syncProvider: string | null
+  syncSecretName: string | null
+  autoReconcileWeekly: boolean
   createdAt: string
   _count?: { stockLevels: number }
 }
 
 const EXTERNAL_SOURCE_NONE = '__none__'
+const SYNC_NONE = '__none__'
+
+// 연동용 LOGIN 비밀값(이름·아이디·호스트만 — 값은 오지 않는다)
+type LoginSecretOption = { name: string; username: string; host: string }
+const hostOf = (url: string) => {
+  try {
+    return new URL(url).host
+  } catch {
+    return url
+  }
+}
 
 const LOCATION_TYPE_LABEL: Record<LocationType, string> = {
   OWN: '자사창고',
@@ -65,6 +80,11 @@ export function LocationManager() {
   const [name, setName] = useState('')
   const [typeValue, setTypeValue] = useState<LocationType>('OWN')
   const [externalSourceValue, setExternalSourceValue] = useState<string>(EXTERNAL_SOURCE_NONE)
+  const [syncProviderValue, setSyncProviderValue] = useState<string>(SYNC_NONE)
+  const [syncSecretValue, setSyncSecretValue] = useState<string>('')
+  const [autoWeekly, setAutoWeekly] = useState(false)
+  // null = 아직 안 불러옴, 'forbidden' = 권한 없음(비밀값 목록은 ADMIN 이상)
+  const [loginSecrets, setLoginSecrets] = useState<LoginSecretOption[] | 'forbidden' | null>(null)
   const [saving, setSaving] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null)
@@ -86,11 +106,49 @@ export function LocationManager() {
     load()
   }, [load])
 
+  // 3PL 위치 편집 시 LOGIN 비밀값 목록 로드 — 다이얼로그를 열 때마다 새로 가져온다
+  useEffect(() => {
+    if (!dialogOpen) {
+      if (loginSecrets !== null) setLoginSecrets(null)
+      return
+    }
+    if (typeValue !== 'THIRD_PARTY' || loginSecrets !== null) return
+    void (async () => {
+      try {
+        const mr = await fetch('/api/spaces/members')
+        const mb = await mr.json().catch(() => null)
+        if (!mr.ok || !mb?.spaceId) return setLoginSecrets('forbidden')
+        const sr = await fetch(`/api/spaces/${mb.spaceId}/secrets`)
+        const sb = await sr.json().catch(() => null)
+        if (!sr.ok) return setLoginSecrets('forbidden')
+        const list = (sb.secrets ?? []) as Array<{
+          name: string
+          kind: string
+          config: { username?: string; loginUrl?: string } | null
+        }>
+        setLoginSecrets(
+          list
+            .filter((x) => x.kind === 'LOGIN')
+            .map((x) => ({
+              name: x.name,
+              username: x.config?.username ?? '',
+              host: x.config?.loginUrl ? hostOf(x.config.loginUrl) : '',
+            }))
+        )
+      } catch {
+        setLoginSecrets('forbidden')
+      }
+    })()
+  }, [dialogOpen, typeValue, loginSecrets])
+
   function openCreate() {
     setEditing(null)
     setName('')
     setTypeValue('OWN')
     setExternalSourceValue(EXTERNAL_SOURCE_NONE)
+    setSyncProviderValue(SYNC_NONE)
+    setSyncSecretValue('')
+    setAutoWeekly(false)
     setDialogOpen(true)
   }
 
@@ -99,6 +157,9 @@ export function LocationManager() {
     setName(loc.name)
     setTypeValue(loc.type)
     setExternalSourceValue(loc.externalSource ?? EXTERNAL_SOURCE_NONE)
+    setSyncProviderValue(loc.syncProvider ?? SYNC_NONE)
+    setSyncSecretValue(loc.syncSecretName ?? '')
+    setAutoWeekly(loc.autoReconcileWeekly)
     setDialogOpen(true)
   }
 
@@ -106,6 +167,11 @@ export function LocationManager() {
     const trimmed = name.trim()
     if (!trimmed) {
       toast.error('위치명을 입력하세요')
+      return
+    }
+    const syncOn = typeValue === 'THIRD_PARTY' && syncProviderValue !== SYNC_NONE
+    if (syncOn && !syncSecretValue) {
+      toast.error('로그인 비밀값을 선택하세요')
       return
     }
     setSaving(true)
@@ -119,7 +185,19 @@ export function LocationManager() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmed, type: typeValue, externalSource }),
+        body: JSON.stringify({
+          name: trimmed,
+          type: typeValue,
+          externalSource,
+          // 신규 생성(POST)은 연동 필드를 받지 않는다 — 수정(PATCH)에서만 보낸다
+          ...(editing
+            ? {
+                syncProvider: syncOn ? syncProviderValue : null,
+                syncSecretName: syncOn ? syncSecretValue : null,
+                autoReconcileWeekly: syncOn && autoWeekly,
+              }
+            : {}),
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '저장 실패')
@@ -349,6 +427,79 @@ export function LocationManager() {
               연결된 소스를 지정하면 재고 조정의 데이터 연동에서 이 위치로 자동 분배됩니다.
             </p>
           </div>
+          {editing && typeValue === 'THIRD_PARTY' && (
+            <div className="space-y-3 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="location-sync-provider">외부 연동</Label>
+                <Select
+                  value={syncProviderValue}
+                  onValueChange={setSyncProviderValue}
+                  disabled={saving}
+                >
+                  <SelectTrigger id="location-sync-provider">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={SYNC_NONE}>없음</SelectItem>
+                    <SelectItem value="wekeep">위킵</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {syncProviderValue !== SYNC_NONE && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="location-sync-secret">로그인 비밀값</Label>
+                    {loginSecrets === 'forbidden' ? (
+                      <p className="text-xs text-muted-foreground">
+                        비밀값 목록을 볼 권한이 없습니다. 연동 설정 → 비밀값에서 위킵 로그인
+                        비밀값을 등록한 뒤 관리자에게 연결을 요청하세요.
+                        {syncSecretValue ? ` (현재 연결: ${syncSecretValue})` : ''}
+                      </p>
+                    ) : (
+                      <Select
+                        value={syncSecretValue}
+                        onValueChange={setSyncSecretValue}
+                        disabled={saving || loginSecrets === null}
+                      >
+                        <SelectTrigger id="location-sync-secret">
+                          <SelectValue
+                            placeholder={loginSecrets === null ? '불러오는 중' : '비밀값 선택'}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(loginSecrets ?? []).map((sec) => (
+                            <SelectItem key={sec.name} value={sec.name}>
+                              {sec.name} ({sec.username} · {sec.host})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    {Array.isArray(loginSecrets) && loginSecrets.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        등록된 로그인 비밀값이 없습니다. 연동 설정 → 비밀값에서 먼저 등록하세요.
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <Label htmlFor="location-sync-weekly">주간 자동 조정</Label>
+                      <p className="text-xs text-muted-foreground">
+                        매주 월요일 오전 9시에 위킵 재고로 자동 조정합니다. 차이가 크면 확정하지
+                        않고 알림만 보냅니다.
+                      </p>
+                    </div>
+                    <Switch
+                      id="location-sync-weekly"
+                      checked={autoWeekly}
+                      onCheckedChange={setAutoWeekly}
+                      disabled={saving}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
               취소

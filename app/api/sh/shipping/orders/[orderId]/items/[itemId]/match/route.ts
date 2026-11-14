@@ -20,6 +20,7 @@ type Params = { params: Promise<{ orderId: string; itemId: string }> }
  *   { mode: 'option',  optionId: string,  saveAlias?: boolean }
  *   { mode: 'manual',  fulfillments: [{ optionId, quantity }] }  // 카탈로그에 없는 복합 구성 수동 입력
  *   { mode: 'clear' }   // 매칭 해제 (별칭은 남김)
+ *   { barcodeOptions: [{ nsBarcode, optionId }] }  // N배송 바코드별 매칭 (mode 무시)
  *
  * 하위 호환: { optionId } 만 전달하면 'option' 모드로 처리.
  */
@@ -43,7 +44,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const rawSaveAlias = body?.saveAlias !== false // default true
 
   // 하위 호환: mode 없이 optionId만 온 경우
-  if (!body?.mode) {
+  if (!body?.mode && !Array.isArray(body?.barcodeOptions)) {
     mode = rawOptionId ? 'option' : 'clear'
   }
 
@@ -152,6 +153,77 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     } catch (err) {
       console.error('[match] N배송 출고 재계산 실패', err)
     }
+  }
+
+  // N배송 바코드별 매칭: { barcodeOptions: [{ nsBarcode, optionId }] } — 항목의 모든 바코드에 옵션이 있어야 한다.
+  // 바코드마다 `bc:<barcode>` alias(그 옵션 × 1)를 남기고, 동기화와 같이 수량 × 피킹 수량으로 출고를 맞춘다.
+  if (Array.isArray(body?.barcodeOptions)) {
+    const maps = (isNbaesong && Array.isArray(item.skuMappings) ? item.skuMappings : []) as Array<{
+      nsBarcode?: unknown
+      pickingQuantityPerOrder?: unknown
+    }>
+    if (!item.order.channelId || maps.length === 0) {
+      return errorResponse('바코드 매칭은 바코드가 있는 N배송 주문에서만 가능합니다', 400)
+    }
+    const picked = new Map<string, string>()
+    for (const b of body.barcodeOptions as Array<{ nsBarcode?: unknown; optionId?: unknown }>) {
+      if (typeof b?.nsBarcode === 'string' && typeof b?.optionId === 'string' && b.optionId.trim())
+        picked.set(b.nsBarcode, b.optionId)
+    }
+    const rows: Array<{ nsBarcode: string; picking: number; optionId: string }> = []
+    for (const m of maps) {
+      const optionId = typeof m.nsBarcode === 'string' ? picked.get(m.nsBarcode) : undefined
+      if (typeof m.nsBarcode !== 'string' || !m.nsBarcode || !optionId) {
+        return errorResponse('모든 바코드에 옵션을 지정해 주세요', 400)
+      }
+      if (typeof m.pickingQuantityPerOrder !== 'number' || m.pickingQuantityPerOrder < 1) {
+        return errorResponse('바코드 피킹 수량을 알 수 없습니다', 400)
+      }
+      rows.push({ nsBarcode: m.nsBarcode, picking: m.pickingQuantityPerOrder, optionId })
+    }
+    const optionIds = Array.from(new Set(rows.map((r) => r.optionId)))
+    const validOptions = await prisma.invProductOption.findMany({
+      where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
+      select: { id: true },
+    })
+    if (validOptions.length !== optionIds.length) {
+      return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
+    }
+
+    const channelId = item.order.channelId
+    await prisma.$transaction(async (tx) => {
+      for (const r of rows) {
+        // 리졸버가 조회 키를 normalizeAlias 로 정규화하므로 저장도 같은 형태로 맞춘다.
+        const aliasName = normalizeAlias(`bc:${r.nsBarcode}`)
+        const alias = await tx.channelProductAlias.upsert({
+          where: { channelId_aliasName: { channelId, aliasName } },
+          update: { optionId: r.optionId, listingId: null },
+          create: {
+            spaceId: resolved.space.id,
+            channelId,
+            aliasName,
+            optionId: r.optionId,
+            listingId: null,
+          },
+        })
+        await tx.channelProductAliasFulfillment.deleteMany({ where: { aliasId: alias.id } })
+      }
+      await tx.delOrderItem.update({
+        where: { id: itemId },
+        data: { optionId: null, listingId: null },
+      })
+      await tx.delOrderItemFulfillment.deleteMany({ where: { orderItemId: itemId } })
+      await tx.delOrderItemFulfillment.createMany({
+        data: rows.map((r) => ({
+          orderItemId: itemId,
+          optionId: r.optionId,
+          quantity: item.quantity * r.picking,
+        })),
+      })
+    })
+
+    await recomputeIfNbaesong()
+    return NextResponse.json({ ok: true, mode: 'barcode', aliasCount: rows.length })
   }
 
   if (mode === 'listing') {

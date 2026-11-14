@@ -1,7 +1,12 @@
 /** @jest-environment node */
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    spaceSecret: { upsert: jest.fn(), findUnique: jest.fn(), findMany: jest.fn() },
+    spaceSecret: {
+      upsert: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+    },
     spaceAgent: { findUnique: jest.fn() },
     agentToken: { findUnique: jest.fn() },
   },
@@ -24,6 +29,7 @@ import {
   saveApiKeySecret,
   saveLoginSecret,
   loadLoginForUse,
+  loadLoginSecretForSystem,
   revealSecretValue,
 } from '../store'
 
@@ -409,5 +415,37 @@ test('revealSecretValue: LOGIN 비밀번호는 화면 보기로 복호화하지 
   expect(await revealSecretValue('sp', 'k')).toEqual({
     id: 's2',
     value: 'SK_TEST_0123456789abcdef',
+  })
+})
+
+describe('loadLoginSecretForSystem', () => {
+  const update = prisma.spaceSecret.update as jest.Mock
+  beforeEach(() => {
+    findUnique.mockReset()
+    update.mockReset().mockResolvedValue({})
+  })
+
+  it('LOGIN 비밀값을 actor 없이 복호화하고 사용 시각을 남긴다', async () => {
+    findUnique.mockResolvedValue({
+      ...ROW,
+      kind: 'LOGIN',
+      config: { loginUrl: 'https://x', username: 'u' },
+    })
+    await expect(loadLoginSecretForSystem('sp1', 'wk')).resolves.toEqual({
+      id: 's1',
+      loginUrl: 'https://x',
+      username: 'u',
+      password: KEY,
+    })
+    expect(update).toHaveBeenCalled()
+  })
+
+  it('없거나 LOGIN이 아니면 throw, 메시지에 값 없음', async () => {
+    findUnique.mockResolvedValue(null)
+    await expect(loadLoginSecretForSystem('sp1', 'wk')).rejects.toThrow(DENIED)
+    findUnique.mockResolvedValue(ROW)
+    const err = await loadLoginSecretForSystem('sp1', 'wk').catch((e) => e)
+    expect(err.message).toBe(DENIED)
+    expect(err.message).not.toContain(KEY)
   })
 })

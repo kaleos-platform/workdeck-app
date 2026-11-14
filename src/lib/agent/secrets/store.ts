@@ -230,6 +230,25 @@ export async function loadLoginForUse(
 }
 
 /**
+ * 서버 내부 전용(위킵 재고 연동 등): actor·허용목록 검사 없이 LOGIN 비밀값을 복호화한다.
+ * 호출자가 위치에 연결된 이름만 넘긴다. 없거나 LOGIN이 아니면 throw(비밀번호는 메시지에 싣지 않는다).
+ */
+export async function loadLoginSecretForSystem(
+  spaceId: string,
+  name: string
+): Promise<{ id: string; loginUrl: string; username: string; password: string }> {
+  const row = await prisma.spaceSecret.findUnique({
+    where: { spaceId_name: { spaceId, name } },
+    select: { id: true, kind: true, config: true, encryptedPayload: true, iv: true },
+  })
+  if (!row || row.kind !== 'LOGIN') throw new ToolUserError(UNUSABLE)
+  const cfg = row.config as LoginConfig
+  const password = decryptField('space-secret', row.encryptedPayload, row.iv)
+  await recordSecretUsed(row.id)
+  return { id: row.id, loginUrl: cfg.loginUrl, username: cfg.username, password }
+}
+
+/**
  * 제안한 신원(SpaceAgent)이 아직 같은 Space에서 ACTIVE이고 secret:write scope를 가졌는지.
  * 토큰 인증·OAuth 바인딩이 이 행의 status·scopes를 쓰므로 비활성화·scope 회수가 승인 실행에도 반영된다.
  * actorTokenId가 있으면 그 토큰의 폐기·만료도 확인한다.

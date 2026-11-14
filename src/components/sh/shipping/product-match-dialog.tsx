@@ -9,6 +9,7 @@ import {
   Minus,
   Pencil,
   Plus,
+  ScanBarcode,
   Search,
   X,
 } from 'lucide-react'
@@ -85,6 +86,8 @@ export type MatchResult =
       }>
     }
 
+type Tab = 'listing' | 'manual' | 'barcode'
+
 type ManualItem = {
   optionId: string
   optionName: string
@@ -105,6 +108,8 @@ type Props = {
   channelSet: boolean
   // N배송 자동 수집 주문 — alias 저장이 유일한 영속 경로라 항상 저장
   forceAlias?: boolean
+  // N배송 항목의 바코드 — 있으면 바코드별 옵션 매칭 탭을 기본으로 연다
+  barcodes?: Array<{ nsBarcode: string; pickingQuantityPerOrder: number }>
   onMatched: (result: MatchResult) => void | Promise<void>
 }
 
@@ -119,10 +124,12 @@ export function ProductMatchDialog({
   channelName,
   channelSet,
   forceAlias = false,
+  barcodes = [],
   onMatched,
 }: Props) {
-  const defaultTab = channelSet ? 'listing' : 'manual'
-  const [tab, setTab] = useState<'listing' | 'manual'>(defaultTab)
+  const hasBarcodes = barcodes.length > 0
+  const defaultTab = hasBarcodes ? 'barcode' : channelSet ? 'listing' : 'manual'
+  const [tab, setTab] = useState<Tab>(defaultTab)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [aliasChecked, setSaveAlias] = useState(true)
@@ -139,6 +146,9 @@ export function ProductMatchDialog({
   const [optionLoading, setOptionLoading] = useState(false)
   const [listingLoading, setListingLoading] = useState(false)
   const [manualItems, setManualItems] = useState<ManualItem[]>([])
+  // 바코드별 매칭 — 바코드 → 선택 옵션, 옵션 검색 결과를 누르면 activeBarcode 에 지정
+  const [barcodePicks, setBarcodePicks] = useState<Record<string, OptionEntry>>({})
+  const [activeBarcode, setActiveBarcode] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -149,10 +159,14 @@ export function ProductMatchDialog({
       setDebouncedSearch(seed)
       // debounce effect가 search=''로 debouncedSearch를 덮어쓰지 않도록 1회 skip.
       skipNextDebounce.current = true
-      setTab(channelSet ? 'listing' : 'manual')
+      setTab(defaultTab)
       setManualItems([])
+      setBarcodePicks({})
+      setActiveBarcode(barcodes[0]?.nsBarcode ?? null)
       setSelectedChannelProductId(null)
     }
+    // barcodes 는 열릴 때의 값만 쓴다(부모가 매 렌더 새 배열을 넘겨도 선택이 초기화되지 않게)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, channelSet, rawName])
 
   // 검색어 / 채널 변경 시 그룹 단계로 복귀
@@ -169,9 +183,9 @@ export function ProductMatchDialog({
     return () => clearTimeout(t)
   }, [search])
 
-  // 옵션 검색 (탭 'manual')
+  // 옵션 검색 (탭 'manual' · 'barcode')
   useEffect(() => {
-    if (!open || tab !== 'manual') return
+    if (!open || tab === 'listing') return
     const q = debouncedSearch.trim()
     setOptionLoading(true)
     const url = q
@@ -334,6 +348,104 @@ export function ProductMatchDialog({
     }
   }
 
+  function pickBarcodeOption(entry: OptionEntry) {
+    if (!activeBarcode) return
+    const next = { ...barcodePicks, [activeBarcode]: entry }
+    setBarcodePicks(next)
+    // 다음 미지정 바코드로 이동
+    setActiveBarcode(barcodes.find((b) => !next[b.nsBarcode])?.nsBarcode ?? null)
+  }
+
+  const allBarcodesPicked = hasBarcodes && barcodes.every((b) => barcodePicks[b.nsBarcode])
+
+  async function saveBarcodes() {
+    if (!allBarcodesPicked) {
+      toast.error('모든 바코드에 옵션을 지정해 주세요')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/sh/shipping/orders/${orderId}/items/${itemId}/match`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          barcodeOptions: barcodes.map((b) => ({
+            nsBarcode: b.nsBarcode,
+            optionId: barcodePicks[b.nsBarcode].optionId,
+          })),
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.message ?? '저장 실패')
+      }
+      const fulfillments = barcodes.map((b) => {
+        const o = barcodePicks[b.nsBarcode]
+        return {
+          optionId: o.optionId,
+          productName: o.productName,
+          optionName: o.optionName,
+          quantity: orderQty * b.pickingQuantityPerOrder,
+        }
+      })
+      const totalQuantity = fulfillments.reduce((s, f) => s + f.quantity, 0)
+      toast.success(`바코드 ${barcodes.length}개 매칭 완료 · 총 ${totalQuantity}개 출고`)
+      await onMatched({
+        mode: 'manual',
+        fulfillmentCount: fulfillments.length,
+        totalQuantity,
+        fulfillments,
+      })
+      onOpenChange(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '저장 실패')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function renderOptionResults(
+    onPick: (e: OptionEntry) => void,
+    isAdded: (e: OptionEntry) => boolean
+  ) {
+    if (optionLoading) {
+      return <p className="py-4 text-center text-sm text-muted-foreground">검색 중...</p>
+    }
+    if (optionResults.length === 0) {
+      return <p className="py-4 text-center text-sm text-muted-foreground">검색 결과가 없습니다</p>
+    }
+    return optionResults.map((e) => {
+      const added = isAdded(e)
+      return (
+        <button
+          key={e.optionId}
+          type="button"
+          disabled={submitting}
+          onClick={() => onPick(e)}
+          className={cn(
+            'flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50',
+            added && 'bg-primary/5'
+          )}
+        >
+          <div className="min-w-0">
+            <p className="truncate font-medium">
+              {e.productName} <span className="text-muted-foreground">— {e.optionName}</span>
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {e.brandName ? `${e.brandName} · ` : ''}
+              {e.sku ? `SKU ${e.sku}` : '관리코드 없음'}
+            </p>
+          </div>
+          {added ? (
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+          ) : (
+            <Plus className="h-4 w-4 shrink-0 text-muted-foreground" />
+          )}
+        </button>
+      )
+    })
+  }
+
   async function pickListing(entry: ListingEntry) {
     setSubmitting(true)
     try {
@@ -402,8 +514,14 @@ export function ProductMatchDialog({
             </div>
           </div>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as 'listing' | 'manual')}>
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
+            <TabsList className={cn('grid w-full', hasBarcodes ? 'grid-cols-3' : 'grid-cols-2')}>
+              {hasBarcodes && (
+                <TabsTrigger value="barcode">
+                  <ScanBarcode className="mr-1 h-4 w-4" />
+                  바코드별
+                </TabsTrigger>
+              )}
               <TabsTrigger value="listing" disabled={!channelSet}>
                 <Layers className="mr-1 h-4 w-4" />
                 판매채널 상품
@@ -504,48 +622,79 @@ export function ProductMatchDialog({
               )}
             </TabsContent>
 
+            {hasBarcodes && (
+              <TabsContent value="barcode" className="mt-3 space-y-3">
+                <div>
+                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                    바코드 {barcodes.length}개 — 행을 고른 뒤 아래에서 옵션을 누르세요
+                  </p>
+                  <ul className="space-y-1 rounded-md border p-1">
+                    {barcodes.map((b) => {
+                      const pick = barcodePicks[b.nsBarcode]
+                      const active = activeBarcode === b.nsBarcode
+                      return (
+                        <li key={b.nsBarcode}>
+                          <button
+                            type="button"
+                            disabled={submitting}
+                            onClick={() => setActiveBarcode(b.nsBarcode)}
+                            aria-pressed={active}
+                            className={cn(
+                              'flex w-full items-center justify-between gap-2 rounded-sm border px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50',
+                              active ? 'border-primary bg-primary/5' : 'border-transparent'
+                            )}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-mono text-xs">{b.nsBarcode}</p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                주문당 {b.pickingQuantityPerOrder}개 × 주문 수량 {orderQty}개 ={' '}
+                                {b.pickingQuantityPerOrder * orderQty}개 출고
+                              </p>
+                            </div>
+                            <p
+                              className={cn(
+                                'max-w-[55%] shrink-0 truncate text-right text-xs',
+                                pick ? 'font-medium text-foreground' : 'text-muted-foreground'
+                              )}
+                            >
+                              {pick ? `${pick.productName} — ${pick.optionName}` : '옵션 미지정'}
+                            </p>
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+                <div>
+                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">옵션 검색</p>
+                  <div className="max-h-[25vh] space-y-1 overflow-y-auto rounded-md border p-1">
+                    {renderOptionResults(
+                      pickBarcodeOption,
+                      (e) => !!activeBarcode && barcodePicks[activeBarcode]?.optionId === e.optionId
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  저장하면 바코드마다 옵션이 연결되고, 지난 N배송 주문도 다음 동기화에서 다시
+                  매칭·차감됩니다
+                </p>
+                <Button
+                  type="button"
+                  onClick={saveBarcodes}
+                  disabled={submitting || !allBarcodesPicked}
+                  className="w-full"
+                >
+                  {submitting ? '저장 중...' : '바코드 매칭 저장'}
+                </Button>
+              </TabsContent>
+            )}
+
             <TabsContent value="manual" className="mt-3 space-y-3">
               <div>
                 <p className="mb-1.5 text-xs font-medium text-muted-foreground">옵션 검색</p>
                 <div className="max-h-[25vh] space-y-1 overflow-y-auto rounded-md border p-1">
-                  {optionLoading ? (
-                    <p className="py-4 text-center text-sm text-muted-foreground">검색 중...</p>
-                  ) : optionResults.length === 0 ? (
-                    <p className="py-4 text-center text-sm text-muted-foreground">
-                      검색 결과가 없습니다
-                    </p>
-                  ) : (
-                    optionResults.map((e) => {
-                      const added = manualItems.some((m) => m.optionId === e.optionId)
-                      return (
-                        <button
-                          key={e.optionId}
-                          type="button"
-                          disabled={submitting}
-                          onClick={() => addManualOption(e)}
-                          className={cn(
-                            'flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50',
-                            added && 'bg-primary/5'
-                          )}
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate font-medium">
-                              {e.productName}{' '}
-                              <span className="text-muted-foreground">— {e.optionName}</span>
-                            </p>
-                            <p className="truncate text-xs text-muted-foreground">
-                              {e.brandName ? `${e.brandName} · ` : ''}
-                              {e.sku ? `SKU ${e.sku}` : '관리코드 없음'}
-                            </p>
-                          </div>
-                          {added ? (
-                            <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
-                          ) : (
-                            <Plus className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          )}
-                        </button>
-                      )
-                    })
+                  {renderOptionResults(addManualOption, (e) =>
+                    manualItems.some((m) => m.optionId === e.optionId)
                   )}
                 </div>
               </div>
