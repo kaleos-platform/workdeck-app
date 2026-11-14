@@ -53,6 +53,12 @@ type Props = {
   page: number
   postings: Array<{ id: string; title: string }>
   counts: ApplicationStatusCounts
+  // 이동 기준 경로(쿼리 제외). 생략하면 지원자 목록 경로 — 공고 상세 탭에서 재사용할 때 지정한다.
+  basePath?: string
+  // basePath 에 항상 붙는 쿼리(예: tab=applicants)
+  baseQuery?: Record<string, string>
+  // 지정하면 공고 필터를 숨기고 해당 공고로 고정한다(filters.posting 도 같은 값이어야 한다).
+  lockedPostingId?: string
   filters: {
     search?: string
     posting: string
@@ -133,6 +139,9 @@ function ApplicationsTableContent({
   page,
   postings,
   counts,
+  basePath = RECRUITING_APPLICATIONS_PATH,
+  baseQuery,
+  lockedPostingId,
   filters,
   storeInput,
   setStoreInput,
@@ -171,7 +180,7 @@ function ApplicationsTableContent({
   function updateQuery(patch: Record<string, string>) {
     if (bulkInFlight.current || pending) return
     lastIndex.current = null
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(baseQuery)
     const next = { ...filters, page: '1', ...patch }
     if (next.search) params.set('search', next.search)
     if (next.posting) params.set('posting', next.posting)
@@ -183,7 +192,7 @@ function ApplicationsTableContent({
     if (next.position) params.set('position', next.position)
     if (next.page && next.page !== '1') params.set('page', next.page)
     startTransition(() => {
-      router.push(`${RECRUITING_APPLICATIONS_PATH}?${params.toString()}`)
+      router.push(`${basePath}?${params.toString()}`)
       setSelected(new Set())
     })
   }
@@ -415,23 +424,25 @@ function ApplicationsTableContent({
       {/* 필터 */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-wrap items-end gap-2">
-          <Select
-            disabled={busy}
-            value={filters.posting || ALL}
-            onValueChange={(v) => updateQuery({ posting: v === ALL ? '' : v })}
-          >
-            <SelectTrigger className="w-52">
-              <SelectValue placeholder="전체 공고" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>전체 공고</SelectItem>
-              {postings.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {!lockedPostingId && (
+            <Select
+              disabled={busy}
+              value={filters.posting || ALL}
+              onValueChange={(v) => updateQuery({ posting: v === ALL ? '' : v })}
+            >
+              <SelectTrigger className="w-52">
+                <SelectValue placeholder="전체 공고" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>전체 공고</SelectItem>
+                {postings.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className="flex items-center gap-1 text-sm">
             <Input
               type="date"
@@ -485,8 +496,9 @@ function ApplicationsTableContent({
                   disabled={allKeys.length === 0 || busy}
                 />
               </TableHead>
-              <TableHead className="w-[140px]">이름</TableHead>
-              <TableHead>공고</TableHead>
+              {/* 공고 고정(공고 상세 탭)일 때는 공고 열을 숨기고 이름 열이 남는 폭을 쓴다 */}
+              <TableHead className={lockedPostingId ? undefined : 'w-[140px]'}>이름</TableHead>
+              {!lockedPostingId && <TableHead>공고</TableHead>}
               <TableHead className="w-[120px]">진행 상태</TableHead>
               <TableHead className="w-[150px]">확인 필요</TableHead>
               <TableHead className="w-[110px] text-right">지원일</TableHead>
@@ -495,7 +507,10 @@ function ApplicationsTableContent({
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={lockedPostingId ? 5 : 6}
+                  className="py-10 text-center text-sm text-muted-foreground"
+                >
                   {pending ? (
                     '불러오는 중...'
                   ) : page > totalPages ? (
@@ -543,11 +558,13 @@ function ApplicationsTableContent({
                       {r.maskedName}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-sm">
-                    <div className="truncate" title={r.postingTitle}>
-                      {r.postingTitle}
-                    </div>
-                  </TableCell>
+                  {!lockedPostingId && (
+                    <TableCell className="text-sm">
+                      <div className="truncate" title={r.postingTitle}>
+                        {r.postingTitle}
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell>
                     {r.stage === 'HIRING' ? (
                       <ProcessStageBadge stage={r.hiringStage} />

@@ -280,3 +280,24 @@ it('검색어는 400ms 디바운스 후 자동 적용된다', async () => {
   expect(push).toHaveBeenCalledWith(expect.stringContaining('search=' + 'b'.repeat(64)))
   jest.useRealTimers()
 })
+
+it('공고 고정 + basePath: 공고 필터를 숨기고 이동·Excel URL 에 공고와 탭을 유지한다', async () => {
+  global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({ message: '오류' }) })
+  render(
+    <ApplicationsTable
+      {...props}
+      basePath="/d/recruiting/postings/p1"
+      baseQuery={{ tab: 'applicants' }}
+      lockedPostingId="p1"
+      filters={{ ...props.filters, posting: 'p1' }}
+    />
+  )
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /^면접/ }))
+  const url = push.mock.calls.at(-1)[0] as string
+  expect(url).toMatch(/^\/d\/recruiting\/postings\/p1\?tab=applicants&/)
+  expect(url).toContain('posting=p1')
+  expect(url).toContain('stage=HIRING')
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '엑셀 내보내기' })))
+  expect(fetch).toHaveBeenCalledWith(expect.stringContaining('posting=p1'))
+})
