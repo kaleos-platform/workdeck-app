@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog'
@@ -89,9 +90,9 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
   const [locationStepOpen, setLocationStepOpen] = useState(false)
   const [locationId, setLocationId] = useState('')
   const [locationStepReason, setLocationStepReason] = useState<string | null>(null)
-  // 위치명이 적힌 행 수 — 0보다 크면 그 행들도 선택한 장소로 덮어써진다는 사실을 알려야 한다.
+  // 위치명이 적힌 행은 기본 보관 장소를 선택해도 그대로 유지한다.
   const [locationStepNamedRows, setLocationStepNamedRows] = useState(0)
-  const locations = useLocations(locationStepOpen)
+  const locations = useLocations(open || locationStepOpen)
 
   function resetAll() {
     setFile(null)
@@ -160,7 +161,7 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
     setSubmitting(true)
     setUploadError(null)
     try {
-      const result = await postFile({})
+      const result = await postFile({ locationId })
       if (!result) return
       const { res, data } = result
 
@@ -230,6 +231,9 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>재고 조정 — 파일 업로드</DialogTitle>
+            <DialogDescription>
+              파일을 올려 실재고를 대조합니다. 위치가 비어 있으면 적용할 보관 장소를 선택하세요.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
@@ -248,6 +252,34 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
                 value={snapshotDate}
                 onChange={(e) => setSnapshotDate(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reconciliation-default-location">위치가 없는 행의 보관 장소</Label>
+              <Select
+                value={locationId || 'from-file'}
+                onValueChange={(value) => setLocationId(value === 'from-file' ? '' : value)}
+                disabled={submitting}
+              >
+                <SelectTrigger
+                  id="reconciliation-default-location"
+                  className="w-full"
+                  aria-describedby="reconciliation-location-hint"
+                >
+                  <SelectValue placeholder="보관 장소 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="from-file">파일의 위치명 사용</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p id="reconciliation-location-hint" className="text-xs text-muted-foreground">
+                파일에 위치명이 있으면 해당 위치를 사용하고, 빈 행에만 선택한 장소를 적용합니다.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -326,6 +358,9 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>보관 장소 선택</DialogTitle>
+            <DialogDescription>
+              위치명이 비어 있는 행에 적용할 보관 장소를 선택하세요.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
@@ -333,9 +368,9 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
                 '이 파일은 위치명 컬럼이 없어 자동 분배가 불가합니다. 어느 보관 장소로 반영할지 선택해 주세요.'}
             </p>
             {locationStepNamedRows > 0 ? (
-              <p className="text-xs text-amber-600 dark:text-amber-500">
-                위치명이 적힌 {locationStepNamedRows}건도 <strong>선택한 장소로 반영</strong>됩니다.
-                파일에 적힌 대로 나눠 반영하려면 취소 후 위치명을 모두 채워 다시 올리세요.
+              <p className="text-xs text-muted-foreground">
+                위치명이 적힌 {locationStepNamedRows}건은 파일의 위치를 유지하고, 빈 행에만 선택한
+                장소를 적용합니다.
               </p>
             ) : (
               <p className="text-xs text-muted-foreground">
