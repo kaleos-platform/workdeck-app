@@ -8,7 +8,7 @@ jest.mock('../sidebar', () => ({
 }))
 
 it('모바일 메뉴를 열고 항목을 선택하면 메뉴를 닫는다', () => {
-  render(<MobileNavigation workspaceName="합성 공간" variant="recruiting" />)
+  render(<MobileNavigation variant="recruiting" />)
   expect(screen.queryByRole('link', { name: '지원자' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: '메뉴 열기' }))
   expect(screen.getByRole('dialog', { name: '메뉴' })).toBeInTheDocument()
@@ -18,10 +18,10 @@ it('모바일 메뉴를 열고 항목을 선택하면 메뉴를 닫는다', () =
 
 it('브라우저 이동으로 경로가 바뀌면 열린 메뉴를 닫는다', () => {
   mockPathname = '/d/recruiting'
-  const view = render(<MobileNavigation workspaceName="합성 공간" variant="recruiting" />)
+  const view = render(<MobileNavigation variant="recruiting" />)
   fireEvent.click(screen.getByRole('button', { name: '메뉴 열기' }))
   mockPathname = '/d/recruiting/applications'
-  view.rerender(<MobileNavigation workspaceName="합성 공간" variant="recruiting" />)
+  view.rerender(<MobileNavigation variant="recruiting" />)
   expect(screen.queryByRole('dialog', { name: '메뉴' })).not.toBeInTheDocument()
 })
 
@@ -33,7 +33,7 @@ it('데스크톱 폭으로 바뀌면 열린 메뉴를 닫는다', () => {
     },
     removeEventListener: jest.fn(),
   })
-  render(<MobileNavigation workspaceName="합성 공간" variant="recruiting" />)
+  render(<MobileNavigation variant="recruiting" />)
   fireEvent.click(screen.getByRole('button', { name: '메뉴 열기' }))
   act(() => {
     change?.({ matches: true })

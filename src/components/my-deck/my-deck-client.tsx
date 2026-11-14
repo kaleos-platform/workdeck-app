@@ -30,6 +30,7 @@ import {
   formatTrialEndDate,
   type DeckAccessReason,
 } from '@/components/billing/billing-shared'
+import { SpaceChips, type SpaceItem } from '@/components/layout/space-switcher'
 
 type DeckSummary = {
   id: string
@@ -39,6 +40,9 @@ type DeckSummary = {
 
 type MyDeckClientProps = {
   spaceName: string
+  /** 소속 작업 공간 — 제목 아래 칩으로 권한 표시·전환 */
+  spaces: SpaceItem[]
+  currentSpaceId: string
   activeDecks: DeckSummary[]
   /** comingSoon=준비중 — 이 공간에서 새로 추가할 수 없는 업무 */
   availableDecks: Array<DeckSummary & { comingSoon: boolean }>
@@ -143,6 +147,8 @@ function formatDate(value: string) {
 
 export function MyDeckClient({
   spaceName,
+  spaces,
+  currentSpaceId,
   activeDecks,
   availableDecks,
   subscribedDeckIds,
@@ -352,8 +358,9 @@ export function MyDeckClient({
       <header className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">내 워크덱</h1>
         <p className="text-sm text-muted-foreground">
-          {spaceName} 계정에서 사용할 업무를 관리하세요.
+          {spaceName} 작업 공간에서 사용할 업무를 관리하세요.
         </p>
+        <SpaceChips spaces={spaces} currentSpaceId={currentSpaceId} />
       </header>
 
       <section aria-labelledby="active-decks-heading" className="space-y-4">

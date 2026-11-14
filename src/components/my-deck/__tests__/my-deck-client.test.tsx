@@ -9,6 +9,8 @@ jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn(), info
 const deck = { id: 'recruiting', name: '모집 관리', description: null }
 const base = {
   spaceName: '테스트',
+  spaces: [],
+  currentSpaceId: 'sp-1',
   activeDecks: [],
   availableDecks: [{ ...deck, comingSoon: false }],
   subscribedDeckIds: [],

@@ -5,10 +5,12 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { MobileNavigation } from '@/components/layout/mobile-navigation'
 import { SpaceFetchGuard } from '@/components/layout/space-fetch-guard'
 import { resolveSpaceContext } from '@/lib/api-helpers'
+import { listMemberships } from '@/lib/spaces/current-space'
 import type { DeckVariant } from '@/lib/deck-meta'
 import type { Role } from '@/lib/auth/roles'
 
 type DeckShellProps = {
+  /** 사이드바 표시는 현재 작업 공간(resolveSpaceContext) 기준 — 이 값은 쓰지 않는다. */
   workspaceName: string
   variant: DeckVariant
   mode?: 'default' | 'my-deck'
@@ -30,7 +32,6 @@ type DeckShellProps = {
  * 향후 새 deck은 layout에서 이 컴포넌트만 사용하면 동일한 UI가 적용된다.
  */
 export async function DeckShell({
-  workspaceName,
   variant,
   mode,
   activeDecks,
@@ -41,10 +42,20 @@ export async function DeckShell({
   children,
 }: DeckShellProps) {
   const ctx = await resolveSpaceContext()
-  const sidebarProps = { workspaceName, variant, mode, activeDecks, isOwner, role }
+  // 사이드바 작업 공간 카드 — 요청 단위 cache 라 해석기와 같은 조회를 공유한다.
+  const spaces =
+    'error' in ctx
+      ? []
+      : (await listMemberships(ctx.user.id)).map((m) => ({
+          id: m.space.id,
+          name: m.space.name,
+          role: m.role,
+        }))
+  const currentSpaceId = 'error' in ctx ? null : ctx.space.id
+  const sidebarProps = { variant, mode, activeDecks, isOwner, role, spaces, currentSpaceId }
   return (
     <div className="flex h-screen" data-deck={dataDeck}>
-      <SpaceFetchGuard spaceId={'error' in ctx ? null : ctx.space.id} />
+      <SpaceFetchGuard spaceId={currentSpaceId} watchSwitch={spaces.length > 1} />
       {/* 좁은 화면은 사이드바를 숨기고 헤더 왼쪽 메뉴 버튼(시트)으로 연다 */}
       <div className="hidden h-full md:block">
         <Sidebar {...sidebarProps} />
