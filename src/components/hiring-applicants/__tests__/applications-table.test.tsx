@@ -43,6 +43,7 @@ const props = {
     hiringStage: 'APPLIED' as const,
     duplicated: false,
     blacklisted: false,
+    directRegistration: false,
     createdAt: '2026-09-27',
   })),
   total: 2,
@@ -300,4 +301,10 @@ it('공고 고정 + basePath: 공고 필터를 숨기고 이동·Excel URL 에 �
   expect(url).toContain('stage=HIRING')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: '엑셀 내보내기' })))
   expect(fetch).toHaveBeenCalledWith(expect.stringContaining('posting=p1'))
+})
+
+it('확인 필요 열에 직접 등록 배지를 해당 행에만 표시한다', () => {
+  const rows = props.rows.map((r) => ({ ...r, directRegistration: r.id === 'a' }))
+  render(<ApplicationsTable {...props} rows={rows} />)
+  expect(screen.getAllByText('직접 등록')).toHaveLength(1)
 })

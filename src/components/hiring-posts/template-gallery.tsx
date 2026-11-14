@@ -253,6 +253,9 @@ type GalleryProps = {
   renderActions?: (template: TemplateRow) => ReactNode
   // 이름 영역 교체(인라인 이름 변경용)
   renderTitle?: (template: TemplateRow) => ReactNode | undefined
+  // 탭을 바깥에서 제어할 때(복사 후 내 템플릿 탭으로 전환 등). 생략하면 내부 상태.
+  tab?: 'mine' | 'provided'
+  onTabChange?: (tab: 'mine' | 'provided') => void
   gridClassName?: string
 }
 
@@ -263,13 +266,20 @@ export function TemplateGallery({
   onSelect,
   renderActions,
   renderTitle,
+  tab: controlledTab,
+  onTabChange,
   gridClassName = 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4',
 }: GalleryProps) {
   const mine = templates.filter((t) => !t.isSample)
   const provided = templates.filter((t) => t.isSample)
-  const [tab, setTab] = useState<'mine' | 'provided'>(() =>
+  const [innerTab, setInnerTab] = useState<'mine' | 'provided'>(() =>
     mine.length > 0 || provided.length === 0 ? 'mine' : 'provided'
   )
+  const tab = controlledTab ?? innerTab
+  const setTab = (next: 'mine' | 'provided') => {
+    setInnerTab(next)
+    onTabChange?.(next)
+  }
 
   function renderGrid(list: TemplateRow[]) {
     return (
