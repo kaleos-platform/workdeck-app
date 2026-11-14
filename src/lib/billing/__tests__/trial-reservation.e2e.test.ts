@@ -489,4 +489,65 @@ d('체험 중 구독 예약 실 DB', () => {
     expect(f.lockedPrice).toBe(12273)
     expect((await item('recruiting')).awaitingTrialEnd).toBe(false)
   })
+
+  test('미납(PAST_DUE) 구독에는 업무 추가가 막힌다(지난 결제일 기준 1일치 결제 방지)', async () => {
+    await paidSubscription(at(-2))
+    await prisma.spaceSubscription.update({
+      where: { spaceId: SPACE },
+      data: { status: 'PAST_DUE', retryCount: 1 },
+    })
+    await expect(addDeck(SPACE, 'recruiting')).rejects.toMatchObject({ status: 409 })
+    expect(mockCharge).not.toHaveBeenCalled()
+  })
+
+  test('미납 중인 예약 전용 구독에서 예약을 취소하면 결제일이 바뀌고 재시도가 다시 시작된다', async () => {
+    await blankSubscription()
+    const first = at(-1)
+    await trial('finance', at(3))
+    await trial('recruiting', at(6))
+    await startSubscription(SPACE, ['finance', 'recruiting'])
+    await trial('finance', first)
+    await prisma.spaceSubscription.update({
+      where: { spaceId: SPACE },
+      data: { status: 'PAST_DUE', retryCount: 1, currentPeriodEnd: first },
+    })
+    await cancelDeck(SPACE, 'finance')
+    const s = await sub()
+    expect(s.status).toBe('ACTIVE')
+    expect(s.retryCount).toBe(0)
+    expect(s.currentPeriodEnd!.getTime()).toBeGreaterThan(Date.now())
+  })
+
+  test('같은 아이템의 과거 예약 결제 이력은 이번 예약 취소를 결제된 해지로 바꾸지 않는다', async () => {
+    const s = await paidSubscription(at(20))
+    const oldStart = at(-40)
+    await trial('recruiting', at(5))
+    const created = await prisma.subscriptionItem.create({
+      data: {
+        subscriptionId: s.id,
+        deckAppId: 'recruiting',
+        priceSnapshot: 20000,
+        awaitingTrialEnd: true,
+      },
+    })
+    const { trialStartOrderId } = await import('../pricing')
+    await prisma.billingCharge.create({
+      data: {
+        spaceId: SPACE,
+        orderId: trialStartOrderId(created.id, oldStart),
+        supplyAmount: 1000,
+        vatAmount: 100,
+        amount: 1100,
+        status: 'PAID',
+        provider: 'toss',
+        paymentKey: 'old-pk',
+        periodStart: oldStart,
+        periodEnd: at(-30),
+        breakdown: [{ deckAppId: 'recruiting', type: 'DECK', price: 1000, prorated: true }],
+      },
+    })
+    const result = await cancelDeck(SPACE, 'recruiting')
+    expect(result).toEqual({ effectiveAt: null, reservationCanceled: true })
+    expect((await item('recruiting')).status).toBe('ENDED')
+  })
 })

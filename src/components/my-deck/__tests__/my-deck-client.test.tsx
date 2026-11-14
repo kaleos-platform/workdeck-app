@@ -15,6 +15,7 @@ const base = {
   availableDecks: [{ ...deck, comingSoon: false }],
   subscribedDeckIds: [],
   reservedDeckIds: [],
+  reservationOnly: false,
   checkoutPaused: false,
   isOwner: true,
   cardSummary: null,
@@ -155,6 +156,7 @@ test('체험 예약만 있는 구독에 체험 끝난 업무를 더하면 일할
       hasActiveSubscription
       subscribedDeckIds={['finance']}
       reservedDeckIds={['finance']}
+      reservationOnly
       billing={[{ ...bill, allowed: false, reason: 'LOCKED', trialEndsAt: '2026-01-01T00:00:00Z' }]}
     />
   )

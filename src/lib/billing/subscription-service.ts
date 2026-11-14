@@ -637,6 +637,10 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     return { prorated: false, amount: 0, reserved: false }
   }
 
+  // 미납 중에는 지난 결제일 기준 일할(1일치)로 업무가 열리지 않게 막는다 — 결제수단 확인이 먼저다.
+  if (subscription.status === 'PAST_DUE') {
+    throw new BillingError('결제가 실패한 상태입니다. 결제수단을 확인한 뒤 다시 시도해 주세요', 409)
+  }
   // 예약만 있는 구독(결제 전)에 업무를 더하면 일할 대신 구독 시작 규칙으로 결제일을 다시 잡는다.
   if (subscription.status === 'ACTIVE' && !hasPaidItems(subscription.items)) {
     const live = subscription.items
@@ -807,7 +811,7 @@ async function cancelReservation(
     const adopted = await reconcilePending(
       getBillingProvider(),
       spaceId,
-      `prorate_${item.id}_trial`
+      trialStartOrderId(item.id, start)
     )
     if (adopted) {
       await prisma.$transaction([
@@ -831,7 +835,8 @@ async function cancelReservation(
         spaceId,
         status: { in: ['PENDING', 'PAID'] },
         OR: [
-          { orderId: { startsWith: `prorate_${item.id}_trial` } },
+          // 이번 체험 종료일의 주문만 본다 — 같은 아이템의 과거 예약 결제 이력과 섞이지 않게
+          { orderId: trialStartOrderId(item.id, start) },
           { orderId: { startsWith: `sub_${subscriptionId}_` }, status: 'PENDING' },
         ],
       },

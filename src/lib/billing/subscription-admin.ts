@@ -217,6 +217,9 @@ export async function updateSubscriptionAccess(
                 '구독이 변경되었습니다. 새로고침 후 다시 시도해 주세요'
               )
             subscriptionCanceled = true
+          } else {
+            // 결제 업무가 모두 빠지고 체험 예약만 남으면 첫 결제일을 예약 기준으로 다시 맞춘다
+            await realignReservationOnly(tx, subscription.id, spaceId)
           }
         }
         const prior = {

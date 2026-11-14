@@ -33,40 +33,39 @@ export interface AdminMetrics {
 export async function getAdminMetrics(): Promise<AdminMetrics> {
   const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-  const [
-    newUsers7d,
-    totalUsers,
-    newRevenue7d,
-    activeMrrAgg,
-    activeDeckCounts,
-    currentPaidSubs,
-  ] = await Promise.all([
-    prisma.user.count({ where: { createdAt: { gte: since7d } } }),
-    prisma.user.count(),
-    prisma.billingCharge.aggregate({
-      _sum: { amount: true },
-      where: { status: 'PAID', createdAt: { gte: since7d } },
-    }),
-    // 실제 MRR: 현재 ACTIVE 구독(면제 아님)의 ACTIVE 아이템 공급가 합. CANCEL_AT_PERIOD_END는 제외.
-    prisma.subscriptionItem.aggregate({
-      _sum: { priceSnapshot: true },
-      where: {
-        status: 'ACTIVE',
-        subscription: { status: 'ACTIVE', exemptFlag: false },
-      },
-    }),
-    // 잠재 MRR: 활성 deck 인스턴스 수 — pricingMode 필터 없음(전 deck FREE_BETA라 상수 0 방지).
-    prisma.deckInstance.groupBy({
-      by: ['deckAppId'],
-      where: { isActive: true },
-      _count: { _all: true },
-    }),
-    // 현재 유료 사용자: 구독 ACTIVE && 면제 아님인 Space
-    prisma.spaceSubscription.findMany({
-      where: { status: 'ACTIVE', exemptFlag: false },
-      select: { spaceId: true },
-    }),
-  ])
+  const [newUsers7d, totalUsers, newRevenue7d, activeMrrAgg, activeDeckCounts, currentPaidSubs] =
+    await Promise.all([
+      prisma.user.count({ where: { createdAt: { gte: since7d } } }),
+      prisma.user.count(),
+      prisma.billingCharge.aggregate({
+        _sum: { amount: true },
+        where: { status: 'PAID', createdAt: { gte: since7d } },
+      }),
+      // 실제 MRR: 현재 ACTIVE 구독(면제 아님)의 ACTIVE 아이템 공급가 합. CANCEL_AT_PERIOD_END는 제외.
+      prisma.subscriptionItem.aggregate({
+        _sum: { priceSnapshot: true },
+        where: {
+          status: 'ACTIVE',
+          awaitingTrialEnd: false, // 체험 중 구독 예약은 아직 결제 전
+          subscription: { status: 'ACTIVE', exemptFlag: false },
+        },
+      }),
+      // 잠재 MRR: 활성 deck 인스턴스 수 — pricingMode 필터 없음(전 deck FREE_BETA라 상수 0 방지).
+      prisma.deckInstance.groupBy({
+        by: ['deckAppId'],
+        where: { isActive: true },
+        _count: { _all: true },
+      }),
+      // 현재 유료 사용자: 구독 ACTIVE && 면제 아님인 Space
+      prisma.spaceSubscription.findMany({
+        where: {
+          status: 'ACTIVE',
+          exemptFlag: false,
+          items: { some: { status: { not: 'ENDED' }, awaitingTrialEnd: false } },
+        },
+        select: { spaceId: true },
+      }),
+    ])
 
   // 누적 유료 사용자 — PAID 이력 있는 Space → 멤버 distinct (순차 의존, 확인 결과 in: [] 은 0행 정상 반환)
   const paidSpaces = await prisma.billingCharge.groupBy({

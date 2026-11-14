@@ -4,6 +4,9 @@
 // 날짜를 복사해 두면 연장 시 체험 중에 결제된다.
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
+import { hasPaidItems } from './reservation-rules'
+
+export { hasPaidItems }
 
 export type DbClient = Prisma.TransactionClient | typeof prisma
 
@@ -21,10 +24,6 @@ export function reservedStart(
   trialEnds: Map<string, Date>
 ): Date {
   return trialEnds.get(item.deckAppId) ?? item.addedAt
-}
-
-export function hasPaidItems(items: Array<{ status: string; awaitingTrialEnd: boolean }>) {
-  return items.some((i) => i.status !== 'ENDED' && !i.awaitingTrialEnd)
 }
 
 // 결제된 아이템 없이 예약만 남은 구독은 결제일을 남은 예약의 가장 빠른 시작일로 맞추고,
@@ -47,8 +46,14 @@ export async function realignReservationOnly(
   }
   const trialEnds = await loadTrialEnds(tx, spaceId)
   const next = new Date(Math.min(...items.map((i) => reservedStart(i, trialEnds).getTime())))
+  const current = await tx.spaceSubscription.findUnique({
+    where: { id: subscriptionId },
+    select: { currentPeriodEnd: true },
+  })
+  if (current?.currentPeriodEnd?.getTime() === next.getTime()) return
+  // 결제일이 바뀌면 새 첫 결제로 본다 — PAST_DUE·재시도 횟수를 남기면 재시도 일정이 영영 오지 않는다.
   await tx.spaceSubscription.update({
     where: { id: subscriptionId },
-    data: { currentPeriodEnd: next, retryCount: 0 },
+    data: { status: 'ACTIVE', currentPeriodEnd: next, retryCount: 0 },
   })
 }

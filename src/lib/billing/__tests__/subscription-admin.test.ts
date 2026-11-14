@@ -46,6 +46,8 @@ function database() {
     subscriptionItem: {
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       count: jest.fn().mockResolvedValue(0),
+      // 남은 아이템 — 기본은 결제된 업무(예약 재정렬 대상 아님)
+      findMany: jest.fn().mockResolvedValue([{ status: 'ACTIVE', awaitingTrialEnd: false }]),
     },
     adminAuditLog: { create: jest.fn().mockResolvedValue({}) },
   }

@@ -52,6 +52,8 @@ type MyDeckClientProps = {
   subscribedDeckIds: string[]
   /** 체험 중 구독 예약(결제 전) deck — 해지 대신 예약 취소 */
   reservedDeckIds: string[]
+  /** 결제된 업무 없이 체험 예약만 있는 구독 — 체험 아닌 업무 추가는 한 달치로 새로 시작한다 */
+  reservationOnly: boolean
   /** 결제 일시 중지 — 구독 버튼을 비활성화하고 안내한다 */
   checkoutPaused: boolean
   isOwner: boolean
@@ -158,6 +160,7 @@ export function MyDeckClient({
   availableDecks,
   subscribedDeckIds,
   reservedDeckIds,
+  reservationOnly,
   checkoutPaused,
   isOwner,
   cardSummary,
@@ -226,14 +229,10 @@ export function MyDeckClient({
         isAddition: hasActiveSubscription,
         trialEndsAt: info?.reason === 'TRIAL' ? (info.trialEndsAt ?? null) : null,
         // 체험 예약만 있는 구독에 체험 아닌 업무를 더하면 일할이 아니라 한 달치로 시작한다
-        chargesFullMonth:
-          hasActiveSubscription &&
-          subscribedDeckIds.length > 0 &&
-          subscribedDeckIds.every((id) => reserved.has(id)) &&
-          info?.reason !== 'TRIAL',
+        chargesFullMonth: hasActiveSubscription && reservationOnly && info?.reason !== 'TRIAL',
       })
     },
-    [billingById, hasActiveSubscription, subscribedDeckIds, reserved]
+    [billingById, hasActiveSubscription, reservationOnly]
   )
 
   const openDeck = useCallback(
@@ -335,7 +334,9 @@ export function MyDeckClient({
     // 카드 등록 후 돌아온 사용 중 업무(체험 중 구독)는 구독 확인 단계를 바로 연다
     const active = activeDecks.find((d) => d.id === subscribeParam)
     if (active) {
-      if (isOwner && canSubscribe(active.id) && !checkoutPaused) openSubscribe(active)
+      if (!isOwner || checkoutPaused) return
+      if (canSubscribe(active.id)) openSubscribe(active)
+      else if (isLocked(active.id)) openDeck(active) // 체험이 끝나 잠긴 업무: 구독 확인을 다시 연다
       return
     }
     const deck = availableDecks.find((d) => d.id === subscribeParam)
@@ -352,6 +353,7 @@ export function MyDeckClient({
     openDeck,
     openSubscribe,
     canSubscribe,
+    isLocked,
     isOwner,
     checkoutPaused,
   ])

@@ -21,6 +21,7 @@ import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { cn } from '@/lib/utils'
 import { SubscribeDialog, type SubscribeTarget } from './subscribe-dialog'
 import { TrialDdayBadge } from './trial-dday-badge'
+import { isReservationOnly } from '@/lib/billing/reservation-rules'
 import {
   REASON_BADGE,
   discountNote,
@@ -164,8 +165,7 @@ export function SubscriptionSettingsClient() {
   const openSubscribeDialog = useCallback(
     (deckIds: string[], isAddition: boolean) => {
       const access = deckIds.length === 1 ? data?.entitlement.decks[deckIds[0]] : undefined
-      const live = (data?.subscription?.items ?? []).filter((i) => i.status !== 'ENDED')
-      const reservedOnly = live.length > 0 && live.every((i) => i.awaitingTrialEnd)
+      const reservedOnly = isReservationOnly(data?.subscription?.items ?? [])
       const decks = (data?.products ?? [])
         .filter(
           (p) =>
@@ -205,7 +205,8 @@ export function SubscriptionSettingsClient() {
   const subscribeParam = searchParams.get('subscribe')
   useEffect(() => {
     if (!subscribeParam || !data) return
-    const ids = subscribeParam.split(',').filter(Boolean)
+    // 확인 모달은 업무 1건 단위(체험 여부별 안내가 달라 여러 건을 한 모달에 섞지 않는다)
+    const ids = subscribeParam.split(',').filter(Boolean).slice(0, 1)
     const already = new Set(
       (data.subscription?.items ?? []).filter((i) => i.status === 'ACTIVE').map((i) => i.deckAppId)
     )
@@ -230,8 +231,7 @@ export function SubscriptionSettingsClient() {
       }))
     if (decks.length === 0) return
     const access = decks.length === 1 ? data.entitlement.decks[decks[0].id] : undefined
-    const live = (data.subscription?.items ?? []).filter((i) => i.status !== 'ENDED')
-    const reservedOnly = live.length > 0 && live.every((i) => i.awaitingTrialEnd)
+    const reservedOnly = isReservationOnly(data.subscription?.items ?? [])
     const inTrial = access?.reason === 'TRIAL'
     setPending({
       decks,
@@ -265,10 +265,7 @@ export function SubscriptionSettingsClient() {
     [data]
   )
   // 결제된 업무 없이 체험 예약만 있는 구독 — 아직 결제 전이다
-  const reservationOnly = useMemo(() => {
-    const live = (data?.subscription?.items ?? []).filter((i) => i.status !== 'ENDED')
-    return live.length > 0 && live.every((i) => i.awaitingTrialEnd)
-  }, [data])
+  const reservationOnly = useMemo(() => isReservationOnly(data?.subscription?.items ?? []), [data])
   const subscriptionEnding = useMemo(() => endsAtPeriodEnd(data?.subscription?.items ?? []), [data])
 
   if (loading) {

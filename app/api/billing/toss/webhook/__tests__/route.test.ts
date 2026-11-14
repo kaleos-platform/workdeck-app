@@ -119,7 +119,7 @@ test('체험 예약만 남으면 구독을 끝내지 않고 결제일을 체험 
   await POST(req())
   expect(tx.spaceSubscription.update).toHaveBeenCalledWith({
     where: { id: 'sub' },
-    data: { currentPeriodEnd: trialEnd, retryCount: 0 },
+    data: { status: 'ACTIVE', currentPeriodEnd: trialEnd, retryCount: 0 },
   })
 })
 test('새 결제가 같은 업무의 이용 기간을 보장하면 종료하지 않는다', async () => {

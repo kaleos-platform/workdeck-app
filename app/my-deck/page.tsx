@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { MyDeckClient } from '@/components/my-deck/my-deck-client'
 import { listMemberships, resolveCurrentMembership } from '@/lib/spaces/current-space'
 import { isCheckoutPausedFor, resolveEntitlement } from '@/lib/billing/entitlement'
+import { isReservationOnly } from '@/lib/billing/reservation-rules'
 import { effectivePrice } from '@/lib/billing/pricing'
 import { findClosedDecks } from '@/lib/billing/deck-release'
 
@@ -131,6 +132,7 @@ export default async function MyDeckPage({
       availableDecks={availableDecks.map((d) => ({ ...d, comingSoon: closed.has(d.id) }))}
       subscribedDeckIds={subscribedDeckIds}
       reservedDeckIds={reservedDeckIds}
+      reservationOnly={isReservationOnly(subscription?.items ?? [])}
       checkoutPaused={isCheckoutPausedFor(space.id)}
       isOwner={membership.role === 'OWNER'}
       cardSummary={billingMethod?.cardSummary ?? null}
