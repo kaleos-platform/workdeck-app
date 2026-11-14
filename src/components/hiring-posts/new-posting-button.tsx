@@ -22,7 +22,19 @@ import { PostingStatusBadge, type PostingStatus } from './status-badge'
 
 type RecentPosting = { id: string; title: string; status: PostingStatus; createdAt: string }
 
-export function NewPostingButton() {
+type TemplateRef = { id: string; name: string }
+
+// template 를 주면 그 템플릿을 적용한 새 공고를 만든다(이전 공고 복사 모드 없음).
+// triggerLabel/triggerProps 로 카드·미리보기 푸터 등 다른 자리의 버튼으로 쓸 수 있다.
+export function NewPostingButton({
+  template,
+  triggerLabel,
+  triggerProps,
+}: {
+  template?: TemplateRef
+  triggerLabel?: string
+  triggerProps?: React.ComponentProps<typeof Button>
+} = {}) {
   const router = useRouter()
   const titleId = useId()
   const submitting = useRef(false)
@@ -71,6 +83,19 @@ export function NewPostingButton() {
       })
       if (!res.ok) throw new Error('공고 생성에 실패했습니다')
       const { posting } = await res.json()
+      if (template) {
+        // 공고는 이미 만들어졌으므로 적용 실패여도 초안으로 이동하고 재시도 방법을 안내한다.
+        const applied = await fetch(`/api/hiring-posts/postings/${posting.id}/apply-template`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ templateId: template.id, mode: 'append' }),
+        }).catch(() => null)
+        if (!applied?.ok) {
+          toast.error(
+            '공고는 만들었지만 템플릿을 적용하지 못했습니다. 공고 꾸미기에서 다시 불러오세요.'
+          )
+        }
+      }
       router.push(getRecruitingPostingBuildPath(posting.id))
       setOpen(false)
       setTitle('')
@@ -90,44 +115,52 @@ export function NewPostingButton() {
       }}
     >
       <DialogTrigger asChild>
-        <Button>
-          <Plus /> 새 공고
+        <Button {...triggerProps}>
+          {triggerLabel ?? (
+            <>
+              <Plus /> 새 공고
+            </>
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={createPosting} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>새 공고 만들기</DialogTitle>
+            <DialogTitle>{template ? '이 템플릿으로 새 공고' : '새 공고 만들기'}</DialogTitle>
             <DialogDescription>
-              {mode === 'copy'
-                ? '최근 공고를 골라 복사본을 초안으로 만듭니다.'
-                : '제목을 입력하면 초안과 본문 제목을 함께 만듭니다.'}
+              {template
+                ? `‘${template.name}’ 템플릿의 블록을 넣어 초안을 만듭니다.`
+                : mode === 'copy'
+                  ? '최근 공고를 골라 복사본을 초안으로 만듭니다.'
+                  : '제목을 입력하면 초안과 본문 제목을 함께 만듭니다.'}
             </DialogDescription>
           </DialogHeader>
-          <div
-            className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1"
-            role="group"
-            aria-label="시작 방식"
-          >
-            {(
-              [
-                ['new', '새로 만들기'],
-                ['copy', '이전 공고 복사해서 시작'],
-              ] as const
-            ).map(([value, label]) => (
-              <Button
-                key={value}
-                type="button"
-                size="sm"
-                variant={mode === value ? 'default' : 'ghost'}
-                aria-pressed={mode === value}
-                disabled={creating}
-                onClick={() => setMode(value)}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
+          {!template && (
+            <div
+              className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1"
+              role="group"
+              aria-label="시작 방식"
+            >
+              {(
+                [
+                  ['new', '새로 만들기'],
+                  ['copy', '이전 공고 복사해서 시작'],
+                ] as const
+              ).map(([value, label]) => (
+                <Button
+                  key={value}
+                  type="button"
+                  size="sm"
+                  variant={mode === value ? 'default' : 'ghost'}
+                  aria-pressed={mode === value}
+                  disabled={creating}
+                  onClick={() => setMode(value)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          )}
           {mode === 'new' ? (
             <div className="space-y-2">
               <Label htmlFor={titleId}>공고 제목</Label>

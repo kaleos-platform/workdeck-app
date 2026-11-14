@@ -3,16 +3,18 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Pencil, Trash2, Check, X, Eye } from 'lucide-react'
+import { Pencil, Trash2, Check, X, Eye, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { NewPostingButton } from './new-posting-button'
 import {
   TemplateGallery,
   TemplatePreviewPane,
@@ -21,6 +23,8 @@ import {
 } from './template-gallery'
 
 export type { TemplateRow }
+
+type GalleryTab = 'mine' | 'provided'
 
 export function TemplatesManager({ initialTemplates }: { initialTemplates: TemplateRow[] }) {
   const router = useRouter()
@@ -31,6 +35,7 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
   const [busy, setBusy] = useState(false)
   const store = useTemplateBlockStore()
   const [previewId, setPreviewId] = useState<string | null>(null)
+  const [tab, setTab] = useState<GalleryTab | undefined>(undefined)
   const previewing = templates.find((t) => t.id === previewId) ?? null
 
   function openEdit(t: TemplateRow) {
@@ -73,6 +78,34 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
     }
   }
 
+  // 워크덱 제공 → 내 템플릿 복사 / 내 템플릿 복제. 성공하면 내 템플릿 탭에 새 카드를 보여 준다.
+  async function handleCopy(source: TemplateRow) {
+    if (busyRef.current) return
+    busyRef.current = true
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/hiring-posts/templates/${source.id}/copy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      })
+      if (!res.ok) throw new Error('템플릿 복사에 실패했습니다')
+      const { template } = await res.json()
+      setTemplates((current) => [
+        { ...template, updatedAt: template.updatedAt, isSample: false },
+        ...current,
+      ])
+      setTab('mine')
+      router.refresh()
+      toast.success(`‘${template.name}’ 템플릿을 내 템플릿에 만들었습니다`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '템플릿 복사에 실패했습니다')
+    } finally {
+      busyRef.current = false
+      setBusy(false)
+    }
+  }
+
   async function handleDelete(id: string) {
     if (busyRef.current) return
     if (!confirm('이 템플릿을 삭제할까요?')) return
@@ -98,6 +131,8 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
       <TemplateGallery
         templates={templates}
         store={store}
+        tab={tab}
+        onTabChange={setTab}
         onSelect={(t) => setPreviewId(t.id)}
         renderTitle={(t) =>
           editingId === t.id ? (
@@ -131,35 +166,59 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
           ) : undefined
         }
         renderActions={(t) => (
-          <>
-            <Button size="sm" variant="ghost" onClick={() => setPreviewId(t.id)}>
-              <Eye /> 미리보기
-            </Button>
-            {t.isSample ? (
-              <span className="ml-auto text-xs text-muted-foreground">읽기 전용</span>
-            ) : (
-              <span className="ml-auto flex">
-                <Button
-                  disabled={busy}
-                  aria-label={`${t.name} 이름 변경`}
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => openEdit(t)}
-                >
-                  <Pencil />
-                </Button>
-                <Button
-                  disabled={busy}
-                  aria-label={`${t.name} 삭제`}
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => handleDelete(t.id)}
-                >
-                  <Trash2 />
-                </Button>
-              </span>
-            )}
-          </>
+          // 주 동작(새 공고) 한 줄 + 보조 동작은 아이콘 한 줄로 — 카드 하단이 쌓이지 않게 한다.
+          <div className="flex w-full flex-col gap-1.5">
+            <NewPostingButton
+              template={t}
+              triggerLabel="이 템플릿으로 새 공고"
+              triggerProps={{ size: 'sm', variant: 'outline', className: 'w-full' }}
+            />
+            <div className="flex items-center">
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-label={`${t.name} 미리보기`}
+                title="미리보기"
+                onClick={() => setPreviewId(t.id)}
+              >
+                <Eye />
+              </Button>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                disabled={busy}
+                aria-label={`${t.name} ${t.isSample ? '내 템플릿으로 복사' : '복제'}`}
+                title={t.isSample ? '내 템플릿으로 복사' : '복제'}
+                onClick={() => handleCopy(t)}
+              >
+                <Copy />
+              </Button>
+              {!t.isSample && (
+                <span className="ml-auto flex">
+                  <Button
+                    disabled={busy}
+                    aria-label={`${t.name} 이름 변경`}
+                    title="이름 변경"
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => openEdit(t)}
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    disabled={busy}
+                    aria-label={`${t.name} 삭제`}
+                    title="삭제"
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => handleDelete(t.id)}
+                  >
+                    <Trash2 />
+                  </Button>
+                </span>
+              )}
+            </div>
+          </div>
         )}
       />
       <Dialog open={!!previewing} onOpenChange={(open) => !open && setPreviewId(null)}>
@@ -174,6 +233,15 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
           </DialogHeader>
           {previewing && (
             <TemplatePreviewPane store={store} template={previewing} className="h-[60vh]" />
+          )}
+          {previewing && (
+            <DialogFooter>
+              <NewPostingButton
+                template={previewing}
+                triggerLabel="이 템플릿으로 새 공고"
+                triggerProps={{ size: 'sm' }}
+              />
+            </DialogFooter>
           )}
         </DialogContent>
       </Dialog>

@@ -42,6 +42,7 @@ import {
   StageBadge,
   ProcessStageBadge,
   DuplicatedBadge,
+  DirectRegistrationBadge,
   BlacklistBadge,
 } from '@/components/hiring-applicants/badges'
 
@@ -575,6 +576,7 @@ function ApplicationsTableContent({
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {r.duplicated && <DuplicatedBadge />}
+                      {r.directRegistration && <DirectRegistrationBadge />}
                       {r.blacklisted && <BlacklistBadge />}
                     </div>
                   </TableCell>
