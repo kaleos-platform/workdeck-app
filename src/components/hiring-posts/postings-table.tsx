@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Copy, Loader2, MoreHorizontal, Pencil } from 'lucide-react'
+import { CalendarPlus, Copy, Link2, Loader2, Lock, MoreHorizontal, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -21,13 +22,19 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { closePosting } from './close-posting'
+import { CloseConfirmDialog } from './close-confirm-dialog'
+import { ExtendDeadlineDialog } from './extend-deadline-dialog'
+import { canExtendDeadline } from './extend-posting'
 import { NewPostingButton } from './new-posting-button'
 import { JOB_TYPE_LABELS } from './build-types'
 import { PostingStatusBadge, STATUS_LABELS, type PostingStatus } from './status-badge'
 import {
   RECRUITING_POSTINGS_PATH,
   getRecruitingPostingBuildPath,
+  getHiringPublicApplyPath,
   getRecruitingPostingDetailPath,
+  getRecruitingPostingPath,
 } from '@/lib/deck-routes'
 
 export type PostingRow = {
@@ -87,9 +94,38 @@ export function PostingsTable({
   const [jobTypeInput, setJobTypeInput] = useState(jobType)
   const [pending, startTransition] = useTransition()
   const [copyingId, setCopyingId] = useState<string | null>(null)
+  const [closingId, setClosingId] = useState<string | null>(null)
+  // 확인 팝업 대상 행(마감 확인·마감일 연장)
+  const [closeTarget, setCloseTarget] = useState<PostingRow | null>(null)
+  const [extendTarget, setExtendTarget] = useState<PostingRow | null>(null)
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const hasUnappliedInput =
-    query.trim() !== q || storeInput.trim() !== store || positionInput.trim() !== position
+  // 마지막으로 이동한 조건 — 서버 값이 이것과 다를 때(뒤로가기 등)만 입력창을 맞춘다.
+  const applied = useRef({ q, store, position, jobType })
+
+  // 제목·장소·직무 입력은 400ms 멈추면 자동 적용(Enter는 즉시 적용)
+  useEffect(() => {
+    const next = { q: query.trim(), store: storeInput.trim(), position: positionInput.trim() }
+    const cur = applied.current
+    if (next.q === cur.q && next.store === cur.store && next.position === cur.position) return
+    const timer = setTimeout(() => {
+      navigate(1, next.q, status, { store: next.store, position: next.position, jobType })
+    }, 400)
+    return () => clearTimeout(timer)
+    // navigate는 매 렌더 새로 만들어지므로 입력값 변경만 추적한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, storeInput, positionInput])
+
+  // 뒤로가기 등 외부에서 URL 조건이 바뀌면 입력창을 따라간다.
+  useEffect(() => {
+    const cur = applied.current
+    if (cur.q === q && cur.store === store && cur.position === position && cur.jobType === jobType)
+      return
+    applied.current = { q, store, position, jobType }
+    setQuery(q)
+    setStoreInput(store)
+    setPositionInput(position)
+    setJobTypeInput(jobType)
+  }, [q, store, position, jobType])
 
   function navigate(
     nextPage: number,
@@ -104,6 +140,12 @@ export function PostingsTable({
     if (filters.position.trim()) params.set('position', filters.position.trim())
     if (filters.jobType) params.set('jobType', filters.jobType)
     if (nextPage > 1) params.set('page', String(nextPage))
+    applied.current = {
+      q: nextQuery.trim(),
+      store: filters.store.trim(),
+      position: filters.position.trim(),
+      jobType: filters.jobType,
+    }
     const suffix = params.toString()
     startTransition(() => router.push(`${RECRUITING_POSTINGS_PATH}${suffix ? `?${suffix}` : ''}`))
   }
@@ -125,6 +167,28 @@ export function PostingsTable({
     }
   }
 
+  async function handleClose(postingId: string) {
+    setClosingId(postingId)
+    try {
+      await closePosting(postingId)
+      toast.success('공고를 마감했습니다')
+      setCloseTarget(null)
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '처리에 실패했습니다')
+    } finally {
+      setClosingId(null)
+    }
+  }
+
+  function handleCopyApplyLink(uuid: string) {
+    const url = `${window.location.origin}${getHiringPublicApplyPath(uuid)}`
+    navigator.clipboard.writeText(url).then(
+      () => toast.success('지원서 링크를 복사했습니다'),
+      () => toast.error('복사에 실패했습니다')
+    )
+  }
+
   return (
     <div className="space-y-4" aria-busy={pending}>
       <form
@@ -143,7 +207,6 @@ export function PostingsTable({
           className="w-full sm:w-48"
           aria-label="공고 제목 검색"
           placeholder="공고 제목 검색"
-          disabled={pending}
           maxLength={200}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -151,7 +214,6 @@ export function PostingsTable({
         <Input
           className="w-full sm:w-40"
           aria-label="모집 장소"
-          disabled={pending}
           placeholder="모집 장소"
           maxLength={200}
           value={storeInput}
@@ -160,7 +222,6 @@ export function PostingsTable({
         <Input
           className="w-full sm:w-40"
           aria-label="모집 직무"
-          disabled={pending}
           placeholder="모집 직무"
           maxLength={200}
           value={positionInput}
@@ -188,9 +249,6 @@ export function PostingsTable({
             </option>
           ))}
         </select>
-        <Button type="submit" variant="outline" disabled={pending}>
-          검색
-        </Button>
         {(q || status !== 'ALL' || store || position || jobType) && (
           <Button
             type="button"
@@ -207,11 +265,6 @@ export function PostingsTable({
             초기화
           </Button>
         )}
-        <p className="w-full text-xs text-muted-foreground" aria-live="polite">
-          {hasUnappliedInput
-            ? '입력한 검색 조건은 아직 적용되지 않았습니다.'
-            : '제목·장소·직무를 입력한 뒤 검색을 눌러 적용하세요.'}
-        </p>
       </form>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Tabs value={status} onValueChange={(v) => navigate(1, q, v as 'ALL' | PostingStatus)}>
@@ -264,13 +317,21 @@ export function PostingsTable({
               postings.map((p) => (
                 <TableRow
                   key={p.id}
-                  className="cursor-pointer"
-                  onClick={() => router.push(getRecruitingPostingDetailPath(p.id))}
+                  className="cursor-pointer hover:bg-muted/40"
+                  onClick={(e) => {
+                    // 링크·버튼·메뉴 클릭은 각자 처리하므로 행 클릭 이동과 겹치지 않게 한다.
+                    if ((e.target as HTMLElement).closest('a, button, [role="menuitem"]')) return
+                    router.push(getRecruitingPostingDetailPath(p.id))
+                  }}
                 >
                   <TableCell className="sticky left-0 z-10 bg-background font-medium">
-                    <span className="block truncate" title={p.title}>
+                    <Link
+                      href={getRecruitingPostingDetailPath(p.id)}
+                      className="block truncate hover:underline"
+                      title={p.title}
+                    >
                       {p.title}
-                    </span>
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col items-start gap-1">
@@ -280,7 +341,15 @@ export function PostingsTable({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{p.applicantCount}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    <Link
+                      href={getRecruitingPostingPath(p.id, { tab: 'applicants' })}
+                      className="hover:underline"
+                      aria-label={`${p.title} 지원자 ${p.applicantCount}명 보기`}
+                    >
+                      {p.applicantCount}
+                    </Link>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(p.closingDate)}
                   </TableCell>
@@ -311,6 +380,31 @@ export function PostingsTable({
                           )}
                           복사
                         </DropdownMenuItem>
+                        {p.status === 'ACTIVE' && !p.receptionExpired && (
+                          <DropdownMenuItem onSelect={() => handleCopyApplyLink(p.uuid)}>
+                            <Link2 className="size-4" />
+                            지원서 링크 복사
+                          </DropdownMenuItem>
+                        )}
+                        {canExtendDeadline(p) && (
+                          <DropdownMenuItem onSelect={() => setExtendTarget(p)}>
+                            <CalendarPlus className="size-4" />
+                            마감일 연장
+                          </DropdownMenuItem>
+                        )}
+                        {p.status === 'ACTIVE' && (
+                          <DropdownMenuItem
+                            disabled={closingId === p.id}
+                            onSelect={() => setCloseTarget(p)}
+                          >
+                            {closingId === p.id ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <Lock className="size-4" />
+                            )}
+                            마감
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -343,6 +437,21 @@ export function PostingsTable({
           </Button>
         </nav>
       </div>
+      <CloseConfirmDialog
+        open={!!closeTarget}
+        onOpenChange={(v) => !v && setCloseTarget(null)}
+        busy={!!closingId}
+        onConfirm={() => closeTarget && void handleClose(closeTarget.id)}
+      />
+      {extendTarget?.closingDate && (
+        <ExtendDeadlineDialog
+          open
+          onOpenChange={(v) => !v && setExtendTarget(null)}
+          postingId={extendTarget.id}
+          closingDate={extendTarget.closingDate}
+          onExtended={() => router.refresh()}
+        />
+      )}
     </div>
   )
 }

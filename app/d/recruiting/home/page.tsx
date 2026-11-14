@@ -145,7 +145,7 @@ export default async function RecruitingHomePage() {
           <Link href={RECRUITING_POSTINGS_PATH}>전체 공고</Link>
         </Button>
         <Button variant="ghost" size="sm" asChild>
-          <Link href={RECRUITING_DETAIL_TEMPLATES_PATH}>상세 템플릿 관리</Link>
+          <Link href={RECRUITING_DETAIL_TEMPLATES_PATH}>공고 템플릿 관리</Link>
         </Button>
       </div>
     </div>

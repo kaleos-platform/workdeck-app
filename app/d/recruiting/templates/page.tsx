@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { TemplatesManager, type TemplateRow } from '@/components/hiring-posts/templates-manager'
 import { templateContentScope, templateListScope } from '@/lib/hiring/template-scope'
 
-// 상세 템플릿 관리 (생성은 위저드 상세 스텝, 여기서는 이름 변경/삭제)
+// 공고 템플릿 관리 (생성은 위저드 상세 스텝, 여기서는 이름 변경/삭제)
 export default async function TemplatesPage() {
   const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
@@ -29,7 +29,7 @@ export default async function TemplatesPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold">상세 템플릿</h1>
+        <h1 className="text-2xl font-semibold">공고 템플릿</h1>
         <p className="text-sm text-muted-foreground">
           공고 상세 스텝에서 “템플릿으로 저장”한 재사용 블록을 관리합니다.
         </p>

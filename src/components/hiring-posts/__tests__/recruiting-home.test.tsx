@@ -36,7 +36,7 @@ it('빈 공간에서 안내 문구와 새 공고 버튼을 제공하고 현재 �
   expect(screen.getByText(/모집 중인 공고가 없습니다/)).toBeInTheDocument()
   expect(screen.getByText('공고를 발행하면 지원서가 이곳에 쌓입니다.')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: '새 공고' })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: '상세 템플릿 관리' })).toHaveAttribute(
+  expect(screen.getByRole('link', { name: '공고 템플릿 관리' })).toHaveAttribute(
     'href',
     '/d/recruiting/templates'
   )
