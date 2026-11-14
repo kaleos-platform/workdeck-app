@@ -334,6 +334,7 @@ export type SpaceWhereInput = {
   subscription?: Prisma.XOR<Prisma.SpaceSubscriptionNullableScalarRelationFilter, Prisma.SpaceSubscriptionWhereInput> | null
   billingMethods?: Prisma.BillingMethodListRelationFilter
   billingCharges?: Prisma.BillingChargeListRelationFilter
+  deckAccessPolicies?: Prisma.SpaceDeckAccessListRelationFilter
 }
 
 export type SpaceOrderByWithRelationInput = {
@@ -446,6 +447,7 @@ export type SpaceOrderByWithRelationInput = {
   subscription?: Prisma.SpaceSubscriptionOrderByWithRelationInput
   billingMethods?: Prisma.BillingMethodOrderByRelationAggregateInput
   billingCharges?: Prisma.BillingChargeOrderByRelationAggregateInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessOrderByRelationAggregateInput
 }
 
 export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -561,6 +563,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   subscription?: Prisma.XOR<Prisma.SpaceSubscriptionNullableScalarRelationFilter, Prisma.SpaceSubscriptionWhereInput> | null
   billingMethods?: Prisma.BillingMethodListRelationFilter
   billingCharges?: Prisma.BillingChargeListRelationFilter
+  deckAccessPolicies?: Prisma.SpaceDeckAccessListRelationFilter
 }, "id">
 
 export type SpaceOrderByWithAggregationInput = {
@@ -701,6 +704,7 @@ export type SpaceCreateInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateInput = {
@@ -813,6 +817,7 @@ export type SpaceUncheckedCreateInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUpdateInput = {
@@ -925,6 +930,7 @@ export type SpaceUpdateInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateInput = {
@@ -1037,6 +1043,7 @@ export type SpaceUncheckedUpdateInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateManyInput = {
@@ -2403,6 +2410,20 @@ export type SpaceUpdateOneRequiredWithoutHiringMessageTemplatesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutHiringMessageTemplatesInput, Prisma.SpaceUpdateWithoutHiringMessageTemplatesInput>, Prisma.SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput>
 }
 
+export type SpaceCreateNestedOneWithoutDeckAccessPoliciesInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutDeckAccessPoliciesInput, Prisma.SpaceUncheckedCreateWithoutDeckAccessPoliciesInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutDeckAccessPoliciesInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutDeckAccessPoliciesNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutDeckAccessPoliciesInput, Prisma.SpaceUncheckedCreateWithoutDeckAccessPoliciesInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutDeckAccessPoliciesInput
+  upsert?: Prisma.SpaceUpsertWithoutDeckAccessPoliciesInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutDeckAccessPoliciesInput, Prisma.SpaceUpdateWithoutDeckAccessPoliciesInput>, Prisma.SpaceUncheckedUpdateWithoutDeckAccessPoliciesInput>
+}
+
 export type SpaceCreateNestedOneWithoutSubscriptionInput = {
   create?: Prisma.XOR<Prisma.SpaceCreateWithoutSubscriptionInput, Prisma.SpaceUncheckedCreateWithoutSubscriptionInput>
   connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutSubscriptionInput
@@ -2666,6 +2687,7 @@ export type SpaceCreateWithoutWorkspaceInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutWorkspaceInput = {
@@ -2777,6 +2799,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutWorkspaceInput = {
@@ -2904,6 +2927,7 @@ export type SpaceUpdateWithoutWorkspaceInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutWorkspaceInput = {
@@ -3015,6 +3039,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutMembersInput = {
@@ -3126,6 +3151,7 @@ export type SpaceCreateWithoutMembersInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutMembersInput = {
@@ -3237,6 +3263,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutMembersInput = {
@@ -3364,6 +3391,7 @@ export type SpaceUpdateWithoutMembersInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutMembersInput = {
@@ -3475,6 +3503,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvitationsInput = {
@@ -3586,6 +3615,7 @@ export type SpaceCreateWithoutInvitationsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvitationsInput = {
@@ -3697,6 +3727,7 @@ export type SpaceUncheckedCreateWithoutInvitationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvitationsInput = {
@@ -3824,6 +3855,7 @@ export type SpaceUpdateWithoutInvitationsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvitationsInput = {
@@ -3935,6 +3967,7 @@ export type SpaceUncheckedUpdateWithoutInvitationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutAgentPendingActionsInput = {
@@ -4046,6 +4079,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
@@ -4157,6 +4191,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutAgentPendingActionsInput = {
@@ -4284,6 +4319,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
@@ -4395,6 +4431,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutAgentToggleInput = {
@@ -4506,6 +4543,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutAgentToggleInput = {
@@ -4617,6 +4655,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutAgentToggleInput = {
@@ -4744,6 +4783,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
@@ -4855,6 +4895,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutAgentsInput = {
@@ -4966,6 +5007,7 @@ export type SpaceCreateWithoutAgentsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutAgentsInput = {
@@ -5077,6 +5119,7 @@ export type SpaceUncheckedCreateWithoutAgentsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutAgentsInput = {
@@ -5204,6 +5247,7 @@ export type SpaceUpdateWithoutAgentsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutAgentsInput = {
@@ -5315,6 +5359,7 @@ export type SpaceUncheckedUpdateWithoutAgentsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutToolAuditLogsInput = {
@@ -5426,6 +5471,7 @@ export type SpaceCreateWithoutToolAuditLogsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutToolAuditLogsInput = {
@@ -5537,6 +5583,7 @@ export type SpaceUncheckedCreateWithoutToolAuditLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutToolAuditLogsInput = {
@@ -5664,6 +5711,7 @@ export type SpaceUpdateWithoutToolAuditLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutToolAuditLogsInput = {
@@ -5775,6 +5823,7 @@ export type SpaceUncheckedUpdateWithoutToolAuditLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutUsageEventsInput = {
@@ -5886,6 +5935,7 @@ export type SpaceCreateWithoutUsageEventsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutUsageEventsInput = {
@@ -5997,6 +6047,7 @@ export type SpaceUncheckedCreateWithoutUsageEventsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutUsageEventsInput = {
@@ -6124,6 +6175,7 @@ export type SpaceUpdateWithoutUsageEventsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutUsageEventsInput = {
@@ -6235,6 +6287,7 @@ export type SpaceUncheckedUpdateWithoutUsageEventsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSpaceCredentialsInput = {
@@ -6346,6 +6399,7 @@ export type SpaceCreateWithoutSpaceCredentialsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSpaceCredentialsInput = {
@@ -6457,6 +6511,7 @@ export type SpaceUncheckedCreateWithoutSpaceCredentialsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSpaceCredentialsInput = {
@@ -6584,6 +6639,7 @@ export type SpaceUpdateWithoutSpaceCredentialsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSpaceCredentialsInput = {
@@ -6695,6 +6751,7 @@ export type SpaceUncheckedUpdateWithoutSpaceCredentialsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSpaceSecretsInput = {
@@ -6806,6 +6863,7 @@ export type SpaceCreateWithoutSpaceSecretsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSpaceSecretsInput = {
@@ -6917,6 +6975,7 @@ export type SpaceUncheckedCreateWithoutSpaceSecretsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSpaceSecretsInput = {
@@ -7044,6 +7103,7 @@ export type SpaceUpdateWithoutSpaceSecretsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSpaceSecretsInput = {
@@ -7155,6 +7215,7 @@ export type SpaceUncheckedUpdateWithoutSpaceSecretsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutAgentLlmUsagesInput = {
@@ -7266,6 +7327,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
@@ -7377,6 +7439,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutAgentLlmUsagesInput = {
@@ -7504,6 +7567,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
@@ -7615,6 +7679,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSlackInstallationInput = {
@@ -7726,6 +7791,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
@@ -7837,6 +7903,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSlackInstallationInput = {
@@ -7964,6 +8031,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
@@ -8075,6 +8143,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeckInstancesInput = {
@@ -8186,6 +8255,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
@@ -8297,6 +8367,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeckInstancesInput = {
@@ -8424,6 +8495,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
@@ -8535,6 +8607,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutCoupangProductItemsInput = {
@@ -8646,6 +8719,7 @@ export type SpaceCreateWithoutCoupangProductItemsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
@@ -8757,6 +8831,7 @@ export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutCoupangProductItemsInput = {
@@ -8884,6 +8959,7 @@ export type SpaceUpdateWithoutCoupangProductItemsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
@@ -8995,6 +9071,7 @@ export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutCoupangWriteJobsInput = {
@@ -9106,6 +9183,7 @@ export type SpaceCreateWithoutCoupangWriteJobsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
@@ -9217,6 +9295,7 @@ export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutCoupangWriteJobsInput = {
@@ -9344,6 +9423,7 @@ export type SpaceUpdateWithoutCoupangWriteJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
@@ -9455,6 +9535,7 @@ export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductGroupsInput = {
@@ -9566,6 +9647,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
@@ -9677,6 +9759,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductGroupsInput = {
@@ -9804,6 +9887,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
@@ -9915,6 +9999,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductsInput = {
@@ -10026,6 +10111,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductsInput = {
@@ -10137,6 +10223,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductsInput = {
@@ -10264,6 +10351,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductsInput = {
@@ -10375,6 +10463,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutAdCampaignProductMapsInput = {
@@ -10486,6 +10575,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
@@ -10597,6 +10687,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutAdCampaignProductMapsInput = {
@@ -10724,6 +10815,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
@@ -10835,6 +10927,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductExtractionJobsInput = {
@@ -10946,6 +11039,7 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
@@ -11057,6 +11151,7 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductExtractionJobsInput = {
@@ -11184,6 +11279,7 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
@@ -11295,6 +11391,7 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationsInput = {
@@ -11406,6 +11503,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationsInput = {
@@ -11517,6 +11615,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationsInput = {
@@ -11644,6 +11743,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
@@ -11755,6 +11855,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvMovementsInput = {
@@ -11866,6 +11967,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvMovementsInput = {
@@ -11977,6 +12079,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvMovementsInput = {
@@ -12104,6 +12207,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
@@ -12215,6 +12319,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvStockLevelsInput = {
@@ -12326,6 +12431,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
@@ -12437,6 +12543,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvStockLevelsInput = {
@@ -12564,6 +12671,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
@@ -12675,6 +12783,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvImportHistoriesInput = {
@@ -12786,6 +12895,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
@@ -12897,6 +13007,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvImportHistoriesInput = {
@@ -13024,6 +13135,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
@@ -13135,6 +13247,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvReconciliationsInput = {
@@ -13246,6 +13359,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
@@ -13357,6 +13471,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvReconciliationsInput = {
@@ -13484,6 +13599,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
@@ -13595,6 +13711,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationMappingsInput = {
@@ -13706,6 +13823,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
@@ -13817,6 +13935,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationMappingsInput = {
@@ -13944,6 +14063,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
@@ -14055,6 +14175,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvReconExcludedCodesInput = {
@@ -14166,6 +14287,7 @@ export type SpaceCreateWithoutInvReconExcludedCodesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvReconExcludedCodesInput = {
@@ -14277,6 +14399,7 @@ export type SpaceUncheckedCreateWithoutInvReconExcludedCodesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvReconExcludedCodesInput = {
@@ -14404,6 +14527,7 @@ export type SpaceUpdateWithoutInvReconExcludedCodesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvReconExcludedCodesInput = {
@@ -14515,6 +14639,7 @@ export type SpaceUncheckedUpdateWithoutInvReconExcludedCodesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvSettingsInput = {
@@ -14626,6 +14751,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvSettingsInput = {
@@ -14737,6 +14863,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvSettingsInput = {
@@ -14864,6 +14991,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
@@ -14975,6 +15103,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodsInput = {
@@ -15086,6 +15215,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
@@ -15197,6 +15327,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodsInput = {
@@ -15324,6 +15455,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
@@ -15435,6 +15567,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
@@ -15546,6 +15679,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
@@ -15657,6 +15791,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput = {
@@ -15784,6 +15919,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
@@ -15895,6 +16031,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelBatchesInput = {
@@ -16006,6 +16143,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelBatchesInput = {
@@ -16117,6 +16255,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelBatchesInput = {
@@ -16244,6 +16383,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
@@ -16355,6 +16495,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelOrdersInput = {
@@ -16466,6 +16607,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelOrdersInput = {
@@ -16577,6 +16719,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelOrdersInput = {
@@ -16704,6 +16847,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
@@ -16815,6 +16959,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductAliasesInput = {
@@ -16926,6 +17071,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
@@ -17037,6 +17183,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductAliasesInput = {
@@ -17164,6 +17311,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
@@ -17275,6 +17423,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
@@ -17386,6 +17535,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
@@ -17497,6 +17647,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelColumnMappingPresetsInput = {
@@ -17624,6 +17775,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
@@ -17735,6 +17887,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
@@ -17846,6 +17999,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
@@ -17957,6 +18111,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelIntegrationHistoriesInput = {
@@ -18084,6 +18239,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
@@ -18195,6 +18351,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandsInput = {
@@ -18306,6 +18463,7 @@ export type SpaceCreateWithoutBrandsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandsInput = {
@@ -18417,6 +18575,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandsInput = {
@@ -18544,6 +18703,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandsInput = {
@@ -18655,6 +18815,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelTypeDefsInput = {
@@ -18766,6 +18927,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
@@ -18877,6 +19039,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelTypeDefsInput = {
@@ -19004,6 +19167,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
@@ -19115,6 +19279,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelsInput = {
@@ -19226,6 +19391,7 @@ export type SpaceCreateWithoutChannelsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelsInput = {
@@ -19337,6 +19503,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelsInput = {
@@ -19464,6 +19631,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelsInput = {
@@ -19575,6 +19743,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductionRunsInput = {
@@ -19686,6 +19855,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductionRunsInput = {
@@ -19797,6 +19967,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductionRunsInput = {
@@ -19924,6 +20095,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
@@ -20035,6 +20207,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutPricingScenariosInput = {
@@ -20146,6 +20319,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
@@ -20257,6 +20431,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutPricingScenariosInput = {
@@ -20384,6 +20559,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
@@ -20495,6 +20671,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductPricingSettingsInput = {
@@ -20606,6 +20783,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
@@ -20717,6 +20895,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductPricingSettingsInput = {
@@ -20844,6 +21023,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
@@ -20955,6 +21135,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutOptionCodeAliasesInput = {
@@ -21066,6 +21247,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
@@ -21177,6 +21359,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutOptionCodeAliasesInput = {
@@ -21304,6 +21487,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
@@ -21415,6 +21599,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutAtomicWordsInput = {
@@ -21526,6 +21711,7 @@ export type SpaceCreateWithoutAtomicWordsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
@@ -21637,6 +21823,7 @@ export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutAtomicWordsInput = {
@@ -21764,6 +21951,7 @@ export type SpaceUpdateWithoutAtomicWordsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
@@ -21875,6 +22063,7 @@ export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductListingsInput = {
@@ -21986,6 +22175,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductListingsInput = {
@@ -22097,6 +22287,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductListingsInput = {
@@ -22224,6 +22415,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductListingsInput = {
@@ -22335,6 +22527,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelStockMovementsInput = {
@@ -22446,6 +22639,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
@@ -22557,6 +22751,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelStockMovementsInput = {
@@ -22684,6 +22879,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
@@ -22795,6 +22991,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductsInput = {
@@ -22906,6 +23103,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductsInput = {
@@ -23017,6 +23215,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductsInput = {
@@ -23144,6 +23343,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
@@ -23255,6 +23455,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutKeywordMastersInput = {
@@ -23366,6 +23567,7 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
@@ -23477,6 +23679,7 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutKeywordMastersInput = {
@@ -23604,6 +23807,7 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
@@ -23715,6 +23919,7 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelKeywordRulesInput = {
@@ -23826,6 +24031,7 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
@@ -23937,6 +24143,7 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelKeywordRulesInput = {
@@ -24064,6 +24271,7 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
@@ -24175,6 +24383,7 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutKeywordChangeLogsInput = {
@@ -24286,6 +24495,7 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
@@ -24397,6 +24607,7 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutKeywordChangeLogsInput = {
@@ -24524,6 +24735,7 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
@@ -24635,6 +24847,7 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductsInput = {
@@ -24746,6 +24959,7 @@ export type SpaceCreateWithoutProductsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductsInput = {
@@ -24857,6 +25071,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductsInput = {
@@ -24984,6 +25199,7 @@ export type SpaceUpdateWithoutProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductsInput = {
@@ -25095,6 +25311,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutPersonasInput = {
@@ -25206,6 +25423,7 @@ export type SpaceCreateWithoutPersonasInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutPersonasInput = {
@@ -25317,6 +25535,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutPersonasInput = {
@@ -25444,6 +25663,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutPersonasInput = {
@@ -25555,6 +25775,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandProfilesInput = {
@@ -25666,6 +25887,7 @@ export type SpaceCreateWithoutBrandProfilesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandProfilesInput = {
@@ -25777,6 +25999,7 @@ export type SpaceUncheckedCreateWithoutBrandProfilesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandProfilesInput = {
@@ -25904,6 +26127,7 @@ export type SpaceUpdateWithoutBrandProfilesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandProfilesInput = {
@@ -26015,6 +26239,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfilesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSalesContentOnboardingInput = {
@@ -26126,6 +26351,7 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
@@ -26237,6 +26463,7 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentOnboardingInput = {
@@ -26364,6 +26591,7 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
@@ -26475,6 +26703,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutScOnboardingResourcesInput = {
@@ -26586,6 +26815,7 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
@@ -26697,6 +26927,7 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutScOnboardingResourcesInput = {
@@ -26824,6 +27055,7 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
@@ -26935,6 +27167,7 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutAiSettingInput = {
@@ -27046,6 +27279,7 @@ export type SpaceCreateWithoutAiSettingInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutAiSettingInput = {
@@ -27157,6 +27391,7 @@ export type SpaceUncheckedCreateWithoutAiSettingInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutAiSettingInput = {
@@ -27284,6 +27519,7 @@ export type SpaceUpdateWithoutAiSettingInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutAiSettingInput = {
@@ -27395,6 +27631,7 @@ export type SpaceUncheckedUpdateWithoutAiSettingInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
@@ -27506,6 +27743,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
@@ -27617,6 +27855,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutWorkspaceAiCreditsInput = {
@@ -27744,6 +27983,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
@@ -27855,6 +28095,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutImageGenerationLogsInput = {
@@ -27966,6 +28207,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
@@ -28077,6 +28319,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutImageGenerationLogsInput = {
@@ -28204,6 +28447,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
@@ -28315,6 +28559,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTextGenerationLogsInput = {
@@ -28426,6 +28671,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
@@ -28537,6 +28783,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTextGenerationLogsInput = {
@@ -28664,6 +28911,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
@@ -28775,6 +29023,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTemplatesInput = {
@@ -28886,6 +29135,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTemplatesInput = {
@@ -28997,6 +29247,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTemplatesInput = {
@@ -29124,6 +29375,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTemplatesInput = {
@@ -29235,6 +29487,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSalesContentChannelsInput = {
@@ -29346,6 +29599,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
@@ -29457,6 +29711,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentChannelsInput = {
@@ -29584,6 +29839,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
@@ -29695,6 +29951,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentsInput = {
@@ -29806,6 +30063,7 @@ export type SpaceCreateWithoutContentsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentsInput = {
@@ -29917,6 +30175,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentsInput = {
@@ -30044,6 +30303,7 @@ export type SpaceUpdateWithoutContentsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentsInput = {
@@ -30155,6 +30415,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentDeploymentsInput = {
@@ -30266,6 +30527,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
@@ -30377,6 +30639,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentDeploymentsInput = {
@@ -30504,6 +30767,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
@@ -30615,6 +30879,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentClickEventsInput = {
@@ -30726,6 +30991,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
@@ -30837,6 +31103,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentClickEventsInput = {
@@ -30964,6 +31231,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
@@ -31075,6 +31343,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelCredentialsInput = {
@@ -31186,6 +31455,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
@@ -31297,6 +31567,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelCredentialsInput = {
@@ -31424,6 +31695,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
@@ -31535,6 +31807,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeploymentMetricsInput = {
@@ -31646,6 +31919,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
@@ -31757,6 +32031,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeploymentMetricsInput = {
@@ -31884,6 +32159,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
@@ -31995,6 +32271,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSalesContentJobsInput = {
@@ -32106,6 +32383,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
@@ -32217,6 +32495,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentJobsInput = {
@@ -32344,6 +32623,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
@@ -32455,6 +32735,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentVersionsInput = {
@@ -32566,6 +32847,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentVersionsInput = {
@@ -32677,6 +32959,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentVersionsInput = {
@@ -32804,6 +33087,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
@@ -32915,6 +33199,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentAssetsInput = {
@@ -33026,6 +33311,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentAssetsInput = {
@@ -33137,6 +33423,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentAssetsInput = {
@@ -33264,6 +33551,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
@@ -33375,6 +33663,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutIdeationsInput = {
@@ -33486,6 +33775,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutIdeationsInput = {
@@ -33597,6 +33887,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutIdeationsInput = {
@@ -33724,6 +34015,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutIdeationsInput = {
@@ -33835,6 +34127,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutImprovementRulesInput = {
@@ -33946,6 +34239,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
@@ -34057,6 +34351,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutImprovementRulesInput = {
@@ -34184,6 +34479,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
@@ -34295,6 +34591,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutReorderPlansInput = {
@@ -34406,6 +34703,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutReorderPlansInput = {
@@ -34517,6 +34815,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutReorderPlansInput = {
@@ -34644,6 +34943,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
@@ -34755,6 +35055,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinAccountsInput = {
@@ -34866,6 +35167,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinAccountsInput = {
@@ -34977,6 +35279,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinAccountsInput = {
@@ -35104,6 +35407,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
@@ -35215,6 +35519,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinLiabilitiesInput = {
@@ -35326,6 +35631,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
@@ -35437,6 +35743,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinLiabilitiesInput = {
@@ -35564,6 +35871,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
@@ -35675,6 +35983,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinCategoriesInput = {
@@ -35786,6 +36095,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
@@ -35897,6 +36207,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinCategoriesInput = {
@@ -36024,6 +36335,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
@@ -36135,6 +36447,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinClassRulesInput = {
@@ -36246,6 +36559,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
@@ -36357,6 +36671,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinClassRulesInput = {
@@ -36484,6 +36799,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
@@ -36595,6 +36911,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinMappingPresetsInput = {
@@ -36706,6 +37023,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
@@ -36817,6 +37135,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinMappingPresetsInput = {
@@ -36944,6 +37263,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
@@ -37055,6 +37375,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinImportsInput = {
@@ -37166,6 +37487,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinImportsInput = {
@@ -37277,6 +37599,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinImportsInput = {
@@ -37404,6 +37727,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinImportsInput = {
@@ -37515,6 +37839,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinStagedRowsInput = {
@@ -37626,6 +37951,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
@@ -37737,6 +38063,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinStagedRowsInput = {
@@ -37864,6 +38191,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
@@ -37975,6 +38303,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinTransactionsInput = {
@@ -38086,6 +38415,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
@@ -38197,6 +38527,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinTransactionsInput = {
@@ -38324,6 +38655,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
@@ -38435,6 +38767,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
@@ -38546,6 +38879,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
@@ -38657,6 +38991,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinBalanceSnapshotsInput = {
@@ -38784,6 +39119,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
@@ -38895,6 +39231,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinLiabilitySnapshotsInput = {
@@ -39006,6 +39343,7 @@ export type SpaceCreateWithoutFinLiabilitySnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinLiabilitySnapshotsInput = {
@@ -39117,6 +39455,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitySnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinLiabilitySnapshotsInput = {
@@ -39244,6 +39583,7 @@ export type SpaceUpdateWithoutFinLiabilitySnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinLiabilitySnapshotsInput = {
@@ -39355,6 +39695,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitySnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringStoresInput = {
@@ -39466,6 +39807,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringStoresInput = {
@@ -39577,6 +39919,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringStoresInput = {
@@ -39704,6 +40047,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
@@ -39815,6 +40159,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringPositionsInput = {
@@ -39926,6 +40271,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
@@ -40037,6 +40383,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringPositionsInput = {
@@ -40164,6 +40511,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
@@ -40275,6 +40623,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringPostingsInput = {
@@ -40386,6 +40735,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
@@ -40497,6 +40847,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringPostingsInput = {
@@ -40624,6 +40975,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
@@ -40735,6 +41087,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringPostingPositionsInput = {
@@ -40846,6 +41199,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
@@ -40957,6 +41311,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringPostingPositionsInput = {
@@ -41084,6 +41439,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
@@ -41195,6 +41551,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringContentsInput = {
@@ -41306,6 +41663,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringContentsInput = {
@@ -41417,6 +41775,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringContentsInput = {
@@ -41544,6 +41903,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
@@ -41655,6 +42015,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringDetailTemplatesInput = {
@@ -41766,6 +42127,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
@@ -41877,6 +42239,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringDetailTemplatesInput = {
@@ -42004,6 +42367,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
@@ -42115,6 +42479,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringApplicationsInput = {
@@ -42226,6 +42591,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
@@ -42337,6 +42703,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringApplicationsInput = {
@@ -42464,6 +42831,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
@@ -42575,6 +42943,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringUploadSessionsInput = {
@@ -42686,6 +43055,7 @@ export type SpaceCreateWithoutHiringUploadSessionsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
@@ -42797,6 +43167,7 @@ export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringUploadSessionsInput = {
@@ -42924,6 +43295,7 @@ export type SpaceUpdateWithoutHiringUploadSessionsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
@@ -43035,6 +43407,7 @@ export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringMigrationRecordsInput = {
@@ -43146,6 +43519,7 @@ export type SpaceCreateWithoutHiringMigrationRecordsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
@@ -43257,6 +43631,7 @@ export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringMigrationRecordsInput = {
@@ -43384,6 +43759,7 @@ export type SpaceUpdateWithoutHiringMigrationRecordsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
@@ -43495,6 +43871,7 @@ export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringBlacklistsInput = {
@@ -43606,6 +43983,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
@@ -43717,6 +44095,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringBlacklistsInput = {
@@ -43844,6 +44223,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
@@ -43955,6 +44335,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringMessageTemplatesInput = {
@@ -44066,6 +44447,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
@@ -44177,6 +44559,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringMessageTemplatesInput = {
@@ -44304,6 +44687,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
@@ -44407,6 +44791,471 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  agents?: Prisma.SpaceAgentUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutDeckAccessPoliciesInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  invitations?: Prisma.SpaceInvitationCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invReconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
+  keywordRankSnapshots?: Prisma.KeywordRankSnapshotCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  toolAuditLogs?: Prisma.ToolAuditLogCreateNestedManyWithoutSpaceInput
+  usageEvents?: Prisma.UsageEventCreateNestedManyWithoutSpaceInput
+  spaceCredentials?: Prisma.SpaceCredentialCreateNestedManyWithoutSpaceInput
+  spaceSecrets?: Prisma.SpaceSecretCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfiles?: Prisma.BrandProfileCreateNestedManyWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  scNotionConnection?: Prisma.ScNotionConnectionCreateNestedOneWithoutSpaceInput
+  scDriveConnection?: Prisma.ScDriveConnectionCreateNestedOneWithoutSpaceInput
+  scSources?: Prisma.ScSourceCreateNestedManyWithoutSpaceInput
+  scMedia?: Prisma.ScMediaCreateNestedManyWithoutSpaceInput
+  scPublishRequests?: Prisma.ScPublishRequestCreateNestedManyWithoutSpaceInput
+  scMediaCopies?: Prisma.ScMediaCopyCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  agents?: Prisma.SpaceAgentCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutDeckAccessPoliciesInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  invitations?: Prisma.SpaceInvitationUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invReconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
+  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  toolAuditLogs?: Prisma.ToolAuditLogUncheckedCreateNestedManyWithoutSpaceInput
+  usageEvents?: Prisma.UsageEventUncheckedCreateNestedManyWithoutSpaceInput
+  spaceCredentials?: Prisma.SpaceCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  spaceSecrets?: Prisma.SpaceSecretUncheckedCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfiles?: Prisma.BrandProfileUncheckedCreateNestedManyWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  scNotionConnection?: Prisma.ScNotionConnectionUncheckedCreateNestedOneWithoutSpaceInput
+  scDriveConnection?: Prisma.ScDriveConnectionUncheckedCreateNestedOneWithoutSpaceInput
+  scSources?: Prisma.ScSourceUncheckedCreateNestedManyWithoutSpaceInput
+  scMedia?: Prisma.ScMediaUncheckedCreateNestedManyWithoutSpaceInput
+  scPublishRequests?: Prisma.ScPublishRequestUncheckedCreateNestedManyWithoutSpaceInput
+  scMediaCopies?: Prisma.ScMediaCopyUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  agents?: Prisma.SpaceAgentUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutDeckAccessPoliciesInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutDeckAccessPoliciesInput, Prisma.SpaceUncheckedCreateWithoutDeckAccessPoliciesInput>
+}
+
+export type SpaceUpsertWithoutDeckAccessPoliciesInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutDeckAccessPoliciesInput, Prisma.SpaceUncheckedUpdateWithoutDeckAccessPoliciesInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutDeckAccessPoliciesInput, Prisma.SpaceUncheckedCreateWithoutDeckAccessPoliciesInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutDeckAccessPoliciesInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutDeckAccessPoliciesInput, Prisma.SpaceUncheckedUpdateWithoutDeckAccessPoliciesInput>
+}
+
+export type SpaceUpdateWithoutDeckAccessPoliciesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  invitations?: Prisma.SpaceInvitationUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invReconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
+  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  toolAuditLogs?: Prisma.ToolAuditLogUpdateManyWithoutSpaceNestedInput
+  usageEvents?: Prisma.UsageEventUpdateManyWithoutSpaceNestedInput
+  spaceCredentials?: Prisma.SpaceCredentialUpdateManyWithoutSpaceNestedInput
+  spaceSecrets?: Prisma.SpaceSecretUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfiles?: Prisma.BrandProfileUpdateManyWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  scNotionConnection?: Prisma.ScNotionConnectionUpdateOneWithoutSpaceNestedInput
+  scDriveConnection?: Prisma.ScDriveConnectionUpdateOneWithoutSpaceNestedInput
+  scSources?: Prisma.ScSourceUpdateManyWithoutSpaceNestedInput
+  scMedia?: Prisma.ScMediaUpdateManyWithoutSpaceNestedInput
+  scPublishRequests?: Prisma.ScPublishRequestUpdateManyWithoutSpaceNestedInput
+  scMediaCopies?: Prisma.ScMediaCopyUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  agents?: Prisma.SpaceAgentUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutDeckAccessPoliciesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  invitations?: Prisma.SpaceInvitationUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  toolAuditLogs?: Prisma.ToolAuditLogUncheckedUpdateManyWithoutSpaceNestedInput
+  usageEvents?: Prisma.UsageEventUncheckedUpdateManyWithoutSpaceNestedInput
+  spaceCredentials?: Prisma.SpaceCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  spaceSecrets?: Prisma.SpaceSecretUncheckedUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfiles?: Prisma.BrandProfileUncheckedUpdateManyWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  scNotionConnection?: Prisma.ScNotionConnectionUncheckedUpdateOneWithoutSpaceNestedInput
+  scDriveConnection?: Prisma.ScDriveConnectionUncheckedUpdateOneWithoutSpaceNestedInput
+  scSources?: Prisma.ScSourceUncheckedUpdateManyWithoutSpaceNestedInput
+  scMedia?: Prisma.ScMediaUncheckedUpdateManyWithoutSpaceNestedInput
+  scPublishRequests?: Prisma.ScPublishRequestUncheckedUpdateManyWithoutSpaceNestedInput
+  scMediaCopies?: Prisma.ScMediaCopyUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -44526,6 +45375,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSubscriptionInput = {
@@ -44637,6 +45487,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSubscriptionInput = {
@@ -44764,6 +45615,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
@@ -44875,6 +45727,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBillingMethodsInput = {
@@ -44986,6 +45839,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
@@ -45097,6 +45951,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBillingMethodsInput = {
@@ -45224,6 +46079,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
@@ -45335,6 +46191,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBillingChargesInput = {
@@ -45446,6 +46303,7 @@ export type SpaceCreateWithoutBillingChargesInput = {
   workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBillingChargesInput = {
@@ -45557,6 +46415,7 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBillingChargesInput = {
@@ -45684,6 +46543,7 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
@@ -45795,6 +46655,7 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutWorkerTokensInput = {
@@ -45906,6 +46767,7 @@ export type SpaceCreateWithoutWorkerTokensInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutWorkerTokensInput = {
@@ -46017,6 +46879,7 @@ export type SpaceUncheckedCreateWithoutWorkerTokensInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutWorkerTokensInput = {
@@ -46144,6 +47007,7 @@ export type SpaceUpdateWithoutWorkerTokensInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutWorkerTokensInput = {
@@ -46255,6 +47119,7 @@ export type SpaceUncheckedUpdateWithoutWorkerTokensInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutKeywordRankSnapshotsInput = {
@@ -46366,6 +47231,7 @@ export type SpaceCreateWithoutKeywordRankSnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutKeywordRankSnapshotsInput = {
@@ -46477,6 +47343,7 @@ export type SpaceUncheckedCreateWithoutKeywordRankSnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutKeywordRankSnapshotsInput = {
@@ -46604,6 +47471,7 @@ export type SpaceUpdateWithoutKeywordRankSnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutKeywordRankSnapshotsInput = {
@@ -46715,6 +47583,7 @@ export type SpaceUncheckedUpdateWithoutKeywordRankSnapshotsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutScNotionConnectionInput = {
@@ -46826,6 +47695,7 @@ export type SpaceCreateWithoutScNotionConnectionInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutScNotionConnectionInput = {
@@ -46937,6 +47807,7 @@ export type SpaceUncheckedCreateWithoutScNotionConnectionInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutScNotionConnectionInput = {
@@ -47064,6 +47935,7 @@ export type SpaceUpdateWithoutScNotionConnectionInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutScNotionConnectionInput = {
@@ -47175,6 +48047,7 @@ export type SpaceUncheckedUpdateWithoutScNotionConnectionInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutScDriveConnectionInput = {
@@ -47286,6 +48159,7 @@ export type SpaceCreateWithoutScDriveConnectionInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutScDriveConnectionInput = {
@@ -47397,6 +48271,7 @@ export type SpaceUncheckedCreateWithoutScDriveConnectionInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutScDriveConnectionInput = {
@@ -47524,6 +48399,7 @@ export type SpaceUpdateWithoutScDriveConnectionInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutScDriveConnectionInput = {
@@ -47635,6 +48511,7 @@ export type SpaceUncheckedUpdateWithoutScDriveConnectionInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutScSourcesInput = {
@@ -47746,6 +48623,7 @@ export type SpaceCreateWithoutScSourcesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutScSourcesInput = {
@@ -47857,6 +48735,7 @@ export type SpaceUncheckedCreateWithoutScSourcesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutScSourcesInput = {
@@ -47984,6 +48863,7 @@ export type SpaceUpdateWithoutScSourcesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutScSourcesInput = {
@@ -48095,6 +48975,7 @@ export type SpaceUncheckedUpdateWithoutScSourcesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutScMediaInput = {
@@ -48206,6 +49087,7 @@ export type SpaceCreateWithoutScMediaInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutScMediaInput = {
@@ -48317,6 +49199,7 @@ export type SpaceUncheckedCreateWithoutScMediaInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutScMediaInput = {
@@ -48444,6 +49327,7 @@ export type SpaceUpdateWithoutScMediaInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutScMediaInput = {
@@ -48555,6 +49439,7 @@ export type SpaceUncheckedUpdateWithoutScMediaInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutScPublishRequestsInput = {
@@ -48666,6 +49551,7 @@ export type SpaceCreateWithoutScPublishRequestsInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutScPublishRequestsInput = {
@@ -48777,6 +49663,7 @@ export type SpaceUncheckedCreateWithoutScPublishRequestsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutScPublishRequestsInput = {
@@ -48904,6 +49791,7 @@ export type SpaceUpdateWithoutScPublishRequestsInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutScPublishRequestsInput = {
@@ -49015,6 +49903,7 @@ export type SpaceUncheckedUpdateWithoutScPublishRequestsInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutScMediaCopiesInput = {
@@ -49126,6 +50015,7 @@ export type SpaceCreateWithoutScMediaCopiesInput = {
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutScMediaCopiesInput = {
@@ -49237,6 +50127,7 @@ export type SpaceUncheckedCreateWithoutScMediaCopiesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutScMediaCopiesInput = {
@@ -49364,6 +50255,7 @@ export type SpaceUpdateWithoutScMediaCopiesInput = {
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutScMediaCopiesInput = {
@@ -49475,6 +50367,7 @@ export type SpaceUncheckedUpdateWithoutScMediaCopiesInput = {
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -49575,6 +50468,7 @@ export type SpaceCountOutputType = {
   workerTokens: number
   billingMethods: number
   billingCharges: number
+  deckAccessPolicies: number
 }
 
 export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -49670,6 +50564,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   workerTokens?: boolean | SpaceCountOutputTypeCountWorkerTokensArgs
   billingMethods?: boolean | SpaceCountOutputTypeCountBillingMethodsArgs
   billingCharges?: boolean | SpaceCountOutputTypeCountBillingChargesArgs
+  deckAccessPolicies?: boolean | SpaceCountOutputTypeCountDeckAccessPoliciesArgs
 }
 
 /**
@@ -50326,6 +51221,13 @@ export type SpaceCountOutputTypeCountBillingChargesArgs<ExtArgs extends runtime.
   where?: Prisma.BillingChargeWhereInput
 }
 
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountDeckAccessPoliciesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SpaceDeckAccessWhereInput
+}
+
 
 export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -50437,6 +51339,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   subscription?: boolean | Prisma.Space$subscriptionArgs<ExtArgs>
   billingMethods?: boolean | Prisma.Space$billingMethodsArgs<ExtArgs>
   billingCharges?: boolean | Prisma.Space$billingChargesArgs<ExtArgs>
+  deckAccessPolicies?: boolean | Prisma.Space$deckAccessPoliciesArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["space"]>
 
@@ -50574,6 +51477,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   subscription?: boolean | Prisma.Space$subscriptionArgs<ExtArgs>
   billingMethods?: boolean | Prisma.Space$billingMethodsArgs<ExtArgs>
   billingCharges?: boolean | Prisma.Space$billingChargesArgs<ExtArgs>
+  deckAccessPolicies?: boolean | Prisma.Space$deckAccessPoliciesArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -50684,6 +51588,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     subscription: Prisma.$SpaceSubscriptionPayload<ExtArgs> | null
     billingMethods: Prisma.$BillingMethodPayload<ExtArgs>[]
     billingCharges: Prisma.$BillingChargePayload<ExtArgs>[]
+    deckAccessPolicies: Prisma.$SpaceDeckAccessPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -51189,6 +52094,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   subscription<T extends Prisma.Space$subscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$subscriptionArgs<ExtArgs>>): Prisma.Prisma__SpaceSubscriptionClient<runtime.Types.Result.GetResult<Prisma.$SpaceSubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   billingMethods<T extends Prisma.Space$billingMethodsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$billingMethodsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BillingMethodPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   billingCharges<T extends Prisma.Space$billingChargesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$billingChargesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BillingChargePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deckAccessPolicies<T extends Prisma.Space$deckAccessPoliciesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$deckAccessPoliciesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceDeckAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -54008,6 +54914,30 @@ export type Space$billingChargesArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.BillingChargeScalarFieldEnum | Prisma.BillingChargeScalarFieldEnum[]
+}
+
+/**
+ * Space.deckAccessPolicies
+ */
+export type Space$deckAccessPoliciesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SpaceDeckAccess
+   */
+  select?: Prisma.SpaceDeckAccessSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SpaceDeckAccess
+   */
+  omit?: Prisma.SpaceDeckAccessOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SpaceDeckAccessInclude<ExtArgs> | null
+  where?: Prisma.SpaceDeckAccessWhereInput
+  orderBy?: Prisma.SpaceDeckAccessOrderByWithRelationInput | Prisma.SpaceDeckAccessOrderByWithRelationInput[]
+  cursor?: Prisma.SpaceDeckAccessWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SpaceDeckAccessScalarFieldEnum | Prisma.SpaceDeckAccessScalarFieldEnum[]
 }
 
 /**

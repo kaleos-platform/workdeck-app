@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,23 +41,6 @@ type BillingDeckProduct = {
   released: boolean
 }
 
-type SubscriptionRow = {
-  id: string
-  spaceId: string
-  status: 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'EXPIRED'
-  trialEndsAt: string | null
-  currentPeriodEnd: string | null
-  retryCount: number
-  exemptFlag: boolean
-  exemptNote: string | null
-  space: {
-    id: string
-    name: string
-    members: { user: { id: string; email: string; name: string | null } }[]
-  }
-  items: { deckAppId: string; status: string }[]
-}
-
 type ChargeRow = {
   id: string
   orderId: string
@@ -74,25 +56,7 @@ type ChargeRow = {
 
 type Overview = {
   products: BillingDeckProduct[]
-  subscriptions: SubscriptionRow[]
   recentCharges: ChargeRow[]
-  summary: { byStatus: Record<string, number>; exempt: number }
-}
-
-const STATUS_LABEL: Record<string, string> = {
-  TRIALING: '체험',
-  ACTIVE: '활성',
-  PAST_DUE: '연체',
-  CANCELED: '해지',
-  EXPIRED: '만료',
-}
-
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  TRIALING: 'secondary',
-  ACTIVE: 'default',
-  PAST_DUE: 'destructive',
-  CANCELED: 'outline',
-  EXPIRED: 'outline',
 }
 
 function formatKrw(n: number) {
@@ -108,12 +72,9 @@ export function BillingDashboard() {
   const [data, setData] = useState<Overview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [pastDueOnly, setPastDueOnly] = useState(false)
   const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({})
   const [pendingModeChange, setPendingModeChange] = useState<BillingDeckProduct | null>(null)
   const [pendingRelease, setPendingRelease] = useState<BillingDeckProduct | null>(null)
-  const [exemptDialog, setExemptDialog] = useState<SubscriptionRow | null>(null)
-  const [exemptNoteDraft, setExemptNoteDraft] = useState('')
   const [busy, setBusy] = useState(false)
 
   async function load() {
@@ -134,13 +95,6 @@ export function BillingDashboard() {
   useEffect(() => {
     load()
   }, [])
-
-  const filteredSubs = useMemo(() => {
-    if (!data) return []
-    return pastDueOnly
-      ? data.subscriptions.filter((s) => s.status === 'PAST_DUE')
-      : data.subscriptions
-  }, [data, pastDueOnly])
 
   async function savePrice(product: BillingDeckProduct) {
     const draft = priceDrafts[product.id]
@@ -214,26 +168,6 @@ export function BillingDashboard() {
     }
   }
 
-  async function submitExempt(exempt: boolean) {
-    if (!exemptDialog) return
-    setBusy(true)
-    try {
-      const res = await fetch(`/api/admin/billing/spaces/${exemptDialog.spaceId}/exempt`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ exempt, note: exemptNoteDraft || undefined }),
-      })
-      if (!res.ok) throw new Error()
-      setExemptDialog(null)
-      setExemptNoteDraft('')
-      await load()
-    } catch {
-      setError('면제 설정 변경에 실패했습니다')
-    } finally {
-      setBusy(false)
-    }
-  }
-
   if (loading && !data) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>
   }
@@ -244,35 +178,6 @@ export function BillingDashboard() {
   return (
     <div className="flex flex-col gap-8">
       {error && <p className="text-sm text-destructive">{error}</p>}
-
-      <div className="grid grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>활성 구독</CardDescription>
-            <CardTitle className="text-2xl">{data.summary.byStatus.ACTIVE ?? 0}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>체험 중</CardDescription>
-            <CardTitle className="text-2xl">{data.summary.byStatus.TRIALING ?? 0}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>연체</CardDescription>
-            <CardTitle className="text-2xl text-destructive">
-              {data.summary.byStatus.PAST_DUE ?? 0}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>운영자 면제</CardDescription>
-            <CardTitle className="text-2xl">{data.summary.exempt}</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
 
       <Card>
         <CardHeader>
@@ -351,97 +256,6 @@ export function BillingDashboard() {
                   <TableCell>{formatDate(p.paidActivatedAt)}</TableCell>
                 </TableRow>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>구독 현황</CardTitle>
-            <CardDescription>Space별 구독 상태와 면제 여부</CardDescription>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Switch checked={pastDueOnly} onCheckedChange={setPastDueOnly} />
-            <span>연체만 보기</span>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Space</TableHead>
-                <TableHead>소유자</TableHead>
-                <TableHead>상태</TableHead>
-                <TableHead>Deck</TableHead>
-                <TableHead>재시도</TableHead>
-                <TableHead>다음 결제일</TableHead>
-                <TableHead>면제</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSubs.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell>
-                    <Link
-                      href={`/admin/billing/${s.spaceId}`}
-                      className="font-medium hover:underline"
-                    >
-                      {s.space.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {s.space.members.length === 0 ? (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    ) : (
-                      <div className="flex flex-col gap-0.5">
-                        {s.space.members.map(({ user }) => (
-                          <Link
-                            key={user.id}
-                            href={`/admin/users/${user.id}`}
-                            className="text-sm hover:underline"
-                          >
-                            {user.email}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_VARIANT[s.status] ?? 'outline'}>
-                      {STATUS_LABEL[s.status] ?? s.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {s.items.map((i) => i.deckAppId).join(', ') || '-'}
-                  </TableCell>
-                  <TableCell>{s.retryCount}</TableCell>
-                  <TableCell>{formatDate(s.currentPeriodEnd)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={s.exemptFlag}
-                        disabled={busy}
-                        onCheckedChange={() => {
-                          setExemptDialog(s)
-                          setExemptNoteDraft(s.exemptNote ?? '')
-                        }}
-                      />
-                      {s.exemptFlag && (
-                        <span className="text-xs text-muted-foreground">{s.exemptNote}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredSubs.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    표시할 구독이 없습니다
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -557,40 +371,6 @@ export function BillingDashboard() {
             </Button>
             <Button onClick={confirmReleaseChange} disabled={busy}>
               변경 확인
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!exemptDialog} onOpenChange={(open) => !open && setExemptDialog(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {exemptDialog?.exemptFlag ? '면제 해제' : '면제 설정'} — {exemptDialog?.space.name}
-            </DialogTitle>
-            <DialogDescription>
-              {exemptDialog?.exemptFlag
-                ? '면제를 해제하면 다음 결제 주기부터 정상 과금됩니다.'
-                : '면제 사유를 입력하세요 (감사 로그에 기록됩니다).'}
-            </DialogDescription>
-          </DialogHeader>
-          {!exemptDialog?.exemptFlag && (
-            <Input
-              placeholder="면제 사유 (선택)"
-              value={exemptNoteDraft}
-              onChange={(e) => setExemptNoteDraft(e.target.value)}
-            />
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setExemptDialog(null)} disabled={busy}>
-              취소
-            </Button>
-            <Button
-              onClick={() => submitExempt(!exemptDialog?.exemptFlag)}
-              disabled={busy}
-              variant={exemptDialog?.exemptFlag ? 'destructive' : 'default'}
-            >
-              확인
             </Button>
           </DialogFooter>
         </DialogContent>

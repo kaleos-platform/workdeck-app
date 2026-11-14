@@ -74,6 +74,8 @@ export interface ChargeDto {
 export interface DeckAccessDto {
   allowed: boolean
   reason: DeckAccessReason
+  trialEndsAt?: string | null
+  exempt?: boolean
   graceEndsAt?: string | null
 }
 
@@ -121,16 +123,16 @@ export function discountNote(listSupply: number, effectiveSupply: number): strin
 export function formatDate(value: string | null): string {
   if (!value) return '-'
   return new Date(value).toLocaleDateString('ko-KR', {
+    timeZone: 'Asia/Seoul',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
 }
 
-export function daysUntil(value: string | null): number | null {
-  if (!value) return null
-  const diffMs = new Date(value).getTime() - Date.now()
-  return Math.ceil(diffMs / (24 * 60 * 60 * 1000))
+/** 종료 시각은 exclusive이므로 실제 이용 가능한 마지막 날짜를 표시한다. */
+export function formatTrialEndDate(value: string): string {
+  return formatDate(new Date(new Date(value).getTime() - 1).toISOString())
 }
 
 export function loadTossSdk(): Promise<void> {
@@ -178,17 +180,30 @@ export const CHARGE_STATUS_LABEL: Record<
 
 export const REASON_BADGE: Partial<Record<DeckAccessReason, { label: string; className: string }>> =
   {
+    EXEMPT: {
+      label: '면제 이용 중',
+      className:
+        'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400',
+    },
+    LOCKED: {
+      label: '이용 제한',
+      className:
+        'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400',
+    },
     GRACE: {
       label: '무료 적용중',
-      className: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+      className:
+        'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400',
     },
     TRIAL: {
-      label: 'Trial 이용 중',
-      className: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+      label: '체험 중',
+      className:
+        'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400',
     },
     PAUSED: {
       label: '결제 준비 중 (무료)',
-      className: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+      className:
+        'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400',
     },
   }
 
