@@ -93,7 +93,7 @@ it('템플릿 교체 전에 본문 저장을 기다리고 실패하면 교체 �
     fireEvent.click(screen.getByText('템플릿 불러오기'))
   })
   await act(async () => {
-    fireEvent.click(screen.getByText('QA 템플릿'))
+    fireEvent.click(screen.getByRole('button', { name: 'QA 템플릿' }))
   })
   fireEvent.click(screen.getByRole('radio', { name: '기존 블록 교체' }))
   await act(async () => {
@@ -214,4 +214,55 @@ it('다른 창에서 변경된 카드를 정렬한 경우 그 변경을 본 것�
     await editorRef.current!.flush()
   })
   expect(JSON.parse((fetch as jest.Mock).mock.calls[1][1].body).expectedUpdatedAt).toBe(initial)
+})
+
+it('갤러리에서 템플릿을 고르면 기존과 같은 payload 로 적용 API 를 호출한다', async () => {
+  global.fetch = jest.fn(async (url, options) => {
+    if (url === '/api/hiring-posts/templates')
+      return {
+        ok: true,
+        json: async () => ({
+          templates: [
+            {
+              id: 't',
+              name: '내 양식',
+              isSample: false,
+              updatedAt: '2026-09-27',
+              _count: { contents: 1 },
+            },
+            {
+              id: 's',
+              name: '제공 양식',
+              isSample: true,
+              updatedAt: '2026-09-01',
+              _count: { contents: 2 },
+            },
+          ],
+        }),
+      }
+    if (String(url).startsWith('/api/hiring-posts/templates/'))
+      return { ok: true, json: async () => ({ contents: [] }) }
+    if (url === '/api/hiring-posts/postings/qa/apply-template' && options?.method === 'POST')
+      return { ok: true, json: async () => ({ contents: [] }) }
+    return { ok: false }
+  }) as jest.Mock
+  render(<Form />)
+  await act(async () => {
+    fireEvent.click(screen.getByText('템플릿 불러오기'))
+  })
+  expect(screen.getByRole('button', { name: '적용' })).toBeDisabled()
+  await act(async () => {
+    fireEvent.mouseDown(screen.getByRole('tab', { name: '워크덱 제공 1' }), { button: 0 })
+  })
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: '제공 양식' }))
+  })
+  expect(screen.getByRole('button', { name: '제공 양식' })).toHaveAttribute('aria-pressed', 'true')
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: '적용' }))
+  })
+  const call = (fetch as jest.Mock).mock.calls.find(([url]) =>
+    String(url).endsWith('/apply-template')
+  )
+  expect(JSON.parse(call[1].body)).toEqual({ templateId: 's', mode: 'append' })
 })
