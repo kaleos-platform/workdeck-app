@@ -3,7 +3,7 @@ import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { MyDeckClient } from '@/components/my-deck/my-deck-client'
 import { listMemberships, resolveCurrentMembership } from '@/lib/spaces/current-space'
-import { resolveEntitlement } from '@/lib/billing/entitlement'
+import { isCheckoutPausedFor, resolveEntitlement } from '@/lib/billing/entitlement'
 import { effectivePrice } from '@/lib/billing/pricing'
 import { findClosedDecks } from '@/lib/billing/deck-release'
 
@@ -65,13 +65,18 @@ export default async function MyDeckPage({
       status: true,
       items: {
         where: { type: 'DECK' },
-        select: { deckAppId: true, status: true, lockedPrice: true },
+        select: { deckAppId: true, status: true, lockedPrice: true, awaitingTrialEnd: true },
       },
     },
   })
   const subscribedDeckIds =
     subscription?.items.filter((item) => item.status === 'ACTIVE').map((item) => item.deckAppId) ??
     []
+  // 체험 중 구독 예약(결제 전) — 해지 대신 「예약 취소」로 보인다
+  const reservedDeckIds =
+    subscription?.items
+      .filter((item) => item.status === 'ACTIVE' && item.awaitingTrialEnd)
+      .map((item) => item.deckAppId) ?? []
 
   // 유료 업무를 추가하려면 구독이 선행되어야 한다. 클라이언트가 추가 전에
   // 구독 확인 모달을 띄울지 판단할 수 있도록 가격·결제수단·접근권한을 함께 내린다.
@@ -125,9 +130,13 @@ export default async function MyDeckPage({
       activeDecks={space.deckInstances.map((instance) => instance.deckApp)}
       availableDecks={availableDecks.map((d) => ({ ...d, comingSoon: closed.has(d.id) }))}
       subscribedDeckIds={subscribedDeckIds}
+      reservedDeckIds={reservedDeckIds}
+      checkoutPaused={isCheckoutPausedFor(space.id)}
       isOwner={membership.role === 'OWNER'}
       cardSummary={billingMethod?.cardSummary ?? null}
-      hasActiveSubscription={subscription?.status === 'ACTIVE'}
+      hasActiveSubscription={
+        subscription?.status === 'ACTIVE' || subscription?.status === 'PAST_DUE'
+      }
       billing={billingProducts.map((product) => ({
         id: product.id,
         pricingMode: product.pricingMode,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getBillingProvider } from '@/lib/billing/providers/toss'
+import { realignReservationOnly } from '@/lib/billing/trial-reservation'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -113,17 +114,8 @@ export async function POST(request: NextRequest) {
         },
         data: { status: 'ENDED', endedAt: new Date(), lockedPrice: null },
       })
-      const remaining = await tx.subscriptionItem.count({
-        where: {
-          subscriptionId: subscription.id,
-          status: { in: ['ACTIVE', 'CANCEL_AT_PERIOD_END'] },
-        },
-      })
-      if (remaining === 0)
-        await tx.spaceSubscription.update({
-          where: { id: subscription.id },
-          data: { status: 'CANCELED', currentPeriodEnd: null, retryCount: 0 },
-        })
+      // 남은 업무가 없으면 구독 종료, 체험 예약만 남으면 결제일을 예약 시작일로 다시 맞춘다.
+      await realignReservationOnly(tx, subscription.id, current.spaceId)
     })
   } catch {
     return NextResponse.json({ error: 'refund sync failed' }, { status: 503 })

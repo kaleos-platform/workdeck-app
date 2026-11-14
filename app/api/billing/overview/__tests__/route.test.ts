@@ -18,7 +18,10 @@ jest.mock('@/lib/api-helpers', () => ({
   ...jest.requireActual('@/lib/api-helpers'),
   resolveSpaceContext: jest.fn(),
 }))
-jest.mock('@/lib/billing/entitlement', () => ({ resolveEntitlement: jest.fn() }))
+jest.mock('@/lib/billing/entitlement', () => ({
+  resolveEntitlement: jest.fn(),
+  isCheckoutPausedFor: () => false,
+}))
 jest.mock('@/lib/billing/deck-release', () => ({ findClosedDecks: jest.fn() }))
 
 const p = prisma as unknown as Record<string, Record<string, jest.Mock>>

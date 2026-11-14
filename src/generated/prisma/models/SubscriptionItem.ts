@@ -29,11 +29,13 @@ export type AggregateSubscriptionItem = {
 export type SubscriptionItemAvgAggregateOutputType = {
   priceSnapshot: number | null
   lockedPrice: number | null
+  billingRetryCount: number | null
 }
 
 export type SubscriptionItemSumAggregateOutputType = {
   priceSnapshot: number | null
   lockedPrice: number | null
+  billingRetryCount: number | null
 }
 
 export type SubscriptionItemMinAggregateOutputType = {
@@ -46,6 +48,8 @@ export type SubscriptionItemMinAggregateOutputType = {
   status: $Enums.SubscriptionItemStatus | null
   addedAt: Date | null
   endedAt: Date | null
+  awaitingTrialEnd: boolean | null
+  billingRetryCount: number | null
 }
 
 export type SubscriptionItemMaxAggregateOutputType = {
@@ -58,6 +62,8 @@ export type SubscriptionItemMaxAggregateOutputType = {
   status: $Enums.SubscriptionItemStatus | null
   addedAt: Date | null
   endedAt: Date | null
+  awaitingTrialEnd: boolean | null
+  billingRetryCount: number | null
 }
 
 export type SubscriptionItemCountAggregateOutputType = {
@@ -70,6 +76,8 @@ export type SubscriptionItemCountAggregateOutputType = {
   status: number
   addedAt: number
   endedAt: number
+  awaitingTrialEnd: number
+  billingRetryCount: number
   _all: number
 }
 
@@ -77,11 +85,13 @@ export type SubscriptionItemCountAggregateOutputType = {
 export type SubscriptionItemAvgAggregateInputType = {
   priceSnapshot?: true
   lockedPrice?: true
+  billingRetryCount?: true
 }
 
 export type SubscriptionItemSumAggregateInputType = {
   priceSnapshot?: true
   lockedPrice?: true
+  billingRetryCount?: true
 }
 
 export type SubscriptionItemMinAggregateInputType = {
@@ -94,6 +104,8 @@ export type SubscriptionItemMinAggregateInputType = {
   status?: true
   addedAt?: true
   endedAt?: true
+  awaitingTrialEnd?: true
+  billingRetryCount?: true
 }
 
 export type SubscriptionItemMaxAggregateInputType = {
@@ -106,6 +118,8 @@ export type SubscriptionItemMaxAggregateInputType = {
   status?: true
   addedAt?: true
   endedAt?: true
+  awaitingTrialEnd?: true
+  billingRetryCount?: true
 }
 
 export type SubscriptionItemCountAggregateInputType = {
@@ -118,6 +132,8 @@ export type SubscriptionItemCountAggregateInputType = {
   status?: true
   addedAt?: true
   endedAt?: true
+  awaitingTrialEnd?: true
+  billingRetryCount?: true
   _all?: true
 }
 
@@ -217,6 +233,8 @@ export type SubscriptionItemGroupByOutputType = {
   status: $Enums.SubscriptionItemStatus
   addedAt: Date
   endedAt: Date | null
+  awaitingTrialEnd: boolean
+  billingRetryCount: number
   _count: SubscriptionItemCountAggregateOutputType | null
   _avg: SubscriptionItemAvgAggregateOutputType | null
   _sum: SubscriptionItemSumAggregateOutputType | null
@@ -252,6 +270,8 @@ export type SubscriptionItemWhereInput = {
   status?: Prisma.EnumSubscriptionItemStatusFilter<"SubscriptionItem"> | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFilter<"SubscriptionItem"> | Date | string
   endedAt?: Prisma.DateTimeNullableFilter<"SubscriptionItem"> | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFilter<"SubscriptionItem"> | boolean
+  billingRetryCount?: Prisma.IntFilter<"SubscriptionItem"> | number
   subscription?: Prisma.XOR<Prisma.SpaceSubscriptionScalarRelationFilter, Prisma.SpaceSubscriptionWhereInput>
 }
 
@@ -265,6 +285,8 @@ export type SubscriptionItemOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  awaitingTrialEnd?: Prisma.SortOrder
+  billingRetryCount?: Prisma.SortOrder
   subscription?: Prisma.SpaceSubscriptionOrderByWithRelationInput
 }
 
@@ -282,6 +304,8 @@ export type SubscriptionItemWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumSubscriptionItemStatusFilter<"SubscriptionItem"> | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFilter<"SubscriptionItem"> | Date | string
   endedAt?: Prisma.DateTimeNullableFilter<"SubscriptionItem"> | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFilter<"SubscriptionItem"> | boolean
+  billingRetryCount?: Prisma.IntFilter<"SubscriptionItem"> | number
   subscription?: Prisma.XOR<Prisma.SpaceSubscriptionScalarRelationFilter, Prisma.SpaceSubscriptionWhereInput>
 }, "id" | "subscriptionId_type_deckAppId">
 
@@ -295,6 +319,8 @@ export type SubscriptionItemOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  awaitingTrialEnd?: Prisma.SortOrder
+  billingRetryCount?: Prisma.SortOrder
   _count?: Prisma.SubscriptionItemCountOrderByAggregateInput
   _avg?: Prisma.SubscriptionItemAvgOrderByAggregateInput
   _max?: Prisma.SubscriptionItemMaxOrderByAggregateInput
@@ -315,6 +341,8 @@ export type SubscriptionItemScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumSubscriptionItemStatusWithAggregatesFilter<"SubscriptionItem"> | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeWithAggregatesFilter<"SubscriptionItem"> | Date | string
   endedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SubscriptionItem"> | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolWithAggregatesFilter<"SubscriptionItem"> | boolean
+  billingRetryCount?: Prisma.IntWithAggregatesFilter<"SubscriptionItem"> | number
 }
 
 export type SubscriptionItemCreateInput = {
@@ -326,6 +354,8 @@ export type SubscriptionItemCreateInput = {
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: number
   subscription: Prisma.SpaceSubscriptionCreateNestedOneWithoutItemsInput
 }
 
@@ -339,6 +369,8 @@ export type SubscriptionItemUncheckedCreateInput = {
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: number
 }
 
 export type SubscriptionItemUpdateInput = {
@@ -350,6 +382,8 @@ export type SubscriptionItemUpdateInput = {
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  billingRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
   subscription?: Prisma.SpaceSubscriptionUpdateOneRequiredWithoutItemsNestedInput
 }
 
@@ -363,6 +397,8 @@ export type SubscriptionItemUncheckedUpdateInput = {
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  billingRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type SubscriptionItemCreateManyInput = {
@@ -375,6 +411,8 @@ export type SubscriptionItemCreateManyInput = {
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: number
 }
 
 export type SubscriptionItemUpdateManyMutationInput = {
@@ -386,6 +424,8 @@ export type SubscriptionItemUpdateManyMutationInput = {
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  billingRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type SubscriptionItemUncheckedUpdateManyInput = {
@@ -398,6 +438,8 @@ export type SubscriptionItemUncheckedUpdateManyInput = {
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  billingRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type SubscriptionItemListRelationFilter = {
@@ -426,11 +468,14 @@ export type SubscriptionItemCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  awaitingTrialEnd?: Prisma.SortOrder
+  billingRetryCount?: Prisma.SortOrder
 }
 
 export type SubscriptionItemAvgOrderByAggregateInput = {
   priceSnapshot?: Prisma.SortOrder
   lockedPrice?: Prisma.SortOrder
+  billingRetryCount?: Prisma.SortOrder
 }
 
 export type SubscriptionItemMaxOrderByAggregateInput = {
@@ -443,6 +488,8 @@ export type SubscriptionItemMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  awaitingTrialEnd?: Prisma.SortOrder
+  billingRetryCount?: Prisma.SortOrder
 }
 
 export type SubscriptionItemMinOrderByAggregateInput = {
@@ -455,11 +502,14 @@ export type SubscriptionItemMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   addedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  awaitingTrialEnd?: Prisma.SortOrder
+  billingRetryCount?: Prisma.SortOrder
 }
 
 export type SubscriptionItemSumOrderByAggregateInput = {
   priceSnapshot?: Prisma.SortOrder
   lockedPrice?: Prisma.SortOrder
+  billingRetryCount?: Prisma.SortOrder
 }
 
 export type SubscriptionItemCreateNestedManyWithoutSubscriptionInput = {
@@ -521,6 +571,8 @@ export type SubscriptionItemCreateWithoutSubscriptionInput = {
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: number
 }
 
 export type SubscriptionItemUncheckedCreateWithoutSubscriptionInput = {
@@ -532,6 +584,8 @@ export type SubscriptionItemUncheckedCreateWithoutSubscriptionInput = {
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: number
 }
 
 export type SubscriptionItemCreateOrConnectWithoutSubscriptionInput = {
@@ -573,6 +627,8 @@ export type SubscriptionItemScalarWhereInput = {
   status?: Prisma.EnumSubscriptionItemStatusFilter<"SubscriptionItem"> | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFilter<"SubscriptionItem"> | Date | string
   endedAt?: Prisma.DateTimeNullableFilter<"SubscriptionItem"> | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFilter<"SubscriptionItem"> | boolean
+  billingRetryCount?: Prisma.IntFilter<"SubscriptionItem"> | number
 }
 
 export type SubscriptionItemCreateManySubscriptionInput = {
@@ -584,6 +640,8 @@ export type SubscriptionItemCreateManySubscriptionInput = {
   status?: $Enums.SubscriptionItemStatus
   addedAt?: Date | string
   endedAt?: Date | string | null
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: number
 }
 
 export type SubscriptionItemUpdateWithoutSubscriptionInput = {
@@ -595,6 +653,8 @@ export type SubscriptionItemUpdateWithoutSubscriptionInput = {
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  billingRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type SubscriptionItemUncheckedUpdateWithoutSubscriptionInput = {
@@ -606,6 +666,8 @@ export type SubscriptionItemUncheckedUpdateWithoutSubscriptionInput = {
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  billingRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type SubscriptionItemUncheckedUpdateManyWithoutSubscriptionInput = {
@@ -617,6 +679,8 @@ export type SubscriptionItemUncheckedUpdateManyWithoutSubscriptionInput = {
   status?: Prisma.EnumSubscriptionItemStatusFieldUpdateOperationsInput | $Enums.SubscriptionItemStatus
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  awaitingTrialEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  billingRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 
@@ -631,6 +695,8 @@ export type SubscriptionItemSelect<ExtArgs extends runtime.Types.Extensions.Inte
   status?: boolean
   addedAt?: boolean
   endedAt?: boolean
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: boolean
   subscription?: boolean | Prisma.SpaceSubscriptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subscriptionItem"]>
 
@@ -644,6 +710,8 @@ export type SubscriptionItemSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   status?: boolean
   addedAt?: boolean
   endedAt?: boolean
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: boolean
   subscription?: boolean | Prisma.SpaceSubscriptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subscriptionItem"]>
 
@@ -657,6 +725,8 @@ export type SubscriptionItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   status?: boolean
   addedAt?: boolean
   endedAt?: boolean
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: boolean
   subscription?: boolean | Prisma.SpaceSubscriptionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subscriptionItem"]>
 
@@ -670,9 +740,11 @@ export type SubscriptionItemSelectScalar = {
   status?: boolean
   addedAt?: boolean
   endedAt?: boolean
+  awaitingTrialEnd?: boolean
+  billingRetryCount?: boolean
 }
 
-export type SubscriptionItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "subscriptionId" | "type" | "deckAppId" | "priceSnapshot" | "lockedPrice" | "status" | "addedAt" | "endedAt", ExtArgs["result"]["subscriptionItem"]>
+export type SubscriptionItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "subscriptionId" | "type" | "deckAppId" | "priceSnapshot" | "lockedPrice" | "status" | "addedAt" | "endedAt" | "awaitingTrialEnd" | "billingRetryCount", ExtArgs["result"]["subscriptionItem"]>
 export type SubscriptionItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscription?: boolean | Prisma.SpaceSubscriptionDefaultArgs<ExtArgs>
 }
@@ -698,6 +770,8 @@ export type $SubscriptionItemPayload<ExtArgs extends runtime.Types.Extensions.In
     status: $Enums.SubscriptionItemStatus
     addedAt: Date
     endedAt: Date | null
+    awaitingTrialEnd: boolean
+    billingRetryCount: number
   }, ExtArgs["result"]["subscriptionItem"]>
   composites: {}
 }
@@ -1131,6 +1205,8 @@ export interface SubscriptionItemFieldRefs {
   readonly status: Prisma.FieldRef<"SubscriptionItem", 'SubscriptionItemStatus'>
   readonly addedAt: Prisma.FieldRef<"SubscriptionItem", 'DateTime'>
   readonly endedAt: Prisma.FieldRef<"SubscriptionItem", 'DateTime'>
+  readonly awaitingTrialEnd: Prisma.FieldRef<"SubscriptionItem", 'Boolean'>
+  readonly billingRetryCount: Prisma.FieldRef<"SubscriptionItem", 'Int'>
 }
     
 

@@ -18,6 +18,7 @@ import {
 import { ExternalLink, PlusCircle } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { SubscribeDialog, type SubscribeTarget } from '@/components/billing/subscribe-dialog'
+import { TrialDdayBadge } from '@/components/billing/trial-dday-badge'
 import {
   COUPANG_ADS_BASE_PATH,
   SELLER_HUB_BASE_PATH,
@@ -49,6 +50,10 @@ type MyDeckClientProps = {
   availableDecks: Array<DeckSummary & { comingSoon: boolean }>
   /** 과금 중(SubscriptionItem ACTIVE)인 deck — 이 업무는 구독 해지, 나머지는 사용 중지 */
   subscribedDeckIds: string[]
+  /** 체험 중 구독 예약(결제 전) deck — 해지 대신 예약 취소 */
+  reservedDeckIds: string[]
+  /** 결제 일시 중지 — 구독 버튼을 비활성화하고 안내한다 */
+  checkoutPaused: boolean
   isOwner: boolean
   cardSummary: string | null
   hasActiveSubscription: boolean
@@ -152,6 +157,8 @@ export function MyDeckClient({
   activeDecks,
   availableDecks,
   subscribedDeckIds,
+  reservedDeckIds,
+  checkoutPaused,
   isOwner,
   cardSummary,
   hasActiveSubscription,
@@ -164,6 +171,7 @@ export function MyDeckClient({
   const [isCanceling, setIsCanceling] = useState(false)
 
   const subscribed = useMemo(() => new Set(subscribedDeckIds), [subscribedDeckIds])
+  const reserved = useMemo(() => new Set(reservedDeckIds), [reservedDeckIds])
   const billingById = useMemo(() => new Map(billing.map((b) => [b.id, b])), [billing])
   const [pending, setPending] = useState<SubscribeTarget | null>(null)
   const [subscribeBusy, setSubscribeBusy] = useState(false)
@@ -189,16 +197,22 @@ export function MyDeckClient({
     [billingById]
   )
 
-  const openDeck = useCallback(
+  /** 사용 중이지만 유료 구독 전인 업무(체험·유예·결제 준비 중 무료) — 미리 구독할 수 있다 */
+  const canSubscribe = useCallback(
+    (deckId: string) => {
+      const info = billingById.get(deckId)
+      return Boolean(
+        info &&
+        info.pricingMode === 'SUBSCRIPTION' &&
+        !subscribed.has(deckId) &&
+        (info.reason === 'TRIAL' || info.reason === 'GRACE' || info.reason === 'PAUSED')
+      )
+    },
+    [billingById, subscribed]
+  )
+
+  const openSubscribe = useCallback(
     (deck: DeckSummary) => {
-      if (!needsSubscription(deck.id)) {
-        setSelectedDeck(deck)
-        return
-      }
-      if (!isOwner) {
-        toast.error('구독이 필요한 업무입니다. 워크스페이스 소유자에게 요청하세요.')
-        return
-      }
       const info = billingById.get(deck.id)
       setPending({
         decks: [
@@ -210,9 +224,25 @@ export function MyDeckClient({
           },
         ],
         isAddition: hasActiveSubscription,
+        trialEndsAt: info?.reason === 'TRIAL' ? (info.trialEndsAt ?? null) : null,
       })
     },
-    [billingById, hasActiveSubscription, isOwner, needsSubscription]
+    [billingById, hasActiveSubscription]
+  )
+
+  const openDeck = useCallback(
+    (deck: DeckSummary) => {
+      if (!needsSubscription(deck.id)) {
+        setSelectedDeck(deck)
+        return
+      }
+      if (!isOwner) {
+        toast.error('구독이 필요한 업무입니다. 워크스페이스 소유자에게 요청하세요.')
+        return
+      }
+      openSubscribe(deck)
+    },
+    [isOwner, needsSubscription, openSubscribe]
   )
 
   const hasActiveDecks = useMemo(() => activeDecks.length > 0, [activeDecks.length])
@@ -262,6 +292,7 @@ export function MyDeckClient({
       const json = (await res.json().catch(() => null)) as {
         message?: string
         error?: string
+        reserved?: boolean
       } | null
       if (!res.ok) throw new Error(json?.message ?? json?.error ?? '구독에 실패했습니다')
 
@@ -276,7 +307,11 @@ export function MyDeckClient({
         throw new Error(err?.message ?? '업무 활성화에 실패했습니다')
       }
 
-      toast.success(`${deck.name} 구독을 시작했습니다`)
+      toast.success(
+        json?.reserved && pending.trialEndsAt
+          ? `${deck.name} 구독을 예약했습니다. 체험이 끝나는 ${formatTrialEndDate(pending.trialEndsAt)} 다음 날부터 유료로 전환됩니다.`
+          : `${deck.name} 구독을 시작했습니다`
+      )
       setPending(null)
       router.refresh()
     } catch (error) {
@@ -291,6 +326,12 @@ export function MyDeckClient({
   useEffect(() => {
     if (!subscribeParam) return
     window.history.replaceState(null, '', window.location.pathname)
+    // 카드 등록 후 돌아온 사용 중 업무(체험 중 구독)는 구독 확인 단계를 바로 연다
+    const active = activeDecks.find((d) => d.id === subscribeParam)
+    if (active) {
+      if (isOwner && canSubscribe(active.id) && !checkoutPaused) openSubscribe(active)
+      return
+    }
     const deck = availableDecks.find((d) => d.id === subscribeParam)
     if (!deck) return
     if (deck.comingSoon) {
@@ -298,7 +339,16 @@ export function MyDeckClient({
       return
     }
     openDeck(deck)
-  }, [subscribeParam, availableDecks, openDeck])
+  }, [
+    subscribeParam,
+    activeDecks,
+    availableDecks,
+    openDeck,
+    openSubscribe,
+    canSubscribe,
+    isOwner,
+    checkoutPaused,
+  ])
 
   /**
    * 과금 중이면 구독 해지(기간 말까지 이용), 아니면 업무 사용 중지(목록에서 내림).
@@ -323,6 +373,7 @@ export function MyDeckClient({
         message?: string
         error?: string
         effectiveAt?: string | null
+        reservationCanceled?: boolean
       } | null
 
       if (!response.ok) {
@@ -333,7 +384,9 @@ export function MyDeckClient({
         )
       }
 
-      if (isSubscribed) {
+      if (payload?.reservationCanceled) {
+        toast.success(`${cancelTarget.name} 구독 예약을 취소했습니다. 결제되지 않습니다.`)
+      } else if (isSubscribed) {
         toast.success(
           payload?.effectiveAt
             ? `${cancelTarget.name} 구독을 해지했습니다. ${formatDate(payload.effectiveAt)}까지 이용할 수 있습니다.`
@@ -352,6 +405,9 @@ export function MyDeckClient({
   }
 
   const selectedBilling = selectedDeck ? billingById.get(selectedDeck.id) : undefined
+  const cancelLabel = (deckId: string) =>
+    reserved.has(deckId) ? '구독 예약 취소' : subscribed.has(deckId) ? '구독 해지' : '사용 중지'
+  const cancelTrialEnd = cancelTarget ? billingById.get(cancelTarget.id)?.trialEndsAt : null
 
   return (
     <div className="space-y-8">
@@ -392,10 +448,12 @@ export function MyDeckClient({
                       <Badge variant="destructive">이용 중지됨</Badge>
                     ) : (
                       <Badge variant="secondary">
-                        {billingById.get(deck.id)?.reason === 'SUBSCRIBED'
-                          ? '유료 구독 중'
-                          : (REASON_BADGE[billingById.get(deck.id)?.reason ?? 'FREE_BETA']?.label ??
-                            '무료 이용 중')}
+                        {reserved.has(deck.id)
+                          ? '구독 예약'
+                          : billingById.get(deck.id)?.reason === 'SUBSCRIBED'
+                            ? '유료 구독 중'
+                            : (REASON_BADGE[billingById.get(deck.id)?.reason ?? 'FREE_BETA']
+                                ?.label ?? '무료 이용 중')}
                       </Badge>
                     )}
                   </div>
@@ -407,12 +465,18 @@ export function MyDeckClient({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {billingById.get(deck.id)?.reason === 'TRIAL' &&
+                  {(billingById.get(deck.id)?.reason === 'TRIAL' || reserved.has(deck.id)) &&
                     billingById.get(deck.id)?.trialEndsAt && (
-                      <p className="text-xs text-muted-foreground tabular-nums">
-                        체험 종료일: {formatTrialEndDate(billingById.get(deck.id)!.trialEndsAt!)}{' '}
-                        (KST)
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <TrialDdayBadge
+                          trialEndsAt={billingById.get(deck.id)!.trialEndsAt!}
+                          reserved={reserved.has(deck.id)}
+                        />
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          체험 종료일: {formatTrialEndDate(billingById.get(deck.id)!.trialEndsAt!)}{' '}
+                          (KST)
+                        </span>
+                      </div>
                     )}
                   {isLocked(deck.id) ? (
                     <Button
@@ -434,15 +498,26 @@ export function MyDeckClient({
                       </Link>
                     </Button>
                   )}
+                  {isOwner && canSubscribe(deck.id) && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => openSubscribe(deck)}
+                      disabled={checkoutPaused}
+                      aria-label={`${deck.name} 유료 구독하기`}
+                    >
+                      {checkoutPaused ? '결제 준비 중' : '구독하기'}
+                    </Button>
+                  )}
                   {isOwner && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="w-full text-muted-foreground hover:text-foreground"
                       onClick={() => setCancelTarget(deck)}
-                      aria-label={`${deck.name} ${subscribed.has(deck.id) ? '구독 해지' : '사용 중지'} 확인 열기`}
+                      aria-label={`${deck.name} ${cancelLabel(deck.id)} 확인 열기`}
                     >
-                      {subscribed.has(deck.id) ? '구독 해지' : '사용 중지'}
+                      {cancelLabel(deck.id)}
                     </Button>
                   )}
                 </CardContent>
@@ -521,7 +596,8 @@ export function MyDeckClient({
             <p>{additionDescription(selectedBilling)}</p>
             {(startsTrial(selectedBilling) || selectedBilling?.reason === 'TRIAL') && (
               <p className="text-muted-foreground">
-                체험 종료 후 자동 결제되지 않습니다. 계속 이용하려면 직접 유료 구독을 시작하세요.
+                체험 종료 후 자동 결제되지 않습니다. 사용 중인 업무 카드의 「구독하기」로 미리
+                구독하면 체험이 끝나는 날부터 유료로 이어집니다.
               </p>
             )}
           </div>
@@ -547,16 +623,20 @@ export function MyDeckClient({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {cancelTarget && subscribed.has(cancelTarget.id)
-                ? '구독을 해지할까요?'
-                : '사용을 중지할까요?'}
+              {cancelTarget && reserved.has(cancelTarget.id)
+                ? '구독 예약을 취소할까요?'
+                : cancelTarget && subscribed.has(cancelTarget.id)
+                  ? '구독을 해지할까요?'
+                  : '사용을 중지할까요?'}
             </DialogTitle>
             <DialogDescription>
               {!cancelTarget
                 ? '확인할 업무를 선택해주세요.'
-                : subscribed.has(cancelTarget.id)
-                  ? `${cancelTarget.name} 구독을 해지하면 이미 결제한 이용 기간의 마지막 날까지는 그대로 사용할 수 있고, 다음 주기부터 요금이 청구되지 않습니다. 기존 데이터는 삭제되지 않습니다.`
-                  : `${cancelTarget.name}을(를) 사용 중인 업무에서 내립니다. 기존 데이터는 삭제되지 않으며 언제든 다시 추가할 수 있습니다.`}
+                : reserved.has(cancelTarget.id)
+                  ? `${cancelTarget.name} 구독 예약을 취소합니다. 결제되지 않으며${cancelTrialEnd ? `, 체험은 ${formatTrialEndDate(cancelTrialEnd)}까지 그대로 이용할 수 있습니다` : ''}. 계속 쓰려면 체험이 끝나기 전에 다시 구독하세요.`
+                  : subscribed.has(cancelTarget.id)
+                    ? `${cancelTarget.name} 구독을 해지하면 이미 결제한 이용 기간의 마지막 날까지는 그대로 사용할 수 있고, 다음 주기부터 요금이 청구되지 않습니다. 기존 데이터는 삭제되지 않습니다.`
+                    : `${cancelTarget.name}을(를) 사용 중인 업무에서 내립니다. 기존 데이터는 삭제되지 않으며 언제든 다시 추가할 수 있습니다.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -570,8 +650,8 @@ export function MyDeckClient({
             >
               {isCanceling
                 ? '처리 중...'
-                : cancelTarget && subscribed.has(cancelTarget.id)
-                  ? '구독 해지'
+                : cancelTarget
+                  ? cancelLabel(cancelTarget.id)
                   : '사용 중지'}
             </Button>
           </DialogFooter>

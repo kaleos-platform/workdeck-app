@@ -2,6 +2,7 @@ import 'server-only'
 import { prisma } from '@/lib/prisma'
 import { evaluateDeckAccess } from './entitlement-core'
 import { isCheckoutPausedFor } from './entitlement'
+import { realignReservationOnly } from './trial-reservation'
 import type { SubscriptionAccessOverview } from './subscription-admin-types'
 import {
   trialEndOfKstDay,
@@ -62,7 +63,8 @@ export async function getSubscriptionAccessOverview(
           const paid =
             !!subscription &&
             ['ACTIVE', 'PAST_DUE'].includes(subscription.status) &&
-            activeDeckItemIds.includes(product.id)
+            activeDeckItemIds.includes(product.id) &&
+            !item?.awaitingTrialEnd
           return {
             spaceId: space.id,
             spaceName: space.name,
@@ -84,6 +86,7 @@ export async function getSubscriptionAccessOverview(
             currentPeriodEnd: subscription?.currentPeriodEnd?.toISOString() ?? null,
             subscriptionStatus: subscription?.status ?? null,
             itemStatus: item?.status ?? null,
+            itemAwaitingTrialEnd: Boolean(item?.awaitingTrialEnd && item.status !== 'ENDED'),
             spaceExempt: subscription?.exemptFlag ?? false,
             exemptFlag: policy?.exemptFlag ?? false,
             exemptNote: policy?.exemptNote ?? null,
@@ -132,11 +135,14 @@ export async function updateSubscriptionAccess(
             409,
             '처리 중인 청구가 있습니다. 결제 결과 확인 후 다시 시도해 주세요'
           )
+        // 체험 중 구독 예약(결제 전)은 유료가 아니다 — 체험 연장 시 결제 시작일도 함께 밀린다(파생).
         const paid =
           subscription &&
           ['ACTIVE', 'PAST_DUE'].includes(subscription.status) &&
           subscription.items.some(
-            (item) => item.status === 'ACTIVE' || item.status === 'CANCEL_AT_PERIOD_END'
+            (item) =>
+              (item.status === 'ACTIVE' || item.status === 'CANCEL_AT_PERIOD_END') &&
+              !item.awaitingTrialEnd
           )
         let data: { trialEndsAt: Date } | { exemptFlag: boolean; exemptNote: string }
         if ('trialEndsOn' in patch) {
@@ -173,6 +179,9 @@ export async function updateSubscriptionAccess(
         } else {
           await tx.spaceDeckAccess.create({ data: { spaceId, deckAppId, ...data } })
         }
+        // 예약만 있는 구독은 첫 결제일을 연장된 체험 종료일에 맞춘다.
+        if ('trialEndsOn' in patch && subscription?.status === 'ACTIVE')
+          await realignReservationOnly(tx, subscription.id, spaceId)
         if ('exempt' in patch && patch.exempt && subscription) {
           await tx.subscriptionItem.updateMany({
             where: {

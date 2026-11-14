@@ -4694,6 +4694,10 @@ model SubscriptionItem {
   status         SubscriptionItemStatus @default(ACTIVE)
   addedAt        DateTime               @default(now())
   endedAt        DateTime?
+  // 체험 중 예약된 아이템. 결제 시작일은 저장하지 않고 SpaceDeckAccess.trialEndsAt 에서 파생한다
+  awaitingTrialEnd  Boolean @default(false)
+  // 체험 종료일 일할 결제 실패 횟수 (구독 단위 retryCount 와 별개)
+  billingRetryCount Int     @default(0)
 
   subscription SpaceSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 

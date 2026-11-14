@@ -1,4 +1,4 @@
-import { runDueCharges } from '@/lib/billing/subscription-service'
+import { runDueCharges, runReservedStarts } from '@/lib/billing/subscription-service'
 import { withCronRun } from '@/lib/cron/with-cron-run'
 
 export const runtime = 'nodejs'
@@ -16,7 +16,9 @@ export const maxDuration = 300
  * `withCronRun`이 담당한다.
  */
 export const GET = withCronRun('/api/cron/billing-charge', async () => {
-  const results = await runDueCharges()
+  // 체험 종료일 일할 결제를 먼저 처리해야 정기결제가 미납분을 정확히 합산한다.
+  const reserved = await runReservedStarts()
+  const results = [...reserved, ...(await runDueCharges())]
   const counts = results.reduce<Record<string, number>>((acc, r) => {
     const key = r.outcome.startsWith('error') ? 'error' : r.outcome
     acc[key] = (acc[key] ?? 0) + 1

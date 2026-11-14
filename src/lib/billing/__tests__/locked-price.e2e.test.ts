@@ -85,6 +85,10 @@ async function cleanup() {
 }
 
 // billing-admin.mjs migrate-grant 와 같은 상태: 체험 종료일 + ENDED 모집 관리 item(보장가)
+// 체험 중 구독은 체험 종료일 결제 예약이 된다(trial-reservation.e2e). 이 파일은 보장가·즉시 결제
+// 재시도를 검증하므로 체험이 이미 끝난 상태로 부여한다.
+const TRIAL_OVER = () => new Date(Date.now() - 1000)
+
 async function grant(spaceId: string, trialEndsAt: Date) {
   await prisma.spaceDeckAccess.upsert({
     where: { spaceId_deckAppId: { spaceId, deckAppId: 'recruiting' } },
@@ -212,7 +216,7 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
   it('해제 예약 취소(재추가)는 보장가 유지', async () => {
     await cancelDeck(SPACE_A, 'recruiting')
     const r = await addDeck(SPACE_A, 'recruiting')
-    expect(r).toEqual({ prorated: false, amount: 0 })
+    expect(r).toEqual({ prorated: false, amount: 0, reserved: false })
     const item = await recruitingItem(SPACE_A)
     expect(item?.lockedPrice).toBe(LOCKED)
     expect(item?.priceSnapshot).toBe(LOCKED)
@@ -245,7 +249,7 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
     await registerCard(SPACE_B)
     mockCharge.mockResolvedValue({ ok: true, paymentKey: 'pay_b1', failReason: null })
     await startSubscription(SPACE_B, ['finance'])
-    await grant(SPACE_B, new Date(Date.now() + 30 * 86400000))
+    await grant(SPACE_B, TRIAL_OVER())
 
     mockCharge.mockResolvedValue({ ok: true, paymentKey: 'pay_b2', failReason: null })
     const r = await addDeck(SPACE_B, 'recruiting')
@@ -279,7 +283,7 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
     await registerCard(spaceId)
     mockCharge.mockResolvedValue({ ok: true, paymentKey: `pay_${spaceId}_0`, failReason: null })
     await startSubscription(spaceId, ['finance'])
-    await grant(spaceId, new Date(Date.now() + 30 * 86400000))
+    await grant(spaceId, TRIAL_OVER())
   }
 
   async function charges(spaceId: string, prefix: string) {
@@ -289,7 +293,7 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
   }
 
   it('EXPIRED 재시작에서 모집 관리를 다시 고르면 보장가 유지', async () => {
-    await grant(SPACE_C, new Date(Date.now() + 30 * 86400000))
+    await grant(SPACE_C, TRIAL_OVER())
     await registerCard(SPACE_C)
     mockCharge.mockResolvedValue({ ok: true, paymentKey: 'pay_c1', failReason: null })
     await startSubscription(SPACE_C, ['recruiting'])
@@ -352,7 +356,7 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
   })
 
   it('구독 시작: 카드 거절 후 같은 날 재시도 가능, 보장가 청구', async () => {
-    await grant(SPACE_F, new Date(Date.now() + 30 * 86400000))
+    await grant(SPACE_F, TRIAL_OVER())
     await registerCard(SPACE_F)
 
     mockCharge.mockResolvedValue({ ok: false, paymentKey: null, failReason: 'REJECT_CARD' })
@@ -392,7 +396,7 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
   })
 
   it('구독 시작: 예외 + 조회 실패 → PENDING 유지·차단(다른 날 orderId 도), 5분 경과 후 조회 DONE 이면 이어받아 활성화', async () => {
-    await grant(SPACE_H, new Date(Date.now() + 30 * 86400000))
+    await grant(SPACE_H, TRIAL_OVER())
     await registerCard(SPACE_H)
     mockCharge.mockRejectedValue(new Error('network timeout'))
     mockLookup.mockRejectedValue(new Error('lookup down'))
@@ -450,7 +454,7 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
   })
 
   it('구독 시작: 중복 주문 오류 + 조회 DONE → 성공 처리', async () => {
-    await grant(SPACE_J, new Date(Date.now() + 30 * 86400000))
+    await grant(SPACE_J, TRIAL_OVER())
     await registerCard(SPACE_J)
     mockCharge.mockResolvedValue({
       ok: false,

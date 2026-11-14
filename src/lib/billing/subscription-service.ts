@@ -14,12 +14,20 @@ import {
   cycleOrderId,
   startOrderId,
   prorateOrderId,
+  trialStartOrderId,
   effectivePrice,
   type ChargeLine,
 } from './pricing'
 import { DECK_CATALOG_DEFAULTS } from './catalog-defaults'
 import { isCheckoutPausedFor } from './entitlement'
 import { findClosedDecks } from './deck-release'
+import {
+  hasPaidItems,
+  loadTrialEnds,
+  realignReservationOnly,
+  reservedStart,
+  type DbClient,
+} from './trial-reservation'
 
 // dunning: 결제일 경과 +1·+3·+5일에 재시도, 3회 실패 시 EXPIRED
 const RETRY_OFFSETS_DAYS = [1, 3, 5]
@@ -215,6 +223,19 @@ async function createOrReclaimCharge(
     ) {
       throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
     }
+    // 체험 종료일 일할 청구는 예약이 아직 살아 있을 때만 만든다(예약 취소와 경합 방지).
+    if (
+      data.orderId.includes('_trial') &&
+      !subscription?.items.some(
+        (item) =>
+          item.type === 'DECK' &&
+          deckIds.includes(item.deckAppId) &&
+          item.status === 'ACTIVE' &&
+          item.awaitingTrialEnd
+      )
+    ) {
+      throw new BillingError('구독 상태가 변경되었습니다. 다음 청구 실행에서 다시 확인합니다', 409)
+    }
     const existing = await tx.billingCharge.findUnique({ where: { orderId: data.orderId } })
     if (!existing) return tx.billingCharge.create({ data })
     const stalePending =
@@ -292,6 +313,15 @@ async function loadDefaultMethod(spaceId: string) {
       })
   )
   return { ...method, decryptedBillingKey }
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// 주기 일수 = periodEnd - (periodEnd - 1개월), 실제 달력 기준
+function cycleDaysEndingAt(periodEnd: Date): number {
+  const prevPeriodStart = new Date(periodEnd)
+  prevPeriodStart.setUTCMonth(prevPeriodStart.getUTCMonth() - 1)
+  return Math.max(1, Math.round((periodEnd.getTime() - prevPeriodStart.getTime()) / DAY_MS))
 }
 
 // SDK 호출 전 선행: 구독 레코드 + customerKey 확보 (SDK requestBillingAuth에 동일 키 사용 필수)
@@ -406,7 +436,11 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
     include: { items: true },
   })
   if (!subscription) throw new BillingError('결제수단 등록이 선행되어야 합니다', 400)
-  if (subscription.status === 'ACTIVE' || subscription.status === 'PAST_DUE') {
+  // 체험 예약만 있는(아직 결제 전) ACTIVE 구독은 첫 유료 업무가 생길 때 시작 규칙을 다시 탄다.
+  if (
+    subscription.status === 'PAST_DUE' ||
+    (subscription.status === 'ACTIVE' && hasPaidItems(subscription.items))
+  ) {
     throw new BillingError('이미 활성 구독이 있습니다 — 업무 추가를 사용하세요', 409)
   }
 
@@ -418,8 +452,81 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
     )
 
   const now = new Date()
+  // 체험 중 업무는 체험 종료일에 결제를 시작한다(서버의 체험 종료일만 신뢰).
+  const trialEnds = await loadTrialEnds(prisma, spaceId)
+  const reservedIds = new Set(
+    deckIds.filter((id) => (trialEnds.get(id)?.getTime() ?? 0) > now.getTime())
+  )
+  const itemUpserts = (db: DbClient) =>
+    products.map((p) =>
+      db.subscriptionItem.upsert({
+        where: {
+          subscriptionId_type_deckAppId: {
+            subscriptionId: subscription.id,
+            type: 'DECK',
+            deckAppId: p.id,
+          },
+        },
+        create: {
+          subscriptionId: subscription.id,
+          type: 'DECK',
+          deckAppId: p.id,
+          priceSnapshot: priceOf(p),
+          awaitingTrialEnd: reservedIds.has(p.id),
+        },
+        update: {
+          status: 'ACTIVE',
+          priceSnapshot: priceOf(p),
+          endedAt: null,
+          addedAt: now,
+          awaitingTrialEnd: reservedIds.has(p.id),
+          billingRetryCount: 0,
+        },
+      })
+    )
+  const endOthers = (db: DbClient) => [
+    // 재시작에서 고르지 않은 업무는 해지로 보고 보장가도 소멸
+    db.subscriptionItem.updateMany({
+      where: {
+        subscriptionId: subscription.id,
+        status: { not: 'ENDED' },
+        deckAppId: { notIn: deckIds },
+      },
+      data: { status: 'ENDED', endedAt: now, lockedPrice: null },
+    }),
+    db.subscriptionItem.updateMany({
+      where: {
+        subscriptionId: subscription.id,
+        status: { not: 'ENDED' },
+        deckAppId: { in: deckIds },
+      },
+      data: { status: 'ENDED', endedAt: now },
+    }),
+  ]
+
+  const immediate = products.filter((p) => !reservedIds.has(p.id))
+  if (immediate.length === 0) {
+    // 전부 체험 중: 지금은 0원, 가장 빠른 체험 종료일이 첫 결제일(정기결제 cron 이 한 달치 결제)
+    const anchor = new Date(Math.min(...deckIds.map((id) => trialEnds.get(id)!.getTime())))
+    await prisma.$transaction(async (tx) => {
+      const moved = await tx.spaceSubscription.updateMany({
+        where: {
+          id: subscription.id,
+          status: subscription.status,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+        },
+        data: { status: 'ACTIVE', currentPeriodEnd: anchor, retryCount: 0 },
+      })
+      if (moved.count === 0)
+        throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
+      for (const op of endOthers(tx)) await op
+      for (const op of itemUpserts(tx)) await op
+    })
+    return { periodEnd: anchor, amount: 0, reserved: true }
+  }
+
   const periodEnd = addMonthClamped(now)
-  const lines: ChargeLine[] = products.map((p) => ({
+  const lines: ChargeLine[] = immediate.map((p) => ({
     deckAppId: p.id,
     type: 'DECK',
     price: priceOf(p),
@@ -475,45 +582,12 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
       where: { id: subscription.id },
       data: { status: 'ACTIVE', currentPeriodEnd: periodEnd, retryCount: 0 },
     }),
-    // 이전 아이템(만료 재시작 케이스) 정리 후 이번 선택으로 upsert.
-    // 재시작에서 고르지 않은 업무는 해지로 보고 보장가도 소멸
-    prisma.subscriptionItem.updateMany({
-      where: {
-        subscriptionId: subscription.id,
-        status: { not: 'ENDED' },
-        deckAppId: { notIn: deckIds },
-      },
-      data: { status: 'ENDED', endedAt: now, lockedPrice: null },
-    }),
-    prisma.subscriptionItem.updateMany({
-      where: {
-        subscriptionId: subscription.id,
-        status: { not: 'ENDED' },
-        deckAppId: { in: deckIds },
-      },
-      data: { status: 'ENDED', endedAt: now },
-    }),
-    ...products.map((p) =>
-      prisma.subscriptionItem.upsert({
-        where: {
-          subscriptionId_type_deckAppId: {
-            subscriptionId: subscription.id,
-            type: 'DECK',
-            deckAppId: p.id,
-          },
-        },
-        create: {
-          subscriptionId: subscription.id,
-          type: 'DECK',
-          deckAppId: p.id,
-          priceSnapshot: priceOf(p),
-        },
-        update: { status: 'ACTIVE', priceSnapshot: priceOf(p), endedAt: null, addedAt: now },
-      })
-    ),
+    // 이전 아이템(만료 재시작 케이스) 정리 후 이번 선택으로 upsert. 체험 중 업무는 예약으로 남긴다.
+    ...endOthers(prisma),
+    ...itemUpserts(prisma),
   ])
 
-  return { periodEnd, amount: charge.amount }
+  return { periodEnd, amount: charge.amount, reserved: false }
 }
 
 // deck 중도 추가: 일할 즉시결제 → 즉시 활성
@@ -543,24 +617,53 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     })
     if (resumed.count === 0)
       throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
-    return { prorated: false, amount: 0 }
+    return { prorated: false, amount: 0, reserved: false }
+  }
+
+  // 예약만 있는 구독(결제 전)에 업무를 더하면 일할 대신 구독 시작 규칙으로 결제일을 다시 잡는다.
+  if (subscription.status === 'ACTIVE' && !hasPaidItems(subscription.items)) {
+    const live = subscription.items
+      .filter((i) => i.type === 'DECK' && i.status !== 'ENDED')
+      .map((i) => i.deckAppId)
+    const started = await startSubscription(spaceId, [...new Set([...live, deckAppId])])
+    return { prorated: false, amount: started.amount, reserved: started.reserved }
   }
 
   assertCheckoutOpen(spaceId)
   const now = new Date()
-  // 주기 일수 = periodEnd - (periodEnd - 1개월), 실제 달력 기준
-  const prevPeriodStart = new Date(subscription.currentPeriodEnd)
-  prevPeriodStart.setUTCMonth(prevPeriodStart.getUTCMonth() - 1)
-  const cycleDays = Math.max(
-    1,
-    Math.round((subscription.currentPeriodEnd.getTime() - prevPeriodStart.getTime()) / 86400000)
-  )
+  const cycleDays = cycleDaysEndingAt(subscription.currentPeriodEnd)
   const remaining = remainingDaysBetween(now, subscription.currentPeriodEnd)
   // 이전 고객 보장가 (ENDED item 에 남아 있음). 정가가 더 낮아지면 정가
   const price = effectivePrice(
     subscription.items.find((i) => i.type === 'DECK' && i.deckAppId === deckAppId)?.lockedPrice,
     product.monthlyPrice
   )
+  // 체험 중 업무: 지금은 0원 예약, 체험 종료일에 그날~결제일 일할 결제(runReservedStarts)
+  const trialEndsAt = (await loadTrialEnds(prisma, spaceId)).get(deckAppId)
+  if (trialEndsAt && trialEndsAt > now) {
+    await prisma.subscriptionItem.upsert({
+      where: {
+        subscriptionId_type_deckAppId: { subscriptionId: subscription.id, type: 'DECK', deckAppId },
+      },
+      create: {
+        subscriptionId: subscription.id,
+        type: 'DECK',
+        deckAppId,
+        priceSnapshot: price,
+        awaitingTrialEnd: true,
+      },
+      update: {
+        status: 'ACTIVE',
+        priceSnapshot: price,
+        endedAt: null,
+        addedAt: now,
+        awaitingTrialEnd: true,
+        billingRetryCount: 0,
+      },
+    })
+    return { prorated: false, amount: 0, reserved: true }
+  }
+
   const supply = prorate(price, remaining, cycleDays)
   const amounts = calcAmounts(supply)
 
@@ -631,11 +734,18 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     }),
     prisma.subscriptionItem.update({
       where: { id: item.id },
-      data: { status: 'ACTIVE', priceSnapshot: price, endedAt: null, addedAt: now },
+      data: {
+        status: 'ACTIVE',
+        priceSnapshot: price,
+        endedAt: null,
+        addedAt: now,
+        awaitingTrialEnd: false,
+        billingRetryCount: 0,
+      },
     }),
   ])
 
-  return { prorated: true, amount: charge.amount }
+  return { prorated: true, amount: charge.amount, reserved: false }
 }
 
 // deck 해제 예약: 기간말까지 사용, 다음 주기 미청구
@@ -649,6 +759,10 @@ export async function cancelDeck(spaceId: string, deckAppId: string) {
     (i) => i.type === 'DECK' && i.deckAppId === deckAppId && i.status === 'ACTIVE'
   )
   if (!item) throw new BillingError('구독 중인 업무가 아닙니다', 404)
+  if (item.awaitingTrialEnd) {
+    const settled = await cancelReservation(spaceId, subscription.id, item)
+    if (settled) return settled
+  }
 
   const canceled = await prisma.subscriptionItem.updateMany({
     where: { id: item.id, status: 'ACTIVE' },
@@ -656,7 +770,78 @@ export async function cancelDeck(spaceId: string, deckAppId: string) {
   })
   if (canceled.count === 0)
     throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
-  return { effectiveAt: subscription.currentPeriodEnd }
+  return { effectiveAt: subscription.currentPeriodEnd, reservationCanceled: false }
+}
+
+// 결제 전 예약 취소. 0원 종료면 결과를 반환하고, 결제가 이미 승인돼 있었으면 null(기존 해지로 진행).
+async function cancelReservation(
+  spaceId: string,
+  subscriptionId: string,
+  item: { id: string; deckAppId: string; addedAt: Date }
+) {
+  const now = new Date()
+  const start = reservedStart(item, await loadTrialEnds(prisma, spaceId))
+  if (start <= now) {
+    // 체험이 끝나 결제가 시도됐을 수 있다 — 결과를 확인한 뒤에만 0원 취소한다.
+    const cyclePending = await prisma.billingCharge.findFirst({
+      where: { spaceId, status: 'PENDING', orderId: { startsWith: `sub_${subscriptionId}_` } },
+    })
+    if (cyclePending) throw new BillingError(CHECKING_MESSAGE, 409)
+    const adopted = await reconcilePending(
+      getBillingProvider(),
+      spaceId,
+      `prorate_${item.id}_trial`
+    )
+    if (adopted) {
+      await prisma.$transaction([
+        prisma.billingCharge.update({
+          where: { id: adopted.charge.id },
+          data: { status: 'PAID', paymentKey: adopted.paymentKey },
+        }),
+        prisma.subscriptionItem.update({
+          where: { id: item.id },
+          data: { awaitingTrialEnd: false, billingRetryCount: 0 },
+        }),
+      ])
+      return null
+    }
+  }
+  const outcome = await prisma.$transaction(async (tx) => {
+    // cron 의 청구 생성(createOrReclaimCharge)과 같은 Space 행 잠금 아래에서 판단한다.
+    await tx.$queryRaw`SELECT id FROM "Space" WHERE id = ${spaceId} FOR UPDATE`
+    const charges = await tx.billingCharge.findMany({
+      where: {
+        spaceId,
+        status: { in: ['PENDING', 'PAID'] },
+        OR: [
+          { orderId: { startsWith: `prorate_${item.id}_trial` } },
+          { orderId: { startsWith: `sub_${subscriptionId}_` }, status: 'PENDING' },
+        ],
+      },
+      select: { status: true, orderId: true },
+    })
+    if (charges.some((c) => c.status === 'PENDING'))
+      throw new BillingError(CHECKING_MESSAGE, 409)
+    if (charges.some((c) => c.status === 'PAID')) {
+      // 이미 승인된 일할 결제가 있다 — 결제된 아이템으로 확정하고 일반 해지로 진행한다.
+      await tx.subscriptionItem.updateMany({
+        where: { id: item.id, status: 'ACTIVE', awaitingTrialEnd: true },
+        data: { awaitingTrialEnd: false, billingRetryCount: 0 },
+      })
+      return 'paid' as const
+    }
+    // 결제 이력이 없으므로 해지가 아니다 — 보장가(lockedPrice)는 유지한다.
+    const ended = await tx.subscriptionItem.updateMany({
+      where: { id: item.id, status: 'ACTIVE', awaitingTrialEnd: true },
+      data: { status: 'ENDED', endedAt: now },
+    })
+    if (ended.count === 0)
+      throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
+    await realignReservationOnly(tx, subscriptionId, spaceId)
+    return 'ended' as const
+  })
+  if (outcome === 'paid') return null
+  return { effectiveAt: null, reservationCanceled: true }
 }
 
 // ── 정기결제 cron ──────────────────────────────────────────────
@@ -695,7 +880,70 @@ export async function runDueCharges(now = new Date()) {
       const cancelIds = sub.items
         .filter((i) => i.status === 'CANCEL_AT_PERIOD_END')
         .map((i) => i.id)
-      const activeItems = sub.items.filter((i) => i.status === 'ACTIVE')
+      const allActive = sub.items.filter((i) => i.status === 'ACTIVE')
+      // 체험 예약 분류(timestamp 정확 비교): 결제일보다 늦게 끝나는 체험은 이번 주기에서 제외·유지,
+      // 결제일보다 먼저 끝났는데 아직 예약이면 일할 미납 → 새 주기 결제에 합산한다.
+      const periodStartAt = sub.currentPeriodEnd!
+      const trialEnds = await loadTrialEnds(prisma, sub.spaceId)
+      const startOf = (i: (typeof allActive)[number]) => reservedStart(i, trialEnds)
+      const futureItems = allActive.filter(
+        (i) => i.awaitingTrialEnd && startOf(i).getTime() > periodStartAt.getTime()
+      )
+      const activeItems = allActive.filter((i) => !futureItems.includes(i))
+
+      if (activeItems.length === 0 && futureItems.length > 0) {
+        // 결제된 업무 없이 아직 체험 중인 예약만 남음(체험 연장 등) → 결제 없이 결제일을 다시 맞춘다.
+        const next = new Date(Math.min(...futureItems.map((i) => startOf(i).getTime())))
+        await prisma.$transaction([
+          prisma.subscriptionItem.updateMany({
+            where: { id: { in: cancelIds } },
+            data: { status: 'ENDED', endedAt: now, lockedPrice: null }, // 실제 해지 → 보장가 소멸
+          }),
+          prisma.spaceSubscription.updateMany({
+            where: { id: sub.id, currentPeriodEnd: sub.currentPeriodEnd },
+            data: { status: 'ACTIVE', currentPeriodEnd: next, retryCount: 0 },
+          }),
+        ])
+        results.push({ spaceId: sub.spaceId, outcome: 'reanchored' })
+        continue
+      }
+
+      // 미납 일할의 단독 청구가 결과 불명이면 이중 청구를 피하려고 이 구독의 정기결제 전체를 보류한다.
+      const debtItems = activeItems.filter(
+        (i) => i.awaitingTrialEnd && startOf(i).getTime() < periodStartAt.getTime()
+      )
+      const settledDebt = new Set<string>()
+      let hold = false
+      for (const i of debtItems) {
+        const debtOrderId = trialStartOrderId(i.id, startOf(i))
+        const prior = await prisma.billingCharge.findUnique({ where: { orderId: debtOrderId } })
+        if (prior?.status === 'PAID') {
+          settledDebt.add(i.id)
+        } else if (prior?.status === 'PENDING') {
+          const found = await lookupOrder(provider, debtOrderId)
+          if (!found) {
+            hold = true
+            break
+          }
+          if ('failed' in found) {
+            await prisma.billingCharge.updateMany({
+              where: { id: prior.id, status: 'PENDING' },
+              data: { status: 'FAILED', failReason: `결제 미승인: ${found.failed}` },
+            })
+          } else {
+            await prisma.billingCharge.updateMany({
+              where: { id: prior.id, status: 'PENDING' },
+              data: { status: 'PAID', paymentKey: found.paymentKey },
+            })
+            settledDebt.add(i.id)
+          }
+        }
+      }
+      if (hold) {
+        results.push({ spaceId: sub.spaceId, outcome: 'waiting_pending_prorate' })
+        continue
+      }
+      const dueIds = activeItems.map((i) => i.id)
 
       if (activeItems.length === 0) {
         // 남은 구독 deck 없음 → 주기 종료, CANCELED
@@ -723,6 +971,10 @@ export async function runDueCharges(now = new Date()) {
           prisma.subscriptionItem.updateMany({
             where: { id: { in: cancelIds } },
             data: { status: 'ENDED', endedAt: now, lockedPrice: null },
+          }),
+          prisma.subscriptionItem.updateMany({
+            where: { id: { in: dueIds } },
+            data: { awaitingTrialEnd: false, billingRetryCount: 0 },
           }),
           prisma.spaceSubscription.updateMany({
             where: { id: sub.id, currentPeriodEnd: sub.currentPeriodEnd },
@@ -755,6 +1007,21 @@ export async function runDueCharges(now = new Date()) {
         type: 'DECK',
         price: i.priceSnapshot,
       }))
+      // 미납 일할(체험 종료일~이번 결제일)을 별도 줄로 합산한다.
+      const debtCycleDays = cycleDaysEndingAt(periodStartAt)
+      for (const i of billableItems) {
+        if (!debtItems.includes(i) || settledDebt.has(i.id)) continue
+        lines.push({
+          deckAppId: i.deckAppId,
+          type: 'DECK',
+          price: prorate(
+            i.priceSnapshot,
+            remainingDaysBetween(startOf(i), periodStartAt),
+            debtCycleDays
+          ),
+          prorated: true,
+        })
+      }
       const amounts = sumLines(lines)
       const periodStart = sub.currentPeriodEnd!
       const periodEnd = addMonthClamped(periodStart)
@@ -813,6 +1080,10 @@ export async function runDueCharges(now = new Date()) {
             where: { id: { in: cancelIds } },
             data: { status: 'ENDED', endedAt: now, lockedPrice: null }, // 실제 해지 → 보장가 소멸
           }),
+          prisma.subscriptionItem.updateMany({
+            where: { id: { in: dueIds } },
+            data: { awaitingTrialEnd: false, billingRetryCount: 0 },
+          }),
           prisma.spaceSubscription.update({
             where: { id: sub.id },
             data: { status: 'ACTIVE', currentPeriodEnd: periodEnd, retryCount: 0 },
@@ -846,5 +1117,163 @@ export async function runDueCharges(now = new Date()) {
     }
   }
 
+  return results
+}
+
+// ── 체험 종료일 일할 결제 (cron: runDueCharges 보다 먼저 실행) ─────────────────
+// 결제된 구독 중간에 체험이 끝난 예약 업무를 그날~다음 결제일까지 일할 결제한다.
+// 실패는 그 업무만 재시도(구독 retryCount·PAST_DUE 미사용)하고, 소진되면 그 업무만 종료한다.
+// 정기결제일이 먼저 오면 runDueCharges 가 미납분을 새 주기 결제에 합산한다.
+export async function runReservedStarts(now = new Date()) {
+  const provider = getBillingProvider()
+  const subs = await prisma.spaceSubscription.findMany({
+    where: {
+      status: 'ACTIVE',
+      exemptFlag: false,
+      currentPeriodEnd: { gt: now },
+      items: { some: { type: 'DECK', status: 'ACTIVE', awaitingTrialEnd: true } },
+    },
+    include: {
+      items: { where: { type: 'DECK', status: 'ACTIVE', awaitingTrialEnd: true } },
+      space: {
+        select: {
+          deckAccessPolicies: { where: { exemptFlag: true }, select: { deckAppId: true } },
+        },
+      },
+    },
+  })
+
+  const results: Array<{ spaceId: string; itemId: string; outcome: string }> = []
+  for (const sub of subs) {
+    const periodEnd = sub.currentPeriodEnd!
+    const trialEnds = await loadTrialEnds(prisma, sub.spaceId)
+    const exemptIds = new Set(sub.space.deckAccessPolicies.map((p) => p.deckAppId))
+    for (const item of sub.items) {
+      const push = (outcome: string) =>
+        results.push({ spaceId: sub.spaceId, itemId: item.id, outcome })
+      try {
+        const start = reservedStart(item, trialEnds)
+        // 아직 체험 중이거나, 정기결제일과 같은 날 시작(한 달치는 runDueCharges 담당)
+        if (start > now || start >= periodEnd) continue
+        if (exemptIds.has(item.deckAppId)) {
+          await prisma.subscriptionItem.updateMany({
+            where: { id: item.id, awaitingTrialEnd: true },
+            data: { awaitingTrialEnd: false, billingRetryCount: 0 },
+          })
+          push('exempt')
+          continue
+        }
+        const n = item.billingRetryCount
+        if (n >= 1 && now.getTime() < start.getTime() + RETRY_OFFSETS_DAYS[n - 1] * DAY_MS) {
+          push('waiting_retry')
+          continue
+        }
+
+        const supply = prorate(
+          item.priceSnapshot,
+          remainingDaysBetween(start, periodEnd),
+          cycleDaysEndingAt(periodEnd)
+        )
+        const amounts = calcAmounts(supply)
+        const orderId = trialStartOrderId(item.id, start)
+
+        const prior = await prisma.billingCharge.findUnique({ where: { orderId } })
+        let approvedKey: string | null | undefined
+        if (prior?.status === 'PAID') approvedKey = prior.paymentKey
+        if (prior?.status === 'PENDING') {
+          if (now.getTime() - prior.updatedAt.getTime() < STALE_PENDING_MS) {
+            push('pending')
+            continue
+          }
+          const found = await lookupOrder(provider, orderId)
+          if (!found) {
+            push('pending')
+            continue
+          }
+          if ('failed' in found) {
+            await prisma.billingCharge.updateMany({
+              where: { id: prior.id, status: 'PENDING' },
+              data: { status: 'FAILED', failReason: `결제 미승인: ${found.failed}` },
+            })
+          } else {
+            approvedKey = found.paymentKey
+          }
+        }
+
+        let chargeId = prior?.id
+        let failReason: string | null = null
+        if (approvedKey === undefined) {
+          const charge = await createOrReclaimCharge({
+            spaceId: sub.spaceId,
+            orderId,
+            ...amounts,
+            status: 'PENDING',
+            provider: provider.id,
+            periodStart: start,
+            periodEnd,
+            breakdown: [{ deckAppId: item.deckAppId, type: 'DECK', price: supply, prorated: true }],
+          })
+          if (!charge) {
+            push('already_processed')
+            continue
+          }
+          chargeId = charge.id
+          const method = await loadDefaultMethod(sub.spaceId).catch(() => null)
+          if (!method) {
+            failReason = '결제수단 없음'
+          } else {
+            const outcome = await settleCharge(provider, {
+              billingKey: method.decryptedBillingKey,
+              customerKey: sub.customerKey!,
+              orderId,
+              orderName: `워크덱 ${deckLabel(item.deckAppId)} (체험 종료 후 일할)`,
+              amount: amounts.amount,
+            })
+            if (outcome.kind === 'pending') {
+              push('pending')
+              continue
+            }
+            if (outcome.kind === 'failed') failReason = outcome.reason
+            else approvedKey = outcome.paymentKey
+          }
+        }
+
+        if (approvedKey !== undefined) {
+          await prisma.$transaction([
+            prisma.billingCharge.update({
+              where: { id: chargeId! },
+              data: { status: 'PAID', paymentKey: approvedKey },
+            }),
+            prisma.subscriptionItem.updateMany({
+              where: { id: item.id, awaitingTrialEnd: true },
+              data: { awaitingTrialEnd: false, billingRetryCount: 0 },
+            }),
+          ])
+          push('paid')
+          continue
+        }
+
+        const nextRetry = n + 1
+        const exhausted = nextRetry > MAX_RETRY
+        await prisma.$transaction(async (tx) => {
+          await tx.billingCharge.update({
+            where: { id: chargeId! },
+            data: { status: 'FAILED', failReason },
+          })
+          // 결제 실패 만료는 보장가 유지(기존 정책) — lockedPrice 는 건드리지 않는다.
+          await tx.subscriptionItem.updateMany({
+            where: { id: item.id, status: 'ACTIVE', awaitingTrialEnd: true },
+            data: exhausted
+              ? { status: 'ENDED', endedAt: now, billingRetryCount: nextRetry }
+              : { billingRetryCount: nextRetry },
+          })
+          if (exhausted) await realignReservationOnly(tx, sub.id, sub.spaceId)
+        })
+        push(exhausted ? 'ended' : 'retry_scheduled')
+      } catch (e) {
+        push(`error: ${(e as Error).message}`)
+      }
+    }
+  }
   return results
 }

@@ -14,7 +14,12 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { buildMarketingUrl } from '@/lib/domain'
-import { discountNote, formatWon, startCardRegistration } from './billing-shared'
+import {
+  discountNote,
+  formatTrialEndDate,
+  formatWon,
+  startCardRegistration,
+} from './billing-shared'
 
 export type SubscribeTarget = {
   /** 구독할 업무 목록 — 구독 시작은 여러 건, 업무 추가는 1건 */
@@ -22,6 +27,8 @@ export type SubscribeTarget = {
   decks: Array<{ id: string; name: string; monthlyPrice: number; listPrice: number }>
   /** true = 기존 구독에 업무 추가(일할 청구), false = 신규 구독 시작(전액) */
   isAddition: boolean
+  /** 체험 중인 업무의 체험 종료 시각 — 있으면 지금은 0원, 체험 종료일에 결제가 시작된다(구독 예약) */
+  trialEndsAt?: string | null
 }
 
 type SubscribeDialogProps = {
@@ -74,23 +81,39 @@ export function SubscribeDialog({
   )
   const names = target.decks.map((d) => d.name).join(', ')
   const needsCard = !cardSummary
+  const trialEnd =
+    target.trialEndsAt && new Date(target.trialEndsAt).getTime() > Date.now()
+      ? formatTrialEndDate(target.trialEndsAt)
+      : null
 
   return (
     <Dialog open onOpenChange={(open) => !open && !busy && !cardBusy && onCancel()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {needsCard ? '결제수단을 먼저 등록해주세요' : '구독을 시작할까요?'}
+            {needsCard
+              ? '결제수단을 먼저 등록해주세요'
+              : trialEnd
+                ? '구독을 예약할까요?'
+                : '구독을 시작할까요?'}
           </DialogTitle>
           <DialogDescription>
             {needsCard
               ? '카드를 등록하면 이어서 구독 내용을 확인할 수 있습니다. 등록 단계에서는 결제가 일어나지 않습니다.'
-              : `${names} 업무를 구독합니다.`}
+              : trialEnd
+                ? `${names} 업무를 구독합니다. 체험은 ${trialEnd}까지 그대로 이용하고, 그 다음 날부터 유료로 전환됩니다.`
+                : `${names} 업무를 구독합니다.`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 text-sm">
           <div className="space-y-1.5 rounded-lg border bg-muted/30 p-4">
+            {trialEnd && (
+              <div className="flex items-baseline justify-between">
+                <span className="text-muted-foreground">오늘 결제 금액</span>
+                <span className="font-semibold">0원</span>
+              </div>
+            )}
             <div className="flex items-baseline justify-between">
               <span className="text-muted-foreground">월 결제 금액</span>
               <span className="text-lg font-semibold">{formatWon(total)}</span>
@@ -121,9 +144,17 @@ export function SubscribeDialog({
 
           <ul className="space-y-1 text-xs break-keep text-muted-foreground">
             <li>• 결제일로부터 1개월 단위로 자동 갱신되며, 언제든 해지할 수 있습니다.</li>
-            {target.isAddition && (
-              <li>• 이용 기간 중 추가하므로 남은 기간만큼 일할 계산된 금액이 즉시 청구됩니다.</li>
+            {trialEnd ? (
+              <li>
+                • 체험이 끝나면 첫 결제가 진행됩니다. 이미 구독 중인 업무가 있으면 다음 결제일까지
+                남은 기간만큼 일할 계산해 결제하고, 이후 함께 결제됩니다.
+              </li>
+            ) : (
+              target.isAddition && (
+                <li>• 이용 기간 중 추가하므로 남은 기간만큼 일할 계산된 금액이 즉시 청구됩니다.</li>
+              )
             )}
+            {trialEnd && <li>• 체험이 끝나기 전에 예약을 취소하면 결제되지 않습니다.</li>}
             <li>
               • 해지하면 결제한 기간의 마지막 날까지 이용할 수 있습니다. 자세한 기준은{' '}
               <Link
@@ -159,7 +190,7 @@ export function SubscribeDialog({
           ) : (
             <Button onClick={onConfirm} disabled={busy}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {target.isAddition ? '추가하고 결제' : '구독 시작'}
+              {trialEnd ? '구독 예약' : target.isAddition ? '추가하고 결제' : '구독 시작'}
             </Button>
           )}
         </DialogFooter>

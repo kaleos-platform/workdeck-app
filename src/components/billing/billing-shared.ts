@@ -36,6 +36,8 @@ export interface SubscriptionItemDto {
   deckAppId: string
   priceSnapshot: number
   status: SubscriptionItemStatus
+  /** 체험 중 예약 — 체험 종료일에 결제가 시작된다 */
+  awaitingTrialEnd?: boolean
 }
 
 export interface SubscriptionDto {
@@ -92,6 +94,7 @@ export interface OverviewDto {
   method: MethodDto | null
   charges: ChargeDto[]
   entitlement: EntitlementDto
+  checkoutPaused?: boolean
 }
 
 declare global {
@@ -133,6 +136,23 @@ export function formatDate(value: string | null): string {
 /** 종료 시각은 exclusive이므로 실제 이용 가능한 마지막 날짜를 표시한다. */
 export function formatTrialEndDate(value: string): string {
   return formatDate(new Date(new Date(value).getTime() - 1).toISOString())
+}
+
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000
+const kstDay = (ms: number) => Math.floor((ms + KST_OFFSET_MS) / 86400000)
+
+/**
+ * 체험 종료까지 남은 날 (KST 날짜 기준). formatTrialEndDate 가 보여주는 마지막 이용일과 같은 날을 D-Day 로 센다.
+ * 이미 끝났으면 null. D-3 이하는 강조(urgent).
+ */
+export function trialDday(
+  trialEndsAt: string,
+  now: Date = new Date()
+): { label: string; urgent: boolean } | null {
+  const end = new Date(trialEndsAt).getTime()
+  if (end <= now.getTime()) return null
+  const days = kstDay(end - 1) - kstDay(now.getTime())
+  return { label: days === 0 ? 'D-Day' : `D-${days}`, urgent: days <= 3 }
 }
 
 export function loadTossSdk(): Promise<void> {
@@ -244,8 +264,21 @@ export function useBillingOverview() {
  * 다음 주기 청구액 — 해지 예약(CANCEL_AT_PERIOD_END) 아이템은 다음 주기부터 빠진다.
  * 현재 주기 이용 금액과 다르다: 해지 예약분도 이번 주기까지는 이미 결제된 상태다.
  */
-export function nextCycleSupplyTotal(items: SubscriptionItemDto[]): number {
-  return items.filter((i) => i.status === 'ACTIVE').reduce((sum, i) => sum + i.priceSnapshot, 0)
+export function nextCycleSupplyTotal(
+  items: SubscriptionItemDto[],
+  currentPeriodEnd: string | null = null,
+  trialEndsOf: (deckAppId: string) => string | null | undefined = () => null
+): number {
+  // 다음 결제일보다 체험이 늦게 끝나는 예약은 그날 청구되지 않는다.
+  const periodEnd = currentPeriodEnd ? new Date(currentPeriodEnd).getTime() : null
+  return items
+    .filter((i) => i.status === 'ACTIVE')
+    .filter((i) => {
+      if (!i.awaitingTrialEnd || periodEnd === null) return true
+      const trialEnd = trialEndsOf(i.deckAppId)
+      return !trialEnd || new Date(trialEnd).getTime() <= periodEnd
+    })
+    .reduce((sum, i) => sum + i.priceSnapshot, 0)
 }
 
 /**
