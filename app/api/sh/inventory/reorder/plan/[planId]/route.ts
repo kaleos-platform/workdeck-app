@@ -146,6 +146,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       supersededByPlanId: plan.supersededByPlanId,
       sourcePlanId: plan.sourcePlanId,
       biasAdjustApplied: plan.biasAdjustApplied,
+      linkedSkuAllocation: plan.linkedSkuAllocation,
       totalSuggestedQty: plan.totalSuggestedQty,
       totalFinalQty: plan.totalFinalQty,
       memo: plan.memo,

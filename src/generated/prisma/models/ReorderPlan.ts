@@ -92,6 +92,7 @@ export type ReorderPlanCountAggregateOutputType = {
   finalizedAt: number
   confirmedAt: number
   biasAdjustApplied: number
+  linkedSkuAllocation: number
   totalSuggestedQty: number
   totalFinalQty: number
   memo: number
@@ -170,6 +171,7 @@ export type ReorderPlanCountAggregateInputType = {
   finalizedAt?: true
   confirmedAt?: true
   biasAdjustApplied?: true
+  linkedSkuAllocation?: true
   totalSuggestedQty?: true
   totalFinalQty?: true
   memo?: true
@@ -279,6 +281,7 @@ export type ReorderPlanGroupByOutputType = {
   finalizedAt: Date | null
   confirmedAt: Date | null
   biasAdjustApplied: runtime.JsonValue | null
+  linkedSkuAllocation: runtime.JsonValue | null
   totalSuggestedQty: number
   totalFinalQty: number
   memo: string | null
@@ -324,6 +327,7 @@ export type ReorderPlanWhereInput = {
   finalizedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   biasAdjustApplied?: Prisma.JsonNullableFilter<"ReorderPlan">
+  linkedSkuAllocation?: Prisma.JsonNullableFilter<"ReorderPlan">
   totalSuggestedQty?: Prisma.IntFilter<"ReorderPlan"> | number
   totalFinalQty?: Prisma.IntFilter<"ReorderPlan"> | number
   memo?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
@@ -356,6 +360,7 @@ export type ReorderPlanOrderByWithRelationInput = {
   finalizedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   biasAdjustApplied?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedSkuAllocation?: Prisma.SortOrderInput | Prisma.SortOrder
   totalSuggestedQty?: Prisma.SortOrder
   totalFinalQty?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -392,6 +397,7 @@ export type ReorderPlanWhereUniqueInput = Prisma.AtLeast<{
   finalizedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   biasAdjustApplied?: Prisma.JsonNullableFilter<"ReorderPlan">
+  linkedSkuAllocation?: Prisma.JsonNullableFilter<"ReorderPlan">
   totalSuggestedQty?: Prisma.IntFilter<"ReorderPlan"> | number
   totalFinalQty?: Prisma.IntFilter<"ReorderPlan"> | number
   memo?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
@@ -424,6 +430,7 @@ export type ReorderPlanOrderByWithAggregationInput = {
   finalizedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   biasAdjustApplied?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedSkuAllocation?: Prisma.SortOrderInput | Prisma.SortOrder
   totalSuggestedQty?: Prisma.SortOrder
   totalFinalQty?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -454,6 +461,7 @@ export type ReorderPlanScalarWhereWithAggregatesInput = {
   finalizedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReorderPlan"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReorderPlan"> | Date | string | null
   biasAdjustApplied?: Prisma.JsonNullableWithAggregatesFilter<"ReorderPlan">
+  linkedSkuAllocation?: Prisma.JsonNullableWithAggregatesFilter<"ReorderPlan">
   totalSuggestedQty?: Prisma.IntWithAggregatesFilter<"ReorderPlan"> | number
   totalFinalQty?: Prisma.IntWithAggregatesFilter<"ReorderPlan"> | number
   memo?: Prisma.StringNullableWithAggregatesFilter<"ReorderPlan"> | string | null
@@ -472,6 +480,7 @@ export type ReorderPlanCreateInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -503,6 +512,7 @@ export type ReorderPlanUncheckedCreateInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -526,6 +536,7 @@ export type ReorderPlanUpdateInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -557,6 +568,7 @@ export type ReorderPlanUncheckedUpdateInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -584,6 +596,7 @@ export type ReorderPlanCreateManyInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -602,6 +615,7 @@ export type ReorderPlanUpdateManyMutationInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -623,6 +637,7 @@ export type ReorderPlanUncheckedUpdateManyInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -665,6 +680,7 @@ export type ReorderPlanCountOrderByAggregateInput = {
   finalizedAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   biasAdjustApplied?: Prisma.SortOrder
+  linkedSkuAllocation?: Prisma.SortOrder
   totalSuggestedQty?: Prisma.SortOrder
   totalFinalQty?: Prisma.SortOrder
   memo?: Prisma.SortOrder
@@ -1030,6 +1046,7 @@ export type ReorderPlanCreateWithoutCreatedByInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1059,6 +1076,7 @@ export type ReorderPlanUncheckedCreateWithoutCreatedByInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1115,6 +1133,7 @@ export type ReorderPlanScalarWhereInput = {
   finalizedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"ReorderPlan"> | Date | string | null
   biasAdjustApplied?: Prisma.JsonNullableFilter<"ReorderPlan">
+  linkedSkuAllocation?: Prisma.JsonNullableFilter<"ReorderPlan">
   totalSuggestedQty?: Prisma.IntFilter<"ReorderPlan"> | number
   totalFinalQty?: Prisma.IntFilter<"ReorderPlan"> | number
   memo?: Prisma.StringNullableFilter<"ReorderPlan"> | string | null
@@ -1133,6 +1152,7 @@ export type ReorderPlanCreateWithoutSpaceInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1162,6 +1182,7 @@ export type ReorderPlanUncheckedCreateWithoutSpaceInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1211,6 +1232,7 @@ export type ReorderPlanCreateWithoutProductInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1240,6 +1262,7 @@ export type ReorderPlanUncheckedCreateWithoutProductInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1289,6 +1312,7 @@ export type ReorderPlanCreateWithoutLocationInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1318,6 +1342,7 @@ export type ReorderPlanUncheckedCreateWithoutLocationInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1367,6 +1392,7 @@ export type ReorderPlanCreateWithoutProductionRunsInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1397,6 +1423,7 @@ export type ReorderPlanUncheckedCreateWithoutProductionRunsInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1435,6 +1462,7 @@ export type ReorderPlanUpdateWithoutProductionRunsInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1465,6 +1493,7 @@ export type ReorderPlanUncheckedUpdateWithoutProductionRunsInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1487,6 +1516,7 @@ export type ReorderPlanCreateWithoutRevisionsInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1517,6 +1547,7 @@ export type ReorderPlanUncheckedCreateWithoutRevisionsInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1544,6 +1575,7 @@ export type ReorderPlanCreateWithoutSourcePlanInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1574,6 +1606,7 @@ export type ReorderPlanUncheckedCreateWithoutSourcePlanInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1617,6 +1650,7 @@ export type ReorderPlanUpdateWithoutRevisionsInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1647,6 +1681,7 @@ export type ReorderPlanUncheckedUpdateWithoutRevisionsInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1685,6 +1720,7 @@ export type ReorderPlanCreateWithoutSetsInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1715,6 +1751,7 @@ export type ReorderPlanUncheckedCreateWithoutSetsInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1753,6 +1790,7 @@ export type ReorderPlanUpdateWithoutSetsInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1783,6 +1821,7 @@ export type ReorderPlanUncheckedUpdateWithoutSetsInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1805,6 +1844,7 @@ export type ReorderPlanCreateWithoutItemsInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1835,6 +1875,7 @@ export type ReorderPlanUncheckedCreateWithoutItemsInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1873,6 +1914,7 @@ export type ReorderPlanUpdateWithoutItemsInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1903,6 +1945,7 @@ export type ReorderPlanUncheckedUpdateWithoutItemsInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1925,6 +1968,7 @@ export type ReorderPlanCreateWithoutAccuraciesInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1955,6 +1999,7 @@ export type ReorderPlanUncheckedCreateWithoutAccuraciesInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -1993,6 +2038,7 @@ export type ReorderPlanUpdateWithoutAccuraciesInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2023,6 +2069,7 @@ export type ReorderPlanUncheckedUpdateWithoutAccuraciesInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2048,6 +2095,7 @@ export type ReorderPlanCreateManyCreatedByInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -2066,6 +2114,7 @@ export type ReorderPlanUpdateWithoutCreatedByInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2095,6 +2144,7 @@ export type ReorderPlanUncheckedUpdateWithoutCreatedByInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2121,6 +2171,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutCreatedByInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2142,6 +2193,7 @@ export type ReorderPlanCreateManySpaceInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -2160,6 +2212,7 @@ export type ReorderPlanUpdateWithoutSpaceInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2189,6 +2242,7 @@ export type ReorderPlanUncheckedUpdateWithoutSpaceInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2215,6 +2269,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutSpaceInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2236,6 +2291,7 @@ export type ReorderPlanCreateManyProductInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -2254,6 +2310,7 @@ export type ReorderPlanUpdateWithoutProductInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2283,6 +2340,7 @@ export type ReorderPlanUncheckedUpdateWithoutProductInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2309,6 +2367,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutProductInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2330,6 +2389,7 @@ export type ReorderPlanCreateManyLocationInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -2348,6 +2408,7 @@ export type ReorderPlanUpdateWithoutLocationInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2377,6 +2438,7 @@ export type ReorderPlanUncheckedUpdateWithoutLocationInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2403,6 +2465,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutLocationInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2425,6 +2488,7 @@ export type ReorderPlanCreateManySourcePlanInput = {
   finalizedAt?: Date | string | null
   confirmedAt?: Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty: number
   totalFinalQty: number
   memo?: string | null
@@ -2442,6 +2506,7 @@ export type ReorderPlanUpdateWithoutSourcePlanInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2472,6 +2537,7 @@ export type ReorderPlanUncheckedUpdateWithoutSourcePlanInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2498,6 +2564,7 @@ export type ReorderPlanUncheckedUpdateManyWithoutSourcePlanInput = {
   finalizedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   biasAdjustApplied?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  linkedSkuAllocation?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalSuggestedQty?: Prisma.IntFieldUpdateOperationsInput | number
   totalFinalQty?: Prisma.IntFieldUpdateOperationsInput | number
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2586,6 +2653,7 @@ export type ReorderPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   finalizedAt?: boolean
   confirmedAt?: boolean
   biasAdjustApplied?: boolean
+  linkedSkuAllocation?: boolean
   totalSuggestedQty?: boolean
   totalFinalQty?: boolean
   memo?: boolean
@@ -2619,6 +2687,7 @@ export type ReorderPlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   finalizedAt?: boolean
   confirmedAt?: boolean
   biasAdjustApplied?: boolean
+  linkedSkuAllocation?: boolean
   totalSuggestedQty?: boolean
   totalFinalQty?: boolean
   memo?: boolean
@@ -2646,6 +2715,7 @@ export type ReorderPlanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   finalizedAt?: boolean
   confirmedAt?: boolean
   biasAdjustApplied?: boolean
+  linkedSkuAllocation?: boolean
   totalSuggestedQty?: boolean
   totalFinalQty?: boolean
   memo?: boolean
@@ -2673,6 +2743,7 @@ export type ReorderPlanSelectScalar = {
   finalizedAt?: boolean
   confirmedAt?: boolean
   biasAdjustApplied?: boolean
+  linkedSkuAllocation?: boolean
   totalSuggestedQty?: boolean
   totalFinalQty?: boolean
   memo?: boolean
@@ -2683,7 +2754,7 @@ export type ReorderPlanSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ReorderPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "planNo" | "status" | "windowDays" | "createdById" | "productId" | "locationId" | "finalizedAt" | "confirmedAt" | "biasAdjustApplied" | "totalSuggestedQty" | "totalFinalQty" | "memo" | "supersededAt" | "supersededByPlanId" | "sourcePlanId" | "createdAt" | "updatedAt", ExtArgs["result"]["reorderPlan"]>
+export type ReorderPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "planNo" | "status" | "windowDays" | "createdById" | "productId" | "locationId" | "finalizedAt" | "confirmedAt" | "biasAdjustApplied" | "linkedSkuAllocation" | "totalSuggestedQty" | "totalFinalQty" | "memo" | "supersededAt" | "supersededByPlanId" | "sourcePlanId" | "createdAt" | "updatedAt", ExtArgs["result"]["reorderPlan"]>
 export type ReorderPlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -2738,6 +2809,7 @@ export type $ReorderPlanPayload<ExtArgs extends runtime.Types.Extensions.Interna
     finalizedAt: Date | null
     confirmedAt: Date | null
     biasAdjustApplied: runtime.JsonValue | null
+    linkedSkuAllocation: runtime.JsonValue | null
     totalSuggestedQty: number
     totalFinalQty: number
     memo: string | null
@@ -3190,6 +3262,7 @@ export interface ReorderPlanFieldRefs {
   readonly finalizedAt: Prisma.FieldRef<"ReorderPlan", 'DateTime'>
   readonly confirmedAt: Prisma.FieldRef<"ReorderPlan", 'DateTime'>
   readonly biasAdjustApplied: Prisma.FieldRef<"ReorderPlan", 'Json'>
+  readonly linkedSkuAllocation: Prisma.FieldRef<"ReorderPlan", 'Json'>
   readonly totalSuggestedQty: Prisma.FieldRef<"ReorderPlan", 'Int'>
   readonly totalFinalQty: Prisma.FieldRef<"ReorderPlan", 'Int'>
   readonly memo: Prisma.FieldRef<"ReorderPlan", 'String'>

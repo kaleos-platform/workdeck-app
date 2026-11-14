@@ -67,6 +67,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ pl
           locationId: plan.locationId, // 위치 세트/레이어드 계획의 대상 위치 보존 (누락 시 평이 상품 플랜으로 강등)
           sourcePlanId: plan.id,
           biasAdjustApplied: plan.biasAdjustApplied ?? undefined,
+          linkedSkuAllocation: plan.linkedSkuAllocation ?? undefined,
           totalSuggestedQty: plan.totalSuggestedQty,
           totalFinalQty: plan.totalFinalQty,
           memo: plan.memo,

@@ -2253,6 +2253,7 @@ export const ReorderPlanScalarFieldEnum = {
   finalizedAt: 'finalizedAt',
   confirmedAt: 'confirmedAt',
   biasAdjustApplied: 'biasAdjustApplied',
+  linkedSkuAllocation: 'linkedSkuAllocation',
   totalSuggestedQty: 'totalSuggestedQty',
   totalFinalQty: 'totalFinalQty',
   memo: 'memo',

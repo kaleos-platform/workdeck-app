@@ -15132,6 +15132,7 @@ export const ReorderPlanScalarFieldEnum = {
   finalizedAt: 'finalizedAt',
   confirmedAt: 'confirmedAt',
   biasAdjustApplied: 'biasAdjustApplied',
+  linkedSkuAllocation: 'linkedSkuAllocation',
   totalSuggestedQty: 'totalSuggestedQty',
   totalFinalQty: 'totalFinalQty',
   memo: 'memo',
@@ -16229,14 +16230,14 @@ export type ListEnumAgentActionStatusFieldRefInput<$PrismaModel> = FieldRefInput
  * Reference to a field of type 'BrowserWriteJobStatus'
  */
 export type EnumBrowserWriteJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BrowserWriteJobStatus'>
-
+    
 
 
 /**
  * Reference to a field of type 'BrowserWriteJobStatus[]'
  */
 export type ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BrowserWriteJobStatus[]'>
-
+    
 
 
 /**
