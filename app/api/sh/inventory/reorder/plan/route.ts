@@ -680,6 +680,33 @@ export async function POST(req: NextRequest) {
     siblingAvgRate: plan.siblingAvgRate,
   })
 
+  // 자체·3PL 출고 단계 옵션 상세 — 연동 위치를 뺀 나머지 위치 기준(비레이어드 = 전체).
+  // computeLayeredRoundedSplit 의 remaining 계산과 같은 항목을 보여 준다.
+  const ownLayerFields = (it: (typeof itemInputs)[number]) => {
+    const st = stockInputs.get(it.optionId)
+    const onHand = Math.max(0, it.onHandStock)
+    const layeredNow = rocketGrossByOption != null
+    const rocketSales = layeredNow ? it.plan.rocketSalesInWindow : 0
+    const rocketExpected = layeredNow ? (rocketExpectedSalesByOption?.get(it.optionId) ?? 0) : 0
+    const rocketSafety = layeredNow ? (rocketSafetyStockByOption?.get(it.optionId) ?? 0) : 0
+    const rocketOnHand = layeredNow ? (st?.rocketOnHandQty ?? 0) : 0
+    const rocketIncoming = layeredNow ? (st?.rocketIncomingQty ?? 0) : 0
+    const expected = Math.max(0, it.plan.gross - rocketExpected)
+    const safety = Math.max(0, it.safetyStockQty - rocketSafety)
+    const current = Math.max(0, onHand - rocketOnHand)
+    const incoming = Math.max(0, it.incomingQty - rocketIncoming)
+    return {
+      salesInWindowQty: it.plan.salesInWindow,
+      linkedLocationSalesInWindowQty: layeredNow ? rocketSales : null,
+      ownSalesInWindowQty: Math.max(0, it.plan.salesInWindow - rocketSales),
+      ownExpectedSalesQty: Math.ceil(expected),
+      ownSafetyStockQty: Math.ceil(safety),
+      ownCurrentStockQty: current,
+      ownIncomingQty: incoming,
+      ownNeedQty: Math.max(0, Math.ceil(expected + safety - current - incoming)),
+    }
+  }
+
   // ── 5.7) dryRun 미리보기 — persist·LLM 없이 계산 결과만 반환(생성 위저드 시드) ──
   // 실제 생성과 동일 코드 경로(수요·예측·레이어드 산식)라 미리보기 == 생성 플랜 by construction.
   if (body.dryRun) {
@@ -772,6 +799,7 @@ export async function POST(req: NextRequest) {
             ? (optionFinalQtyOverride.get(it.optionId) ?? 0)
             : it.roundedSuggestedQty,
           ...engineFields(it.plan),
+          ...ownLayerFields(it),
         }
       }),
       sets: (planSetsData ?? []).map((s) => ({

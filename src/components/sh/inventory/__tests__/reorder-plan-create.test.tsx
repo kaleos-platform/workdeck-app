@@ -69,7 +69,18 @@ const preview = {
   locationName: null,
   sets: [],
   options: [
-    option({ optionId: 'o1', optionName: '블랙', onHandStock: -3, checkStock: true }),
+    option({
+      optionId: 'o1',
+      optionName: '블랙',
+      onHandStock: -3,
+      checkStock: true,
+      ownSalesInWindowQty: 123,
+      ownExpectedSalesQty: 50,
+      ownSafetyStockQty: 7,
+      ownCurrentStockQty: 11,
+      ownIncomingQty: 4,
+      ownNeedQty: 42,
+    }),
     option({
       optionId: 'o2',
       optionName: '화이트',
@@ -176,5 +187,23 @@ describe('발주 위저드 Step ④ — 모델 비교·신상품·재고 확인'
     await waitFor(() => expect(planBodies()).toHaveLength(2))
     // 재계산에도 수동 수량을 실어 보내야 입력값이 0 으로 초기화되지 않는다
     expect(planBodies()[1].manualQtyByOption).toEqual({ o2: 15 })
+  })
+})
+
+describe('발주 위저드 Step ③ — 자체·3PL 옵션 상세', () => {
+  it('옵션별 판매·예측 소진량·안전재고·현재고·입고예정·부족분·발주 수량을 표로 보여 준다', async () => {
+    render(<ReorderPlanCreate />)
+    fireEvent.click(screen.getByText('pick'))
+    await waitFor(() => expect(planBodies()).toHaveLength(1))
+    fireEvent.click(await screen.findByRole('button', { name: /다음 · 자체·3PL 출고 확인/ }))
+    await screen.findByText('자체·3PL 입고 필요 수량')
+    expect(screen.getByText('판매(90일)')).toBeInTheDocument()
+    const row = screen
+      .getAllByText('블랙')
+      .map((el) => el.closest('tr')!)
+      .find(Boolean)!
+    for (const v of ['123', '50', '7', '11', '4', '42', '30']) {
+      expect(within(row).getByText(v)).toBeInTheDocument()
+    }
   })
 })
