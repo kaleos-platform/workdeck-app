@@ -40,7 +40,11 @@
  *     --review-file review.json --apply
  *   개발 프로젝트로 확인되지 않는 대상은 --confirm-prod <brandId>:<spaceId> 가 추가로 필요하다.
  *   --review-file 이 필수이며, 승인되지 않은 이미지가 있는 항목은 refused.json 에 남기고 뺀다.
- *   충돌이 있으면 쓰기 없이 멈추고 conflicts.json 을 남긴다. --skip-conflicts 를 주면 그 항목만 빼고 진행한다.
+ *   사전 검사에서 충돌이 있으면 쓰기 전에 멈추고 conflicts.json 을 남긴다.
+ *   실행 중 충돌 시 앞서 복사·적재한 항목이 남을 수 있으므로 결과와 원장을 확인한다.
+ *   --skip-conflicts 를 주면 충돌 항목은 빼고 진행한다.
+ *   APPLIED_PARTIAL은 보류·거부·충돌이 있었음을 뜻한다. APPLIED_SCOPE_UNVERIFIED는
+ *   packet 적용은 끝났지만 원본 전체 범위를 독립 검증하지 못한 상태다. 두 상태는 exit 2다.
  *   --apply 는 SUPABASE_SERVICE_ROLE_KEY(Storage)와 ENCRYPTION_KEY*(원장 스냅샷 암호화)를 쓴다.
  *
  * 출력은 건수와 고정 코드뿐이다. 원문·id·접속 정보는 stdout/stderr에 남기지 않는다.
@@ -123,6 +127,7 @@ function readPacketSet(dir: string): PacketSet {
       .sort()
       .map((name) => readJson(join(folder, name)))
   return {
+    manifest: readJson('manifest.json'),
     org: readJson('org.json'),
     templates: readAll('templates'),
     postings: readAll('postings'),
@@ -259,6 +264,8 @@ async function importPackets(args: string[]) {
       })
     )
     if (report.status === 'CONFLICT_STOPPED') process.exitCode = 1
+    else if (report.status === 'APPLIED_PARTIAL' || report.status === 'APPLIED_SCOPE_UNVERIFIED')
+      process.exitCode = 2
   } finally {
     await db.$disconnect()
   }

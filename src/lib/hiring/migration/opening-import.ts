@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { chmodSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { z } from 'zod'
+import { z } from 'zod'
 import { Prisma, type PrismaClient } from '@/generated/prisma/client'
 import { copyMigrationFile } from './file-copy'
 import {
@@ -42,7 +42,12 @@ export type TargetStorage = {
   read: (path: string) => Promise<Uint8Array | null>
   write: (path: string, bytes: Uint8Array, mimeType: string) => Promise<void>
 }
-export type PacketSet = { org: unknown; templates: unknown[]; postings: unknown[] }
+export type PacketSet = {
+  org: unknown
+  templates: unknown[]
+  postings: unknown[]
+  manifest?: unknown
+}
 type Db = Pick<
   PrismaClient,
   | '$transaction'
@@ -417,7 +422,9 @@ type ImportIssue = { kind: string; id: string; code: string }
 type ImportIssues = { conflicts: ImportIssue[]; refused: ImportIssue[] }
 
 export function safeMigrationStatus(status: string) {
-  return ['PLANNED', 'CONFLICT_STOPPED', 'APPLIED_PARTIAL', 'APPLIED'].includes(status)
+  return ['PLANNED', 'CONFLICT_STOPPED', 'APPLIED_PARTIAL', 'APPLIED_SCOPE_UNVERIFIED'].includes(
+    status
+  )
     ? status
     : 'UNKNOWN'
 }
@@ -438,6 +445,14 @@ export function safeMigrationSummary(summary: object) {
     removedSections: ['managerSections', 'disabledSections', 'templateDynamicSections'],
     refused: ['postings', 'templates'],
     sameNameInTarget: ['stores', 'positions'],
+    sourceScope: [
+      'verified',
+      'postingsHeld',
+      'postingsExcluded',
+      'templatesHeld',
+      'storesHeld',
+      'positionsHeld',
+    ],
   }
   for (const [group, keys] of Object.entries(fields)) {
     const source = input[group]
@@ -551,6 +566,80 @@ export async function runOpeningImport(
   if (apply && options.review === undefined) throw Error('REVIEW_FILE_REQUIRED')
   const org = parsePacket(orgPacketSchema, set.org)
   assertSnapshotTimes(org, true)
+  const id = z.string().regex(/^[1-9]\d{0,18}$/)
+  const entry = z.object({ id, status: z.enum(['included', 'held', 'excluded']) })
+  const manifest = z
+    .object({
+      summary: z.object({ sourceSpaceId: id, snapshotAt: z.string() }),
+      postings: z.array(entry),
+      templates: z.array(entry),
+      stores: z.array(id),
+      positions: z.array(id),
+      heldOrg: z.object({ stores: z.array(id), positions: z.array(id) }),
+    })
+    .safeParse(set.manifest)
+  if (
+    !manifest.success ||
+    manifest.data.summary.sourceSpaceId !== org.sourceSpaceId ||
+    manifest.data.summary.snapshotAt !== org.sourceSnapshotAt
+  )
+    throw Error('SOURCE_SCOPE_INVALID')
+  const m = manifest.data
+  const sameIds = (expected: string[], actual: string[]) =>
+    new Set(expected).size === expected.length &&
+    new Set(actual).size === actual.length &&
+    expected.length === actual.length &&
+    expected.every((value) => actual.includes(value))
+  const postingPackets = set.postings.map((raw) => parsePacket(postingPacketSchema, raw))
+  const templatePackets = set.templates.map((raw) => parsePacket(templatePacketSchema, raw))
+  const postingIds = postingPackets.map((packet) => packet.sourcePostingId)
+  const templateIds = templatePackets.map((packet) => packet.sourceTemplateId)
+  if (
+    !sameIds(
+      m.postings.map((x) => x.id),
+      [...new Set(m.postings.map((x) => x.id))]
+    ) ||
+    !sameIds(
+      m.templates.map((x) => x.id),
+      [...new Set(m.templates.map((x) => x.id))]
+    ) ||
+    [...postingPackets, ...templatePackets].some(
+      (packet) =>
+        packet.sourceSpaceId !== org.sourceSpaceId ||
+        packet.sourceSnapshotAt !== org.sourceSnapshotAt
+    ) ||
+    m.templates.some((x) => x.status === 'excluded') ||
+    !sameIds(
+      m.postings.filter((x) => x.status === 'included').map((x) => x.id),
+      postingIds
+    ) ||
+    !sameIds(
+      m.templates.filter((x) => x.status === 'included').map((x) => x.id),
+      templateIds
+    ) ||
+    !sameIds(
+      m.stores,
+      org.stores.map((x) => x.sourceId)
+    ) ||
+    !sameIds(
+      m.positions,
+      org.positions.map((x) => x.sourceId)
+    ) ||
+    m.heldOrg.stores.some((x) => m.stores.includes(x)) ||
+    m.heldOrg.positions.some((x) => m.positions.includes(x)) ||
+    new Set(m.heldOrg.stores).size !== m.heldOrg.stores.length ||
+    new Set(m.heldOrg.positions).size !== m.heldOrg.positions.length
+  )
+    throw Error('SOURCE_SCOPE_INVALID')
+  // 로컬 manifest만으로 원본 범위의 누락이나 조작 여부를 증명할 수 없다.
+  const sourceScope = {
+    verified: 0,
+    postingsHeld: m.postings.filter((x) => x.status === 'held').length,
+    postingsExcluded: m.postings.filter((x) => x.status === 'excluded').length,
+    templatesHeld: m.templates.filter((x) => x.status === 'held').length,
+    storesHeld: m.heldOrg.stores.length,
+    positionsHeld: m.heldOrg.positions.length,
+  }
   // prepare와 같은 기준이다. 조직 이름은 키워드를 보지 않는다.
   const orgHits = scanContacts(org)
   if (orgHits.url) throw Error('HELD_SENSITIVE_URL')
@@ -625,6 +714,7 @@ export async function runOpeningImport(
 
   const empty = (): Counts => ({ created: 0, skipped: 0, conflict: 0 })
   const report = {
+    sourceScope,
     targetSpaceName: space.name,
     refused: {
       postings: issues.refused.filter((item) => item.kind === 'posting').length,
@@ -785,9 +875,16 @@ export async function runOpeningImport(
       if (!skipConflicts) return { status: 'CONFLICT_STOPPED' as const, ...report, issues }
     }
   }
-  const partial = issues.conflicts.length || issues.refused.length
   return {
-    status: partial ? ('APPLIED_PARTIAL' as const) : ('APPLIED' as const),
+    status:
+      issues.conflicts.length ||
+      issues.refused.length ||
+      sourceScope.postingsHeld ||
+      sourceScope.templatesHeld ||
+      sourceScope.storesHeld ||
+      sourceScope.positionsHeld
+        ? ('APPLIED_PARTIAL' as const)
+        : ('APPLIED_SCOPE_UNVERIFIED' as const),
     ...report,
     issues,
   }

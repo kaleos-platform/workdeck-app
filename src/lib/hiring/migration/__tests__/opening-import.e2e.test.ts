@@ -107,7 +107,15 @@ function packets() {
     images: { 'index:0': { ...asset } },
     resources: {},
   }
-  return { org, postings: [posting], templates: [template] }
+  const manifest = {
+    summary: { sourceSpaceId: org.sourceSpaceId, snapshotAt: org.sourceSnapshotAt },
+    postings: [{ id: posting.sourcePostingId, status: 'included' }],
+    templates: [{ id: template.sourceTemplateId, status: 'included' }],
+    stores: org.stores.map((store) => store.sourceId),
+    positions: org.positions.map((position) => position.sourceId),
+    heldOrg: { stores: [], positions: [] },
+  }
+  return { org, postings: [posting], templates: [template], manifest }
 }
 
 const objects = new Map<string, Uint8Array>()
@@ -185,7 +193,8 @@ describe('Opening 비PII 적재 (dev DB)', () => {
 
     const applied = await run(packets(), true)
     expect(applied).toMatchObject({
-      status: 'APPLIED',
+      status: 'APPLIED_SCOPE_UNVERIFIED',
+      sourceScope: { verified: 0 },
       targetSpaceName: 'opening-e2e',
       postings: { created: 1, conflict: 0 },
     })
@@ -222,7 +231,7 @@ describe('Opening 비PII 적재 (dev DB)', () => {
 
     const again = await run(packets(), true)
     expect(again).toMatchObject({
-      status: 'APPLIED',
+      status: 'APPLIED_SCOPE_UNVERIFIED',
       stores: { created: 0, skipped: 1 },
       positions: { skipped: 1 },
       templates: { skipped: 1 },

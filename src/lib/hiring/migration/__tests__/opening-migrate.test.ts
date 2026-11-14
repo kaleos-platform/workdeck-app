@@ -62,7 +62,7 @@ it('stdout 상태는 정해진 상태만 보존한다', () => {
   expect(safeMigrationStatus('PLANNED')).toBe('PLANNED')
   expect(safeMigrationStatus('CONFLICT_STOPPED')).toBe('CONFLICT_STOPPED')
   expect(safeMigrationStatus('APPLIED_PARTIAL')).toBe('APPLIED_PARTIAL')
-  expect(safeMigrationStatus('APPLIED')).toBe('APPLIED')
+  expect(safeMigrationStatus('APPLIED_SCOPE_UNVERIFIED')).toBe('APPLIED_SCOPE_UNVERIFIED')
   expect(safeMigrationStatus('privateperson')).toBe('UNKNOWN')
 })
 
@@ -484,7 +484,8 @@ async function importSet(
   storage = memoryStorage().storage,
   extra: { review?: unknown; skipConflicts?: boolean } = {}
 ) {
-  const initialReview = recordedReviews.get(prepared) ?? approvePrepared(prepared)
+  const initialReview =
+    'review' in extra ? extra.review : (recordedReviews.get(prepared) ?? approvePrepared(prepared))
   return runOpeningImport(db as unknown as FakeDb, prepared, {
     spaceId: 'space',
     brandId: '9',
@@ -1206,7 +1207,7 @@ describe('import', () => {
     const { objects, storage } = memoryStorage()
     const report = await importSet(db, prepared, true, storage)
     expect(report).toMatchObject({
-      status: 'APPLIED',
+      status: 'APPLIED_PARTIAL',
       stores: { created: 2 },
       positions: { created: 1 },
       templates: { created: 1 },
@@ -1254,11 +1255,13 @@ describe('import', () => {
     await importSet(db, first, true)
     const size = records.size
     const again = await prepare()
-    for (const packet of again.postings)
-      packet.sourceSnapshotAt = new Date(snapshotAt.getTime() + 1000).toISOString()
+    const later = new Date(snapshotAt.getTime() + 1000).toISOString()
+    again.org.sourceSnapshotAt = later
+    again.manifest.summary.snapshotAt = later
+    for (const packet of [...again.postings, ...again.templates]) packet.sourceSnapshotAt = later
     const report = await importSet(db, again, true)
     expect(report).toMatchObject({
-      status: 'APPLIED',
+      status: 'APPLIED_PARTIAL',
       stores: { created: 0, skipped: 2 },
       templates: { skipped: 1 },
       postings: { created: 0, skipped: 2 },
@@ -1273,6 +1276,7 @@ describe('import', () => {
     const changed = await prepare()
     changed.postings[0].posting.title = '수정된 합성 공고'
     changed.org.positions.push({ ...changed.org.positions[0], sourceId: '31' })
+    changed.manifest.positions.push('31')
     const report = await importSet(db, changed, true, undefined, {
       review: approvePrepared(changed),
     })
@@ -1329,6 +1333,7 @@ describe('import', () => {
   it('공고가 참조하는 매장이 org packet에 없으면 거부한다', async () => {
     const prepared = await prepare()
     prepared.org.stores = prepared.org.stores.slice(1)
+    prepared.manifest.stores = prepared.org.stores.map((entry) => entry.sourceId)
     await expect(
       importSet(fakeDb().db, prepared, false, undefined, { review: approvePrepared(prepared) })
     ).rejects.toThrow('MIGRATION_REFERENCE_UNMAPPED')
@@ -1498,7 +1503,7 @@ describe('사람 검토', () => {
     const target = fakeDb()
     await expect(
       importSet(target.db, approved, true, undefined, { review })
-    ).resolves.toMatchObject({ status: 'APPLIED' })
+    ).resolves.toMatchObject({ status: 'APPLIED_PARTIAL' })
     const changedPosting = await prepare(rows, review)
     changedPosting.postings[0].posting.title = '변경된 이름'
     await expect(
@@ -1584,7 +1589,7 @@ describe('사람 검토', () => {
         images: released.manifest.manualReviewImages.map((image) => image.sha256),
       }),
     })
-    expect(report.status).toBe('APPLIED')
+    expect(report.status).toBe('APPLIED_PARTIAL')
     expect(postings.size).toBe(4)
   })
 
@@ -1738,6 +1743,67 @@ describe('사람 검토', () => {
 })
 
 describe('적재 게이트', () => {
+  it('준비 단계 보류가 누락된 packet의 적재는 전체 완료로 표시하지 않는다', async () => {
+    const prepared = await prepare()
+    expect(prepared.manifest.postings.some((entry) => entry.status === 'held')).toBe(true)
+    const report = await importSet(fakeDb().db, prepared, true)
+    expect(report.status).toBe('APPLIED_PARTIAL')
+    expect(report.sourceScope).toMatchObject({
+      verified: 0,
+      postingsHeld: prepared.manifest.summary.postings.held,
+      postingsExcluded: prepared.manifest.summary.postings.excluded,
+    })
+    expect(
+      safeMigrationSummary({ sourceScope: { ...report.sourceScope, privateName: '비공개 이름' } })
+        .sourceScope
+    ).toEqual(report.sourceScope)
+  })
+
+  it('manifest가 없거나 packet 목록과 다르면 시작 전에 거부한다', async () => {
+    const prepared = await prepare()
+    const db = fakeDb()
+    for (const manifest of [undefined, { ...prepared.manifest, postings: [] }]) {
+      await expect(
+        importSet(db.db, { ...prepared, manifest } as typeof prepared, true, undefined, {
+          review: approvePrepared(prepared),
+        })
+      ).rejects.toThrow('SOURCE_SCOPE_INVALID')
+    }
+    expect(db.postings.size).toBe(0)
+  })
+
+  it('동일 고객이라도 다른 snapshot packet이 섞이면 거부한다', async () => {
+    const prepared = await prepare()
+    prepared.postings[0].sourceSnapshotAt = new Date(snapshotAt.getTime() + 1000).toISOString()
+    await expect(importSet(fakeDb().db, prepared, true)).rejects.toThrow('SOURCE_SCOPE_INVALID')
+  })
+
+  it('로컬 manifest가 보류를 숨겨도 독립 범위 증거 없이는 전체 완료를 표시하지 않는다', async () => {
+    const prepared = await prepare()
+    const forged = {
+      ...prepared.manifest,
+      postings: prepared.manifest.postings.filter((entry) => entry.status === 'included'),
+      templates: prepared.manifest.templates.filter((entry) => entry.status === 'included'),
+      heldOrg: { stores: [], positions: [] },
+      summary: {
+        ...prepared.manifest.summary,
+        postings: {
+          ...prepared.manifest.summary.postings,
+          held: 0,
+          excluded: 0,
+          total: prepared.postings.length,
+        },
+        templates: {
+          ...prepared.manifest.summary.templates,
+          held: 0,
+          total: prepared.templates.length,
+        },
+      },
+    }
+    const report = await importSet(fakeDb().db, { ...prepared, manifest: forged }, true)
+    expect(report.status).toBe('APPLIED_SCOPE_UNVERIFIED')
+    expect(report.sourceScope.verified).toBe(0)
+  })
   it('합성 prepare·사람 검토 후보 파일·승인 후 dry-run은 DB와 Storage를 변경하지 않는다', async () => {
     const reader: OpeningObjectReader = async (input) =>
       ['content_data/a.json', 'content_data/c.json'].includes(input.key)
@@ -2047,6 +2113,7 @@ describe('적재 게이트', () => {
     const changed = await prepare()
     changed.postings[0].posting.title = '수정된 합성 공고'
     changed.org.positions.push({ ...changed.org.positions[0], sourceId: '31', name: '새 직무' })
+    changed.manifest.positions.push('31')
 
     const stopped = await importSet(db, changed, true, undefined, {
       review: approvePrepared(changed),
