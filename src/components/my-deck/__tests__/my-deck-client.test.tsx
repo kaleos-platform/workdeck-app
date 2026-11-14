@@ -146,3 +146,19 @@ test('구독 예약한 업무는 예약 표시와 예약 취소만 보인다', (
   fireEvent.click(screen.getByRole('button', { name: '모집 관리 구독 예약 취소 확인 열기' }))
   expect(screen.getByRole('dialog')).toHaveTextContent('결제되지 않으며')
 })
+
+test('체험 예약만 있는 구독에 체험 끝난 업무를 더하면 일할이 아닌 구독 시작으로 안내한다', () => {
+  render(
+    <MyDeckClient
+      {...base}
+      cardSummary="신한 1234"
+      hasActiveSubscription
+      subscribedDeckIds={['finance']}
+      reservedDeckIds={['finance']}
+      billing={[{ ...bill, allowed: false, reason: 'LOCKED', trialEndsAt: '2026-01-01T00:00:00Z' }]}
+    />
+  )
+  fireEvent.click(screen.getByRole('button', { name: '모집 관리 추가 확인 열기' }))
+  expect(screen.getByRole('dialog')).not.toHaveTextContent('일할')
+  expect(screen.getByRole('button', { name: '구독 시작' })).toBeInTheDocument()
+})

@@ -29,6 +29,8 @@ export type SubscribeTarget = {
   isAddition: boolean
   /** 체험 중인 업무의 체험 종료 시각 — 있으면 지금은 0원, 체험 종료일에 결제가 시작된다(구독 예약) */
   trialEndsAt?: string | null
+  /** 업무 추가 경로지만 결제된 업무가 없는(체험 예약만 있는) 구독 — 일할이 아니라 한 달치로 새 주기를 시작한다 */
+  chargesFullMonth?: boolean
 }
 
 type SubscribeDialogProps = {
@@ -150,7 +152,8 @@ export function SubscribeDialog({
                 남은 기간만큼 일할 계산해 결제하고, 이후 함께 결제됩니다.
               </li>
             ) : (
-              target.isAddition && (
+              target.isAddition &&
+              !target.chargesFullMonth && (
                 <li>• 이용 기간 중 추가하므로 남은 기간만큼 일할 계산된 금액이 즉시 청구됩니다.</li>
               )
             )}
@@ -190,7 +193,11 @@ export function SubscribeDialog({
           ) : (
             <Button onClick={onConfirm} disabled={busy}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {trialEnd ? '구독 예약' : target.isAddition ? '추가하고 결제' : '구독 시작'}
+              {trialEnd
+                ? '구독 예약'
+                : target.isAddition && !target.chargesFullMonth
+                  ? '추가하고 결제'
+                  : '구독 시작'}
             </Button>
           )}
         </DialogFooter>

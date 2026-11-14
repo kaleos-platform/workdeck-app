@@ -473,4 +473,20 @@ d('체험 중 구독 예약 실 DB', () => {
     expect(mockCharge).not.toHaveBeenCalled()
     expect(await prisma.billingCharge.count({ where: { spaceId: SPACE } })).toBe(0)
   })
+
+  test('예약 전용 구독에 /start 를 다시 호출해도 기존 예약과 보장가를 지우지 않는다', async () => {
+    await blankSubscription()
+    await trial('finance', at(5))
+    await startSubscription(SPACE, ['finance'])
+    await prisma.subscriptionItem.updateMany({
+      where: { deckAppId: 'finance', subscription: { spaceId: SPACE } },
+      data: { lockedPrice: 12273 },
+    })
+    await startSubscription(SPACE, ['recruiting'])
+    const f = await item('finance')
+    expect(f.status).toBe('ACTIVE')
+    expect(f.awaitingTrialEnd).toBe(true)
+    expect(f.lockedPrice).toBe(12273)
+    expect((await item('recruiting')).awaitingTrialEnd).toBe(false)
+  })
 })

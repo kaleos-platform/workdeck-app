@@ -164,6 +164,8 @@ export function SubscriptionSettingsClient() {
   const openSubscribeDialog = useCallback(
     (deckIds: string[], isAddition: boolean) => {
       const access = deckIds.length === 1 ? data?.entitlement.decks[deckIds[0]] : undefined
+      const live = (data?.subscription?.items ?? []).filter((i) => i.status !== 'ENDED')
+      const reservedOnly = live.length > 0 && live.every((i) => i.awaitingTrialEnd)
       const decks = (data?.products ?? [])
         .filter(
           (p) =>
@@ -178,10 +180,12 @@ export function SubscriptionSettingsClient() {
           listPrice: p.monthlyPrice,
         }))
       if (decks.length === 0) return
+      const inTrial = access?.reason === 'TRIAL'
       setPending({
         decks,
         isAddition,
-        trialEndsAt: access?.reason === 'TRIAL' ? (access.trialEndsAt ?? null) : null,
+        trialEndsAt: inTrial ? (access?.trialEndsAt ?? null) : null,
+        chargesFullMonth: isAddition && reservedOnly && !inTrial,
       })
     },
     [data]
@@ -226,10 +230,14 @@ export function SubscriptionSettingsClient() {
       }))
     if (decks.length === 0) return
     const access = decks.length === 1 ? data.entitlement.decks[decks[0].id] : undefined
+    const live = (data.subscription?.items ?? []).filter((i) => i.status !== 'ENDED')
+    const reservedOnly = live.length > 0 && live.every((i) => i.awaitingTrialEnd)
+    const inTrial = access?.reason === 'TRIAL'
     setPending({
       decks,
       isAddition,
-      trialEndsAt: access?.reason === 'TRIAL' ? (access.trialEndsAt ?? null) : null,
+      trialEndsAt: inTrial ? (access?.trialEndsAt ?? null) : null,
+      chargesFullMonth: isAddition && reservedOnly && !inTrial,
     })
     // 한 번만 열리도록 파라미터 제거
     window.history.replaceState(null, '', window.location.pathname)

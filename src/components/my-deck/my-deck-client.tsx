@@ -225,9 +225,15 @@ export function MyDeckClient({
         ],
         isAddition: hasActiveSubscription,
         trialEndsAt: info?.reason === 'TRIAL' ? (info.trialEndsAt ?? null) : null,
+        // 체험 예약만 있는 구독에 체험 아닌 업무를 더하면 일할이 아니라 한 달치로 시작한다
+        chargesFullMonth:
+          hasActiveSubscription &&
+          subscribedDeckIds.length > 0 &&
+          subscribedDeckIds.every((id) => reserved.has(id)) &&
+          info?.reason !== 'TRIAL',
       })
     },
-    [billingById, hasActiveSubscription]
+    [billingById, hasActiveSubscription, subscribedDeckIds, reserved]
   )
 
   const openDeck = useCallback(

@@ -424,10 +424,10 @@ export async function removeBillingMethod(spaceId: string, methodId: string | nu
   await prisma.billingMethod.delete({ where: { id: method.id } })
 }
 
-export async function startSubscription(spaceId: string, deckIds: string[]) {
+export async function startSubscription(spaceId: string, requestedDeckIds: string[]) {
   assertCheckoutOpen(spaceId)
-  if (deckIds.length === 0) throw new BillingError('구독할 업무를 선택하세요', 400)
-  const products = await loadProducts(spaceId, deckIds)
+  if (requestedDeckIds.length === 0) throw new BillingError('구독할 업무를 선택하세요', 400)
+  const requestedProducts = await loadProducts(spaceId, requestedDeckIds)
   const method = await loadDefaultMethod(spaceId)
   const provider = getBillingProvider()
 
@@ -443,6 +443,23 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
   ) {
     throw new BillingError('이미 활성 구독이 있습니다 — 업무 추가를 사용하세요', 409)
   }
+  // 예약 전용 구독에서는 기존 예약을 항상 포함한다 — 빠뜨리면 아래 정리 단계가 예약과 보장가를 지운다
+  // (오래된 화면에서 /start 를 직접 호출해도 안전하도록 서버에서 합친다).
+  const deckIds =
+    subscription.status === 'ACTIVE'
+      ? [
+          ...new Set([
+            ...subscription.items
+              .filter((i) => i.type === 'DECK' && i.status !== 'ENDED')
+              .map((i) => i.deckAppId),
+            ...requestedDeckIds,
+          ]),
+        ]
+      : requestedDeckIds
+  const products =
+    deckIds.length === requestedDeckIds.length
+      ? requestedProducts
+      : await loadProducts(spaceId, deckIds)
 
   // 이전 고객 보장가: item 에 lockedPrice 가 있으면 사용 (정가가 더 낮아지면 정가)
   const priceOf = (p: { id: string; monthlyPrice: number }) =>
@@ -820,8 +837,7 @@ async function cancelReservation(
       },
       select: { status: true, orderId: true },
     })
-    if (charges.some((c) => c.status === 'PENDING'))
-      throw new BillingError(CHECKING_MESSAGE, 409)
+    if (charges.some((c) => c.status === 'PENDING')) throw new BillingError(CHECKING_MESSAGE, 409)
     if (charges.some((c) => c.status === 'PAID')) {
       // 이미 승인된 일할 결제가 있다 — 결제된 아이템으로 확정하고 일반 해지로 진행한다.
       await tx.subscriptionItem.updateMany({
