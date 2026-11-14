@@ -1503,7 +1503,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
               <LinkedSkuAllocationPanel
                 allocation={skuAlloc}
                 optionNameById={optionNameById}
-                desc={`외부 연동 소계 ${fmtQty(externalTotal)}개를 SKU 부족분(30일 판매 × ${horizonDays}일 − 재고 − 입고예정) 비례로 나눕니다. 나머지 ${fmtQty(Math.max(0, totalFinal - externalTotal))}개는 자체·3PL 위치로 입고합니다.`}
+                desc={`외부 연동 소계 ${fmtQty(externalTotal)}개로 SKU 부족분(30일 판매 × ${horizonDays}일 − 재고 − 입고예정)을 먼저 채우고, 남는 몫은 SKU 30일 판매 비중으로 나눕니다. 나머지 ${fmtQty(Math.max(0, totalFinal - externalTotal))}개는 자체·3PL 위치로 입고합니다.`}
               />
             ) : sets.length > 0 ? (
               <>
