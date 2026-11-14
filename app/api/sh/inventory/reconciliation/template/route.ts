@@ -21,6 +21,7 @@ export async function GET() {
           internalName: true,
           brand: { select: { name: true } },
           options: {
+            where: { deletedAt: null },
             select: { id: true, name: true },
             orderBy: { name: 'asc' },
           },
