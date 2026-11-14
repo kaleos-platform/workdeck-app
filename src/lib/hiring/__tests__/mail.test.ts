@@ -73,14 +73,31 @@ function application(overrides: Record<string, unknown> = {}) {
 describe('buildReceiptEmail', () => {
   it('공고명·접수 시각(KST)·문의 안내만 담는다', () => {
     const mail = buildReceiptEmail({
+      spaceName: '카페 <오렌지>',
       postingTitle: '<b>홀</b> 매니저',
       submittedAt: new Date('2026-11-13T05:05:00Z'),
       hasReplyTo: true,
     })
     expect(mail.subject).toContain('<b>홀</b> 매니저')
     expect(mail.html).toContain('&lt;b&gt;홀&lt;/b&gt;')
+    expect(mail.html).not.toContain('<b>홀')
     expect(mail.text).toContain('2026년 11월 13일 14:05')
     expect(mail.text).toContain('회신')
+  })
+
+  it('고객사 이름이 헤더, 워크덱은 하단 표기만 — html·text 모두', () => {
+    const mail = buildReceiptEmail({
+      spaceName: '카페 <오렌지>',
+      postingTitle: '홀 매니저',
+      submittedAt: new Date('2026-11-13T05:05:00Z'),
+      hasReplyTo: false,
+    })
+    expect(mail.html).toContain('카페 &lt;오렌지&gt;')
+    expect(mail.html).not.toContain('<오렌지>')
+    expect(mail.html).toContain('Workdeck으로 발송')
+    expect(mail.text.split('\n')[0]).toBe('카페 <오렌지>')
+    expect(mail.text).toContain('Workdeck으로 발송')
+    expect(mail.text).toContain('채용 공고에 안내된 연락처')
   })
 })
 
@@ -157,6 +174,17 @@ describe('buildDigestEmail', () => {
     expect(mail.subject).toContain('4명')
     expect(mail.text).toContain('A 공고: 3명')
     expect(mail.html).toContain('https://app/x?posting=p1')
+  })
+
+  it('공고명은 escape 하고 text 파트에 링크·안내를 남긴다', () => {
+    const mail = buildDigestEmail('2026-11-12', [
+      { title: '<script>x</script>', count: 2, url: 'https://app/x?posting=p1&a=1' },
+    ])
+    expect(mail.html).not.toContain('<script>')
+    expect(mail.html).toContain('&lt;script&gt;')
+    expect(mail.html).toContain('href="https://app/x?posting=p1&amp;a=1"')
+    expect(mail.text).toContain('https://app/x?posting=p1&a=1')
+    expect(mail.text).toContain('새 지원자 일일 요약 메일')
   })
 })
 

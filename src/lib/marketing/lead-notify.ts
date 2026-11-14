@@ -1,6 +1,7 @@
 import 'server-only'
 import { buildAdminUrl } from '@/lib/domain'
-import { escapeHtml, sendEmail } from '@/lib/email/send'
+import { sendEmail } from '@/lib/email/send'
+import { emailBlocks, renderEmail } from '@/lib/email/layout'
 
 // 도입 신청 알림 — 실패해도 신청 접수는 성공이어야 하므로 호출 측에서 allSettled 로 묶는다.
 // 리드는 전용 웹훅 채널로 보낸다(sendSystemNotification 은 운영 Space 채널용).
@@ -63,13 +64,27 @@ export async function notifyEmail(lead: LeadNotifyInput) {
     ['이메일', lead.email],
     ['휴대폰', maskPhone(lead.phone)],
   ]
-  const html = `<table>${rows
-    .map(([k, v]) => `<tr><th align="left">${escapeHtml(k)}</th><td>${escapeHtml(v)}</td></tr>`)
-    .join('')}</table><p><a href="${ADMIN_LEADS_URL}">${ADMIN_LEADS_URL}</a></p>`
+  const html = renderEmail({
+    preheader: `${lead.companyName} · ${lead.deckName}`,
+    header: { kind: 'workdeck', label: '운영 알림' },
+    body: [
+      emailBlocks.heading('새 도입 신청'),
+      emailBlocks.details(rows),
+      emailBlocks.button('어드민에서 보기', ADMIN_LEADS_URL),
+    ],
+    footer: ['운영자에게만 발송되는 내부 알림입니다.'],
+  })
+  const text = [
+    '새 도입 신청',
+    ...rows.map(([k, v]) => `${k}: ${v}`),
+    '',
+    `어드민에서 보기: ${ADMIN_LEADS_URL}`,
+  ].join('\n')
   await sendEmail({
     from: process.env.LEAD_NOTIFY_FROM ?? 'Workdeck <noreply@workdeck.work>',
     to: process.env.LEAD_NOTIFY_TO ?? 'hello@workdeck.work',
     subject: `${ENV_PREFIX}[도입 신청] ${lead.companyName} (${lead.deckName})`,
     html,
+    text,
   })
 }
