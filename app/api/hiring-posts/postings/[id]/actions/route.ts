@@ -12,7 +12,7 @@ import { checkPublishable } from '@/lib/hiring/postings'
 
 type Params = { params: Promise<{ id: string }> }
 
-// 공고 상태 전이: publish(발행) / close(마감) / reopen(재개) / archive(보관)
+// 공고 상태 전이: publish(발행) / close(마감) / reopen(재개) / archive(보관) / extend(마감일 연장)
 export async function POST(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
@@ -84,6 +84,32 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
     case 'reopen': {
       return errorResponse('새로운 모집은 공고를 복사해 진행해 주세요.', 409)
+    }
+    case 'extend': {
+      // 발행 잠금 예외: 모집 조건·지원서는 그대로 두고 마감일만 늦춘다(앞당기기·상시 모집 전환 불가).
+      // 마감됐던 공고는 다시 접수 상태(ACTIVE)가 된다. 지원 접수 범위를 넓히기만 하므로 지원자 이력에 영향이 없다.
+      if (!parsed.data.closingDate) return errorResponse('연장할 마감일을 입력하세요', 400)
+      const closingDate = new Date(parsed.data.closingDate)
+      if (isHiringDeadlinePassed(closingDate, now))
+        return errorResponse('오늘 이후 날짜로 연장해 주세요', 400)
+      // 조건부 갱신 — 발행 이력이 있고 보관되지 않았으며 기존 마감일보다 늦을 때만 반영한다.
+      const [updated] = await prisma.hiringPosting.updateManyAndReturn({
+        where: {
+          id,
+          spaceId: resolved.space.id,
+          publishedAt: { not: null },
+          status: { in: ['ACTIVE', 'CLOSED'] },
+          closingDate: { lt: closingDate },
+        },
+        data: { closingDate, status: 'ACTIVE' },
+        select: { id: true, status: true, closingDate: true },
+      })
+      if (!updated)
+        return errorResponse(
+          '발행된 공고의 마감일을 기존보다 늦은 날짜로만 연장할 수 있습니다',
+          409
+        )
+      return NextResponse.json({ posting: updated })
     }
   }
 }
