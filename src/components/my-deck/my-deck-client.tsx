@@ -25,6 +25,11 @@ import {
 } from '@/lib/deck-routes'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { buildMarketingUrl } from '@/lib/domain'
+import {
+  REASON_BADGE,
+  formatTrialEndDate,
+  type DeckAccessReason,
+} from '@/components/billing/billing-shared'
 
 type DeckSummary = {
   id: string
@@ -50,7 +55,34 @@ type MyDeckClientProps = {
     monthlyPrice: number
     listPrice: number
     allowed: boolean
+    reason: DeckAccessReason | null
+    trialEndsAt: string | null
+    graceEndsAt?: string | null
   }>
+}
+
+type DeckBilling = MyDeckClientProps['billing'][number]
+
+function startsTrial(info?: DeckBilling) {
+  return (
+    info?.pricingMode === 'SUBSCRIPTION' &&
+    !info.trialEndsAt &&
+    (info.reason === 'LOCKED' || info.reason === 'PAUSED')
+  )
+}
+
+function additionDescription(info?: DeckBilling): string {
+  if (startsTrial(info)) return '추가하면 이 업무의 7일 무료 체험이 시작됩니다.'
+  if (info?.reason === 'TRIAL' && info.trialEndsAt)
+    return `체험 종료일: ${formatTrialEndDate(info.trialEndsAt)} (KST). 다시 추가해도 체험 기간은 연장되지 않습니다.`
+  if (info?.reason === 'EXEMPT') return '면제 이용 중인 업무입니다. 추가할 때 결제되지 않습니다.'
+  if (info?.reason === 'SUBSCRIBED')
+    return '이미 유료 구독 중인 업무입니다. 추가할 때 중복 결제되지 않습니다.'
+  if (info?.reason === 'PAUSED')
+    return '결제 준비 중으로 무료 이용이 허용되어 있습니다. 새 체험 기간이 시작되는 것은 아닙니다.'
+  if (info?.reason === 'GRACE')
+    return `무료 이용 유예 중입니다.${info.graceEndsAt ? ` ${formatTrialEndDate(info.graceEndsAt)} (KST)까지 이용할 수 있습니다.` : ''}`
+  return '무료로 제공되는 업무입니다. 추가할 때 결제되지 않습니다.'
 }
 
 const DECK_ENTRY: Record<string, string> = {
@@ -144,7 +176,9 @@ export function MyDeckClient({
   const needsSubscription = useCallback(
     (deckId: string) => {
       const info = billingById.get(deckId)
-      return Boolean(info && info.pricingMode === 'SUBSCRIPTION' && !info.allowed)
+      return Boolean(
+        info && info.pricingMode === 'SUBSCRIPTION' && !info.allowed && !startsTrial(info)
+      )
     },
     [billingById]
   )
@@ -311,6 +345,8 @@ export function MyDeckClient({
     }
   }
 
+  const selectedBilling = selectedDeck ? billingById.get(selectedDeck.id) : undefined
+
   return (
     <div className="space-y-8">
       <header className="space-y-2">
@@ -346,8 +382,11 @@ export function MyDeckClient({
                     {isLocked(deck.id) ? (
                       <Badge variant="destructive">이용 중지됨</Badge>
                     ) : (
-                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
-                        사용 중
+                      <Badge variant="secondary">
+                        {billingById.get(deck.id)?.reason === 'SUBSCRIBED'
+                          ? '유료 구독 중'
+                          : (REASON_BADGE[billingById.get(deck.id)?.reason ?? 'FREE_BETA']?.label ??
+                            '무료 이용 중')}
                       </Badge>
                     )}
                   </div>
@@ -359,6 +398,13 @@ export function MyDeckClient({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
+                  {billingById.get(deck.id)?.reason === 'TRIAL' &&
+                    billingById.get(deck.id)?.trialEndsAt && (
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        체험 종료일: {formatTrialEndDate(billingById.get(deck.id)!.trialEndsAt!)}{' '}
+                        (KST)
+                      </p>
+                    )}
                   {isLocked(deck.id) ? (
                     <Button
                       className="w-full"
@@ -462,12 +508,24 @@ export function MyDeckClient({
               {selectedDeck ? `추가할 업무: ${selectedDeck.name}` : '추가할 업무를 확인해주세요.'}
             </DialogDescription>
           </DialogHeader>
+          <div className="space-y-2 text-sm">
+            <p>{additionDescription(selectedBilling)}</p>
+            {(startsTrial(selectedBilling) || selectedBilling?.reason === 'TRIAL') && (
+              <p className="text-muted-foreground">
+                체험 종료 후 자동 결제되지 않습니다. 계속 이용하려면 직접 유료 구독을 시작하세요.
+              </p>
+            )}
+          </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setSelectedDeck(null)} disabled={isSubmitting}>
               취소
             </Button>
             <Button onClick={confirmAddDeck} disabled={!selectedDeck || isSubmitting}>
-              {isSubmitting ? '추가 중...' : '추가하기'}
+              {isSubmitting
+                ? '추가 중...'
+                : startsTrial(selectedBilling)
+                  ? '무료 체험 시작'
+                  : '추가하기'}
             </Button>
           </DialogFooter>
         </DialogContent>

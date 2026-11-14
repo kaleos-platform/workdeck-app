@@ -89,3 +89,32 @@ test('면제된 업무는 직접 구독 링크로 들어와도 결제 모달을 
   expect(screen.queryByRole('button', { name: '구독 시작' })).not.toBeInTheDocument()
   mockSubscribeParam = ''
 })
+
+test('전액 환불로 종료된 구독은 해지 예정일 대신 환불 완료를 안내한다', async () => {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      role: 'OWNER',
+      products: [{ ...product, id: 'recruiting' }],
+      subscription: {
+        status: 'CANCELED',
+        currentPeriodEnd: null,
+        exemptFlag: false,
+        trialEndsAt: null,
+        items: [],
+      },
+      method: null,
+      charges: [{ status: 'REFUNDED', periodEnd: '2026-12-14T00:00:00Z' }],
+      entitlement: {
+        allowedDecks: [],
+        lockedDecks: ['recruiting'],
+        decks: { recruiting: { allowed: false, reason: 'LOCKED', trialEndsAt: null } },
+      },
+    }),
+  })
+  render(<SubscriptionSettingsClient />)
+  expect(
+    await screen.findByText(/마지막 결제가 전액 취소되어 유료 구독이 종료되었습니다/)
+  ).toBeInTheDocument()
+  expect(screen.queryByText(/이후 구독이 종료됩니다/)).not.toBeInTheDocument()
+})
