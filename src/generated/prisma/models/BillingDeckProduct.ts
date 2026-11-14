@@ -248,6 +248,7 @@ export type BillingDeckProductWhereInput = {
   released?: Prisma.BoolFilter<"BillingDeckProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"BillingDeckProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BillingDeckProduct"> | Date | string
+  accessPolicies?: Prisma.SpaceDeckAccessListRelationFilter
 }
 
 export type BillingDeckProductOrderByWithRelationInput = {
@@ -260,6 +261,7 @@ export type BillingDeckProductOrderByWithRelationInput = {
   released?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  accessPolicies?: Prisma.SpaceDeckAccessOrderByRelationAggregateInput
 }
 
 export type BillingDeckProductWhereUniqueInput = Prisma.AtLeast<{
@@ -275,6 +277,7 @@ export type BillingDeckProductWhereUniqueInput = Prisma.AtLeast<{
   released?: Prisma.BoolFilter<"BillingDeckProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"BillingDeckProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BillingDeckProduct"> | Date | string
+  accessPolicies?: Prisma.SpaceDeckAccessListRelationFilter
 }, "id">
 
 export type BillingDeckProductOrderByWithAggregationInput = {
@@ -319,6 +322,7 @@ export type BillingDeckProductCreateInput = {
   released?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  accessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutProductInput
 }
 
 export type BillingDeckProductUncheckedCreateInput = {
@@ -331,6 +335,7 @@ export type BillingDeckProductUncheckedCreateInput = {
   released?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  accessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type BillingDeckProductUpdateInput = {
@@ -343,6 +348,7 @@ export type BillingDeckProductUpdateInput = {
   released?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutProductNestedInput
 }
 
 export type BillingDeckProductUncheckedUpdateInput = {
@@ -355,6 +361,7 @@ export type BillingDeckProductUncheckedUpdateInput = {
   released?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type BillingDeckProductCreateManyInput = {
@@ -437,10 +444,122 @@ export type BillingDeckProductSumOrderByAggregateInput = {
   monthlyPrice?: Prisma.SortOrder
 }
 
+export type BillingDeckProductScalarRelationFilter = {
+  is?: Prisma.BillingDeckProductWhereInput
+  isNot?: Prisma.BillingDeckProductWhereInput
+}
+
 export type EnumDeckPricingModeFieldUpdateOperationsInput = {
   set?: $Enums.DeckPricingMode
 }
 
+export type BillingDeckProductCreateNestedOneWithoutAccessPoliciesInput = {
+  create?: Prisma.XOR<Prisma.BillingDeckProductCreateWithoutAccessPoliciesInput, Prisma.BillingDeckProductUncheckedCreateWithoutAccessPoliciesInput>
+  connectOrCreate?: Prisma.BillingDeckProductCreateOrConnectWithoutAccessPoliciesInput
+  connect?: Prisma.BillingDeckProductWhereUniqueInput
+}
+
+export type BillingDeckProductUpdateOneRequiredWithoutAccessPoliciesNestedInput = {
+  create?: Prisma.XOR<Prisma.BillingDeckProductCreateWithoutAccessPoliciesInput, Prisma.BillingDeckProductUncheckedCreateWithoutAccessPoliciesInput>
+  connectOrCreate?: Prisma.BillingDeckProductCreateOrConnectWithoutAccessPoliciesInput
+  upsert?: Prisma.BillingDeckProductUpsertWithoutAccessPoliciesInput
+  connect?: Prisma.BillingDeckProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BillingDeckProductUpdateToOneWithWhereWithoutAccessPoliciesInput, Prisma.BillingDeckProductUpdateWithoutAccessPoliciesInput>, Prisma.BillingDeckProductUncheckedUpdateWithoutAccessPoliciesInput>
+}
+
+export type BillingDeckProductCreateWithoutAccessPoliciesInput = {
+  id: string
+  name: string
+  pricingMode?: $Enums.DeckPricingMode
+  monthlyPrice: number
+  paidActivatedAt?: Date | string | null
+  isActive?: boolean
+  released?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BillingDeckProductUncheckedCreateWithoutAccessPoliciesInput = {
+  id: string
+  name: string
+  pricingMode?: $Enums.DeckPricingMode
+  monthlyPrice: number
+  paidActivatedAt?: Date | string | null
+  isActive?: boolean
+  released?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BillingDeckProductCreateOrConnectWithoutAccessPoliciesInput = {
+  where: Prisma.BillingDeckProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.BillingDeckProductCreateWithoutAccessPoliciesInput, Prisma.BillingDeckProductUncheckedCreateWithoutAccessPoliciesInput>
+}
+
+export type BillingDeckProductUpsertWithoutAccessPoliciesInput = {
+  update: Prisma.XOR<Prisma.BillingDeckProductUpdateWithoutAccessPoliciesInput, Prisma.BillingDeckProductUncheckedUpdateWithoutAccessPoliciesInput>
+  create: Prisma.XOR<Prisma.BillingDeckProductCreateWithoutAccessPoliciesInput, Prisma.BillingDeckProductUncheckedCreateWithoutAccessPoliciesInput>
+  where?: Prisma.BillingDeckProductWhereInput
+}
+
+export type BillingDeckProductUpdateToOneWithWhereWithoutAccessPoliciesInput = {
+  where?: Prisma.BillingDeckProductWhereInput
+  data: Prisma.XOR<Prisma.BillingDeckProductUpdateWithoutAccessPoliciesInput, Prisma.BillingDeckProductUncheckedUpdateWithoutAccessPoliciesInput>
+}
+
+export type BillingDeckProductUpdateWithoutAccessPoliciesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  pricingMode?: Prisma.EnumDeckPricingModeFieldUpdateOperationsInput | $Enums.DeckPricingMode
+  monthlyPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  paidActivatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  released?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BillingDeckProductUncheckedUpdateWithoutAccessPoliciesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  pricingMode?: Prisma.EnumDeckPricingModeFieldUpdateOperationsInput | $Enums.DeckPricingMode
+  monthlyPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  paidActivatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  released?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type BillingDeckProductCountOutputType
+ */
+
+export type BillingDeckProductCountOutputType = {
+  accessPolicies: number
+}
+
+export type BillingDeckProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  accessPolicies?: boolean | BillingDeckProductCountOutputTypeCountAccessPoliciesArgs
+}
+
+/**
+ * BillingDeckProductCountOutputType without action
+ */
+export type BillingDeckProductCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BillingDeckProductCountOutputType
+   */
+  select?: Prisma.BillingDeckProductCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * BillingDeckProductCountOutputType without action
+ */
+export type BillingDeckProductCountOutputTypeCountAccessPoliciesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SpaceDeckAccessWhereInput
+}
 
 
 export type BillingDeckProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -453,6 +572,8 @@ export type BillingDeckProductSelect<ExtArgs extends runtime.Types.Extensions.In
   released?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  accessPolicies?: boolean | Prisma.BillingDeckProduct$accessPoliciesArgs<ExtArgs>
+  _count?: boolean | Prisma.BillingDeckProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["billingDeckProduct"]>
 
 export type BillingDeckProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -492,10 +613,18 @@ export type BillingDeckProductSelectScalar = {
 }
 
 export type BillingDeckProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "pricingMode" | "monthlyPrice" | "paidActivatedAt" | "isActive" | "released" | "createdAt" | "updatedAt", ExtArgs["result"]["billingDeckProduct"]>
+export type BillingDeckProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  accessPolicies?: boolean | Prisma.BillingDeckProduct$accessPoliciesArgs<ExtArgs>
+  _count?: boolean | Prisma.BillingDeckProductCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type BillingDeckProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type BillingDeckProductIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $BillingDeckProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "BillingDeckProduct"
-  objects: {}
+  objects: {
+    accessPolicies: Prisma.$SpaceDeckAccessPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
@@ -900,6 +1029,7 @@ readonly fields: BillingDeckProductFieldRefs;
  */
 export interface Prisma__BillingDeckProductClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  accessPolicies<T extends Prisma.BillingDeckProduct$accessPoliciesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BillingDeckProduct$accessPoliciesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceDeckAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -955,6 +1085,10 @@ export type BillingDeckProductFindUniqueArgs<ExtArgs extends runtime.Types.Exten
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
+  /**
    * Filter, which BillingDeckProduct to fetch.
    */
   where: Prisma.BillingDeckProductWhereUniqueInput
@@ -973,6 +1107,10 @@ export type BillingDeckProductFindUniqueOrThrowArgs<ExtArgs extends runtime.Type
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
+  /**
    * Filter, which BillingDeckProduct to fetch.
    */
   where: Prisma.BillingDeckProductWhereUniqueInput
@@ -990,6 +1128,10 @@ export type BillingDeckProductFindFirstArgs<ExtArgs extends runtime.Types.Extens
    * Omit specific fields from the BillingDeckProduct
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
   /**
    * Filter, which BillingDeckProduct to fetch.
    */
@@ -1039,6 +1181,10 @@ export type BillingDeckProductFindFirstOrThrowArgs<ExtArgs extends runtime.Types
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
+  /**
    * Filter, which BillingDeckProduct to fetch.
    */
   where?: Prisma.BillingDeckProductWhereInput
@@ -1087,6 +1233,10 @@ export type BillingDeckProductFindManyArgs<ExtArgs extends runtime.Types.Extensi
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
+  /**
    * Filter, which BillingDeckProducts to fetch.
    */
   where?: Prisma.BillingDeckProductWhereInput
@@ -1129,6 +1279,10 @@ export type BillingDeckProductCreateArgs<ExtArgs extends runtime.Types.Extension
    * Omit specific fields from the BillingDeckProduct
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
   /**
    * The data needed to create a BillingDeckProduct.
    */
@@ -1177,6 +1331,10 @@ export type BillingDeckProductUpdateArgs<ExtArgs extends runtime.Types.Extension
    * Omit specific fields from the BillingDeckProduct
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
   /**
    * The data needed to update a BillingDeckProduct.
    */
@@ -1244,6 +1402,10 @@ export type BillingDeckProductUpsertArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
+  /**
    * The filter to search for the BillingDeckProduct to update in case it exists.
    */
   where: Prisma.BillingDeckProductWhereUniqueInput
@@ -1270,6 +1432,10 @@ export type BillingDeckProductDeleteArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
+  /**
    * Filter which BillingDeckProduct to delete.
    */
   where: Prisma.BillingDeckProductWhereUniqueInput
@@ -1290,6 +1456,30 @@ export type BillingDeckProductDeleteManyArgs<ExtArgs extends runtime.Types.Exten
 }
 
 /**
+ * BillingDeckProduct.accessPolicies
+ */
+export type BillingDeckProduct$accessPoliciesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SpaceDeckAccess
+   */
+  select?: Prisma.SpaceDeckAccessSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SpaceDeckAccess
+   */
+  omit?: Prisma.SpaceDeckAccessOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SpaceDeckAccessInclude<ExtArgs> | null
+  where?: Prisma.SpaceDeckAccessWhereInput
+  orderBy?: Prisma.SpaceDeckAccessOrderByWithRelationInput | Prisma.SpaceDeckAccessOrderByWithRelationInput[]
+  cursor?: Prisma.SpaceDeckAccessWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SpaceDeckAccessScalarFieldEnum | Prisma.SpaceDeckAccessScalarFieldEnum[]
+}
+
+/**
  * BillingDeckProduct without action
  */
 export type BillingDeckProductDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1301,4 +1491,8 @@ export type BillingDeckProductDefaultArgs<ExtArgs extends runtime.Types.Extensio
    * Omit specific fields from the BillingDeckProduct
    */
   omit?: Prisma.BillingDeckProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingDeckProductInclude<ExtArgs> | null
 }

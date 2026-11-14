@@ -29,7 +29,13 @@ export interface SubscriptionInput {
   activeDeckItemIds: string[]
 }
 
+export interface DeckAccessPolicyInput {
+  trialEndsAt: Date | null
+  exemptFlag: boolean
+}
+
 export interface DeckAccessInput {
+  deckAccess?: DeckAccessPolicyInput | null
   product: DeckProductInput
   subscription: SubscriptionInput | null
   // 해당 Space의 DeckInstance 생성 시각 (없으면 null) — 유예 판정용
@@ -60,7 +66,7 @@ export function evaluateDeckAccess(input: DeckAccessInput): DeckAccess {
   }
 
   // 2. 운영자 면제
-  if (subscription?.exemptFlag) {
+  if (subscription?.exemptFlag || input.deckAccess?.exemptFlag) {
     return { allowed: true, reason: 'EXEMPT' }
   }
 
@@ -74,7 +80,7 @@ export function evaluateDeckAccess(input: DeckAccessInput): DeckAccess {
   }
 
   // 4. Trial 유효
-  if (subscription?.trialEndsAt && subscription.trialEndsAt > now) {
+  if (input.deckAccess?.trialEndsAt && input.deckAccess.trialEndsAt > now) {
     return { allowed: true, reason: 'TRIAL' }
   }
 

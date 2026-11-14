@@ -802,6 +802,11 @@ export type HiringMessageTemplate = Prisma.HiringMessageTemplateModel
  */
 export type BillingDeckProduct = Prisma.BillingDeckProductModel
 /**
+ * Model SpaceDeckAccess
+ *
+ */
+export type SpaceDeckAccess = Prisma.SpaceDeckAccessModel
+/**
  * Model SpaceSubscription
  * 
  */

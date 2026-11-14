@@ -171,33 +171,83 @@ async function reconcilePending(
 // 멱등 게이트: orderId 유니크 제약. 같은 orderId 의 직전 시도가 FAILED 면 그 행을 재사용한다
 // (토스는 승인된 orderId 만 재사용을 막는다 — 정기결제 재시도와 같은 방식. 새 orderId 로 재시도하면
 // 응답 유실 후 실제로는 승인된 건과 이중 결제될 수 있다). PENDING·PAID 면 null → 호출부가 409.
-async function createOrReclaimCharge(data: Prisma.BillingChargeUncheckedCreateInput) {
-  const created = await prisma.billingCharge.create({ data }).catch((e) => {
-    if ((e as { code?: string }).code === 'P2002') return null // orderId 중복만 흡수
-    throw e
+async function createOrReclaimCharge(
+  data: Prisma.BillingChargeUncheckedCreateInput,
+  renewal = false,
+  now = new Date()
+) {
+  return prisma.$transaction(async (tx) => {
+    // 운영자 정책 변경과 같은 Space 행을 잠가 면제 확인~PENDING 생성 사이의 경합을 막는다.
+    await tx.$queryRaw`SELECT id FROM "Space" WHERE id = ${data.spaceId} FOR UPDATE`
+    const lines = data.breakdown as unknown as ChargeLine[]
+    const deckIds = lines.map((line) => line.deckAppId)
+    const [subscription, exempt] = await Promise.all([
+      tx.spaceSubscription.findUnique({
+        where: { spaceId: data.spaceId },
+        include: { items: true },
+      }),
+      tx.spaceDeckAccess.findFirst({
+        where: { spaceId: data.spaceId, deckAppId: { in: deckIds }, exemptFlag: true },
+      }),
+    ])
+    if (subscription?.exemptFlag || exempt)
+      throw new BillingError('결제 면제 중인 업무는 유료 구독할 수 없습니다', 409)
+    if (
+      renewal &&
+      (!subscription ||
+        !['ACTIVE', 'PAST_DUE'].includes(subscription.status) ||
+        subscription.currentPeriodEnd?.getTime() !== new Date(data.periodStart).getTime() ||
+        deckIds.some(
+          (id) =>
+            !subscription.items.some(
+              (item) => item.deckAppId === id && item.type === 'DECK' && item.status === 'ACTIVE'
+            )
+        ))
+    ) {
+      throw new BillingError('구독 상태가 변경되었습니다. 다음 청구 실행에서 다시 확인합니다', 409)
+    }
+    const existing = await tx.billingCharge.findUnique({ where: { orderId: data.orderId } })
+    if (!existing) return tx.billingCharge.create({ data })
+    const stalePending =
+      renewal &&
+      existing.status === 'PENDING' &&
+      existing.updatedAt.getTime() < now.getTime() - 60 * 60 * 1000
+    if (existing.status !== 'FAILED' && !stalePending) return null
+    // 승인 여부가 불명인 주문의 금액은 바꾸지 않는다. 같은 주문으로 재요청해 PG 멱등성을 유지한다.
+    if (
+      stalePending &&
+      (existing.amount !== data.amount ||
+        JSON.stringify(existing.breakdown) !== JSON.stringify(data.breakdown))
+    ) {
+      throw new BillingError(CHECKING_MESSAGE, 409)
+    }
+    return tx.billingCharge.update({
+      where: { id: existing.id },
+      data: {
+        status: 'PENDING',
+        failReason: null,
+        supplyAmount: data.supplyAmount,
+        vatAmount: data.vatAmount,
+        amount: data.amount,
+        periodStart: data.periodStart,
+        periodEnd: data.periodEnd,
+        breakdown: data.breakdown,
+      },
+    })
   })
-  if (created) return created
-  const existing = await prisma.billingCharge.findUnique({ where: { orderId: data.orderId } })
-  if (existing?.status !== 'FAILED') return null
-  const claimed = await prisma.billingCharge.updateMany({
-    where: { id: existing.id, status: 'FAILED', updatedAt: existing.updatedAt },
-    data: {
-      status: 'PENDING',
-      failReason: null,
-      supplyAmount: data.supplyAmount,
-      vatAmount: data.vatAmount,
-      amount: data.amount,
-      periodStart: data.periodStart,
-      periodEnd: data.periodEnd,
-      breakdown: data.breakdown,
-    },
-  })
-  return claimed.count === 1
-    ? prisma.billingCharge.findUnique({ where: { id: existing.id } })
-    : null
 }
 
 async function loadProducts(spaceId: string, deckIds: string[]) {
+  const [subscription, exempt] = await Promise.all([
+    prisma.spaceSubscription.findUnique({ where: { spaceId }, select: { exemptFlag: true } }),
+    prisma.spaceDeckAccess.findFirst({
+      where: { spaceId, deckAppId: { in: deckIds }, exemptFlag: true },
+      select: { id: true },
+    }),
+  ])
+  if (subscription?.exemptFlag || exempt) {
+    throw new BillingError('결제 면제 중인 업무는 유료 구독할 수 없습니다', 409)
+  }
   // 준비중 업무는 신규 구독 불가 — 이미 설치·구독 중인 공간은 예외 (URL 직접 호출 우회 차단)
   if ((await findClosedDecks(spaceId, deckIds)).length > 0) {
     throw new BillingError('준비중인 업무는 구독할 수 없습니다', 403)
@@ -300,11 +350,18 @@ export async function removeBillingMethod(spaceId: string, methodId: string | nu
     where: { spaceId },
     include: { items: { where: { status: { in: ['ACTIVE', 'CANCEL_AT_PERIOD_END'] } } } },
   })
+  const policies = await prisma.spaceDeckAccess.findMany({
+    where: { spaceId, exemptFlag: true },
+    select: { deckAppId: true },
+  })
+  const exemptDeckIds = new Set(policies.map((p) => p.deckAppId))
   const hasBillableItem =
     subscription &&
     !subscription.exemptFlag &&
     (subscription.status === 'ACTIVE' || subscription.status === 'PAST_DUE') &&
-    subscription.items.some((item) => item.status === 'ACTIVE')
+    subscription.items.some(
+      (item) => item.status === 'ACTIVE' && !exemptDeckIds.has(item.deckAppId)
+    )
   if (hasBillableItem) {
     throw new BillingError(
       '구독 중인 업무가 있어 결제수단을 삭제할 수 없습니다 — 먼저 구독을 해지하세요',
@@ -609,6 +666,11 @@ export async function runDueCharges(now = new Date()) {
     },
     include: {
       items: { where: { type: 'DECK', status: { in: ['ACTIVE', 'CANCEL_AT_PERIOD_END'] } } },
+      space: {
+        select: {
+          deckAccessPolicies: { where: { exemptFlag: true }, select: { deckAppId: true } },
+        },
+      },
     },
   })
 
@@ -616,23 +678,6 @@ export async function runDueCharges(now = new Date()) {
 
   for (const sub of due) {
     try {
-      // PAST_DUE는 재시도 스케줄(+1·+3·+5일) 도래 시에만 시도
-      if (sub.status === 'PAST_DUE') {
-        if (sub.retryCount > MAX_RETRY) {
-          // 초기 시도 + 재시도 3회 전부 실패 — 안전망 (실패 브랜치에서 이미 EXPIRED 처리됨)
-          await prisma.spaceSubscription.update({
-            where: { id: sub.id },
-            data: { status: 'EXPIRED' },
-          })
-          results.push({ spaceId: sub.spaceId, outcome: 'expired' })
-          continue
-        }
-        if (!shouldAttemptRetry(sub.currentPeriodEnd!, sub.retryCount, now)) {
-          results.push({ spaceId: sub.spaceId, outcome: 'waiting_retry' })
-          continue
-        }
-      }
-
       // 해제 예약 아이템은 이번 주기부터 제외 + ENDED 처리
       const cancelIds = sub.items
         .filter((i) => i.status === 'CANCEL_AT_PERIOD_END')
@@ -655,7 +700,44 @@ export async function runDueCharges(now = new Date()) {
         continue
       }
 
-      const lines: ChargeLine[] = activeItems.map((i) => ({
+      const exemptIds = new Set(sub.space.deckAccessPolicies.map((p) => p.deckAppId))
+      const billableItems = activeItems.filter((item) => !exemptIds.has(item.deckAppId))
+      if (billableItems.length === 0) {
+        // 면제 주기는 미납으로 만들거나 PG에 0원을 청구하지 않는다. 밀린 주기도 소급 청구하지 않는다.
+        let nextPeriod = addMonthClamped(sub.currentPeriodEnd!)
+        while (nextPeriod <= now) nextPeriod = addMonthClamped(nextPeriod)
+        await prisma.$transaction([
+          prisma.subscriptionItem.updateMany({
+            where: { id: { in: cancelIds } },
+            data: { status: 'ENDED', endedAt: now, lockedPrice: null },
+          }),
+          prisma.spaceSubscription.updateMany({
+            where: { id: sub.id, currentPeriodEnd: sub.currentPeriodEnd },
+            data: { status: 'ACTIVE', currentPeriodEnd: nextPeriod, retryCount: 0 },
+          }),
+        ])
+        results.push({ spaceId: sub.spaceId, outcome: 'exempt' })
+        continue
+      }
+
+      // PAST_DUE는 재시도 스케줄(+1·+3·+5일) 도래 시에만 시도
+      if (sub.status === 'PAST_DUE') {
+        if (sub.retryCount > MAX_RETRY) {
+          // 초기 시도 + 재시도 3회 전부 실패 — 안전망 (실패 브랜치에서 이미 EXPIRED 처리됨)
+          await prisma.spaceSubscription.update({
+            where: { id: sub.id },
+            data: { status: 'EXPIRED' },
+          })
+          results.push({ spaceId: sub.spaceId, outcome: 'expired' })
+          continue
+        }
+        if (!shouldAttemptRetry(sub.currentPeriodEnd!, sub.retryCount, now)) {
+          results.push({ spaceId: sub.spaceId, outcome: 'waiting_retry' })
+          continue
+        }
+      }
+
+      const lines: ChargeLine[] = billableItems.map((i) => ({
         deckAppId: i.deckAppId,
         type: 'DECK',
         price: i.priceSnapshot,
@@ -665,46 +747,23 @@ export async function runDueCharges(now = new Date()) {
       const periodEnd = addMonthClamped(periodStart)
       const orderId = cycleOrderId(sub.id, periodStart)
 
-      // 멱등+경합 게이트: orderId 유니크 제약. 같은 주기 재실행 시 P2002 → 스킵.
-      // 단 직전 시도가 FAILED면 재시도 가능해야 하므로 FAILED 레코드는 재사용.
-      let charge = await prisma.billingCharge
-        .create({
-          data: {
-            spaceId: sub.spaceId,
-            orderId,
-            ...amounts,
-            status: 'PENDING',
-            provider: provider.id,
-            periodStart,
-            periodEnd,
-            breakdown: lines as unknown as Prisma.InputJsonValue,
-          },
-        })
-        .catch(() => null)
+      const charge = await createOrReclaimCharge(
+        {
+          spaceId: sub.spaceId,
+          orderId,
+          ...amounts,
+          status: 'PENDING',
+          provider: provider.id,
+          periodStart,
+          periodEnd,
+          breakdown: lines as unknown as Prisma.InputJsonValue,
+        },
+        true,
+        now
+      )
       if (!charge) {
-        const existing = await prisma.billingCharge.findUnique({ where: { orderId } })
-        const stalePending =
-          existing?.status === 'PENDING' &&
-          existing.updatedAt.getTime() < now.getTime() - 60 * 60 * 1000
-        if (!existing || (existing.status !== 'FAILED' && !stalePending)) {
-          results.push({ spaceId: sub.spaceId, outcome: 'already_processed' })
-          continue
-        }
-        // FAILED(또는 1시간+ 잔류 PENDING — 크래시 잔재) → 재시도 선점 (경합 게이트 — 정확히 1회만 통과)
-        const claimed = await prisma.billingCharge.updateMany({
-          where: { id: existing.id, status: existing.status, updatedAt: existing.updatedAt },
-          data: {
-            status: 'PENDING',
-            ...amounts,
-            breakdown: lines as unknown as Prisma.InputJsonValue,
-          },
-        })
-        if (claimed.count !== 1) {
-          results.push({ spaceId: sub.spaceId, outcome: 'already_processed' })
-          continue
-        }
-        charge = await prisma.billingCharge.findUnique({ where: { id: existing.id } })
-        if (!charge) continue
+        results.push({ spaceId: sub.spaceId, outcome: 'already_processed' })
+        continue
       }
 
       const method = await loadDefaultMethod(sub.spaceId).catch(() => null)

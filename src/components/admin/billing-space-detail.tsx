@@ -1,16 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 type SpaceDetail = {
   space: { id: string; name: string }
   subscription: {
     id: string
     status: string
-    trialEndsAt: string | null
     currentPeriodEnd: string | null
     retryCount: number
     exemptFlag: boolean
@@ -71,7 +78,7 @@ export function BillingSpaceDetail({ spaceId }: { spaceId: string }) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold">{data.space.name}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{data.space.name}</h1>
         <p className="text-sm text-muted-foreground">{data.space.id}</p>
       </div>
 
@@ -80,6 +87,9 @@ export function BillingSpaceDetail({ spaceId }: { spaceId: string }) {
           <CardTitle>구독</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
+          <Link href="/admin/subscriptions" className="w-fit text-sm underline underline-offset-4">
+            업무별 체험·면제 관리
+          </Link>
           {data.subscription ? (
             <>
               <div className="flex flex-wrap gap-6 text-sm">
@@ -88,7 +98,6 @@ export function BillingSpaceDetail({ spaceId }: { spaceId: string }) {
                 </span>
                 <span>재시도 {data.subscription.retryCount}회</span>
                 <span>다음 결제일 {formatDate(data.subscription.currentPeriodEnd)}</span>
-                <span>트라이얼 종료 {formatDate(data.subscription.trialEndsAt)}</span>
                 <span>
                   면제{' '}
                   {data.subscription.exemptFlag

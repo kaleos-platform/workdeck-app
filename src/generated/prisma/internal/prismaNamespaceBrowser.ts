@@ -203,6 +203,7 @@ export const ModelName = {
   HiringBlacklist: 'HiringBlacklist',
   HiringMessageTemplate: 'HiringMessageTemplate',
   BillingDeckProduct: 'BillingDeckProduct',
+  SpaceDeckAccess: 'SpaceDeckAccess',
   SpaceSubscription: 'SpaceSubscription',
   SubscriptionItem: 'SubscriptionItem',
   BillingMethod: 'BillingMethod',
@@ -2832,6 +2833,20 @@ export const BillingDeckProductScalarFieldEnum = {
 } as const
 
 export type BillingDeckProductScalarFieldEnum = (typeof BillingDeckProductScalarFieldEnum)[keyof typeof BillingDeckProductScalarFieldEnum]
+
+
+export const SpaceDeckAccessScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  deckAppId: 'deckAppId',
+  trialEndsAt: 'trialEndsAt',
+  exemptFlag: 'exemptFlag',
+  exemptNote: 'exemptNote',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceDeckAccessScalarFieldEnum = (typeof SpaceDeckAccessScalarFieldEnum)[keyof typeof SpaceDeckAccessScalarFieldEnum]
 
 
 export const SpaceSubscriptionScalarFieldEnum = {
