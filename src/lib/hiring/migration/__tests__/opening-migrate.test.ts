@@ -624,15 +624,16 @@ describe('이미지·scene 정제', () => {
   const svg =
     '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>'
 
-  it('내장 SVG는 PNG로 굽고 형식을 고친다', async () => {
+  // 굽은 PNG는 편집기 저장 한도에 맞춰 WebP로 다시 압축된다(lossyCompress).
+  it('내장 SVG는 래스터로 굽고 형식을 고친다', async () => {
     const raw = scene()
     raw.files.f.dataURL = dataUrl('image/svg+xml', svg)
     const diag: string[] = []
     const clean = await sanitizeScene(raw, (key) => diag.push(key))
-    expect(clean.files.f.mimeType).toBe('image/png')
-    expect(clean.files.f.dataURL).toMatch(/^data:image\/png;base64,/)
+    expect(clean.files.f.mimeType).toBe('image/webp')
+    expect(clean.files.f.dataURL).toMatch(/^data:image\/webp;base64,/)
     const bytes = Buffer.from(clean.files.f.dataURL.split(',')[1], 'base64')
-    expect((await sharp(bytes).metadata()).format).toBe('png')
+    expect((await sharp(bytes).metadata()).format).toBe('webp')
     expect(diag).toEqual(['image/svg+xml|svg|CONVERTED'])
   })
 
@@ -658,7 +659,7 @@ describe('이미지·scene 정제', () => {
     raw.files.f.dataURL = make()
     const diag: string[] = []
     const clean = await sanitizeScene(raw, (entry) => diag.push(entry))
-    expect(clean.files.f.dataURL).toMatch(/^data:image\/png;base64,/)
+    expect(clean.files.f.dataURL).toMatch(/^data:image\/webp;base64,/)
     expect(diag).toEqual([key])
   })
 
@@ -1425,10 +1426,10 @@ describe('적재 게이트', () => {
     expect(() => embeddedImages(content)).toThrow('SCENE_IMAGE_INVALID')
   })
 
-  it('내장 이미지의 MIME이 실제 PNG와 다르면 거부한다', async () => {
+  it('내장 이미지의 MIME이 실제 바이트와 다르면 거부한다', async () => {
     const content = (await prepare()).postings[0].content
     const embedded = await sanitizeScene(scene())
-    embedded.files.f.dataURL = embedded.files.f.dataURL.replace('image/png', 'image/jpeg')
+    embedded.files.f.dataURL = embedded.files.f.dataURL.replace('image/webp', 'image/jpeg')
     embedded.files.f.mimeType = 'image/jpeg'
     content.resources['70'].scene = embedded
     expect(() => embeddedImages(content)).toThrow('SCENE_IMAGE_INVALID')
@@ -1461,8 +1462,8 @@ describe('적재 게이트', () => {
     const reviewDir = mkdtempSync(join(tmpdir(), 'embedded-review-'))
     try {
       writeReviewDir(reviewDir, initial.review)
-      expect(readFileSync(join(reviewDir, 'images', `${sha256}.png`))).toEqual(bytes)
-      expect(statSync(join(reviewDir, 'images', `${sha256}.png`)).mode & 0o777).toBe(0o600)
+      expect(readFileSync(join(reviewDir, 'images', `${sha256}.webp`))).toEqual(bytes)
+      expect(statSync(join(reviewDir, 'images', `${sha256}.webp`)).mode & 0o777).toBe(0o600)
     } finally {
       rmSync(reviewDir, { recursive: true, force: true })
     }
@@ -1507,6 +1508,7 @@ describe('적재 게이트', () => {
       'EMBEDDED_IMAGE_REVIEW_REQUIRED'
     )
     resource.scene!.files.f.dataURL = `data:image/png;base64,${Buffer.from(await png(99)).toString('base64')}`
+    resource.scene!.files.f.mimeType = 'image/png'
     await expect(
       planPosting(
         approved.postings[0],

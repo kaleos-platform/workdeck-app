@@ -27,6 +27,7 @@ import {
 } from './opening-packet'
 import {
   cleanImage,
+  lossyCompress,
   failureLabel,
   imageDiagKey,
   sanitizeScene,
@@ -499,19 +500,27 @@ async function buildCustomerPackets(
     })
   }
   const stripped = new Map<string, Promise<Asset>>()
-  async function readAsset(key: unknown, targetTypes: string[], owned = false): Promise<Asset> {
+  // design: 디자인 블록의 내보낸 이미지 — 편집기 저장 한도에 맞춰 JPEG로 압축한다.
+  async function readAsset(
+    key: unknown,
+    targetTypes: string[],
+    owned = false,
+    design = false
+  ): Promise<Asset> {
     if (typeof key !== 'string' || !key) throw Error('ASSET_KEY_MISSING')
     const raw = await readFile(key, targetTypes, owned)
-    if (!stripped.has(key))
+    const cacheKey = design ? `${key}\u0000design` : key
+    if (!stripped.has(cacheKey))
       stripped.set(
-        key,
+        cacheKey,
         (async () => {
           // 메타데이터를 지운 결과를 해시한다. 검토·복사 대상은 이 바이트다.
           const sniffed = sniffLabel(raw)
-          const clean = await cleanImage(raw).catch((error) => {
+          const cleaned = await cleanImage(raw).catch((error) => {
             count(assetImageDiag, imageDiagKey('', sniffed, failureLabel(error)))
             throw error
           })
+          const clean = design ? await lossyCompress(cleaned, 'jpeg') : cleaned
           count(assetImageDiag, imageDiagKey('', sniffed, sniffed === 'svg' ? 'CONVERTED' : 'OK'))
           const { bytes, mimeType } = clean
           if (bytes.byteLength > 10 * 1024 * 1024) throw Error('ASSET_TOO_LARGE')
@@ -520,7 +529,7 @@ async function buildCustomerPackets(
           return { ref: hashKey(key), sha256, sizeBytes: bytes.byteLength, mimeType }
         })()
       )
-    return stripped.get(key) as Promise<Asset>
+    return stripped.get(cacheKey) as Promise<Asset>
   }
   async function readScene(key: string) {
     let scene: Row
@@ -667,7 +676,7 @@ async function buildCustomerPackets(
       if (!row) throw Error('CONTENT_MISSING_RESOURCE')
       if (row.status !== 1 || row.content_type !== 'excalidraw') throw Error('RESOURCE_UNSUPPORTED')
       if (row.owner_brand_id !== brand.id) throw Error('RESOURCE_SCOPE_MISMATCH')
-      const asset = await readAsset(row.image_key, ['content_image'], true)
+      const asset = await readAsset(row.image_key, ['content_image'], true, true)
       const sceneKey = text(row.file_key)
       if (type === 'content' && !sceneKey) throw Error('CONTENT_MISSING_SCENE')
       resources[id] = {
