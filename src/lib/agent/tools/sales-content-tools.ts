@@ -12,6 +12,8 @@ import { pickDailyMetrics } from '@/lib/sc/metrics-dedup'
 import { redactErrorMessage } from '@/lib/sc/notifications'
 import { ToolUserError } from './errors'
 import { copyRequestPhotos, isPublishable } from '@/lib/sc/osmu/media-copy'
+import { requestPost } from '@/lib/sc/osmu/request-create'
+import { REQUEST_KINDS } from '@/lib/sc/osmu/notion-schema'
 import type { RequestSnapshot } from '@/lib/sc/osmu/notion-schema'
 import type { ToolDefinition } from './types'
 
@@ -594,6 +596,41 @@ const getSource: ToolDefinition = {
   },
 }
 
+const requestPostTool: ToolDefinition = {
+  name: 'sc_request_post',
+  description:
+    '노션을 열지 않고 콘텐츠 발행 요청을 겁니다. 노션 「콘텐츠 소재」에서 소재를 제목으로 찾아 「콘텐츠 발행」 행을 만들고(같은 소재·유형의 진행 중 행이 있으면 재사용) 「작성 요청」으로 둔 뒤, 소재 정리·사진 동기화·사진 설명을 바로 실행합니다(최대 약 45초). 사용자가 "○○ 소재로 블로그 써줘"처럼 요청하면 이 도구를 먼저 쓰세요. 결과 state 가 READY 면 publishablePhotos 를 확인하고 sc_get_source(requestId) → sc_propose_post({requestId, photos, …}) 로 이어서 작성·제안하세요. publishablePhotos 가 0 이고 photos 가 남아 있으면 사진 설명이 아직 진행 중이니 몇 분 뒤 sc_list_requests 로 다시 확인하세요. NEEDS_INPUT 이면 lastError 를 사용자에게 그대로 알리세요. 소재를 못 찾으면 오류에 소재 제목 목록이 오니 사용자에게 어느 소재인지 물어보세요.',
+  inputSchema: {
+    source: z.string().trim().min(1).max(200).describe('노션 「콘텐츠 소재」 제목(일부여도 됨)'),
+    kind: z
+      .enum(REQUEST_KINDS)
+      .optional()
+      .describe('발행 유형. 기본 블로그(현재 작성은 블로그만 지원)'),
+    brief: z.string().trim().max(1000).optional().describe('관점·요청 사항(글 방향)'),
+    desiredDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional()
+      .describe('희망 발행일 YYYY-MM-DD'),
+  },
+  mode: 'write',
+  scope: 'sc:write',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    // MCP 함수 한도(60초) 안에서 끝나도록 45초 예산.
+    return requestPost(
+      ctx.spaceId,
+      {
+        source: params.source as string,
+        kind: (params.kind as string | undefined) ?? '블로그',
+        brief: params.brief as string | undefined,
+        desiredDate: params.desiredDate as string | undefined,
+      },
+      Date.now() + 45_000
+    )
+  },
+}
+
 export const salesContentTools: ToolDefinition[] = [
   listBrands,
   listProducts,
@@ -601,6 +638,7 @@ export const salesContentTools: ToolDefinition[] = [
   listChannels,
   listContents,
   getContent,
+  requestPostTool,
   listRequests,
   getSource,
   proposePost,

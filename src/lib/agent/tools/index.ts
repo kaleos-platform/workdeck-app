@@ -19,6 +19,7 @@ export type { ToolMode, McpToolContext, ToolDefinition } from './types'
  * deck별 파일(finance/seller-hub/coupang-ads)이 자신의 ToolDefinition[] 를
  * export하고 여기에 spread로 합친다. writeTools는 mode:"write"(승인 큐 경유).
  * slackTools(slack_post)는 승인 큐를 거치지 않는 예외 — 등록 채널·대량 멘션 차단으로 제한한다.
+ * sc_request_post 도 예외 — 발행 「요청」만 만들고, 게시물은 sc_propose_post 승인을 거쳐야 나간다.
  */
 export const toolDefinitions: ToolDefinition[] = [
   whoamiTool,
