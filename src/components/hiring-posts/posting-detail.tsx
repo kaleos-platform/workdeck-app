@@ -3,12 +3,16 @@
 import { isPostingRecruitmentLocked } from '@/lib/hiring/publication-policy'
 
 import { PublishDialog } from './publish-dialog'
+import { closePosting } from './close-posting'
+import { CloseConfirmDialog } from './close-confirm-dialog'
+import { ExtendDeadlineDialog } from './extend-deadline-dialog'
+import { canExtendDeadline } from './extend-posting'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeft, Copy, ExternalLink, Lock, Pencil } from 'lucide-react'
+import { ArrowLeft, CalendarPlus, Copy, ExternalLink, Lock, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -76,6 +80,9 @@ export function PostingDetail({
   const expired = isHiringDeadlinePassed(closingDate ? new Date(closingDate) : null)
   const locked = isPostingRecruitmentLocked({ ...posting, status })
   const [busy, setBusy] = useState(false)
+  const [closeOpen, setCloseOpen] = useState(false)
+  const [extendOpen, setExtendOpen] = useState(false)
+  const canExtend = canExtendDeadline({ status, closingDate })
 
   const hasOutputErrors = embedIssues.some((issue) => issue.severity === 'error')
   const isDraft = status === 'DRAFT'
@@ -83,21 +90,13 @@ export function PostingDetail({
   const postingUrl = `${origin}/p/${posting.uuid}`
   const previewSuffix = isDraft ? '?preview=1' : ''
 
-  async function runAction(action: 'close') {
+  async function runAction() {
     setBusy(true)
     try {
-      const res = await fetch(`/api/hiring-posts/postings/${posting.id}/actions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.message ?? '처리에 실패했습니다')
-      }
-      const { posting: updated } = await res.json()
+      const updated = await closePosting(posting.id)
       setStatus(updated.status)
       toast.success('공고를 마감했습니다')
+      setCloseOpen(false)
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '처리에 실패했습니다')
@@ -158,8 +157,13 @@ export function PostingDetail({
               }}
             />
           )}
+          {canExtend && (
+            <Button variant="outline" onClick={() => setExtendOpen(true)} disabled={busy}>
+              <CalendarPlus /> 마감일 연장
+            </Button>
+          )}
           {status === 'ACTIVE' && (
-            <Button variant="outline" onClick={() => runAction('close')} disabled={busy}>
+            <Button variant="outline" onClick={() => setCloseOpen(true)} disabled={busy}>
               <Lock /> 마감
             </Button>
           )}
@@ -170,6 +174,26 @@ export function PostingDetail({
           </Button>
         </div>
       </div>
+
+      <CloseConfirmDialog
+        open={closeOpen}
+        onOpenChange={setCloseOpen}
+        busy={busy}
+        onConfirm={() => void runAction()}
+      />
+      {canExtend && closingDate && (
+        <ExtendDeadlineDialog
+          open={extendOpen}
+          onOpenChange={setExtendOpen}
+          postingId={posting.id}
+          closingDate={closingDate}
+          onExtended={(updated) => {
+            setStatus(updated.status)
+            setClosingDate(updated.closingDate)
+            router.refresh()
+          }}
+        />
+      )}
 
       <nav aria-label="공고 상세" className="flex flex-wrap gap-1 border-b">
         {(
@@ -232,7 +256,7 @@ export function PostingDetail({
             </p>
             {expired && (
               <p className="text-sm font-semibold text-destructive">
-                마감일이 지났습니다. 새로운 모집은 공고를 복사해 진행해 주세요.
+                마감일이 지났습니다. 마감일을 연장하거나 공고를 복사해 새로 모집하세요.
               </p>
             )}
             <p className="text-sm text-muted-foreground">
@@ -245,7 +269,8 @@ export function PostingDetail({
           {locked && (
             <p className="rounded-lg border bg-muted/40 p-4 text-sm">
               최초 발행 이력이 있는 공고입니다. 지원자 이력 보존을 위해 모집 조건과 지원서 설정은
-              변경할 수 없습니다. 새로운 지원자는 공고를 복사해 모집해 주세요.
+              변경할 수 없습니다. 마감일이 있는 공고는 마감일 연장으로 접수를 이어가고, 조건을 바꾼
+              모집은 공고를 복사해 진행해 주세요.
             </p>
           )}
           {isDraft && !locked && (
