@@ -83,9 +83,6 @@ export async function lossyCompress(clean: CleanImage, to: 'webp' | 'jpeg'): Pro
   }
 }
 
-export const compressDesignExport = async (bytes: Uint8Array) =>
-  lossyCompress(await cleanImage(bytes), 'jpeg')
-
 export const sniffLabel = (bytes: Uint8Array) =>
   sniffImage(bytes)?.replace('image/', '') ?? (isSvg(bytes) ? 'svg' : 'unknown')
 

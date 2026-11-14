@@ -1,7 +1,7 @@
 /** @jest-environment node */
 import sharp from 'sharp'
 import { resolveUploadMime } from '@/lib/hiring/storage'
-import { compressDesignExport, sanitizeScene } from '../opening-sanitize'
+import { cleanImage, lossyCompress, sanitizeScene } from '../opening-sanitize'
 import { planOpeningTemplate, type OpeningTemplatePacket } from '../template-import'
 
 // 사진처럼 부드러운 색 변화 + 잡음 — 무손실 PNG는 크고 손실 압축이 잘 듣는다.
@@ -54,11 +54,24 @@ describe('디자인 이미지 압축', () => {
 
   it('디자인 내보낸 이미지는 같은 해상도의 JPEG로 줄인다', async () => {
     const png = await noisyPng()
-    const out = await compressDesignExport(png)
+    const out = await lossyCompress(await cleanImage(png), 'jpeg')
     expect(out.mimeType).toBe('image/jpeg')
     const meta = await sharp(out.bytes).metadata()
     expect([meta.format, meta.width, meta.height]).toEqual(['jpeg', 600, 400])
     expect(out.bytes.length).toBeLessThan(png.length)
+  })
+
+  it('투명 PNG 내보낸 이미지는 흰 배경으로 합친다', async () => {
+    const transparent = await sharp({
+      create: { width: 300, height: 300, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    })
+      .composite([{ input: await noisyPng(100, 100), top: 100, left: 100 }])
+      .png()
+      .toBuffer()
+    const out = await lossyCompress(await cleanImage(transparent), 'jpeg')
+    expect(out.mimeType).toBe('image/jpeg')
+    const { data } = await sharp(out.bytes).raw().toBuffer({ resolveWithObject: true })
+    expect([...data.subarray(0, 3)].every((v) => v > 245)).toBe(true)
   })
 })
 
@@ -115,17 +128,16 @@ describe('템플릿 디자인 저장 한도', () => {
 })
 
 describe('디자인 저장 업로드 형식', () => {
-  it('선언과 무관하게 실제 바이트로 형식을 정한다', async () => {
+  it('실제 바이트로 형식을 정한다(기존 PNG·새 JPEG)', async () => {
     const jpeg = await sharp({ create: { width: 2, height: 2, channels: 3, background: '#fff' } })
       .jpeg()
       .toBuffer()
-    expect(resolveUploadMime(jpeg, undefined)).toBe('image/jpeg')
-    expect(resolveUploadMime(jpeg, 'image/png')).toBe('image/jpeg')
-    expect(resolveUploadMime(await noisyPng(2, 2), undefined)).toBe('image/png')
+    expect(resolveUploadMime(jpeg)).toBe('image/jpeg')
+    expect(resolveUploadMime(await noisyPng(2, 2))).toBe('image/png')
   })
 
-  it('이미지가 아니면 선언값, 없으면 기존 기본값(PNG)을 쓴다', () => {
-    expect(resolveUploadMime(Buffer.from('%PDF-1.4'), 'application/pdf')).toBe('application/pdf')
-    expect(resolveUploadMime(Buffer.from('????'), undefined)).toBe('image/png')
+  it('이미지가 아니면 선언 형식과 무관하게 거부한다', () => {
+    expect(() => resolveUploadMime(Buffer.from('%PDF-1.4'))).toThrow('이미지 파일만')
+    expect(() => resolveUploadMime(Buffer.from('<html><script>'))).toThrow('이미지 파일만')
   })
 })

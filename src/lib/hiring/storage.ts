@@ -57,15 +57,20 @@ export function sniffImage(bytes: Uint8Array): ImageMime | null {
   return null
 }
 
-// 디자인 저장은 형식을 보내지 않는다(편집기 내보내기가 PNG→JPEG로 바뀜). 실제 바이트가 우선이다.
-export function resolveUploadMime(bytes: Uint8Array, declared: string | undefined): string {
-  return sniffImage(bytes) ?? declared ?? 'image/png'
+// 공고·템플릿 자산(이미지 블록·디자인)은 이미지뿐이다. 형식은 클라이언트 선언 대신 실제 바이트로 정하고
+// 이미지가 아니면 거부한다 — 공개 버킷에 text/html 등 위장 형식이 올라가지 않게 한다.
+// 디자인 저장은 형식을 보내지 않으므로(편집기 내보내기 PNG→JPEG) 기존 PNG·새 JPEG 모두 여기서 판별된다.
+export function resolveUploadMime(bytes: Uint8Array): ImageMime {
+  const mime = sniffImage(bytes)
+  if (!mime) throw new Error('이미지 파일만 업로드할 수 있습니다')
+  return mime
 }
 
 export function extFromMime(mime: string): string {
   if (/png/i.test(mime)) return 'png'
   if (/jpeg|jpg/i.test(mime)) return 'jpg'
   if (/webp/i.test(mime)) return 'webp'
+  if (/gif/i.test(mime)) return 'gif'
   if (/pdf/i.test(mime)) return 'pdf'
   if (/wordprocessingml/i.test(mime)) return 'docx'
   if (/msword/i.test(mime)) return 'doc'

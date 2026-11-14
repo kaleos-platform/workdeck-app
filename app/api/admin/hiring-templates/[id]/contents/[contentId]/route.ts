@@ -98,7 +98,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const uploaded = await uploadSampleTemplateAsset({
         templateId: id,
         data: buffer,
-        mimeType: resolveUploadMime(buffer, parsed.data.mimeType),
+        mimeType: resolveUploadMime(buffer),
       })
       imagePath = uploaded.path
     } catch (err) {
