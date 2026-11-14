@@ -2,8 +2,8 @@
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { listApplications } from '@/lib/hiring/applications'
-import type { HiringApplicationStage } from '@/generated/prisma/client'
+import { listApplications, countApplicationsByStatus } from '@/lib/hiring/applications'
+import type { HiringApplicationStage, HiringProcessStage } from '@/generated/prisma/client'
 import { ApplicationsTable } from '@/components/hiring-applicants/applications-table'
 import { normalizeWorkplaceFilter } from '@/lib/hiring/application-workplace-filter'
 
@@ -11,12 +11,14 @@ import { parseYmdDateKst } from '@/lib/date-range'
 
 const PAGE_SIZE = 50
 const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
+const VALID_PROCESSES = new Set(['APPLIED', 'INTERVIEW', 'JOB_OFFER'])
 
 type Props = {
   searchParams: Promise<{
     search?: string | string[]
     posting?: string | string[]
     stage?: string | string[]
+    process?: string | string[]
     from?: string | string[]
     to?: string | string[]
     page?: string | string[]
@@ -40,6 +42,7 @@ export default async function ApplicationsPage({ searchParams }: Props) {
     search: typeof raw.search === 'string' ? raw.search : raw.search ? 'invalid' : '',
     posting: typeof raw.posting === 'string' ? raw.posting : '',
     stage: typeof raw.stage === 'string' ? raw.stage : '',
+    process: typeof raw.process === 'string' ? raw.process : '',
     from: typeof raw.from === 'string' ? raw.from : '',
     to: typeof raw.to === 'string' ? raw.to : '',
     store: normalizeWorkplaceFilter(raw.store),
@@ -56,23 +59,28 @@ export default async function ApplicationsPage({ searchParams }: Props) {
       : 1
   const stage =
     sp.stage && VALID_STAGES.has(sp.stage) ? (sp.stage as HiringApplicationStage) : undefined
+  // 진행 단계는 진행 중(HIRING) 지원자에게만 의미가 있다.
+  const process =
+    stage === 'HIRING' && sp.process && VALID_PROCESSES.has(sp.process)
+      ? (sp.process as HiringProcessStage)
+      : undefined
   const from = parseYmdDateKst(sp.from ?? '') ?? undefined
   // to 는 해당 일자 끝까지 포함
   const toRaw = parseYmdDateKst(sp.to ?? '')
   const to = toRaw ? new Date(toRaw.getTime() + 24 * 60 * 60 * 1000 - 1) : undefined
 
-  const [{ rows, total }, postings] = await Promise.all([
-    listApplications(spaceId, {
-      search: sp.search,
-      store: sp.store,
-      position: sp.position,
-      postingId: sp.posting || undefined,
-      stage,
-      from,
-      to,
-      page,
-      pageSize: PAGE_SIZE,
-    }),
+  const baseFilters = {
+    search: sp.search,
+    store: sp.store,
+    position: sp.position,
+    postingId: sp.posting || undefined,
+    from,
+    to,
+  }
+  const [{ rows, total }, counts, postings] = await Promise.all([
+    listApplications(spaceId, { ...baseFilters, stage, process, page, pageSize: PAGE_SIZE }),
+    // 탭 카운트는 상태 필터를 제외한 분포를 보여준다.
+    countApplicationsByStatus(spaceId, baseFilters),
     prisma.hiringPosting.findMany({
       where: { spaceId },
       orderBy: { createdAt: 'desc' },
@@ -97,12 +105,14 @@ export default async function ApplicationsPage({ searchParams }: Props) {
         pageSize={PAGE_SIZE}
         page={page}
         postings={postings}
+        counts={counts}
         filters={{
           search: sp.search,
           store: sp.store,
           position: sp.position,
           posting: sp.posting ?? '',
           stage: stage ?? '',
+          process: process ?? '',
           from: from ? (sp.from ?? '') : '',
           to: to ? (sp.to ?? '') : '',
         }}

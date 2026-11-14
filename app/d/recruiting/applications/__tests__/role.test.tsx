@@ -5,6 +5,14 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 jest.mock('@/lib/api-helpers', () => ({ resolveDeckContext: jest.fn() }))
 jest.mock('@/lib/hiring/applications', () => ({
   listApplications: jest.fn(async () => ({ rows: [], total: 0 })),
+  countApplicationsByStatus: jest.fn(async () => ({
+    all: 0,
+    APPLIED: 0,
+    INTERVIEW: 0,
+    JOB_OFFER: 0,
+    ACCEPTED: 0,
+    REJECTED: 0,
+  })),
 }))
 jest.mock('@/lib/prisma', () => ({
   prisma: { hiringPosting: { findMany: jest.fn(async () => []) } },

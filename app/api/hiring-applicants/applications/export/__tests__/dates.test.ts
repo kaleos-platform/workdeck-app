@@ -24,6 +24,14 @@ jest.mock('@/lib/prisma', () => ({
 jest.mock('@/lib/hiring/applications', () => ({
   ...jest.requireActual('@/lib/hiring/application-shared'),
   listApplications: jest.fn(async () => ({ rows: [], total: 0 })),
+  countApplicationsByStatus: jest.fn(async () => ({
+    all: 0,
+    APPLIED: 0,
+    INTERVIEW: 0,
+    JOB_OFFER: 0,
+    ACCEPTED: 0,
+    REJECTED: 0,
+  })),
 }))
 jest.mock('@/lib/hiring/migration/ledger', () => ({
   decodeMigrationSnapshot: jest.fn((r) => r.snapshot),
