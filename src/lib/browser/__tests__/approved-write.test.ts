@@ -113,7 +113,7 @@ const recovery = {
   claimId: 'claim-1',
 }
 
-it('미시작 중단은 동일 소유자의 원본 보고서·만료·승인 상태 CAS로 한 번만 복구한다', async () => {
+it('미시작 중단은 동일 소유자 CAS로 한 번 복구하며 완료 시각을 초기화한다', async () => {
   db.findFirst.mockResolvedValue({ report: aborted } as never)
   db.updateMany.mockResolvedValue({ count: 1 })
   await expect(
@@ -145,6 +145,7 @@ it('미시작 중단은 동일 소유자의 원본 보고서·만료·승인 상
     }),
     data: {
       status: 'PENDING',
+      finishedAt: null,
       claimedAt: null,
       claimedByTokenId: null,
       claimId: null,

@@ -94,6 +94,7 @@ export async function recoverUnstartedBrowserWrite(
     where: { ...where, expiresAt: { gt: recoveredAt }, report: { equals: previous.data } },
     data: {
       status: 'PENDING',
+      finishedAt: null,
       claimedAt: null,
       claimedByTokenId: null,
       claimId: null,
