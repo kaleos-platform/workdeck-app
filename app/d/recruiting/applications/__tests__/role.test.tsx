@@ -3,14 +3,9 @@ import ApplicationsPage from '../page'
 import { resolveDeckContext } from '@/lib/api-helpers'
 
 jest.mock('@/lib/api-helpers', () => ({ resolveDeckContext: jest.fn() }))
-jest.mock('@/lib/hiring/applications', () => ({
-  listApplications: jest.fn(async () => ({ rows: [], total: 0 })),
-}))
-jest.mock('@/lib/prisma', () => ({
-  prisma: { hiringPosting: { findMany: jest.fn(async () => []) } },
-}))
-jest.mock('@/components/hiring-applicants/applications-table', () => ({
-  ApplicationsTable: ({ canExportExcel }: { canExportExcel: boolean }) => (
+// 목록 조회는 async 서버 컴포넌트(공유 섹션)가 하므로 역할 전달만 검증한다.
+jest.mock('@/components/hiring-applicants/applications-list-section', () => ({
+  ApplicationsListSection: ({ canExportExcel }: { canExportExcel: boolean }) => (
     <span>{canExportExcel ? '다운로드 가능' : '다운로드 불가'}</span>
   ),
 }))

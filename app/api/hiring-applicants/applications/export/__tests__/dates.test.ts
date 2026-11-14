@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import * as XLSX from 'xlsx'
 import { GET } from '../route'
 import ApplicationsPage from '../../../../../d/recruiting/applications/page'
+import { ApplicationsListSection } from '@/components/hiring-applicants/applications-list-section'
 import { prisma } from '@/lib/prisma'
 import { listApplications } from '@/lib/hiring/applications'
 
@@ -24,6 +25,14 @@ jest.mock('@/lib/prisma', () => ({
 jest.mock('@/lib/hiring/applications', () => ({
   ...jest.requireActual('@/lib/hiring/application-shared'),
   listApplications: jest.fn(async () => ({ rows: [], total: 0 })),
+  countApplicationsByStatus: jest.fn(async () => ({
+    all: 0,
+    APPLIED: 0,
+    INTERVIEW: 0,
+    JOB_OFFER: 0,
+    ACCEPTED: 0,
+    REJECTED: 0,
+  })),
 }))
 jest.mock('@/lib/hiring/migration/ledger', () => ({
   decodeMigrationSnapshot: jest.fn((r) => r.snapshot),
@@ -32,6 +41,13 @@ jest.mock('@/lib/hiring/pii', () => ({ decryptApplicationPii: () => ({ name: 'QA
 jest.mock('@/components/hiring-applicants/applications-table', () => ({
   ApplicationsTable: () => null,
 }))
+
+// 목록 페이지는 조회를 공유 섹션(async server component)에 위임하므로 섹션까지 실행한다.
+async function runApplicationsPage(args: Parameters<typeof ApplicationsPage>[0]) {
+  const page = await ApplicationsPage(args)
+  const section = page.props.children[1]
+  return ApplicationsListSection(section.props)
+}
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -106,7 +122,7 @@ it('같은 질문 키와 라벨의 중복 답변은 손실된 Excel 대신 422�
 
 it('근무지와 직무 조건을 지원자 목록과 Excel에 함께 적용한다', async () => {
   const params = { store: '  강남  ', position: '서빙' }
-  await ApplicationsPage({ searchParams: Promise.resolve(params) })
+  await runApplicationsPage({ searchParams: Promise.resolve(params) })
   await GET(new NextRequest(`http://localhost/api/export?${new URLSearchParams(params)}`))
   expect(listApplications).toHaveBeenCalledWith(
     'qa-space',
@@ -137,7 +153,9 @@ it('공고가 선택된 경우 직무 후보도 해당 공고로 제한한다', 
 it.each(['store', 'position'])(
   '반복된 %s 조건은 목록과 Excel을 전체 결과로 확장하지 않는다',
   async (field) => {
-    const page = await ApplicationsPage({ searchParams: Promise.resolve({ [field]: ['a', 'b'] }) })
+    const page = await runApplicationsPage({
+      searchParams: Promise.resolve({ [field]: ['a', 'b'] }),
+    })
     expect(page.props.children).toContain('검색 조건이 올바르지 않습니다')
     expect(listApplications).not.toHaveBeenCalled()
     const response = await GET(new NextRequest(`http://localhost/api/export?${field}=a&${field}=b`))
@@ -149,13 +167,13 @@ it.each(['store', 'position'])(
 it.each(['999999999999999999999', '42949674', '1.5', '2oops', '-1', '0', ['2', '3']])(
   '잘못된 페이지 %s는 첫 페이지로 조회한다',
   async (page) => {
-    await ApplicationsPage({ searchParams: Promise.resolve({ page }) })
+    await runApplicationsPage({ searchParams: Promise.resolve({ page }) })
     expect(listApplications).toHaveBeenCalledWith('qa-space', expect.objectContaining({ page: 1 }))
   }
 )
 
 it('반복 필터는 조회 조건에 배열로 전달하지 않는다', async () => {
-  await ApplicationsPage({
+  await runApplicationsPage({
     searchParams: Promise.resolve({
       posting: ['a', 'b'],
       stage: ['ACCEPTED'],
@@ -175,7 +193,7 @@ it('반복 필터는 조회 조건에 배열로 전달하지 않는다', async (
 })
 
 it('유효한 페이지와 필터는 유지한다', async () => {
-  await ApplicationsPage({
+  await runApplicationsPage({
     searchParams: Promise.resolve({ page: '2', posting: 'qa', stage: 'ACCEPTED' }),
   })
   expect(listApplications).toHaveBeenCalledWith(
@@ -186,7 +204,7 @@ it('유효한 페이지와 필터는 유지한다', async () => {
 
 it('목록과 엑셀은 한국 날짜의 자정부터 마지막 밀리초까지 동일하게 조회한다', async () => {
   const params = { from: '2026-09-27', to: '2026-09-27' }
-  await ApplicationsPage({ searchParams: Promise.resolve(params) })
+  await runApplicationsPage({ searchParams: Promise.resolve(params) })
   await GET(new NextRequest(`http://localhost/api/export?${new URLSearchParams(params)}`))
   const from = new Date('2026-09-26T15:00:00.000Z')
   const to = new Date('2026-09-27T14:59:59.999Z')
@@ -199,7 +217,7 @@ it('목록과 엑셀은 한국 날짜의 자정부터 마지막 밀리초까지 
 })
 
 it('존재하지 않는 날짜를 다른 날짜로 자동 변환하지 않는다', async () => {
-  await ApplicationsPage({ searchParams: Promise.resolve({ from: '2026-02-30', to: 'bad' }) })
+  await runApplicationsPage({ searchParams: Promise.resolve({ from: '2026-02-30', to: 'bad' }) })
   await GET(new NextRequest('http://localhost/api/export?from=2026-02-30&to=bad'))
   expect(listApplications).toHaveBeenCalledWith(
     'qa-space',
@@ -607,7 +625,7 @@ it.each([null, { type: 'string', value: { invalid: true } }])(
 
 it('목록과 엑셀에 동일한 이름 검색 조건을 적용한다', async () => {
   const search = 'a'.repeat(64)
-  await ApplicationsPage({ searchParams: Promise.resolve({ search }) })
+  await runApplicationsPage({ searchParams: Promise.resolve({ search }) })
   await GET(new NextRequest('http://localhost/api/export?search=' + search))
   expect(listApplications).toHaveBeenCalledWith('qa-space', expect.objectContaining({ search }))
   expect(prisma.hiringApplication.findMany).toHaveBeenCalledWith(
@@ -627,7 +645,7 @@ it('잘못된 검색 토큰을 전체 지원자 엑셀로 확대하지 않는다
 })
 
 it('근무지 검색 조건이 바뀌면 입력 영역을 새 조건으로 초기화한다', async () => {
-  const a = await ApplicationsPage({ searchParams: Promise.resolve({ store: '강남' }) })
-  const b = await ApplicationsPage({ searchParams: Promise.resolve({ store: '홍대' }) })
-  expect(a.props.children[1].key).not.toBe(b.props.children[1].key)
+  const a = await runApplicationsPage({ searchParams: Promise.resolve({ store: '강남' }) })
+  const b = await runApplicationsPage({ searchParams: Promise.resolve({ store: '홍대' }) })
+  expect(a.key).not.toBe(b.key)
 })

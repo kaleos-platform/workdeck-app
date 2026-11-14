@@ -1,7 +1,8 @@
 'use client'
 
 import { createApplicantSearch } from '@/lib/hiring/application-search-action'
-import { useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Download, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -31,9 +32,11 @@ import {
 } from '@/components/ui/floating-action-bar'
 import { applyRangeSelection } from '@/lib/range-selection'
 import { RECRUITING_APPLICATIONS_PATH, getRecruitingApplicationPath } from '@/lib/deck-routes'
-import { STAGE_LABELS } from '@/lib/hiring/application-shared'
+import { STAGE_LABELS, PROCESS_STAGE_LABELS } from '@/lib/hiring/application-shared'
 import { APPLICATION_STAGES } from '@/lib/validations/hiring-applicants'
 import type { ApplicationListRow } from '@/lib/hiring/application-shared'
+import type { ApplicationStatusCounts } from '@/lib/hiring/applications'
+import { cn } from '@/lib/utils'
 import type { HiringApplicationStage } from '@/generated/prisma/client'
 import {
   StageBadge,
@@ -49,10 +52,18 @@ type Props = {
   pageSize: number
   page: number
   postings: Array<{ id: string; title: string }>
+  counts: ApplicationStatusCounts
+  // 이동 기준 경로(쿼리 제외). 생략하면 지원자 목록 경로 — 공고 상세 탭에서 재사용할 때 지정한다.
+  basePath?: string
+  // basePath 에 항상 붙는 쿼리(예: tab=applicants)
+  baseQuery?: Record<string, string>
+  // 지정하면 공고 필터를 숨기고 해당 공고로 고정한다(filters.posting 도 같은 값이어야 한다).
+  lockedPostingId?: string
   filters: {
     search?: string
     posting: string
     stage: string
+    process: string
     from: string
     to: string
     store: string
@@ -61,10 +72,39 @@ type Props = {
 }
 
 const ALL = '__all__'
+const SEARCH_DEBOUNCE_MS = 400
+
+// 상태 탭 — 진행 중 세부 단계는 stage=HIRING + process, 합격/불합격은 stage 만 지정한다.
+const STATUS_TABS: Array<{
+  key: keyof ApplicationStatusCounts
+  label: string
+  stage: string
+  process: string
+}> = [
+  { key: 'all', label: '전체', stage: '', process: '' },
+  { key: 'APPLIED', label: PROCESS_STAGE_LABELS.APPLIED, stage: 'HIRING', process: 'APPLIED' },
+  {
+    key: 'INTERVIEW',
+    label: PROCESS_STAGE_LABELS.INTERVIEW,
+    stage: 'HIRING',
+    process: 'INTERVIEW',
+  },
+  {
+    key: 'JOB_OFFER',
+    label: PROCESS_STAGE_LABELS.JOB_OFFER,
+    stage: 'HIRING',
+    process: 'JOB_OFFER',
+  },
+  { key: 'ACCEPTED', label: STAGE_LABELS.ACCEPTED, stage: 'ACCEPTED', process: '' },
+  { key: 'REJECTED', label: STAGE_LABELS.REJECTED, stage: 'REJECTED', process: '' },
+]
 
 export function ApplicationsTable(props: Props) {
   const [storeInput, setStoreInput] = useState(props.filters.store)
   const [positionInput, setPositionInput] = useState(props.filters.position)
+  // 검색어는 URL 변경(리마운트)에도 입력 중인 값을 유지해야 하므로 바깥에서 보관한다.
+  const [searchText, setSearchText] = useState('')
+  const lastAppliedSearch = useRef('')
   const { filters, page } = props
   return (
     <ApplicationsTableContent
@@ -72,6 +112,7 @@ export function ApplicationsTable(props: Props) {
         filters.search,
         filters.posting,
         filters.stage,
+        filters.process,
         filters.from,
         filters.to,
         filters.store,
@@ -83,6 +124,9 @@ export function ApplicationsTable(props: Props) {
       setStoreInput={setStoreInput}
       positionInput={positionInput}
       setPositionInput={setPositionInput}
+      searchText={searchText}
+      setSearchText={setSearchText}
+      lastAppliedSearch={lastAppliedSearch}
     />
   )
 }
@@ -94,12 +138,22 @@ function ApplicationsTableContent({
   pageSize,
   page,
   postings,
+  counts,
+  basePath = RECRUITING_APPLICATIONS_PATH,
+  baseQuery,
+  lockedPostingId,
   filters,
   storeInput,
   setStoreInput,
   positionInput,
   setPositionInput,
+  searchText,
+  setSearchText,
+  lastAppliedSearch,
 }: Props & {
+  searchText: string
+  setSearchText: (value: string) => void
+  lastAppliedSearch: { current: string }
   storeInput: string
   setStoreInput: (value: string) => void
   positionInput: string
@@ -114,7 +168,6 @@ function ApplicationsTableContent({
   const lastIndex = useRef<number | null>(null)
   const bulkInFlight = useRef(false)
   const exportInFlight = useRef(false)
-  const [searchText, setSearchText] = useState('')
   const [searching, setSearching] = useState(false)
   const searchInFlight = useRef(false)
   const busy = bulkLoading || pending || searching
@@ -127,18 +180,19 @@ function ApplicationsTableContent({
   function updateQuery(patch: Record<string, string>) {
     if (bulkInFlight.current || pending) return
     lastIndex.current = null
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(baseQuery)
     const next = { ...filters, page: '1', ...patch }
     if (next.search) params.set('search', next.search)
     if (next.posting) params.set('posting', next.posting)
     if (next.stage) params.set('stage', next.stage)
+    if (next.stage === 'HIRING' && next.process) params.set('process', next.process)
     if (next.from) params.set('from', next.from)
     if (next.to) params.set('to', next.to)
     if (next.store) params.set('store', next.store)
     if (next.position) params.set('position', next.position)
     if (next.page && next.page !== '1') params.set('page', next.page)
     startTransition(() => {
-      router.push(`${RECRUITING_APPLICATIONS_PATH}?${params.toString()}`)
+      router.push(`${basePath}?${params.toString()}`)
       setSelected(new Set())
     })
   }
@@ -187,21 +241,33 @@ function ApplicationsTableContent({
     }
   }
 
-  async function searchApplicants(event: React.FormEvent) {
-    event.preventDefault()
-    if (busy || searchInFlight.current) return
+  // 검색어(이름·휴대폰 끝 4자리)를 서버 액션으로 토큰화해 URL 에 반영한다.
+  // extra 로 근무지·직무 조건을 함께 적용할 수 있다(Enter 제출).
+  async function applySearch(text: string, extra: Record<string, string> = {}) {
+    if (searchInFlight.current) return
+    const previous = lastAppliedSearch.current
+    lastAppliedSearch.current = text
     searchInFlight.current = true
     setSearching(true)
     try {
-      const search = await createApplicantSearch(searchText)
-      updateQuery({ search })
+      const search = await createApplicantSearch(text)
+      updateQuery({ search, ...extra })
     } catch {
+      lastAppliedSearch.current = previous
       toast.error('검색하지 못했습니다. 입력과 로그인 상태를 확인해 주세요')
     } finally {
       searchInFlight.current = false
       setSearching(false)
     }
   }
+
+  // 입력 후 400ms 지나면 자동 적용(디바운스). 이미 적용한 값·처리 중에는 건너뛴다.
+  useEffect(() => {
+    if (searchText === lastAppliedSearch.current || busy) return
+    const timer = setTimeout(() => void applySearch(searchText), SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- applySearch 는 매 렌더 새로 만들어지지만 ref 만 참조한다
+  }, [searchText, busy])
 
   async function exportExcel() {
     if (exportInFlight.current || busy) return
@@ -211,6 +277,7 @@ function ApplicationsTableContent({
     if (filters.search) params.set('search', filters.search)
     if (filters.posting) params.set('posting', filters.posting)
     if (filters.stage) params.set('stage', filters.stage)
+    if (filters.stage === 'HIRING' && filters.process) params.set('process', filters.process)
     if (filters.from) params.set('from', filters.from)
     if (filters.to) params.set('to', filters.to)
     if (filters.store) params.set('store', filters.store)
@@ -253,56 +320,32 @@ function ApplicationsTableContent({
 
   return (
     <div className="space-y-3">
+      {/* 검색·조건 — 어느 입력에서든 Enter 로 함께 적용한다(검색어는 400ms 디바운스도 적용) */}
       <form
-        onSubmit={searchApplicants}
-        className="flex flex-wrap items-center gap-2"
         role="search"
         aria-label="지원자 검색"
-      >
-        <Input
-          aria-label="지원자 이름 또는 휴대전화 검색"
-          placeholder="이름 전체 · 휴대전화 · 끝 4자리"
-          maxLength={200}
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-          disabled={busy}
-          className="w-full sm:w-72"
-        />
-        <Button type="submit" variant="outline" disabled={busy}>
-          검색
-        </Button>
-        {filters.search && (
-          <>
-            <span className="text-sm text-muted-foreground">검색 적용 중</span>
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={busy}
-              onClick={() => {
-                setSearchText('')
-                updateQuery({ search: '' })
-              }}
-            >
-              검색 해제
-            </Button>
-          </>
-        )}
-      </form>
-      <form
-        role="search"
-        aria-label="근무지와 직무 검색"
         className="flex flex-wrap items-center gap-2"
         onSubmit={(event) => {
           event.preventDefault()
-          updateQuery({ store: storeInput.trim(), position: positionInput.trim() })
+          void applySearch(searchText, {
+            store: storeInput.trim(),
+            position: positionInput.trim(),
+          })
         }}
       >
+        <Input
+          aria-label="지원자 이름 또는 휴대전화 검색"
+          placeholder="이름 · 휴대폰 끝 4자리"
+          maxLength={200}
+          value={searchText}
+          onChange={(event) => setSearchText(event.target.value)}
+          className="w-full sm:w-64"
+        />
         <Input
           aria-label="지원 근무지"
           placeholder="지원 근무지"
           maxLength={200}
-          disabled={busy}
-          className="w-full sm:w-44"
+          className="w-full sm:w-40"
           value={storeInput}
           onChange={(event) => setStoreInput(event.target.value)}
         />
@@ -310,18 +353,34 @@ function ApplicationsTableContent({
           aria-label="지원 직무"
           placeholder="지원 직무"
           maxLength={200}
-          disabled={busy}
-          className="w-full sm:w-44"
+          className="w-full sm:w-40"
           value={positionInput}
           onChange={(event) => setPositionInput(event.target.value)}
         />
-        <Button type="submit" variant="outline" disabled={busy}>
-          조건 검색
-        </Button>
+        {/* Enter 암묵 제출용 — 입력이 여러 개라 제출 버튼이 있어야 한다 */}
+        <button type="submit" className="sr-only">
+          검색 적용
+        </button>
+        {filters.search && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              setSearchText('')
+              lastAppliedSearch.current = ''
+              updateQuery({ search: '' })
+            }}
+          >
+            검색 해제
+          </Button>
+        )}
         {(filters.store || filters.position) && (
           <Button
             type="button"
             variant="ghost"
+            size="sm"
             disabled={busy}
             onClick={() => {
               setStoreInput('')
@@ -334,47 +393,56 @@ function ApplicationsTableContent({
         )}
         {(storeInput.trim() !== filters.store || positionInput.trim() !== filters.position) && (
           <span className="text-xs text-muted-foreground">
-            입력한 근무지·직무 조건은 아직 적용되지 않았습니다.
+            근무지·직무는 Enter 를 눌러야 적용됩니다.
           </span>
         )}
       </form>
+      <nav aria-label="진행 상태" className="flex flex-wrap gap-1 border-b">
+        {STATUS_TABS.map((tab) => {
+          const active =
+            filters.stage === tab.stage && (filters.process === tab.process || !tab.process)
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              aria-current={active ? 'page' : undefined}
+              disabled={busy}
+              onClick={() => updateQuery({ stage: tab.stage, process: tab.process })}
+              className={cn(
+                '-mb-px border-b-2 px-3 py-2 text-sm transition-colors disabled:opacity-60',
+                active
+                  ? 'border-primary font-semibold text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {tab.label}{' '}
+              <span className="tabular-nums">{counts[tab.key].toLocaleString('ko-KR')}</span>
+            </button>
+          )
+        })}
+      </nav>
       {/* 필터 */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-wrap items-end gap-2">
-          <Select
-            disabled={busy}
-            value={filters.posting || ALL}
-            onValueChange={(v) => updateQuery({ posting: v === ALL ? '' : v })}
-          >
-            <SelectTrigger className="w-52">
-              <SelectValue placeholder="전체 공고" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>전체 공고</SelectItem>
-              {postings.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            disabled={busy}
-            value={filters.stage || ALL}
-            onValueChange={(v) => updateQuery({ stage: v === ALL ? '' : v })}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="전체 상태" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>전체 상태</SelectItem>
-              {APPLICATION_STAGES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {STAGE_LABELS[s]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {!lockedPostingId && (
+            <Select
+              disabled={busy}
+              value={filters.posting || ALL}
+              onValueChange={(v) => updateQuery({ posting: v === ALL ? '' : v })}
+            >
+              <SelectTrigger className="w-52">
+                <SelectValue placeholder="전체 공고" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>전체 공고</SelectItem>
+                {postings.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className="flex items-center gap-1 text-sm">
             <Input
               type="date"
@@ -417,7 +485,7 @@ function ApplicationsTableContent({
       </div>
 
       <div className="rounded-md border">
-        <Table>
+        <Table className="min-w-[760px] table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
@@ -428,18 +496,21 @@ function ApplicationsTableContent({
                   disabled={allKeys.length === 0 || busy}
                 />
               </TableHead>
-              <TableHead>이름</TableHead>
-              <TableHead>공고</TableHead>
-              <TableHead>결과</TableHead>
-              <TableHead>단계</TableHead>
-              <TableHead>표시</TableHead>
-              <TableHead className="text-right">지원일</TableHead>
+              {/* 공고 고정(공고 상세 탭)일 때는 공고 열을 숨기고 이름 열이 남는 폭을 쓴다 */}
+              <TableHead className={lockedPostingId ? undefined : 'w-[140px]'}>이름</TableHead>
+              {!lockedPostingId && <TableHead>공고</TableHead>}
+              <TableHead className="w-[120px]">진행 상태</TableHead>
+              <TableHead className="w-[150px]">확인 필요</TableHead>
+              <TableHead className="w-[110px] text-right">지원일</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={lockedPostingId ? 5 : 6}
+                  className="py-10 text-center text-sm text-muted-foreground"
+                >
                   {pending ? (
                     '불러오는 중...'
                   ) : page > totalPages ? (
@@ -464,7 +535,9 @@ function ApplicationsTableContent({
                 <TableRow
                   key={r.id}
                   className="cursor-pointer hover:bg-muted/40"
-                  onClick={() => {
+                  onClick={(e) => {
+                    // 이름 링크는 브라우저가 직접 처리하므로 행 클릭 이동과 겹치지 않게 한다.
+                    if ((e.target as HTMLElement).closest('a')) return
                     if (!busy) router.push(getRecruitingApplicationPath(r.id))
                   }}
                 >
@@ -477,17 +550,27 @@ function ApplicationsTableContent({
                       aria-label={`${r.maskedName} 선택`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{r.maskedName}</TableCell>
-                  <TableCell className="text-sm">
-                    <div className="max-w-[220px] truncate" title={r.postingTitle}>
-                      {r.postingTitle}
-                    </div>
+                  <TableCell className="font-medium">
+                    <Link
+                      href={getRecruitingApplicationPath(r.id)}
+                      className="block truncate hover:underline focus-visible:underline"
+                    >
+                      {r.maskedName}
+                    </Link>
                   </TableCell>
+                  {!lockedPostingId && (
+                    <TableCell className="text-sm">
+                      <div className="truncate" title={r.postingTitle}>
+                        {r.postingTitle}
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell>
-                    <StageBadge stage={r.stage} />
-                  </TableCell>
-                  <TableCell>
-                    <ProcessStageBadge stage={r.hiringStage} />
+                    {r.stage === 'HIRING' ? (
+                      <ProcessStageBadge stage={r.hiringStage} />
+                    ) : (
+                      <StageBadge stage={r.stage} />
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">

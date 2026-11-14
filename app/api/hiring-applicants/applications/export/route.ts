@@ -13,13 +13,14 @@ import { prisma } from '@/lib/prisma'
 import { resolveDeckContext, assertRole, errorResponse } from '@/lib/api-helpers'
 import { decryptApplicationPii, type ApplicationEntryValue } from '@/lib/hiring/pii'
 import { STAGE_LABELS, PROCESS_STAGE_LABELS } from '@/lib/hiring/applications'
-import type { HiringApplicationStage } from '@/generated/prisma/client'
+import type { HiringApplicationStage, HiringProcessStage } from '@/generated/prisma/client'
 
 import { parseYmdDateKst, formatDateToYmdKst } from '@/lib/date-range'
 
 export const runtime = 'nodejs'
 
 const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
+const VALID_PROCESSES = new Set(['APPLIED', 'INTERVIEW', 'JOB_OFFER'])
 
 const EXPORT_ROW_CAP = 2000
 const INVALID_ANSWER_MESSAGE =
@@ -42,6 +43,11 @@ export async function GET(req: NextRequest) {
   const stageRaw = sp.get('stage') || undefined
   const stage =
     stageRaw && VALID_STAGES.has(stageRaw) ? (stageRaw as HiringApplicationStage) : undefined
+  const processRaw = sp.get('process') || undefined
+  const process =
+    stage === 'HIRING' && processRaw && VALID_PROCESSES.has(processRaw)
+      ? (processRaw as HiringProcessStage)
+      : undefined
   const fromRaw = sp.get('from')
   const toRaw = sp.get('to')
   const from = parseYmdDateKst(fromRaw ?? '') ?? undefined
@@ -58,6 +64,7 @@ export async function GET(req: NextRequest) {
       deletedAt: null,
       ...(posting ? { postingId: posting } : {}),
       ...(stage ? { stage } : {}),
+      ...(process ? { hiringStage: process } : {}),
       ...(from || to
         ? {
             createdAt: {
