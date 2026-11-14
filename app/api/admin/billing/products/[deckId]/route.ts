@@ -92,15 +92,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ de
   }
   const { before, updated } = result
 
+  // 마케팅(정적 생성) 페이지의 준비중 배지·가격을 다시 만든다 — 표시가=결제가 유지.
+  // DB 는 이미 커밋됐으므로 감사 로그 실패와 무관하게 먼저 무효화한다
+  if (updated.released !== before.released || updated.monthlyPrice !== before.monthlyPrice) {
+    invalidateDeckReleaseCache()
+  }
+
   await writeAuditLog(auth.user.id, 'billing.product.update', 'billingDeckProduct', deckId, {
     before,
     after: updated,
   })
-
-  // 마케팅(정적 생성) 페이지의 준비중 배지·가격을 다시 만든다 — 표시가=결제가 유지
-  if (updated.released !== before.released || updated.monthlyPrice !== before.monthlyPrice) {
-    invalidateDeckReleaseCache()
-  }
 
   return NextResponse.json({ product: updated })
 }
