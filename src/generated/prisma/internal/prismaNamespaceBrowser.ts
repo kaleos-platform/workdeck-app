@@ -64,6 +64,7 @@ export const ModelName = {
   SpaceMember: 'SpaceMember',
   SpaceInvitation: 'SpaceInvitation',
   AgentPendingAction: 'AgentPendingAction',
+  BrowserWriteJob: 'BrowserWriteJob',
   SpaceAgentSetting: 'SpaceAgentSetting',
   SpaceAgent: 'SpaceAgent',
   ToolAuditLog: 'ToolAuditLog',
@@ -456,6 +457,25 @@ export const AgentPendingActionScalarFieldEnum = {
 } as const
 
 export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
+
+
+export const BrowserWriteJobScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  actionId: 'actionId',
+  status: 'status',
+  payload: 'payload',
+  expiresAt: 'expiresAt',
+  claimedAt: 'claimedAt',
+  claimedByTokenId: 'claimedByTokenId',
+  claimId: 'claimId',
+  report: 'report',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BrowserWriteJobScalarFieldEnum = (typeof BrowserWriteJobScalarFieldEnum)[keyof typeof BrowserWriteJobScalarFieldEnum]
 
 
 export const SpaceAgentSettingScalarFieldEnum = {

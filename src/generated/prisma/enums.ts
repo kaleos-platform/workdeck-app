@@ -197,6 +197,18 @@ export const InvOptionStatus = {
 export type InvOptionStatus = (typeof InvOptionStatus)[keyof typeof InvOptionStatus]
 
 
+export const BrowserWriteJobStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  RESTORED: 'RESTORED',
+  ABORTED: 'ABORTED',
+  UNCERTAIN: 'UNCERTAIN',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type BrowserWriteJobStatus = (typeof BrowserWriteJobStatus)[keyof typeof BrowserWriteJobStatus]
+
+
 export const SecretKind = {
   API_KEY: 'API_KEY',
   LOGIN: 'LOGIN',
