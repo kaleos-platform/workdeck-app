@@ -51,7 +51,11 @@ type SubscriptionRow = {
   retryCount: number
   exemptFlag: boolean
   exemptNote: string | null
-  space: { id: string; name: string }
+  space: {
+    id: string
+    name: string
+    members: { user: { id: string; email: string; name: string | null } }[]
+  }
   items: { deckAppId: string; status: string }[]
 }
 
@@ -368,6 +372,7 @@ export function BillingDashboard() {
             <TableHeader>
               <TableRow>
                 <TableHead>Space</TableHead>
+                <TableHead>소유자</TableHead>
                 <TableHead>상태</TableHead>
                 <TableHead>Deck</TableHead>
                 <TableHead>재시도</TableHead>
@@ -385,6 +390,23 @@ export function BillingDashboard() {
                     >
                       {s.space.name}
                     </Link>
+                  </TableCell>
+                  <TableCell>
+                    {s.space.members.length === 0 ? (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    ) : (
+                      <div className="flex flex-col gap-0.5">
+                        {s.space.members.map(({ user }) => (
+                          <Link
+                            key={user.id}
+                            href={`/admin/users/${user.id}`}
+                            className="text-sm hover:underline"
+                          >
+                            {user.email}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={STATUS_VARIANT[s.status] ?? 'outline'}>
@@ -415,7 +437,7 @@ export function BillingDashboard() {
               ))}
               {filteredSubs.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
                     표시할 구독이 없습니다
                   </TableCell>
                 </TableRow>

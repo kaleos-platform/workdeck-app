@@ -15,7 +15,16 @@ export async function GET() {
     prisma.spaceSubscription.findMany({
       orderBy: { updatedAt: 'desc' },
       include: {
-        space: { select: { id: true, name: true } },
+        space: {
+          select: {
+            id: true,
+            name: true,
+            members: {
+              where: { role: 'OWNER' },
+              select: { user: { select: { id: true, email: true, name: true } } },
+            },
+          },
+        },
         items: {
           where: { status: { in: ['ACTIVE', 'CANCEL_AT_PERIOD_END'] } },
           select: { deckAppId: true, status: true },
