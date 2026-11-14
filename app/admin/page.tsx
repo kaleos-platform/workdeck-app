@@ -13,9 +13,14 @@ const SECTIONS = [
     description: '사용자 검색, 계정 상세, ban/해제, 멤버십 관리',
   },
   {
+    href: '/admin/subscriptions',
+    title: '구독 현황',
+    description: 'Space·덱별 이용 상태, 체험 연장과 면제 관리',
+  },
+  {
     href: '/admin/billing',
     title: '결제',
-    description: 'deck 구독 현황, 과금 모드/가격 관리, 결제 이력',
+    description: '과금 모드/가격 관리, 결제 이력',
   },
   {
     href: '/admin/templates',

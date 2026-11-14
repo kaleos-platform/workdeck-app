@@ -86,6 +86,11 @@ async function cleanup() {
 
 // billing-admin.mjs migrate-grant 와 같은 상태: 체험 종료일 + ENDED 모집 관리 item(보장가)
 async function grant(spaceId: string, trialEndsAt: Date) {
+  await prisma.spaceDeckAccess.upsert({
+    where: { spaceId_deckAppId: { spaceId, deckAppId: 'recruiting' } },
+    create: { spaceId, deckAppId: 'recruiting', trialEndsAt },
+    update: { trialEndsAt },
+  })
   const sub = await prisma.spaceSubscription.upsert({
     where: { spaceId },
     create: { spaceId, status: 'TRIALING', trialEndsAt },
@@ -160,8 +165,8 @@ d('이전 고객 보장가 lockedPrice (모킹 PG + 실 DB)', () => {
     await grant(SPACE_A, new Date(Date.now() + 30 * 86400000))
     expect((await resolveEntitlement(SPACE_A)).decks['recruiting'].reason).toBe('TRIAL')
 
-    await prisma.spaceSubscription.update({
-      where: { spaceId: SPACE_A },
+    await prisma.spaceDeckAccess.update({
+      where: { spaceId_deckAppId: { spaceId: SPACE_A, deckAppId: 'recruiting' } },
       data: { trialEndsAt: new Date(Date.now() - 1000) },
     })
     expect((await resolveEntitlement(SPACE_A)).decks['recruiting'].reason).toBe('LOCKED')

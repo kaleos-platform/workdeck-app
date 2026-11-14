@@ -43,6 +43,7 @@ import {
 } from '@/lib/billing/subscription-service'
 import { resolveEntitlement, ensureTrialStarted } from '@/lib/billing/entitlement'
 
+const testPrices: Record<string, number> = {}
 const SPACE_ID = 'e2e-billing-space-0001'
 const RUN =
   !!(process.env.DATABASE_URL || process.env.DIRECT_URL) && !!process.env.ENCRYPTION_KEY_V1
@@ -89,6 +90,8 @@ const d = RUN ? describe : describe.skip
 d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
   beforeAll(async () => {
     await cleanup()
+    for (const product of await prisma.billingDeckProduct.findMany())
+      testPrices[product.id] = product.monthlyPrice
     await prisma.space.create({ data: { id: SPACE_ID, name: 'e2e-billing' } })
     await setPaidMode(['coupang-ads', 'finance'])
   })
@@ -104,19 +107,19 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
     mockIssue.mockReset()
   })
 
-  it('Trial lazy-start는 평생 1회', async () => {
-    await ensureTrialStarted(SPACE_ID)
-    const sub1 = await prisma.spaceSubscription.findUnique({ where: { spaceId: SPACE_ID } })
-    expect(sub1?.trialEndsAt).toBeTruthy()
-
-    // Trial 만료로 조작 후 재시도 → 재부여 없음
-    await prisma.spaceSubscription.update({
-      where: { spaceId: SPACE_ID },
+  it('Trial lazy-start는 업무별 평생 1회', async () => {
+    await ensureTrialStarted(SPACE_ID, 'coupang-ads')
+    const where = { spaceId_deckAppId: { spaceId: SPACE_ID, deckAppId: 'coupang-ads' } }
+    expect((await prisma.spaceDeckAccess.findUnique({ where }))?.trialEndsAt).toBeTruthy()
+    // 체험 만료 뒤 재추가해도 새 체험은 부여하지 않는다.
+    await prisma.spaceDeckAccess.update({
+      where,
       data: { trialEndsAt: new Date('2020-01-15T00:00:00Z') },
     })
-    await ensureTrialStarted(SPACE_ID)
-    const sub2 = await prisma.spaceSubscription.findUnique({ where: { spaceId: SPACE_ID } })
-    expect(sub2?.trialEndsAt).toEqual(new Date('2020-01-15T00:00:00Z'))
+    await ensureTrialStarted(SPACE_ID, 'coupang-ads')
+    expect((await prisma.spaceDeckAccess.findUnique({ where }))?.trialEndsAt).toEqual(
+      new Date('2020-01-15T00:00:00Z')
+    )
   })
 
   it('카드등록 → 구독시작(첫결제) → ACTIVE + entitlement 반영', async () => {
@@ -128,7 +131,7 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
     await registerBillingMethod(SPACE_ID, 'auth_key_test')
 
     const r = await startSubscription(SPACE_ID, ['coupang-ads', 'finance'])
-    expect(r.amount).toBe(Math.round((29000 + 19000) * 1.1)) // VAT 포함 52,800
+    expect(r.amount).toBe(Math.round((testPrices['coupang-ads'] + testPrices.finance) * 1.1)) // 현재 카탈로그 공급가 합계에 VAT 적용
 
     const sub = await prisma.spaceSubscription.findUnique({
       where: { spaceId: SPACE_ID },
@@ -175,7 +178,7 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
     const r = await addDeck(SPACE_ID, 'seller-hub')
     expect(r.prorated).toBe(true)
     expect(r.amount).toBeGreaterThan(0)
-    expect(r.amount).toBeLessThanOrEqual(Math.round(29000 * 1.1))
+    expect(r.amount).toBeLessThanOrEqual(Math.round(testPrices['seller-hub'] * 1.1))
 
     const ent = await resolveEntitlement(SPACE_ID)
     expect(ent.decks['seller-hub'].reason).toBe('SUBSCRIBED')
@@ -192,7 +195,7 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
     expect(r.find((x) => x.spaceId === SPACE_ID)?.outcome).toBe('paid')
 
     const lastCall = mockCharge.mock.calls.at(-1)![0]
-    expect(lastCall.amount).toBe(Math.round((29000 + 19000) * 1.1)) // seller-hub 제외
+    expect(lastCall.amount).toBe(Math.round((testPrices['coupang-ads'] + testPrices.finance) * 1.1)) // seller-hub 제외
 
     const item = await prisma.subscriptionItem.findFirst({
       where: { subscription: { spaceId: SPACE_ID }, deckAppId: 'seller-hub' },

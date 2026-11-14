@@ -1,5 +1,6 @@
 // deck 단위 entitlement — DB 래퍼. 순수 판정 로직은 entitlement-core.ts.
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@/generated/prisma/client'
 import {
   evaluateDeckAccess,
   TRIAL_DAYS,
@@ -33,17 +34,20 @@ export interface SpaceEntitlement {
   allowedDecks: string[]
   lockedDecks: string[]
   // deck별 상세 (배너·UI용)
-  decks: Record<string, DeckAccess>
+  decks: Record<string, DeckAccess & { trialEndsAt: Date | null; exempt: boolean }>
   trialEndsAt: Date | null
   exempt: boolean
 }
 
 // Space 전체 entitlement 조회 (DB 접근 래퍼)
-export async function resolveEntitlement(spaceId: string): Promise<SpaceEntitlement> {
+export async function resolveEntitlement(
+  spaceId: string,
+  db: Prisma.TransactionClient = prisma
+): Promise<SpaceEntitlement> {
   const now = new Date()
-  const [products, subscription, instances] = await Promise.all([
-    prisma.billingDeckProduct.findMany({ where: { isActive: true } }),
-    prisma.spaceSubscription.findUnique({
+  const [products, subscription, instances, policies] = await Promise.all([
+    db.billingDeckProduct.findMany({ where: { isActive: true } }),
+    db.spaceSubscription.findUnique({
       where: { spaceId },
       include: {
         items: {
@@ -52,10 +56,11 @@ export async function resolveEntitlement(spaceId: string): Promise<SpaceEntitlem
         },
       },
     }),
-    prisma.deckInstance.findMany({
+    db.deckInstance.findMany({
       where: { spaceId },
       select: { deckAppId: true, createdAt: true },
     }),
+    db.spaceDeckAccess.findMany({ where: { spaceId } }),
   ])
 
   const subInput: SubscriptionInput | null = subscription
@@ -68,20 +73,26 @@ export async function resolveEntitlement(spaceId: string): Promise<SpaceEntitlem
       }
     : null
 
+  const policyMap = new Map(policies.map((p) => [p.deckAppId, p]))
   const instanceMap = new Map(instances.map((i) => [i.deckAppId, i.createdAt]))
-  const decks: Record<string, DeckAccess> = {}
+  const decks: Record<string, DeckAccess & { trialEndsAt: Date | null; exempt: boolean }> = {}
   const allowedDecks: string[] = []
   const lockedDecks: string[] = []
 
   for (const product of products) {
     const access = evaluateDeckAccess({
       product,
+      deckAccess: policyMap.get(product.id),
       subscription: subInput,
       deckInstanceCreatedAt: instanceMap.get(product.id) ?? null,
       now,
       checkoutPaused: isCheckoutPausedFor(spaceId),
     })
-    decks[product.id] = access
+    decks[product.id] = {
+      ...access,
+      trialEndsAt: policyMap.get(product.id)?.trialEndsAt ?? null,
+      exempt: Boolean(subscription?.exemptFlag || policyMap.get(product.id)?.exemptFlag),
+    }
     if (access.allowed) allowedDecks.push(product.id)
     else lockedDecks.push(product.id)
   }
@@ -95,13 +106,17 @@ export async function resolveEntitlement(spaceId: string): Promise<SpaceEntitlem
   }
 }
 
-export async function canUseDeck(spaceId: string, deckAppId: string): Promise<boolean> {
-  const product = await prisma.billingDeckProduct.findUnique({ where: { id: deckAppId } })
+export async function canUseDeck(
+  spaceId: string,
+  deckAppId: string,
+  db: Prisma.TransactionClient = prisma
+): Promise<boolean> {
+  const product = await db.billingDeckProduct.findUnique({ where: { id: deckAppId } })
   // 과금 카탈로그에 없는 deck(비활성 6종 등)은 billing 관할 밖 — 기존 동작 유지
   if (!product || !product.isActive) return true
   if (product.pricingMode === 'FREE_BETA') return true
 
-  const entitlement = await resolveEntitlement(spaceId)
+  const entitlement = await resolveEntitlement(spaceId, db)
   return entitlement.decks[deckAppId]?.allowed ?? false
 }
 
@@ -128,24 +143,41 @@ export async function canWorkspaceCollect(workspaceId: string): Promise<boolean>
   return canUseDeck(workspace.spaceId, 'coupang-ads')
 }
 
-// Trial lazy-start: 유료 deck 첫 사용 시도 시 호출.
-// Trial 이력(trialEndsAt 존재)이 있으면 아무것도 하지 않는다 — 평생 1회.
-export async function ensureTrialStarted(spaceId: string): Promise<void> {
-  const now = new Date()
-  const trialEndsAt = addDays(now, TRIAL_DAYS)
-  const existing = await prisma.spaceSubscription.findUnique({ where: { spaceId } })
-  if (!existing) {
-    await prisma.spaceSubscription.create({
-      data: { spaceId, status: 'TRIALING', trialEndsAt },
-    })
-    return
-  }
-  if (existing.trialEndsAt) return // 평생 1회
-  // 구독 레코드는 있으나 Trial 이력 없음 (예: 면제 해제된 Space) — TRIALING 상태일 때만 부여
-  if (existing.status === 'TRIALING') {
-    await prisma.spaceSubscription.update({
+// 업무별 최초 활성화 시 7일. 비활성화·재추가·동시 요청도 기존 종료일을 덮어쓰지 않는다.
+export async function ensureTrialStarted(
+  spaceId: string,
+  deckAppId: string,
+  db: Prisma.TransactionClient = prisma
+): Promise<void> {
+  const [subscription, product, policy] = await Promise.all([
+    db.spaceSubscription.findUnique({
       where: { spaceId },
-      data: { trialEndsAt },
-    })
-  }
+      include: {
+        items: {
+          where: { type: 'DECK', deckAppId, status: { in: ['ACTIVE', 'CANCEL_AT_PERIOD_END'] } },
+        },
+      },
+    }),
+    db.billingDeckProduct.findUnique({ where: { id: deckAppId } }),
+    db.spaceDeckAccess.findUnique({ where: { spaceId_deckAppId: { spaceId, deckAppId } } }),
+  ])
+  if (!product?.isActive || product.pricingMode !== 'SUBSCRIPTION') return
+  if (subscription?.exemptFlag || policy?.exemptFlag || policy?.trialEndsAt) return
+  if (
+    subscription &&
+    ['ACTIVE', 'PAST_DUE'].includes(subscription.status) &&
+    subscription.items.length > 0
+  )
+    return
+  const trialEndsAt = addDays(new Date(), TRIAL_DAYS)
+  // 빈 upsert는 Prisma의 SELECT+INSERT로 처리될 수 있어 동시 요청에 안전한 ON CONFLICT를 사용한다.
+  await db.spaceDeckAccess.createMany({
+    data: [{ spaceId, deckAppId, trialEndsAt }],
+    skipDuplicates: true,
+  })
+  // 면제만 관리하던 레코드에서 최초 체험을 시작하는 경우도 원자적으로 한 번만 설정한다.
+  await db.spaceDeckAccess.updateMany({
+    where: { spaceId, deckAppId, trialEndsAt: null, exemptFlag: false },
+    data: { trialEndsAt },
+  })
 }

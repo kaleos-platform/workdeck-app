@@ -32,17 +32,6 @@ export async function POST(request: NextRequest) {
     return errorResponse('준비중인 업무입니다', 403)
   }
 
-  // 유료 deck 첫 사용 시도 → Trial lazy-start (평생 1회, 이력 있으면 no-op)
-  const product = await prisma.billingDeckProduct.findUnique({ where: { id: deckAppId } })
-  if (product?.isActive && product.pricingMode === 'SUBSCRIPTION') {
-    await ensureTrialStarted(resolved.space.id)
-  }
-
-  // entitlement 게이트: 무료 베타·면제·구독·Trial·유예 전부 아니면 402
-  if (!(await canUseDeck(resolved.space.id, deckAppId))) {
-    return errorResponse('구독이 필요한 업무입니다', 402)
-  }
-
   const existing = await prisma.deckInstance.findUnique({
     where: {
       spaceId_deckAppId: {
@@ -59,28 +48,32 @@ export async function POST(request: NextRequest) {
     return errorResponse('이미 사용 중인 업무입니다', 409)
   }
 
-  if (existing) {
-    const updated = await prisma.deckInstance.update({
-      where: { id: existing.id },
-      data: { isActive: true },
-      select: { id: true, deckAppId: true, isActive: true },
+  try {
+    const instance = await prisma.$transaction(async (tx) => {
+      await ensureTrialStarted(resolved.space.id, deckAppId, tx)
+      if (!(await canUseDeck(resolved.space.id, deckAppId, tx))) {
+        throw new Error('DECK_SUBSCRIPTION_REQUIRED')
+      }
+      if (existing) {
+        return tx.deckInstance.update({
+          where: { id: existing.id },
+          data: { isActive: true },
+          select: { id: true, deckAppId: true, isActive: true },
+        })
+      }
+      return tx.deckInstance.create({
+        data: { spaceId: resolved.space.id, deckAppId, isActive: true },
+        select: { id: true, deckAppId: true, isActive: true },
+      })
     })
     if (deckAppId === 'finance') await seedFinanceCategories(resolved.space.id)
-    return NextResponse.json({ deck: deckApp, instance: updated })
+    return NextResponse.json({ deck: deckApp, instance }, { status: existing ? 200 : 201 })
+  } catch (error) {
+    if (error instanceof Error && error.message === 'DECK_SUBSCRIPTION_REQUIRED') {
+      return errorResponse('구독이 필요한 업무입니다', 402)
+    }
+    return errorResponse('업무를 활성화하지 못했습니다', 500)
   }
-
-  const created = await prisma.deckInstance.create({
-    data: {
-      spaceId: resolved.space.id,
-      deckAppId,
-      isActive: true,
-    },
-    select: { id: true, deckAppId: true, isActive: true },
-  })
-
-  if (deckAppId === 'finance') await seedFinanceCategories(resolved.space.id)
-
-  return NextResponse.json({ deck: deckApp, instance: created }, { status: 201 })
 }
 
 // DELETE /api/spaces/decks — 현재 Space에서 Deck 비활성화(사용 중지).

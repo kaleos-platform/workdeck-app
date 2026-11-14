@@ -15,9 +15,9 @@
 //                                                                  # Opening 이전 고객: 모집 관리 보장가(lockedPrice, 실제 해지 시 소멸)
 //                                                                  # 무료는 일반 고객과 같은 7일 체험뿐 — 이력이 있으면 연장하지 않음
 //   node scripts/billing-admin.mjs set-trial <spaceId> <종료일 YYYY-MM-DD>
-//                                                                  # 체험 종료일(KST) 지정. 토스 결제 공백기 이전 고객 전용 — 결제 가능일+7일로 맞춘다
+//                                                                  # 모집 관리 체험 종료일(KST) 연장. 토스 결제 공백기 이전 고객 전용 — 결제 가능일+7일로 맞춘다
 //   node scripts/billing-admin.mjs trial-all <종료일 YYYY-MM-DD> [--apply]
-//                                                                  # 면제 아닌 체험 공간 일괄 연장(기본 미리보기). BILLING_CHECKOUT_PAUSED 해제 직전에 실행
+//                                                                  # 면제 아닌 업무별 체험 일괄 연장(기본 미리보기). BILLING_CHECKOUT_PAUSED 해제 직전에 실행
 import 'dotenv/config'
 import { config } from 'dotenv'
 import pg from 'pg'
@@ -32,10 +32,32 @@ if (!connectionString) {
 
 const client = new pg.Client({
   connectionString,
-  ssl: { rejectUnauthorized: false },
+  ssl: ['localhost', '127.0.0.1', '[::1]'].includes(new URL(connectionString).hostname)
+    ? false
+    : { rejectUnauthorized: false },
 })
 
 const [cmd, ...args] = process.argv.slice(2)
+
+// Date의 자동 날짜 보정(예: 2월 30일)을 허용하지 않는다.
+function validateTrialDate(value) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(value ?? '') ||
+    !Number.isFinite(Date.parse(`${value}T00:00:00Z`)) ||
+    new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) !== value ||
+    value.startsWith('0000')
+  ) {
+    throw new Error('실제 종료일 YYYY-MM-DD가 필요합니다')
+  }
+}
+
+// a는 SpaceDeckAccess. 다른 업무를 유료 구독 중이어도 대상 체험은 연장할 수 있다.
+const noPaidTarget = `NOT EXISTS (
+  SELECT 1 FROM "SpaceSubscription" s JOIN "SubscriptionItem" i ON i."subscriptionId" = s.id
+  WHERE s."spaceId" = a."spaceId" AND s.status IN ('ACTIVE', 'PAST_DUE')
+    AND i.type = 'DECK' AND i."deckAppId" = a."deckAppId"
+    AND i.status IN ('ACTIVE', 'CANCEL_AT_PERIOD_END')
+)`
 
 async function main() {
   await client.connect()
@@ -50,14 +72,23 @@ async function main() {
       console.table(products.rows)
 
       const subs = await client.query(`
-        SELECT s."spaceId", sp.name AS space_name, s.status, s."trialEndsAt",
+        SELECT s."spaceId", sp.name AS space_name, s.status, s."trialEndsAt" AS "legacyTrialEndsAt",
                s."currentPeriodEnd", s."retryCount", s."exemptFlag",
                (SELECT string_agg(i."deckAppId", ',') FROM "SubscriptionItem" i
                  WHERE i."subscriptionId" = s.id AND i.status IN ('ACTIVE','CANCEL_AT_PERIOD_END')) AS decks
         FROM "SpaceSubscription" s JOIN "Space" sp ON sp.id = s."spaceId"
         ORDER BY s."updatedAt" DESC`)
-      console.log('\n── 구독 현황 ──')
+      console.log('\n── 구독 현황 (legacyTrialEndsAt은 호환 기록) ──')
       console.table(subs.rows)
+
+      const policies = await client.query(`
+        SELECT a."spaceId", sp.name AS space_name, a."deckAppId", a."trialEndsAt",
+               a."exemptFlag", a."exemptNote", COALESCE(s."exemptFlag", false) AS "spaceExemptFlag"
+        FROM "SpaceDeckAccess" a JOIN "Space" sp ON sp.id = a."spaceId"
+        LEFT JOIN "SpaceSubscription" s ON s."spaceId" = a."spaceId"
+        ORDER BY a."spaceId", a."deckAppId"`)
+      console.log('\n── 업무별 체험·면제 (접근 정책) ──')
+      console.table(policies.rows)
 
       const locked = await client.query(`
         SELECT s."spaceId", i."deckAppId", i.status, i."lockedPrice"
@@ -153,20 +184,29 @@ async function main() {
       }
       await client.query('BEGIN')
       try {
-        // 이전 고객도 무료는 일반 고객과 같은 7일 체험(TRIAL_DAYS)뿐 — 보장가가 곧 프로모션.
-        // 체험 이력(trialEndsAt)이 없을 때만 지금부터 7일을 부여하고, 있으면 그대로 둔다(평생 1회).
-        // entitlement-core TRIAL_DAYS 와 맞출 것
         const sub = await client.query(
-          `INSERT INTO "SpaceSubscription" (id, "spaceId", status, "trialEndsAt", "createdAt", "updatedAt")
-           VALUES (gen_random_uuid()::text, $1, 'TRIALING', now() + interval '7 days', now(), now())
-           ON CONFLICT ("spaceId") DO UPDATE SET
-             "trialEndsAt" = CASE WHEN "SpaceSubscription"."trialEndsAt" IS NULL AND "SpaceSubscription".status = 'TRIALING'
-                                  THEN EXCLUDED."trialEndsAt" ELSE "SpaceSubscription"."trialEndsAt" END,
-             "updatedAt" = now()
-           RETURNING id, status, "trialEndsAt"::text AS "trialEndsAtUtc"`,
+          `INSERT INTO "SpaceSubscription" (id, "spaceId", status, "createdAt", "updatedAt")
+           VALUES (gen_random_uuid()::text, $1, 'TRIALING', now(), now())
+           ON CONFLICT ("spaceId") DO UPDATE SET "updatedAt" = now()
+           RETURNING id, status`,
           [spaceId]
         )
         const { id: subscriptionId } = sub.rows[0]
+        // 모집 업무의 첫 체험만 부여한다. 기존 이력은 만료·미시작 여부와 무관하게 보존한다.
+        // 면제·무료 업무에는 새 체험을 소비하지 않는다. TRIAL_DAYS와 같은 7일.
+        await client.query(
+          `INSERT INTO "SpaceDeckAccess" (id, "spaceId", "deckAppId", "trialEndsAt", "createdAt", "updatedAt")
+           SELECT gen_random_uuid()::text, $1, 'recruiting', now() + interval '7 days', now(), now()
+           FROM "SpaceSubscription" s JOIN "BillingDeckProduct" p ON p.id = 'recruiting'
+           WHERE s.id = $2 AND NOT s."exemptFlag" AND p."pricingMode" = 'SUBSCRIPTION'
+           ON CONFLICT ("spaceId", "deckAppId") DO NOTHING`,
+          [spaceId, subscriptionId]
+        )
+        const access = await client.query(
+          `SELECT "deckAppId", "trialEndsAt"::text AS "trialEndsAtUtc", "exemptFlag"
+           FROM "SpaceDeckAccess" WHERE "spaceId" = $1 AND "deckAppId" = 'recruiting'`,
+          [spaceId]
+        )
         // ENDED item 에 보장가를 심는다 → startSubscription/addDeck 이 재활성화하며 사용
         const item = await client.query(
           `INSERT INTO "SubscriptionItem" (id, "subscriptionId", type, "deckAppId", "priceSnapshot", "lockedPrice", status, "endedAt")
@@ -181,12 +221,12 @@ async function main() {
         }
         await client.query('COMMIT')
         console.log(`✔ Space ${spaceId} 이전 혜택 부여`)
-        console.table([{ ...sub.rows[0], ...item.rows[0] }])
-        const { status, trialEndsAtUtc } = sub.rows[0]
+        console.table([{ ...sub.rows[0], ...access.rows[0], ...item.rows[0] }])
+        const { trialEndsAtUtc } = access.rows[0] ?? {}
         const trialOver =
           !trialEndsAtUtc || new Date(`${trialEndsAtUtc.replace(' ', 'T')}Z`) <= new Date()
-        if (trialOver && status !== 'ACTIVE' && status !== 'PAST_DUE') {
-          console.log('⚠ 접근 불가 — set-trial 또는 결제 필요')
+        if (trialOver) {
+          console.log('⚠ 모집 체험 없음 또는 만료 — 면제·유예가 없다면 set-trial 또는 결제 필요')
         }
       } catch (e) {
         await client.query('ROLLBACK')
@@ -197,24 +237,26 @@ async function main() {
 
     case 'set-trial': {
       const [spaceId, until] = args
-      if (!spaceId || !/^\d{4}-\d{2}-\d{2}$/.test(until ?? '')) {
-        throw new Error('사용법: set-trial <spaceId> <종료일 YYYY-MM-DD>')
-      }
-      // 종료일 다음날 00:00 KST 까지 체험. 체험 중인 구독만 바꾼다(유료 구독에 영향 없음)
-      // 이전 고객(보장가 보유) 전용 — 과거 종료일은 즉시 잠금이라 거부
+      if (!spaceId) throw new Error('사용법: set-trial <spaceId> <종료일 YYYY-MM-DD>')
+      validateTrialDate(until)
+      // 기존 syntax는 모집 관리 전용. 시작된 체험만 KST 날짜 말일까지 연장한다.
       const res = await client.query(
-        `UPDATE "SpaceSubscription" s
+        `UPDATE "SpaceDeckAccess" a
          SET "trialEndsAt" = (($2::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'UTC', "updatedAt" = now()
-         WHERE s."spaceId" = $1 AND s.status = 'TRIALING'
+         WHERE a."spaceId" = $1 AND a."deckAppId" = 'recruiting'
+           AND a."trialEndsAt" IS NOT NULL
            AND (($2::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') > now()
-           AND EXISTS (SELECT 1 FROM "SubscriptionItem" i
-                       WHERE i."subscriptionId" = s.id AND i."deckAppId" = 'recruiting' AND i."lockedPrice" IS NOT NULL)
-         RETURNING "spaceId", status, "trialEndsAt"::text AS "trialEndsAtUtc"`,
+           AND a."trialEndsAt" < ((($2::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'UTC')
+           AND ${noPaidTarget}
+           AND EXISTS (SELECT 1 FROM "SpaceSubscription" s JOIN "SubscriptionItem" i ON i."subscriptionId" = s.id
+                       WHERE s."spaceId" = a."spaceId" AND i.type = 'DECK'
+                         AND i."deckAppId" = 'recruiting' AND i."lockedPrice" IS NOT NULL)
+         RETURNING "spaceId", "deckAppId", "trialEndsAt"::text AS "trialEndsAtUtc"`,
         [spaceId, until]
       )
       if (res.rowCount === 0) {
         throw new Error(
-          `Space ${spaceId}: 변경 없음 — 체험 중 구독, 모집 관리 보장가(migrate-grant), 미래 종료일이 모두 필요합니다`
+          `Space ${spaceId}: 변경 없음 — 시작된 모집 체험, 보장가(migrate-grant), 기존보다 늦은 미래 종료일, 대상 업무 유료 구독 없음이 필요합니다`
         )
       }
       console.log(`✔ Space ${spaceId} 체험 종료일 ${until}(KST)`)
@@ -224,32 +266,32 @@ async function main() {
 
     case 'trial-all': {
       const [until, flag] = args
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(until ?? '')) {
+      validateTrialDate(until)
+      if (flag && flag !== '--apply')
         throw new Error('사용법: trial-all <종료일 YYYY-MM-DD> [--apply]')
-      }
-      // 결제 일시 중지 해제 직전용: 해제하면 체험이 끝난 공간이 바로 잠기므로
-      // 면제 아닌 TRIALING 구독의 체험 종료일을 종료일 다음날 00:00 KST 로 일괄 연장한다(앞당기지 않음).
-      // EXPIRED·CANCELED(직접 해지·결제 실패)는 대상 아님 — 해제 후 다시 결제하면 된다.
-      // 구독 행 없는 공간은 deck 설치 시 ensureTrialStarted 가 체험을 만들므로 없음(기존 공간은 면제 백필).
+      // 면제·유료 구독·무료 업무를 제외하고, 시작된 업무별 체험만 연장한다.
       const end = `(($1::date + 1)::timestamp AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'UTC'`
       const future = await client.query(`SELECT ${end} > (now() AT TIME ZONE 'UTC') AS ok`, [until])
       if (!future.rows[0].ok) throw new Error(`${until}: 과거 종료일은 즉시 잠금이라 거부`)
-      const where = `status = 'TRIALING' AND "exemptFlag" = false AND "trialEndsAt" IS NOT NULL AND "trialEndsAt" < ${end}`
+      const where = `a."exemptFlag" = false AND a."trialEndsAt" IS NOT NULL AND a."trialEndsAt" < ${end}
+        AND NOT EXISTS (SELECT 1 FROM "SpaceSubscription" s WHERE s."spaceId" = a."spaceId" AND s."exemptFlag")
+        AND EXISTS (SELECT 1 FROM "BillingDeckProduct" p WHERE p.id = a."deckAppId" AND p."pricingMode" = 'SUBSCRIPTION')
+        AND ${noPaidTarget}`
       if (flag !== '--apply') {
         const preview = await client.query(
-          `SELECT "spaceId", "trialEndsAt"::text AS "trialEndsAtUtc" FROM "SpaceSubscription" WHERE ${where}`,
+          `SELECT "spaceId", "deckAppId", "trialEndsAt"::text AS "trialEndsAtUtc" FROM "SpaceDeckAccess" a WHERE ${where}`,
           [until]
         )
-        console.log(`미리보기: ${preview.rowCount}개 공간 → ${until}(KST). 적용하려면 --apply`)
+        console.log(`미리보기: ${preview.rowCount}개 업무 → ${until}(KST). 적용하려면 --apply`)
         console.table(preview.rows)
         break
       }
       const res = await client.query(
-        `UPDATE "SpaceSubscription" SET "trialEndsAt" = ${end}, "updatedAt" = now()
-         WHERE ${where} RETURNING "spaceId", "trialEndsAt"::text AS "trialEndsAtUtc"`,
+        `UPDATE "SpaceDeckAccess" a SET "trialEndsAt" = ${end}, "updatedAt" = now()
+         WHERE ${where} RETURNING "spaceId", "deckAppId", "trialEndsAt"::text AS "trialEndsAtUtc"`,
         [until]
       )
-      console.log(`✔ ${res.rowCount}개 공간 체험 종료일 ${until}(KST)`)
+      console.log(`✔ ${res.rowCount}개 업무 체험 종료일 ${until}(KST)`)
       console.table(res.rows)
       break
     }

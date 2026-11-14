@@ -17,8 +17,8 @@ import {
   discountNote,
   endsAtPeriodEnd,
   nextCycleSupplyTotal,
-  daysUntil,
   formatDate,
+  formatTrialEndDate,
   formatWon,
   useBillingOverview,
 } from './billing-shared'
@@ -63,7 +63,7 @@ export function SubscriptionSettingsClient() {
     } finally {
       setStartBusy(false)
     }
-  }, [selectedDecks, load])
+  }, [selectedDecks, load, setBanner])
 
   const runAddDeck = useCallback(
     async (deckAppId: string) => {
@@ -97,7 +97,7 @@ export function SubscriptionSettingsClient() {
         setDeckBusyId(null)
       }
     },
-    [load]
+    [load, setBanner]
   )
 
   const handleCancelDeck = useCallback(
@@ -130,14 +130,19 @@ export function SubscriptionSettingsClient() {
         setDeckBusyId(null)
       }
     },
-    [load]
+    [load, setBanner]
   )
 
   /** 확인 모달을 연다. 실제 호출은 onConfirm 에서 일어난다. */
   const openSubscribeDialog = useCallback(
     (deckIds: string[], isAddition: boolean) => {
       const decks = (data?.products ?? [])
-        .filter((p) => deckIds.includes(p.id))
+        .filter(
+          (p) =>
+            deckIds.includes(p.id) &&
+            !data?.entitlement.decks[p.id]?.exempt &&
+            !data?.subscription?.exemptFlag
+        )
         .map((p) => ({
           id: p.id,
           name: p.name,
@@ -172,7 +177,14 @@ export function SubscriptionSettingsClient() {
     if (target.length === 0) return
     const isAddition = data.subscription?.status === 'ACTIVE'
     const decks = data.products
-      .filter((p) => target.includes(p.id) && p.pricingMode === 'SUBSCRIPTION' && !p.comingSoon)
+      .filter(
+        (p) =>
+          target.includes(p.id) &&
+          p.pricingMode === 'SUBSCRIPTION' &&
+          !p.comingSoon &&
+          !data.entitlement.decks[p.id]?.exempt &&
+          !data.subscription?.exemptFlag
+      )
       .map((p) => ({
         id: p.id,
         name: p.name,
@@ -187,7 +199,14 @@ export function SubscriptionSettingsClient() {
   }, [subscribeParam, data])
 
   const subscribableProducts = useMemo(
-    () => data?.products.filter((p) => p.pricingMode === 'SUBSCRIPTION' && !p.comingSoon) ?? [],
+    () =>
+      data?.products.filter(
+        (p) =>
+          p.pricingMode === 'SUBSCRIPTION' &&
+          !p.comingSoon &&
+          !data.entitlement.decks[p.id]?.exempt &&
+          !data.subscription?.exemptFlag
+      ) ?? [],
     [data]
   )
 
@@ -221,7 +240,6 @@ export function SubscriptionSettingsClient() {
   }
 
   const { subscription, method, entitlement } = data
-  const trialDaysLeft = daysUntil(subscription?.trialEndsAt ?? null)
   // 유료 전환된 업무가 하나도 없으면 구독 자체가 성립하지 않는다 (전 업무 무료 제공 중)
   const hasSubscribableProduct = subscribableProducts.length > 0
   const needsSubscriptionStart =
@@ -261,32 +279,15 @@ export function SubscriptionSettingsClient() {
               <CardTitle>구독 상태</CardTitle>
               <CardDescription>워크덱 업무 이용 현황을 확인하세요.</CardDescription>
             </div>
-            {data.subscription?.exemptFlag && <Badge variant="secondary">무료 이용 중</Badge>}
+            {data.subscription?.exemptFlag && <Badge variant="secondary">전체 Space 면제</Badge>}
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* 구독 이력이 없거나, 면제 백필로 생긴 빈 TRIALING 행(trialEndsAt 없음)일 때 */}
-            {(!subscription ||
-              (subscription.status === 'TRIALING' && !subscription.trialEndsAt)) && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Info className="h-4 w-4" />
-                {hasSubscribableProduct
-                  ? '아직 구독을 시작하지 않았습니다.'
+            {(!subscription || subscription.status === 'TRIALING') && (
+              <p className="text-sm text-muted-foreground">
+                {data.products.some((p) => p.pricingMode === 'SUBSCRIPTION' && !p.comingSoon)
+                  ? '업무별 체험 기간과 이용 상태를 아래에서 확인하세요. 체험 종료 후 자동 결제되지 않습니다. 계속 이용하려면 직접 유료 구독을 시작하세요.'
                   : '현재 모든 업무를 무료로 제공하고 있습니다. 유료 청구가 시작되기 전에 미리 안내드립니다.'}
-              </div>
-            )}
-            {subscription?.status === 'TRIALING' && subscription.trialEndsAt && (
-              <div className="flex items-center gap-2 text-sm">
-                <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                  Trial
-                </Badge>
-                <span>
-                  {trialDaysLeft !== null && trialDaysLeft > 0
-                    ? `Trial 종료까지 ${trialDaysLeft}일 남았습니다 (${formatDate(subscription.trialEndsAt)})`
-                    : Object.values(entitlement.decks).some((d) => d.reason === 'PAUSED')
-                      ? '결제 준비 중이라 무료로 이용하고 있습니다. 결제가 열리면 이메일로 안내드립니다'
-                      : `Trial이 종료되었습니다 (${formatDate(subscription.trialEndsAt)})`}
-                </span>
-              </div>
+              </p>
             )}
             {subscription?.status === 'ACTIVE' && (
               <div className="flex items-center gap-2 text-sm">
@@ -334,6 +335,7 @@ export function SubscriptionSettingsClient() {
                 const access = entitlement.decks[product.id]
                 const reasonBadge = access?.reason ? REASON_BADGE[access.reason] : undefined
                 const busy = deckBusyId === product.id
+                const isExempt = access?.exempt || subscription?.exemptFlag
 
                 return (
                   <div key={product.id} className="flex flex-col gap-3 rounded-lg border p-4">
@@ -366,6 +368,14 @@ export function SubscriptionSettingsClient() {
                         )}
                       </div>
                     </div>
+
+                    {access?.trialEndsAt && (
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        {access.reason === 'LOCKED' ? '체험 종료' : '체험 종료일'}:{' '}
+                        {formatTrialEndDate(access.trialEndsAt)} (KST)
+                        {access.reason === 'LOCKED' && ' · 계속 이용하려면 유료 구독을 시작하세요.'}
+                      </p>
+                    )}
 
                     {product.comingSoon ? (
                       <Badge variant="secondary" className="w-fit">
@@ -429,7 +439,7 @@ export function SubscriptionSettingsClient() {
                             >
                               기간말 해지 예정
                             </Badge>
-                            {isOwner && (
+                            {isOwner && !isExempt && (
                               <Button
                                 size="sm"
                                 variant="ghost"
@@ -444,7 +454,7 @@ export function SubscriptionSettingsClient() {
                           </>
                         )}
 
-                        {!item && subscription?.status === 'ACTIVE' && isOwner && (
+                        {!item && !isExempt && subscription?.status === 'ACTIVE' && isOwner && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -457,20 +467,24 @@ export function SubscriptionSettingsClient() {
                           </Button>
                         )}
 
-                        {!item && needsSubscriptionStart && isOwner && hasSubscribableProduct && (
-                          <Button
-                            size="sm"
-                            variant={selectedDecks.includes(product.id) ? 'secondary' : 'outline'}
-                            className="ml-auto"
-                            onClick={() =>
-                              method
-                                ? toggleDeckSelection(product.id)
-                                : openSubscribeDialog([product.id], false)
-                            }
-                          >
-                            {selectedDecks.includes(product.id) ? '빼기' : '구독'}
-                          </Button>
-                        )}
+                        {!item &&
+                          !isExempt &&
+                          needsSubscriptionStart &&
+                          isOwner &&
+                          hasSubscribableProduct && (
+                            <Button
+                              size="sm"
+                              variant={selectedDecks.includes(product.id) ? 'secondary' : 'outline'}
+                              className="ml-auto"
+                              onClick={() =>
+                                method
+                                  ? toggleDeckSelection(product.id)
+                                  : openSubscribeDialog([product.id], false)
+                              }
+                            >
+                              {selectedDecks.includes(product.id) ? '빼기' : '구독'}
+                            </Button>
+                          )}
                       </div>
                     )}
                   </div>
