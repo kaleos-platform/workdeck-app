@@ -89,7 +89,7 @@ async function spaceMismatch(spaceId: string): Promise<NextResponse | null> {
     // 요청 컨텍스트 밖 — 헤더 없음 취급
   }
   if (!sent || sent === spaceId) return null
-  return errorResponse('다른 탭에서 Space가 바뀌었습니다. 새로고침 후 다시 시도하세요', 409)
+  return errorResponse('다른 탭에서 작업 공간이 바뀌었습니다. 새로고침 후 다시 시도하세요', 409)
 }
 
 // 인증 + 현재 Space 멤버십(쿠키 → OWNER 최고참 → 최고참) — Deck 활성화와 무관
@@ -131,7 +131,7 @@ export async function resolveRequestedSpaceContext(requestedSpaceId: string | nu
   const membership = await resolveCurrentMembership(user.id, requestedSpaceId)
   if (!membership) return { error: errorResponse('공간이 없습니다', 404) }
   if ('forbidden' in membership)
-    return { error: errorResponse('이 Space의 구성원이 아닙니다', 403) }
+    return { error: errorResponse('이 작업 공간의 구성원이 아닙니다', 403) }
   // 명시 requested 는 호출자가 직접 고른 Space 라 헤더와 비교하지 않는다
   if (!requestedSpaceId) {
     const mismatch = await spaceMismatch(membership.space.id)

@@ -17,7 +17,6 @@ export default async function ApprovalsLayout({ children }: { children: React.Re
 
   return (
     <DeckShell
-      workspaceName={shell.workspaceName}
       variant="workdeck"
       mode="my-deck"
       isOwner={shell.isOwner}
