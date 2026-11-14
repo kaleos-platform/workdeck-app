@@ -4434,12 +4434,40 @@ model HiringUploadSession {
   applicationId String?   @unique
   requestHash   String?
   createdAt     DateTime  @default(now())
+  cleanupBackfilledAt DateTime?
+  cleanupRetryAt DateTime?
 
   space   Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   posting HiringPosting? @relation(fields: [postingId], references: [id], onDelete: SetNull)
 
   @@index([expiresAt, completedAt])
   @@index([postingId, createdAt])
+  @@index([cleanupBackfilledAt, createdAt, id])
+}
+
+// 세션과 Space 삭제 이후에도 정리할 경로만 보존한다.
+model HiringUploadCleanup {
+  id          String   @id
+  spaceId     String
+  paths       Json
+  quarantined Boolean  @default(false)
+  retiredAt   DateTime?
+  leaseToken  String?  @unique @db.Uuid
+  leaseUntil  DateTime?
+  failedCount Int      @default(0)
+  checkedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([checkedAt, createdAt])
+}
+
+// 잠긴 정리 대상을 건너뛴 뒤 기존 정렬의 다음 위치부터 재검사한다.
+model HiringCleanupCursor {
+  id          Int       @id @default(1)
+  initialized Boolean   @default(false)
+  checkedAt   DateTime?
+  createdAt   DateTime?
+  ledgerId    String?   @db.Uuid
 }
 
 // 고객 이전의 영속 대응 원장. 대상 행 생성과 원장 확정은 같은 트랜잭션에서 수행한다.
@@ -4480,6 +4508,7 @@ model HiringApplicationFile {
 
   @@index([applicationId])
   @@index([spaceId])
+  @@index([filePath])
 }
 
 // 지원서 내부 메모 (고용주 팀 코멘트)

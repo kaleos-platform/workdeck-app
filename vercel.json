@@ -1,5 +1,6 @@
 {
   "framework": "nextjs",
+  "git": { "deploymentEnabled": { "fix/hiring-cleanup-source-no-preview": false } },
   "buildCommand": "find .next -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} + 2>/dev/null; npx prisma migrate deploy && next build",
   "installCommand": "npm install",
   "ignoreCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then exit 1; fi; git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)*.md' ':(exclude).github'",
@@ -35,11 +36,18 @@
     "app/api/cron/hiring-upload-sweep/route.ts": {
       "maxDuration": 60
     },
+    "app/api/cron/hiring-upload-backfill/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/cron/hiring-upload-cleanup/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/collection/naver-nbaesong/ingest/route.ts": {
       "maxDuration": 60
     }
   },
   "crons": [
+    { "path": "/api/cron/hiring-upload-cleanup", "schedule": "*/5 * * * *" },
     {
       "path": "/api/cron/wekeep-weekly-reconcile",
       "schedule": "0 0 * * 1"
@@ -67,10 +75,6 @@
     {
       "path": "/api/cron/product-source-orphan-sweep",
       "schedule": "0 5 * * *"
-    },
-    {
-      "path": "/api/cron/hiring-upload-sweep",
-      "schedule": "30 * * * *"
     },
     {
       "path": "/api/cron/coupang-product-sync",
