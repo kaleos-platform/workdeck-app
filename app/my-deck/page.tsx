@@ -125,6 +125,9 @@ export default async function MyDeckPage({
         ),
         listPrice: product.monthlyPrice,
         allowed: entitlement.decks[product.id]?.allowed ?? false,
+        reason: entitlement.decks[product.id]?.reason ?? null,
+        trialEndsAt: entitlement.decks[product.id]?.trialEndsAt?.toISOString() ?? null,
+        graceEndsAt: entitlement.decks[product.id]?.graceEndsAt?.toISOString() ?? null,
       }))}
     />
   )
