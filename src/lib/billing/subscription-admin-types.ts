@@ -12,6 +12,8 @@ export type SubscriptionAccessRow = {
   currentPeriodEnd: string | null
   subscriptionStatus: string | null
   itemStatus: string | null
+  /** 체험 중 구독 예약 — 아직 결제 전 */
+  itemAwaitingTrialEnd: boolean
   spaceExempt: boolean
   exemptFlag: boolean
   exemptNote: string | null

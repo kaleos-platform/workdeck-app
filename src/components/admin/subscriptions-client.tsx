@@ -455,6 +455,11 @@ export function SubscriptionsClient() {
                         {row.subscriptionStatus === 'PAST_DUE' && (
                           <p className="mt-1 text-xs text-destructive">결제 연체</p>
                         )}
+                        {row.itemAwaitingTrialEnd && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            구독 예약 · 체험 종료일 결제
+                          </p>
+                        )}
                       </TableCell>
                       <TableCell className="text-xs tabular-nums">
                         {row.trialEndsAt ? trialDate(row.trialEndsAt) : '미시작'}

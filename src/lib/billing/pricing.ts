@@ -5,6 +5,7 @@ export interface ChargeLine {
   deckAppId: string
   type: 'DECK' | 'ADDON'
   price: number // 공급가
+  prorated?: boolean // 일할 줄(체험 종료일 미납분 합산 등)
 }
 
 export interface ChargeAmounts {
@@ -67,4 +68,10 @@ export function startOrderId(subscriptionId: string, date: Date): string {
 // (같은 날 중복 추가 시도는 멱등 차단, 해제 후 재추가는 다른 날이면 새 청구 허용)
 export function prorateOrderId(itemId: string, date: Date): string {
   return `prorate_${itemId}_${ymd(date)}`
+}
+
+// 체험 종료일 일할 결제 멱등 orderId: 아이템 × 체험 종료일 1건 (재시도는 같은 주문 재사용).
+// prorate_ 접두를 유지해 기존 PENDING 확인·주기 변경 가드를 그대로 탄다.
+export function trialStartOrderId(itemId: string, trialEndsAt: Date): string {
+  return `prorate_${itemId}_trial${ymd(trialEndsAt)}`
 }
