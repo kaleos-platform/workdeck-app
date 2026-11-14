@@ -2,35 +2,24 @@ import { z } from 'zod'
 import type { ActionDefinition } from './types'
 import { prisma } from '@/lib/prisma'
 import { ToolUserError } from '@/lib/agent/tools/errors'
-import { generatePlanNo } from '@/lib/inv/reorder-seq'
-import { computeProductPlan, isModelKey, loadPlanOptionInputs } from '@/lib/inv/reorder-engine'
-import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
+import {
+  runReorderPlanRequest,
+  type ReorderPlanRequestBody,
+} from '@/lib/inv/reorder-engine/run-plan-request'
 import { readTargetKeywords, applyKeywordsToTarget } from '@/lib/sh/keyword-apply'
 import { applyKeywordOps } from '@/lib/sh/keyword-review'
 import { lastChangeAt, isMeasuring, MEASURE_DAYS } from '@/lib/sh/keyword-review-query'
 import { keywordListSchema } from '@/lib/sh/schemas'
-import { plannedStockQty } from '@/lib/inv/planned-stock'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
 function def<T>(d: ActionDefinition<T>): ActionDefinition {
   return d as unknown as ActionDefinition
 }
 
-const DEFAULT_WINDOW_DAYS = 90
-const DEFAULT_TARGET_COVER_DAYS = 30
-
 // ─── 3) seller-hub.reorder.plan.create ───────────────────────────────────────
-// 발주 계획 라우트(app/api/sh/inventory/reorder/plan/route.ts)와 같은 입력 로더(loadPlanOptionInputs)와
-// 같은 상품 단위 계산(computeProductPlan)을 쓴다 — 수량 공식·모델 선택·bias 가 화면 생성과 같다.
-// 모델 = 상품 발주 설정의 선택 모델, 없으면 백테스트 추천 모델.
-//
-// 의도적으로 생략(라우트 위저드 전용):
-//   - 레이어드/로켓 세트 감지 (setSpecs, rocketChannel) — 비레이어드 상품 계획만 만든다
-//   - optionFinalOverrides / excludeRocketLayer / dryRun / 모델 지정(modelByProduct)
-//   - 신상품 옵션(이력 60일 미만) 수동 수량 입력 — 입력 수단이 없어 MANUAL·수량 0 으로 저장된다
-//   - LLM rationale (결정론적 텍스트만 저장)
-//   - bias 정산 실행(settleEligiblePlans) — 이미 정산된 계획의 bias 는 로더가 반영한다
-//   - P2002 planNo 충돌 재시도 (generatePlanNo 1회)
+// 발주 화면 위저드와 같은 경로(runReorderPlanRequest)로 만든다 — 수량·모델·연동 위치 분리·SKU 배분·
+// 자체·3PL 입고 위치가 화면에서 기본값으로 만든 계획과 같다(에밀리 보고 = 발주 화면 = 생성 계획).
+// 위저드 전용 편집(옵션 최종수량 수정·모델 지정·커버일수 변경)은 받지 않는다. 근거 문구는 LLM 없이 만든다.
 const reorderPlanParams = z.object({
   productId: z.string(),
   optionIds: z.array(z.string()).optional(),
@@ -55,173 +44,34 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
       throw new ToolUserError('발주 예측에서 제외된 상품입니다. 발주 설정에서 제외를 해제하세요.')
   },
   execute: async (ctx, params) => {
-    const spaceId = ctx.spaceId
     // createdById는 User FK — 제안자가 에이전트일 수 있으므로 승인한 구성원으로 기록한다.
     const userId = ctx.deciderId
     if (!userId) throw new Error('승인자 정보가 없습니다')
-
-    const selectedOptionIds =
-      Array.isArray(params.optionIds) && params.optionIds.length > 0 ? params.optionIds : null
-
-    // ── 1) 상품 + 옵션 + 발주 설정 로드 (활성 상품만) ──
-    const product = await prisma.invProduct.findFirst({
-      where: { spaceId, status: 'ACTIVE', id: params.productId },
-      select: {
-        id: true,
-        reorderRoundUnit: true,
-        options: {
-          // 삭제·단종 옵션은 생산·발주 대상이 아니다
-          where: {
-            deletedAt: null,
-            status: 'ACTIVE',
-            ...(selectedOptionIds ? { id: { in: selectedOptionIds } } : {}),
-          },
-          select: { id: true, safetyStockQty: true, createdAt: true },
-        },
-        reorderConfig: {
-          select: {
-            leadTimeDays: true,
-            analysisWindowDays: true,
-            targetCoverDays: true,
-            excludeFromForecast: true,
-            forecastModel: true,
-          },
-        },
-      },
-    })
-    if (!product) {
-      throw new Error('선택한 상품을 찾을 수 없습니다 (활성 상태가 아니거나 권한 없음)')
+    const run = async (body: ReorderPlanRequestBody) => {
+      const res = await runReorderPlanRequest({ spaceId: ctx.spaceId, userId }, body)
+      const data = (await res.json()) as Record<string, unknown>
+      if (!res.ok) throw new Error(String(data.message ?? data.error ?? '발주 계획 생성 실패'))
+      return data
     }
-    if (product.reorderConfig?.excludeFromForecast) {
-      throw new Error('발주 예측에서 제외된 상품입니다. 발주 설정에서 제외를 해제하세요.')
+    // 발주 화면 위저드 기본값과 같은 계획 — 연동 위치(로켓그로스) 자동 감지·SKU 배분·추천 모델·
+    // 상품 설정 커버일수, 자체·3PL 입고 위치는 위저드 기본값(이 상품 재고가 가장 많은 위치).
+    const base: ReorderPlanRequestBody = {
+      productId: params.productId,
+      ...(params.optionIds?.length ? { optionIds: params.optionIds } : {}),
+      excludeRocketLayer: false,
+      linkedLocationIds: [],
     }
-    if (product.options.length === 0) throw new Error('선택된 옵션이 없습니다')
-
-    const leadTimeDays = product.reorderConfig?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
-    const windowDays = product.reorderConfig?.analysisWindowDays ?? DEFAULT_WINDOW_DAYS
-    const targetCoverDays = product.reorderConfig?.targetCoverDays ?? DEFAULT_TARGET_COVER_DAYS
-    const roundUnit = product.reorderRoundUnit ?? 10
-    const storedModel = product.reorderConfig?.forecastModel
-    const now = new Date()
-
-    // ── 2) 입력 로드 + 상품 단위 계산 (발주 계획 라우트와 공용) ──
-    const { optionInputsByProduct, realizedByProduct } = await loadPlanOptionInputs({
-      spaceId,
-      products: [product],
-      now,
-      rocketChannelId: null,
-    })
-    const optionInputs = optionInputsByProduct.get(product.id) ?? []
-    const results = computeProductPlan({
-      options: optionInputs,
-      product: {
-        leadTimeDays,
-        targetCoverDays,
-        roundUnit,
-        windowDays,
-        configModel: isModelKey(storedModel) ? storedModel : null,
-        realized: realizedByProduct.get(product.id),
-        layered: false,
-      },
-      now,
-    })
-    const itemInputs = results.map((plan, idx) => {
-      const input = optionInputs[idx]
-      return {
-        plan,
-        biasAdjustFactor: input.biasFactor,
-        safetyStockQty: input.safetyStockQty,
-        onHandStock: input.stock.onHandQty,
-        incomingQty: input.stock.incomingQty,
-        currentStock: plannedStockQty({
-          onHandQty: input.stock.onHandQty,
-          incomingQty: input.stock.incomingQty,
-        }),
-      }
-    })
-
-    // ── 3) 트랜잭션 저장 (LLM 없이 결정론적 rationale) ──
-    const planId = await prisma.$transaction(async (tx) => {
-      const planNo = await generatePlanNo(spaceId, tx)
-      const totalSuggestedQty = itemInputs.reduce((s, i) => s + i.plan.roundedSuggestedQty, 0)
-      const biasAdjustApplied: Record<string, number> = {}
-      for (const item of itemInputs) biasAdjustApplied[item.plan.optionId] = item.biasAdjustFactor
-
-      const plan = await tx.reorderPlan.create({
-        data: {
-          spaceId,
-          planNo,
-          productId: params.productId,
-          locationId: null,
-          status: 'DRAFT',
-          // 단일 상품 계획 — 상품 분석 기간 그대로 기록
-          windowDays,
-          createdById: userId,
-          totalSuggestedQty,
-          totalFinalQty: 0,
-          memo: params.memo ?? null,
-          biasAdjustApplied,
-        },
-        select: { id: true },
-      })
-
-      await tx.reorderPlanItem.createMany({
-        data: itemInputs.map((item) => ({
-          planId: plan.id,
-          optionId: item.plan.optionId,
-          productId: params.productId,
-          currentStock: item.currentStock,
-          dailyAvgForecast: item.plan.dailyRate,
-          forecastModel: item.plan.selectedModel,
-          modelForecasts: item.plan.modelForecasts,
-          leadTimeDays,
-          safetyStockQty: item.safetyStockQty,
-          suggestedQty: item.plan.suggestedQty,
-          roundedSuggestedQty: item.plan.roundedSuggestedQty,
-          finalQty: item.plan.finalQty,
-          roundUnit,
-          // 결정론적 rationale — LLM 미사용(승인 큐 액션은 동기 실행, 외부 호출 최소화).
-          rationale: `${item.plan.selectedModel} 모델 일평균 ${item.plan.dailyRate.toFixed(2)}개 × (리드타임 ${leadTimeDays}일 + 목표 커버 ${targetCoverDays}일) + 안전재고 ${item.safetyStockQty}개 − 현재고·생산 중 ${item.currentStock}개.`,
-          biasAdjustFactor: item.biasAdjustFactor,
-          confidenceScore: null,
-          inputsSnapshot: JSON.parse(
-            JSON.stringify({
-              selectedModel: item.plan.selectedModel,
-              recommendedModel: item.plan.recommendedModel,
-              targetCoverDays,
-              isNewOption: item.plan.isNewOption,
-              biasAdjustFactor: item.biasAdjustFactor,
-              windowDays,
-              leadTimeDays,
-              safetyStockQty: item.safetyStockQty,
-              currentStock: item.currentStock,
-              onHandStock: item.onHandStock,
-              incomingQty: item.incomingQty,
-            })
-          ),
-        })),
-      })
-
-      return plan.id
-    })
-
-    // 신상품 옵션(이력 60일 미만)은 수동 수량 입력 수단이 없어 0 으로 저장된다 — 결과에 알린다
-    const manualOptionIds = itemInputs
-      .filter((i) => i.plan.selectedModel === 'MANUAL')
-      .map((i) => i.plan.optionId)
-    if (manualOptionIds.length === 0) return { planId, itemCount: itemInputs.length }
-    const manualOptions = await prisma.invProductOption.findMany({
-      where: { id: { in: manualOptionIds } },
-      select: { id: true, name: true, sku: true },
-    })
-    return {
-      planId,
-      itemCount: itemInputs.length,
-      manualOptions: manualOptions.map((o) => ({ optionId: o.id, name: o.name, sku: o.sku })),
-      note: `판매 이력 60일 미만 — 수량 0으로 저장, 발주 화면에서 직접 입력 필요: ${manualOptions
-        .map((o) => o.name)
-        .join(', ')}`,
+    const preview = (await run({ ...base, dryRun: true })) as {
+      ownLocations?: Array<{ id: string; isActive?: boolean }>
     }
+    const created = (await run({
+      ...base,
+      memo: params.memo,
+      // 입고 위치는 활성 위치만 — 재고가 남은 비활성 위치는 목록엔 있어도 기본값이 될 수 없다
+      ownLocationId: preview.ownLocations?.find((l) => l.isActive !== false)?.id ?? null,
+      skipLlmRationale: true,
+    })) as { planId: string; planNo?: string; items?: unknown[] }
+    return { planId: created.planId, planNo: created.planNo, itemCount: created.items?.length ?? 0 }
   },
 }
 

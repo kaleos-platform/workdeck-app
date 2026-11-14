@@ -111,6 +111,7 @@ type Preview = {
     name: string
     type: string
     onHandQty: number
+    isActive?: boolean
     /** 옵션별 이 위치 재고 */
     stockByOption?: Record<string, number>
   }>
@@ -606,7 +607,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   const externalTotal = options.reduce((s, o) => s + (externalBySku.get(o.optionId) ?? 0), 0)
   const ownTotal = options.reduce((s, o) => s + (ownBySku.get(o.optionId) ?? 0), 0)
   const linkedNeedTotal = options.reduce((s, o) => s + (o.linkedLocationNeedQty ?? 0), 0)
-  const ownLocationList = preview?.ownLocations ?? []
+  // 입고 위치 선택지는 활성 위치만(재고가 남은 비활성 위치는 ③ 재고 칩에만 보인다)
+  const ownLocationList = (preview?.ownLocations ?? []).filter((l) => l.isActive !== false)
   const effectiveOwnLocation =
     ownLocationList.find((l) => l.id === ownLocationId) ?? ownLocationList[0] ?? null
   // 검토 단계 위치별 분배 — 최종수량 중 연동 위치 몫(엔진 분배, 최종 이하), 나머지는 자체·3PL
