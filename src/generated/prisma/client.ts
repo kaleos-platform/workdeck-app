@@ -105,6 +105,11 @@ export type SpaceInvitation = Prisma.SpaceInvitationModel
  */
 export type AgentPendingAction = Prisma.AgentPendingActionModel
 /**
+ * Model BrowserWriteJob
+ *
+ */
+export type BrowserWriteJob = Prisma.BrowserWriteJobModel
+/**
  * Model SpaceAgentSetting
  * 
  */
