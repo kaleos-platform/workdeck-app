@@ -48,7 +48,7 @@ export type RunReconciliationMatchResult = {
 /**
  * 파싱된 결과를 매칭하고 PENDING 대조 기록을 생성한다.
  *
- * @param locationId 단일 위치 매칭 시 지정. null이면 행별 위치명(stock_status_export)으로 분배.
+ * @param locationId 기본 보관 장소. 템플릿에서는 위치명이 비어 있는 행에만 적용한다.
  */
 export async function runReconciliationMatch(params: {
   spaceId: string
@@ -57,7 +57,33 @@ export async function runReconciliationMatch(params: {
   fileName: string
   snapshotDateOverride?: Date
 }): Promise<RunReconciliationMatchResult> {
-  const { spaceId, parsed, locationId, fileName, snapshotDateOverride } = params
+  const { spaceId, parsed: inputParsed, locationId, fileName, snapshotDateOverride } = params
+
+  const location = locationId
+    ? await prisma.invStorageLocation.findFirst({
+        where: { id: locationId, spaceId },
+        select: { id: true, name: true, isActive: true },
+      })
+    : null
+  if (locationId && !location)
+    throw new ReconciliationCoreError('보관 장소를 찾을 수 없습니다', 404, {
+      code: 'LOCATION_NOT_FOUND',
+    })
+  if (location && !location.isActive)
+    throw new ReconciliationCoreError('보관 장소가 비활성화되었습니다', 400, {
+      code: 'LOCATION_INACTIVE',
+    })
+
+  // 파일에 적힌 위치는 유지하고, 빈 행에만 사용자가 선택한 기본 위치를 채운다.
+  const parsed =
+    location && inputParsed.format === 'stock_status_export'
+      ? {
+          ...inputParsed,
+          rows: inputParsed.rows.map((row) =>
+            row.externalLocationName ? row : { ...row, externalLocationName: location.name }
+          ),
+        }
+      : inputParsed
 
   const snapshotDate: Date = snapshotDateOverride ?? parsed.snapshotDate ?? new Date()
 
@@ -68,20 +94,7 @@ export async function runReconciliationMatch(params: {
   const useMultiLocation =
     parsed.format === 'stock_status_export' && parsed.rows.every((r) => !!r.externalLocationName)
 
-  if (locationId && !useMultiLocation) {
-    const location = await prisma.invStorageLocation.findFirst({
-      where: { id: locationId, spaceId },
-      select: { id: true, isActive: true },
-    })
-    if (!location)
-      throw new ReconciliationCoreError('보관 장소를 찾을 수 없습니다', 404, {
-        code: 'LOCATION_NOT_FOUND',
-      })
-    if (!location.isActive)
-      throw new ReconciliationCoreError('보관 장소가 비활성화되었습니다', 400, {
-        code: 'LOCATION_INACTIVE',
-      })
-
+  if (location && !useMultiLocation) {
     primaryLocationId = location.id
     matchResult = await matchReconciliation(spaceId, location.id, parsed)
   } else {
@@ -94,7 +107,7 @@ export async function runReconciliationMatch(params: {
       })
       throw new ReconciliationCoreError(
         `위치명이 비어있는 행이 ${rowsWithoutLoc.length}건 있습니다 (전체 ${parsed.rows.length}건). ` +
-          '보관 장소를 선택하면 그 장소 재고로 반영합니다.',
+          '보관 장소를 선택하면 위치명이 빈 행에 적용합니다.',
         400,
         {
           code: 'LOCATION_REQUIRED',
