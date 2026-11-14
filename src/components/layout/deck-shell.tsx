@@ -10,8 +10,6 @@ import type { DeckVariant } from '@/lib/deck-meta'
 import type { Role } from '@/lib/auth/roles'
 
 type DeckShellProps = {
-  /** 사이드바 표시는 현재 작업 공간(resolveSpaceContext) 기준 — 이 값은 쓰지 않는다. */
-  workspaceName: string
   variant: DeckVariant
   mode?: 'default' | 'my-deck'
   activeDecks?: Array<{ id: string; name: string }>

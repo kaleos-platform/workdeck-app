@@ -20,9 +20,5 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect((await hasSpaceAccess(user.id)) ? '/my-deck' : '/workspace-setup')
   }
 
-  return (
-    <DeckShell workspaceName={workspace.name} variant="coupang-ads">
-      {children}
-    </DeckShell>
-  )
+  return <DeckShell variant="coupang-ads">{children}</DeckShell>
 }
