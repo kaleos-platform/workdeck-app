@@ -149,10 +149,10 @@ export async function runIntakeForSpace(spaceId: string, deadline: number): Prom
     }
   }
 
-  // 4) 사진 설명(남은 시간만큼).
-  if (Date.now() < deadline - 60_000) {
+  // 4) 사진 설명(남은 시간만큼, 되쓰기 몫 10초는 남긴다).
+  if (Date.now() < deadline - 15_000) {
     try {
-      report.described = await describePendingMedia(spaceId, 10)
+      report.described = await describePendingMedia(spaceId, 10, deadline - 10_000)
     } catch (err) {
       report.errors.push(`describe: ${errText(err)}`)
     }
