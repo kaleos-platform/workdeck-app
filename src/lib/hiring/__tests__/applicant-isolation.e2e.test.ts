@@ -15,6 +15,7 @@ import { POST as addComment } from '../../../../app/api/hiring-applicants/applic
 import { PATCH as editComment } from '../../../../app/api/hiring-applicants/applications/[id]/comments/[commentId]/route'
 import { GET as getFile } from '../../../../app/api/hiring-applicants/applications/[id]/files/[fileId]/route'
 import { getApplicantFileSignedUrl } from '@/lib/hiring/storage'
+import type { Prisma } from '@/generated/prisma/client'
 
 jest.mock('@/lib/hiring/storage', () => ({
   ...jest.requireActual('@/lib/hiring/storage'),
@@ -224,6 +225,54 @@ it('목록과 Excel은 같은 고객의 기간 내 미삭제 지원서만 반환
     지원일: '2026-09-27',
   })
   expect(JSON.stringify(rows)).not.toContain('다른 고객 응답')
+})
+
+it('합성 지원서의 숫자·boolean을 Excel에 보존하고 중복·비지원 값은 422로 거부한다', async () => {
+  const original = await prisma.hiringApplication.findUniqueOrThrow({
+    where: { id: ownId },
+    select: { applicationEntries: true },
+  })
+  const setEntries = (entries: Prisma.InputJsonValue) =>
+    prisma.hiringApplication.update({
+      where: { id: ownId },
+      data: { applicationEntries: entries },
+    })
+  try {
+    await setEntries([
+      { key: 'zero', label: '합성 숫자', value: 0 },
+      { key: 'flag', label: '합성 불리언', value: false },
+      { key: 'list', label: '합성 목록', value: ['가', '나'] },
+      { key: 'formula', label: '합성 수식', value: '=1+1' },
+    ])
+    const ok = await exportApplications(new NextRequest('http://localhost/export'))
+    expect(ok?.status).toBe(200)
+    const workbook = XLSX.read(Buffer.from(await ok!.arrayBuffer()), { type: 'buffer' })
+    const sheet = workbook.Sheets['지원자']
+    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({
+      '합성 숫자': '0',
+      '합성 불리언': 'false',
+      '합성 목록': '가, 나',
+      '합성 수식': '=1+1',
+    })
+    expect(
+      Object.values(sheet).filter((cell) => cell && typeof cell === 'object' && 'f' in cell)
+    ).toHaveLength(0)
+    await setEntries([
+      { key: 'x', label: '합성 질문', value: '첫 답' },
+      { key: 'x', label: '합성 질문', value: '둘째 답' },
+    ])
+    const duplicate = await exportApplications(new NextRequest('http://localhost/export'))
+    expect(duplicate?.status).toBe(422)
+    expect(JSON.stringify(await duplicate!.json())).not.toMatch(/첫 답|둘째 답/)
+    await setEntries([{ key: 'x', label: '합성 질문', value: { private: '합성 원문' } }])
+    const invalid = await exportApplications(new NextRequest('http://localhost/export'))
+    expect(invalid?.status).toBe(422)
+    expect(JSON.stringify(await invalid!.json())).not.toContain('합성 원문')
+  } finally {
+    await setEntries(original.applicationEntries as Prisma.InputJsonValue)
+  }
 })
 
 it('Excel은 같은 고객의 근무지와 같은 공고의 직무 및 한국 지원 시각을 내보낸다', async () => {

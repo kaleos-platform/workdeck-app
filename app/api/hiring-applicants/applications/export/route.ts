@@ -22,6 +22,8 @@ export const runtime = 'nodejs'
 const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
 
 const EXPORT_ROW_CAP = 2000
+const INVALID_ANSWER_MESSAGE =
+  '지원자 답변의 형식을 확인할 수 없습니다. 기간이나 공고별로 범위를 좁혀 지원자 상세를 확인해 주세요'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('recruiting')
@@ -90,11 +92,19 @@ export async function GET(req: NextRequest) {
   const customLabels = new Map<string, string>()
   for (const app of applications) {
     const entries = (app.applicationEntries as ApplicationEntryValue[] | null) ?? []
+    const seen = new Set<string>()
     for (const e of entries) {
       if (['name', 'phone', 'email', 'address'].includes(e.key)) continue
-      if (e.value == null || (Array.isArray(e.value) && e.value.length === 0)) continue
       const label = e.label || e.key
       const identity = JSON.stringify([e.key, label])
+      if (seen.has(identity)) return errorResponse(INVALID_ANSWER_MESSAGE, 422)
+      seen.add(identity)
+      const valid = e.value == null || typeof e.value === 'string' ||
+        typeof e.value === 'boolean' ||
+        (typeof e.value === 'number' && Number.isFinite(e.value)) ||
+        (Array.isArray(e.value) && e.value.every((value) => typeof value === 'string'))
+      if (!valid) return errorResponse(INVALID_ANSWER_MESSAGE, 422)
+      if (e.value == null || (Array.isArray(e.value) && e.value.length === 0)) continue
       if (!customLabels.has(identity)) customLabels.set(identity, label)
     }
   }
@@ -146,7 +156,7 @@ export async function GET(req: NextRequest) {
     for (const identity of customLabels.keys()) {
       const e = byKey.get(identity)
       const val = e?.value
-      row.push(Array.isArray(val) ? val.join(', ') : typeof val === 'string' ? val : '')
+      row.push(val == null ? '' : Array.isArray(val) ? val.join(', ') : String(val))
     }
     return row
   })
