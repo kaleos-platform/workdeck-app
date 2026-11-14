@@ -64,6 +64,42 @@ export async function GET(_req: NextRequest, { params }: Params) {
   // 구성 옵션이 겹치는 여러 세트는 각각 대안적 환산(합산 아님) — over-count 없음.
   const baselineStockByOption = new Map<string, number>()
   for (const o of options) baselineStockByOption.set(o.optionId, o.baselineQty)
+
+  // 새 레이어드 계획 — 생성 시점 연동 위치 SKU 배분을 그대로 보여 준다(세트별 중복 환산 없음).
+  const plan = await prisma.reorderPlan.findUnique({
+    where: { id: run.reorderPlanId },
+    select: { linkedSkuAllocation: true },
+  })
+  const alloc = plan?.linkedSkuAllocation as {
+    skus?: Array<{
+      name: string
+      optionName: string | null
+      allocSets: number
+      items: Array<{ optionId: string; perSet: number }>
+    }>
+  } | null
+  if (alloc?.skus) {
+    const names = await prisma.invProductOption.findMany({
+      where: {
+        id: { in: [...new Set(alloc.skus.flatMap((k) => k.items.map((i) => i.optionId)))] },
+      },
+      select: { id: true, name: true },
+    })
+    const nameById = new Map(names.map((o) => [o.id, o.name]))
+    const sets = alloc.skus
+      .filter((k) => k.allocSets > 0)
+      .map((k) => ({
+        listingName: k.optionName ? `${k.name} · ${k.optionName}` : k.name,
+        setQty: k.allocSets,
+        items: k.items.map((i) => ({
+          optionId: i.optionId,
+          perSet: i.perSet,
+          optionName: nameById.get(i.optionId) ?? i.optionId,
+        })),
+      }))
+    return NextResponse.json({ layered: true, rocketLocation, options, sets })
+  }
+
   const planSets = await prisma.reorderPlanSet.findMany({
     where: { planId: run.reorderPlanId },
     orderBy: { sortOrder: 'asc' },

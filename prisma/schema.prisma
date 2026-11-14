@@ -3593,6 +3593,8 @@ model ReorderPlan {
   finalizedAt       DateTime? // (레거시) 확정 전환 시점 — confirmedAt 으로 대체 중
   confirmedAt       DateTime? // "예측 검증 시작" 시점 = 예측 동결점 = 신뢰도 평가 앵커
   biasAdjustApplied Json? // 적용된 bias 보정 계수 맵 { optionId: factor }
+  // 연동 위치(로켓그로스) 몫의 외부 SKU 별 배분 스냅샷(생성 시점) — { locationId, locationName, snapshotDate, skus[], loose[] }
+  linkedSkuAllocation Json?
 
   totalSuggestedQty Int // 전체 옵션 제안 수량 합계
   totalFinalQty     Int // 전체 옵션 최종 확정 수량 합계

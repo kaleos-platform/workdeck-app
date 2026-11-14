@@ -34,6 +34,7 @@ import {
   type WizardStep,
 } from './reorder-ui'
 import { MODEL_KEYS, MODEL_KEY_LABEL, type ModelKey } from './reorder-plan-types'
+import { LinkedSkuAllocationPanel, type LinkedSkuAllocation } from './linked-sku-allocation-panel'
 
 // dryRun 미리보기(POST /reorder/plan { dryRun:true }) 응답 — 생성과 동일 코드 경로라 drift 없음.
 type PreviewOption = {
@@ -85,6 +86,8 @@ type Preview = {
   locationName: string | null
   options: PreviewOption[]
   sets: PreviewSet[]
+  /** 연동 위치 몫의 외부 SKU 별 배분(레이어드만) */
+  linkedSkuAllocation?: LinkedSkuAllocation | null
   /** 자체·3PL 출고 위치별 현재고(상품 옵션 합) — 연동 위치 제외 */
   ownLocations?: Array<{ id: string; name: string; type: string; onHandQty: number }>
 }
@@ -186,6 +189,15 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     }
     setStepIdx(i)
     setReached((r) => Math.max(r, i))
+    // 검토 단계 진입 시 고친 최종수량으로 연동 SKU 배분을 다시 계산한다.
+    if (
+      i === STEP_REVIEW &&
+      picked &&
+      preview?.linkedSkuAllocation &&
+      editedOptionsRef.current.size > 0
+    ) {
+      void fetchPreview(picked.productId, !includeRocket, selectedLinkedLocationIds)
+    }
   }
 
   const getPreviewOverrides = () => {
@@ -226,6 +238,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
           linkedLocationIds,
           ...overrides,
           ...engine,
+          // 사용자가 고친 최종수량 — 연동 SKU 배분이 그 수량 이하로 맞춰진다.
+          optionFinalOverrides: editedFinalOverrides(),
         }),
       })
       if (!res.ok) {
@@ -262,6 +276,17 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     } finally {
       setPreviewLoading(false)
     }
+  }
+
+  function editedFinalOverrides(): Record<string, number> {
+    const out: Record<string, number> = {}
+    for (const id of editedOptionsRef.current) {
+      const v = Number(finalByOption[id])
+      if ((finalByOption[id] ?? '').trim() !== '' && Number.isFinite(v) && v >= 0) {
+        out[id] = Math.floor(v)
+      }
+    }
+    return out
   }
 
   // 신상품 옵션(MANUAL)은 최종수량 입력값이 곧 수동 발주 수량이다.
@@ -524,7 +549,12 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   const totalFinal = options.reduce((s, o) => s + finalQtyOf(o), 0)
   const hasCost = options.some((o) => o.costPrice != null)
   const totalAmount = options.reduce((s, o) => s + finalQtyOf(o) * (o.costPrice ?? 0), 0)
-  const totalSetQty = (preview?.sets ?? []).reduce((s, x) => s + x.finalSetQty, 0)
+  const skuAlloc = preview?.linkedSkuAllocation ?? null
+  // 레이어드는 연동 위치 SKU 배분 세트 합, 그 외(위치 세트 계획)는 기존 역산 합
+  const totalSetQty = skuAlloc
+    ? skuAlloc.skus.reduce((s, x) => s + x.allocSets, 0)
+    : (preview?.sets ?? []).reduce((s, x) => s + x.finalSetQty, 0)
+  const hasSetSummary = skuAlloc ? skuAlloc.skus.length > 0 : (preview?.sets.length ?? 0) > 0
   // 계산 변수를 바꾼 뒤 "계산 다시 적용"을 누르지 않으면 화면 수량과 생성될 수량이 어긋난다.
   // 문자열 비교 금지 — 적용값은 Math.floor 후 저장되므로 '30' vs '30.0'이 영구 dirty가 된다.
   const appliedCover = options[0]?.targetCoverDays
@@ -784,8 +814,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     <PlanSummaryBar
       stats={[
         { label: '최종 발주 수량', value: fmtQty(totalFinal), unit: '개' },
-        ...(preview?.sets.length
-          ? [{ label: '세트 환산', value: fmtQty(totalSetQty), unit: '세트' }]
+        ...(hasSetSummary
+          ? [{ label: '연동 SKU 배분', value: fmtQty(totalSetQty), unit: '세트' }]
           : []),
         ...(hasCost ? [{ label: '발주 금액', value: fmtWon(totalAmount) }] : []),
         { label: '재고 커버', value: String(horizonDays), unit: '일 기준' },
@@ -1463,7 +1493,13 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
       ) : (
         <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-4">
-            {sets.length > 0 && (
+            {skuAlloc ? (
+              <LinkedSkuAllocationPanel
+                allocation={skuAlloc}
+                optionNameById={optionNameById}
+                desc={`외부 연동 소계 ${fmtQty(externalTotal)}개를 SKU 부족분(30일 판매 × ${horizonDays}일 − 재고 − 입고예정) 비례로 나눕니다. 나머지 ${fmtQty(Math.max(0, totalFinal - externalTotal))}개는 자체·3PL 위치로 입고합니다.`}
+              />
+            ) : sets.length > 0 ? (
               <>
                 <Panel
                   title="입고되면 이 구성대로 세트를 묶어 연동 위치에 등록합니다"
@@ -1525,7 +1561,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                   </div>
                 </Panel>
               </>
-            )}
+            ) : null}
 
             <Panel
               title="발주 내역 — 옵션 단위"
@@ -1600,8 +1636,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                 size="lg"
                 sub={`옵션 ${options.filter((o) => finalQtyOf(o) > 0).length}종`}
               />
-              {sets.length > 0 && (
-                <Kpi label="세트 환산" value={fmtQty(totalSetQty)} unit="세트" size="lg" />
+              {hasSetSummary && (
+                <Kpi label="연동 SKU 배분" value={fmtQty(totalSetQty)} unit="세트" size="lg" />
               )}
               {hasCost && <Kpi label="발주 금액" value={fmtWon(totalAmount)} size="lg" />}
               <div className="space-y-1.5 border-t pt-3 text-xs text-muted-foreground">
