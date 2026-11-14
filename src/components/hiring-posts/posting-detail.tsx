@@ -4,7 +4,7 @@ import { isPostingRecruitmentLocked } from '@/lib/hiring/publication-policy'
 
 import { PublishDialog } from './publish-dialog'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -15,7 +15,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { PostingStatusBadge, type PostingStatus } from '@/components/hiring-posts/status-badge'
 import { PreviewFrame } from '@/components/hiring-posts/preview-frame'
 import type { PostingEmbedIssue } from '@/lib/hiring/render-embed-html'
-import { RECRUITING_POSTINGS_PATH, getRecruitingPostingBuildPath } from '@/lib/deck-routes'
+import {
+  RECRUITING_POSTINGS_PATH,
+  getRecruitingPostingBuildPath,
+  getRecruitingPostingPath,
+} from '@/lib/deck-routes'
+import { cn } from '@/lib/utils'
 
 type Posting = {
   id: string
@@ -32,6 +37,11 @@ type Props = {
   embedHtml: string
   embedIssues?: PostingEmbedIssue[]
   usesFormLink?: boolean
+  // 탭은 URL(?tab=)로 결정되며 서버가 내려준다. 기본은 지원자 모집.
+  tab?: 'recruit' | 'applicants' | 'content'
+  applicantCount?: number
+  // 지원자 탭 내용(서버에서 렌더한 목록)
+  children?: ReactNode
 }
 
 function formatClosingDate(value: string | null): string | null {
@@ -56,6 +66,9 @@ export function PostingDetail({
   embedHtml,
   embedIssues = [],
   usesFormLink = false,
+  tab = 'recruit',
+  applicantCount = 0,
+  children,
 }: Props) {
   const router = useRouter()
   const [status, setStatus] = useState<PostingStatus>(posting.status)
@@ -158,190 +171,241 @@ export function PostingDetail({
         </div>
       </div>
 
-      <section
-        aria-labelledby="recruiting-period-title"
-        className="space-y-3 rounded-lg border border-l-4 border-primary/30 bg-muted/40 p-5"
-      >
-        <h2 id="recruiting-period-title" className="text-base font-semibold">
-          모집 기간 및 접수 상태
-        </h2>
-        <p className="text-xl font-bold tabular-nums">
-          {closingDate ? formatClosingDate(closingDate) : '상시 모집 · 마감일 없음'}
-        </p>
-        <p className="text-sm font-medium">
-          {isDraft
-            ? '접수 시작 전 · 공고를 발행해야 지원서를 받을 수 있습니다.'
-            : status === 'ACTIVE' && !expired
-              ? '지원서 접수 중'
-              : '접수 마감 · 현재 지원서를 받지 않습니다.'}
-        </p>
-        {expired && (
-          <p className="text-sm font-semibold text-destructive">
-            마감일이 지났습니다. 새로운 모집은 공고를 복사해 진행해 주세요.
-          </p>
-        )}
-        <p className="text-sm text-muted-foreground">
-          {closingDate
-            ? '발행 후 한국 시간 기준 마감일 23:59까지 접수합니다.'
-            : '발행 후 직접 마감할 때까지 접수합니다.'}
-        </p>
-      </section>
-
-      {locked && (
-        <p className="rounded-lg border bg-muted/40 p-4 text-sm">
-          최초 발행 이력이 있는 공고입니다. 지원자 이력 보존을 위해 모집 조건과 지원서 설정은 변경할
-          수 없습니다. 새로운 지원자는 공고를 복사해 모집해 주세요.
-        </p>
-      )}
-      {isDraft && !locked && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-900/40 dark:text-amber-200">
-          HTML은 발행 전에도 복사할 수 있습니다. Workdeck 지원서·공고 링크는 발행 후 공개되므로,
-          HTML에 지원서 연결 버튼이 있으면 발행 상태를 확인하세요. 상단의 공고 발행 버튼에서
-          마감일을 확인하고 발행해 주세요.
-        </div>
-      )}
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,680px)]">
-        <div className="space-y-6">
-          <section className="space-y-3 rounded-lg border p-6">
-            <div>
-              <h2 className="font-medium">외부 채용사이트에 게시</h2>
-              <p className="text-sm text-muted-foreground">
-                HTML을 복사해 사람인·알바몬 등의 공고 상세 HTML 입력란에 붙여 넣으세요. 게시 전 해당
-                사이트의 미리보기를 확인하세요.
-              </p>
-            </div>
-            {embedIssues.length > 0 && (
-              <div role="alert" className="space-y-2 rounded-md border p-3 text-sm">
-                <p className="font-medium">
-                  {hasOutputErrors
-                    ? '수정 후 HTML을 복사할 수 있습니다.'
-                    : 'HTML 복사 전 확인하세요.'}
-                </p>
-                <ul className="list-disc space-y-1 pl-5">
-                  {embedIssues.map((issue, index) => (
-                    <li key={index}>
-                      {issue.blockNumber > 0 ? `카드 ${issue.blockNumber}: ` : ''}
-                      {issue.message}
-                    </li>
-                  ))}
-                </ul>
-                {hasOutputErrors && (
-                  <Link
-                    className="inline-block underline"
-                    href={getRecruitingPostingBuildPath(posting.id)}
-                  >
-                    공고 수정하기
-                  </Link>
-                )}
-              </div>
+      <nav aria-label="공고 상세" className="flex flex-wrap gap-1 border-b">
+        {(
+          [
+            { key: 'recruit', label: '지원자 모집', href: getRecruitingPostingPath(posting.id) },
+            {
+              key: 'applicants',
+              label: '지원자',
+              href: getRecruitingPostingPath(posting.id, { tab: 'applicants' }),
+            },
+            {
+              key: 'content',
+              label: '공고 내용',
+              href: getRecruitingPostingPath(posting.id, { tab: 'content' }),
+            },
+          ] as const
+        ).map((t) => (
+          <Link
+            key={t.key}
+            href={t.href}
+            aria-current={tab === t.key ? 'page' : undefined}
+            className={cn(
+              '-mb-px border-b-2 px-3 py-2 text-sm transition-colors',
+              tab === t.key
+                ? 'border-primary font-semibold text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             )}
-            {usesFormLink && (status !== 'ACTIVE' || expired) && (
-              <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">
-                HTML에 Workdeck 지원서 링크가 포함되어 있지만 현재 지원 접수가 열려 있지 않습니다.{' '}
-                {locked
-                  ? '새로운 모집은 공고를 복사해 발행한 뒤 새 지원서 링크를 사용하세요.'
-                  : '공고 발행 버튼에서 마감일을 확인하고 발행해 주세요.'}
-              </p>
+          >
+            {t.label}
+            {t.key === 'applicants' && (
+              <>
+                {' '}
+                <span className="tabular-nums">{applicantCount.toLocaleString('ko-KR')}</span>
+              </>
             )}
-            <Button
-              disabled={hasOutputErrors}
-              onClick={() =>
-                copyText(
-                  embedHtml,
-                  'HTML 코드를 복사했습니다',
-                  isDraft ? '초안 공고는 발행 전까지 지원서 링크로 접수할 수 없습니다.' : undefined
-                )
-              }
-            >
-              <Copy /> HTML 복사
-            </Button>
-            <details className="space-y-2">
-              <summary className="cursor-pointer text-sm text-muted-foreground">
-                HTML 코드 보기
-              </summary>
-              <Textarea
-                aria-label="공고 HTML 코드"
-                readOnly
-                value={embedHtml}
-                rows={6}
-                className="font-mono text-xs"
-              />
-            </details>
-          </section>
-          <div className="space-y-3 rounded-lg border p-6">
-            <div>
-              <h2 className="font-medium">지원서 링크</h2>
-              <p className="text-sm text-muted-foreground">
-                링크를 채용 사이트에 등록하면 지원자를 바로 모을 수 있어요.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Input readOnly value={applyUrl} className="font-mono text-sm" />
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-11 shrink-0"
-                onClick={() => window.open(`${applyUrl}${previewSuffix}`, '_blank')}
-              >
-                <ExternalLink />
-                <span className="sr-only">열기</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-11 shrink-0"
-                onClick={() => copyText(applyUrl, '지원서 링크를 복사했습니다')}
-              >
-                <Copy /> 복사
-              </Button>
-            </div>
-          </div>
+          </Link>
+        ))}
+      </nav>
 
-          <div className="space-y-3 rounded-lg border p-6">
-            <div>
-              <h2 className="font-medium">공고 링크</h2>
-              <p className="text-sm text-muted-foreground">공고 상세 페이지 링크입니다.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Input readOnly value={postingUrl} className="font-mono text-sm" />
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-11 shrink-0"
-                onClick={() => window.open(`${postingUrl}${previewSuffix}`, '_blank')}
-              >
-                <ExternalLink />
-                <span className="sr-only">열기</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-11 shrink-0"
-                onClick={() => copyText(postingUrl, '공고 링크를 복사했습니다')}
-              >
-                <Copy /> 복사
-              </Button>
-            </div>
-          </div>
-        </div>
+      {tab === 'applicants' && children}
 
-        {/* 우측 — 공고 미리보기(임베드 HTML과 동일한 결과, PC/모바일 폭 전환) */}
-        <aside className="space-y-3 lg:sticky lg:top-6 lg:self-start">
-          <h2 className="font-medium">공고 미리보기</h2>
-          <PreviewFrame>
-            <iframe
-              title="외부 게시용 공고 미리보기"
-              sandbox=""
-              referrerPolicy="no-referrer"
-              className="h-[70vh] min-h-96 w-full rounded-md border bg-white"
-              srcDoc={`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:16px;overflow-wrap:anywhere">${embedHtml}</body></html>`}
-            />
-            <p className="text-xs text-muted-foreground">
-              외부 게시용 HTML 미리보기입니다. 채용 사이트의 편집 설정에 따라 표시가 달라질 수
-              있습니다.
+      {tab === 'recruit' && (
+        <>
+          <section
+            aria-labelledby="recruiting-period-title"
+            className="space-y-3 rounded-lg border border-l-4 border-primary/30 bg-muted/40 p-5"
+          >
+            <h2 id="recruiting-period-title" className="text-base font-semibold">
+              모집 기간 및 접수 상태
+            </h2>
+            <p className="text-xl font-bold tabular-nums">
+              {closingDate ? formatClosingDate(closingDate) : '상시 모집 · 마감일 없음'}
             </p>
-          </PreviewFrame>
-        </aside>
-      </div>
+            <p className="text-sm font-medium">
+              {isDraft
+                ? '접수 시작 전 · 공고를 발행해야 지원서를 받을 수 있습니다.'
+                : status === 'ACTIVE' && !expired
+                  ? '지원서 접수 중'
+                  : '접수 마감 · 현재 지원서를 받지 않습니다.'}
+            </p>
+            {expired && (
+              <p className="text-sm font-semibold text-destructive">
+                마감일이 지났습니다. 새로운 모집은 공고를 복사해 진행해 주세요.
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              {closingDate
+                ? '발행 후 한국 시간 기준 마감일 23:59까지 접수합니다.'
+                : '발행 후 직접 마감할 때까지 접수합니다.'}
+            </p>
+          </section>
+
+          {locked && (
+            <p className="rounded-lg border bg-muted/40 p-4 text-sm">
+              최초 발행 이력이 있는 공고입니다. 지원자 이력 보존을 위해 모집 조건과 지원서 설정은
+              변경할 수 없습니다. 새로운 지원자는 공고를 복사해 모집해 주세요.
+            </p>
+          )}
+          {isDraft && !locked && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-900/40 dark:text-amber-200">
+              HTML은 발행 전에도 복사할 수 있습니다. Workdeck 지원서·공고 링크는 발행 후 공개되므로,
+              HTML에 지원서 연결 버튼이 있으면 발행 상태를 확인하세요. 상단의 공고 발행 버튼에서
+              마감일을 확인하고 발행해 주세요.
+            </div>
+          )}
+
+          <div className="max-w-3xl space-y-6">
+            <div className="space-y-6">
+              <section className="space-y-3 rounded-lg border p-6">
+                <div>
+                  <h2 className="font-medium">외부 채용사이트에 게시</h2>
+                  <p className="text-sm text-muted-foreground">
+                    HTML을 복사해 사람인·알바몬 등의 공고 상세 HTML 입력란에 붙여 넣으세요. 게시 전
+                    해당 사이트의 미리보기를 확인하세요.
+                  </p>
+                </div>
+                {embedIssues.length > 0 && (
+                  <div role="alert" className="space-y-2 rounded-md border p-3 text-sm">
+                    <p className="font-medium">
+                      {hasOutputErrors
+                        ? '수정 후 HTML을 복사할 수 있습니다.'
+                        : 'HTML 복사 전 확인하세요.'}
+                    </p>
+                    <ul className="list-disc space-y-1 pl-5">
+                      {embedIssues.map((issue, index) => (
+                        <li key={index}>
+                          {issue.blockNumber > 0 ? `카드 ${issue.blockNumber}: ` : ''}
+                          {issue.message}
+                        </li>
+                      ))}
+                    </ul>
+                    {hasOutputErrors && (
+                      <Link
+                        className="inline-block underline"
+                        href={getRecruitingPostingBuildPath(posting.id)}
+                      >
+                        공고 수정하기
+                      </Link>
+                    )}
+                  </div>
+                )}
+                {usesFormLink && (status !== 'ACTIVE' || expired) && (
+                  <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">
+                    HTML에 Workdeck 지원서 링크가 포함되어 있지만 현재 지원 접수가 열려 있지
+                    않습니다.{' '}
+                    {locked
+                      ? '새로운 모집은 공고를 복사해 발행한 뒤 새 지원서 링크를 사용하세요.'
+                      : '공고 발행 버튼에서 마감일을 확인하고 발행해 주세요.'}
+                  </p>
+                )}
+                <Button
+                  disabled={hasOutputErrors}
+                  onClick={() =>
+                    copyText(
+                      embedHtml,
+                      'HTML 코드를 복사했습니다',
+                      isDraft
+                        ? '초안 공고는 발행 전까지 지원서 링크로 접수할 수 없습니다.'
+                        : undefined
+                    )
+                  }
+                >
+                  <Copy /> HTML 복사
+                </Button>
+                <details className="space-y-2">
+                  <summary className="cursor-pointer text-sm text-muted-foreground">
+                    HTML 코드 보기
+                  </summary>
+                  <Textarea
+                    aria-label="공고 HTML 코드"
+                    readOnly
+                    value={embedHtml}
+                    rows={6}
+                    className="font-mono text-xs"
+                  />
+                </details>
+              </section>
+              <div className="space-y-3 rounded-lg border p-6">
+                <div>
+                  <h2 className="font-medium">지원서 링크</h2>
+                  <p className="text-sm text-muted-foreground">
+                    링크를 채용 사이트에 등록하면 지원자를 바로 모을 수 있어요.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input readOnly value={applyUrl} className="font-mono text-sm" />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-11 shrink-0"
+                    onClick={() => window.open(`${applyUrl}${previewSuffix}`, '_blank')}
+                  >
+                    <ExternalLink />
+                    <span className="sr-only">열기</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-11 shrink-0"
+                    onClick={() => copyText(applyUrl, '지원서 링크를 복사했습니다')}
+                  >
+                    <Copy /> 복사
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-lg border p-6">
+                <div>
+                  <h2 className="font-medium">공고 링크</h2>
+                  <p className="text-sm text-muted-foreground">공고 상세 페이지 링크입니다.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input readOnly value={postingUrl} className="font-mono text-sm" />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-11 shrink-0"
+                    onClick={() => window.open(`${postingUrl}${previewSuffix}`, '_blank')}
+                  >
+                    <ExternalLink />
+                    <span className="sr-only">열기</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-11 shrink-0"
+                    onClick={() => copyText(postingUrl, '공고 링크를 복사했습니다')}
+                  >
+                    <Copy /> 복사
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {tab === 'content' && (
+        <div className="max-w-[680px]">
+          {/* 공고 미리보기(임베드 HTML과 동일한 결과, PC/모바일 폭 전환) */}
+          <aside className="space-y-3">
+            <h2 className="font-medium">공고 미리보기</h2>
+            <PreviewFrame>
+              <iframe
+                title="외부 게시용 공고 미리보기"
+                sandbox=""
+                referrerPolicy="no-referrer"
+                className="h-[70vh] min-h-96 w-full rounded-md border bg-white"
+                srcDoc={`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:16px;overflow-wrap:anywhere">${embedHtml}</body></html>`}
+              />
+              <p className="text-xs text-muted-foreground">
+                외부 게시용 HTML 미리보기입니다. 채용 사이트의 편집 설정에 따라 표시가 달라질 수
+                있습니다.
+              </p>
+            </PreviewFrame>
+          </aside>
+        </div>
+      )}
     </div>
   )
 }

@@ -144,8 +144,12 @@ export const RECRUITING_DETAIL_TEMPLATES_PATH = `${RECRUITING_BASE_PATH}/templat
 export const RECRUITING_STORES_PATH = `${RECRUITING_BASE_PATH}/settings/stores`
 export const RECRUITING_POSITIONS_PATH = `${RECRUITING_BASE_PATH}/settings/positions`
 
-export function getRecruitingPostingPath(id: string): string {
-  return `${RECRUITING_POSTINGS_PATH}/${id}`
+export function getRecruitingPostingPath(
+  id: string,
+  opts?: { tab?: 'applicants' | 'content' }
+): string {
+  const base = `${RECRUITING_POSTINGS_PATH}/${id}`
+  return opts?.tab ? `${base}?tab=${opts.tab}` : base
 }
 
 export function getRecruitingPostingBuildPath(id: string, step?: string): string {

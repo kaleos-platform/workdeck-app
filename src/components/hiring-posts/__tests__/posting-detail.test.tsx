@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { PostingDetail } from '../posting-detail'
 import { renderPostingEmbed } from '@/lib/hiring/render-embed-html'
 
@@ -60,6 +60,23 @@ it('초안에서도 HTML을 우선 복사하고 앱 CSS와 격리된 미리보�
   )
   fireEvent.click(screen.getByRole('button', { name: 'HTML 복사' }))
   await waitFor(() => expect(writeText).toHaveBeenCalledWith(html))
+  // 미리보기는 「공고 내용」 탭에서 제공한다.
+  expect(screen.queryByTitle('외부 게시용 공고 미리보기')).not.toBeInTheDocument()
+  cleanup()
+  render(
+    <PostingDetail
+      posting={{
+        id: 'test',
+        uuid: 'public-test',
+        title: '테스트',
+        status: 'DRAFT',
+        closingDate: null,
+      }}
+      origin="https://workdeck.test"
+      embedHtml={html}
+      tab="content"
+    />
+  )
   const frame = screen.getByTitle('외부 게시용 공고 미리보기')
   expect(frame).toHaveAttribute('sandbox', '')
   expect(frame.getAttribute('srcdoc')).toContain(html)
@@ -207,4 +224,53 @@ it('발행 상태라도 마감일이 지나면 HTML 지원 링크에 새 모집 
     />
   )
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+describe('공고 상세 탭', () => {
+  const posting = {
+    id: 'p1',
+    uuid: 'u1',
+    title: 'QA',
+    status: 'ACTIVE' as const,
+    closingDate: null,
+  }
+  const base = { posting, origin: 'https://workdeck.test', embedHtml: '<div></div>' }
+
+  it('탭 링크는 URL 상태이며 지원자 수와 현재 탭(aria-current)을 표시한다', () => {
+    render(<PostingDetail {...base} tab="applicants" applicantCount={1234} />)
+    const nav = within(screen.getByRole('navigation', { name: '공고 상세' }))
+    expect(nav.getByRole('link', { name: '지원자 모집' })).toHaveAttribute(
+      'href',
+      '/d/recruiting/postings/p1'
+    )
+    const applicants = nav.getByRole('link', { name: '지원자 1,234' })
+    expect(applicants).toHaveAttribute('href', '/d/recruiting/postings/p1?tab=applicants')
+    expect(applicants).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('link', { name: '공고 내용' })).toHaveAttribute(
+      'href',
+      '/d/recruiting/postings/p1?tab=content'
+    )
+    expect(nav.getByRole('link', { name: '지원자 모집' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('지원자 탭에서는 서버가 내려준 목록만 보이고 모집 블록·미리보기는 숨긴다', () => {
+    render(
+      <PostingDetail {...base} tab="applicants" applicantCount={2}>
+        <p>지원자 목록 자리</p>
+      </PostingDetail>
+    )
+    expect(screen.getByText('지원자 목록 자리')).toBeInTheDocument()
+    expect(screen.queryByText('모집 기간 및 접수 상태')).not.toBeInTheDocument()
+    expect(screen.queryByTitle('외부 게시용 공고 미리보기')).not.toBeInTheDocument()
+  })
+
+  it('기본 탭은 지원자 모집이며 children 을 렌더하지 않는다', () => {
+    render(
+      <PostingDetail {...base}>
+        <p>지원자 목록 자리</p>
+      </PostingDetail>
+    )
+    expect(screen.getByText('모집 기간 및 접수 상태')).toBeInTheDocument()
+    expect(screen.queryByText('지원자 목록 자리')).not.toBeInTheDocument()
+  })
 })

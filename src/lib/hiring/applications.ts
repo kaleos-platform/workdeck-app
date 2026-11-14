@@ -228,18 +228,20 @@ export type ApplicationListFilters = {
   position?: string
   postingId?: string
   stage?: HiringApplicationStage
+  // 진행 단계(서류 접수/면접/최종 제안) — stage 가 HIRING 일 때만 의미가 있다.
+  process?: HiringProcessStage
   from?: Date
   to?: Date
   page: number
   pageSize: number
 }
 
-/** 교차 목록 — spaceId 스코프 필수. 블랙리스트는 phoneHash 조인으로 내부 표시. */
-export async function listApplications(
+/** 목록·상태별 카운트 공용 where. stage/process 는 있을 때만 포함한다. */
+export async function buildApplicationListWhere(
   spaceId: string,
-  filters: ApplicationListFilters
-): Promise<{ rows: ApplicationListRow[]; total: number }> {
-  const where = {
+  filters: Omit<ApplicationListFilters, 'page' | 'pageSize'>
+) {
+  return {
     ...applicantSearchWhere(filters.search),
     ...(await applicantWorkplaceWhere(
       spaceId,
@@ -251,6 +253,7 @@ export async function listApplications(
     deletedAt: null,
     ...(filters.postingId ? { postingId: filters.postingId } : {}),
     ...(filters.stage ? { stage: filters.stage } : {}),
+    ...(filters.process ? { hiringStage: filters.process } : {}),
     ...(filters.from || filters.to
       ? {
           createdAt: {
@@ -260,6 +263,50 @@ export async function listApplications(
         }
       : {}),
   }
+}
+
+export type ApplicationStatusCounts = {
+  all: number
+  APPLIED: number
+  INTERVIEW: number
+  JOB_OFFER: number
+  ACCEPTED: number
+  REJECTED: number
+}
+
+/** 상태 탭 카운트 — stage/process 필터는 무시하고 나머지 조건만 적용한다(groupBy 1회). */
+export async function countApplicationsByStatus(
+  spaceId: string,
+  filters: Omit<ApplicationListFilters, 'page' | 'pageSize' | 'stage' | 'process'>
+): Promise<ApplicationStatusCounts> {
+  const where = await buildApplicationListWhere(spaceId, filters)
+  const groups = await prisma.hiringApplication.groupBy({
+    by: ['stage', 'hiringStage'],
+    where,
+    _count: true,
+  })
+  const counts: ApplicationStatusCounts = {
+    all: 0,
+    APPLIED: 0,
+    INTERVIEW: 0,
+    JOB_OFFER: 0,
+    ACCEPTED: 0,
+    REJECTED: 0,
+  }
+  for (const g of groups) {
+    counts.all += g._count
+    if (g.stage === 'HIRING') counts[g.hiringStage] += g._count
+    else counts[g.stage] += g._count
+  }
+  return counts
+}
+
+/** 교차 목록 — spaceId 스코프 필수. 블랙리스트는 phoneHash 조인으로 내부 표시. */
+export async function listApplications(
+  spaceId: string,
+  filters: ApplicationListFilters
+): Promise<{ rows: ApplicationListRow[]; total: number }> {
+  const where = await buildApplicationListWhere(spaceId, filters)
 
   const [records, total, blacklist] = await Promise.all([
     prisma.hiringApplication.findMany({

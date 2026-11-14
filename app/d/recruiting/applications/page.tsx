@@ -1,84 +1,17 @@
-// 지원자 교차 목록(server component) — searchParams 로 필터·페이지네이션, 도메인 모듈 직접 조회.
+// 지원자 교차 목록(server component) — 목록 조회·필터는 공유 섹션이 처리한다.
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
-import { listApplications } from '@/lib/hiring/applications'
-import type { HiringApplicationStage } from '@/generated/prisma/client'
-import { ApplicationsTable } from '@/components/hiring-applicants/applications-table'
-import { normalizeWorkplaceFilter } from '@/lib/hiring/application-workplace-filter'
+import {
+  ApplicationsListSection,
+  type ApplicationsSearchParams,
+} from '@/components/hiring-applicants/applications-list-section'
 
-import { parseYmdDateKst } from '@/lib/date-range'
-
-const PAGE_SIZE = 50
-const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
-
-type Props = {
-  searchParams: Promise<{
-    search?: string | string[]
-    posting?: string | string[]
-    stage?: string | string[]
-    from?: string | string[]
-    to?: string | string[]
-    page?: string | string[]
-    store?: string | string[]
-    position?: string | string[]
-  }>
-}
+type Props = { searchParams: Promise<ApplicationsSearchParams> }
 
 export default async function ApplicationsPage({ searchParams }: Props) {
   const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
-  const spaceId = resolved.space.id
-
   const raw = await searchParams
-  if (Array.isArray(raw.store) || Array.isArray(raw.position)) {
-    return (
-      <p className="p-6">근무지 또는 직무 검색 조건이 올바르지 않습니다. 주소를 확인해 주세요.</p>
-    )
-  }
-  const sp = {
-    search: typeof raw.search === 'string' ? raw.search : raw.search ? 'invalid' : '',
-    posting: typeof raw.posting === 'string' ? raw.posting : '',
-    stage: typeof raw.stage === 'string' ? raw.stage : '',
-    from: typeof raw.from === 'string' ? raw.from : '',
-    to: typeof raw.to === 'string' ? raw.to : '',
-    store: normalizeWorkplaceFilter(raw.store),
-    position: normalizeWorkplaceFilter(raw.position),
-  }
-  const requestedPage =
-    typeof raw.page === 'string' && /^\d+$/.test(raw.page) ? Number(raw.page) : 1
-  // Prisma skip의 Int 범위를 넘는 페이지는 첫 페이지로 복구한다.
-  const page =
-    Number.isSafeInteger(requestedPage) &&
-    requestedPage > 0 &&
-    requestedPage <= Math.floor(2147483647 / PAGE_SIZE) + 1
-      ? requestedPage
-      : 1
-  const stage =
-    sp.stage && VALID_STAGES.has(sp.stage) ? (sp.stage as HiringApplicationStage) : undefined
-  const from = parseYmdDateKst(sp.from ?? '') ?? undefined
-  // to 는 해당 일자 끝까지 포함
-  const toRaw = parseYmdDateKst(sp.to ?? '')
-  const to = toRaw ? new Date(toRaw.getTime() + 24 * 60 * 60 * 1000 - 1) : undefined
-
-  const [{ rows, total }, postings] = await Promise.all([
-    listApplications(spaceId, {
-      search: sp.search,
-      store: sp.store,
-      position: sp.position,
-      postingId: sp.posting || undefined,
-      stage,
-      from,
-      to,
-      page,
-      pageSize: PAGE_SIZE,
-    }),
-    prisma.hiringPosting.findMany({
-      where: { spaceId },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true, title: true },
-    }),
-  ])
 
   return (
     <div className="space-y-4 p-6">
@@ -89,23 +22,10 @@ export default async function ApplicationsPage({ searchParams }: Props) {
         </p>
       </div>
 
-      <ApplicationsTable
+      <ApplicationsListSection
+        spaceId={resolved.space.id}
         canExportExcel={resolved.role === 'OWNER' || resolved.role === 'ADMIN'}
-        key={JSON.stringify([sp.store, sp.position])}
-        rows={rows}
-        total={total}
-        pageSize={PAGE_SIZE}
-        page={page}
-        postings={postings}
-        filters={{
-          search: sp.search,
-          store: sp.store,
-          position: sp.position,
-          posting: sp.posting ?? '',
-          stage: stage ?? '',
-          from: from ? (sp.from ?? '') : '',
-          to: to ? (sp.to ?? '') : '',
-        }}
+        raw={raw}
       />
     </div>
   )

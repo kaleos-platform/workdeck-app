@@ -1,0 +1,129 @@
+// 지원자 목록 섹션(server component) — 교차 목록 페이지와 공고 상세의 지원자 탭이 공유한다.
+// searchParams 로 필터·페이지네이션, 도메인 모듈 직접 조회.
+import { prisma } from '@/lib/prisma'
+import { listApplications, countApplicationsByStatus } from '@/lib/hiring/applications'
+import type { HiringApplicationStage, HiringProcessStage } from '@/generated/prisma/client'
+import { ApplicationsTable } from '@/components/hiring-applicants/applications-table'
+import { normalizeWorkplaceFilter } from '@/lib/hiring/application-workplace-filter'
+import { parseYmdDateKst } from '@/lib/date-range'
+
+const PAGE_SIZE = 50
+const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
+const VALID_PROCESSES = new Set(['APPLIED', 'INTERVIEW', 'JOB_OFFER'])
+
+export type ApplicationsSearchParams = {
+  search?: string | string[]
+  posting?: string | string[]
+  stage?: string | string[]
+  process?: string | string[]
+  from?: string | string[]
+  to?: string | string[]
+  page?: string | string[]
+  store?: string | string[]
+  position?: string | string[]
+}
+
+type Props = {
+  spaceId: string
+  canExportExcel: boolean
+  raw: ApplicationsSearchParams
+  // 공고 상세 탭처럼 특정 공고로 고정할 때 지정한다(URL 의 posting 값은 무시).
+  lockedPostingId?: string
+  // 필터·페이지 이동 기준 경로(쿼리 제외). 생략하면 지원자 목록 경로.
+  basePath?: string
+  // basePath 에 항상 유지할 쿼리(예: tab=applicants)
+  baseQuery?: Record<string, string>
+}
+
+export async function ApplicationsListSection({
+  spaceId,
+  canExportExcel,
+  raw,
+  lockedPostingId,
+  basePath,
+  baseQuery,
+}: Props) {
+  if (Array.isArray(raw.store) || Array.isArray(raw.position)) {
+    return (
+      <p className="p-6">근무지 또는 직무 검색 조건이 올바르지 않습니다. 주소를 확인해 주세요.</p>
+    )
+  }
+  const sp = {
+    search: typeof raw.search === 'string' ? raw.search : raw.search ? 'invalid' : '',
+    posting: lockedPostingId ?? (typeof raw.posting === 'string' ? raw.posting : ''),
+    stage: typeof raw.stage === 'string' ? raw.stage : '',
+    process: typeof raw.process === 'string' ? raw.process : '',
+    from: typeof raw.from === 'string' ? raw.from : '',
+    to: typeof raw.to === 'string' ? raw.to : '',
+    store: normalizeWorkplaceFilter(raw.store),
+    position: normalizeWorkplaceFilter(raw.position),
+  }
+  const requestedPage =
+    typeof raw.page === 'string' && /^\d+$/.test(raw.page) ? Number(raw.page) : 1
+  // Prisma skip의 Int 범위를 넘는 페이지는 첫 페이지로 복구한다.
+  const page =
+    Number.isSafeInteger(requestedPage) &&
+    requestedPage > 0 &&
+    requestedPage <= Math.floor(2147483647 / PAGE_SIZE) + 1
+      ? requestedPage
+      : 1
+  const stage =
+    sp.stage && VALID_STAGES.has(sp.stage) ? (sp.stage as HiringApplicationStage) : undefined
+  // 진행 단계는 진행 중(HIRING) 지원자에게만 의미가 있다.
+  const process =
+    stage === 'HIRING' && sp.process && VALID_PROCESSES.has(sp.process)
+      ? (sp.process as HiringProcessStage)
+      : undefined
+  const from = parseYmdDateKst(sp.from ?? '') ?? undefined
+  // to 는 해당 일자 끝까지 포함
+  const toRaw = parseYmdDateKst(sp.to ?? '')
+  const to = toRaw ? new Date(toRaw.getTime() + 24 * 60 * 60 * 1000 - 1) : undefined
+
+  const baseFilters = {
+    search: sp.search,
+    store: sp.store,
+    position: sp.position,
+    postingId: sp.posting || undefined,
+    from,
+    to,
+  }
+  const [{ rows, total }, counts, postings] = await Promise.all([
+    listApplications(spaceId, { ...baseFilters, stage, process, page, pageSize: PAGE_SIZE }),
+    // 탭 카운트는 상태 필터를 제외한 분포를 보여준다.
+    countApplicationsByStatus(spaceId, baseFilters),
+    // 공고 고정 시 공고 필터를 숨기므로 목록 조회가 필요 없다.
+    lockedPostingId
+      ? Promise.resolve([])
+      : prisma.hiringPosting.findMany({
+          where: { spaceId },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, title: true },
+        }),
+  ])
+
+  return (
+    <ApplicationsTable
+      canExportExcel={canExportExcel}
+      key={JSON.stringify([sp.store, sp.position])}
+      rows={rows}
+      total={total}
+      pageSize={PAGE_SIZE}
+      page={page}
+      postings={postings}
+      counts={counts}
+      basePath={basePath}
+      baseQuery={baseQuery}
+      lockedPostingId={lockedPostingId}
+      filters={{
+        search: sp.search,
+        store: sp.store,
+        position: sp.position,
+        posting: sp.posting ?? '',
+        stage: stage ?? '',
+        process: process ?? '',
+        from: from ? (sp.from ?? '') : '',
+        to: to ? (sp.to ?? '') : '',
+      }}
+    />
+  )
+}
