@@ -23,9 +23,9 @@ const SECTIONS = [
     description: '과금 모드/가격 관리, 결제 이력',
   },
   {
-    href: '/admin/templates',
-    title: '템플릿',
-    description: '모집 관리 샘플 템플릿 생성/편집',
+    href: '/admin/decks',
+    title: '업무 관리',
+    description: '덱별 운영 기능과 관리 도구',
   },
 ]
 

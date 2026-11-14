@@ -11,10 +11,9 @@ const NAV_ITEMS = [
   { href: '/admin/users', label: '사용자' },
   { href: '/admin/subscriptions', label: '구독 현황' },
   { href: '/admin/billing', label: '결제' },
+  { href: '/admin/decks', label: '업무 관리' },
   { href: '/admin/leads', label: '도입 신청' },
-  { href: '/admin/templates', label: '템플릿' },
   { href: '/admin/recovery', label: '복구 관리' },
-  { href: '/admin/hiring-upload-sweep', label: '첨부 정리 이력' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
