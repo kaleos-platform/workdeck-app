@@ -2,13 +2,13 @@ import { buildMarketingUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { DECK_LANDINGS } from '@/lib/marketing/decks'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
-import { DECK_PRICING_ROWS } from '@/lib/marketing/pricing-data'
+import { DECK_PRICING_ROWS, withLivePrices } from '@/lib/marketing/pricing-data'
 import { getAllPosts } from '@/lib/marketing/blog'
-import { getReleasedDeckIds } from '@/lib/billing/deck-release'
+import { getMarketingDeckStatus, type MarketingDeckStatus } from '@/lib/billing/deck-release'
 
 export const dynamic = 'force-static'
 
-function buildLlmsTxt(releasedIds: string[]): string {
+function buildLlmsTxt({ releasedIds, supplyPriceById }: MarketingDeckStatus): string {
   const lines: string[] = []
 
   lines.push('# Workdeck')
@@ -45,7 +45,7 @@ function buildLlmsTxt(releasedIds: string[]): string {
   lines.push('')
   lines.push('업무별 월 구독료(VAT 포함)입니다. 준비중 업무는 출시 후 요금을 안내합니다.')
   lines.push('')
-  for (const row of DECK_PRICING_ROWS) {
+  for (const row of withLivePrices(DECK_PRICING_ROWS, supplyPriceById)) {
     lines.push(
       releasedIds.includes(row.slug)
         ? `- ${row.name}: 월 ${row.totalPrice.toLocaleString('ko-KR')}원 (VAT 포함)`
@@ -81,7 +81,7 @@ function buildLlmsTxt(releasedIds: string[]): string {
 }
 
 export async function GET() {
-  return new Response(buildLlmsTxt(await getReleasedDeckIds()), {
+  return new Response(buildLlmsTxt(await getMarketingDeckStatus()), {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
     },
