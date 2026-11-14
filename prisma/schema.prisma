@@ -554,6 +554,7 @@ model Space {
 
   // ─── 에이전트 승인 큐 (Agent) ───
   agentPendingActions AgentPendingAction[]
+  browserWriteJobs BrowserWriteJob[]
 
   // ─── 하이브리드 workdeck 에이전트 (M4) ───
   agentToggle    SpaceAgentSetting?
@@ -650,10 +651,42 @@ model AgentPendingAction {
   updatedAt DateTime @updatedAt
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  browserWriteJob BrowserWriteJob?
 
   @@index([spaceId, status, createdAt])
   @@index([status, expiresAt])
   @@index([workId])
+}
+
+// 승인 접수와 외부 저장 결과를 분리한다. RUNNING 작업은 자동 재실행하지 않는다.
+enum BrowserWriteJobStatus {
+  PENDING
+  RUNNING
+  RESTORED
+  ABORTED
+  UNCERTAIN
+  EXPIRED
+}
+
+model BrowserWriteJob {
+  id String @id @default(cuid())
+  spaceId String
+  actionId String @unique
+  status BrowserWriteJobStatus @default(PENDING)
+  payload Json
+  expiresAt DateTime
+  claimedAt DateTime?
+  claimedByTokenId String?
+  claimId String?
+  report Json?
+  finishedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  action AgentPendingAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, status, createdAt])
 }
 
 // Space별 workdeck 내장 에이전트(Slack 멘션) 활성 토글. 레코드 없으면 앱에서 기본 활성으로 취급한다.
