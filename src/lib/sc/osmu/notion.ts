@@ -116,3 +116,18 @@ export async function getDataSourceSchema(
   )
   return Object.fromEntries(Object.entries(ds.properties).map(([k, v]) => [k, v.type]))
 }
+
+/** data source 에 행(페이지) 생성. */
+export function createPage(
+  token: string,
+  dataSourceId: string,
+  properties: Record<string, unknown>
+): Promise<NotionPage & { url: string }> {
+  return call(token, '/pages', {
+    method: 'POST',
+    body: JSON.stringify({
+      parent: { type: 'data_source_id', data_source_id: dataSourceId },
+      properties,
+    }),
+  })
+}

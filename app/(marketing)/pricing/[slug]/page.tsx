@@ -10,10 +10,17 @@ import { buildAppUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { COMPANY, CONTACT_EMAIL } from '@/lib/marketing/company'
 import { DECK_LANDINGS } from '@/lib/marketing/decks'
-import { DECK_PRICING_BY_SLUG } from '@/lib/marketing/pricing-data'
-import { getReleasedDeckIds } from '@/lib/billing/deck-release'
+import { DECK_PRICING_ROWS, withLivePrices } from '@/lib/marketing/pricing-data'
+import { getMarketingDeckStatus } from '@/lib/billing/deck-release'
 import { MARKETING_DECK_SLUGS, type MarketingDeckSlugString } from '@/lib/marketing/routes'
 import { buildMarketingMetadata, breadcrumbJsonLd, productJsonLd } from '@/lib/marketing/seo'
+
+/** 결제와 같은 DB 공급가로 계산한 가격 행 + 공개 여부 */
+async function loadProduct(slug: MarketingDeckSlugString) {
+  const { releasedIds, supplyPriceById } = await getMarketingDeckStatus()
+  const row = withLivePrices(DECK_PRICING_ROWS, supplyPriceById).find((r) => r.slug === slug)!
+  return { row, released: releasedIds.includes(slug) }
+}
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -31,8 +38,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { slug } = await params
   if (!isDeckSlug(slug)) return {}
 
-  const row = DECK_PRICING_BY_SLUG[slug]
-  const released = (await getReleasedDeckIds()).includes(slug)
+  const { row, released } = await loadProduct(slug)
   return buildMarketingMetadata({
     title: `${row.name} 구독 — Workdeck`,
     description: released
@@ -70,12 +76,11 @@ export default async function DeckProductPage({ params }: ProductPageProps) {
   const { slug } = await params
   if (!isDeckSlug(slug)) notFound()
 
-  const row = DECK_PRICING_BY_SLUG[slug]
+  const { row, released } = await loadProduct(slug)
   const landing = DECK_LANDINGS[slug]
   const meta = DECK_META[slug]
   const Icon = meta.icon
   // 준비중 업무는 판매하지 않는다 — 가격·구매 버튼·상품 구조화 데이터 미노출
-  const released = (await getReleasedDeckIds()).includes(slug)
   const specs = buildSpecs(released ? row.totalPrice : null)
 
   return (

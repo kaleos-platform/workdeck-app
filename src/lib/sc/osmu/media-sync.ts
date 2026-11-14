@@ -126,7 +126,12 @@ const DESCRIBE_SYSTEM = `사진을 블로그 작성자에게 설명한다. JSON 
 - face: 얼굴로 사람을 알아볼 수 있으면 identifiable. 뒷모습·멀리 작은 사람·손만 보이면 none. 애매하면 identifiable.`
 
 /** 설명 안 된 사진을 limit 장까지 처리. 반환: 처리 수. 얼굴 판정 실패는 UNKNOWN 유지(게시 불가). */
-export async function describePendingMedia(spaceId: string, limit = 10): Promise<number> {
+/** deadline(ms) 을 넘기면 남은 사진은 다음 실행에 맡긴다(MCP 호출처럼 짧은 예산용). */
+export async function describePendingMedia(
+  spaceId: string,
+  limit = 10,
+  deadline = Infinity
+): Promise<number> {
   const pending = await prisma.scMedia.findMany({
     // 일시 오류(429·5xx)는 1시간 뒤 다시 시도한다.
     where: {
@@ -140,7 +145,10 @@ export async function describePendingMedia(spaceId: string, limit = 10): Promise
   })
   if (pending.length === 0) return 0
   const token = await driveTokenForSpace(spaceId)
+  let done = 0
   for (const m of pending) {
+    if (Date.now() > deadline) break
+    done++
     try {
       const file = await getDriveFile(token, m.driveFileId)
       const { bytes, mimeType } = await downloadThumbnail(token, file, 1024)
@@ -180,7 +188,7 @@ export async function describePendingMedia(spaceId: string, limit = 10): Promise
       })
     }
   }
-  return pending.length
+  return done
 }
 
 export function parseDescribe(text: string): {

@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { buildAppUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
-import { DECK_PRICING_ROWS } from '@/lib/marketing/pricing-data'
-import { getReleasedDeckIds } from '@/lib/billing/deck-release'
+import { DECK_PRICING_ROWS, withLivePrices } from '@/lib/marketing/pricing-data'
+import { getMarketingDeckStatus } from '@/lib/billing/deck-release'
 import { buildMarketingMetadata, faqJsonLd } from '@/lib/marketing/seo'
 import { JsonLd } from '@/components/marketing/json-ld'
 import { FaqSection } from '@/components/marketing/landing/faq-section'
@@ -46,7 +46,9 @@ const faq: DeckLandingFaqItem[] = [
 ]
 
 export default async function PricingPage() {
-  const releasedIds = await getReleasedDeckIds()
+  // 표시가 = 결제가: 가격은 결제에 쓰는 DB 공급가로 계산한다
+  const { releasedIds, supplyPriceById } = await getMarketingDeckStatus()
+  const pricingRows = withLivePrices(DECK_PRICING_ROWS, supplyPriceById)
   return (
     <div className="w-full">
       <JsonLd data={faqJsonLd(faq)} />
@@ -70,7 +72,7 @@ export default async function PricingPage() {
       <section className="border-t bg-muted/30 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {DECK_PRICING_ROWS.map((row) => {
+            {pricingRows.map((row) => {
               const meta = DECK_META[row.slug]
               const Icon = meta.icon
               // 준비중 업무는 판매 상품이 아니다 — 가격·구매 링크 대신 출시 알림

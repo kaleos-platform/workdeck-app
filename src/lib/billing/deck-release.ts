@@ -26,6 +26,19 @@ export function isDeckReleased(product: { released: boolean } | null | undefined
   return product?.released === true
 }
 
+/**
+ * 신규 고객이 실제로 결제할 수 있는 판매 상품인가 — 활성 + 공개 + 유료(SUBSCRIPTION).
+ * FREE_BETA 는 구독 시작이 거부되므로(loadProducts) 판매 상품으로 치지 않는다.
+ * PG 심사 요건상 이 조건을 만족하는 업무가 항상 1개 이상 있어야 한다.
+ */
+export function isDeckSellable(product: {
+  isActive: boolean
+  released: boolean
+  pricingMode: string
+}): boolean {
+  return product.isActive && isDeckReleased(product) && product.pricingMode === 'SUBSCRIPTION'
+}
+
 /** 이 공간에서 새로 추가·구독할 수 없는 업무 id (준비중이면서 설치·구독 이력 없음) */
 export async function findClosedDecks(spaceId: string, deckIds: string[]): Promise<string[]> {
   if (deckIds.length === 0) return []
@@ -52,26 +65,46 @@ export async function findClosedDecks(spaceId: string, deckIds: string[]): Promi
   return deckIds.filter((id) => !open.has(id))
 }
 
-const loadReleasedDeckIds = unstable_cache(
-  async () => {
+export interface MarketingDeckStatus {
+  releasedIds: string[]
+  /** 업무별 월 공급가(VAT 별도) — 결제에 쓰는 DB 값 그대로 */
+  supplyPriceById: Record<string, number>
+}
+
+const loadMarketingDeckStatus = unstable_cache(
+  async (): Promise<MarketingDeckStatus> => {
     const rows = await prisma.billingDeckProduct.findMany({
       where: { isActive: true },
-      select: { id: true, released: true },
+      select: { id: true, released: true, monthlyPrice: true },
     })
-    return rows.filter(isDeckReleased).map((r) => r.id)
+    return {
+      releasedIds: rows.filter(isDeckReleased).map((r) => r.id),
+      supplyPriceById: Object.fromEntries(rows.map((r) => [r.id, r.monthlyPrice])),
+    }
   },
-  ['deck-release'],
+  ['deck-release-status'],
   { tags: [DECK_RELEASE_TAG] }
 )
 
-/** 마케팅용 공개 업무 id 목록 (캐시). 조회 실패 시 시드 기본값으로 폴백한다. */
-export async function getReleasedDeckIds(): Promise<string[]> {
+/**
+ * 마케팅용 공개 업무·공급가 (캐시). 어드민에서 공개 여부나 가격을 바꾸면 무효화된다.
+ * 조회 실패(빌드 환경 등) 시 시드 기본값으로 폴백한다.
+ */
+export async function getMarketingDeckStatus(): Promise<MarketingDeckStatus> {
   try {
-    return await loadReleasedDeckIds()
+    return await loadMarketingDeckStatus()
   } catch (e) {
-    console.error('[deck-release] 공개 업무 조회 실패 — 기본값 사용', e)
-    return RELEASE_FALLBACK_DECK_IDS
+    console.error('[deck-release] 업무 공개·가격 조회 실패 — 기본값 사용', e)
+    return {
+      releasedIds: RELEASE_FALLBACK_DECK_IDS,
+      supplyPriceById: Object.fromEntries(DECK_CATALOG_DEFAULTS.map((d) => [d.id, d.monthlyPrice])),
+    }
   }
+}
+
+/** 마케팅용 공개 업무 id 목록 */
+export async function getReleasedDeckIds(): Promise<string[]> {
+  return (await getMarketingDeckStatus()).releasedIds
 }
 
 export function invalidateDeckReleaseCache(): void {
