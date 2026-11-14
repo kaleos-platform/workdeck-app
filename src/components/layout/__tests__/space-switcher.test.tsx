@@ -59,45 +59,57 @@ describe('SpaceSwitcher (사이드바)', () => {
   })
 })
 
-describe('SpaceChips (내 워크덱 홈)', () => {
-  it('현재 작업 공간은 선택 상태, 권한 설명을 글로 보여 준다', () => {
-    const { SpaceChips } = mod
-    render(<SpaceChips spaces={two} currentSpaceId="sp-a" navigate={assign} />)
-    expect(screen.getByRole('button', { name: /Space A/ })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: /Space B/ })).toHaveAttribute('aria-pressed', 'false')
-    expect(screen.getByText(/결제·구독/)).toBeInTheDocument()
+describe('SpaceContext (내 워크덱 홈 맥락 줄)', () => {
+  it('현재 공간 이름·권한만 보이고 권한 설명은 눌러야 보인다', async () => {
+    const { SpaceContext } = mod
+    render(<SpaceContext spaces={two} currentSpaceId="sp-a" navigate={assign} />)
+    expect(screen.getByText('Space A')).toBeInTheDocument()
+    expect(screen.queryByText(/결제·구독/)).toBeNull()
+    await userEvent.click(screen.getByRole('button', { name: '내 권한 소유자 안내' }))
+    expect(await screen.findByText(/결제·구독/)).toBeInTheDocument()
   })
 
-  it('다른 칩을 누르면 전환, 요청 중에는 모든 칩이 비활성', async () => {
-    let resolve!: (v: unknown) => void
-    global.fetch = jest.fn(() => new Promise((r) => (resolve = r))) as unknown as typeof fetch
-    const { SpaceChips } = mod
-    render(<SpaceChips spaces={two} currentSpaceId="sp-a" navigate={assign} />)
-    await userEvent.click(screen.getByRole('button', { name: /Space B/ }))
-    await waitFor(() => expect(screen.getByRole('button', { name: /Space A/ })).toBeDisabled())
-    await userEvent.click(screen.getByRole('button', { name: /Space B/ }))
-    expect(global.fetch).toHaveBeenCalledTimes(1)
-    resolve({ ok: true, status: 204 })
+  it('하나면 전환 메뉴가 없다', () => {
+    const { SpaceContext } = mod
+    render(<SpaceContext spaces={[two[0]]} currentSpaceId="sp-a" navigate={assign} />)
+    expect(screen.queryByRole('button', { name: /작업 공간 전환/ })).toBeNull()
+  })
+
+  it('전환 메뉴에서 고르면 POST 후 /my-deck', async () => {
+    postStatus(204)
+    const { SpaceContext } = mod
+    render(<SpaceContext spaces={two} currentSpaceId="sp-a" navigate={assign} />)
+    await userEvent.click(screen.getByRole('button', { name: /작업 공간 전환/ }))
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: /Space B/ }))
     await waitFor(() => expect(assign).toHaveBeenCalledWith('/my-deck'))
   })
 
-  it('실패(404)면 이동하지 않고 안내 후 다시 누를 수 있다', async () => {
+  it('실패(404)면 이동하지 않고 안내', async () => {
     postStatus(404)
-    const { SpaceChips } = mod
-    render(<SpaceChips spaces={two} currentSpaceId="sp-a" navigate={assign} />)
-    await userEvent.click(screen.getByRole('button', { name: /Space B/ }))
+    const { SpaceContext } = mod
+    render(<SpaceContext spaces={two} currentSpaceId="sp-a" navigate={assign} />)
+    await userEvent.click(screen.getByRole('button', { name: /작업 공간 전환/ }))
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: /Space B/ }))
     expect(await screen.findByRole('alert')).toHaveTextContent('소속되어 있지 않습니다')
-    expect(screen.getByRole('button', { name: /Space B/ })).toBeEnabled()
     expect(assign).not.toHaveBeenCalled()
   })
 
-  it('네트워크 오류도 안내', async () => {
-    global.fetch = jest.fn(async () => {
-      throw new Error('offline')
-    }) as unknown as typeof fetch
-    const { SpaceChips } = mod
-    render(<SpaceChips spaces={two} currentSpaceId="sp-a" navigate={assign} />)
-    await userEvent.click(screen.getByRole('button', { name: /Space B/ }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('다시 시도')
+  it('요청 중 다시 골라도 요청은 하나(사이드바와 공유 잠금)', async () => {
+    let resolve!: (v: unknown) => void
+    global.fetch = jest.fn(() => new Promise((r) => (resolve = r))) as unknown as typeof fetch
+    const { SpaceContext, SpaceSwitcher } = mod
+    render(
+      <>
+        <SpaceSwitcher spaces={two} currentSpaceId="sp-a" navigate={assign} />
+        <SpaceContext spaces={two} currentSpaceId="sp-a" navigate={assign} />
+      </>
+    )
+    const [sidebar, home] = screen.getAllByRole('button', { name: /작업 공간 전환/ })
+    await userEvent.click(home)
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: /Space B/ }))
+    await waitFor(() => expect(sidebar).toBeDisabled())
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+    resolve({ ok: true, status: 204 })
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/my-deck'))
   })
 })

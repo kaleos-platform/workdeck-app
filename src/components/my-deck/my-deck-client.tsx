@@ -30,7 +30,7 @@ import {
   formatTrialEndDate,
   type DeckAccessReason,
 } from '@/components/billing/billing-shared'
-import { SpaceChips, type SpaceItem } from '@/components/layout/space-switcher'
+import { SpaceContext, type SpaceItem } from '@/components/layout/space-switcher'
 
 type DeckSummary = {
   id: string
@@ -39,6 +39,7 @@ type DeckSummary = {
 }
 
 type MyDeckClientProps = {
+  /** 페이지가 보여 주는 Space 이름(맥락 줄은 spaces·currentSpaceId 로 그린다) */
   spaceName: string
   /** 소속 작업 공간 — 제목 아래 칩으로 권한 표시·전환 */
   spaces: SpaceItem[]
@@ -146,7 +147,6 @@ function formatDate(value: string) {
 }
 
 export function MyDeckClient({
-  spaceName,
   spaces,
   currentSpaceId,
   activeDecks,
@@ -355,12 +355,14 @@ export function MyDeckClient({
 
   return (
     <div className="space-y-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">내 워크덱</h1>
-        <p className="text-sm text-muted-foreground">
-          {spaceName} 작업 공간에서 사용할 업무를 관리하세요.
-        </p>
-        <SpaceChips spaces={spaces} currentSpaceId={currentSpaceId} />
+      <header className="space-y-3">
+        <SpaceContext spaces={spaces} currentSpaceId={currentSpaceId} />
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">내 워크덱</h1>
+          <p className="text-sm text-muted-foreground">
+            이 작업 공간에서 사용 중인 업무 {activeDecks.length}개
+          </p>
+        </div>
       </header>
 
       <section aria-labelledby="active-decks-heading" className="space-y-4">
