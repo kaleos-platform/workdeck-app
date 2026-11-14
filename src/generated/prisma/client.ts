@@ -106,7 +106,7 @@ export type SpaceInvitation = Prisma.SpaceInvitationModel
 export type AgentPendingAction = Prisma.AgentPendingActionModel
 /**
  * Model BrowserWriteJob
- *
+ * 
  */
 export type BrowserWriteJob = Prisma.BrowserWriteJobModel
 /**
@@ -772,6 +772,16 @@ export type HiringApplicationStore = Prisma.HiringApplicationStoreModel
  */
 export type HiringUploadSession = Prisma.HiringUploadSessionModel
 /**
+ * Model HiringUploadCleanup
+ * 
+ */
+export type HiringUploadCleanup = Prisma.HiringUploadCleanupModel
+/**
+ * Model HiringCleanupCursor
+ * 
+ */
+export type HiringCleanupCursor = Prisma.HiringCleanupCursorModel
+/**
  * Model HiringMigrationRecord
  * 
  */
@@ -808,7 +818,7 @@ export type HiringMessageTemplate = Prisma.HiringMessageTemplateModel
 export type BillingDeckProduct = Prisma.BillingDeckProductModel
 /**
  * Model SpaceDeckAccess
- *
+ * 
  */
 export type SpaceDeckAccess = Prisma.SpaceDeckAccessModel
 /**

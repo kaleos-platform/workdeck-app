@@ -197,6 +197,8 @@ export const ModelName = {
   HiringApplication: 'HiringApplication',
   HiringApplicationStore: 'HiringApplicationStore',
   HiringUploadSession: 'HiringUploadSession',
+  HiringUploadCleanup: 'HiringUploadCleanup',
+  HiringCleanupCursor: 'HiringCleanupCursor',
   HiringMigrationRecord: 'HiringMigrationRecord',
   HiringApplicationFile: 'HiringApplicationFile',
   HiringComment: 'HiringComment',
@@ -2253,6 +2255,7 @@ export const ReorderPlanScalarFieldEnum = {
   finalizedAt: 'finalizedAt',
   confirmedAt: 'confirmedAt',
   biasAdjustApplied: 'biasAdjustApplied',
+  linkedSkuAllocation: 'linkedSkuAllocation',
   totalSuggestedQty: 'totalSuggestedQty',
   totalFinalQty: 'totalFinalQty',
   memo: 'memo',
@@ -2740,10 +2743,39 @@ export const HiringUploadSessionScalarFieldEnum = {
   completedAt: 'completedAt',
   applicationId: 'applicationId',
   requestHash: 'requestHash',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  cleanupBackfilledAt: 'cleanupBackfilledAt',
+  cleanupRetryAt: 'cleanupRetryAt'
 } as const
 
 export type HiringUploadSessionScalarFieldEnum = (typeof HiringUploadSessionScalarFieldEnum)[keyof typeof HiringUploadSessionScalarFieldEnum]
+
+
+export const HiringUploadCleanupScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  paths: 'paths',
+  quarantined: 'quarantined',
+  retiredAt: 'retiredAt',
+  leaseToken: 'leaseToken',
+  leaseUntil: 'leaseUntil',
+  failedCount: 'failedCount',
+  checkedAt: 'checkedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringUploadCleanupScalarFieldEnum = (typeof HiringUploadCleanupScalarFieldEnum)[keyof typeof HiringUploadCleanupScalarFieldEnum]
+
+
+export const HiringCleanupCursorScalarFieldEnum = {
+  id: 'id',
+  initialized: 'initialized',
+  checkedAt: 'checkedAt',
+  createdAt: 'createdAt',
+  ledgerId: 'ledgerId'
+} as const
+
+export type HiringCleanupCursorScalarFieldEnum = (typeof HiringCleanupCursorScalarFieldEnum)[keyof typeof HiringCleanupCursorScalarFieldEnum]
 
 
 export const HiringMigrationRecordScalarFieldEnum = {

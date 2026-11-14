@@ -56,6 +56,7 @@ import type { SafetyStockSuggestion } from '@/lib/inv/forecast/safety-stock-sugg
 import { ProductionRunFormDialog } from '@/components/sh/products/production/production-run-form-dialog'
 import { ReorderPlanAccuracyCard } from '@/components/sh/inventory/reorder-plan-accuracy-card'
 import { Kpi, PlanSummaryBar, fmtQty, fmtWon } from './reorder-ui'
+import { LinkedSkuAllocationPanel } from './linked-sku-allocation-panel'
 
 // 시즌 계수 선택지 — 서버 AnswerSchema의 seasonFactor(0.1~5)와 정합. 패널·셀 공용.
 const SEASON_FACTOR_OPTIONS = [
@@ -804,7 +805,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             <Kpi label="예측 창" value={plan.windowDays} unit="일" size="sm" />
             <Kpi label="제안 합계" value={fmtQty(plan.totalSuggestedQty)} unit="개" size="sm" />
             <Kpi label="최종 합계" value={fmtQty(totalFinalQty)} unit="개" size="sm" />
-            {isSetMode && (
+            {isSetMode && !isLayered && (
               <Kpi label="세트 환산" value={fmtQty(totalSetQty)} unit="세트" size="sm" />
             )}
             {totalAmount != null && <Kpi label="발주 금액" value={fmtWon(totalAmount)} size="sm" />}
@@ -1150,8 +1151,25 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
       }
 
-      {/* ── 연동 세트 환산 — 최종 발주 하단 참고 섹션 ── */}
-      {isSetMode && (
+      {/* ── 레이어드: 생성 시점 연동 위치 SKU 배분 (판매채널 상품 역산은 세트마다 몫을 중복 표시해 쓰지 않는다) ── */}
+      {isLayered &&
+        (plan.linkedSkuAllocation ? (
+          <LinkedSkuAllocationPanel
+            allocation={plan.linkedSkuAllocation}
+            optionNameById={
+              new Map(Array.from(optionMap.entries()).map(([id, o]) => [id, o.optionName]))
+            }
+            desc="계획 생성 시점의 배분입니다. 최종 발주를 고쳐도 다시 계산하지 않습니다."
+          />
+        ) : (
+          <p className="rounded-lg border px-4 py-3 text-xs text-muted-foreground">
+            이전 방식으로 만든 계획이라 연동 위치 SKU 배분 정보가 없습니다. 새로 만든 계획부터 쿠팡
+            SKU별 배분을 보여 줍니다.
+          </p>
+        ))}
+
+      {/* ── 연동 세트 환산(위치 세트 계획) — 최종 발주 하단 참고 섹션 ── */}
+      {isSetMode && !isLayered && (
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-medium">
             연동 세트 환산{' '}
@@ -1168,6 +1186,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
         </div>
       )}
       {isSetMode &&
+        !isLayered &&
         (sets.length === 0 ? (
           <div className="rounded-lg border py-10 text-center text-sm text-muted-foreground">
             세트 항목이 없습니다

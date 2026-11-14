@@ -35,6 +35,8 @@ export type HiringUploadSessionMinAggregateOutputType = {
   applicationId: string | null
   requestHash: string | null
   createdAt: Date | null
+  cleanupBackfilledAt: Date | null
+  cleanupRetryAt: Date | null
 }
 
 export type HiringUploadSessionMaxAggregateOutputType = {
@@ -48,6 +50,8 @@ export type HiringUploadSessionMaxAggregateOutputType = {
   applicationId: string | null
   requestHash: string | null
   createdAt: Date | null
+  cleanupBackfilledAt: Date | null
+  cleanupRetryAt: Date | null
 }
 
 export type HiringUploadSessionCountAggregateOutputType = {
@@ -62,6 +66,8 @@ export type HiringUploadSessionCountAggregateOutputType = {
   applicationId: number
   requestHash: number
   createdAt: number
+  cleanupBackfilledAt: number
+  cleanupRetryAt: number
   _all: number
 }
 
@@ -77,6 +83,8 @@ export type HiringUploadSessionMinAggregateInputType = {
   applicationId?: true
   requestHash?: true
   createdAt?: true
+  cleanupBackfilledAt?: true
+  cleanupRetryAt?: true
 }
 
 export type HiringUploadSessionMaxAggregateInputType = {
@@ -90,6 +98,8 @@ export type HiringUploadSessionMaxAggregateInputType = {
   applicationId?: true
   requestHash?: true
   createdAt?: true
+  cleanupBackfilledAt?: true
+  cleanupRetryAt?: true
 }
 
 export type HiringUploadSessionCountAggregateInputType = {
@@ -104,6 +114,8 @@ export type HiringUploadSessionCountAggregateInputType = {
   applicationId?: true
   requestHash?: true
   createdAt?: true
+  cleanupBackfilledAt?: true
+  cleanupRetryAt?: true
   _all?: true
 }
 
@@ -191,6 +203,8 @@ export type HiringUploadSessionGroupByOutputType = {
   applicationId: string | null
   requestHash: string | null
   createdAt: Date
+  cleanupBackfilledAt: Date | null
+  cleanupRetryAt: Date | null
   _count: HiringUploadSessionCountAggregateOutputType | null
   _min: HiringUploadSessionMinAggregateOutputType | null
   _max: HiringUploadSessionMaxAggregateOutputType | null
@@ -226,6 +240,8 @@ export type HiringUploadSessionWhereInput = {
   applicationId?: Prisma.StringNullableFilter<"HiringUploadSession"> | string | null
   requestHash?: Prisma.StringNullableFilter<"HiringUploadSession"> | string | null
   createdAt?: Prisma.DateTimeFilter<"HiringUploadSession"> | Date | string
+  cleanupBackfilledAt?: Prisma.DateTimeNullableFilter<"HiringUploadSession"> | Date | string | null
+  cleanupRetryAt?: Prisma.DateTimeNullableFilter<"HiringUploadSession"> | Date | string | null
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   posting?: Prisma.XOR<Prisma.HiringPostingNullableScalarRelationFilter, Prisma.HiringPostingWhereInput> | null
 }
@@ -242,6 +258,8 @@ export type HiringUploadSessionOrderByWithRelationInput = {
   applicationId?: Prisma.SortOrderInput | Prisma.SortOrder
   requestHash?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  cleanupBackfilledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupRetryAt?: Prisma.SortOrderInput | Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   posting?: Prisma.HiringPostingOrderByWithRelationInput
 }
@@ -261,6 +279,8 @@ export type HiringUploadSessionWhereUniqueInput = Prisma.AtLeast<{
   completedAt?: Prisma.DateTimeNullableFilter<"HiringUploadSession"> | Date | string | null
   requestHash?: Prisma.StringNullableFilter<"HiringUploadSession"> | string | null
   createdAt?: Prisma.DateTimeFilter<"HiringUploadSession"> | Date | string
+  cleanupBackfilledAt?: Prisma.DateTimeNullableFilter<"HiringUploadSession"> | Date | string | null
+  cleanupRetryAt?: Prisma.DateTimeNullableFilter<"HiringUploadSession"> | Date | string | null
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   posting?: Prisma.XOR<Prisma.HiringPostingNullableScalarRelationFilter, Prisma.HiringPostingWhereInput> | null
 }, "id" | "applicationId">
@@ -277,6 +297,8 @@ export type HiringUploadSessionOrderByWithAggregationInput = {
   applicationId?: Prisma.SortOrderInput | Prisma.SortOrder
   requestHash?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  cleanupBackfilledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupRetryAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.HiringUploadSessionCountOrderByAggregateInput
   _max?: Prisma.HiringUploadSessionMaxOrderByAggregateInput
   _min?: Prisma.HiringUploadSessionMinOrderByAggregateInput
@@ -297,6 +319,8 @@ export type HiringUploadSessionScalarWhereWithAggregatesInput = {
   applicationId?: Prisma.StringNullableWithAggregatesFilter<"HiringUploadSession"> | string | null
   requestHash?: Prisma.StringNullableWithAggregatesFilter<"HiringUploadSession"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"HiringUploadSession"> | Date | string
+  cleanupBackfilledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"HiringUploadSession"> | Date | string | null
+  cleanupRetryAt?: Prisma.DateTimeNullableWithAggregatesFilter<"HiringUploadSession"> | Date | string | null
 }
 
 export type HiringUploadSessionCreateInput = {
@@ -309,6 +333,8 @@ export type HiringUploadSessionCreateInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
   space: Prisma.SpaceCreateNestedOneWithoutHiringUploadSessionsInput
   posting?: Prisma.HiringPostingCreateNestedOneWithoutUploadSessionsInput
 }
@@ -325,6 +351,8 @@ export type HiringUploadSessionUncheckedCreateInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
 }
 
 export type HiringUploadSessionUpdateInput = {
@@ -337,6 +365,8 @@ export type HiringUploadSessionUpdateInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   space?: Prisma.SpaceUpdateOneRequiredWithoutHiringUploadSessionsNestedInput
   posting?: Prisma.HiringPostingUpdateOneWithoutUploadSessionsNestedInput
 }
@@ -353,6 +383,8 @@ export type HiringUploadSessionUncheckedUpdateInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type HiringUploadSessionCreateManyInput = {
@@ -367,6 +399,8 @@ export type HiringUploadSessionCreateManyInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
 }
 
 export type HiringUploadSessionUpdateManyMutationInput = {
@@ -379,6 +413,8 @@ export type HiringUploadSessionUpdateManyMutationInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type HiringUploadSessionUncheckedUpdateManyInput = {
@@ -393,6 +429,8 @@ export type HiringUploadSessionUncheckedUpdateManyInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type HiringUploadSessionListRelationFilter = {
@@ -417,6 +455,8 @@ export type HiringUploadSessionCountOrderByAggregateInput = {
   applicationId?: Prisma.SortOrder
   requestHash?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  cleanupBackfilledAt?: Prisma.SortOrder
+  cleanupRetryAt?: Prisma.SortOrder
 }
 
 export type HiringUploadSessionMaxOrderByAggregateInput = {
@@ -430,6 +470,8 @@ export type HiringUploadSessionMaxOrderByAggregateInput = {
   applicationId?: Prisma.SortOrder
   requestHash?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  cleanupBackfilledAt?: Prisma.SortOrder
+  cleanupRetryAt?: Prisma.SortOrder
 }
 
 export type HiringUploadSessionMinOrderByAggregateInput = {
@@ -443,6 +485,8 @@ export type HiringUploadSessionMinOrderByAggregateInput = {
   applicationId?: Prisma.SortOrder
   requestHash?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  cleanupBackfilledAt?: Prisma.SortOrder
+  cleanupRetryAt?: Prisma.SortOrder
 }
 
 export type HiringUploadSessionCreateNestedManyWithoutSpaceInput = {
@@ -539,6 +583,8 @@ export type HiringUploadSessionCreateWithoutSpaceInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
   posting?: Prisma.HiringPostingCreateNestedOneWithoutUploadSessionsInput
 }
 
@@ -553,6 +599,8 @@ export type HiringUploadSessionUncheckedCreateWithoutSpaceInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
 }
 
 export type HiringUploadSessionCreateOrConnectWithoutSpaceInput = {
@@ -596,6 +644,8 @@ export type HiringUploadSessionScalarWhereInput = {
   applicationId?: Prisma.StringNullableFilter<"HiringUploadSession"> | string | null
   requestHash?: Prisma.StringNullableFilter<"HiringUploadSession"> | string | null
   createdAt?: Prisma.DateTimeFilter<"HiringUploadSession"> | Date | string
+  cleanupBackfilledAt?: Prisma.DateTimeNullableFilter<"HiringUploadSession"> | Date | string | null
+  cleanupRetryAt?: Prisma.DateTimeNullableFilter<"HiringUploadSession"> | Date | string | null
 }
 
 export type HiringUploadSessionCreateWithoutPostingInput = {
@@ -608,6 +658,8 @@ export type HiringUploadSessionCreateWithoutPostingInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
   space: Prisma.SpaceCreateNestedOneWithoutHiringUploadSessionsInput
 }
 
@@ -622,6 +674,8 @@ export type HiringUploadSessionUncheckedCreateWithoutPostingInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
 }
 
 export type HiringUploadSessionCreateOrConnectWithoutPostingInput = {
@@ -661,6 +715,8 @@ export type HiringUploadSessionCreateManySpaceInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
 }
 
 export type HiringUploadSessionUpdateWithoutSpaceInput = {
@@ -673,6 +729,8 @@ export type HiringUploadSessionUpdateWithoutSpaceInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   posting?: Prisma.HiringPostingUpdateOneWithoutUploadSessionsNestedInput
 }
 
@@ -687,6 +745,8 @@ export type HiringUploadSessionUncheckedUpdateWithoutSpaceInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type HiringUploadSessionUncheckedUpdateManyWithoutSpaceInput = {
@@ -700,6 +760,8 @@ export type HiringUploadSessionUncheckedUpdateManyWithoutSpaceInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type HiringUploadSessionCreateManyPostingInput = {
@@ -713,6 +775,8 @@ export type HiringUploadSessionCreateManyPostingInput = {
   applicationId?: string | null
   requestHash?: string | null
   createdAt?: Date | string
+  cleanupBackfilledAt?: Date | string | null
+  cleanupRetryAt?: Date | string | null
 }
 
 export type HiringUploadSessionUpdateWithoutPostingInput = {
@@ -725,6 +789,8 @@ export type HiringUploadSessionUpdateWithoutPostingInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   space?: Prisma.SpaceUpdateOneRequiredWithoutHiringUploadSessionsNestedInput
 }
 
@@ -739,6 +805,8 @@ export type HiringUploadSessionUncheckedUpdateWithoutPostingInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type HiringUploadSessionUncheckedUpdateManyWithoutPostingInput = {
@@ -752,6 +820,8 @@ export type HiringUploadSessionUncheckedUpdateManyWithoutPostingInput = {
   applicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requestHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupBackfilledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -768,6 +838,8 @@ export type HiringUploadSessionSelect<ExtArgs extends runtime.Types.Extensions.I
   applicationId?: boolean
   requestHash?: boolean
   createdAt?: boolean
+  cleanupBackfilledAt?: boolean
+  cleanupRetryAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   posting?: boolean | Prisma.HiringUploadSession$postingArgs<ExtArgs>
 }, ExtArgs["result"]["hiringUploadSession"]>
@@ -784,6 +856,8 @@ export type HiringUploadSessionSelectCreateManyAndReturn<ExtArgs extends runtime
   applicationId?: boolean
   requestHash?: boolean
   createdAt?: boolean
+  cleanupBackfilledAt?: boolean
+  cleanupRetryAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   posting?: boolean | Prisma.HiringUploadSession$postingArgs<ExtArgs>
 }, ExtArgs["result"]["hiringUploadSession"]>
@@ -800,6 +874,8 @@ export type HiringUploadSessionSelectUpdateManyAndReturn<ExtArgs extends runtime
   applicationId?: boolean
   requestHash?: boolean
   createdAt?: boolean
+  cleanupBackfilledAt?: boolean
+  cleanupRetryAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   posting?: boolean | Prisma.HiringUploadSession$postingArgs<ExtArgs>
 }, ExtArgs["result"]["hiringUploadSession"]>
@@ -816,9 +892,11 @@ export type HiringUploadSessionSelectScalar = {
   applicationId?: boolean
   requestHash?: boolean
   createdAt?: boolean
+  cleanupBackfilledAt?: boolean
+  cleanupRetryAt?: boolean
 }
 
-export type HiringUploadSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "postingId" | "tokenHash" | "files" | "expiresAt" | "claimedAt" | "completedAt" | "applicationId" | "requestHash" | "createdAt", ExtArgs["result"]["hiringUploadSession"]>
+export type HiringUploadSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "postingId" | "tokenHash" | "files" | "expiresAt" | "claimedAt" | "completedAt" | "applicationId" | "requestHash" | "createdAt" | "cleanupBackfilledAt" | "cleanupRetryAt", ExtArgs["result"]["hiringUploadSession"]>
 export type HiringUploadSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   posting?: boolean | Prisma.HiringUploadSession$postingArgs<ExtArgs>
@@ -850,6 +928,8 @@ export type $HiringUploadSessionPayload<ExtArgs extends runtime.Types.Extensions
     applicationId: string | null
     requestHash: string | null
     createdAt: Date
+    cleanupBackfilledAt: Date | null
+    cleanupRetryAt: Date | null
   }, ExtArgs["result"]["hiringUploadSession"]>
   composites: {}
 }
@@ -1286,6 +1366,8 @@ export interface HiringUploadSessionFieldRefs {
   readonly applicationId: Prisma.FieldRef<"HiringUploadSession", 'String'>
   readonly requestHash: Prisma.FieldRef<"HiringUploadSession", 'String'>
   readonly createdAt: Prisma.FieldRef<"HiringUploadSession", 'DateTime'>
+  readonly cleanupBackfilledAt: Prisma.FieldRef<"HiringUploadSession", 'DateTime'>
+  readonly cleanupRetryAt: Prisma.FieldRef<"HiringUploadSession", 'DateTime'>
 }
     
 
