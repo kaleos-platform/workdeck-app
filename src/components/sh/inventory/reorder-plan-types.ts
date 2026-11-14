@@ -18,12 +18,16 @@ export const MODEL_KEY_LABEL: Record<ModelKey, string> = {
 // 레거시(SMA·WMA·HW·BAYES) 계획 + v2 모델 키
 export type ForecastModel = 'SMA' | 'WMA' | 'HW' | 'BAYES' | 'MANUAL' | ModelKey
 
+import type { LinkedSkuAllocation } from './linked-sku-allocation-panel'
+
 export type ReorderPlan = {
   id: string
   planNo: string
   productName: string | null // 상품 단위 계획명. null = 레거시 전체-계획
   locationId: string | null // 연동 위치 세트 계획이면 non-null
   isLayered?: boolean // 레이어드(상품 + 로켓 세트 + 직접 배송) 계획이면 true
+  /** 레이어드: 생성 시점 연동 위치 SKU 배분 스냅샷. 이전 계획 = null */
+  linkedSkuAllocation?: LinkedSkuAllocation | null
   status: ReorderPlanStatus
   windowDays: number
   finalizedAt: string | null

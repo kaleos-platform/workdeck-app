@@ -106,7 +106,7 @@ export type SpaceInvitation = Prisma.SpaceInvitationModel
 export type AgentPendingAction = Prisma.AgentPendingActionModel
 /**
  * Model BrowserWriteJob
- *
+ * 
  */
 export type BrowserWriteJob = Prisma.BrowserWriteJobModel
 /**
@@ -808,7 +808,7 @@ export type HiringMessageTemplate = Prisma.HiringMessageTemplateModel
 export type BillingDeckProduct = Prisma.BillingDeckProductModel
 /**
  * Model SpaceDeckAccess
- *
+ * 
  */
 export type SpaceDeckAccess = Prisma.SpaceDeckAccessModel
 /**

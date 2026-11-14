@@ -20,6 +20,8 @@ import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { DEFAULT_PRODUCTION_LEAD_TIME_DAYS as DEFAULT_LEAD_TIME_DAYS } from '@/lib/inv/reorder-calculator'
 import { plannedStockQty } from '@/lib/inv/planned-stock'
 import { computeSetAvailable } from '@/lib/sh/set-plan-calc'
+import { allocateLinkedSkus } from '@/lib/inv/reorder-engine/linked-sku-allocation'
+import { loadLinkedSkuInputs } from '@/lib/inv/reorder-engine/linked-sku-inputs'
 import {
   computeProductPlan,
   isModelKey,
@@ -597,6 +599,75 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ── 5.65) 레이어드: 연동 위치 몫을 그 위치의 외부 SKU(1장·3장·5장 세트 등)로 배분 ──
+  // 판매채널 상품(ProductListing) 역산은 세트마다 옵션 몫 전체를 넣어 중복 표시됐다. 세트별 재고·판매는
+  // 연동 위치 SKU 에만 있으므로 SKU 단위로 나눈다. 레이어드는 ReorderPlanSet 을 더 만들지 않는다.
+  let linkedSkuAllocation: {
+    locationId: string
+    locationName: string
+    snapshotDate: string | null
+    skus: Array<{
+      code: string
+      name: string
+      optionName: string | null
+      items: Array<{ optionId: string; perSet: number }>
+      stock: number
+      inbound: number
+      sales30d: number
+      needSets: number
+      allocSets: number
+    }>
+    loose: Array<{ optionId: string; qty: number }>
+  } | null = null
+  if (isLayered && rocketGrossByOption) {
+    planSetsData = null
+    const skuInputs = await loadLinkedSkuInputs(spaceId, linkedLocationIdsForCalc, optionIds)
+    if (skuInputs) {
+      // 연동 위치 몫 = 엔진 분배분, 단 사용자가 최종수량을 줄였으면 그 이하로.
+      const budget = new Map<string, number>()
+      for (const it of itemInputs) {
+        const linked = Math.ceil(rocketGrossByOption.get(it.optionId) ?? 0)
+        const final = optionFinalQtyOverride?.get(it.optionId) ?? it.plan.finalQty
+        budget.set(it.optionId, Math.max(0, Math.min(linked, final)))
+      }
+      const head = itemInputs[0]
+      const horizonDays = head ? head.leadTimeDays + head.plan.targetCoverDays : 0
+      const result = allocateLinkedSkus(skuInputs.skus, budget, horizonDays)
+      const allocByCode = new Map(result.skus.map((a) => [a.code, a]))
+      // SKU 로 묶이지 않은 낱개는 연동 위치로 보내지 않고 자체·3PL 몫으로 옮긴다(사용자 결정 11-15).
+      // rocketGross/directGross 가 입고 분배(stockin-split)·화면 소계·저장값의 단일 원천이다.
+      for (const [optionId, qty] of result.looseByOption) {
+        const linked = rocketGrossByOption.get(optionId) ?? 0
+        const moved = Math.min(qty, Math.ceil(linked))
+        rocketGrossByOption.set(optionId, Math.max(0, Math.ceil(linked) - moved))
+        directGrossByOption?.set(optionId, (directGrossByOption.get(optionId) ?? 0) + moved)
+      }
+      const loc = await prisma.invStorageLocation.findUnique({
+        where: { id: skuInputs.locationId },
+        select: { name: true },
+      })
+      linkedSkuAllocation = {
+        locationId: skuInputs.locationId,
+        locationName: loc?.name ?? '로켓그로스',
+        snapshotDate: skuInputs.snapshotDate?.toISOString() ?? null,
+        skus: skuInputs.skus
+          .map((s) => ({
+            code: s.code,
+            name: s.name,
+            optionName: s.optionName,
+            items: s.items,
+            stock: s.stock,
+            inbound: s.inbound,
+            sales30d: s.sales30d,
+            needSets: allocByCode.get(s.code)?.needSets ?? 0,
+            allocSets: allocByCode.get(s.code)?.allocSets ?? 0,
+          }))
+          .sort((a, b) => b.allocSets - a.allocSets || b.sales30d - a.sales30d),
+        loose: [...result.looseByOption].map(([optionId, qty]) => ({ optionId, qty })),
+      }
+    }
+  }
+
   // 응답 item 공통 — 모델 비교·추천·선택 (위저드 표시용)
   const engineFields = (plan: PlanOptionResult) => ({
     models: plan.models,
@@ -631,7 +702,27 @@ export async function POST(req: NextRequest) {
       })
       locationName = rocketLoc?.name ?? '로켓그로스'
     }
+    // 자체 출고 위치별 현재고 — 연동(레이어드) 위치를 뺀 나머지. 엔진의 나머지 위치 재고와 같은 원장.
+    const linkedIds = new Set(isLayered ? linkedLocationIdsForCalc : [])
+    const [levelsByLoc, locs] = await Promise.all([
+      prisma.invStockLevel.groupBy({
+        by: ['locationId'],
+        where: { spaceId, optionId: { in: optionIds } },
+        _sum: { quantity: true },
+      }),
+      prisma.invStorageLocation.findMany({
+        where: { spaceId },
+        select: { id: true, name: true, type: true, isActive: true },
+      }),
+    ])
+    const qtyByLoc = new Map(levelsByLoc.map((g) => [g.locationId, g._sum.quantity ?? 0]))
+    const ownLocations = locs
+      .filter((l) => !linkedIds.has(l.id) && (l.isActive || (qtyByLoc.get(l.id) ?? 0) !== 0))
+      .map((l) => ({ id: l.id, name: l.name, type: l.type, onHandQty: qtyByLoc.get(l.id) ?? 0 }))
+      .sort((a, b) => b.onHandQty - a.onHandQty)
     return NextResponse.json({
+      ownLocations,
+      linkedSkuAllocation,
       dryRun: true,
       isLayered,
       qualifies: isLayered || setSpecs != null,
@@ -734,6 +825,7 @@ export async function POST(req: NextRequest) {
         totalFinalQty,
         memo: body.memo ?? null,
         biasAdjustApplied,
+        linkedSkuAllocation: linkedSkuAllocation ?? undefined,
       },
     })
 
