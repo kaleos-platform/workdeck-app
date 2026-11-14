@@ -35,10 +35,13 @@ export function LinkedSkuAllocationPanel({
   allocation,
   optionNameById,
   desc,
+  showAfterStock = false,
 }: {
   allocation: LinkedSkuAllocation
   optionNameById: Map<string, string>
   desc: string
+  /** 재고 열을 「현재 → 입고 후」로 표시 (위저드 검토 단계) */
+  showAfterStock?: boolean
 }) {
   const [showZero, setShowZero] = useState(false)
   const zeroCount = allocation.skus.filter((k) => k.allocSets <= 0).length
@@ -73,7 +76,9 @@ export function LinkedSkuAllocationPanel({
               <TableHead>쿠팡 SKU</TableHead>
               <TableHead>구성</TableHead>
               <TableHead className="text-right">30일 판매</TableHead>
-              <TableHead className="text-right">재고</TableHead>
+              <TableHead className="text-right">
+                {showAfterStock ? '재고 (현재 → 입고 후)' : '재고'}
+              </TableHead>
               <TableHead className="text-right">입고예정</TableHead>
               <TableHead className="text-right">부족</TableHead>
               <TableHead className="text-right">배분</TableHead>
@@ -97,8 +102,16 @@ export function LinkedSkuAllocationPanel({
                 <TableCell className="text-right font-mono tabular-nums">
                   {fmtQty(k.sales30d)}
                 </TableCell>
-                <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
-                  {fmtQty(k.stock)}
+                <TableCell className="text-right font-mono whitespace-nowrap tabular-nums">
+                  {showAfterStock && k.allocSets > 0 ? (
+                    <>
+                      <span className="text-muted-foreground">{fmtQty(k.stock)}</span>
+                      {' → '}
+                      <b>{fmtQty(k.stock + k.allocSets)}</b>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">{fmtQty(k.stock)}</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
                   {fmtQty(k.inbound)}
