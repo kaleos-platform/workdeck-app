@@ -70,4 +70,19 @@ describe('allocateLinkedSkus', () => {
     expect(r.skus[0].allocSets).toBe(0)
     expect(r.looseByOption.get(L)).toBe(10)
   })
+
+  it('부족분을 채우고 남는 몫은 판매 비중으로 — 판매 적은 1장 SKU 에 몰지 않는다 (11-15 운영 누드 L)', () => {
+    const skus = [
+      sku('1p', 1, { sales30d: 1 }), // 부족 2세트
+      sku('3p', 3, { sales30d: 35, stock: 12, inbound: 50 }), // 부족 0, 판매 105개
+      sku('5p', 5, { stock: 29 }),
+    ]
+    const r = allocateLinkedSkus(skus, new Map([[L, 68]]), 50)
+    const by = Object.fromEntries(r.skus.map((s) => [s.code, s.allocSets]))
+    // 부족분 2개 → 1p, 남는 66개 × 105/106 = 65.4개 → 3p 21세트(63개), 나머지 3개 → 1p
+    expect(by['3p']).toBe(21)
+    expect(by['1p']).toBe(5)
+    expect(by['5p']).toBe(0)
+    expect(usedUnits(r, skus)).toBe(68)
+  })
 })
