@@ -191,10 +191,11 @@ const FINANCE_FLAT_ROUTES = [
 ]
 
 // ─── 모집 관리 섹션 메뉴 (단일 사이드바 + 섹션 그룹, 도메인 탭 금지) ──────────
-const RECRUITING_MAIN_ITEMS: SidebarItem[] = [
-  { label: '홈', href: RECRUITING_HOME_PATH },
-  { label: '공고 관리', href: RECRUITING_POSTINGS_PATH },
-  { label: '지원자', href: RECRUITING_APPLICATIONS_PATH },
+// 매일 쓰는 메뉴는 섹션 없이 최상위, 가끔 쓰는 설정만 「설정」 섹션으로 묶는다.
+const RECRUITING_MAIN_ROUTES = [
+  { label: '홈', icon: Home, href: RECRUITING_HOME_PATH },
+  { label: '공고 관리', icon: Briefcase, href: RECRUITING_POSTINGS_PATH },
+  { label: '지원자', icon: Users, href: RECRUITING_APPLICATIONS_PATH },
 ]
 const RECRUITING_SETTINGS_ITEMS: SidebarItem[] = [
   { label: '공고 템플릿', href: RECRUITING_DETAIL_TEMPLATES_PATH },
@@ -703,13 +704,25 @@ export function Sidebar({
 
         {isRecruitingSidebar && (
           <div className="space-y-2">
-            <SidebarSection
-              label="모집"
-              icon={Briefcase}
-              items={RECRUITING_MAIN_ITEMS}
-              collapsed={collapsed}
-              onExpand={expand}
-            />
+            <div className="space-y-0.5">
+              {RECRUITING_MAIN_ROUTES.map((route) => {
+                const isHomeRoute = route.href === RECRUITING_HOME_PATH
+                const isActive = isHomeRoute
+                  ? pathname === route.href
+                  : pathname === route.href || pathname.startsWith(`${route.href}/`)
+                return (
+                  <RailLink
+                    key={route.href}
+                    href={route.href}
+                    icon={route.icon}
+                    label={route.label}
+                    isActive={isActive}
+                    collapsed={collapsed}
+                    size="sm"
+                  />
+                )
+              })}
+            </div>
             <SidebarSection
               label="설정"
               icon={Settings}
