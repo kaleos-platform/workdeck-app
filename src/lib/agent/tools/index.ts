@@ -11,6 +11,7 @@ import { naverAdsTools } from './naver-ads-tools'
 import { salesContentTools } from './sales-content-tools'
 import { secretTools } from './secret-tools'
 import { recruitingTools } from './recruiting-tools'
+import { browserTools } from './browser-tools'
 
 export type { ToolMode, McpToolContext, ToolDefinition } from './types'
 
@@ -34,4 +35,5 @@ export const toolDefinitions: ToolDefinition[] = [
   ...salesContentTools,
   ...secretTools,
   ...recruitingTools,
+  ...browserTools,
 ]

@@ -339,6 +339,7 @@ export type AgentPendingActionWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"AgentPendingAction"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AgentPendingAction"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  browserWriteJob?: Prisma.XOR<Prisma.BrowserWriteJobNullableScalarRelationFilter, Prisma.BrowserWriteJobWhereInput> | null
 }
 
 export type AgentPendingActionOrderByWithRelationInput = {
@@ -369,6 +370,7 @@ export type AgentPendingActionOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
+  browserWriteJob?: Prisma.BrowserWriteJobOrderByWithRelationInput
 }
 
 export type AgentPendingActionWhereUniqueInput = Prisma.AtLeast<{
@@ -402,6 +404,7 @@ export type AgentPendingActionWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"AgentPendingAction"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AgentPendingAction"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  browserWriteJob?: Prisma.XOR<Prisma.BrowserWriteJobNullableScalarRelationFilter, Prisma.BrowserWriteJobWhereInput> | null
 }, "id" | "idempotencyKey">
 
 export type AgentPendingActionOrderByWithAggregationInput = {
@@ -495,6 +498,7 @@ export type AgentPendingActionCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutAgentPendingActionsInput
+  browserWriteJob?: Prisma.BrowserWriteJobCreateNestedOneWithoutActionInput
 }
 
 export type AgentPendingActionUncheckedCreateInput = {
@@ -524,6 +528,7 @@ export type AgentPendingActionUncheckedCreateInput = {
   slackMessageTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  browserWriteJob?: Prisma.BrowserWriteJobUncheckedCreateNestedOneWithoutActionInput
 }
 
 export type AgentPendingActionUpdateInput = {
@@ -553,6 +558,7 @@ export type AgentPendingActionUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutAgentPendingActionsNestedInput
+  browserWriteJob?: Prisma.BrowserWriteJobUpdateOneWithoutActionNestedInput
 }
 
 export type AgentPendingActionUncheckedUpdateInput = {
@@ -582,6 +588,7 @@ export type AgentPendingActionUncheckedUpdateInput = {
   slackMessageTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  browserWriteJob?: Prisma.BrowserWriteJobUncheckedUpdateOneWithoutActionNestedInput
 }
 
 export type AgentPendingActionCreateManyInput = {
@@ -761,6 +768,11 @@ export type AgentPendingActionMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type AgentPendingActionScalarRelationFilter = {
+  is?: Prisma.AgentPendingActionWhereInput
+  isNot?: Prisma.AgentPendingActionWhereInput
+}
+
 export type AgentPendingActionCreateNestedManyWithoutSpaceInput = {
   create?: Prisma.XOR<Prisma.AgentPendingActionCreateWithoutSpaceInput, Prisma.AgentPendingActionUncheckedCreateWithoutSpaceInput> | Prisma.AgentPendingActionCreateWithoutSpaceInput[] | Prisma.AgentPendingActionUncheckedCreateWithoutSpaceInput[]
   connectOrCreate?: Prisma.AgentPendingActionCreateOrConnectWithoutSpaceInput | Prisma.AgentPendingActionCreateOrConnectWithoutSpaceInput[]
@@ -811,6 +823,20 @@ export type EnumAgentActionStatusFieldUpdateOperationsInput = {
   set?: $Enums.AgentActionStatus
 }
 
+export type AgentPendingActionCreateNestedOneWithoutBrowserWriteJobInput = {
+  create?: Prisma.XOR<Prisma.AgentPendingActionCreateWithoutBrowserWriteJobInput, Prisma.AgentPendingActionUncheckedCreateWithoutBrowserWriteJobInput>
+  connectOrCreate?: Prisma.AgentPendingActionCreateOrConnectWithoutBrowserWriteJobInput
+  connect?: Prisma.AgentPendingActionWhereUniqueInput
+}
+
+export type AgentPendingActionUpdateOneRequiredWithoutBrowserWriteJobNestedInput = {
+  create?: Prisma.XOR<Prisma.AgentPendingActionCreateWithoutBrowserWriteJobInput, Prisma.AgentPendingActionUncheckedCreateWithoutBrowserWriteJobInput>
+  connectOrCreate?: Prisma.AgentPendingActionCreateOrConnectWithoutBrowserWriteJobInput
+  upsert?: Prisma.AgentPendingActionUpsertWithoutBrowserWriteJobInput
+  connect?: Prisma.AgentPendingActionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AgentPendingActionUpdateToOneWithWhereWithoutBrowserWriteJobInput, Prisma.AgentPendingActionUpdateWithoutBrowserWriteJobInput>, Prisma.AgentPendingActionUncheckedUpdateWithoutBrowserWriteJobInput>
+}
+
 export type AgentPendingActionCreateWithoutSpaceInput = {
   id?: string
   deckKey: string
@@ -837,6 +863,7 @@ export type AgentPendingActionCreateWithoutSpaceInput = {
   slackMessageTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  browserWriteJob?: Prisma.BrowserWriteJobCreateNestedOneWithoutActionInput
 }
 
 export type AgentPendingActionUncheckedCreateWithoutSpaceInput = {
@@ -865,6 +892,7 @@ export type AgentPendingActionUncheckedCreateWithoutSpaceInput = {
   slackMessageTs?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  browserWriteJob?: Prisma.BrowserWriteJobUncheckedCreateNestedOneWithoutActionInput
 }
 
 export type AgentPendingActionCreateOrConnectWithoutSpaceInput = {
@@ -925,6 +953,138 @@ export type AgentPendingActionScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"AgentPendingAction"> | Date | string
 }
 
+export type AgentPendingActionCreateWithoutBrowserWriteJobInput = {
+  id?: string
+  deckKey: string
+  actionType: string
+  payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  summary: string
+  beforeState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  source: $Enums.AgentActionSource
+  actorType?: string
+  actorId: string
+  requesterUserId?: string | null
+  requesterSlackUserId?: string | null
+  workId?: string | null
+  actorTokenId?: string | null
+  status?: $Enums.AgentActionStatus
+  expiresAt: Date | string
+  decidedBy?: string | null
+  decidedAt?: Date | string | null
+  executedAt?: Date | string | null
+  result?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  error?: string | null
+  idempotencyKey?: string | null
+  slackChannelId?: string | null
+  slackMessageTs?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutAgentPendingActionsInput
+}
+
+export type AgentPendingActionUncheckedCreateWithoutBrowserWriteJobInput = {
+  id?: string
+  spaceId: string
+  deckKey: string
+  actionType: string
+  payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  summary: string
+  beforeState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  source: $Enums.AgentActionSource
+  actorType?: string
+  actorId: string
+  requesterUserId?: string | null
+  requesterSlackUserId?: string | null
+  workId?: string | null
+  actorTokenId?: string | null
+  status?: $Enums.AgentActionStatus
+  expiresAt: Date | string
+  decidedBy?: string | null
+  decidedAt?: Date | string | null
+  executedAt?: Date | string | null
+  result?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  error?: string | null
+  idempotencyKey?: string | null
+  slackChannelId?: string | null
+  slackMessageTs?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type AgentPendingActionCreateOrConnectWithoutBrowserWriteJobInput = {
+  where: Prisma.AgentPendingActionWhereUniqueInput
+  create: Prisma.XOR<Prisma.AgentPendingActionCreateWithoutBrowserWriteJobInput, Prisma.AgentPendingActionUncheckedCreateWithoutBrowserWriteJobInput>
+}
+
+export type AgentPendingActionUpsertWithoutBrowserWriteJobInput = {
+  update: Prisma.XOR<Prisma.AgentPendingActionUpdateWithoutBrowserWriteJobInput, Prisma.AgentPendingActionUncheckedUpdateWithoutBrowserWriteJobInput>
+  create: Prisma.XOR<Prisma.AgentPendingActionCreateWithoutBrowserWriteJobInput, Prisma.AgentPendingActionUncheckedCreateWithoutBrowserWriteJobInput>
+  where?: Prisma.AgentPendingActionWhereInput
+}
+
+export type AgentPendingActionUpdateToOneWithWhereWithoutBrowserWriteJobInput = {
+  where?: Prisma.AgentPendingActionWhereInput
+  data: Prisma.XOR<Prisma.AgentPendingActionUpdateWithoutBrowserWriteJobInput, Prisma.AgentPendingActionUncheckedUpdateWithoutBrowserWriteJobInput>
+}
+
+export type AgentPendingActionUpdateWithoutBrowserWriteJobInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  deckKey?: Prisma.StringFieldUpdateOperationsInput | string
+  actionType?: Prisma.StringFieldUpdateOperationsInput | string
+  payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  summary?: Prisma.StringFieldUpdateOperationsInput | string
+  beforeState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  source?: Prisma.EnumAgentActionSourceFieldUpdateOperationsInput | $Enums.AgentActionSource
+  actorType?: Prisma.StringFieldUpdateOperationsInput | string
+  actorId?: Prisma.StringFieldUpdateOperationsInput | string
+  requesterUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterSlackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  executedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  result?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackMessageTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutAgentPendingActionsNestedInput
+}
+
+export type AgentPendingActionUncheckedUpdateWithoutBrowserWriteJobInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  deckKey?: Prisma.StringFieldUpdateOperationsInput | string
+  actionType?: Prisma.StringFieldUpdateOperationsInput | string
+  payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  summary?: Prisma.StringFieldUpdateOperationsInput | string
+  beforeState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  source?: Prisma.EnumAgentActionSourceFieldUpdateOperationsInput | $Enums.AgentActionSource
+  actorType?: Prisma.StringFieldUpdateOperationsInput | string
+  actorId?: Prisma.StringFieldUpdateOperationsInput | string
+  requesterUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterSlackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  executedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  result?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackMessageTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type AgentPendingActionCreateManySpaceInput = {
   id?: string
   deckKey: string
@@ -979,6 +1139,7 @@ export type AgentPendingActionUpdateWithoutSpaceInput = {
   slackMessageTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  browserWriteJob?: Prisma.BrowserWriteJobUpdateOneWithoutActionNestedInput
 }
 
 export type AgentPendingActionUncheckedUpdateWithoutSpaceInput = {
@@ -1007,6 +1168,7 @@ export type AgentPendingActionUncheckedUpdateWithoutSpaceInput = {
   slackMessageTs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  browserWriteJob?: Prisma.BrowserWriteJobUncheckedUpdateOneWithoutActionNestedInput
 }
 
 export type AgentPendingActionUncheckedUpdateManyWithoutSpaceInput = {
@@ -1067,6 +1229,7 @@ export type AgentPendingActionSelect<ExtArgs extends runtime.Types.Extensions.In
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  browserWriteJob?: boolean | Prisma.AgentPendingAction$browserWriteJobArgs<ExtArgs>
 }, ExtArgs["result"]["agentPendingAction"]>
 
 export type AgentPendingActionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1161,6 +1324,7 @@ export type AgentPendingActionSelectScalar = {
 export type AgentPendingActionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "deckKey" | "actionType" | "payload" | "summary" | "beforeState" | "source" | "actorType" | "actorId" | "requesterUserId" | "requesterSlackUserId" | "workId" | "actorTokenId" | "status" | "expiresAt" | "decidedBy" | "decidedAt" | "executedAt" | "result" | "error" | "idempotencyKey" | "slackChannelId" | "slackMessageTs" | "createdAt" | "updatedAt", ExtArgs["result"]["agentPendingAction"]>
 export type AgentPendingActionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  browserWriteJob?: boolean | Prisma.AgentPendingAction$browserWriteJobArgs<ExtArgs>
 }
 export type AgentPendingActionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1173,6 +1337,7 @@ export type $AgentPendingActionPayload<ExtArgs extends runtime.Types.Extensions.
   name: "AgentPendingAction"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
+    browserWriteJob: Prisma.$BrowserWriteJobPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1596,6 +1761,7 @@ readonly fields: AgentPendingActionFieldRefs;
 export interface Prisma__AgentPendingActionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  browserWriteJob<T extends Prisma.AgentPendingAction$browserWriteJobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AgentPendingAction$browserWriteJobArgs<ExtArgs>>): Prisma.Prisma__BrowserWriteJobClient<runtime.Types.Result.GetResult<Prisma.$BrowserWriteJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2044,6 +2210,25 @@ export type AgentPendingActionDeleteManyArgs<ExtArgs extends runtime.Types.Exten
    * Limit how many AgentPendingActions to delete.
    */
   limit?: number
+}
+
+/**
+ * AgentPendingAction.browserWriteJob
+ */
+export type AgentPendingAction$browserWriteJobArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BrowserWriteJob
+   */
+  select?: Prisma.BrowserWriteJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BrowserWriteJob
+   */
+  omit?: Prisma.BrowserWriteJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BrowserWriteJobInclude<ExtArgs> | null
+  where?: Prisma.BrowserWriteJobWhereInput
 }
 
 /**

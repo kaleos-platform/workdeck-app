@@ -470,6 +470,23 @@ export type EnumAgentActionStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
 }
 
+export type EnumBrowserWriteJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BrowserWriteJobStatus | Prisma.EnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BrowserWriteJobStatus[] | Prisma.ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BrowserWriteJobStatus[] | Prisma.ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBrowserWriteJobStatusFilter<$PrismaModel> | $Enums.BrowserWriteJobStatus
+}
+
+export type EnumBrowserWriteJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BrowserWriteJobStatus | Prisma.EnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BrowserWriteJobStatus[] | Prisma.ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BrowserWriteJobStatus[] | Prisma.ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBrowserWriteJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.BrowserWriteJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBrowserWriteJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBrowserWriteJobStatusFilter<$PrismaModel>
+}
+
 export type EnumSecretKindFilter<$PrismaModel = never> = {
   equals?: $Enums.SecretKind | Prisma.EnumSecretKindFieldRefInput<$PrismaModel>
   in?: $Enums.SecretKind[] | Prisma.ListEnumSecretKindFieldRefInput<$PrismaModel>
@@ -2330,6 +2347,23 @@ export type NestedEnumAgentActionStatusWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBrowserWriteJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BrowserWriteJobStatus | Prisma.EnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BrowserWriteJobStatus[] | Prisma.ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BrowserWriteJobStatus[] | Prisma.ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBrowserWriteJobStatusFilter<$PrismaModel> | $Enums.BrowserWriteJobStatus
+}
+
+export type NestedEnumBrowserWriteJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BrowserWriteJobStatus | Prisma.EnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BrowserWriteJobStatus[] | Prisma.ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BrowserWriteJobStatus[] | Prisma.ListEnumBrowserWriteJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBrowserWriteJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.BrowserWriteJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBrowserWriteJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBrowserWriteJobStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumSecretKindFilter<$PrismaModel = never> = {

@@ -7,6 +7,7 @@ import { googleMarketingActions } from './google-marketing'
 import { salesContentActions } from './sales-content'
 import { secretHttpActions } from './secret-http'
 import { recruitingActions } from './recruiting'
+import { browserActions } from './browser'
 
 /**
  * 전체 액션 정의 단일 소스.
@@ -21,6 +22,7 @@ const allActions: ActionDefinition[] = [
   ...salesContentActions,
   ...secretHttpActions,
   ...recruitingActions,
+  ...browserActions,
 ]
 
 const byType = new Map<string, ActionDefinition>(allActions.map((a) => [a.actionType, a]))
