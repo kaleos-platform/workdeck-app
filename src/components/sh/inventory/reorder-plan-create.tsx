@@ -1408,8 +1408,10 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                   {options.map((o) => {
                     const finalQty = finalQtyOf(o)
                     // 표시용 파생값 — 서버 계산이 아니라 "이 수량이면 며칠 버티는가"의 환산.
-                    const coverDays =
-                      o.dailyAvgForecast > 0 ? (o.currentStock + finalQty) / o.dailyAvgForecast : 0
+                    const noSales = !(o.dailyAvgForecast > 0)
+                    const coverDays = noSales
+                      ? 0
+                      : Math.max(0, o.currentStock + finalQty) / o.dailyAvgForecast
                     const roundDelta = o.roundedSuggestedQty - o.suggestedQty
                     return (
                       <TableRow key={o.optionId}>
@@ -1509,20 +1511,21 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="font-mono text-sm tabular-nums">
-                            {coverDays > 900 || coverDays === 0
-                              ? '—'
-                              : `${Math.round(coverDays)}일`}
+                          {/* 예측 판매 0 = 소진되지 않아 일수를 셀 수 없다 → 「판매 없음」(회색) */}
+                          <div
+                            className={`font-mono text-sm tabular-nums ${noSales ? 'text-muted-foreground' : ''}`}
+                          >
+                            {noSales
+                              ? '판매 없음'
+                              : coverDays > 900
+                                ? '900일+'
+                                : `${Math.round(coverDays)}일`}
                           </div>
                           <Bar
                             className="mt-1"
-                            value={Math.min(coverDays, 90)}
+                            value={noSales ? 0 : Math.min(coverDays, 90)}
                             max={90}
-                            tone={
-                              coverDays > 0 && coverDays < horizonDays
-                                ? 'bg-amber-500'
-                                : 'bg-emerald-500'
-                            }
+                            tone={coverDays < horizonDays ? 'bg-amber-500' : 'bg-emerald-500'}
                           />
                         </TableCell>
                       </TableRow>
