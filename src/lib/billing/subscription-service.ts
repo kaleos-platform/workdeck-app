@@ -206,6 +206,15 @@ async function createOrReclaimCharge(
     ) {
       throw new BillingError('구독 상태가 변경되었습니다. 다음 청구 실행에서 다시 확인합니다', 409)
     }
+    // 환불로 구독이 끝난 뒤에는 이전에 읽은 주기로 일할 결제를 시작하지 않는다.
+    if (
+      data.orderId.startsWith('prorate_') &&
+      (!subscription ||
+        !['ACTIVE', 'PAST_DUE'].includes(subscription.status) ||
+        subscription.currentPeriodEnd?.getTime() !== new Date(data.periodEnd).getTime())
+    ) {
+      throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
+    }
     const existing = await tx.billingCharge.findUnique({ where: { orderId: data.orderId } })
     if (!existing) return tx.billingCharge.create({ data })
     const stalePending =
@@ -528,10 +537,12 @@ export async function addDeck(spaceId: string, deckAppId: string) {
   if (existing?.status === 'ACTIVE') throw new BillingError('이미 구독 중인 업무입니다', 409)
   if (existing?.status === 'CANCEL_AT_PERIOD_END') {
     // 해제 예약 취소 = 재활성 (기간말까지 이미 결제된 상태라 추가 결제 없음)
-    await prisma.subscriptionItem.update({
-      where: { id: existing.id },
+    const resumed = await prisma.subscriptionItem.updateMany({
+      where: { id: existing.id, status: 'CANCEL_AT_PERIOD_END' },
       data: { status: 'ACTIVE' },
     })
+    if (resumed.count === 0)
+      throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
     return { prorated: false, amount: 0 }
   }
 
@@ -639,10 +650,12 @@ export async function cancelDeck(spaceId: string, deckAppId: string) {
   )
   if (!item) throw new BillingError('구독 중인 업무가 아닙니다', 404)
 
-  await prisma.subscriptionItem.update({
-    where: { id: item.id },
+  const canceled = await prisma.subscriptionItem.updateMany({
+    where: { id: item.id, status: 'ACTIVE' },
     data: { status: 'CANCEL_AT_PERIOD_END' },
   })
+  if (canceled.count === 0)
+    throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
   return { effectiveAt: subscription.currentPeriodEnd }
 }
 

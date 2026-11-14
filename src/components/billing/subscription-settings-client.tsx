@@ -310,8 +310,9 @@ export function SubscriptionSettingsClient() {
             {(subscription?.status === 'EXPIRED' || subscription?.status === 'CANCELED') && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Info className="h-4 w-4" />
-                구독이 {subscription.status === 'EXPIRED' ? '만료' : '해지'}되었습니다. 다시 구독을
-                시작할 수 있습니다.
+                {subscription.status === 'CANCELED' && data.charges[0]?.status === 'REFUNDED'
+                  ? '마지막 결제가 전액 취소되어 유료 구독이 종료되었습니다. 업무별 체험·면제 여부는 아래에서 확인하세요.'
+                  : `구독이 ${subscription.status === 'EXPIRED' ? '만료' : '해지'}되었습니다. 다시 구독을 시작할 수 있습니다.`}
               </div>
             )}
           </CardContent>
