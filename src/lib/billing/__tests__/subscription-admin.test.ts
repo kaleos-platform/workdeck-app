@@ -185,7 +185,15 @@ test('구독 없는 Space의 비활성 설치·정책·종료 아이템 이력�
     accessReason: 'LOCKED',
     subscriptionStatus: null,
   })
-  expect(result.spaces).toEqual([{ id: 's', name: '공간', exemptFlag: false, exemptNote: null }])
+  expect(result.spaces).toEqual([
+    {
+      id: 's',
+      name: '공간',
+      owners: [{ id: 'u', email: 'a@b', name: null }],
+      exemptFlag: false,
+      exemptNote: null,
+    },
+  ])
 })
 
 test.each(['missing', 'free', 'unstarted'])(
@@ -345,4 +353,24 @@ test('정책 변경은 Space 행을 먼저 잠가 같은 공간의 청구 생성
   expect(tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
     tx.space.findUnique.mock.invocationCallOrder[0]
   )
+})
+
+test('업무 없는 Space도 OWNER 정보와 전체 면제 상태를 반환한다', async () => {
+  const user = { id: 'empty-owner', email: 'empty@test.dev', name: '검증 소유자' }
+  ;(prisma.billingDeckProduct.findMany as jest.Mock).mockResolvedValue([])
+  ;(prisma.space.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'empty',
+      name: '빈 공간',
+      members: [{ user }],
+      deckInstances: [],
+      deckAccessPolicies: [],
+      subscription: null,
+    },
+  ])
+  const result = await getSubscriptionAccessOverview(now)
+  expect(result.rows).toEqual([])
+  expect(result.spaces).toEqual([
+    { id: 'empty', name: '빈 공간', owners: [user], exemptFlag: false, exemptNote: null },
+  ])
 })

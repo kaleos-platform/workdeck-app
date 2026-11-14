@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ChevronDown, ChevronRight, CornerDownRight } from 'lucide-react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -85,6 +86,7 @@ export function SubscriptionsClient() {
   const [search, setSearch] = useState('')
   const [deck, setDeck] = useState('all')
   const [status, setStatus] = useState('all')
+  const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({})
   const [change, setChange] = useState<Change | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
   const form = useForm<Values>({
@@ -108,29 +110,39 @@ export function SubscriptionsClient() {
   useEffect(() => {
     void load()
   }, [load])
-  const rows = useMemo(
-    () =>
-      (data?.rows ?? [])
-        .filter((row) => {
-          const text = [
-            row.spaceName,
-            ...row.owners.flatMap((owner) => [owner.email, owner.name ?? '']),
-          ]
-            .join(' ')
-            .toLowerCase()
-          return (
-            text.includes(search.trim().toLowerCase()) &&
-            (deck === 'all' || row.deckAppId === deck) &&
-            (status === 'all' || row.accessReason === status)
+  const hasFilters = Boolean(search.trim()) || deck !== 'all' || status !== 'all'
+  const groups = useMemo(() => {
+    const bySpace = new Map<string, SubscriptionAccessRow[]>()
+    for (const row of data?.rows ?? []) {
+      const rows = bySpace.get(row.spaceId) ?? []
+      rows.push(row)
+      bySpace.set(row.spaceId, rows)
+    }
+    const query = search.trim().toLowerCase()
+    return (data?.spaces ?? [])
+      .flatMap((space) => {
+        const text = [
+          space.name,
+          ...space.owners.flatMap((owner) => [owner.email, owner.name ?? '']),
+        ]
+          .join(' ')
+          .toLowerCase()
+        if (!text.includes(query)) return []
+        const allRows = bySpace.get(space.id) ?? []
+        const rows = allRows
+          .filter(
+            (row) =>
+              (deck === 'all' || row.deckAppId === deck) &&
+              (status === 'all' || row.accessReason === status)
           )
-        })
-        .sort(
-          (a, b) =>
-            a.spaceName.localeCompare(b.spaceName, 'ko') ||
-            a.deckName.localeCompare(b.deckName, 'ko')
-        ),
-    [data, search, deck, status]
-  )
+          .sort((a, b) => a.deckName.localeCompare(b.deckName, 'ko'))
+        // 업무·상태 조건이 없으면 업무 없는 Space도 검색·면제 관리 대상에 포함한다.
+        if ((deck !== 'all' || status !== 'all') && rows.length === 0) return []
+        return [{ space, rows, totalRows: allRows.length }]
+      })
+      .sort((a, b) => a.space.name.localeCompare(b.space.name, 'ko'))
+  }, [data, search, deck, status])
+  const visibleDeckCount = groups.reduce((sum, group) => sum + group.rows.length, 0)
   function open(target: Change) {
     form.reset({
       note: '',
@@ -213,22 +225,28 @@ export function SubscriptionsClient() {
           </Button>
         </div>
       )}
-      <section className="space-y-3" aria-label="덱별 구독 현황">
+      <section className="space-y-3" aria-label="Space·업무별 구독 현황">
         <div className="flex flex-wrap items-center gap-2">
           <Input
             aria-label="Space·소유자 검색"
             placeholder="Space·소유자 검색"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setExpandedSpaces({})
+            }}
             className="w-full sm:w-64"
           />
           <select
-            aria-label="덱 필터"
+            aria-label="업무 필터"
             value={deck}
-            onChange={(e) => setDeck(e.target.value)}
+            onChange={(e) => {
+              setDeck(e.target.value)
+              setExpandedSpaces({})
+            }}
             className="h-9 rounded-md border bg-background px-3 text-sm"
           >
-            <option value="all">전체 덱</option>
+            <option value="all">전체 업무</option>
             {decks.map(([id, name]) => (
               <option key={id} value={id}>
                 {name}
@@ -238,7 +256,10 @@ export function SubscriptionsClient() {
           <select
             aria-label="상태 필터"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => {
+              setStatus(e.target.value)
+              setExpandedSpaces({})
+            }}
             className="h-9 rounded-md border bg-background px-3 text-sm"
           >
             <option value="all">전체 상태</option>
@@ -249,149 +270,260 @@ export function SubscriptionsClient() {
             ))}
           </select>
           <span className="text-xs text-muted-foreground tabular-nums">
-            {rows.length}건 · 날짜 KST
+            {groups.length}개 Space · {visibleDeckCount}개 업무
           </span>
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            <span className="text-xs text-muted-foreground">날짜 KST</span>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={groups.length === 0}
+              onClick={() =>
+                setExpandedSpaces(Object.fromEntries(groups.map(({ space }) => [space.id, true])))
+              }
+            >
+              전체 펼치기
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={groups.length === 0}
+              onClick={() =>
+                setExpandedSpaces(Object.fromEntries(groups.map(({ space }) => [space.id, false])))
+              }
+            >
+              전체 접기
+            </Button>
+            {hasFilters && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setSearch('')
+                  setDeck('all')
+                  setStatus('all')
+                  setExpandedSpaces({})
+                }}
+              >
+                필터 초기화
+              </Button>
+            )}
+          </div>
         </div>
         <div className="rounded-md border">
-          <Table className="min-w-[1260px] table-fixed">
-            <TableHeader className="sticky top-0 bg-background">
+          <Table className="min-w-[1250px] table-fixed">
+            <TableHeader className="sticky top-0 z-20 bg-background">
               <TableRow>
-                <TableHead className="sticky left-0 z-20 w-[180px] bg-background">Space</TableHead>
-                <TableHead className="w-[210px]">소유자</TableHead>
-                <TableHead className="w-[130px]">덱</TableHead>
-                <TableHead className="w-[110px]">이용 상태</TableHead>
+                <TableHead className="sticky left-0 z-30 w-[230px] bg-background">
+                  Space / 업무
+                </TableHead>
+                <TableHead className="w-[220px]">소유자</TableHead>
+                <TableHead className="w-[160px]">이용 상태</TableHead>
                 <TableHead className="w-[130px]">체험 종료일</TableHead>
                 <TableHead className="w-[130px]">유료 이용 기한</TableHead>
-                <TableHead className="w-[240px]">덱 면제</TableHead>
-                <TableHead className="w-[130px]">체험 관리</TableHead>
+                <TableHead className="w-[240px]">면제</TableHead>
+                <TableHead className="w-[140px]">체험 관리</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={`${row.spaceId}-${row.deckAppId}`}>
-                  <TableCell className="sticky left-0 z-10 bg-background">
-                    <Link
-                      href={`/admin/billing/${row.spaceId}`}
-                      className="block truncate font-medium hover:underline"
-                      title={row.spaceName}
-                    >
-                      {row.spaceName}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {row.owners.map((owner) => (
-                      <Link
-                        key={owner.id}
-                        href={`/admin/users/${owner.id}`}
-                        className="block truncate text-xs hover:underline"
-                        title={`${owner.name ?? ''} ${owner.email}`}
-                      >
-                        {owner.email}
-                      </Link>
-                    ))}
-                  </TableCell>
-                  <TableCell>
-                    <span className="block truncate" title={row.deckName}>
-                      {row.deckName}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={row.accessReason === 'LOCKED' ? 'destructive' : 'secondary'}>
-                      {labels[row.accessReason]}
-                    </Badge>
-                    {row.subscriptionStatus === 'PAST_DUE' && (
-                      <p className="mt-1 text-xs text-destructive">결제 연체</p>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-xs tabular-nums">
-                    {row.trialEndsAt ? trialDate(row.trialEndsAt) : '미시작'}
-                  </TableCell>
-                  <TableCell className="text-xs tabular-nums">
-                    {row.currentPeriodEnd &&
-                    !row.exemptFlag &&
-                    !row.spaceExempt &&
-                    (row.itemStatus === 'ACTIVE' || row.itemStatus === 'CANCEL_AT_PERIOD_END') &&
-                    (row.subscriptionStatus === 'ACTIVE' || row.subscriptionStatus === 'PAST_DUE')
-                      ? dateOnly(row.currentPeriodEnd)
-                      : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        aria-label={`${row.spaceName} ${row.deckName} 덱 면제`}
-                        checked={row.exemptFlag}
-                        onCheckedChange={() => open({ kind: 'deck', row })}
-                      />
-                      <span className="text-xs">{row.exemptFlag ? '덱 면제' : '덱 면제 없음'}</span>
-                    </div>
-                    {row.spaceExempt && (
-                      <p className="mt-1 text-xs text-muted-foreground">전체 Space 면제 적용</p>
-                    )}
-                    {row.exemptNote && (
-                      <p className="truncate text-xs text-muted-foreground" title={row.exemptNote}>
-                        {row.exemptNote}
+            {groups.map(({ space, rows, totalRows }) => {
+              const expanded = rows.length > 0 && (expandedSpaces[space.id] ?? hasFilters)
+              const summary = Object.entries(
+                rows.reduce<Record<string, number>>((counts, row) => {
+                  counts[row.accessReason] = (counts[row.accessReason] ?? 0) + 1
+                  return counts
+                }, {})
+              )
+                .map(
+                  ([reason, count]) =>
+                    `${labels[reason as SubscriptionAccessRow['accessReason']]} ${count}`
+                )
+                .join(' · ')
+              return (
+                <TableBody key={space.id} aria-label={`${space.name} 구독 현황`}>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableCell className="sticky left-0 z-10 bg-muted">
+                      <div className="flex min-w-0 items-center gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-8 shrink-0"
+                          disabled={rows.length === 0}
+                          aria-label={`${space.name} 업무 ${expanded ? '접기' : '펼치기'}`}
+                          aria-expanded={expanded}
+                          aria-controls={
+                            rows
+                              .map((row) => `subscription-${space.id}-${row.deckAppId}`)
+                              .join(' ') || undefined
+                          }
+                          onClick={() =>
+                            setExpandedSpaces((prev) => ({ ...prev, [space.id]: !expanded }))
+                          }
+                        >
+                          {expanded ? (
+                            <ChevronDown className="size-4" aria-hidden="true" />
+                          ) : (
+                            <ChevronRight className="size-4" aria-hidden="true" />
+                          )}
+                        </Button>
+                        <Link
+                          href={`/admin/billing/${space.id}`}
+                          className="min-w-0 truncate font-medium hover:underline"
+                          title={space.name}
+                        >
+                          {space.name}
+                        </Link>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {space.owners.length ? (
+                        space.owners.map((owner) => (
+                          <Link
+                            key={owner.id}
+                            href={`/admin/users/${owner.id}`}
+                            className="block truncate text-xs hover:underline"
+                            title={`${owner.name ?? ''} ${owner.email}`}
+                          >
+                            {owner.email}
+                          </Link>
+                        ))
+                      ) : (
+                        <span className="text-xs text-muted-foreground">소유자 없음</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-xs font-medium">
+                        {totalRows === 0
+                          ? '업무 없음'
+                          : rows.length === totalRows
+                            ? `${totalRows}개 업무`
+                            : `${totalRows}개 중 ${rows.length}개 표시`}
                       </p>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {row.canExtendTrial ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        aria-label={`${row.deckName} 체험 연장`}
-                        onClick={() => open({ kind: 'trial', row })}
-                      >
-                        체험 연장
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {rows.length === 0 && (
+                      {summary && (
+                        <p className="mt-1 text-xs whitespace-normal text-muted-foreground">
+                          {summary}
+                        </p>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">—</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">—</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          aria-label={`${space.name} 전체 Space 면제`}
+                          checked={space.exemptFlag}
+                          onCheckedChange={() => open({ kind: 'space', space })}
+                        />
+                        <span className="text-xs font-medium">전체 업무 면제</span>
+                      </div>
+                      {space.exemptNote && (
+                        <p
+                          className="mt-1 truncate text-xs text-muted-foreground"
+                          title={space.exemptNote}
+                        >
+                          {space.exemptNote}
+                        </p>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">—</TableCell>
+                  </TableRow>
+                  {rows.map((row) => (
+                    <TableRow
+                      key={row.deckAppId}
+                      id={`subscription-${space.id}-${row.deckAppId}`}
+                      hidden={!expanded}
+                    >
+                      <TableCell className="sticky left-0 z-10 bg-background">
+                        <div className="flex min-w-0 items-center gap-2 pl-8">
+                          <CornerDownRight
+                            className="size-3.5 shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
+                          <span className="truncate" title={row.deckName}>
+                            {row.deckName}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="sr-only">소유자는 Space 행 참조</span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={row.accessReason === 'LOCKED' ? 'destructive' : 'secondary'}
+                        >
+                          {labels[row.accessReason]}
+                        </Badge>
+                        {row.subscriptionStatus === 'PAST_DUE' && (
+                          <p className="mt-1 text-xs text-destructive">결제 연체</p>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-xs tabular-nums">
+                        {row.trialEndsAt ? trialDate(row.trialEndsAt) : '미시작'}
+                      </TableCell>
+                      <TableCell className="text-xs tabular-nums">
+                        {row.currentPeriodEnd &&
+                        !row.exemptFlag &&
+                        !row.spaceExempt &&
+                        (row.itemStatus === 'ACTIVE' ||
+                          row.itemStatus === 'CANCEL_AT_PERIOD_END') &&
+                        (row.subscriptionStatus === 'ACTIVE' ||
+                          row.subscriptionStatus === 'PAST_DUE')
+                          ? dateOnly(row.currentPeriodEnd)
+                          : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            aria-label={`${row.spaceName} ${row.deckName} 덱 면제`}
+                            checked={row.exemptFlag}
+                            onCheckedChange={() => open({ kind: 'deck', row })}
+                          />
+                          <span className="text-xs">
+                            {row.exemptFlag ? '덱 면제' : '덱 면제 없음'}
+                          </span>
+                        </div>
+                        {row.spaceExempt && (
+                          <p className="mt-1 text-xs text-muted-foreground">전체 Space 면제 적용</p>
+                        )}
+                        {row.exemptNote && (
+                          <p
+                            className="truncate text-xs text-muted-foreground"
+                            title={row.exemptNote}
+                          >
+                            {row.exemptNote}
+                          </p>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {row.canExtendTrial ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            aria-label={`${row.deckName} 체험 연장`}
+                            onClick={() => open({ kind: 'trial', row })}
+                          >
+                            체험 연장
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              )
+            })}
+            {groups.length === 0 && (
+              <TableBody>
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                    {data.rows.length
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    {data.spaces.length
                       ? '검색 조건에 맞는 구독이 없습니다'
-                      : '활성화된 덱이 없습니다. Space에서 덱을 활성화하면 표시됩니다.'}
+                      : '등록된 Space가 없습니다. Space를 생성하면 이곳에서 구독을 관리할 수 있습니다.'}
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
+              </TableBody>
+            )}
           </Table>
-        </div>
-      </section>
-      <section className="space-y-3" aria-label="전체 Space 면제 관리">
-        <h2 className="text-lg font-semibold">전체 Space 면제</h2>
-        <p className="text-sm text-muted-foreground">
-          모든 덱에 적용되는 기존 면제 설정입니다. 덱별 면제와 별도로 유지됩니다.
-        </p>
-        {data.spaces.length === 0 && (
-          <p className="text-sm text-muted-foreground">관리할 Space가 없습니다.</p>
-        )}
-        <div className="divide-y rounded-md border">
-          {data.spaces.map((space) => (
-            <div key={space.id} className="flex items-center gap-3 px-3 py-2">
-              <Link
-                href={`/admin/billing/${space.id}`}
-                className="min-w-0 flex-1 truncate text-sm hover:underline"
-              >
-                {space.name}
-              </Link>
-              <span
-                className="hidden truncate text-xs text-muted-foreground sm:block"
-                title={space.exemptNote ?? ''}
-              >
-                {space.exemptNote}
-              </span>
-              <Switch
-                aria-label={`${space.name} 전체 Space 면제`}
-                checked={space.exemptFlag}
-                onCheckedChange={() => open({ kind: 'space', space })}
-              />
-            </div>
-          ))}
         </div>
       </section>
       <Dialog
@@ -423,6 +555,8 @@ export function SubscriptionsClient() {
                     ? '면제를 해제합니다.'
                     : '면제를 설정합니다.'
                 }`}
+              {change?.kind === 'space' &&
+                ' 필터와 관계없이 이 Space의 모든 업무에 적용됩니다. 개별 업무 면제 설정은 유지됩니다.'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>

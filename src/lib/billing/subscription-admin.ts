@@ -39,6 +39,7 @@ export async function getSubscriptionAccessOverview(
     spaces: spaces.map((space) => ({
       id: space.id,
       name: space.name,
+      owners: space.members.map((member) => member.user),
       exemptFlag: space.subscription?.exemptFlag ?? false,
       exemptNote: space.subscription?.exemptNote ?? null,
     })),
