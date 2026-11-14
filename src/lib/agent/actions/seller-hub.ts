@@ -62,12 +62,13 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
       linkedLocationIds: [],
     }
     const preview = (await run({ ...base, dryRun: true })) as {
-      ownLocations?: Array<{ id: string }>
+      ownLocations?: Array<{ id: string; isActive?: boolean }>
     }
     const created = (await run({
       ...base,
       memo: params.memo,
-      ownLocationId: preview.ownLocations?.[0]?.id ?? null,
+      // 입고 위치는 활성 위치만 — 재고가 남은 비활성 위치는 목록엔 있어도 기본값이 될 수 없다
+      ownLocationId: preview.ownLocations?.find((l) => l.isActive !== false)?.id ?? null,
       skipLlmRationale: true,
     })) as { planId: string; planNo?: string; items?: unknown[] }
     return { planId: created.planId, planNo: created.planNo, itemCount: created.items?.length ?? 0 }

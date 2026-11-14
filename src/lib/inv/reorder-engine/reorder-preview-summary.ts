@@ -23,7 +23,7 @@ type PreviewOption = {
 type Preview = {
   locationName: string | null
   options: PreviewOption[]
-  ownLocations?: Array<{ id: string; name: string }>
+  ownLocations?: Array<{ id: string; name: string; isActive?: boolean }>
   linkedSkuAllocation?: {
     skus: Array<{ name: string; optionName: string | null; allocSets: number }>
   } | null
@@ -69,7 +69,7 @@ export function summarizeReorderPreview(p: Preview) {
     targetCoverDays: head?.targetCoverDays ?? null,
     horizonDays: head ? head.leadTimeDays + head.targetCoverDays : null,
     linkedLocationName: p.locationName,
-    ownLocationName: p.ownLocations?.[0]?.name ?? null,
+    ownLocationName: p.ownLocations?.find((l) => l.isActive !== false)?.name ?? null,
     totalOrderQty: sum('orderQty'),
     linkedTotalQty: sum('linkedQty'),
     ownTotalQty: sum('ownQty'),

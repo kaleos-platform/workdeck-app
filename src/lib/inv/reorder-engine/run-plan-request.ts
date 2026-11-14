@@ -773,7 +773,13 @@ export async function runReorderPlanRequest(
     }
     const ownLocations = locs
       .filter((l) => !linkedIds.has(l.id) && (l.isActive || (qtyByLoc.get(l.id) ?? 0) !== 0))
-      .map((l) => ({ id: l.id, name: l.name, type: l.type, onHandQty: qtyByLoc.get(l.id) ?? 0 }))
+      .map((l) => ({
+        id: l.id,
+        name: l.name,
+        type: l.type,
+        isActive: l.isActive,
+        onHandQty: qtyByLoc.get(l.id) ?? 0,
+      }))
       .sort((a, b) => b.onHandQty - a.onHandQty)
       .map((l) => ({ ...l, stockByOption: stockByLocation[l.id] ?? {} }))
     return NextResponse.json({
