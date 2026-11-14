@@ -69,6 +69,11 @@ export type PlanOptionResult = {
   suggestedQty: number
   roundedSuggestedQty: number
   finalQty: number
+  /** 커버 기간 예측 소진량(bias 반영). MANUAL = 0 */
+  gross: number
+  /** 분석 기간 실제 판매 — 전체 / 연동 위치 채널 */
+  salesInWindow: number
+  rocketSalesInWindow: number
   /** 레이어드 분할(비레이어드 = null) */
   layered: {
     rocketExpectedSales: number
@@ -137,6 +142,7 @@ export function computeProductPlan(input: {
 
     const selectedModel: SelectedModel = isNew ? 'MANUAL' : productModel
     let dailyRate: number
+    let gross = 0
     let suggestedQty: number
     let roundedSuggestedQty: number
     let layered: PlanOptionResult['layered'] = null
@@ -161,6 +167,7 @@ export function computeProductPlan(input: {
     } else {
       dailyRate = rates[selectedModel]
       const r = qtyFor(dailyRate)
+      gross = r.gross
       suggestedQty = r.suggestedQty
       roundedSuggestedQty = r.roundedQty
       finalQty = r.roundedQty
@@ -200,6 +207,9 @@ export function computeProductPlan(input: {
       isNewOption: isNew,
       siblingAvgRate: isNew ? siblingAvgRate : null,
       dailyRate,
+      gross,
+      salesInWindow: o.totalQtyInWindow,
+      rocketSalesInWindow: o.rocketQtyInWindow,
       suggestedQty,
       roundedSuggestedQty,
       finalQty,
