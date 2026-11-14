@@ -41,4 +41,5 @@ export type ApplicationListRow = {
   createdAt: string
   duplicated: boolean
   blacklisted: boolean
+  directRegistration: boolean
 }

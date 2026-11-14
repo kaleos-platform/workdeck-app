@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { TemplatesManager } from '../templates-manager'
-jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh: jest.fn() }) }))
+const push = jest.fn()
+jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh: jest.fn(), push }) }))
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }))
 const rows = [
   { id: 'qa', name: '원본 템플릿', blockCount: 5, updatedAt: '2026-09-27', isSample: false },
@@ -103,16 +104,69 @@ it('워크덱 제공 탭은 읽기 전용(미리보기만)이고 내 템플릿 �
     fireEvent.mouseDown(screen.getByRole('tab', { name: '워크덱 제공 1' }), { button: 0 })
   })
   expect(screen.getByText('기본 양식')).toBeInTheDocument()
-  expect(screen.getByText('읽기 전용')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /이름 변경|삭제/ })).not.toBeInTheDocument()
+  // 제공 카드: 내 템플릿으로 복사 + 새 공고 (복제 라벨은 없음)
+  expect(screen.getByRole('button', { name: /내 템플릿으로 복사$/ })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '이 템플릿으로 새 공고' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /복제$/ })).not.toBeInTheDocument()
 })
 
 it('카드 미리보기는 큰 미리보기 대화상자를 열고 PC/모바일을 전환한다', async () => {
   mockFetch()
   render(<TemplatesManager initialTemplates={rows} />)
-  await act(async () => fireEvent.click(screen.getByRole('button', { name: '미리보기' })))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /미리보기$/ })))
   const dialog = await screen.findByRole('dialog', { name: '원본 템플릿' })
   const mobile = within(dialog).getByRole('button', { name: '모바일' })
   fireEvent.click(mobile)
   expect(mobile).toHaveAttribute('aria-pressed', 'true')
+})
+
+it('내 템플릿 카드는 복제·새 공고 버튼을 보이고 복제하면 새 카드가 목록에 추가된다', async () => {
+  mockFetch({
+    ok: true,
+    json: async () => ({
+      template: { id: 'cp', name: '원본 템플릿 (복사)', updatedAt: '2026-11-15', blockCount: 5 },
+    }),
+  })
+  render(<TemplatesManager initialTemplates={rows} />)
+  expect(screen.queryByRole('button', { name: /내 템플릿으로 복사$/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '이 템플릿으로 새 공고' })).toBeInTheDocument()
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /복제$/ })))
+  expect(screen.getByText('원본 템플릿 (복사)')).toBeInTheDocument()
+  expect(mutationCalls()[0][0]).toBe('/api/hiring-posts/templates/qa/copy')
+})
+
+it('제공 템플릿 복사 성공 시 내 템플릿 탭으로 전환해 새 카드를 보여 준다', async () => {
+  mockFetch({
+    ok: true,
+    json: async () => ({
+      template: { id: 'cp', name: '기본 양식 (복사)', updatedAt: '2026-11-15', blockCount: 2 },
+    }),
+  })
+  render(<TemplatesManager initialTemplates={[sample]} />)
+  expect(screen.getByRole('tab', { name: '워크덱 제공 1' })).toHaveAttribute(
+    'aria-selected',
+    'true'
+  )
+  await act(async () =>
+    fireEvent.click(screen.getByRole('button', { name: /내 템플릿으로 복사$/ }))
+  )
+  expect(screen.getByRole('tab', { name: '내 템플릿 1' })).toHaveAttribute('aria-selected', 'true')
+  expect(screen.getByText('기본 양식 (복사)')).toBeInTheDocument()
+})
+
+it('복사 실패는 목록을 바꾸지 않는다', async () => {
+  mockFetch({ ok: false })
+  render(<TemplatesManager initialTemplates={rows} />)
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /복제$/ })))
+  expect(screen.queryByText('원본 템플릿 (복사)')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /복제$/ })).toBeEnabled()
+})
+
+it('미리보기 대화상자 푸터에도 새 공고 버튼이 있다', async () => {
+  mockFetch()
+  render(<TemplatesManager initialTemplates={rows} />)
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /미리보기$/ })))
+  const dialog = await screen.findByRole('dialog', { name: '원본 템플릿' })
+  expect(within(dialog).getByRole('button', { name: '이 템플릿으로 새 공고' })).toBeInTheDocument()
 })

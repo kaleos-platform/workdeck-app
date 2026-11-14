@@ -320,6 +320,7 @@ export async function listApplications(
         stage: true,
         hiringStage: true,
         duplicated: true,
+        directRegistration: true,
         phoneHash: true,
         createdAt: true,
         posting: { select: { title: true, spaceId: true } },
@@ -342,6 +343,7 @@ export async function listApplications(
     hiringStage: r.hiringStage,
     createdAt: r.createdAt.toISOString(),
     duplicated: r.duplicated,
+    directRegistration: r.directRegistration,
     blacklisted: r.phoneHash ? blacklistSet.has(r.phoneHash) : false,
   }))
 

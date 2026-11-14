@@ -37,6 +37,15 @@ export function DuplicatedBadge() {
   )
 }
 
+// 정보 표시용(경고 아님) — 중립 톤
+export function DirectRegistrationBadge() {
+  return (
+    <Badge variant="secondary" className="font-normal">
+      직접 등록
+    </Badge>
+  )
+}
+
 export function BlacklistBadge() {
   return (
     <Badge

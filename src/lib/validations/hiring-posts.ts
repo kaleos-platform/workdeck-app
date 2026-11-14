@@ -266,6 +266,12 @@ export const createTemplateSchema = z.object({
 })
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
 
+// 템플릿 복사(워크덱 제공 → 내 템플릿 / 내 템플릿 복제). name 생략 시 서버가 「원본 (복사)」로 정한다.
+export const copyTemplateSchema = z.object({
+  name: z.string().trim().min(1, '템플릿 이름을 입력하세요').max(200).optional(),
+})
+export type CopyTemplateInput = z.infer<typeof copyTemplateSchema>
+
 // 운영 어드민 — 빈 글로벌 샘플 템플릿 생성 (spaceId=null, isSample=true)
 export const createSampleTemplateSchema = z.object({
   name: z.string().min(1, '템플릿 이름을 입력하세요').max(200),
