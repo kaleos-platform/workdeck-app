@@ -20,5 +20,11 @@ export type SubscriptionAccessRow = {
 
 export type SubscriptionAccessOverview = {
   rows: SubscriptionAccessRow[]
-  spaces: { id: string; name: string; exemptFlag: boolean; exemptNote: string | null }[]
+  spaces: {
+    id: string
+    name: string
+    owners: SubscriptionAccessRow['owners']
+    exemptFlag: boolean
+    exemptNote: string | null
+  }[]
 }
