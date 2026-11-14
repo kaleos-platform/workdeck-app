@@ -3,8 +3,59 @@
 import { prisma } from '@/lib/prisma'
 import { getCoupangGradeIndex } from '@/lib/inv/coupang-return-stock'
 import type { ParseResult } from '@/lib/inv/reconciliation-parser'
+import { fetchWekeepInventory } from '@/lib/inv/wekeep-client'
+import { isWekeepLoginUrl } from '@/lib/inv/location-sync'
+import { loadLoginSecretForSystem } from '@/lib/agent/secrets/store'
 
-export type ReconciliationSource = 'coupang'
+export type ReconciliationSource = 'coupang' | 'wekeep'
+
+/** 위킵 연동 위치를 찾을 수 없거나 설정이 불완전할 때(라우트가 400으로 변환) */
+export class WekeepSourceError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'WekeepSourceError'
+  }
+}
+
+/**
+ * 위킵 라이브 재고 → ParseResult(format 'inventory_list').
+ * 행 규칙은 reconciliation-parser.ts parseInventoryList 와 동일(quantity=가용+유보,
+ * defectQuantity=하자+파손(>0일 때만), externalCode=skuNo). 주간 cron 도 이 함수를 쓴다.
+ * 비밀값은 위치에 저장된 syncSecretName 으로만 로드한다.
+ */
+export async function getWekeepInventoryRows(
+  spaceId: string,
+  locationId: string
+): Promise<ParseResult> {
+  const loc = await prisma.invStorageLocation.findFirst({
+    where: { id: locationId, spaceId, isActive: true, syncProvider: 'wekeep' },
+    select: { syncSecretName: true },
+  })
+  if (!loc) throw new WekeepSourceError('위킵 연동이 설정된 활성 위치가 아닙니다.')
+  if (!loc.syncSecretName)
+    throw new WekeepSourceError('위치에 연결된 위킵 로그인 비밀값을 찾을 수 없습니다.')
+  let secret
+  try {
+    secret = await loadLoginSecretForSystem(spaceId, loc.syncSecretName)
+  } catch {
+    throw new WekeepSourceError('위치에 연결된 위킵 로그인 비밀값을 찾을 수 없습니다.')
+  }
+  if (!isWekeepLoginUrl(secret.loginUrl))
+    throw new WekeepSourceError('위치에 연결된 위킵 로그인 비밀값을 찾을 수 없습니다.')
+  const items = await fetchWekeepInventory({ username: secret.username, password: secret.password })
+  return {
+    format: 'inventory_list',
+    rows: items.map((r) => {
+      const defect = r.faulty + r.damage
+      return {
+        externalCode: r.skuNo,
+        externalName: r.productName || undefined,
+        quantity: r.available + r.reserve,
+        ...(defect > 0 ? { defectQuantity: defect } : {}),
+      }
+    }),
+  }
+}
 
 /**
  * 스냅샷 완전성 판정 — 부분 export(Wing 그리드 미완전 로드 상태 다운로드) 탐지.

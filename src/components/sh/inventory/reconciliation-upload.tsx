@@ -24,7 +24,7 @@ import {
 import { cn } from '@/lib/utils'
 import { ReconciliationTemplateDownload } from './reconciliation-template-download'
 
-type Location = { id: string; name: string; isActive: boolean }
+type Location = { id: string; name: string; isActive: boolean; syncProvider?: string | null }
 
 type UploadError = { message: string; hint?: string }
 
@@ -397,6 +397,10 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
   const [submitting, setSubmitting] = useState(false)
   const [preflight, setPreflight] = useState<Preflight | null>(null)
   const [preflightLoading, setPreflightLoading] = useState(false)
+  // 위킵 연동이 설정된 활성 3PL 위치 — 각각 별도 연동 소스로 나열한다.
+  const wekeepLocations = useLocations(open).filter(
+    (l) => l.isActive && l.syncProvider === 'wekeep'
+  )
 
   useEffect(() => {
     if (!open) {
@@ -430,14 +434,18 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
     new Date(preflight.lastReconciliation.snapshotDate).getTime() >=
       new Date(preflight.latestSnapshot.snapshotDate).getTime()
 
-  async function handleSubmit() {
-    if (!canProceed) return
+  async function handleSubmit(wekeepLocationId?: string) {
+    if (!wekeepLocationId && !canProceed) return
     setSubmitting(true)
     try {
       const res = await fetch('/api/sh/inventory/reconciliation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: 'coupang' }),
+        body: JSON.stringify(
+          wekeepLocationId
+            ? { source: 'wekeep', locationId: wekeepLocationId }
+            : { source: 'coupang' }
+        ),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '연동 실패')
@@ -517,13 +525,29 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
               )}
             </>
           )}
+          {wekeepLocations.length > 0 && (
+            <div className="space-y-2 rounded-md border p-3">
+              <p className="text-sm font-medium">3PL 재고 연동</p>
+              {wekeepLocations.map((l) => (
+                <Button
+                  key={l.id}
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => handleSubmit(l.id)}
+                  disabled={submitting}
+                >
+                  위킵 — {l.name}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
             취소
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting || !canProceed}>
+          <Button onClick={() => handleSubmit()} disabled={submitting || !canProceed}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isOverwrite ? '덮어쓰고 대조' : '이 기준일로 대조'}
           </Button>

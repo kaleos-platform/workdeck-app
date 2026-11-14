@@ -189,6 +189,11 @@ export async function GET(req: NextRequest, { params }: Params) {
           quantity: item.quantity,
           optionId: item.optionId,
           listingId: item.listingId,
+          // N배송 바코드(nsBarcode)·주문당 피킹 수량 — 바코드별 매칭 UI 용
+          skuMappings: item.skuMappings as Array<{
+            nsBarcode: string
+            pickingQuantityPerOrder: number
+          }> | null,
           option: opt
             ? {
                 id: opt.id,
