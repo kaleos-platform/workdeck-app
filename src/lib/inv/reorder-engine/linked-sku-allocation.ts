@@ -6,8 +6,8 @@
 //
 // 규칙
 //  - SKU 부족분(세트 단위) = ceil(30일 판매/30 × 커버 기간) − 현재고 − 입고예정 (≥0)
-//  - 옵션 몫을 SKU 부족분(낱개 환산) 비례로 나누고 세트 수는 내림.
-//  - 부족분이 전부 0 이면 30일 판매 비중으로 나눈다. 판매도 없으면 낱개로 남긴다.
+//  - 옵션 몫으로 SKU 부족분(낱개 환산)을 먼저 채운다(모자라면 부족분 비례). 세트 수는 내림.
+//  - 부족분을 다 채우고 남는 몫은 SKU 30일 판매 비중으로 나눈다. 판매도 없으면 낱개로 남긴다.
 //  - 내림으로 남은 낱개는 그 옵션만 담는 ×1 SKU(가중치 큰 순)에 준다. 없으면 낱개로 남긴다.
 //  - Σ(배분 세트 × 구성 수량) ≤ 옵션 몫 이 항상 성립한다.
 // ponytail: 여러 옵션을 섞은 SKU 는 옵션별 몫 중 가장 작은 세트 수만 받는다(보수적). 섞인 SKU 가
@@ -61,14 +61,23 @@ export function allocateLinkedSkus(
     const budget = Math.max(0, Math.floor(budgetRaw))
     const holders = valid.filter((s) => s.items.some((it) => it.optionId === optionId))
     const perSetOf = (s: LinkedSkuInput) => s.items.find((it) => it.optionId === optionId)!.perSet
-    let weights = holders.map((s) => (needSets.get(s.code) ?? 0) * perSetOf(s))
-    if (weights.every((w) => w === 0))
-      weights = holders.map((s) => Math.max(0, s.sales30d) * perSetOf(s))
-    const total = weights.reduce((a, b) => a + b, 0)
+    // 1) 부족분(낱개)을 먼저 채운다 — 몫이 모자라면 부족분 비례로 줄인다.
+    const needUnits = holders.map((s) => (needSets.get(s.code) ?? 0) * perSetOf(s))
+    const needTotal = needUnits.reduce((a, b) => a + b, 0)
+    const phase1 = Math.min(budget, needTotal)
+    // 2) 부족분을 다 채우고 남는 몫(옵션 단위 예측·안전재고분)은 SKU 30일 판매 비중으로 나눈다.
+    const salesUnits = holders.map((s) => Math.max(0, s.sales30d) * perSetOf(s))
+    const salesTotal = salesUnits.reduce((a, b) => a + b, 0)
+    const excess = budget - phase1
+    const desired = holders.map(
+      (_, i) =>
+        (needTotal > 0 ? (phase1 * needUnits[i]) / needTotal : 0) +
+        (salesTotal > 0 ? (excess * salesUnits[i]) / salesTotal : 0)
+    )
     const wm = new Map<string, number>()
     holders.forEach((s, i) => {
-      wm.set(s.code, weights[i])
-      const sets = total > 0 ? Math.floor((budget * weights[i]) / total / perSetOf(s)) : 0
+      wm.set(s.code, needUnits[i] + salesUnits[i])
+      const sets = Math.floor(desired[i] / perSetOf(s))
       const arr = candidate.get(s.code) ?? []
       arr.push(sets)
       candidate.set(s.code, arr)
