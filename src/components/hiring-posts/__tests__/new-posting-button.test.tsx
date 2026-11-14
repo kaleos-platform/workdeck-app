@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { NewPostingButton } from '../new-posting-button'
+import { toast } from 'sonner'
 import { PostingsTable } from '../postings-table'
 
 const push = jest.fn()
@@ -147,4 +148,57 @@ it('복사 실패 시 이동하지 않고 다시 시도할 수 있다', async ()
   fireEvent.click(screen.getByRole('button', { name: '복사해서 시작' }))
   await waitFor(() => expect(screen.getByRole('button', { name: '복사해서 시작' })).toBeEnabled())
   expect(push).not.toHaveBeenCalled()
+})
+
+describe('템플릿으로 새 공고', () => {
+  const template = { id: 'tpl', name: '카페 양식' }
+  const open = () => {
+    render(<NewPostingButton template={template} triggerLabel="이 템플릿으로 새 공고" />)
+    fireEvent.click(screen.getByRole('button', { name: '이 템플릿으로 새 공고' }))
+    fireEvent.change(screen.getByLabelText('공고 제목'), { target: { value: '홍대점' } })
+    fireEvent.click(screen.getByRole('button', { name: '공고 만들기' }))
+  }
+
+  it('다이얼로그에 템플릿 이름이 보이고 복사 모드는 숨긴다', () => {
+    render(<NewPostingButton template={template} triggerLabel="이 템플릿으로 새 공고" />)
+    fireEvent.click(screen.getByRole('button', { name: '이 템플릿으로 새 공고' }))
+    expect(screen.getByRole('dialog', { name: '이 템플릿으로 새 공고' })).toBeInTheDocument()
+    expect(screen.getByText(/카페 양식/)).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '이전 공고 복사해서 시작' })
+    ).not.toBeInTheDocument()
+    expect(screen.getByLabelText('공고 제목')).toHaveValue('')
+  })
+
+  it('공고 생성 → 템플릿 append 적용 → 편집 화면으로 이동한다', async () => {
+    ;(fetch as jest.Mock).mockImplementation(async (url: string) =>
+      url === '/api/hiring-posts/postings'
+        ? { ok: true, json: async () => ({ posting: { id: 'np' } }) }
+        : { ok: true, json: async () => ({ contents: [] }) }
+    )
+    open()
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/d/recruiting/postings/np/build'))
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      '/api/hiring-posts/postings/np/apply-template',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ templateId: 'tpl', mode: 'append' }),
+      })
+    )
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
+  it('템플릿 적용이 실패해도 초안으로 이동하고 안내한다', async () => {
+    ;(fetch as jest.Mock).mockImplementation(async (url: string) =>
+      url === '/api/hiring-posts/postings'
+        ? { ok: true, json: async () => ({ posting: { id: 'np' } }) }
+        : { ok: false }
+    )
+    open()
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/d/recruiting/postings/np/build'))
+    expect(toast.error).toHaveBeenCalledWith(
+      '공고는 만들었지만 템플릿을 적용하지 못했습니다. 공고 꾸미기에서 다시 불러오세요.'
+    )
+  })
 })
