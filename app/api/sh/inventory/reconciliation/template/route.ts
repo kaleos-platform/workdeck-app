@@ -14,7 +14,7 @@ export async function GET() {
     select: {
       id: true,
       products: {
-        where: { spaceId },
+        where: { spaceId, status: 'ACTIVE' },
         select: {
           id: true,
           name: true,
