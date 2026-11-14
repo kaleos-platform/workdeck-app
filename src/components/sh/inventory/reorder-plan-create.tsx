@@ -16,6 +16,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableFooter,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
@@ -84,6 +85,14 @@ type Preview = {
   locationName: string | null
   options: PreviewOption[]
   sets: PreviewSet[]
+  /** 자체·3PL 출고 위치별 현재고(상품 옵션 합) — 연동 위치 제외 */
+  ownLocations?: Array<{ id: string; name: string; type: string; onHandQty: number }>
+}
+
+const LOCATION_TYPE_LABEL: Record<string, string> = {
+  OWN: '자체 창고',
+  THIRD_PARTY: '3PL',
+  STORE: '매장',
 }
 
 type PickedProduct = { productId: string; productName: string; brandName: string | null }
@@ -97,7 +106,7 @@ type LinkedLocation = { id: string; name: string; externalSource: string | null;
 const STEPS: WizardStep[] = [
   { id: 'product', label: '상품 선택', hint: '발주 대상' },
   { id: 'external', label: '외부 연동 확인', hint: '연동 위치 입고' },
-  { id: 'own', label: '자체 출고 확인', hint: '나머지 위치' },
+  { id: 'own', label: '자체·3PL 출고 확인', hint: '연동 외 위치' },
   { id: 'calc', label: '수량 계산', hint: '리드타임·보정계수' },
   { id: 'review', label: '세트 환산 · 검토', hint: '계획 생성' },
 ]
@@ -701,17 +710,19 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
     const est = options.filter((o) => o.productId === pid && !o.isNewOption)
     const head = est[0]
     if (!head) return null
-    // 자동 = 추천 사용(고정 없음). 서버 응답의 선택 모델이 추천과 다르면 설정에 고정된 상태.
-    const selected: ModelKey | 'AUTO' =
-      modelByProduct[pid] ??
-      (head.selectedModel !== 'MANUAL' && head.selectedModel !== head.recommendedModel
-        ? head.selectedModel
-        : 'AUTO')
+    // 추천 행 = 자동(고정 없음). 서버 응답의 선택 모델이 추천과 다르면 설정에 고정된 상태.
+    const chosen = modelByProduct[pid]
+    const selected: ModelKey =
+      chosen == null || chosen === 'AUTO'
+        ? chosen == null && head.selectedModel !== 'MANUAL'
+          ? head.selectedModel
+          : head.recommendedModel
+        : chosen
     return (
       <Panel
         key={pid}
         title={isMultiProduct ? `예측 모델 — ${head.productName}` : '예측 모델'}
-        desc="과거 오차가 가장 작은 모델을 추천합니다. 바꾸면 수량을 다시 계산합니다."
+        desc="과거 오차가 가장 작은 모델에 「추천」이 붙고 기본 선택됩니다. 바꾸면 수량을 다시 계산합니다."
         padded={false}
       >
         <Table>
@@ -725,36 +736,6 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow data-state={selected === 'AUTO' ? 'selected' : undefined}>
-              <TableCell className="text-sm">
-                자동(추천)
-                <span className="ml-1.5 text-xs text-muted-foreground">
-                  ({MODEL_KEY_LABEL[head.recommendedModel]})
-                </span>
-              </TableCell>
-              <TableCell className="text-right font-mono tabular-nums">
-                {est.reduce((s, o) => s + o.models[head.recommendedModel].dailyRate, 0).toFixed(2)}
-              </TableCell>
-              <TableCell className="text-right font-mono tabular-nums">
-                {fmtQty(est.reduce((s, o) => s + o.models[head.recommendedModel].qty, 0))}
-              </TableCell>
-              <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
-                {head.backtestWape[head.recommendedModel] != null
-                  ? `${(head.backtestWape[head.recommendedModel]! * 100).toFixed(1)}%`
-                  : '—'}
-              </TableCell>
-              <TableCell className="text-center">
-                <input
-                  type="radio"
-                  name={`reorder-model-${pid}`}
-                  className="h-4 w-4 accent-primary"
-                  aria-label="자동(추천) 선택"
-                  checked={selected === 'AUTO'}
-                  disabled={previewLoading}
-                  onChange={() => handleSelectModel(pid, 'AUTO')}
-                />
-              </TableCell>
-            </TableRow>
             {MODEL_KEYS.map((k) => {
               const rate = est.reduce((s, o) => s + o.models[k].dailyRate, 0)
               const qty = est.reduce((s, o) => s + o.models[k].qty, 0)
@@ -908,9 +889,18 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
 
               {includeRocket && (
                 <Panel
-                  title="연동 위치 옵션 전개"
-                  desc="예측 소진량 · 배분 안전재고 · 위치 재고 기준 부족분"
+                  title="연동 위치 입고 필요 수량"
+                  desc="예측 소진량 + 배분 안전재고 − 위치 현재고 − 입고예정 = 이 위치로 보낼 수량"
                   padded={false}
+                  right={
+                    <Kpi
+                      label="외부 연동 소계"
+                      value={fmtQty(externalTotal)}
+                      unit="개"
+                      size="md"
+                      className="text-right"
+                    />
+                  }
                 >
                   <Table>
                     <TableHeader>
@@ -981,16 +971,51 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                         </TableRow>
                       ))}
                     </TableBody>
+                    <TableFooter>
+                      <TableRow>
+                        <TableCell className="text-sm font-medium">합계</TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {fmtQty(
+                            preview.options.reduce(
+                              (s, o) => s + (o.linkedLocationExpectedSalesQty ?? 0),
+                              0
+                            )
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {fmtQty(
+                            preview.options.reduce(
+                              (s, o) => s + (o.linkedLocationSafetyStockQty ?? 0),
+                              0
+                            )
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                          {fmtQty(
+                            preview.options.reduce(
+                              (s, o) => s + (o.linkedLocationCurrentStockQty ?? 0),
+                              0
+                            )
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                          {fmtQty(
+                            preview.options.reduce(
+                              (s, o) => s + (o.linkedLocationIncomingQty ?? 0),
+                              0
+                            )
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-semibold tabular-nums">
+                          {fmtQty(
+                            preview.options.reduce((s, o) => s + (o.linkedLocationNeedQty ?? 0), 0)
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    </TableFooter>
                   </Table>
                 </Panel>
               )}
-
-              {includeRocket &&
-                subtotalPanel(
-                  `외부 연동 소계 — 옵션 단위 ${fmtQty(externalTotal)}개`,
-                  '최종 발주 중 연동 위치로 입고될 분배 수량',
-                  externalBySku
-                )}
             </div>
           </TooltipProvider>
         ) : (
@@ -1039,7 +1064,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
         {summaryBar(
           <StepNav
             onNext={() => goStep(STEP_OWN)}
-            nextLabel="다음 · 자체 출고 확인"
+            nextLabel="다음 · 자체·3PL 출고 확인"
             nextDisabled={previewLoading || !preview}
           />
         )}
@@ -1058,13 +1083,30 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
         ) : (
           <div className="space-y-4">
             <Panel
-              title="자체 출고 물량은 우리 창고에서 나가는 수량입니다"
+              title="자체·3PL 출고 — 아래 위치의 재고로 연동 위치 외 판매를 충당합니다"
               desc={
                 showBaseline
-                  ? `외부 연동 소계 ${fmtQty(externalTotal)}개에 이 물량을 더해 최종 발주 수량을 만듭니다.`
-                  : '연동 위치 분리 없이 전체 판매 수요를 자체 출고로 계산합니다.'
+                  ? `스마트스토어·N배송 등 연동 위치(${preview.locationName ?? '로켓그로스'}) 외 판매 수요에서 아래 위치 재고를 뺀 부족분입니다. 외부 연동 소계 ${fmtQty(externalTotal)}개와 더해 최종 발주 수량이 됩니다.`
+                  : '연동 위치 분리 없이 전체 판매 수요에서 아래 위치 재고를 뺀 부족분입니다.'
               }
             >
+              {(preview.ownLocations ?? []).length > 0 && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {(preview.ownLocations ?? []).map((l) => (
+                    <div
+                      key={l.id}
+                      className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm"
+                    >
+                      <MapPinIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="font-medium">{l.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {LOCATION_TYPE_LABEL[l.type] ?? l.type}
+                      </span>
+                      <span className="font-mono tabular-nums">재고 {fmtQty(l.onHandQty)}개</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-8">
                 <Kpi
                   label="외부 연동"
@@ -1073,7 +1115,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                   size="lg"
                   valueClassName={showBaseline ? undefined : 'text-muted-foreground'}
                 />
-                <Kpi label="자체 출고" value={fmtQty(ownTotal)} unit="개" size="lg" />
+                <Kpi label="자체·3PL 출고" value={fmtQty(ownTotal)} unit="개" size="lg" />
                 <Kpi
                   label="합계"
                   value={fmtQty(externalTotal + ownTotal)}
@@ -1084,8 +1126,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
               </div>
             </Panel>
             {subtotalPanel(
-              `자체 출고 소계 — 옵션 단위 ${fmtQty(ownTotal)}개`,
-              '연동 위치를 제외한 나머지 위치 입고 수량',
+              `자체·3PL 출고 소계 — 옵션 단위 ${fmtQty(ownTotal)}개`,
+              '위 위치로 입고할 수량',
               ownBySku,
               showBaseline ? { label: '외부 연동', bySku: externalBySku } : undefined
             )}

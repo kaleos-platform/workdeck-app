@@ -631,7 +631,26 @@ export async function POST(req: NextRequest) {
       })
       locationName = rocketLoc?.name ?? '로켓그로스'
     }
+    // 자체 출고 위치별 현재고 — 연동(레이어드) 위치를 뺀 나머지. 엔진의 나머지 위치 재고와 같은 원장.
+    const linkedIds = new Set(isLayered ? linkedLocationIdsForCalc : [])
+    const [levelsByLoc, locs] = await Promise.all([
+      prisma.invStockLevel.groupBy({
+        by: ['locationId'],
+        where: { spaceId, optionId: { in: optionIds } },
+        _sum: { quantity: true },
+      }),
+      prisma.invStorageLocation.findMany({
+        where: { spaceId },
+        select: { id: true, name: true, type: true, isActive: true },
+      }),
+    ])
+    const qtyByLoc = new Map(levelsByLoc.map((g) => [g.locationId, g._sum.quantity ?? 0]))
+    const ownLocations = locs
+      .filter((l) => !linkedIds.has(l.id) && (l.isActive || (qtyByLoc.get(l.id) ?? 0) !== 0))
+      .map((l) => ({ id: l.id, name: l.name, type: l.type, onHandQty: qtyByLoc.get(l.id) ?? 0 }))
+      .sort((a, b) => b.onHandQty - a.onHandQty)
     return NextResponse.json({
+      ownLocations,
       dryRun: true,
       isLayered,
       qualifies: isLayered || setSpecs != null,
