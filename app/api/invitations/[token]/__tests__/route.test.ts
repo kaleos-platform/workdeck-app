@@ -72,6 +72,8 @@ it('POST accept: 세션 사용자로 수락하고 감사 로그', async () => {
   const res = await POST(new Request('https://x', { method: 'POST' }), params)
   expect(res.status).toBe(200)
   expect(await res.json()).toEqual({ spaceId: 'sp-1' })
+  // 수락한 공간이 현재 작업 공간이 된다(홈·사이드바 일치)
+  expect(res.headers.get('set-cookie')).toMatch(/wd_space=sp-1/)
   expect(acceptInvitation).toHaveBeenCalledWith({
     token: 'TOK',
     user: { id: 'u-1', email: 'invitee@example.com', emailConfirmed: true, name: '초대받은 사람' },
