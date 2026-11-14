@@ -15,8 +15,10 @@ jest.mock('@/lib/prisma', () => ({
 import { prisma } from '@/lib/prisma'
 import {
   findClosedDecks,
+  getMarketingDeckStatus,
   getReleasedDeckIds,
   isDeckReleased,
+  isDeckSellable,
   RELEASE_FALLBACK_DECK_IDS,
 } from '../deck-release'
 
@@ -29,9 +31,9 @@ const p = prisma as unknown as {
 beforeEach(() => {
   jest.clearAllMocks()
   p.billingDeckProduct.findMany.mockResolvedValue([
-    { id: 'recruiting', released: true },
-    { id: 'finance', released: false },
-    { id: 'seller-hub', released: false },
+    { id: 'recruiting', released: true, monthlyPrice: 30000 },
+    { id: 'finance', released: false, monthlyPrice: 40000 },
+    { id: 'seller-hub', released: false, monthlyPrice: 50000 },
   ])
   p.deckInstance.findMany.mockResolvedValue([])
   p.subscriptionItem.findMany.mockResolvedValue([])
@@ -85,5 +87,35 @@ describe('getReleasedDeckIds', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
     await expect(getReleasedDeckIds()).resolves.toEqual(RELEASE_FALLBACK_DECK_IDS)
     expect(RELEASE_FALLBACK_DECK_IDS).toEqual(['recruiting'])
+  })
+})
+
+describe('isDeckSellable', () => {
+  const base = { isActive: true, released: true, pricingMode: 'SUBSCRIPTION' }
+  it('활성·공개·유료여야 판매 상품', () => {
+    expect(isDeckSellable(base)).toBe(true)
+    expect(isDeckSellable({ ...base, released: false })).toBe(false)
+    expect(isDeckSellable({ ...base, isActive: false })).toBe(false)
+    expect(isDeckSellable({ ...base, pricingMode: 'FREE_BETA' })).toBe(false)
+  })
+})
+
+describe('getMarketingDeckStatus', () => {
+  it('공개 목록과 DB 공급가를 함께 돌려준다 (표시가=결제가)', async () => {
+    const status = await getMarketingDeckStatus()
+    expect(status.releasedIds).toEqual(['recruiting'])
+    expect(status.supplyPriceById).toEqual({
+      recruiting: 30000,
+      finance: 40000,
+      'seller-hub': 50000,
+    })
+  })
+
+  it('DB 실패 시 시드 기본값(공개·가격) 으로 폴백', async () => {
+    p.billingDeckProduct.findMany.mockRejectedValue(new Error('db down'))
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    const status = await getMarketingDeckStatus()
+    expect(status.releasedIds).toEqual(['recruiting'])
+    expect(status.supplyPriceById.recruiting).toBe(20000)
   })
 })
