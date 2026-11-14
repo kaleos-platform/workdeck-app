@@ -10,6 +10,9 @@ import { queryProductOptions } from '@/lib/sh/product-options-query'
 import { queryOptionSalesVelocity } from '@/lib/sh/option-velocity-query'
 import { queryProductMargin } from '@/lib/sh/margin-query'
 import { loadKeywordReview } from '@/lib/sh/keyword-review-query'
+import { runReorderPlanRequest } from '@/lib/inv/reorder-engine/run-plan-request'
+import { summarizeReorderPreview } from '@/lib/inv/reorder-engine/reorder-preview-summary'
+import { ToolUserError } from './errors'
 import type { ToolDefinition } from './types'
 
 const DECK = 'seller-hub'
@@ -154,10 +157,10 @@ const sellerHubGetProductMarginTool: ToolDefinition = {
 const sellerHubGetOptionSalesVelocityTool: ToolDefinition = {
   name: 'sellerhub_get_option_sales_velocity',
   description:
-    'SKU/옵션 단위 판매속도와 로켓그로스 보충·생산 판단 지표를 반환합니다. 옵션별로 기간 판매수량(salesQty, GROSS — 기간별 취소/반품 데이터가 없어 미차감이며 missingFields 로 명시)·일평균 판매속도·직전 동일 기간 대비 증감%(velocityChangePct), 재고 분해(rocketGrowthQty=로켓그로스 가용에서 반품등급 차감, returnGradeQty, thirdPartyQty=로켓그로스 외 외부 물류 위치(3PL 등), officeQty=사무실, incomingQty=생산 중 — 진행 중 생산 차수 + 외부 물류 입고 대기분), 재고가치(stockValue=전사 가용×단위원가 VAT 제외, 원가 미입력 시 0), 소진예상일(daysOfCoverRocketGrowth/daysOfCoverTotal, 판매 0이면 null)을 포함합니다. ' +
+    'SKU/옵션 단위 판매속도와 로켓그로스 보충·생산 판단 지표를 반환합니다. 생산 후보 선별용입니다 — 생산(발주) 권장 수량은 발주 화면과 같은 계산인 sellerhub_get_reorder_preview 로 상품별로 확인하세요. 옵션별로 기간 판매수량(salesQty, GROSS — 기간별 취소/반품 데이터가 없어 미차감이며 missingFields 로 명시)·일평균 판매속도·직전 동일 기간 대비 증감%(velocityChangePct), 재고 분해(rocketGrowthQty=로켓그로스 가용에서 반품등급 차감, returnGradeQty, thirdPartyQty=로켓그로스 외 외부 물류 위치(3PL 등), officeQty=사무실, incomingQty=생산 중 — 진행 중 생산 차수 + 외부 물류 입고 대기분), 재고가치(stockValue=전사 가용×단위원가 VAT 제외, 원가 미입력 시 0), 소진예상일(daysOfCoverRocketGrowth/daysOfCoverTotal, 판매 0이면 null)을 포함합니다. ' +
     '[로켓 이동 판단] suggestedReplenishQty=목표재고일수 기준 이동 권장, cappedReplenishQty=3PL+사무실 출고 가능 내, replenishmentStatus(OUT_OF_STOCK_RISK/REPLENISH/WATCH/OK/NO_SALES)+statusReason 은 로켓그로스 판매·재고만 봅니다. leadTimeDays(기본 7)는 로켓 이동 리드타임입니다. ' +
     '[생산 판단] 발주 계획과 같은 공식입니다 — 채널 파라미터와 무관하게 활성 판매채널 전체 수요·전사 재고 기준. suggestedProductionQty=일평균×(리드타임+목표 커버일수)+안전재고−(재고+생산 중), 라운딩 없음. 일평균(productionDailyRate)=forecastModel 의 일률 — 상품 발주 설정에서 선택한 모델, 없으면 혼합 이동평균(MA_BLEND, 30일 0.6+90일 0.4), 분석 기간(max(periodDays, 상품 분석 기간 기본 90)일, periodDays 와 별개)에서 품절일 제외 — 발주 계획·재고현황 등급과 같은 일률. 재고는 쿠팡 반품 등급을 뺀 전 위치 합. productionLeadTimeDays 는 상품별 발주 설정 값이고 없으면 defaultProductionLeadTimeDays(기본 20, 발주 화면과 동일)이며 leadTimeSource(config/default)로 구분합니다. productionTargetCoverDays=targetCoverDays 지정값, 없으면 상품 발주 설정(기본 30). daysOfCoverWithIncoming=(재고+생산 중−안전재고)/일평균, productionStatus(PRODUCE_NOW=리드타임 내 소진, PRODUCE_SOON=리드타임+목표 커버일수 미달, OK, NO_SALES, CHECK_STOCK=재고 음수 — 기록 없이 출고돼 생산 판단 전 재고 확인 필요, onlyNeedsProduction·totalSuggestedProductionQty 에서 제외, DISCONTINUED=단종 옵션 — 생산하지 않음·권장량 0, 남은 재고의 로켓 이동 판단은 그대로, EXCLUDED=발주 예측 제외 상품 — 권장량 0)+productionStatusReason, optionStatus(ACTIVE/DISCONTINUED). ' +
-    '발주 계획과 다른 점: 모델 미설정 상품은 백테스트 추천 대신 MA_BLEND, 발주 단위 라운딩·레이어드 분할 없음 — 발주 확정은 sellerhub_create_reorder_plan 을 쓰세요. 로켓 이동 판단·dailyVelocity 는 기간 판매÷일수 단순 평균입니다. 기간은 마감일(어제, KST) 앵커이며 periodDays(기본 30)·targetCoverDays·statusThresholds(기본 7/21/30일)를 조정할 수 있습니다. channel 미지정=로켓그로스 연동 채널, "all"=활성 판매채널 전체(협찬·송장 발급·재고 이동 등 비판매 채널 제외, 발주 예측과 같은 수요 정의), 채널 이름/id 지정 시 그 채널만 — salesQty·dailyVelocity 에 적용됩니다. ' +
+    '발주 계획과 다른 점: 모델 미설정 상품은 백테스트 추천 대신 MA_BLEND, 발주 단위 라운딩·레이어드 분할 없음 — 발주 수량은 sellerhub_get_reorder_preview, 계획 생성 요청은 sellerhub_create_reorder_plan 을 쓰세요. 로켓 이동 판단·dailyVelocity 는 기간 판매÷일수 단순 평균입니다. 기간은 마감일(어제, KST) 앵커이며 periodDays(기본 30)·targetCoverDays·statusThresholds(기본 7/21/30일)를 조정할 수 있습니다. channel 미지정=로켓그로스 연동 채널, "all"=활성 판매채널 전체(협찬·송장 발급·재고 이동 등 비판매 채널 제외, 발주 예측과 같은 수요 정의), 채널 이름/id 지정 시 그 채널만 — salesQty·dailyVelocity 에 적용됩니다. ' +
     'sortBy: rocket(기본, 로켓 소진 급한 순)/production(전사 소진 급한 순)/stockValue(재고가치 큰 순). onlyNeedsReplenishment·onlyNeedsProduction 으로 필터합니다. summary 에 로켓·생산 상태별 SKU 수, 권장수량 합계, 보충 불가 SKU 수, 총 재고가치, 생산 리드타임 기본값 적용 SKU 수, 재고 음수 SKU 수(negativeStockSkuCount — 재고 기록 없이 출고된 SKU, 생산 판단 전 확인 필요)가 있습니다.',
   inputSchema: {
     periodDays: z.number().optional(),
@@ -230,6 +233,33 @@ const sellerHubGetKeywordReviewTool: ToolDefinition = {
   },
 }
 
+/**
+ * 상품 하나의 발주 미리보기 — 발주 화면 위저드 기본값과 같은 계산(dryRun, 저장 없음).
+ * 속도 툴(sellerhub_get_option_sales_velocity)로 고른 생산 후보의 권장 수량은 이 값을 쓴다.
+ */
+const sellerHubGetReorderPreviewTool: ToolDefinition = {
+  name: 'sellerhub_get_reorder_preview',
+  description:
+    '상품 하나의 발주 권장 수량을 발주 화면(위저드 기본값)과 같은 계산으로 반환합니다(저장 없음). 추천·선택 예측 모델, 리드타임·목표 커버일수, 옵션별 발주 수량과 연동 위치(로켓그로스)·자체·3PL 분배(linkedQty·ownQty), 재고+입고예정 소진일, 합계(totalOrderQty·linkedTotalQty·ownTotalQty), 로켓 SKU 세트 배분을 포함합니다. 발주 수량이 0인 옵션은 options에서 빠지고 noOrderOptionCount로 셉니다. 생산 권장 수량을 보고할 때는 sellerhub_get_option_sales_velocity 의 suggestedProductionQty 대신 이 값을 쓰세요.',
+  inputSchema: { productId: z.string() },
+  mode: 'read',
+  scope: 'sellerhub:read',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, DECK)
+    const productId = params.productId as string
+    const res = await runReorderPlanRequest(
+      { spaceId: ctx.spaceId, userId: null },
+      { productId, dryRun: true, excludeRocketLayer: false, linkedLocationIds: [] }
+    )
+    const data = (await res.json()) as Record<string, unknown>
+    if (!res.ok) throw new ToolUserError(String(data.message ?? data.error ?? '발주 미리보기 실패'))
+    return {
+      ...summarizeReorderPreview(data as unknown as Parameters<typeof summarizeReorderPreview>[0]),
+      reorderScreenUrl: 'https://app.workdeck.work/d/seller-ops/inventory/reorder',
+    }
+  },
+}
+
 export const sellerHubTools: ToolDefinition[] = [
   sellerHubGetKeywordReviewTool,
   sellerHubGetSalesSummaryTool,
@@ -239,4 +269,5 @@ export const sellerHubTools: ToolDefinition[] = [
   sellerHubGetProductOptionsTool,
   sellerHubGetProductMarginTool,
   sellerHubGetOptionSalesVelocityTool,
+  sellerHubGetReorderPreviewTool,
 ]
