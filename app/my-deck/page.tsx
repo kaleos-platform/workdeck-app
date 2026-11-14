@@ -114,7 +114,14 @@ export default async function MyDeckPage({
         name: m.space.name,
         role: m.role,
       }))}
-      currentSpaceId={space.id}
+      // 칩은 사이드바와 같은 현재 작업 공간(쿠키) 기준 — 옛 ?spaceId 링크로 다른 공간을 보고 있으면 그 칩을 눌러 전환한다.
+      currentSpaceId={
+        requested
+          ? ((await resolveCurrentMembership(user.id).then((m) =>
+              m && !('forbidden' in m) ? m.space.id : null
+            )) ?? space.id)
+          : space.id
+      }
       activeDecks={space.deckInstances.map((instance) => instance.deckApp)}
       availableDecks={availableDecks.map((d) => ({ ...d, comingSoon: closed.has(d.id) }))}
       subscribedDeckIds={subscribedDeckIds}

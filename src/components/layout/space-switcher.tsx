@@ -43,6 +43,12 @@ const setSwitching = (v: boolean) => {
   switching = v
   listeners.forEach((fn) => fn())
 }
+// 뒤로 가기로 bfcache 에서 복원되면 이동 전 잠금이 남아 있다 — 풀어 준다.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) setSwitching(false)
+  })
+}
 /** 테스트 전용 — 성공한 전환은 페이지가 내려갈 때까지 잠겨 있다. */
 export const resetSpaceSwitchForTest = () => setSwitching(false)
 
