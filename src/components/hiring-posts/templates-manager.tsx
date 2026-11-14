@@ -3,26 +3,24 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Pencil, Trash2, Check, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Pencil, Trash2, Check, X, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  TemplateGallery,
+  TemplatePreviewPane,
+  useTemplateBlockStore,
+  type TemplateRow,
+} from './template-gallery'
 
-export type TemplateRow = {
-  id: string
-  name: string
-  blockCount: number
-  updatedAt: string
-  isSample: boolean
-}
+export type { TemplateRow }
 
 export function TemplatesManager({ initialTemplates }: { initialTemplates: TemplateRow[] }) {
   const router = useRouter()
@@ -31,6 +29,9 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
   const [editingId, setEditingId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
+  const store = useTemplateBlockStore()
+  const [previewId, setPreviewId] = useState<string | null>(null)
+  const previewing = templates.find((t) => t.id === previewId) ?? null
 
   function openEdit(t: TemplateRow) {
     if (busyRef.current) return
@@ -93,97 +94,89 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
   }
 
   return (
-    <div className="rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>이름</TableHead>
-            <TableHead className="w-24 text-right">블록 수</TableHead>
-            <TableHead className="w-28 text-right">관리</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {templates.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={3} className="h-24 text-center text-sm text-muted-foreground">
-                저장된 템플릿이 없습니다. 공고 꾸미기에서 “템플릿으로 저장”하세요.
-              </TableCell>
-            </TableRow>
-          ) : (
-            templates.map((t) => (
-              <TableRow key={t.id}>
-                <TableCell className="font-medium">
-                  {editingId === t.id ? (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        aria-label="템플릿 이름"
-                        disabled={busy}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="h-8"
-                      />
-                      <Button
-                        aria-label="이름 저장"
-                        size="icon-sm"
-                        variant="ghost"
-                        onClick={handleRename}
-                        disabled={busy}
-                      >
-                        <Check />
-                      </Button>
-                      <Button
-                        disabled={busy}
-                        aria-label="이름 변경 취소"
-                        size="icon-sm"
-                        variant="ghost"
-                        onClick={() => setEditingId(null)}
-                      >
-                        <X />
-                      </Button>
-                    </div>
-                  ) : (
-                    <span className="inline-flex items-center gap-2">
-                      {t.name}
-                      {t.isSample && (
-                        <Badge variant="secondary" className="font-normal">
-                          샘플
-                        </Badge>
-                      )}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">{t.blockCount}</TableCell>
-                <TableCell className="text-right">
-                  {t.isSample ? (
-                    <span className="text-xs text-muted-foreground">읽기전용</span>
-                  ) : (
-                    <>
-                      <Button
-                        disabled={busy}
-                        aria-label={`${t.name} 이름 변경`}
-                        size="icon-sm"
-                        variant="ghost"
-                        onClick={() => openEdit(t)}
-                      >
-                        <Pencil />
-                      </Button>
-                      <Button
-                        disabled={busy}
-                        aria-label={`${t.name} 삭제`}
-                        size="icon-sm"
-                        variant="ghost"
-                        onClick={() => handleDelete(t.id)}
-                      >
-                        <Trash2 />
-                      </Button>
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
+    <>
+      <TemplateGallery
+        templates={templates}
+        store={store}
+        onSelect={(t) => setPreviewId(t.id)}
+        renderTitle={(t) =>
+          editingId === t.id ? (
+            <div className="flex items-center gap-1">
+              <Input
+                aria-label="템플릿 이름"
+                disabled={busy}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-8"
+              />
+              <Button
+                aria-label="이름 저장"
+                size="icon-sm"
+                variant="ghost"
+                onClick={handleRename}
+                disabled={busy}
+              >
+                <Check />
+              </Button>
+              <Button
+                disabled={busy}
+                aria-label="이름 변경 취소"
+                size="icon-sm"
+                variant="ghost"
+                onClick={() => setEditingId(null)}
+              >
+                <X />
+              </Button>
+            </div>
+          ) : undefined
+        }
+        renderActions={(t) => (
+          <>
+            <Button size="sm" variant="ghost" onClick={() => setPreviewId(t.id)}>
+              <Eye /> 미리보기
+            </Button>
+            {t.isSample ? (
+              <span className="ml-auto text-xs text-muted-foreground">읽기 전용</span>
+            ) : (
+              <span className="ml-auto flex">
+                <Button
+                  disabled={busy}
+                  aria-label={`${t.name} 이름 변경`}
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() => openEdit(t)}
+                >
+                  <Pencil />
+                </Button>
+                <Button
+                  disabled={busy}
+                  aria-label={`${t.name} 삭제`}
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() => handleDelete(t.id)}
+                >
+                  <Trash2 />
+                </Button>
+              </span>
+            )}
+          </>
+        )}
+      />
+      <Dialog open={!!previewing} onOpenChange={(open) => !open && setPreviewId(null)}>
+        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{previewing?.name ?? '템플릿 미리보기'}</DialogTitle>
+            <DialogDescription>
+              {previewing?.isSample
+                ? '워크덱이 제공하는 읽기 전용 템플릿입니다.'
+                : '내가 저장한 템플릿의 블록 미리보기입니다.'}
+            </DialogDescription>
+          </DialogHeader>
+          {previewing && (
+            <TemplatePreviewPane store={store} template={previewing} className="h-[60vh]" />
           )}
-        </TableBody>
-      </Table>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

@@ -230,7 +230,7 @@ it.each(['sample', 'missing', 'network'])(
     expect(
       screen.getByText(
         kind === 'sample'
-          ? '샘플 템플릿은 읽기 전용입니다. 새 템플릿으로 저장해 사용하세요.'
+          ? '워크덱 제공 템플릿은 읽기 전용입니다. 새 템플릿으로 저장해 사용하세요.'
           : '기존 템플릿을 확인할 수 없습니다. 현재 공고를 새 템플릿으로 저장할 수 있습니다.'
       )
     ).toBeInTheDocument()
