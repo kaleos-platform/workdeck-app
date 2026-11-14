@@ -18,14 +18,7 @@ const TIMEOUT_MS = 5000
 
 export const NOREPLY_ADDRESS = 'noreply@workdeck.work'
 
-export function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
+export { escapeHtml } from './layout'
 
 /** 발신 표시 이름 — 헤더 주입·따옴표 깨짐을 막기 위해 제어문자·따옴표·꺾쇠를 제거한다 */
 export function formatFrom(displayName: string, address = NOREPLY_ADDRESS) {

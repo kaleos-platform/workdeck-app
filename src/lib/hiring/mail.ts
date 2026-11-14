@@ -7,7 +7,8 @@ import { after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { decryptPii } from '@/lib/del/encryption'
 import { buildAppUrl } from '@/lib/domain'
-import { escapeHtml, formatFrom, sendEmail } from '@/lib/email/send'
+import { formatFrom, sendEmail } from '@/lib/email/send'
+import { emailBlocks, renderEmail } from '@/lib/email/layout'
 import { RECRUITING_BASE_PATH } from '@/lib/deck-routes'
 import { z } from 'zod'
 import { dailyDigestPostingWhere } from './mail-settings'
@@ -42,15 +43,10 @@ function formatKstDateTime(d: Date): string {
   return `${k.getUTCFullYear()}년 ${k.getUTCMonth() + 1}월 ${k.getUTCDate()}일 ${pad(k.getUTCHours())}:${pad(k.getUTCMinutes())}`
 }
 
-function layout(paragraphs: string[]): string {
-  return `<div style="font-family:sans-serif;font-size:14px;line-height:1.6;color:#111">${paragraphs
-    .map((p) => `<p>${p}</p>`)
-    .join('')}</div>`
-}
-
 // ─── 1) 지원 접수 완료 ─────────────────────────────────────────────────────────
 
 export function buildReceiptEmail(input: {
+  spaceName: string
   postingTitle: string
   submittedAt: Date
   hasReplyTo: boolean
@@ -59,15 +55,38 @@ export function buildReceiptEmail(input: {
   const contact = input.hasReplyTo
     ? '문의 사항은 이 메일에 회신하면 채용 담당자에게 전달됩니다.'
     : '문의 사항은 채용 공고에 안내된 연락처로 문의해 주세요.'
+  const received = `「${input.postingTitle}」 지원서가 정상적으로 접수되었습니다.`
+  const footer = [
+    `${input.spaceName} 채용 공고에 지원하신 분께 발송된 메일입니다.`,
+    'Workdeck으로 발송',
+  ]
   const lines = [
-    `「${input.postingTitle}」 지원서가 정상적으로 접수되었습니다.`,
+    input.spaceName,
+    '',
+    received,
     `접수 시각: ${at} (한국 시간)`,
     contact,
+    '',
+    ...footer,
   ]
   return {
     subject: `[지원 접수 완료] ${input.postingTitle}`,
     text: lines.join('\n'),
-    html: layout(lines.map(escapeHtml)),
+    // 지원자 메일은 고객사가 주인공 — 워크덱은 하단 표기만
+    html: renderEmail({
+      preheader: received,
+      header: { kind: 'space', name: input.spaceName },
+      body: [
+        emailBlocks.heading('지원서가 접수되었습니다'),
+        emailBlocks.paragraph(received),
+        emailBlocks.details([
+          ['공고', input.postingTitle],
+          ['접수 시각', `${at} (한국 시간)`],
+        ]),
+        emailBlocks.paragraph(contact),
+      ],
+      footer,
+    }),
   }
 }
 
@@ -100,6 +119,7 @@ export async function sendApplicantReceipt(applicationId: string): Promise<void>
     const managers = await resolvePostingManagers(app.posting.spaceId, app.posting.authorUserId)
     const replyTo = managers.map((m) => m.email)
     const mail = buildReceiptEmail({
+      spaceName: app.posting.space.name,
       postingTitle: app.posting.title,
       submittedAt: app.createdAt,
       hasReplyTo: replyTo.length > 0,
@@ -137,16 +157,30 @@ export function buildDigestEmail(date: string, items: DigestItem[]) {
   const total = items.reduce((sum, i) => sum + i.count, 0)
   const [, m, d] = date.split('-').map(Number)
   const head = `${m}월 ${d}일 새 지원자가 ${total}명 있습니다.`
-  const text = [head, ...items.map((i) => `- ${i.title}: ${i.count}명 ${i.url}`)].join('\n')
-  const html = layout([
-    escapeHtml(head),
-    `<ul>${items
-      .map(
-        (i) => `<li><a href="${escapeHtml(i.url)}">${escapeHtml(i.title)}</a>: ${i.count}명</li>`
-      )
-      .join('')}</ul>`,
-    '지원자 정보는 워크덱 「모집 관리」에서 확인하세요. 알림은 공고 설정의 「새 지원자 일일 요약 메일」에서 끌 수 있습니다.',
-  ])
+  const guide =
+    '지원자 정보는 워크덱 「모집 관리」에서 확인하세요. 알림은 공고 설정의 「새 지원자 일일 요약 메일」에서 끌 수 있습니다.'
+  const listUrl = buildAppUrl(`${RECRUITING_BASE_PATH}/applications`)
+  const text = [
+    head,
+    ...items.map((i) => `- ${i.title}: ${i.count}명 ${i.url}`),
+    '',
+    `모집 관리에서 확인: ${listUrl}`,
+    '',
+    guide,
+  ].join('\n')
+  const html = renderEmail({
+    preheader: head,
+    header: { kind: 'workdeck', label: '모집 관리' },
+    body: [
+      emailBlocks.heading(`${m}월 ${d}일 새 지원자 ${total}명`),
+      emailBlocks.paragraph(`공고 ${items.length}개에 새 지원서가 들어왔습니다.`, { muted: true }),
+      emailBlocks.linkRows(
+        items.map((i) => ({ label: i.title, value: `${i.count}명`, url: i.url }))
+      ),
+      emailBlocks.button('모집 관리에서 확인', listUrl),
+    ],
+    footer: [guide, 'Workdeck · workdeck.work'],
+  })
   return { subject: `[워크덱 모집 관리] 어제 새 지원자 ${total}명`, text, html }
 }
 
