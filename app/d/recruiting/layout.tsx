@@ -23,10 +23,10 @@ async function loadAccess() {
 }
 
 export default async function RecruitingLayout({ children }: { children: React.ReactNode }) {
-  const { spaceName } = await loadAccess()
+  await loadAccess()
 
   return (
-    <DeckShell workspaceName={spaceName} variant="recruiting" dataDeck="recruiting">
+    <DeckShell variant="recruiting" dataDeck="recruiting">
       {children}
     </DeckShell>
   )

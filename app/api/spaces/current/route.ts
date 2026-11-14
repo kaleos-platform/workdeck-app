@@ -30,10 +30,10 @@ export async function POST(request: NextRequest) {
   const user = await getUser()
   if (!user) return errorResponse('인증이 필요합니다', 401)
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
-  if (!parsed.success) return errorResponse('Space를 확인하세요', 422)
+  if (!parsed.success) return errorResponse('작업 공간을 확인하세요', 422)
   const all = await listMemberships(user.id)
   if (!all.some((m) => m.space.id === parsed.data.spaceId))
-    return errorResponse('Space를 찾을 수 없습니다', 404)
+    return errorResponse('작업 공간을 찾을 수 없습니다', 404)
   const res = new NextResponse(null, { status: 204 })
   res.cookies.set(CURRENT_SPACE_COOKIE, parsed.data.spaceId, CURRENT_SPACE_COOKIE_OPTIONS)
   return res

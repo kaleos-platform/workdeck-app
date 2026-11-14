@@ -15,7 +15,6 @@ export default async function MyDeckLayout({ children }: { children: React.React
 
   return (
     <DeckShell
-      workspaceName={shell.workspaceName}
       variant="workdeck"
       mode="my-deck"
       isOwner={shell.isOwner}
