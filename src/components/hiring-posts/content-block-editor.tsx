@@ -18,7 +18,6 @@ import {
   Shapes,
   Pencil,
   SquarePen,
-  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,6 +45,12 @@ import {
 import type { ExcalidrawScene } from './excalidraw-canvas'
 import { CONTENT_TYPE_META, type ContentType } from './block-editors'
 import { BlockEditOverlay } from './block-edit-overlay'
+import {
+  TemplateGallery,
+  TemplatePreviewPane,
+  createTemplateBlockStore,
+  type TemplateRow,
+} from './template-gallery'
 import { ContentBlockPreview } from './posting-preview'
 import type { SaveHandle } from './use-queued-save'
 import { createTextSaveQueue } from './text-save-queue'
@@ -242,12 +247,8 @@ export function ContentBlockEditor({
   const [applyingTemplate, setApplyingTemplate] = useState(false)
   // 불러오기 모드: append(기본, 하단 추가) / replace(전체 교체)
   const [applyMode, setApplyMode] = useState<'append' | 'replace'>('append')
-  // 선택 템플릿 미리보기(블록 목록) — GET /templates/[id]. 반복 선택 대비 캐시 + 최신요청만 반영.
-  const [previewContents, setPreviewContents] = useState<WizardContentData[] | null>(null)
-  const [previewLoading, setPreviewLoading] = useState(false)
-  const [previewError, setPreviewError] = useState<string | null>(null)
-  const previewCache = useRef<Map<string, WizardContentData[]>>(new Map())
-  const previewReqRef = useRef(0)
+  // 갤러리 썸네일·큰 미리보기가 공유하는 블록 캐시(다이얼로그를 열 때마다 새로 시작)
+  const [templateStore, setTemplateStore] = useState(createTemplateBlockStore)
   // 마지막 저장/적용 템플릿 정보 (서버 스냅샷 + 클라이언트 즉시 갱신)
   const [templateInfo, setTemplateInfo] = useState<AppliedTemplate | null>(appliedTemplate)
   // 저장 모드: 현재 템플릿 덮어쓰기 vs 새 템플릿
@@ -627,9 +628,7 @@ export function ContentBlockEditor({
     setSelectedTemplateId(null)
     setTemplates(null)
     setApplyMode('append')
-    setPreviewContents(null)
-    setPreviewError(null)
-    setPreviewLoading(false)
+    setTemplateStore(createTemplateBlockStore())
     try {
       const res = await fetch('/api/hiring-posts/templates')
       if (!res.ok) throw new Error('템플릿 목록을 불러오지 못했습니다')
@@ -638,34 +637,6 @@ export function ContentBlockEditor({
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '템플릿 목록을 불러오지 못했습니다')
       setTemplates([])
-    }
-  }
-
-  // 템플릿 선택 → 미리보기 블록 로드(캐시 우선). 빠른 전환 시 마지막 요청만 반영.
-  async function selectTemplate(id: string) {
-    setSelectedTemplateId(id)
-    setPreviewError(null)
-    const cached = previewCache.current.get(id)
-    if (cached) {
-      setPreviewContents(cached)
-      setPreviewLoading(false)
-      return
-    }
-    const reqId = ++previewReqRef.current
-    setPreviewContents(null)
-    setPreviewLoading(true)
-    try {
-      const res = await fetch(`/api/hiring-posts/templates/${id}`)
-      if (!res.ok) throw new Error('미리보기를 불러오지 못했습니다')
-      const { contents } = await res.json()
-      previewCache.current.set(id, contents)
-      if (previewReqRef.current === reqId) setPreviewContents(contents)
-    } catch (err) {
-      if (previewReqRef.current === reqId) {
-        setPreviewError(err instanceof Error ? err.message : '미리보기를 불러오지 못했습니다')
-      }
-    } finally {
-      if (previewReqRef.current === reqId) setPreviewLoading(false)
     }
   }
 
@@ -715,6 +686,15 @@ export function ContentBlockEditor({
       setApplyingTemplate(false)
     }
   }
+
+  const templateRows: TemplateRow[] = (templates ?? []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    blockCount: t._count.contents,
+    updatedAt: t.updatedAt,
+    isSample: t.isSample,
+  }))
+  const selectedTemplate = templateRows.find((t) => t.id === selectedTemplateId) ?? null
 
   const editingBlock = editingBlockId
     ? (contents.find((c) => c.id === editingBlockId) ?? null)
@@ -965,7 +945,7 @@ export function ContentBlockEditor({
           {(saveTemplateStatus === 'sample' || saveTemplateStatus === 'unavailable') && (
             <p className="text-sm text-muted-foreground">
               {saveTemplateStatus === 'sample'
-                ? '샘플 템플릿은 읽기 전용입니다. 새 템플릿으로 저장해 사용하세요.'
+                ? '워크덱 제공 템플릿은 읽기 전용입니다. 새 템플릿으로 저장해 사용하세요.'
                 : '기존 템플릿을 확인할 수 없습니다. 현재 공고를 새 템플릿으로 저장할 수 있습니다.'}
             </p>
           )}
@@ -1010,73 +990,38 @@ export function ContentBlockEditor({
           if (!open && !applyingTemplate) setLoadDialogOpen(false)
         }}
       >
-        <DialogContent inert={applyingTemplate} className="flex max-h-[85vh] flex-col sm:max-w-4xl">
+        <DialogContent inert={applyingTemplate} className="flex max-h-[90vh] flex-col sm:max-w-6xl">
           <DialogHeader>
             <DialogTitle>템플릿 불러오기</DialogTitle>
             <DialogDescription>
               현재 공고에 템플릿을 추가하거나 기존 카드를 교체합니다.
             </DialogDescription>
           </DialogHeader>
-          {/* 좌: 템플릿 목록 / 우: 선택 템플릿 미리보기. 모바일(sm 미만)은 세로 스택. */}
-          <div className="flex min-h-0 flex-1 flex-col gap-4 sm:flex-row">
-            <div className="flex min-h-0 flex-col sm:w-2/5">
+          {/* 좌: 내 템플릿/워크덱 제공 갤러리 / 우: 선택 템플릿 큰 미리보기. 모바일(sm 미만)은 세로 스택. */}
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto sm:flex-row sm:overflow-visible">
+            <div className="min-h-0 sm:w-3/5 sm:overflow-y-auto">
               {templates === null ? (
                 <p className="py-4 text-center text-sm text-muted-foreground">불러오는 중…</p>
-              ) : templates.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  저장된 템플릿이 없습니다. 템플릿으로 저장 버튼으로 먼저 만들어 보세요.
-                </p>
               ) : (
-                <div className="max-h-56 min-h-0 flex-1 space-y-1 overflow-y-auto sm:max-h-[60vh]">
-                  {templates.map((t) => (
-                    <label
-                      key={t.id}
-                      className="flex cursor-pointer items-center gap-3 rounded-md border px-4 py-2.5 hover:bg-accent/50 has-checked:border-primary"
-                    >
-                      <input
-                        type="radio"
-                        name="load-template"
-                        checked={selectedTemplateId === t.id}
-                        onChange={() => selectTemplate(t.id)}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">
-                          {t.name}
-                          {t.isSample && (
-                            <span className="ml-2 text-xs text-muted-foreground">샘플</span>
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          블록 {t._count.contents}개 · {formatTemplateAt(t.updatedAt)}
-                        </div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
+                <TemplateGallery
+                  templates={templateRows}
+                  store={templateStore}
+                  selectedId={selectedTemplateId}
+                  onSelect={(t) => setSelectedTemplateId(t.id)}
+                  gridClassName="grid-cols-2 lg:grid-cols-3"
+                />
               )}
             </div>
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-muted/20 sm:w-3/5">
-              {!selectedTemplateId ? (
-                <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground">
-                  템플릿을 선택하면 미리보기가 표시됩니다
-                </div>
-              ) : previewLoading ? (
-                <div className="flex flex-1 items-center justify-center p-6 text-sm text-muted-foreground">
-                  <Loader2 className="mr-2 size-4 animate-spin" /> 미리보기 불러오는 중…
-                </div>
-              ) : previewError ? (
-                <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-destructive">
-                  {previewError}
-                </div>
-              ) : previewContents && previewContents.length > 0 ? (
-                <div className="max-h-64 min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:max-h-[60vh]">
-                  {previewContents.map((c) => (
-                    <ContentBlockPreview key={c.id} content={c} positions={[]} />
-                  ))}
-                </div>
+            <div className="flex min-h-72 flex-col sm:min-h-0 sm:w-2/5">
+              {selectedTemplate ? (
+                <TemplatePreviewPane
+                  store={templateStore}
+                  template={selectedTemplate}
+                  className="min-h-0 flex-1"
+                />
               ) : (
-                <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground">
-                  이 템플릿에는 표시할 블록이 없습니다
+                <div className="flex flex-1 items-center justify-center rounded-md border bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+                  템플릿을 선택하면 미리보기가 표시됩니다
                 </div>
               )}
             </div>

@@ -78,16 +78,7 @@ export default async function PostingsPage({
           있습니다.
         </p>
       </div>
-      <PostingsTable
-        key={JSON.stringify([
-          pagination.q,
-          pagination.store,
-          pagination.position,
-          pagination.jobType,
-        ])}
-        postings={postings}
-        {...pagination}
-      />
+      <PostingsTable postings={postings} {...pagination} />
     </div>
   )
 }

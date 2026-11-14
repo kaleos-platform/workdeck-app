@@ -49,7 +49,16 @@ const props = {
   pageSize: 50,
   page: 1,
   postings: [],
-  filters: { posting: '', stage: '', from: '2026-09-27', to: '', store: '', position: '' },
+  counts: { all: 9, APPLIED: 4, INTERVIEW: 2, JOB_OFFER: 1, ACCEPTED: 1, REJECTED: 1 },
+  filters: {
+    posting: '',
+    stage: '',
+    process: '',
+    from: '2026-09-27',
+    to: '',
+    store: '',
+    position: '',
+  },
 }
 beforeEach(() => jest.clearAllMocks())
 
@@ -67,11 +76,12 @@ it('검색 기록 변경 시 선택은 초기화하고 미적용 근무지 입�
 })
 
 it('근무지와 직무 조건을 검색하고 Excel에도 유지한다', async () => {
+  ;(createApplicantSearch as jest.Mock).mockResolvedValue('')
   global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({ message: '오류' }) })
   const filters = { ...props.filters, store: '강남', position: '서빙' }
   render(<ApplicationsTable {...props} filters={filters} />)
   fireEvent.change(screen.getByLabelText('지원 근무지'), { target: { value: '홍대' } })
-  fireEvent.submit(screen.getByRole('search', { name: '근무지와 직무 검색' }))
+  await act(async () => fireEvent.submit(screen.getByRole('search', { name: '지원자 검색' })))
   expect(push).toHaveBeenCalledWith(expect.stringContaining('store=%ED%99%8D%EB%8C%80'))
   expect(push).toHaveBeenCalledWith(expect.stringContaining('position=%EC%84%9C%EB%B9%99'))
   await act(async () => fireEvent.click(screen.getByRole('button', { name: '엑셀 내보내기' })))
@@ -89,7 +99,7 @@ it('일괄 변경 중 선택과 필터를 잠그고 실제 변경 건수를 안�
   ) as jest.Mock
   render(<ApplicationsTable {...props} />)
   fireEvent.click(screen.getByRole('checkbox', { name: '전체 선택' }))
-  fireEvent.change(screen.getAllByRole('combobox')[2], { target: { value: 'ACCEPTED' } })
+  fireEvent.change(screen.getAllByRole('combobox')[1], { target: { value: 'ACCEPTED' } })
   fireEvent.click(screen.getByRole('button', { name: '적용' }))
   expect(screen.getByRole('checkbox', { name: 'QAa 선택' })).toBeDisabled()
   expect(screen.getAllByRole('combobox')[0]).toBeDisabled()
@@ -106,7 +116,7 @@ it('일괄 변경 실패 후 선택을 유지하고 재시도한다', async () =
     .mockResolvedValueOnce({ ok: true, json: async () => ({ updated: 2 }) })
   render(<ApplicationsTable {...props} />)
   fireEvent.click(screen.getByRole('checkbox', { name: '전체 선택' }))
-  fireEvent.change(screen.getAllByRole('combobox')[2], { target: { value: 'ACCEPTED' } })
+  fireEvent.change(screen.getAllByRole('combobox')[1], { target: { value: 'ACCEPTED' } })
   await act(async () => fireEvent.click(screen.getByRole('button', { name: '적용' })))
   expect(screen.getByRole('checkbox', { name: 'QAa 선택' })).toBeChecked()
   await act(async () => fireEvent.click(screen.getByRole('button', { name: '적용' })))
@@ -204,4 +214,90 @@ it('엑셀 권한이 있는 구성원에게 다운로드를 제공한다', () =>
   expect(
     screen.queryByText('엑셀 내보내기는 관리자 이상만 이용할 수 있습니다.')
   ).not.toBeInTheDocument()
+})
+
+it('상태 탭은 건수를 보여주고 진행 단계 탭은 stage=HIRING&process 로 이동한다', () => {
+  render(<ApplicationsTable {...props} />)
+  expect(screen.getByRole('button', { name: /^전체 9$/ })).toHaveAttribute('aria-current', 'page')
+  fireEvent.click(screen.getByRole('button', { name: /^면접 2$/ }))
+  expect(push).toHaveBeenLastCalledWith(expect.stringMatching(/stage=HIRING&process=INTERVIEW/))
+  fireEvent.click(screen.getByRole('button', { name: /^합격 1$/ }))
+  const last = push.mock.calls.at(-1)[0] as string
+  expect(last).toContain('stage=ACCEPTED')
+  expect(last).not.toContain('process=')
+})
+
+it('전체 탭은 stage·process 를 지우고 현재 탭에 aria-current 를 표시한다', () => {
+  render(
+    <ApplicationsTable
+      {...props}
+      filters={{ ...props.filters, stage: 'HIRING', process: 'JOB_OFFER' }}
+    />
+  )
+  expect(screen.getByRole('button', { name: /^최종 제안 1$/ })).toHaveAttribute(
+    'aria-current',
+    'page'
+  )
+  fireEvent.click(screen.getByRole('button', { name: /^전체 9$/ }))
+  const url = push.mock.calls.at(-1)[0] as string
+  expect(url).not.toContain('stage=')
+  expect(url).not.toContain('process=')
+  expect(url).toContain('from=2026-09-27')
+})
+
+it('엑셀 URL 에 process 를 전달한다', async () => {
+  global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({}) })
+  render(
+    <ApplicationsTable
+      {...props}
+      filters={{ ...props.filters, stage: 'HIRING', process: 'INTERVIEW' }}
+    />
+  )
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '엑셀 내보내기' })))
+  expect(fetch).toHaveBeenCalledWith(expect.stringContaining('process=INTERVIEW'))
+})
+
+it('이름 셀은 실제 링크이고 링크 클릭은 행 이동과 중복되지 않는다', () => {
+  render(<ApplicationsTable {...props} />)
+  const link = screen.getByRole('link', { name: 'QAa' })
+  expect(link).toHaveAttribute('href', '/d/recruiting/applications/a')
+  fireEvent.click(link)
+  expect(push).not.toHaveBeenCalled()
+})
+
+it('검색어는 400ms 디바운스 후 자동 적용된다', async () => {
+  jest.useFakeTimers()
+  ;(createApplicantSearch as jest.Mock).mockResolvedValue('b'.repeat(64))
+  render(<ApplicationsTable {...props} />)
+  fireEvent.change(screen.getByRole('textbox', { name: '지원자 이름 또는 휴대전화 검색' }), {
+    target: { value: '1234' },
+  })
+  expect(createApplicantSearch).not.toHaveBeenCalled()
+  await act(async () => {
+    jest.advanceTimersByTime(400)
+  })
+  expect(createApplicantSearch).toHaveBeenCalledWith('1234')
+  expect(push).toHaveBeenCalledWith(expect.stringContaining('search=' + 'b'.repeat(64)))
+  jest.useRealTimers()
+})
+
+it('공고 고정 + basePath: 공고 필터를 숨기고 이동·Excel URL 에 공고와 탭을 유지한다', async () => {
+  global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({ message: '오류' }) })
+  render(
+    <ApplicationsTable
+      {...props}
+      basePath="/d/recruiting/postings/p1"
+      baseQuery={{ tab: 'applicants' }}
+      lockedPostingId="p1"
+      filters={{ ...props.filters, posting: 'p1' }}
+    />
+  )
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /^면접/ }))
+  const url = push.mock.calls.at(-1)[0] as string
+  expect(url).toMatch(/^\/d\/recruiting\/postings\/p1\?tab=applicants&/)
+  expect(url).toContain('posting=p1')
+  expect(url).toContain('stage=HIRING')
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '엑셀 내보내기' })))
+  expect(fetch).toHaveBeenCalledWith(expect.stringContaining('posting=p1'))
 })

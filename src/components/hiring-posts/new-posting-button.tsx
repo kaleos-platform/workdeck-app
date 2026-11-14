@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
@@ -17,6 +17,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { getRecruitingPostingBuildPath } from '@/lib/deck-routes'
+import { copyPosting } from './copy-posting'
+import { PostingStatusBadge, type PostingStatus } from './status-badge'
+
+type RecentPosting = { id: string; title: string; status: PostingStatus; createdAt: string }
 
 export function NewPostingButton() {
   const router = useRouter()
@@ -25,14 +29,41 @@ export function NewPostingButton() {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [creating, setCreating] = useState(false)
+  // 시작 방식: 새로 만들기 / 이전 공고 복사
+  const [mode, setMode] = useState<'new' | 'copy'>('new')
+  const [recent, setRecent] = useState<RecentPosting[] | null>(null)
+  const [recentError, setRecentError] = useState(false)
+  const [sourceId, setSourceId] = useState<string | null>(null)
+
+  // 복사 모드에 처음 들어갈 때 최근 공고 10개(보관 제외)를 불러온다.
+  useEffect(() => {
+    if (!open || mode !== 'copy' || recent !== null) return
+    let live = true
+    fetch('/api/hiring-posts/postings')
+      .then(async (res) => {
+        if (!res.ok) throw new Error()
+        const { postings } = (await res.json()) as { postings: RecentPosting[] }
+        if (live) setRecent(postings.filter((p) => p.status !== 'ARCHIVED').slice(0, 10))
+      })
+      .catch(() => live && setRecentError(true))
+    return () => {
+      live = false
+    }
+  }, [open, mode, recent])
 
   async function createPosting(event: React.FormEvent) {
     event.preventDefault()
     const trimmed = title.trim()
-    if (!trimmed || submitting.current) return
+    if (submitting.current || (mode === 'copy' ? !sourceId : !trimmed)) return
     submitting.current = true
     setCreating(true)
     try {
+      if (mode === 'copy') {
+        const id = await copyPosting(sourceId!)
+        router.push(getRecruitingPostingBuildPath(id))
+        setOpen(false)
+        return
+      }
       const res = await fetch('/api/hiring-posts/postings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,20 +98,98 @@ export function NewPostingButton() {
         <form onSubmit={createPosting} className="space-y-4">
           <DialogHeader>
             <DialogTitle>새 공고 만들기</DialogTitle>
-            <DialogDescription>제목을 입력하면 초안과 본문 제목을 함께 만듭니다.</DialogDescription>
+            <DialogDescription>
+              {mode === 'copy'
+                ? '최근 공고를 골라 복사본을 초안으로 만듭니다.'
+                : '제목을 입력하면 초안과 본문 제목을 함께 만듭니다.'}
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor={titleId}>공고 제목</Label>
-            <Input
-              id={titleId}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              maxLength={200}
-              required
-              disabled={creating}
-              placeholder="예: 강남점 주말 아르바이트 모집"
-            />
+          <div
+            className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1"
+            role="group"
+            aria-label="시작 방식"
+          >
+            {(
+              [
+                ['new', '새로 만들기'],
+                ['copy', '이전 공고 복사해서 시작'],
+              ] as const
+            ).map(([value, label]) => (
+              <Button
+                key={value}
+                type="button"
+                size="sm"
+                variant={mode === value ? 'default' : 'ghost'}
+                aria-pressed={mode === value}
+                disabled={creating}
+                onClick={() => setMode(value)}
+              >
+                {label}
+              </Button>
+            ))}
           </div>
+          {mode === 'new' ? (
+            <div className="space-y-2">
+              <Label htmlFor={titleId}>공고 제목</Label>
+              <Input
+                id={titleId}
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                maxLength={200}
+                required
+                disabled={creating}
+                placeholder="예: 강남점 주말 아르바이트 모집"
+              />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                직무·본문·지원서 설정을 그대로 가져옵니다. 제목 뒤에 “(복사)”가 붙으며 작성 중
+                상태로 시작합니다.
+              </p>
+              {recentError ? (
+                <p className="py-4 text-center text-sm text-destructive">
+                  공고 목록을 불러오지 못했습니다
+                </p>
+              ) : recent === null ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">불러오는 중…</p>
+              ) : recent.length === 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  복사할 이전 공고가 없습니다
+                </p>
+              ) : (
+                <ul
+                  className="max-h-64 space-y-1 overflow-y-auto"
+                  role="radiogroup"
+                  aria-label="복사할 공고"
+                >
+                  {recent.map((p) => (
+                    <li key={p.id}>
+                      <label className="flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 hover:bg-accent/50 has-checked:border-primary has-checked:bg-accent/30">
+                        <input
+                          type="radio"
+                          name="copy-source"
+                          checked={sourceId === p.id}
+                          disabled={creating}
+                          onChange={() => setSourceId(p.id)}
+                        />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                          {p.title}
+                        </span>
+                        <PostingStatusBadge status={p.status} />
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {new Date(p.createdAt).toLocaleDateString('ko-KR', {
+                            dateStyle: 'medium',
+                            timeZone: 'Asia/Seoul',
+                          })}
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           <DialogFooter>
             <Button
               type="button"
@@ -90,9 +199,12 @@ export function NewPostingButton() {
             >
               취소
             </Button>
-            <Button type="submit" disabled={creating || !title.trim()}>
+            <Button
+              type="submit"
+              disabled={creating || (mode === 'copy' ? !sourceId : !title.trim())}
+            >
               {creating && <Loader2 className="size-4 animate-spin" />}
-              {creating ? '생성 중…' : '공고 만들기'}
+              {creating ? '생성 중…' : mode === 'copy' ? '복사해서 시작' : '공고 만들기'}
             </Button>
           </DialogFooter>
         </form>

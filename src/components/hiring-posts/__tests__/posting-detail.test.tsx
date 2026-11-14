@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { PostingDetail } from '../posting-detail'
 import { renderPostingEmbed } from '@/lib/hiring/render-embed-html'
 
-jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh: jest.fn() }) }))
+const refresh = jest.fn()
+jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }))
 
 it('다른 공고 지원서 링크가 있으면 발행 팝업에서 확인을 안내하되 발행은 허용한다', () => {
@@ -60,6 +61,23 @@ it('초안에서도 HTML을 우선 복사하고 앱 CSS와 격리된 미리보�
   )
   fireEvent.click(screen.getByRole('button', { name: 'HTML 복사' }))
   await waitFor(() => expect(writeText).toHaveBeenCalledWith(html))
+  // 미리보기는 「공고 내용」 탭에서 제공한다.
+  expect(screen.queryByTitle('외부 게시용 공고 미리보기')).not.toBeInTheDocument()
+  cleanup()
+  render(
+    <PostingDetail
+      posting={{
+        id: 'test',
+        uuid: 'public-test',
+        title: '테스트',
+        status: 'DRAFT',
+        closingDate: null,
+      }}
+      origin="https://workdeck.test"
+      embedHtml={html}
+      tab="content"
+    />
+  )
   const frame = screen.getByTitle('외부 게시용 공고 미리보기')
   expect(frame).toHaveAttribute('sandbox', '')
   expect(frame.getAttribute('srcdoc')).toContain(html)
@@ -207,4 +225,146 @@ it('발행 상태라도 마감일이 지나면 HTML 지원 링크에 새 모집 
     />
   )
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+describe('공고 상세 탭', () => {
+  const posting = {
+    id: 'p1',
+    uuid: 'u1',
+    title: 'QA',
+    status: 'ACTIVE' as const,
+    closingDate: null,
+  }
+  const base = { posting, origin: 'https://workdeck.test', embedHtml: '<div></div>' }
+
+  it('탭 링크는 URL 상태이며 지원자 수와 현재 탭(aria-current)을 표시한다', () => {
+    render(<PostingDetail {...base} tab="applicants" applicantCount={1234} />)
+    const nav = within(screen.getByRole('navigation', { name: '공고 상세' }))
+    expect(nav.getByRole('link', { name: '지원자 모집' })).toHaveAttribute(
+      'href',
+      '/d/recruiting/postings/p1'
+    )
+    const applicants = nav.getByRole('link', { name: '지원자 1,234' })
+    expect(applicants).toHaveAttribute('href', '/d/recruiting/postings/p1?tab=applicants')
+    expect(applicants).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('link', { name: '공고 내용' })).toHaveAttribute(
+      'href',
+      '/d/recruiting/postings/p1?tab=content'
+    )
+    expect(nav.getByRole('link', { name: '지원자 모집' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('지원자 탭에서는 서버가 내려준 목록만 보이고 모집 블록·미리보기는 숨긴다', () => {
+    render(
+      <PostingDetail {...base} tab="applicants" applicantCount={2}>
+        <p>지원자 목록 자리</p>
+      </PostingDetail>
+    )
+    expect(screen.getByText('지원자 목록 자리')).toBeInTheDocument()
+    expect(screen.queryByText('모집 기간 및 접수 상태')).not.toBeInTheDocument()
+    expect(screen.queryByTitle('외부 게시용 공고 미리보기')).not.toBeInTheDocument()
+  })
+
+  it('기본 탭은 지원자 모집이며 children 을 렌더하지 않는다', () => {
+    render(
+      <PostingDetail {...base}>
+        <p>지원자 목록 자리</p>
+      </PostingDetail>
+    )
+    expect(screen.getByText('모집 기간 및 접수 상태')).toBeInTheDocument()
+    expect(screen.queryByText('지원자 목록 자리')).not.toBeInTheDocument()
+  })
+})
+
+describe('마감 확인·마감일 연장', () => {
+  const base = { id: 'test', uuid: 'qa', title: 'QA' }
+  const html = '<p>QA</p>'
+
+  it('마감 버튼은 확인 팝업을 거쳐야 API를 호출한다', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ posting: { status: 'CLOSED' } }),
+    }) as unknown as typeof fetch
+    render(
+      <PostingDetail
+        posting={{ ...base, status: 'ACTIVE', closingDate: '2099-12-31T00:00:00.000Z' }}
+        origin="https://workdeck.test"
+        embedHtml={html}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: '마감' }))
+    expect(fetch).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog')).toHaveTextContent('공고를 마감할까요?')
+    fireEvent.click(screen.getByRole('button', { name: '취소' }))
+    expect(fetch).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '마감' }))
+    fireEvent.click(screen.getByRole('button', { name: '마감하기' }))
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+    expect(JSON.parse((fetch as jest.Mock).mock.calls[0][1].body)).toEqual({ action: 'close' })
+  })
+
+  it('마감된 공고를 연장하면 접수 중으로 바뀌고 새로고침한다', async () => {
+    refresh.mockClear()
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        posting: { id: 'test', status: 'ACTIVE', closingDate: '2100-01-07T00:00:00.000Z' },
+      }),
+    }) as unknown as typeof fetch
+    render(
+      <PostingDetail
+        posting={{ ...base, status: 'CLOSED', closingDate: '2099-12-31T00:00:00.000Z' }}
+        origin="https://workdeck.test"
+        embedHtml={html}
+      />
+    )
+    expect(screen.queryByRole('button', { name: '마감' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '마감일 연장' }))
+    expect(screen.getByLabelText('새 마감일')).toHaveValue('2100-01-07')
+    expect(screen.getByRole('dialog')).toHaveTextContent('모집 조건과 지원서는 바뀌지 않고')
+    fireEvent.click(screen.getByRole('button', { name: '연장하기' }))
+    await waitFor(() => expect(refresh).toHaveBeenCalled())
+    expect(JSON.parse((fetch as jest.Mock).mock.calls[0][1].body)).toEqual({
+      action: 'extend',
+      closingDate: '2100-01-07',
+    })
+    expect(screen.getByText('마감 2100. 1. 7.')).toBeInTheDocument()
+    expect(screen.getByText('지원서 접수 중')).toBeInTheDocument()
+  })
+
+  it('연장 실패 시 서버 메시지를 팝업에 표시한다', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ message: '연장할 수 없는 공고입니다' }),
+    }) as unknown as typeof fetch
+    render(
+      <PostingDetail
+        posting={{ ...base, status: 'ACTIVE', closingDate: '2099-12-31T00:00:00.000Z' }}
+        origin="https://workdeck.test"
+        embedHtml={html}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: '마감일 연장' }))
+    fireEvent.click(screen.getByRole('button', { name: '연장하기' }))
+    expect(await screen.findByText('연장할 수 없는 공고입니다')).toBeInTheDocument()
+  })
+
+  it('마감일이 없거나 초안이면 연장 버튼이 없다', () => {
+    const { rerender } = render(
+      <PostingDetail
+        posting={{ ...base, status: 'ACTIVE', closingDate: null }}
+        origin="https://workdeck.test"
+        embedHtml={html}
+      />
+    )
+    expect(screen.queryByRole('button', { name: '마감일 연장' })).not.toBeInTheDocument()
+    rerender(
+      <PostingDetail
+        posting={{ ...base, status: 'DRAFT', closingDate: '2099-12-31' }}
+        origin="https://workdeck.test"
+        embedHtml={html}
+      />
+    )
+    expect(screen.queryByRole('button', { name: '마감일 연장' })).not.toBeInTheDocument()
+  })
 })
