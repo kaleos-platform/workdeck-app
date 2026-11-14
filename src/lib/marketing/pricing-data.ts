@@ -32,12 +32,18 @@ export const DECK_PRICING_ROWS: DeckPricingRow[] = DECK_CATALOG_DEFAULTS.map((de
   }
 })
 
-/** slug → 가격 행 조회용 맵 */
-export const DECK_PRICING_BY_SLUG: Record<MarketingDeckSlug, DeckPricingRow> =
-  DECK_PRICING_ROWS.reduce(
-    (acc, row) => {
-      acc[row.slug] = row
-      return acc
-    },
-    {} as Record<MarketingDeckSlug, DeckPricingRow>
-  )
+/**
+ * DB 공급가(BillingDeckProduct.monthlyPrice)로 가격을 다시 계산한다.
+ * 어드민에서 가격을 바꿔도 마케팅 표시가가 실제 결제 금액과 같도록 페이지가 이 값을 쓴다.
+ * DB 값이 없는 업무는 기본값을 유지한다.
+ */
+export function withLivePrices(
+  rows: DeckPricingRow[],
+  supplyPriceById: Record<string, number>
+): DeckPricingRow[] {
+  return rows.map((row) => {
+    const supply = supplyPriceById[row.slug]
+    if (supply === undefined || supply === row.supplyPrice) return row
+    return { ...row, supplyPrice: supply, totalPrice: calcAmounts(supply).amount }
+  })
+}
