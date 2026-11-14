@@ -30,15 +30,22 @@ export async function GET(_req: NextRequest, { params }: Params) {
   })
   if (!run) return errorResponse('생산 발주를 찾을 수 없습니다', 404)
 
-  const empty = { layered: false as const, rocketLocation: null, options: [] }
+  const empty = { layered: false as const, rocketLocation: null, options: [], ownLocation: null }
   if (!run.reorderPlanId) return NextResponse.json(empty)
+
+  // 검토 단계에서 고른 자체·3PL 입고 위치 — 입고 화면의 자체 몫 기본 위치
+  const planMeta = await prisma.reorderPlan.findUnique({
+    where: { id: run.reorderPlanId },
+    select: { linkedSkuAllocation: true, ownLocation: { select: { id: true, name: true } } },
+  })
+  const ownLocation = planMeta?.ownLocation ?? null
 
   // 연계 플랜의 옵션별 로켓 baseline(rocketGrossQty). 비레이어드 플랜은 전부 null → layered:false.
   const planItems = await prisma.reorderPlanItem.findMany({
     where: { planId: run.reorderPlanId, rocketGrossQty: { not: null } },
     select: { optionId: true, rocketGrossQty: true },
   })
-  if (planItems.length === 0) return NextResponse.json(empty)
+  if (planItems.length === 0) return NextResponse.json({ ...empty, ownLocation })
 
   const baselineByOption = new Map<string, number>()
   for (const pi of planItems) {
@@ -66,11 +73,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   for (const o of options) baselineStockByOption.set(o.optionId, o.baselineQty)
 
   // 새 레이어드 계획 — 생성 시점 연동 위치 SKU 배분을 그대로 보여 준다(세트별 중복 환산 없음).
-  const plan = await prisma.reorderPlan.findUnique({
-    where: { id: run.reorderPlanId },
-    select: { linkedSkuAllocation: true },
-  })
-  const alloc = plan?.linkedSkuAllocation as {
+  const alloc = planMeta?.linkedSkuAllocation as {
     skus?: Array<{
       name: string
       optionName: string | null
@@ -97,7 +100,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
           optionName: nameById.get(i.optionId) ?? i.optionId,
         })),
       }))
-    return NextResponse.json({ layered: true, rocketLocation, options, sets })
+    return NextResponse.json({ layered: true, rocketLocation, options, sets, ownLocation })
   }
 
   const planSets = await prisma.reorderPlanSet.findMany({
@@ -128,5 +131,5 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }
   })
 
-  return NextResponse.json({ layered: true, rocketLocation, options, sets })
+  return NextResponse.json({ layered: true, rocketLocation, options, sets, ownLocation })
 }

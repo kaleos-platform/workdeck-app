@@ -68,6 +68,16 @@ const preview = {
   qualifies: false,
   locationName: null,
   sets: [],
+  ownLocations: [
+    {
+      id: 'wk',
+      name: '위킵 (에이엠엘)',
+      type: 'THIRD_PARTY',
+      onHandQty: 500,
+      stockByOption: { o1: 40 },
+    },
+    { id: 'of', name: '의식주의 사무실', type: 'OWN', onHandQty: 0, stockByOption: {} },
+  ],
   options: [
     option({
       optionId: 'o1',
@@ -205,5 +215,26 @@ describe('발주 위저드 Step ③ — 자체·3PL 옵션 상세', () => {
     for (const v of ['123', '50', '7', '11', '4', '42', '30']) {
       expect(within(row).getByText(v)).toBeInTheDocument()
     }
+  })
+})
+
+describe('발주 위저드 Step ⑤ — 발주 내역 우선·자체·3PL 입고 위치', () => {
+  it('발주 내역을 먼저 보여 주고, 재고 많은 위치를 기본 입고 위치로 현재 → 입고 후를 표시하며 생성에 보낸다', async () => {
+    render(<ReorderPlanCreate />)
+    fireEvent.click(screen.getByText('pick'))
+    await waitFor(() => expect(planBodies()).toHaveLength(1))
+    fireEvent.click(await screen.findByRole('button', { name: /다음 · 자체·3PL 출고 확인/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /다음 · 수량 계산/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /다음 · 세트 환산 · 검토/ }))
+    const order = await screen.findByText('발주 내역 — 옵션 단위')
+    const own = screen.getByText('자체·3PL 입고')
+    // 발주 내역이 자체·3PL 입고보다 먼저
+    expect(order.compareDocumentPosition(own) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByText('→ 위킵 (에이엠엘)')).toBeInTheDocument()
+    // 블랙 30개 → 위킵 재고 40 → 70
+    expect(screen.getByText('70')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /발주 계획 생성/ }))
+    await waitFor(() => expect(push).toHaveBeenCalled())
+    expect(planBodies().at(-1).ownLocationId).toBe('wk')
   })
 })

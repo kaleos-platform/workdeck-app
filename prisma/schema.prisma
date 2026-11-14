@@ -554,7 +554,7 @@ model Space {
 
   // ─── 에이전트 승인 큐 (Agent) ───
   agentPendingActions AgentPendingAction[]
-  browserWriteJobs BrowserWriteJob[]
+  browserWriteJobs    BrowserWriteJob[]
 
   // ─── 하이브리드 workdeck 에이전트 (M4) ───
   agentToggle    SpaceAgentSetting?
@@ -650,7 +650,7 @@ model AgentPendingAction {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space           Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   browserWriteJob BrowserWriteJob?
 
   @@index([spaceId, status, createdAt])
@@ -669,21 +669,21 @@ enum BrowserWriteJobStatus {
 }
 
 model BrowserWriteJob {
-  id String @id @default(cuid())
-  spaceId String
-  actionId String @unique
-  status BrowserWriteJobStatus @default(PENDING)
-  payload Json
-  expiresAt DateTime
-  claimedAt DateTime?
+  id               String                @id @default(cuid())
+  spaceId          String
+  actionId         String                @unique
+  status           BrowserWriteJobStatus @default(PENDING)
+  payload          Json
+  expiresAt        DateTime
+  claimedAt        DateTime?
   claimedByTokenId String?
-  claimId String?
-  report Json?
-  finishedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  claimId          String?
+  report           Json?
+  finishedAt       DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
 
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space  Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   action AgentPendingAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
 
   @@index([spaceId, status, createdAt])
@@ -1687,17 +1687,18 @@ model InvStorageLocation {
   syncSecretName      String?
   autoReconcileWeekly Boolean @default(false)
 
-  space                 Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  stockLevels           InvStockLevel[]
-  movements             InvMovement[]           @relation("MovementLocation")
-  incomingTransfers     InvMovement[]           @relation("MovementToLocation")
-  locationMappings      InvLocationProductMap[]
-  reconExcludedCodes    InvReconExcludedCode[]
-  reconciliations       InvReconciliation[]
-  settingsDefault       InvSettings[]           @relation("DefaultLocation")
-  productionRunStockIns ProductionRun[]         @relation("ProductionRunStockInLocation")
-  reorderPlans          ReorderPlan[] // 연동위치 세트 발주 계획의 대상 위치
-  shippingMethods       DelShippingMethod[] // 이 위치를 출고 위치로 쓰는 배송 방식
+  space                  Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  stockLevels            InvStockLevel[]
+  movements              InvMovement[]           @relation("MovementLocation")
+  incomingTransfers      InvMovement[]           @relation("MovementToLocation")
+  locationMappings       InvLocationProductMap[]
+  reconExcludedCodes     InvReconExcludedCode[]
+  reconciliations        InvReconciliation[]
+  settingsDefault        InvSettings[]           @relation("DefaultLocation")
+  productionRunStockIns  ProductionRun[]         @relation("ProductionRunStockInLocation")
+  reorderPlans           ReorderPlan[] // 연동위치 세트 발주 계획의 대상 위치
+  reorderPlansOwnStockIn ReorderPlan[]           @relation("ReorderPlanOwnLocation")
+  shippingMethods        DelShippingMethod[] // 이 위치를 출고 위치로 쓰는 배송 방식
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3590,11 +3591,13 @@ model ReorderPlan {
   // productId·locationId 동시 non-null 금지(앱 레벨 검증).
   locationId  String?
 
-  finalizedAt       DateTime? // (레거시) 확정 전환 시점 — confirmedAt 으로 대체 중
-  confirmedAt       DateTime? // "예측 검증 시작" 시점 = 예측 동결점 = 신뢰도 평가 앵커
-  biasAdjustApplied Json? // 적용된 bias 보정 계수 맵 { optionId: factor }
+  finalizedAt         DateTime? // (레거시) 확정 전환 시점 — confirmedAt 으로 대체 중
+  confirmedAt         DateTime? // "예측 검증 시작" 시점 = 예측 동결점 = 신뢰도 평가 앵커
+  biasAdjustApplied   Json? // 적용된 bias 보정 계수 맵 { optionId: factor }
   // 연동 위치(로켓그로스) 몫의 외부 SKU 별 배분 스냅샷(생성 시점) — { locationId, locationName, snapshotDate, skus[], loose[] }
   linkedSkuAllocation Json?
+  // 자체·3PL 몫의 입고 위치(검토 단계에서 선택) — 생산 입고 화면의 기본 위치
+  ownLocationId       String?
 
   totalSuggestedQty Int // 전체 옵션 제안 수량 합계
   totalFinalQty     Int // 전체 옵션 최종 확정 수량 합계
@@ -3605,10 +3608,11 @@ model ReorderPlan {
   supersededByPlanId String? // 대체한 새 계획 id
   sourcePlanId       String? // 이 계획이 어느 확정 계획에서 revert되어 파생됐는지
 
-  space     Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  createdBy User                @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  product   InvProduct?         @relation(fields: [productId], references: [id], onDelete: SetNull)
-  location  InvStorageLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  space       Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy   User                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  product     InvProduct?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+  location    InvStorageLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  ownLocation InvStorageLocation? @relation("ReorderPlanOwnLocation", fields: [ownLocationId], references: [id], onDelete: SetNull)
 
   // self-relation: source(확정 원본) ← revisions(파생 초안)
   sourcePlan ReorderPlan?  @relation("PlanRevision", fields: [sourcePlanId], references: [id], onDelete: SetNull)
@@ -4425,19 +4429,19 @@ model HiringApplicationStore {
 // 지원자 첨부 파일 (이력서 등 — hiring-files 비공개 버킷, 서명 URL 접근만)
 // 공개 직접 업로드의 일회성 권한과 재시도 상태. 파일 경로는 서버에서만 결정한다.
 model HiringUploadSession {
-  id            String    @id @default(uuid())
-  spaceId       String
-  postingId     String?
-  tokenHash     String
-  files         Json
-  expiresAt     DateTime
-  claimedAt     DateTime?
-  completedAt   DateTime?
-  applicationId String?   @unique
-  requestHash   String?
-  createdAt     DateTime  @default(now())
+  id                  String    @id @default(uuid())
+  spaceId             String
+  postingId           String?
+  tokenHash           String
+  files               Json
+  expiresAt           DateTime
+  claimedAt           DateTime?
+  completedAt         DateTime?
+  applicationId       String?   @unique
+  requestHash         String?
+  createdAt           DateTime  @default(now())
   cleanupBackfilledAt DateTime?
-  cleanupRetryAt DateTime?
+  cleanupRetryAt      DateTime?
 
   space   Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   posting HiringPosting? @relation(fields: [postingId], references: [id], onDelete: SetNull)
@@ -4449,16 +4453,16 @@ model HiringUploadSession {
 
 // 세션과 Space 삭제 이후에도 정리할 경로만 보존한다.
 model HiringUploadCleanup {
-  id          String   @id
+  id          String    @id
   spaceId     String
   paths       Json
-  quarantined Boolean  @default(false)
+  quarantined Boolean   @default(false)
   retiredAt   DateTime?
-  leaseToken  String?  @unique @db.Uuid
+  leaseToken  String?   @unique @db.Uuid
   leaseUntil  DateTime?
-  failedCount Int      @default(0)
+  failedCount Int       @default(0)
   checkedAt   DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   @@index([checkedAt, createdAt])
 }
