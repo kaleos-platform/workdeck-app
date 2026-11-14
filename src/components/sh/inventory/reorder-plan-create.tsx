@@ -59,6 +59,16 @@ type PreviewOption = {
   directGrossQty: number | null // 나머지 입고 수량. 비연동 = null.
   linkedLocationExpectedSalesQty: number | null // 로켓그로스 예상 판매 필요량(예측 일평균 × 리드타임 × 보정).
   linkedLocationSafetyStockQty: number | null // 로켓그로스 판매 비중으로 배분한 안전재고 반영분.
+  /** 분석 기간 실제 판매 — 전체 / 연동 위치 / 자체·3PL */
+  salesInWindowQty?: number
+  linkedLocationSalesInWindowQty?: number | null
+  ownSalesInWindowQty?: number
+  /** 자체·3PL 출고 상세(비레이어드 = 전체 위치 기준) */
+  ownExpectedSalesQty?: number
+  ownSafetyStockQty?: number
+  ownCurrentStockQty?: number
+  ownIncomingQty?: number
+  ownNeedQty?: number
   linkedLocationNeedQty: number | null // 최종 발주 수량 cap 적용 전 로켓그로스 위치 부족분.
   linkedLocationCurrentStockQty: number | null // 로켓그로스 현재 재고.
   linkedLocationIncomingQty: number | null // 로켓그로스 입고 예정 수량.
@@ -579,6 +589,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   const externalTotal = options.reduce((s, o) => s + (externalBySku.get(o.optionId) ?? 0), 0)
   const ownTotal = options.reduce((s, o) => s + (ownBySku.get(o.optionId) ?? 0), 0)
   const linkedNeedTotal = options.reduce((s, o) => s + (o.linkedLocationNeedQty ?? 0), 0)
+  const windowDays = options[0]?.analysisWindowDays ?? 90
 
   // ── 공용 블록 ───────────────────────────────────────────────────────────────
   const loadingBlock =
@@ -672,68 +683,6 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
       </p>
     </div>
   )
-
-  /** 옵션별 소계 표 (비중 막대 + 선택적 비교 컬럼) */
-  const subtotalPanel = (
-    title: string,
-    desc: string,
-    bySku: Map<string, number>,
-    compare?: { label: string; bySku: Map<string, number> }
-  ) => {
-    const max = Math.max(1, ...options.map((o) => bySku.get(o.optionId) ?? 0))
-    const total = options.reduce((s, o) => s + (bySku.get(o.optionId) ?? 0), 0)
-    return (
-      <Panel
-        title={title}
-        desc={desc}
-        padded={false}
-        right={
-          <Kpi label="소계" value={fmtQty(total)} unit="개" size="md" className="text-right" />
-        }
-      >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>옵션</TableHead>
-              <TableHead className="text-right">수량</TableHead>
-              <TableHead className="w-[220px]">비중</TableHead>
-              {compare && <TableHead className="text-right">{compare.label}</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {options.map((o) => (
-              <TableRow key={o.optionId}>
-                <TableCell className="text-sm">
-                  {isMultiProduct && (
-                    <div className="text-[10px] font-medium text-muted-foreground">
-                      {o.productName}
-                    </div>
-                  )}
-                  {o.optionName}
-                  {o.sku && (
-                    <span className="ml-1.5 font-mono text-[11px] text-muted-foreground">
-                      {o.sku}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right font-mono tabular-nums">
-                  {fmtQty(bySku.get(o.optionId) ?? 0)}
-                </TableCell>
-                <TableCell>
-                  <Bar value={bySku.get(o.optionId) ?? 0} max={max} />
-                </TableCell>
-                {compare && (
-                  <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
-                    {fmtQty(compare.bySku.get(o.optionId) ?? 0)}
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Panel>
-    )
-  }
 
   // 상품별 예측 모델 비교표 — 신상품 옵션(수동 수량)은 합계에서 뺀다.
   const productIds = Array.from(new Set(options.map((o) => o.productId)))
@@ -942,6 +891,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                     <TableHeader>
                       <TableRow>
                         <TableHead>옵션</TableHead>
+                        <TableHead className="text-right">판매({windowDays}일)</TableHead>
                         <TableHead className="text-right">
                           <span className="inline-flex items-center justify-end gap-1">
                             예측 소진량
@@ -950,7 +900,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                                 <HelpCircle className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-96 leading-relaxed whitespace-pre-line">
-                                {`로켓그로스 판매 이력으로 예측한 입고 전 소진량입니다.\n\n= 분석 기간 판매 이력 기반 예측 일평균 × 리드타임 × 보정계수\n\n현재 기본 분석 기간은 90일이고, 상품별 발주 설정의 분석 기간을 따릅니다. 이 값은 90일 판매량 합계가 아니라 리드타임 동안 소진될 것으로 보는 수량입니다.`}
+                                {`로켓그로스 판매 이력으로 예측한 커버 기간 소진량입니다.\n\n= 분석 기간 판매 이력 기반 예측 일평균 × (리드타임 + 목표 커버일수) × 보정계수\n\n현재 기본 분석 기간은 90일이고, 상품별 발주 설정의 분석 기간을 따릅니다. 이 값은 90일 판매량 합계가 아니라 리드타임 동안 소진될 것으로 보는 수량입니다.`}
                               </TooltipContent>
                             </Tooltip>
                           </span>
@@ -989,6 +939,9 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                       {preview.options.map((o) => (
                         <TableRow key={o.optionId}>
                           <TableCell className="text-sm">{o.optionName}</TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                            {fmtQty(o.linkedLocationSalesInWindowQty ?? 0)}
+                          </TableCell>
                           <TableCell className="text-right font-mono tabular-nums">
                             {fmtQty(o.linkedLocationExpectedSalesQty ?? 0)}
                           </TableCell>
@@ -1010,6 +963,14 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                     <TableFooter>
                       <TableRow>
                         <TableCell className="text-sm font-medium">합계</TableCell>
+                        <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                          {fmtQty(
+                            preview.options.reduce(
+                              (s, o) => s + (o.linkedLocationSalesInWindowQty ?? 0),
+                              0
+                            )
+                          )}
+                        </TableCell>
                         <TableCell className="text-right font-mono tabular-nums">
                           {fmtQty(
                             preview.options.reduce(
@@ -1161,12 +1122,98 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                 />
               </div>
             </Panel>
-            {subtotalPanel(
-              `자체·3PL 출고 소계 — 옵션 단위 ${fmtQty(ownTotal)}개`,
-              '위 위치로 입고할 수량',
-              ownBySku,
-              showBaseline ? { label: '외부 연동', bySku: externalBySku } : undefined
-            )}
+            <Panel
+              title="자체·3PL 입고 필요 수량"
+              desc={
+                showBaseline
+                  ? `연동 위치(${preview.locationName ?? '로켓그로스'}) 외 판매 기준 — 예측 소진량 + 배분 안전재고 − 위 위치 현재고 − 입고예정 = 부족분 → 발주 단위 반올림·SKU 미배분분 포함`
+                  : '전체 판매 기준 — 예측 소진량 + 안전재고 − 현재고 − 입고예정 = 부족분 → 발주 단위 반올림'
+              }
+              padded={false}
+              right={
+                <Kpi
+                  label="자체·3PL 소계"
+                  value={fmtQty(ownTotal)}
+                  unit="개"
+                  size="md"
+                  className="text-right"
+                />
+              }
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>옵션</TableHead>
+                    <TableHead className="text-right">판매({windowDays}일)</TableHead>
+                    <TableHead className="text-right">예측 소진량</TableHead>
+                    <TableHead className="text-right">
+                      {showBaseline ? '배분 안전재고' : '안전재고'}
+                    </TableHead>
+                    <TableHead className="text-right">현재고</TableHead>
+                    <TableHead className="text-right">입고예정</TableHead>
+                    <TableHead className="text-right">부족분</TableHead>
+                    <TableHead className="text-right">발주 수량</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {options.map((o) => (
+                    <TableRow key={o.optionId}>
+                      <TableCell className="text-sm">
+                        {isMultiProduct && (
+                          <div className="text-[10px] font-medium text-muted-foreground">
+                            {o.productName}
+                          </div>
+                        )}
+                        {o.optionName}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                        {fmtQty(o.ownSalesInWindowQty ?? 0)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        {fmtQty(o.ownExpectedSalesQty ?? 0)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        {fmtQty(o.ownSafetyStockQty ?? 0)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                        {fmtQty(o.ownCurrentStockQty ?? 0)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                        {fmtQty(o.ownIncomingQty ?? 0)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        {fmtQty(o.ownNeedQty ?? 0)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-semibold tabular-nums">
+                        {fmtQty(ownBySku.get(o.optionId) ?? 0)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell className="text-sm font-medium">합계</TableCell>
+                    {(
+                      [
+                        'ownSalesInWindowQty',
+                        'ownExpectedSalesQty',
+                        'ownSafetyStockQty',
+                        'ownCurrentStockQty',
+                        'ownIncomingQty',
+                        'ownNeedQty',
+                      ] as const
+                    ).map((k) => (
+                      <TableCell key={k} className="text-right font-mono tabular-nums">
+                        {fmtQty(options.reduce((s, o) => s + (o[k] ?? 0), 0))}
+                      </TableCell>
+                    ))}
+                    <TableCell className="text-right font-mono font-semibold tabular-nums">
+                      {fmtQty(ownTotal)}
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </Panel>
           </div>
         )}
 
