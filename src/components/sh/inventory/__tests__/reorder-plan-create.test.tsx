@@ -238,3 +238,36 @@ describe('발주 위저드 Step ⑤ — 발주 내역 우선·자체·3PL 입고
     expect(planBodies().at(-1).ownLocationId).toBe('wk')
   })
 })
+
+describe('발주 위저드 Step ④ — 커버 표시', () => {
+  it('예측 판매 0 은 「판매 없음」, 900일 초과는 「900일+」로 보여 준다', async () => {
+    const saved = preview.options
+    preview.options = [
+      option({
+        optionId: 'z0',
+        optionName: '판매0',
+        dailyAvgForecast: 0,
+        currentStock: 80,
+        finalQty: 0,
+      }),
+      option({
+        optionId: 'z1',
+        optionName: '저회전',
+        dailyAvgForecast: 0.06,
+        currentStock: 87,
+        finalQty: 0,
+      }),
+    ]
+    try {
+      await gotoCalcStep()
+      expect(
+        within(screen.getByText('판매0').closest('tr')!).getByText('판매 없음')
+      ).toBeInTheDocument()
+      expect(
+        within(screen.getByText('저회전').closest('tr')!).getByText('900일+')
+      ).toBeInTheDocument()
+    } finally {
+      preview.options = saved
+    }
+  })
+})
