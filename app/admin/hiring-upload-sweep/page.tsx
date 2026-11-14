@@ -1,3 +1,4 @@
+import { AdminDeckContext } from '@/components/admin/admin-deck-context'
 import { notFound, redirect } from 'next/navigation'
 import { requireOperator } from '@/lib/admin/auth'
 import { mfaStepUpPath } from '@/lib/auth/mfa-policy'
@@ -44,8 +45,9 @@ export default async function HiringUploadSweepPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <AdminDeckContext deck="recruiting" />
       <div>
-        <h1 className="text-lg font-semibold">모집 첨부 정리 이력</h1>
+        <h1 className="text-2xl font-bold tracking-tight break-words">모집 첨부 정리 이력</h1>
         <p className="text-sm text-muted-foreground">
           최근 실행 기록 20건 · 매시 30분 예정 · 시간은 한국 시간 기준
         </p>
