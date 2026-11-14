@@ -10,7 +10,7 @@ import {
   updateContentSchema,
   MAX_CONTENT_DATA_CHARS,
 } from '@/lib/validations/hiring-posts'
-import { uploadSampleTemplateAsset } from '@/lib/hiring/storage'
+import { resolveUploadMime, uploadSampleTemplateAsset } from '@/lib/hiring/storage'
 
 type Params = { params: Promise<{ id: string; contentId: string }> }
 
@@ -98,7 +98,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const uploaded = await uploadSampleTemplateAsset({
         templateId: id,
         data: buffer,
-        mimeType: parsed.data.mimeType ?? 'image/png',
+        mimeType: resolveUploadMime(buffer),
       })
       imagePath = uploaded.path
     } catch (err) {

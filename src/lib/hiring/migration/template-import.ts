@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { Prisma, type PrismaClient } from '@/generated/prisma/client'
 import { createTemplateSchema } from '@/lib/validations/hiring-posts'
 import { migrationHash } from './ledger'
+import { assertDesignEditable } from './posting-import'
 import {
   planPostingContent,
   type PostingContentInput,
@@ -99,6 +100,8 @@ export function planOpeningTemplate(raw: OpeningTemplatePacket, target: OpeningT
       asset.sizeBytes! > 10 * 1024 * 1024
     )
       throw Error('TEMPLATE_ASSET_MANIFEST_REQUIRED')
+  for (const resource of Object.values(raw.content.resources))
+    if (resource.scene) assertDesignEditable(resource.scene, resource.sizeBytes ?? 0)
   if (
     packet.template.image_key
       ? raw.cover?.sourceImageKey !== packet.template.image_key
