@@ -122,6 +122,10 @@ export const contentTypeEnum = z.enum(['image', 'text', 'button', 'positions', '
 // base64 인코딩 오버헤드(~33%)를 감안해 13.5MB 문자 길이 상한 적용
 export const MAX_CONTENT_DATA_CHARS = Math.ceil(10 * 1024 * 1024 * 1.35)
 
+// 디자인 저장 한 번의 요청(scene JSON + 내보낸 이미지 base64) 상한.
+// Vercel 서버리스 요청 본문 하드 한도(~4.5MB) 아래로 JSON 오버헤드 여유를 둔 값 — 올릴 수 없다.
+export const MAX_DESIGN_PAYLOAD_CHARS = 4 * 1024 * 1024
+
 // 사용자 입력 URL 검증 — 빈값 차단 + http/https 스킴만 허용(javascript: 등 차단).
 // linkType === 'url' 인 버튼·블록 링크에서 공유한다(<a href>로 렌더되므로 스킴 제한 필수).
 function refineHttpUrl(url: string | undefined, ctx: z.RefinementCtx): void {

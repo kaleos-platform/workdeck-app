@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { Prisma, type PrismaClient } from '@/generated/prisma/client'
 import { encryptPii } from '@/lib/del/encryption'
-import { postingPositionSchema } from '@/lib/validations/hiring-posts'
+import { MAX_DESIGN_PAYLOAD_CHARS, postingPositionSchema } from '@/lib/validations/hiring-posts'
 import { planOpeningForm } from '@/lib/hiring/opening-form-migration'
 import { importMigrationRecord } from './ledger'
 import { planPostingContent, type PostingContentInput } from './posting-content'
@@ -96,14 +96,18 @@ export function planOpeningPosting(input: OpeningPostingPacket, target: OpeningP
   ]
   for (const block of content.blocks.filter((item) => item.contentType === 'design')) {
     const bytes = assets.find((asset) => asset.copiedImagePath === block.imagePath)?.sizeBytes ?? 0
-    // 현재 디자인 편집기의 scene + export PNG 저장 한도(4 MiB)를 넘는 이전은 보류한다.
-    if (
-      Buffer.byteLength(JSON.stringify(block.data), 'utf8') + Math.ceil(bytes / 3) * 4 + 22 >
-      4 * 1024 * 1024
-    )
-      throw Error('Migration design exceeds editable size')
+    assertDesignEditable(block.data, bytes)
   }
   return { packet, form, content }
+}
+
+// 디자인 편집기의 저장 한도(scene + 내보낸 이미지 base64)를 넘으면 고객이 고쳐 저장할 수 없으니 보류한다.
+export function assertDesignEditable(scene: unknown, exportBytes: number) {
+  if (
+    Buffer.byteLength(JSON.stringify(scene), 'utf8') + Math.ceil(exportBytes / 3) * 4 + 22 >
+    MAX_DESIGN_PAYLOAD_CHARS
+  )
+    throw Error('Migration design exceeds editable size')
 }
 
 export async function importOpeningPosting(

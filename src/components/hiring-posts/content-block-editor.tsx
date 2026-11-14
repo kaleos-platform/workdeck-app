@@ -38,7 +38,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { WizardContentData, WizardPositionData, WizardPosition } from './build-types'
-import type { ButtonData, BlockLink } from '@/lib/validations/hiring-posts'
+import {
+  MAX_DESIGN_PAYLOAD_CHARS,
+  type ButtonData,
+  type BlockLink,
+} from '@/lib/validations/hiring-posts'
 import type { ExcalidrawScene } from './excalidraw-canvas'
 import { CONTENT_TYPE_META, type ContentType } from './block-editors'
 import { BlockEditOverlay } from './block-edit-overlay'
@@ -507,7 +511,7 @@ export function ContentBlockEditor({
         )?.link
         const nextScene: ExcalidrawScene = existingLink ? { ...scene, link: existingLink } : scene
         const payloadChars = JSON.stringify(nextScene).length + imageBase64.length
-        if (payloadChars > 4 * 1024 * 1024) {
+        if (payloadChars > MAX_DESIGN_PAYLOAD_CHARS) {
           throw new Error('디자인이 너무 큽니다. 캔버스에 넣은 이미지 수·크기를 줄여주세요')
         }
         const updated = await patchContent(contentId, { data: nextScene, imageBase64 })

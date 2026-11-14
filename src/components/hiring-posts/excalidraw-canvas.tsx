@@ -388,9 +388,13 @@ export function ExcalidrawCanvas({
         exportingFrame: (frame as never) ?? null,
         exportPadding: 0,
         // exportingFrame 사용 시 appState.exportScale 은 무시된다 — getDimensions 로 2x 강제.
-        // (w,h)=프레임 크롭 치수(640×height) → 2배로 확대해 고해상도 PNG 생성.
+        // (w,h)=프레임 크롭 치수(640×height) → 2배로 확대해 고해상도 이미지 생성.
         getDimensions: (w: number, h: number) => ({ width: w * 2, height: h * 2, scale: 2 }),
-        mimeType: 'image/png',
+        // 배경이 항상 흰색이라 투명도가 필요 없다. PNG는 사진이 들어가면 2~3MB가 되어
+        // 저장 요청 한도(MAX_DESIGN_PAYLOAD_CHARS)를 넘기 쉬워 JPEG로 내보낸다(모든 브라우저 지원).
+        // 서버는 바이트로 형식을 판별하므로 기존 PNG 데이터도 그대로 읽힌다.
+        mimeType: 'image/jpeg',
+        quality: 0.85,
       })
       const imageBase64 = await blobToBase64(blob)
       const scene: ExcalidrawScene = {
