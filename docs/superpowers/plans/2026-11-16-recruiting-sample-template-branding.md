@@ -179,13 +179,20 @@
   로고는 장식용 구석 배치라 삭제해도 레이아웃 유지. 「Opening Bakery」 워드마크·카드 목업, 「BOOK 모임」 배너처럼 블록의 주 요소인 경우는
   같은 위치에 중립 text 요소(「OO Bakery」, 「BOOK 모임」)로 대체.
 
-### 3. PNG 재생성 — 편집기와 같은 코드
+### 3. PNG — 원본 픽셀 패치 (재렌더 폐기, 2026-11-16 dry-run 결과로 변경)
 
-- `excalidraw-canvas.tsx` 의 scene 복원(index 제거·프레임 유무별 frame/artboard 재구성, 263–295행)과 export(폰트 로드·exportingFrame·2x·jpeg 0.85)를
-  순수 함수 모듈(`src/components/hiring-posts/excalidraw-export.ts`)로 추출해 **편집기와 하네스가 같은 코드를 사용**. 편집기 동작 변화 없음(리팩터, 기존 테스트로 확인).
-- 하네스: esbuild 로 위 모듈 + `@excalidraw/excalidraw` + `excalidraw-korean-fonts.css` 를 번들한 로컬 페이지를 Playwright 로 열어 export.
-- 골든 체크: frame 있음/없음·내장 SVG 있음·한글 폰트 종류별로 **변경 없는 블록 최소 6개**를 재export 해 운영 PNG 와 픽셀 diff(크기 동일·차이 비율 임계). 하나라도 어긋나면 중단.
-- 변경 블록 107개 전부 전후 PNG 시트로 육안 확인 + 이미지 크기(640×h 2x) 원본과 동일 검사.
+- 1차 dry-run 은 편집기 export 경로로 재렌더했으나 **폐기**. 이관 scene 은 opening 전용 폰트 체계(요소 `fontWeight` 400/500/700,
+  fontFamily 1~5 = opening 폰트)인데 vanilla excalidraw 는 `fontWeight` 를 무시하고 한글 오버라이드 CSS 는 한글에만 적용돼,
+  재렌더 시 굵기·라틴·숫자 서체·띄어쓰기 폭이 깨졌다. 변경 없는 블록 재렌더도 원본 대비 픽셀 차 4.5~7.7%. 편집기 리팩터는 되돌림.
+- 방식: 원본 PNG(opening export, 프레임 대비 3배)를 유지하고 **바뀐 요소 bbox 만** 패치.
+  - 좌표: scale = PNG 폭 / frame 폭, 원점 = frame x,y. 3개 블록에서 bbox 오버레이로 매핑 먼저 확인.
+  - 지우기: bbox(+패딩)를 바깥 링 샘플 색으로 채움. 링이 균일하지 않거나(그라데이션·사진·겹친 도형) angle≠0 이면 자동 패치 안 함 → review.
+  - 다시 그리기: Pretendard(Regular/Medium/Bold, 전체 unicode), weight=요소 `fontWeight`, 색=strokeColor, 크기·줄높이·정렬=요소 값×scale.
+  - 링이 균일하지 않은 블록은 픽셀 마스킹(최빈 배경색, 배경↔글자색 선분 근처 픽셀만 교체)으로 처리하되 status `auto-masked` 로 구분하고 **블록별 사람 승인 없이는 반영하지 않는다**(apply 는 `auto` + 승인 목록의 `auto-masked` 만).
+  - 로고: 채우기만. 로고가 프레임 50% 이상인 블록(베이커리 #9, 독서모임 #0)은 자동 패치 안 함 → 결정 항목.
+  - 결과는 원본 해상도 PNG. 최대 요청 크기 약 0.5MB(scene+base64) — `MAX_DESIGN_PAYLOAD_CHARS`(4MB) 이내.
+- scene 정리(치환·로고 제거)는 그대로 반영(적용·복사가 data 도 복사하므로). 이후 편집기로 다시 열면 기존과 같은 폰트 저하가 생기는 것은 별건(아래).
+- 별건 발견: 이관 블록을 편집기(고객·어드민)로 다시 저장하면 지금도 같은 폰트 저하가 생긴다. 편집기 폰트 처리 문제로 이번 범위 밖.
 
 ### 4. 반영 — 어드민 API 경유, manifest 기반 (DB 직접 쓰기 없음)
 
@@ -203,8 +210,8 @@
 
 1. 계획 승인 + 결정 항목 회신.
 2. (차단 선택 시) template-scope 임시 차단 → develop→main 릴리스.
-3. export 모듈 추출(리팩터) + 하네스 + 정리 스크립트(dry-run 기본) 작성. 운영 GET 으로 읽어 결정표·전후 PNG·manifest 초안을 `/tmp` 와 에디 보관 경로에 생성. 쓰기 없음.
-4. 골든 체크(6개 이상) 통과 확인.
+3. 정리 스크립트(dry-run 기본: 결정표·scene 정리·PNG 패치) 작성. 운영 GET 으로 읽어 결정표·전후 PNG·manifest 초안을 `/tmp` 와 에디 보관 경로에 생성. 쓰기 없음.
+4. 좌표 매핑 확인(bbox 오버레이 3개) + 전후 시트 직접 확인.
 5. 결정표·전후 PNG 시트 에디 승인.
 6. 원본 전체(29개 상세 JSON·커버 경로·블록 PNG 원본 경로) 영구 백업 → 롤백 리허설: dev DB 또는 테스트 샘플 1개에 적용→롤백→원본 해시 일치 확인.
 7. `--apply`(에디 어드민 세션). manifest 갱신.
@@ -228,6 +235,10 @@
   1. 정리 중 복사 → §0 목록·상세·적용·복사 차단(권장, 결정 필요)
   2. 롤백·동시 편집 → §4 manifest 해시 대조, 커버 포함 백업, 롤백 리허설
   3. 치환 누락·오탐 → §1 요소 단위 결정표, 「오프닝 10:30」「SPEAKER」 유지, 독립 잔존 검사
-  4. export 동일성 → §3 편집기 복원·export 코드 공통 모듈화, 유형별 골든 체크 6개+
+  4. export 동일성 → 1차 반영(공통 모듈+골든 체크)에서 재렌더 불일치가 확인돼 §3 원본 PNG 픽셀 패치로 변경
   5. 복사본 집계 과소 → 복사본 조사에 appliedTemplateId·scene 텍스트·커버 추가, 한계 명시
   6. 실패·재시도 → §4 manifest 상태·GET 대조 후 재시도·실패 시 중단
+- 재검토(2026-11-16, 픽셀 패치 도구 포함 작업 트리): 3건 — 반영 3.
+  1. review 결정이 승인 전 반영됨 → `action=replace` 만 적용하도록 수정
+  2. 불균일 배경 자동 처리 → `auto-masked` 는 블록별 승인 필수로 계획 명시
+  3. 재실행 시 이전 scene 잔존 → `scenes` 실행마다 출력 디렉터리 초기화
