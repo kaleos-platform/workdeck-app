@@ -120,7 +120,7 @@ export function formatWon(amount: number): string {
 /** 보장가 적용 시 정가 병기 문구 (VAT 포함). 할인이 없으면 null */
 export function discountNote(listSupply: number, effectiveSupply: number): string | null {
   if (effectiveSupply >= listSupply) return null
-  return `이전 고객 할인가 (정가 월 ${formatWon(Math.round(listSupply * 1.1))})`
+  return '이전 고객 할인가로 결제됩니다'
 }
 
 export function formatDate(value: string | null): string {

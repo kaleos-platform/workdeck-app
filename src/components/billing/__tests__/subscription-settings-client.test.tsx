@@ -195,3 +195,14 @@ test('결제 일시 중지 중에는 구독 버튼을 비활성화한다', async
   render(<SubscriptionSettingsClient />)
   expect(await screen.findByRole('button', { name: '결제 준비 중' })).toBeDisabled()
 })
+
+test('할인 고객은 업무 카드에 정가 취소선과 할인가를 함께 보인다', async () => {
+  mockSubscribeParam = ''
+  const data = overview({})
+  data.products = [{ ...product, id: 'trial-deck', monthlyPrice: 20000, effectivePrice: 12273 }]
+  global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => data })
+  const { container } = render(<SubscriptionSettingsClient />)
+  expect(await screen.findByText('13,500원')).toBeInTheDocument()
+  expect(container.querySelector('.line-through')).toHaveTextContent('22,000원')
+  expect(screen.getByText('이전 고객 할인가로 결제됩니다')).toBeInTheDocument()
+})
