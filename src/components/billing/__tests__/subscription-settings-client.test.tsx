@@ -204,5 +204,6 @@ test('할인 고객은 업무 카드에 정가 취소선과 할인가를 함께 
   const { container } = render(<SubscriptionSettingsClient />)
   expect(await screen.findByText('13,500원')).toBeInTheDocument()
   expect(container.querySelector('.line-through')).toHaveTextContent('22,000원')
+  expect(screen.getByText('38%')).toBeInTheDocument()
   expect(screen.getByText('이전 고객 할인가로 결제됩니다')).toBeInTheDocument()
 })
