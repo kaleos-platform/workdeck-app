@@ -80,6 +80,26 @@ export default async function ApplyPage({ params, searchParams }: Params) {
           ← 공고로 돌아가기
         </Link>
         <h1 className="text-xl font-semibold">{posting.title}</h1>
+        <dl className="space-y-0.5 text-sm text-muted-foreground">
+          <div className="flex gap-2">
+            <dt>모집 직무</dt>
+            <dd className="text-foreground">{positions.map((p) => p.name).join(', ') || '없음'}</dd>
+          </div>
+          {stores.length > 0 && (
+            <div className="flex gap-2">
+              <dt>모집 장소</dt>
+              <dd className="text-foreground">{stores.map((s) => s.name).join(', ')}</dd>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <dt>마감일</dt>
+            <dd className="text-foreground">
+              {posting.closingDate
+                ? `${posting.closingDate.toISOString().slice(0, 10).replaceAll('-', '.')} 마감`
+                : '상시 모집'}
+            </dd>
+          </div>
+        </dl>
         <p className="text-sm text-muted-foreground">아래 항목을 작성해 지원해 주세요.</p>
       </header>
 

@@ -143,6 +143,7 @@ export const RECRUITING_DETAIL_TEMPLATES_PATH = `${RECRUITING_BASE_PATH}/templat
 export const RECRUITING_SETTINGS_PATH = `${RECRUITING_BASE_PATH}/settings`
 export const RECRUITING_STORES_PATH = `${RECRUITING_BASE_PATH}/settings/stores`
 export const RECRUITING_POSITIONS_PATH = `${RECRUITING_BASE_PATH}/settings/positions`
+export const RECRUITING_MESSAGES_PATH = `${RECRUITING_BASE_PATH}/settings/messages`
 
 export function getRecruitingPostingPath(
   id: string,
