@@ -302,14 +302,17 @@ export function MyDeckClient({
       if (!res.ok) throw new Error(json?.message ?? json?.error ?? '구독에 실패했습니다')
 
       // 구독이 끝나야 entitlement 게이트를 통과하므로 여기서 deck 을 활성화한다.
-      const addRes = await fetch('/api/spaces/decks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deckAppId: deck.id }),
-      })
-      if (!addRes.ok && addRes.status !== 409) {
-        const err = (await addRes.json().catch(() => null)) as { message?: string } | null
-        throw new Error(err?.message ?? '업무 활성화에 실패했습니다')
+      // 이미 사용 중인 업무(체험 중 구독 등)는 활성화 요청이 필요 없다 — 왕복 1회를 줄인다.
+      if (!activeDecks.some((d) => d.id === deck.id)) {
+        const addRes = await fetch('/api/spaces/decks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deckAppId: deck.id }),
+        })
+        if (!addRes.ok && addRes.status !== 409) {
+          const err = (await addRes.json().catch(() => null)) as { message?: string } | null
+          throw new Error(err?.message ?? '업무 활성화에 실패했습니다')
+        }
       }
 
       toast.success(
@@ -324,7 +327,7 @@ export function MyDeckClient({
     } finally {
       setSubscribeBusy(false)
     }
-  }, [pending, router, subscribeBusy])
+  }, [activeDecks, pending, router, subscribeBusy])
 
   // 마케팅 랜딩 딥링크(?subscribe=<slug>) 또는 카드 등록 왕복 후 해당 업무 모달을 연다.
   const subscribeParam = searchParams.get('subscribe')
