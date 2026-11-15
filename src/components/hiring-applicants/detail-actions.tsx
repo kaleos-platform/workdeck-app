@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2, ShieldAlert, Download } from 'lucide-react'
+import { Ban, Loader2, Download } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { RECRUITING_BLACKLIST_PATH } from '@/lib/deck-routes'
 import {
   Dialog,
   DialogContent,
@@ -32,9 +34,11 @@ export function BlacklistButton({
 
   if (blacklisted) {
     return (
-      <Button size="sm" variant="outline" disabled className="text-red-600 dark:text-red-400">
-        <ShieldAlert className="mr-1 size-3.5" />
-        블랙리스트 등록됨
+      <Button asChild size="sm" variant="ghost" className="text-muted-foreground">
+        <Link href={RECRUITING_BLACKLIST_PATH}>
+          <Ban className="mr-1 size-3.5" />
+          블랙리스트 등록됨
+        </Link>
       </Button>
     )
   }
@@ -64,8 +68,8 @@ export function BlacklistButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="text-red-600 dark:text-red-400">
-          <ShieldAlert className="mr-1 size-3.5" />
+        <Button size="sm" variant="ghost" className="text-muted-foreground">
+          <Ban className="mr-1 size-3.5" />
           블랙리스트 추가
         </Button>
       </DialogTrigger>

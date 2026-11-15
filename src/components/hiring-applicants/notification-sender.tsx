@@ -34,11 +34,17 @@ type Props = {
   name?: string | null
   postingTitle?: string | null
   positionName?: string | null
+  onCreated?: () => void
 }
 
-// 상태 알림 발송 — 공개열람 URL 생성(수동 복사). SMS/알림톡 미연동.
-export function NotificationSender({ applicationId, name, postingTitle, positionName }: Props) {
-  const [open, setOpen] = useState(false)
+// 공개열람 URL 생성 본문(트리거·다이얼로그 없음) — 마운트되면 템플릿을 불러온다. SMS/알림톡 미연동.
+export function StatusLinkPanel({
+  applicationId,
+  name,
+  postingTitle,
+  positionName,
+  onCreated,
+}: Props) {
   const [notiType, setNotiType] = useState<HiringNotificationType>('INTERVIEW')
   const [detail, setDetail] = useState('')
   const [templates, setTemplates] = useState<Template[]>([])
@@ -47,12 +53,11 @@ export function NotificationSender({ applicationId, name, postingTitle, position
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!open) return
     fetch('/api/hiring-applicants/message-templates')
       .then((r) => (r.ok ? r.json() : { items: [] }))
       .then((d) => setTemplates(d.items ?? []))
       .catch(() => setTemplates([]))
-  }, [open])
+  }, [])
 
   async function send() {
     setSending(true)
@@ -68,6 +73,7 @@ export function NotificationSender({ applicationId, name, postingTitle, position
       if (!res.ok) throw new Error('발송 실패')
       const { statusUrl } = (await res.json()) as { statusUrl: string }
       setResultUrl(`${window.location.origin}${statusUrl}`)
+      onCreated?.()
     } catch {
       toast.error('알림 생성에 실패했습니다')
     } finally {
@@ -82,20 +88,87 @@ export function NotificationSender({ applicationId, name, postingTitle, position
     setTimeout(() => setCopied(false), 1500)
   }
 
-  function reset() {
-    setResultUrl(null)
-    setDetail('')
-    setCopied(false)
-  }
-
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v)
-        if (!v) reset()
-      }}
-    >
+    <div>
+      {resultUrl ? (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            아래 링크를 복사해 지원자에게 전달하세요. (30일간 유효)
+          </p>
+          <div className="flex items-center gap-2">
+            <Input readOnly value={resultUrl} className="text-xs" />
+            <Button size="sm" onClick={copy}>
+              {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">알림 종류</label>
+            <Select
+              value={notiType}
+              onValueChange={(v) => setNotiType(v as HiringNotificationType)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {NOTIFICATION_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {NOTIFICATION_LABELS[t]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {templates.length > 0 && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">자주 쓰는 메시지</label>
+              <div className="flex flex-wrap gap-1.5">
+                {templates.map((t) => (
+                  <Button
+                    key={t.id}
+                    size="xs"
+                    variant="secondary"
+                    onClick={() =>
+                      setDetail(fillMessage(t.content, { name, postingTitle, positionName }))
+                    }
+                  >
+                    {t.title}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">상세 메시지</label>
+            <Textarea
+              value={detail}
+              onChange={(e) => setDetail(e.target.value)}
+              rows={5}
+              placeholder="면접 일정·장소 등 안내 내용을 입력하세요"
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <Button onClick={send} disabled={sending}>
+              {sending && <Loader2 className="mr-1 size-4 animate-spin" />}
+              링크 생성
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// 상태 알림 발송 — 공개열람 URL 생성(수동 복사).
+export function NotificationSender(props: Omit<Props, 'onCreated'>) {
+  return (
+    <Dialog>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <Send className="mr-1 size-3.5" />
@@ -109,78 +182,7 @@ export function NotificationSender({ applicationId, name, postingTitle, position
             공개 열람 링크를 생성합니다. 생성된 링크를 지원자에게 직접 전달하세요(문자·메신저 등).
           </DialogDescription>
         </DialogHeader>
-
-        {resultUrl ? (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              아래 링크를 복사해 지원자에게 전달하세요. (30일간 유효)
-            </p>
-            <div className="flex items-center gap-2">
-              <Input readOnly value={resultUrl} className="text-xs" />
-              <Button size="sm" onClick={copy}>
-                {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">알림 종류</label>
-              <Select
-                value={notiType}
-                onValueChange={(v) => setNotiType(v as HiringNotificationType)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {NOTIFICATION_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {NOTIFICATION_LABELS[t]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {templates.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">자주 쓰는 메시지</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {templates.map((t) => (
-                    <Button
-                      key={t.id}
-                      size="xs"
-                      variant="secondary"
-                      onClick={() =>
-                        setDetail(fillMessage(t.content, { name, postingTitle, positionName }))
-                      }
-                    >
-                      {t.title}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">상세 메시지</label>
-              <Textarea
-                value={detail}
-                onChange={(e) => setDetail(e.target.value)}
-                rows={5}
-                placeholder="면접 일정·장소 등 안내 내용을 입력하세요"
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <Button onClick={send} disabled={sending}>
-                {sending && <Loader2 className="mr-1 size-4 animate-spin" />}
-                링크 생성
-              </Button>
-            </div>
-          </div>
-        )}
+        <StatusLinkPanel {...props} />
       </DialogContent>
     </Dialog>
   )
