@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Loader2, Send, Copy, Check } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -22,20 +22,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { fillMessage } from '@/lib/hiring/message-template'
 import { NOTIFICATION_LABELS } from '@/lib/hiring/application-shared'
 import { NOTIFICATION_TYPES } from '@/lib/validations/hiring-applicants'
 import type { HiringNotificationType } from '@/generated/prisma/client'
 
-type Props = { applicationId: string }
+type Template = { id: string; title: string; content: string }
+
+type Props = {
+  applicationId: string
+  name?: string | null
+  postingTitle?: string | null
+  positionName?: string | null
+}
 
 // 상태 알림 발송 — 공개열람 URL 생성(수동 복사). SMS/알림톡 미연동.
-export function NotificationSender({ applicationId }: Props) {
+export function NotificationSender({ applicationId, name, postingTitle, positionName }: Props) {
   const [open, setOpen] = useState(false)
   const [notiType, setNotiType] = useState<HiringNotificationType>('INTERVIEW')
   const [detail, setDetail] = useState('')
+  const [templates, setTemplates] = useState<Template[]>([])
   const [sending, setSending] = useState(false)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    fetch('/api/hiring-applicants/message-templates')
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((d) => setTemplates(d.items ?? []))
+      .catch(() => setTemplates([]))
+  }, [open])
 
   async function send() {
     setSending(true)
@@ -125,6 +142,26 @@ export function NotificationSender({ applicationId }: Props) {
                 </SelectContent>
               </Select>
             </div>
+
+            {templates.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">자주 쓰는 메시지</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {templates.map((t) => (
+                    <Button
+                      key={t.id}
+                      size="xs"
+                      variant="secondary"
+                      onClick={() =>
+                        setDetail(fillMessage(t.content, { name, postingTitle, positionName }))
+                      }
+                    >
+                      {t.title}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium">상세 메시지</label>

@@ -785,6 +785,11 @@ export type HiringApplicationNotification = Prisma.HiringApplicationNotification
  */
 export type HiringBlacklist = Prisma.HiringBlacklistModel
 /**
+ * Model HiringMessageTemplate
+ * 
+ */
+export type HiringMessageTemplate = Prisma.HiringMessageTemplateModel
+/**
  * Model BillingDeckProduct
  * 
  */
