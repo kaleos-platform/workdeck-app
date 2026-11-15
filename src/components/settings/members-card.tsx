@@ -156,7 +156,7 @@ export function MembersCard() {
       !confirm(
         spaceName
           ? `「${spaceName}」에서 ${m.user.email} 님을 내보낼까요?`
-          : `${m.user.email} 님을 이 Space에서 내보낼까요?`
+          : `${m.user.email} 님을 이 작업 공간에서 내보낼까요?`
       )
     )
       return

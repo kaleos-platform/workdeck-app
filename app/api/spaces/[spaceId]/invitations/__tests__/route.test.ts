@@ -137,7 +137,7 @@ it('도메인 오류는 상태 코드와 메시지로', async () => {
   ;(createInvitation as jest.Mock).mockRejectedValue(new InvitationError(409, 'already_member'))
   const res = await post({ email: 'invitee@example.com', role: 'ADMIN' })
   expect(res.status).toBe(409)
-  expect((await res.json()).message).toBe('이미 이 Space의 구성원입니다')
+  expect((await res.json()).message).toBe('이미 이 작업 공간의 구성원입니다')
 })
 
 it('GET은 OWNER+MFA, 대기 목록', async () => {

@@ -14,7 +14,7 @@ export default async function MembersSettingsPage() {
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">구성원</h1>
         <p className="text-sm text-muted-foreground">
-          Space 구성원을 보고, 소유자는 이메일로 초대할 수 있습니다.
+          작업 공간 구성원을 보고, 소유자는 이메일로 초대할 수 있습니다.
         </p>
       </header>
       <RoleRequired role={role} min="ADMIN">
