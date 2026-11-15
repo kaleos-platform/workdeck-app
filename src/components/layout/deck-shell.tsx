@@ -51,8 +51,9 @@ export async function DeckShell({
         }))
   const currentSpaceId = 'error' in ctx ? null : ctx.space.id
   const sidebarProps = { variant, mode, activeDecks, isOwner, role, spaces, currentSpaceId }
+  // h-dvh — iOS 사파리 100vh 는 하단 주소창 뒤까지 포함해 하단 고정 요소가 가려진다
   return (
-    <div className="flex h-screen" data-deck={dataDeck}>
+    <div className="flex h-dvh" data-deck={dataDeck}>
       <SpaceFetchGuard spaceId={currentSpaceId} watchSwitch={spaces.length > 1} />
       {/* 좁은 화면은 사이드바를 숨기고 헤더 왼쪽 메뉴 버튼(시트)으로 연다 */}
       <div className="hidden h-full md:block">

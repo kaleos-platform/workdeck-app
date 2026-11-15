@@ -22,7 +22,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { cn } from '@/lib/utils'
 import { STAGE_LABELS, PROCESS_STAGE_LABELS } from '@/lib/hiring/application-shared'
 import { APPLICATION_STAGES, PROCESS_STAGES } from '@/lib/validations/hiring-applicants'
 import type { HiringApplicationStage, HiringProcessStage } from '@/generated/prisma/client'
@@ -59,10 +58,10 @@ function Options<T extends string>({
             key={v}
             type="button"
             size="sm"
-            variant="outline"
+            // 선택값은 채운 버튼 — 다크 모드에서도 현재 값이 구분되게
+            variant={v === value ? 'default' : 'outline'}
             aria-pressed={v === value}
             disabled={disabled}
-            className={cn(v === value && 'border-primary bg-primary/10 text-foreground')}
             onClick={() => onChange(v)}
           >
             {labels[v]}
