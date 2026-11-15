@@ -91,11 +91,16 @@ export function SubscribeDialog({
   const payDate = trialEnd
     ? formatDate(firstChargeAfterTrial(target.trialEndsAt!))
     : '오늘 (확인 즉시)'
-  const payNote = trialEnd
-    ? '체험이 끝나면 이날 첫 결제가 진행되고, 이후 매월 같은 날 자동 결제됩니다. 이미 구독 중인 업무가 있으면 첫 결제는 다음 결제일까지 남은 기간만큼 일할로 계산되고, 그 뒤로 함께 결제됩니다.'
+  // 결제 일정 안내 — 하단 불릿으로 짧게 나눠 보여준다
+  const payNotes = trialEnd
+    ? [
+        '결제 예정일에 첫 결제, 이후 매월 같은 날 자동 결제',
+        '구독 중인 다른 업무가 있으면 첫 결제는 다음 결제일까지 일할 계산',
+        '체험이 끝나기 전에 예약을 취소하면 결제되지 않음',
+      ]
     : target.isAddition && !target.chargesFullMonth
-      ? '이용 기간 중 추가하므로 오늘은 다음 결제일까지 남은 기간만큼 일할 결제하고, 이후 함께 결제됩니다.'
-      : '오늘 첫 달 요금을 결제하고, 이후 매월 같은 날 자동 결제됩니다.'
+      ? ['오늘 다음 결제일까지 남은 기간만 일할 결제', '이후 다른 업무와 함께 매월 결제']
+      : ['오늘 첫 달 결제, 이후 매월 같은 날 자동 결제']
 
   return (
     <Dialog open onOpenChange={(open) => !open && !busy && !cardBusy && onCancel()}>
@@ -137,7 +142,6 @@ export function SubscribeDialog({
               <span className="text-muted-foreground">결제 예정일</span>
               <span className="font-semibold tabular-nums">{payDate}</span>
             </div>
-            <p className="text-xs break-keep text-muted-foreground">{payNote}</p>
             {target.decks.length > 1 && (
               <>
                 <Separator className="my-2" />
@@ -161,7 +165,9 @@ export function SubscribeDialog({
           </div>
 
           <ul className="space-y-1 text-xs break-keep text-muted-foreground">
-            {trialEnd && <li>• 체험이 끝나기 전에 예약을 취소하면 결제되지 않습니다.</li>}
+            {payNotes.map((line) => (
+              <li key={line}>• {line}</li>
+            ))}
             <li>
               • 해지하면 결제한 기간의 마지막 날까지 이용할 수 있습니다. 자세한 기준은{' '}
               <Link
