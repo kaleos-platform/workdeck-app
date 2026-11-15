@@ -47,8 +47,8 @@ export function FeatureRows({ features, gradient }: FeatureRowsProps) {
                 <Image
                   src={image.src}
                   alt={image.alt}
-                  width={1600}
-                  height={1000}
+                  width={image.width ?? 1600}
+                  height={image.height ?? 1000}
                   className="h-auto w-full"
                 />
               </figure>
