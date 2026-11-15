@@ -118,6 +118,12 @@ export function formatWon(amount: number): string {
 }
 
 /** 보장가 적용 시 정가 병기 문구 (VAT 포함). 할인이 없으면 null */
+/** 쇼핑몰식 할인율(%) — 화면에 보이는 VAT 포함 금액 기준, 소수점 버림(과장 표시 방지). 할인 없으면 null */
+export function discountRate(listAmount: number, payAmount: number): number | null {
+  if (listAmount <= 0 || payAmount >= listAmount) return null
+  return Math.floor((1 - payAmount / listAmount) * 100)
+}
+
 export function discountNote(listSupply: number, effectiveSupply: number): string | null {
   if (effectiveSupply >= listSupply) return null
   return '이전 고객 할인가로 결제됩니다'
