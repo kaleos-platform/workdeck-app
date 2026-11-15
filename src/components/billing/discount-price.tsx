@@ -24,7 +24,7 @@ export function DiscountPrice({
           <span className="mr-1.5 font-normal text-muted-foreground line-through">
             {formatWon(list)}
           </span>
-          <span className="mr-1 font-bold text-red-600 dark:text-red-400">{rate}%</span>
+          <span className="mr-1 font-bold text-primary">{rate}%</span>
         </>
       )}
       <span className={cn(rate !== null && 'font-bold text-foreground')}>{formatWon(pay)}</span>
