@@ -19,3 +19,12 @@ test.each([
   render(await ApplicationsPage({ searchParams: Promise.resolve({}) }))
   expect(screen.getByText(expected)).toBeInTheDocument()
 })
+
+it('우측 상단에 블랙리스트 이동 버튼이 있다', async () => {
+  jest.mocked(resolveDeckContext).mockResolvedValue({ role: 'OWNER', space: { id: 'qa' } } as never)
+  render(await ApplicationsPage({ searchParams: Promise.resolve({}) }))
+  expect(screen.getByRole('link', { name: '블랙리스트' })).toHaveAttribute(
+    'href',
+    '/d/recruiting/blacklist'
+  )
+})

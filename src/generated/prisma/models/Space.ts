@@ -325,7 +325,6 @@ export type SpaceWhereInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionListRelationFilter
   hiringMigrationRecords?: Prisma.HiringMigrationRecordListRelationFilter
   hiringBlacklists?: Prisma.HiringBlacklistListRelationFilter
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateListRelationFilter
   agentPendingActions?: Prisma.AgentPendingActionListRelationFilter
   browserWriteJobs?: Prisma.BrowserWriteJobListRelationFilter
   agentToggle?: Prisma.XOR<Prisma.SpaceAgentSettingNullableScalarRelationFilter, Prisma.SpaceAgentSettingWhereInput> | null
@@ -439,7 +438,6 @@ export type SpaceOrderByWithRelationInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionOrderByRelationAggregateInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordOrderByRelationAggregateInput
   hiringBlacklists?: Prisma.HiringBlacklistOrderByRelationAggregateInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateOrderByRelationAggregateInput
   agentPendingActions?: Prisma.AgentPendingActionOrderByRelationAggregateInput
   browserWriteJobs?: Prisma.BrowserWriteJobOrderByRelationAggregateInput
   agentToggle?: Prisma.SpaceAgentSettingOrderByWithRelationInput
@@ -556,7 +554,6 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   hiringUploadSessions?: Prisma.HiringUploadSessionListRelationFilter
   hiringMigrationRecords?: Prisma.HiringMigrationRecordListRelationFilter
   hiringBlacklists?: Prisma.HiringBlacklistListRelationFilter
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateListRelationFilter
   agentPendingActions?: Prisma.AgentPendingActionListRelationFilter
   browserWriteJobs?: Prisma.BrowserWriteJobListRelationFilter
   agentToggle?: Prisma.XOR<Prisma.SpaceAgentSettingNullableScalarRelationFilter, Prisma.SpaceAgentSettingWhereInput> | null
@@ -698,7 +695,6 @@ export type SpaceCreateInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -812,7 +808,6 @@ export type SpaceUncheckedCreateInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -926,7 +921,6 @@ export type SpaceUpdateInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -1040,7 +1034,6 @@ export type SpaceUncheckedUpdateInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -2417,20 +2410,6 @@ export type SpaceUpdateOneRequiredWithoutHiringBlacklistsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutHiringBlacklistsInput, Prisma.SpaceUpdateWithoutHiringBlacklistsInput>, Prisma.SpaceUncheckedUpdateWithoutHiringBlacklistsInput>
 }
 
-export type SpaceCreateNestedOneWithoutHiringMessageTemplatesInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutHiringMessageTemplatesInput, Prisma.SpaceUncheckedCreateWithoutHiringMessageTemplatesInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutHiringMessageTemplatesInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutHiringMessageTemplatesNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutHiringMessageTemplatesInput, Prisma.SpaceUncheckedCreateWithoutHiringMessageTemplatesInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutHiringMessageTemplatesInput
-  upsert?: Prisma.SpaceUpsertWithoutHiringMessageTemplatesInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutHiringMessageTemplatesInput, Prisma.SpaceUpdateWithoutHiringMessageTemplatesInput>, Prisma.SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput>
-}
-
 export type SpaceCreateNestedOneWithoutDeckAccessPoliciesInput = {
   create?: Prisma.XOR<Prisma.SpaceCreateWithoutDeckAccessPoliciesInput, Prisma.SpaceUncheckedCreateWithoutDeckAccessPoliciesInput>
   connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutDeckAccessPoliciesInput
@@ -2699,7 +2678,6 @@ export type SpaceCreateWithoutWorkspaceInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -2812,7 +2790,6 @@ export type SpaceUncheckedCreateWithoutWorkspaceInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -2941,7 +2918,6 @@ export type SpaceUpdateWithoutWorkspaceInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -3054,7 +3030,6 @@ export type SpaceUncheckedUpdateWithoutWorkspaceInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -3167,7 +3142,6 @@ export type SpaceCreateWithoutMembersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -3280,7 +3254,6 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -3409,7 +3382,6 @@ export type SpaceUpdateWithoutMembersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -3522,7 +3494,6 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -3635,7 +3606,6 @@ export type SpaceCreateWithoutInvitationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -3748,7 +3718,6 @@ export type SpaceUncheckedCreateWithoutInvitationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -3877,7 +3846,6 @@ export type SpaceUpdateWithoutInvitationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -3990,7 +3958,6 @@ export type SpaceUncheckedUpdateWithoutInvitationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -4104,7 +4071,6 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -4217,7 +4183,6 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -4346,7 +4311,6 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -4459,7 +4423,6 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4572,7 +4535,6 @@ export type SpaceCreateWithoutBrowserWriteJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -4685,7 +4647,6 @@ export type SpaceUncheckedCreateWithoutBrowserWriteJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -4814,7 +4775,6 @@ export type SpaceUpdateWithoutBrowserWriteJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -4927,7 +4887,6 @@ export type SpaceUncheckedUpdateWithoutBrowserWriteJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5040,7 +4999,6 @@ export type SpaceCreateWithoutAgentToggleInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -5153,7 +5111,6 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -5282,7 +5239,6 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -5395,7 +5351,6 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5508,7 +5463,6 @@ export type SpaceCreateWithoutAgentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -5621,7 +5575,6 @@ export type SpaceUncheckedCreateWithoutAgentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -5750,7 +5703,6 @@ export type SpaceUpdateWithoutAgentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -5863,7 +5815,6 @@ export type SpaceUncheckedUpdateWithoutAgentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -5975,7 +5926,6 @@ export type SpaceCreateWithoutToolAuditLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -6088,7 +6038,6 @@ export type SpaceUncheckedCreateWithoutToolAuditLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -6217,7 +6166,6 @@ export type SpaceUpdateWithoutToolAuditLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -6330,7 +6278,6 @@ export type SpaceUncheckedUpdateWithoutToolAuditLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -6443,7 +6390,6 @@ export type SpaceCreateWithoutUsageEventsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -6556,7 +6502,6 @@ export type SpaceUncheckedCreateWithoutUsageEventsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -6685,7 +6630,6 @@ export type SpaceUpdateWithoutUsageEventsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -6798,7 +6742,6 @@ export type SpaceUncheckedUpdateWithoutUsageEventsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -6911,7 +6854,6 @@ export type SpaceCreateWithoutSpaceCredentialsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -7024,7 +6966,6 @@ export type SpaceUncheckedCreateWithoutSpaceCredentialsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -7153,7 +7094,6 @@ export type SpaceUpdateWithoutSpaceCredentialsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -7266,7 +7206,6 @@ export type SpaceUncheckedUpdateWithoutSpaceCredentialsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -7379,7 +7318,6 @@ export type SpaceCreateWithoutSpaceSecretsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -7492,7 +7430,6 @@ export type SpaceUncheckedCreateWithoutSpaceSecretsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -7621,7 +7558,6 @@ export type SpaceUpdateWithoutSpaceSecretsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -7734,7 +7670,6 @@ export type SpaceUncheckedUpdateWithoutSpaceSecretsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -7848,7 +7783,6 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -7961,7 +7895,6 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -8090,7 +8023,6 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -8203,7 +8135,6 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -8315,7 +8246,6 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -8428,7 +8358,6 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -8557,7 +8486,6 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -8670,7 +8598,6 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -8783,7 +8710,6 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -8896,7 +8822,6 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -9025,7 +8950,6 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -9138,7 +9062,6 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -9251,7 +9174,6 @@ export type SpaceCreateWithoutCoupangProductItemsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -9364,7 +9286,6 @@ export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -9493,7 +9414,6 @@ export type SpaceUpdateWithoutCoupangProductItemsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -9606,7 +9526,6 @@ export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -9719,7 +9638,6 @@ export type SpaceCreateWithoutCoupangWriteJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -9832,7 +9750,6 @@ export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -9961,7 +9878,6 @@ export type SpaceUpdateWithoutCoupangWriteJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -10074,7 +9990,6 @@ export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -10187,7 +10102,6 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -10300,7 +10214,6 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -10429,7 +10342,6 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -10542,7 +10454,6 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -10655,7 +10566,6 @@ export type SpaceCreateWithoutInvProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -10768,7 +10678,6 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -10897,7 +10806,6 @@ export type SpaceUpdateWithoutInvProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -11010,7 +10918,6 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -11123,7 +11030,6 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -11236,7 +11142,6 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -11365,7 +11270,6 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -11478,7 +11382,6 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -11591,7 +11494,6 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -11704,7 +11606,6 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -11833,7 +11734,6 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -11946,7 +11846,6 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -12059,7 +11958,6 @@ export type SpaceCreateWithoutInvLocationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -12172,7 +12070,6 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -12301,7 +12198,6 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -12414,7 +12310,6 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -12527,7 +12422,6 @@ export type SpaceCreateWithoutInvMovementsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -12640,7 +12534,6 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -12769,7 +12662,6 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -12882,7 +12774,6 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -12995,7 +12886,6 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -13108,7 +12998,6 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -13237,7 +13126,6 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -13350,7 +13238,6 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -13463,7 +13350,6 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -13576,7 +13462,6 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -13705,7 +13590,6 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -13818,7 +13702,6 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -13931,7 +13814,6 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -14044,7 +13926,6 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -14173,7 +14054,6 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -14286,7 +14166,6 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -14399,7 +14278,6 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -14512,7 +14390,6 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -14641,7 +14518,6 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -14754,7 +14630,6 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -14867,7 +14742,6 @@ export type SpaceCreateWithoutInvReconExcludedCodesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -14980,7 +14854,6 @@ export type SpaceUncheckedCreateWithoutInvReconExcludedCodesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -15109,7 +14982,6 @@ export type SpaceUpdateWithoutInvReconExcludedCodesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -15222,7 +15094,6 @@ export type SpaceUncheckedUpdateWithoutInvReconExcludedCodesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -15335,7 +15206,6 @@ export type SpaceCreateWithoutInvSettingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -15448,7 +15318,6 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -15577,7 +15446,6 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -15690,7 +15558,6 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -15803,7 +15670,6 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -15916,7 +15782,6 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -16045,7 +15910,6 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -16158,7 +16022,6 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -16271,7 +16134,6 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -16384,7 +16246,6 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -16513,7 +16374,6 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -16626,7 +16486,6 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -16739,7 +16598,6 @@ export type SpaceCreateWithoutDelBatchesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -16852,7 +16710,6 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -16981,7 +16838,6 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -17094,7 +16950,6 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -17207,7 +17062,6 @@ export type SpaceCreateWithoutDelOrdersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -17320,7 +17174,6 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -17449,7 +17302,6 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -17562,7 +17414,6 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -17675,7 +17526,6 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -17788,7 +17638,6 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -17917,7 +17766,6 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -18030,7 +17878,6 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -18143,7 +17990,6 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -18256,7 +18102,6 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -18385,7 +18230,6 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -18498,7 +18342,6 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -18611,7 +18454,6 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -18724,7 +18566,6 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -18853,7 +18694,6 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -18966,7 +18806,6 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -19079,7 +18918,6 @@ export type SpaceCreateWithoutBrandsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -19192,7 +19030,6 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -19321,7 +19158,6 @@ export type SpaceUpdateWithoutBrandsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -19434,7 +19270,6 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -19547,7 +19382,6 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -19660,7 +19494,6 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -19789,7 +19622,6 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -19902,7 +19734,6 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -20015,7 +19846,6 @@ export type SpaceCreateWithoutChannelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -20128,7 +19958,6 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -20257,7 +20086,6 @@ export type SpaceUpdateWithoutChannelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -20370,7 +20198,6 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -20483,7 +20310,6 @@ export type SpaceCreateWithoutProductionRunsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -20596,7 +20422,6 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -20725,7 +20550,6 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -20838,7 +20662,6 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -20951,7 +20774,6 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -21064,7 +20886,6 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -21193,7 +21014,6 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -21306,7 +21126,6 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -21419,7 +21238,6 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -21532,7 +21350,6 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -21661,7 +21478,6 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -21774,7 +21590,6 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -21887,7 +21702,6 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -22000,7 +21814,6 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -22129,7 +21942,6 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -22242,7 +22054,6 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -22355,7 +22166,6 @@ export type SpaceCreateWithoutAtomicWordsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -22468,7 +22278,6 @@ export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -22597,7 +22406,6 @@ export type SpaceUpdateWithoutAtomicWordsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -22710,7 +22518,6 @@ export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -22823,7 +22630,6 @@ export type SpaceCreateWithoutProductListingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -22936,7 +22742,6 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -23065,7 +22870,6 @@ export type SpaceUpdateWithoutProductListingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -23178,7 +22982,6 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -23291,7 +23094,6 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -23404,7 +23206,6 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -23533,7 +23334,6 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -23646,7 +23446,6 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -23759,7 +23558,6 @@ export type SpaceCreateWithoutChannelProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -23872,7 +23670,6 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -24001,7 +23798,6 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -24114,7 +23910,6 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -24227,7 +24022,6 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -24340,7 +24134,6 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -24469,7 +24262,6 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -24582,7 +24374,6 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -24695,7 +24486,6 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -24808,7 +24598,6 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -24937,7 +24726,6 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -25050,7 +24838,6 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -25163,7 +24950,6 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -25276,7 +25062,6 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -25405,7 +25190,6 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -25518,7 +25302,6 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -25631,7 +25414,6 @@ export type SpaceCreateWithoutProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -25744,7 +25526,6 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -25873,7 +25654,6 @@ export type SpaceUpdateWithoutProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -25986,7 +25766,6 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -26099,7 +25878,6 @@ export type SpaceCreateWithoutPersonasInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -26212,7 +25990,6 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -26341,7 +26118,6 @@ export type SpaceUpdateWithoutPersonasInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -26454,7 +26230,6 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -26567,7 +26342,6 @@ export type SpaceCreateWithoutBrandProfilesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -26680,7 +26454,6 @@ export type SpaceUncheckedCreateWithoutBrandProfilesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -26809,7 +26582,6 @@ export type SpaceUpdateWithoutBrandProfilesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -26922,7 +26694,6 @@ export type SpaceUncheckedUpdateWithoutBrandProfilesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -27035,7 +26806,6 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -27148,7 +26918,6 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -27277,7 +27046,6 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -27390,7 +27158,6 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -27503,7 +27270,6 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -27616,7 +27382,6 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -27745,7 +27510,6 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -27858,7 +27622,6 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -27971,7 +27734,6 @@ export type SpaceCreateWithoutAiSettingInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -28084,7 +27846,6 @@ export type SpaceUncheckedCreateWithoutAiSettingInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -28213,7 +27974,6 @@ export type SpaceUpdateWithoutAiSettingInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -28326,7 +28086,6 @@ export type SpaceUncheckedUpdateWithoutAiSettingInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -28439,7 +28198,6 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -28552,7 +28310,6 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -28681,7 +28438,6 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -28794,7 +28550,6 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -28907,7 +28662,6 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -29020,7 +28774,6 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -29149,7 +28902,6 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -29262,7 +29014,6 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -29375,7 +29126,6 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -29488,7 +29238,6 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -29617,7 +29366,6 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -29730,7 +29478,6 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -29843,7 +29590,6 @@ export type SpaceCreateWithoutTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -29956,7 +29702,6 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -30085,7 +29830,6 @@ export type SpaceUpdateWithoutTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -30198,7 +29942,6 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -30311,7 +30054,6 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -30424,7 +30166,6 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -30553,7 +30294,6 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -30666,7 +30406,6 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -30779,7 +30518,6 @@ export type SpaceCreateWithoutContentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -30892,7 +30630,6 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -31021,7 +30758,6 @@ export type SpaceUpdateWithoutContentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -31134,7 +30870,6 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -31247,7 +30982,6 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -31360,7 +31094,6 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -31489,7 +31222,6 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -31602,7 +31334,6 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -31715,7 +31446,6 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -31828,7 +31558,6 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -31957,7 +31686,6 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -32070,7 +31798,6 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -32183,7 +31910,6 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -32296,7 +32022,6 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -32425,7 +32150,6 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -32538,7 +32262,6 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -32651,7 +32374,6 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -32764,7 +32486,6 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -32893,7 +32614,6 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -33006,7 +32726,6 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -33119,7 +32838,6 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -33232,7 +32950,6 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -33361,7 +33078,6 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -33474,7 +33190,6 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -33587,7 +33302,6 @@ export type SpaceCreateWithoutContentVersionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -33700,7 +33414,6 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -33829,7 +33542,6 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -33942,7 +33654,6 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -34055,7 +33766,6 @@ export type SpaceCreateWithoutContentAssetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -34168,7 +33878,6 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -34297,7 +34006,6 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -34410,7 +34118,6 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -34523,7 +34230,6 @@ export type SpaceCreateWithoutIdeationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -34636,7 +34342,6 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -34765,7 +34470,6 @@ export type SpaceUpdateWithoutIdeationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -34878,7 +34582,6 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -34991,7 +34694,6 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -35104,7 +34806,6 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -35233,7 +34934,6 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -35346,7 +35046,6 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -35459,7 +35158,6 @@ export type SpaceCreateWithoutReorderPlansInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -35572,7 +35270,6 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -35701,7 +35398,6 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -35814,7 +35510,6 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -35927,7 +35622,6 @@ export type SpaceCreateWithoutFinAccountsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -36040,7 +35734,6 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -36169,7 +35862,6 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -36282,7 +35974,6 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -36395,7 +36086,6 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -36508,7 +36198,6 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -36637,7 +36326,6 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -36750,7 +36438,6 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -36863,7 +36550,6 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -36976,7 +36662,6 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -37105,7 +36790,6 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -37218,7 +36902,6 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -37331,7 +37014,6 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -37444,7 +37126,6 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -37573,7 +37254,6 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -37686,7 +37366,6 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -37799,7 +37478,6 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -37912,7 +37590,6 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -38041,7 +37718,6 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -38154,7 +37830,6 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -38267,7 +37942,6 @@ export type SpaceCreateWithoutFinImportsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -38380,7 +38054,6 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -38509,7 +38182,6 @@ export type SpaceUpdateWithoutFinImportsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -38622,7 +38294,6 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -38735,7 +38406,6 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -38848,7 +38518,6 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -38977,7 +38646,6 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -39090,7 +38758,6 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -39203,7 +38870,6 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -39316,7 +38982,6 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -39445,7 +39110,6 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -39558,7 +39222,6 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -39671,7 +39334,6 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -39784,7 +39446,6 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -39913,7 +39574,6 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -40026,7 +39686,6 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -40139,7 +39798,6 @@ export type SpaceCreateWithoutFinLiabilitySnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -40252,7 +39910,6 @@ export type SpaceUncheckedCreateWithoutFinLiabilitySnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -40381,7 +40038,6 @@ export type SpaceUpdateWithoutFinLiabilitySnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -40494,7 +40150,6 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitySnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -40607,7 +40262,6 @@ export type SpaceCreateWithoutHiringStoresInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -40720,7 +40374,6 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -40849,7 +40502,6 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -40962,7 +40614,6 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -41075,7 +40726,6 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -41188,7 +40838,6 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -41317,7 +40966,6 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -41430,7 +41078,6 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -41543,7 +41190,6 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -41656,7 +41302,6 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -41785,7 +41430,6 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -41898,7 +41542,6 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -42011,7 +41654,6 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -42124,7 +41766,6 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -42253,7 +41894,6 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -42366,7 +42006,6 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -42479,7 +42118,6 @@ export type SpaceCreateWithoutHiringContentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -42592,7 +42230,6 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -42721,7 +42358,6 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -42834,7 +42470,6 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -42947,7 +42582,6 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -43060,7 +42694,6 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -43189,7 +42822,6 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -43302,7 +42934,6 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -43415,7 +43046,6 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -43528,7 +43158,6 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -43657,7 +43286,6 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -43770,7 +43398,6 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -43883,7 +43510,6 @@ export type SpaceCreateWithoutHiringUploadSessionsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -43996,7 +43622,6 @@ export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -44125,7 +43750,6 @@ export type SpaceUpdateWithoutHiringUploadSessionsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -44238,7 +43862,6 @@ export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -44351,7 +43974,6 @@ export type SpaceCreateWithoutHiringMigrationRecordsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -44464,7 +44086,6 @@ export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -44593,7 +44214,6 @@ export type SpaceUpdateWithoutHiringMigrationRecordsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -44706,7 +44326,6 @@ export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -44819,7 +44438,6 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -44932,7 +44550,6 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -45061,7 +44678,6 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -45174,475 +44790,6 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  agents?: Prisma.SpaceAgentUncheckedUpdateManyWithoutSpaceNestedInput
-  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutHiringMessageTemplatesInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  approvalLimitKrw?: number | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  invitations?: Prisma.SpaceInvitationCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invReconExcludedCodes?: Prisma.InvReconExcludedCodeCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
-  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
-  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
-  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
-  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
-  keywordRankSnapshots?: Prisma.KeywordRankSnapshotCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  toolAuditLogs?: Prisma.ToolAuditLogCreateNestedManyWithoutSpaceInput
-  usageEvents?: Prisma.UsageEventCreateNestedManyWithoutSpaceInput
-  spaceCredentials?: Prisma.SpaceCredentialCreateNestedManyWithoutSpaceInput
-  spaceSecrets?: Prisma.SpaceSecretCreateNestedManyWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfiles?: Prisma.BrandProfileCreateNestedManyWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  scNotionConnection?: Prisma.ScNotionConnectionCreateNestedOneWithoutSpaceInput
-  scDriveConnection?: Prisma.ScDriveConnectionCreateNestedOneWithoutSpaceInput
-  scSources?: Prisma.ScSourceCreateNestedManyWithoutSpaceInput
-  scMedia?: Prisma.ScMediaCreateNestedManyWithoutSpaceInput
-  scPublishRequests?: Prisma.ScPublishRequestCreateNestedManyWithoutSpaceInput
-  scMediaCopies?: Prisma.ScMediaCopyCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
-  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
-  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
-  hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  agents?: Prisma.SpaceAgentCreateNestedManyWithoutSpaceInput
-  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-  deckAccessPolicies?: Prisma.SpaceDeckAccessCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  approvalLimitKrw?: number | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  invitations?: Prisma.SpaceInvitationUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invReconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
-  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
-  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
-  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
-  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
-  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  toolAuditLogs?: Prisma.ToolAuditLogUncheckedCreateNestedManyWithoutSpaceInput
-  usageEvents?: Prisma.UsageEventUncheckedCreateNestedManyWithoutSpaceInput
-  spaceCredentials?: Prisma.SpaceCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  spaceSecrets?: Prisma.SpaceSecretUncheckedCreateNestedManyWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfiles?: Prisma.BrandProfileUncheckedCreateNestedManyWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  scNotionConnection?: Prisma.ScNotionConnectionUncheckedCreateNestedOneWithoutSpaceInput
-  scDriveConnection?: Prisma.ScDriveConnectionUncheckedCreateNestedOneWithoutSpaceInput
-  scSources?: Prisma.ScSourceUncheckedCreateNestedManyWithoutSpaceInput
-  scMedia?: Prisma.ScMediaUncheckedCreateNestedManyWithoutSpaceInput
-  scPublishRequests?: Prisma.ScPublishRequestUncheckedCreateNestedManyWithoutSpaceInput
-  scMediaCopies?: Prisma.ScMediaCopyUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
-  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
-  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  agents?: Prisma.SpaceAgentUncheckedCreateNestedManyWithoutSpaceInput
-  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-  deckAccessPolicies?: Prisma.SpaceDeckAccessUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutHiringMessageTemplatesInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutHiringMessageTemplatesInput, Prisma.SpaceUncheckedCreateWithoutHiringMessageTemplatesInput>
-}
-
-export type SpaceUpsertWithoutHiringMessageTemplatesInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutHiringMessageTemplatesInput, Prisma.SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutHiringMessageTemplatesInput, Prisma.SpaceUncheckedCreateWithoutHiringMessageTemplatesInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutHiringMessageTemplatesInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutHiringMessageTemplatesInput, Prisma.SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput>
-}
-
-export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  invitations?: Prisma.SpaceInvitationUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invReconExcludedCodes?: Prisma.InvReconExcludedCodeUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
-  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
-  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
-  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
-  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
-  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  toolAuditLogs?: Prisma.ToolAuditLogUpdateManyWithoutSpaceNestedInput
-  usageEvents?: Prisma.UsageEventUpdateManyWithoutSpaceNestedInput
-  spaceCredentials?: Prisma.SpaceCredentialUpdateManyWithoutSpaceNestedInput
-  spaceSecrets?: Prisma.SpaceSecretUpdateManyWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfiles?: Prisma.BrandProfileUpdateManyWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  scNotionConnection?: Prisma.ScNotionConnectionUpdateOneWithoutSpaceNestedInput
-  scDriveConnection?: Prisma.ScDriveConnectionUpdateOneWithoutSpaceNestedInput
-  scSources?: Prisma.ScSourceUpdateManyWithoutSpaceNestedInput
-  scMedia?: Prisma.ScMediaUpdateManyWithoutSpaceNestedInput
-  scPublishRequests?: Prisma.ScPublishRequestUpdateManyWithoutSpaceNestedInput
-  scMediaCopies?: Prisma.ScMediaCopyUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
-  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
-  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
-  hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  agents?: Prisma.SpaceAgentUpdateManyWithoutSpaceNestedInput
-  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-  deckAccessPolicies?: Prisma.SpaceDeckAccessUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  invitations?: Prisma.SpaceInvitationUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconExcludedCodes?: Prisma.InvReconExcludedCodeUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
-  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
-  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
-  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
-  keywordRankSnapshots?: Prisma.KeywordRankSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  toolAuditLogs?: Prisma.ToolAuditLogUncheckedUpdateManyWithoutSpaceNestedInput
-  usageEvents?: Prisma.UsageEventUncheckedUpdateManyWithoutSpaceNestedInput
-  spaceCredentials?: Prisma.SpaceCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  spaceSecrets?: Prisma.SpaceSecretUncheckedUpdateManyWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfiles?: Prisma.BrandProfileUncheckedUpdateManyWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  scNotionConnection?: Prisma.ScNotionConnectionUncheckedUpdateOneWithoutSpaceNestedInput
-  scDriveConnection?: Prisma.ScDriveConnectionUncheckedUpdateOneWithoutSpaceNestedInput
-  scSources?: Prisma.ScSourceUncheckedUpdateManyWithoutSpaceNestedInput
-  scMedia?: Prisma.ScMediaUncheckedUpdateManyWithoutSpaceNestedInput
-  scPublishRequests?: Prisma.ScPublishRequestUncheckedUpdateManyWithoutSpaceNestedInput
-  scMediaCopies?: Prisma.ScMediaCopyUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
-  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
-  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilitySnapshots?: Prisma.FinLiabilitySnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -45756,7 +44903,6 @@ export type SpaceCreateWithoutDeckAccessPoliciesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -45869,7 +45015,6 @@ export type SpaceUncheckedCreateWithoutDeckAccessPoliciesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -45998,7 +45143,6 @@ export type SpaceUpdateWithoutDeckAccessPoliciesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -46111,7 +45255,6 @@ export type SpaceUncheckedUpdateWithoutDeckAccessPoliciesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -46224,7 +45367,6 @@ export type SpaceCreateWithoutSubscriptionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -46337,7 +45479,6 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -46466,7 +45607,6 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -46579,7 +45719,6 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -46692,7 +45831,6 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -46805,7 +45943,6 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -46934,7 +46071,6 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -47047,7 +46183,6 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -47160,7 +46295,6 @@ export type SpaceCreateWithoutBillingChargesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -47273,7 +46407,6 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -47402,7 +46535,6 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -47515,7 +46647,6 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -47628,7 +46759,6 @@ export type SpaceCreateWithoutWorkerTokensInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -47741,7 +46871,6 @@ export type SpaceUncheckedCreateWithoutWorkerTokensInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -47870,7 +46999,6 @@ export type SpaceUpdateWithoutWorkerTokensInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -47983,7 +47111,6 @@ export type SpaceUncheckedUpdateWithoutWorkerTokensInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -48095,7 +47222,6 @@ export type SpaceCreateWithoutKeywordRankSnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -48208,7 +47334,6 @@ export type SpaceUncheckedCreateWithoutKeywordRankSnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -48337,7 +47462,6 @@ export type SpaceUpdateWithoutKeywordRankSnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -48450,7 +47574,6 @@ export type SpaceUncheckedUpdateWithoutKeywordRankSnapshotsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -48563,7 +47686,6 @@ export type SpaceCreateWithoutScNotionConnectionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -48676,7 +47798,6 @@ export type SpaceUncheckedCreateWithoutScNotionConnectionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -48805,7 +47926,6 @@ export type SpaceUpdateWithoutScNotionConnectionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -48918,7 +48038,6 @@ export type SpaceUncheckedUpdateWithoutScNotionConnectionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -49031,7 +48150,6 @@ export type SpaceCreateWithoutScDriveConnectionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -49144,7 +48262,6 @@ export type SpaceUncheckedCreateWithoutScDriveConnectionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -49273,7 +48390,6 @@ export type SpaceUpdateWithoutScDriveConnectionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -49386,7 +48502,6 @@ export type SpaceUncheckedUpdateWithoutScDriveConnectionInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -49499,7 +48614,6 @@ export type SpaceCreateWithoutScSourcesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -49612,7 +48726,6 @@ export type SpaceUncheckedCreateWithoutScSourcesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -49741,7 +48854,6 @@ export type SpaceUpdateWithoutScSourcesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -49854,7 +48966,6 @@ export type SpaceUncheckedUpdateWithoutScSourcesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -49967,7 +49078,6 @@ export type SpaceCreateWithoutScMediaInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -50080,7 +49190,6 @@ export type SpaceUncheckedCreateWithoutScMediaInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -50209,7 +49318,6 @@ export type SpaceUpdateWithoutScMediaInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -50322,7 +49430,6 @@ export type SpaceUncheckedUpdateWithoutScMediaInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -50435,7 +49542,6 @@ export type SpaceCreateWithoutScPublishRequestsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -50548,7 +49654,6 @@ export type SpaceUncheckedCreateWithoutScPublishRequestsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -50677,7 +49782,6 @@ export type SpaceUpdateWithoutScPublishRequestsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -50790,7 +49894,6 @@ export type SpaceUncheckedUpdateWithoutScPublishRequestsInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -50903,7 +50006,6 @@ export type SpaceCreateWithoutScMediaCopiesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
@@ -51016,7 +50118,6 @@ export type SpaceUncheckedCreateWithoutScMediaCopiesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
@@ -51145,7 +50246,6 @@ export type SpaceUpdateWithoutScMediaCopiesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
@@ -51258,7 +50358,6 @@ export type SpaceUncheckedUpdateWithoutScMediaCopiesInput = {
   hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   browserWriteJobs?: Prisma.BrowserWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
@@ -51362,7 +50461,6 @@ export type SpaceCountOutputType = {
   hiringUploadSessions: number
   hiringMigrationRecords: number
   hiringBlacklists: number
-  hiringMessageTemplates: number
   agentPendingActions: number
   browserWriteJobs: number
   agentLlmUsages: number
@@ -51459,7 +50557,6 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   hiringUploadSessions?: boolean | SpaceCountOutputTypeCountHiringUploadSessionsArgs
   hiringMigrationRecords?: boolean | SpaceCountOutputTypeCountHiringMigrationRecordsArgs
   hiringBlacklists?: boolean | SpaceCountOutputTypeCountHiringBlacklistsArgs
-  hiringMessageTemplates?: boolean | SpaceCountOutputTypeCountHiringMessageTemplatesArgs
   agentPendingActions?: boolean | SpaceCountOutputTypeCountAgentPendingActionsArgs
   browserWriteJobs?: boolean | SpaceCountOutputTypeCountBrowserWriteJobsArgs
   agentLlmUsages?: boolean | SpaceCountOutputTypeCountAgentLlmUsagesArgs
@@ -52078,13 +51175,6 @@ export type SpaceCountOutputTypeCountHiringBlacklistsArgs<ExtArgs extends runtim
 /**
  * SpaceCountOutputType without action
  */
-export type SpaceCountOutputTypeCountHiringMessageTemplatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.HiringMessageTemplateWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
 export type SpaceCountOutputTypeCountAgentPendingActionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.AgentPendingActionWhereInput
 }
@@ -52240,7 +51330,6 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   hiringUploadSessions?: boolean | Prisma.Space$hiringUploadSessionsArgs<ExtArgs>
   hiringMigrationRecords?: boolean | Prisma.Space$hiringMigrationRecordsArgs<ExtArgs>
   hiringBlacklists?: boolean | Prisma.Space$hiringBlacklistsArgs<ExtArgs>
-  hiringMessageTemplates?: boolean | Prisma.Space$hiringMessageTemplatesArgs<ExtArgs>
   agentPendingActions?: boolean | Prisma.Space$agentPendingActionsArgs<ExtArgs>
   browserWriteJobs?: boolean | Prisma.Space$browserWriteJobsArgs<ExtArgs>
   agentToggle?: boolean | Prisma.Space$agentToggleArgs<ExtArgs>
@@ -52379,7 +51468,6 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   hiringUploadSessions?: boolean | Prisma.Space$hiringUploadSessionsArgs<ExtArgs>
   hiringMigrationRecords?: boolean | Prisma.Space$hiringMigrationRecordsArgs<ExtArgs>
   hiringBlacklists?: boolean | Prisma.Space$hiringBlacklistsArgs<ExtArgs>
-  hiringMessageTemplates?: boolean | Prisma.Space$hiringMessageTemplatesArgs<ExtArgs>
   agentPendingActions?: boolean | Prisma.Space$agentPendingActionsArgs<ExtArgs>
   browserWriteJobs?: boolean | Prisma.Space$browserWriteJobsArgs<ExtArgs>
   agentToggle?: boolean | Prisma.Space$agentToggleArgs<ExtArgs>
@@ -52491,7 +51579,6 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     hiringUploadSessions: Prisma.$HiringUploadSessionPayload<ExtArgs>[]
     hiringMigrationRecords: Prisma.$HiringMigrationRecordPayload<ExtArgs>[]
     hiringBlacklists: Prisma.$HiringBlacklistPayload<ExtArgs>[]
-    hiringMessageTemplates: Prisma.$HiringMessageTemplatePayload<ExtArgs>[]
     agentPendingActions: Prisma.$AgentPendingActionPayload<ExtArgs>[]
     browserWriteJobs: Prisma.$BrowserWriteJobPayload<ExtArgs>[]
     agentToggle: Prisma.$SpaceAgentSettingPayload<ExtArgs> | null
@@ -52998,7 +52085,6 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   hiringUploadSessions<T extends Prisma.Space$hiringUploadSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringUploadSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringUploadSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hiringMigrationRecords<T extends Prisma.Space$hiringMigrationRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringMigrationRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringMigrationRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hiringBlacklists<T extends Prisma.Space$hiringBlacklistsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringBlacklistsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringBlacklistPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  hiringMessageTemplates<T extends Prisma.Space$hiringMessageTemplatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringMessageTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringMessageTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   agentPendingActions<T extends Prisma.Space$agentPendingActionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentPendingActionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentPendingActionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   browserWriteJobs<T extends Prisma.Space$browserWriteJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$browserWriteJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BrowserWriteJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   agentToggle<T extends Prisma.Space$agentToggleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentToggleArgs<ExtArgs>>): Prisma.Prisma__SpaceAgentSettingClient<runtime.Types.Result.GetResult<Prisma.$SpaceAgentSettingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -55622,30 +54708,6 @@ export type Space$hiringBlacklistsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.HiringBlacklistScalarFieldEnum | Prisma.HiringBlacklistScalarFieldEnum[]
-}
-
-/**
- * Space.hiringMessageTemplates
- */
-export type Space$hiringMessageTemplatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the HiringMessageTemplate
-   */
-  select?: Prisma.HiringMessageTemplateSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the HiringMessageTemplate
-   */
-  omit?: Prisma.HiringMessageTemplateOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.HiringMessageTemplateInclude<ExtArgs> | null
-  where?: Prisma.HiringMessageTemplateWhereInput
-  orderBy?: Prisma.HiringMessageTemplateOrderByWithRelationInput | Prisma.HiringMessageTemplateOrderByWithRelationInput[]
-  cursor?: Prisma.HiringMessageTemplateWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.HiringMessageTemplateScalarFieldEnum | Prisma.HiringMessageTemplateScalarFieldEnum[]
 }
 
 /**

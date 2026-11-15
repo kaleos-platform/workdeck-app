@@ -61,8 +61,9 @@ it('초안에서도 HTML을 우선 복사하고 앱 CSS와 격리된 미리보�
   )
   fireEvent.click(screen.getByRole('button', { name: 'HTML 복사' }))
   await waitFor(() => expect(writeText).toHaveBeenCalledWith(html))
-  // 미리보기는 「공고 내용」 탭에서 제공한다.
-  expect(screen.queryByTitle('외부 게시용 공고 미리보기')).not.toBeInTheDocument()
+  // 공고 상세 탭은 미리보기를 함께 보여 주며 기본은 모바일 모드다.
+  expect(screen.getByTitle('외부 게시용 공고 미리보기')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /모바일/ })).toHaveAttribute('aria-pressed', 'true')
   cleanup()
   render(
     <PostingDetail
@@ -75,7 +76,7 @@ it('초안에서도 HTML을 우선 복사하고 앱 CSS와 격리된 미리보�
       }}
       origin="https://workdeck.test"
       embedHtml={html}
-      tab="content"
+      tab="recruit"
     />
   )
   const frame = screen.getByTitle('외부 게시용 공고 미리보기')
@@ -240,18 +241,15 @@ describe('공고 상세 탭', () => {
   it('탭 링크는 URL 상태이며 지원자 수와 현재 탭(aria-current)을 표시한다', () => {
     render(<PostingDetail {...base} tab="applicants" applicantCount={1234} />)
     const nav = within(screen.getByRole('navigation', { name: '공고 상세' }))
-    expect(nav.getByRole('link', { name: '지원자 모집' })).toHaveAttribute(
+    expect(nav.getAllByRole('link')).toHaveLength(2)
+    expect(nav.getByRole('link', { name: '공고 상세' })).toHaveAttribute(
       'href',
       '/d/recruiting/postings/p1'
     )
     const applicants = nav.getByRole('link', { name: '지원자 1,234' })
     expect(applicants).toHaveAttribute('href', '/d/recruiting/postings/p1?tab=applicants')
     expect(applicants).toHaveAttribute('aria-current', 'page')
-    expect(nav.getByRole('link', { name: '공고 내용' })).toHaveAttribute(
-      'href',
-      '/d/recruiting/postings/p1?tab=content'
-    )
-    expect(nav.getByRole('link', { name: '지원자 모집' })).not.toHaveAttribute('aria-current')
+    expect(nav.getByRole('link', { name: '공고 상세' })).not.toHaveAttribute('aria-current')
   })
 
   it('지원자 탭에서는 서버가 내려준 목록만 보이고 모집 블록·미리보기는 숨긴다', () => {
@@ -265,7 +263,7 @@ describe('공고 상세 탭', () => {
     expect(screen.queryByTitle('외부 게시용 공고 미리보기')).not.toBeInTheDocument()
   })
 
-  it('기본 탭은 지원자 모집이며 children 을 렌더하지 않는다', () => {
+  it('기본 탭은 공고 상세이며 children 을 렌더하지 않는다', () => {
     render(
       <PostingDetail {...base}>
         <p>지원자 목록 자리</p>

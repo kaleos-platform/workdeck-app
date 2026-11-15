@@ -16,13 +16,8 @@ export default async function PositionsSettingsPage() {
   const positions: PositionRow[] = rows
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">직무 관리</h1>
-        <p className="text-sm text-muted-foreground">
-          공고 직무에 재사용할 기준 직무를 관리합니다.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">공고 직무에 재사용할 기준 직무를 관리합니다.</p>
       <PositionsManager initialPositions={positions} />
     </div>
   )

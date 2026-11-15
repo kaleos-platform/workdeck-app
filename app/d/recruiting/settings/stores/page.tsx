@@ -23,11 +23,8 @@ export default async function StoresSettingsPage() {
   const stores: StoreRow[] = rows
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">매장 관리</h1>
-        <p className="text-sm text-muted-foreground">공고에 연결할 근무 매장을 관리합니다.</p>
-      </div>
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">공고에 연결할 근무 매장을 관리합니다.</p>
       <StoresManager initialStores={stores} />
     </div>
   )
