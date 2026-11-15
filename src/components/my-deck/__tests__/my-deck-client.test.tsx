@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MyDeckClient } from '../my-deck-client'
 
 jest.mock('next/navigation', () => ({
@@ -185,4 +185,26 @@ test('체험이 아닌 업무 구독은 결제 예정일을 오늘(확인 즉시
   const dialog = screen.getByRole('dialog')
   expect(dialog).toHaveTextContent('오늘 (확인 즉시)')
   expect(dialog).toHaveTextContent('오늘 첫 달 결제, 이후 매월 같은 날 자동 결제')
+})
+
+test('이미 사용 중인 업무를 구독하면 업무 활성화 요청을 보내지 않는다', async () => {
+  const fetchMock = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ reserved: true, amount: 0, prorated: false }),
+  })
+  global.fetch = fetchMock
+  render(
+    <MyDeckClient
+      {...base}
+      cardSummary="신한 1234"
+      activeDecks={[deck]}
+      availableDecks={[]}
+      billing={[{ ...bill, reason: 'TRIAL', trialEndsAt: inDays(10) }]}
+    />
+  )
+  fireEvent.click(screen.getByRole('button', { name: '모집 관리 유료 구독하기' }))
+  fireEvent.click(screen.getByRole('button', { name: '구독 예약' }))
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+  expect(fetchMock.mock.calls[0][0]).toBe('/api/billing/subscription/start')
+  expect(fetchMock.mock.calls.some((c) => c[0] === '/api/spaces/decks')).toBe(false)
 })
