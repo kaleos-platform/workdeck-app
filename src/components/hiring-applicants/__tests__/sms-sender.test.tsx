@@ -54,3 +54,11 @@ it('메시지가 없으면 메시지 관리 링크를 보인다', async () => {
     '/d/recruiting/settings/messages'
   )
 })
+
+it('창을 열어도 문자 내용 입력란에 자동 포커스하지 않는다(휴대폰 키보드 방지)', async () => {
+  setup([{ id: 't1', title: '합격', content: '안녕하세요' }])
+  render(<SmsSender {...props} />)
+  await openDialog()
+  await screen.findByRole('button', { name: '합격' })
+  expect(screen.getByLabelText('문자 내용')).not.toHaveFocus()
+})

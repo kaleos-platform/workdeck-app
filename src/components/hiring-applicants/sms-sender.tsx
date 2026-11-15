@@ -72,7 +72,8 @@ export function SmsSender({ phone, name, postingTitle, positionName }: Props) {
           문자 보내기
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      {/* 휴대폰에서 키보드가 먼저 올라와 메시지 버튼을 가리지 않도록 자동 포커스를 끈다 */}
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>문자 보내기</DialogTitle>
           <DialogDescription>
