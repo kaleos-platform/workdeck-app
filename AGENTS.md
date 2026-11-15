@@ -31,7 +31,7 @@ Prefer `@/` imports instead of deep relative paths.
 ## UI Work
 
 - UI 기준은 루트 `DESIGN.md`(색·상태 색·글꼴·간격·컴포넌트). 화면을 바꾸기 전에 먼저 읽는다.
-- 절차는 `workdeck-ui` 스킬(`.codex/skills/workdeck-ui/SKILL.md`, Claude Code는 `.claude/skills/workdeck-ui`). 새 화면·큰 개편은 `ui-plan` 스킬로 와이어프레임부터.
+- 절차는 `workdeck-ui` 스킬(`.codex/skills/workdeck-ui/SKILL.md`, Claude Code는 `.claude/skills/workdeck-ui`). UX가 바뀌는 작업(새 화면·흐름·정보 구조·상호작용 방식·모바일 배치 재구성)은 구현 전에 `ui-plan` 스킬로 미리보기 합의부터. 요소 이동·간격·색·문구 같은 단순 수정은 제외.
 - shadcn 컴포넌트·예제는 MCP `shadcn`(버전 고정 3.8.5)으로 찾는다. Codex는 `.codex/config.toml`에 있다. Claude Code는 `.mcp.json`이 개인 토큰 때문에 gitignore라 각자 로컬 `.mcp.json`의 `mcpServers`에 `"shadcn": { "command": "npx", "args": ["shadcn@3.8.5", "mcp"] }`를 넣는다.
 
 ## Build, Test, and Development Commands

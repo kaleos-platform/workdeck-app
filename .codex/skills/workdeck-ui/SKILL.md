@@ -10,10 +10,11 @@ Workdeck UI 작업은 `DESIGN.md`를 최우선 기준으로 삼는다. 외부 UI
 ## 시작 절차
 
 1. `DESIGN.md`를 먼저 읽고 현재 작업에 필요한 색상, 컴포넌트, 밀도, 상태 표현 규칙을 확인한다.
-2. 대상 route와 feature component를 읽어 데이터 흐름, URL state, loading/empty/error 상태를 파악한다.
-3. 첨부된 screenshot이나 source reference가 있으면 실제 문제를 구체적으로 적는다.
-4. UI 변경 전 실패하는 테스트를 먼저 추가하거나 기존 테스트를 요구사항에 맞게 갱신한다.
-5. 변경은 관련 feature boundary 안에서 끝낸다. unrelated refactor는 피한다.
+2. UX가 바뀌는 작업(새 화면·흐름·정보 구조·상호작용 방식·모바일 배치 재구성 등)이면 구현 전에 `ui-plan` 스킬로 미리보기 합의부터 한다. 기준은 `ui-plan`의 "언제 쓰나". 단순 수정은 라이브 작업대에서 바로.
+3. 대상 route와 feature component를 읽어 데이터 흐름, URL state, loading/empty/error 상태를 파악한다.
+4. 첨부된 screenshot이나 source reference가 있으면 실제 문제를 구체적으로 적는다.
+5. UI 변경 전 실패하는 테스트를 먼저 추가하거나 기존 테스트를 요구사항에 맞게 갱신한다.
+6. 변경은 관련 feature boundary 안에서 끝낸다. unrelated refactor는 피한다.
 
 ## 디자인 원칙
 
