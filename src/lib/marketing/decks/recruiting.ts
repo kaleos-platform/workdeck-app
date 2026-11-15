@@ -2,8 +2,8 @@ import type { DeckLandingContent, DeckLandingFeature } from '../types'
 
 // 랜딩 공개 스위치. 운영에서 실제 동작을 확인한 뒤에만 true로 바꾼다(표시=실제).
 // false면 데이터에서 빠지므로 화면·JSON-LD·llms.txt·요금 페이지 어디에도 나가지 않는다.
-// 이메일: 운영 배포됨(#1369), 사용자 실발송 확인 후 공개. AI: MCP 도구(#1375) 기준으로 문구 대조 완료.
-const RECRUITING_EMAIL_LIVE = false
+// 이메일: #1369 운영 실수신 확인(접수 11/14·일일 요약 11/15) 후 공개. AI: MCP 도구(#1375) 기준 문구 대조 완료.
+const RECRUITING_EMAIL_LIVE = true
 const RECRUITING_AI_LIVE = true
 
 const OPENING_MIGRATION_NOTICE_URL =
