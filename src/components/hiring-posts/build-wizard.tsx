@@ -170,12 +170,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
           <PostingStatusBadge status={state.status} />
         </div>
 
-        <WizardStepper
-          recruitmentLocked={recruitmentLocked}
-          current={step}
-          onSelect={selectStep}
-          disabled={leaving}
-        />
+        <WizardStepper current={step} onSelect={selectStep} disabled={leaving} />
         {recruitmentLocked && (
           <p role="note" className="rounded-lg border bg-muted/40 p-3 text-sm">
             {PUBLISHED_POSTING_LOCK_MESSAGE}
@@ -215,6 +210,10 @@ export function BuildWizard({ data }: { data: WizardData }) {
                       .join(', ') || '없음'}
                   </dd>
                 </div>
+                <div>
+                  <dt className="text-muted-foreground">지원서 마감일</dt>
+                  <dd>{state.closingDate || '상시 모집'}</dd>
+                </div>
               </dl>
             ) : (
               <div className="space-y-8">
@@ -249,45 +248,37 @@ export function BuildWizard({ data }: { data: WizardData }) {
                     ) => patch(p)}
                   />
                 </Section>
+                <Section title="지원서 마감일">
+                  <StepFormSettings
+                    ref={settingsRef}
+                    postingId={data.posting.id}
+                    value={{ closingDate: state.closingDate }}
+                    onChange={patch}
+                  />
+                </Section>
               </div>
             )}
           </div>
         )}
 
-        {/* 선택 설정 — Workdeck 지원 접수 */}
+        {/* STEP 2 — 지원서 작성 */}
         {step === 'form' && (
           <div className={gridCls}>
             <div className="space-y-8">
               <p className="text-sm text-muted-foreground">
-                Workdeck에서 지원자를 접수할 때 사용하는 설정입니다. 외부 채용사이트용 HTML만 만들
-                때는 기본 설정을 그대로 둘 수 있습니다.
+                {recruitmentLocked
+                  ? '지원서 항목은 읽기 전용입니다. 기존 항목은 미리보기에서 확인할 수 있습니다.'
+                  : '지원자가 작성할 항목입니다. 외부 채용사이트용 HTML만 만들 때는 기본 항목 그대로 두어도 됩니다.'}
               </p>
               {!recruitmentLocked && (
-                <>
-                  <Section title="지원서 마감일">
-                    <StepFormSettings
-                      ref={settingsRef}
-                      postingId={data.posting.id}
-                      value={{
-                        closingDate: state.closingDate,
-                      }}
-                      onChange={patch}
-                    />
-                  </Section>
-                  <Section title="지원서 항목">
-                    <StepForm
-                      ref={formRef}
-                      postingId={data.posting.id}
-                      initialFields={state.formFields}
-                      onChange={(formFields: FormFieldInput[]) => patch({ formFields })}
-                    />
-                  </Section>
-                </>
-              )}
-              {recruitmentLocked && (
-                <p className="text-sm font-medium">
-                  지원서 설정은 읽기 전용입니다. 기존 항목은 미리보기에서 확인할 수 있습니다.
-                </p>
+                <Section title="지원서 항목">
+                  <StepForm
+                    ref={formRef}
+                    postingId={data.posting.id}
+                    initialFields={state.formFields}
+                    onChange={(formFields: FormFieldInput[]) => patch({ formFields })}
+                  />
+                </Section>
               )}
               <Section title="메일 알림">
                 <PostingMailSettings
@@ -321,6 +312,10 @@ export function BuildWizard({ data }: { data: WizardData }) {
                   title={state.title}
                   closingDate={state.closingDate}
                   fields={state.formFields}
+                  positions={state.positions.map((p) => p.name)}
+                  stores={state.stores
+                    .filter((s) => state.storeIds.includes(s.id))
+                    .map((s) => s.name)}
                 />
               </div>
             </div>
@@ -387,22 +382,16 @@ export function BuildWizard({ data }: { data: WizardData }) {
 
       {/* 고정 하단 CTA */}
       <div className="sticky bottom-0 z-20 -mx-6 flex items-center justify-between border-t bg-background/95 px-6 py-4 backdrop-blur">
-        {step !== 'form' && (
-          <Button
-            variant="outline"
-            className="min-w-28"
-            disabled={isFirst || leaving}
-            onClick={goPrev}
-          >
-            <ArrowLeft /> 이전
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          className="min-w-28"
+          disabled={isFirst || leaving}
+          onClick={goPrev}
+        >
+          <ArrowLeft /> 이전
+        </Button>
         <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
-          {step === 'form' ? (
-            <Button disabled={leaving} onClick={() => selectStep('decorate')}>
-              {recruitmentLocked ? '공고 꾸미기로 돌아가기' : '설정 저장하고 돌아가기'}
-            </Button>
-          ) : step === 'decorate' ? (
+          {step === 'decorate' ? (
             <>
               <Button
                 className="min-w-28"

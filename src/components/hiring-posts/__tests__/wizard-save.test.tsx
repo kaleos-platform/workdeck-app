@@ -49,7 +49,7 @@ it('제목 저장 응답 전 이동을 기다리고 실패 시 제목을 유지�
   render(<BuildWizard data={data} />)
   fireEvent.change(screen.getByLabelText('공고 제목'), { target: { value: '최신 제목' } })
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
+    fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ }))
   })
   expect(screen.getByLabelText('공고 제목')).toHaveValue('최신 제목')
   expect(fetch).toHaveBeenCalledTimes(1)
@@ -62,7 +62,7 @@ it('제목 저장 응답 전 이동을 기다리고 실패 시 제목을 유지�
   expect(screen.getByLabelText('공고 제목').closest('[inert]')).toBeNull()
   expect(screen.getByLabelText('공고 제목')).toHaveValue('최신 제목')
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
+    fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ }))
   })
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(screen.getByPlaceholderText('항목 이름')).toBeInTheDocument()
@@ -73,7 +73,7 @@ it('지원서 마지막 입력은 이동 전에 저장하고 실패 시 유지�
   global.fetch = jest.fn().mockResolvedValueOnce({ ok: false }).mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
+    fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ }))
   })
   fireEvent.change(screen.getByPlaceholderText('항목 이름'), { target: { value: '최신 질문' } })
   await act(async () => {
@@ -89,7 +89,7 @@ it('지원서 마지막 입력은 이동 전에 저장하고 실패 시 유지�
     expect.arrayContaining([expect.objectContaining({ label: '최신 질문' })])
   )
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
+    fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ }))
   })
   expect(screen.getByPlaceholderText('항목 이름')).toHaveValue('최신 질문')
 })
@@ -97,9 +97,6 @@ it('지원서 마지막 입력은 이동 전에 저장하고 실패 시 유지�
 it('마감일 저장 실패 시 이동을 막고 최신 날짜로 재시도한다', async () => {
   global.fetch = jest.fn().mockResolvedValueOnce({ ok: false }).mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
-  await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
-  })
   fireEvent.change(screen.getByLabelText('지원서 마감일'), { target: { value: '2099-12-31' } })
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: /공고 꾸미기/ }))
@@ -119,13 +116,13 @@ it('매장 선택 직후 이동해도 저장 실패 시 선택을 유지하고 �
   render(<BuildWizard data={data} />)
   fireEvent.click(screen.getByRole('checkbox', { name: 'QA 매장' }))
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
+    fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ }))
   })
   expect(screen.getByRole('checkbox', { name: 'QA 매장' })).toBeChecked()
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
+    fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ }))
   })
-  expect(screen.getByLabelText('지원서 마감일')).toBeInTheDocument()
+  expect(screen.getByPlaceholderText('항목 이름')).toBeInTheDocument()
   expect(JSON.parse((fetch as jest.Mock).mock.calls[1][1].body)).toEqual({ storeIds: ['store-qa'] })
 })
 
@@ -148,7 +145,7 @@ it('매장 생성 후 연결 실패는 매장을 재생성하지 않고 연결�
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   expect(screen.getByRole('checkbox', { name: '새 QA 매장' })).toBeChecked()
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
+    fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ }))
   })
   expect((fetch as jest.Mock).mock.calls.map((call) => call[1].method)).toEqual([
     'POST',
@@ -172,9 +169,6 @@ it('마감일 저장 중 추가 변경도 순서대로 저장한다', async () =
     )
     .mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
-  await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
-  })
   const date = screen.getByLabelText('지원서 마감일')
   fireEvent.change(date, { target: { value: '2099-12-30' } })
   fireEvent.blur(date)
@@ -191,12 +185,9 @@ it('마감일 저장 중 추가 변경도 순서대로 저장한다', async () =
 it('새로 입력한 과거 마감일은 이동과 저장을 막는다', async () => {
   global.fetch = jest.fn().mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
-  await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ }))
-  })
   fireEvent.change(screen.getByLabelText('지원서 마감일'), { target: { value: '2000-01-01' } })
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: /공고 꾸미기/ }))
+    fireEvent.click(screen.getByRole('button', { name: '다음' }))
   })
   expect(screen.getByLabelText('지원서 마감일')).toHaveValue('2000-01-01')
   expect(fetch).not.toHaveBeenCalled()
@@ -205,7 +196,7 @@ it('새로 입력한 과거 마감일은 이동과 저장을 막는다', async (
 it('기존 지원서 이름을 비우면 자동 저장으로 삭제하지 않고 이동을 막는다', async () => {
   global.fetch = jest.fn().mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
-  await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ })))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ })))
   fireEvent.change(screen.getByPlaceholderText('항목 이름'), { target: { value: '   ' } })
   fireEvent.blur(screen.getByPlaceholderText('항목 이름'))
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /공고 꾸미기/ })))
@@ -226,7 +217,7 @@ it('기존 지원서 이름을 비우면 자동 저장으로 삭제하지 않고
 it('새 빈 지원서 항목은 명시적으로 삭제한 후 이동할 수 있다', async () => {
   global.fetch = jest.fn().mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
-  await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ })))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ })))
   fireEvent.click(screen.getByRole('button', { name: '항목 추가' }))
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /공고 꾸미기/ })))
   expect(screen.getAllByPlaceholderText('항목 이름')).toHaveLength(2)
@@ -315,7 +306,7 @@ it('사이드바 링크도 빈 지원서 항목이 있으면 이동하지 않는
       <BuildWizard data={data} />
     </>
   )
-  await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ })))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ })))
   fireEvent.click(screen.getByRole('button', { name: '항목 추가' }))
   await act(async () => fireEvent.click(screen.getByRole('link', { name: '사이드바 홈' })))
   expect(push).not.toHaveBeenCalled()
@@ -330,7 +321,7 @@ it('빈 이름의 blur 자동 저장도 기존 서버 항목을 삭제하지 않
   global.fetch = jest.fn().mockResolvedValue({ ok: true })
   const { unmount } = render(<BuildWizard data={data} />)
   try {
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ })))
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ })))
     fireEvent.change(screen.getByPlaceholderText('항목 이름'), { target: { value: '' } })
     fireEvent.blur(screen.getByPlaceholderText('항목 이름'))
     await act(async () => jest.advanceTimersByTime(700))
@@ -342,19 +333,15 @@ it('빈 이름의 blur 자동 저장도 기존 서버 항목을 삭제하지 않
   }
 })
 
-it('보조 지원서 설정에서 빈 항목은 복귀를 막고 삭제 후 공고 꾸미기로 돌아간다', async () => {
+it('지원서 작성 단계에서 빈 항목은 다음 이동을 막고 삭제 후 공고 꾸미기로 이동한다', async () => {
   global.fetch = jest.fn().mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
-  await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 설정/ })))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /지원서 작성/ })))
   fireEvent.click(screen.getByRole('button', { name: '항목 추가' }))
-  await act(async () =>
-    fireEvent.click(screen.getByRole('button', { name: '설정 저장하고 돌아가기' }))
-  )
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '다음' })))
   expect(screen.getByRole('button', { name: '빈 항목 삭제' })).toBeInTheDocument()
   expect(screen.queryByText('본문 편집')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: '빈 항목 삭제' }))
-  await act(async () =>
-    fireEvent.click(screen.getByRole('button', { name: '설정 저장하고 돌아가기' }))
-  )
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '다음' })))
   expect(screen.getByText('본문 편집')).toBeInTheDocument()
 })
