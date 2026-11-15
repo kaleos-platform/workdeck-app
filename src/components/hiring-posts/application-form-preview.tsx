@@ -13,10 +13,18 @@ type Props = {
   title: string
   closingDate: string // 'YYYY-MM-DD' 또는 ''
   fields: FormFieldInput[]
+  positions?: string[]
+  stores?: string[]
 }
 
 // 공개 지원 폼 미리보기 — wizard 로컬 상태에서 즉시 렌더(모든 컨트롤 disabled).
-export function ApplicationFormPreview({ title, closingDate, fields }: Props) {
+export function ApplicationFormPreview({
+  title,
+  closingDate,
+  fields,
+  positions = [],
+  stores = [],
+}: Props) {
   return (
     <Card className="rounded-xl">
       <CardContent className="space-y-5">
@@ -30,6 +38,18 @@ export function ApplicationFormPreview({ title, closingDate, fields }: Props) {
               </Badge>
             )}
           </div>
+          <dl className="space-y-0.5 text-xs text-muted-foreground">
+            <div className="flex gap-2">
+              <dt>모집 직무</dt>
+              <dd className="text-foreground">{positions.join(', ') || '없음'}</dd>
+            </div>
+            {stores.length > 0 && (
+              <div className="flex gap-2">
+                <dt>모집 장소</dt>
+                <dd className="text-foreground">{stores.join(', ')}</dd>
+              </div>
+            )}
+          </dl>
         </div>
 
         <div className="space-y-3">

@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DuplicatedBadge, BlacklistBadge } from '@/components/hiring-applicants/badges'
 import { StageControls } from '@/components/hiring-applicants/stage-controls'
 import { CommentThread } from '@/components/hiring-applicants/comment-thread'
+import { SmsSender } from '@/components/hiring-applicants/sms-sender'
 import { NotificationSender } from '@/components/hiring-applicants/notification-sender'
 import { BlacklistButton, FileDownloadList } from '@/components/hiring-applicants/detail-actions'
 import { NOTIFICATION_LABELS } from '@/lib/hiring/applications'
@@ -161,7 +162,18 @@ export default async function ApplicationDetailPage({ params }: Params) {
               <CardTitle className="text-sm">액션</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
-              <NotificationSender applicationId={app.id} />
+              <SmsSender
+                phone={pii.phone}
+                name={pii.name}
+                postingTitle={app.posting?.title ?? null}
+                positionName={app.postingPosition?.name ?? null}
+              />
+              <NotificationSender
+                applicationId={app.id}
+                name={pii.name}
+                postingTitle={app.posting?.title ?? null}
+                positionName={app.postingPosition?.name ?? null}
+              />
               <BlacklistButton applicationId={app.id} blacklisted={blacklisted} />
             </CardContent>
           </Card>
