@@ -1,6 +1,7 @@
 /** @jest-environment node */
 import { POST } from '../route'
 import { prisma } from '@/lib/prisma'
+import { templateAccessScope } from '@/lib/hiring/template-scope'
 import type { NextRequest } from 'next/server'
 
 jest.mock('@/lib/api-helpers', () => ({
@@ -46,7 +47,7 @@ it('워크덱 제공 템플릿을 내 템플릿으로 복사하고 블록을 그
   // 샘플 접근 범위(전역 샘플 포함)로 조회한다.
   expect(prisma.hiringDetailTemplate.findFirst).toHaveBeenCalledWith(
     expect.objectContaining({
-      where: { id: 'src', OR: [{ spaceId: 'space' }, { spaceId: null, isSample: true }] },
+      where: { id: 'src', ...templateAccessScope('space') },
     })
   )
   expect(tx.hiringDetailTemplate.create).toHaveBeenCalledWith(
