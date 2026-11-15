@@ -183,7 +183,17 @@ export async function resendInvitation(
       ...(opts.role && { role: opts.role }),
     },
   })
-  if (claimed.count !== 1) throw new InvitationError(429, 'resend_cooldown')
+  if (claimed.count !== 1) {
+    // 그 사이 수락·취소·만료됐으면 그 사유로, 아니면 동시 다시 보내기(쿨다운)로 알린다.
+    const now2 = await prisma.spaceInvitation.findFirst({
+      where: { id: inv.id, spaceId },
+      select: { expiresAt: true, acceptedAt: true, revokedAt: true },
+    })
+    const state = now2 ? invitationState(now2) : 'not_found'
+    if (state === 'not_found') throw new InvitationError(404, 'not_found')
+    if (state !== 'pending') throw new InvitationError(410, state)
+    throw new InvitationError(429, 'resend_cooldown')
+  }
   return {
     invitation: {
       id: inv.id,

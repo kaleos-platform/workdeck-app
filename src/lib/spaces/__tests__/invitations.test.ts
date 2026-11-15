@@ -417,6 +417,16 @@ describe('resendInvitation', () => {
       reason: 'resend_cooldown',
     })
   })
+  it('갱신 0건인데 그 사이 수락됐으면 410 accepted(쿨다운 문구 아님)', async () => {
+    m.spaceInvitation.findFirst
+      .mockResolvedValueOnce(row())
+      .mockResolvedValueOnce(row({ acceptedAt: new Date() }))
+    m.spaceInvitation.updateMany.mockResolvedValue({ count: 0 })
+    await expect(resendInvitation('sp-1', 'inv-1')).rejects.toMatchObject({
+      status: 410,
+      reason: 'accepted',
+    })
+  })
 })
 
 describe('createInvitation 대기 초대 재초대', () => {

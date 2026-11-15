@@ -172,6 +172,23 @@ it('대기 초대를 취소하면 DELETE 후 목록을 다시 불러온다', asy
   await waitFor(() => expect(screen.queryByText(/p@example.com/)).not.toBeInTheDocument())
 })
 
+it('취소가 2단계 인증을 요구하면 단계 인증으로 보낸다(목록은 AAL2 없이 보임)', async () => {
+  jest.spyOn(window, 'confirm').mockReturnValue(true)
+  mfaRedirect.mockResolvedValue(true)
+  fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+    if (url.startsWith('/api/spaces/members')) return json(owner)
+    if (init?.method === 'DELETE') return json({ code: 'MFA_REQUIRED' }, 403)
+    if (url === '/api/spaces/sp-1/invitations')
+      return json({ invitations: [{ ...pendingInv, id: 'inv-9', email: 'p@example.com' }] })
+    return json({}, 404)
+  })
+  render(<MembersCard />)
+  fireEvent.click(await screen.findByRole('button', { name: '취소' }))
+  await waitFor(() => expect(mfaRedirect).toHaveBeenCalled())
+  expect(screen.queryByText('초대를 취소하지 못했습니다')).not.toBeInTheDocument()
+  mfaRedirect.mockReset()
+})
+
 it('구성원 목록 403이면 API 메시지를 보여준다', async () => {
   fetchMock.mockImplementation(() => json({ message: '관리자 이상만 볼 수 있습니다' }, 403))
   render(<MembersCard />)
