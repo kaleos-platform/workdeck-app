@@ -91,6 +91,10 @@ export function LeadForm({ deck, doneMessage }: { deck: string; doneMessage?: st
           {doneMessage ??
             '신청이 완료되었습니다. 담당자가 확인 후 24시간 안에 이메일로 안내드릴게요.'}
         </p>
+        {/* 중복·과다 접수·발송 실패 때도 거짓이 되지 않도록 발송을 단정하지 않는다 */}
+        <p className="text-sm break-keep text-muted-foreground">
+          확인 메일이 보이지 않으면 스팸함을 확인하거나 hello@workdeck.work 로 알려 주세요.
+        </p>
       </div>
     )
   }

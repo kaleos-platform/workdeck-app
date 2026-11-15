@@ -8,7 +8,8 @@ import { publicRequestKey } from '@/lib/hiring/public-request'
 import { encryptPii } from '@/lib/del/encryption'
 import { DECK_META } from '@/lib/deck-meta'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
-import { notifyEmail, notifySlack } from '@/lib/marketing/lead-notify'
+import { notifyApplicant, notifyEmail, notifySlack } from '@/lib/marketing/lead-notify'
+import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 import { employeeCountLabel, marketingLeadRequestSchema } from '@/lib/validations/marketing-lead'
 
 export const runtime = 'nodejs'
@@ -85,7 +86,13 @@ export async function POST(req: NextRequest) {
     deckName: DECK_META[deck as keyof typeof DECK_META].name,
     phone,
   }
-  const results = await Promise.allSettled([notifySlack(notify), notifyEmail(notify)])
+  // 공개 여부는 서버의 단일 출처로 판정(클라이언트 값 불신). 판정 실패 시 틀린 안내를 보내지 않도록 신청자 메일만 건너뛴다.
+  const releasedIds = await getReleasedDeckIds().catch(() => null)
+  const results = await Promise.allSettled([
+    notifySlack(notify),
+    notifyEmail(notify),
+    ...(releasedIds ? [notifyApplicant(notify, { released: releasedIds.includes(deck) })] : []),
+  ])
   for (const r of results) {
     // 개인정보가 섞이지 않도록 메시지만 남긴다
     if (r.status === 'rejected') console.error('[leads] 알림 실패:', (r.reason as Error)?.message)
