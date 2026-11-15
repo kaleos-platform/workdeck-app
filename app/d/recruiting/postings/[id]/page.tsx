@@ -30,7 +30,7 @@ export default async function PostingDetailPage({ params, searchParams }: PagePr
   if ('error' in resolved) redirect('/my-deck')
   const { id } = await params
   const { tab: rawTab, ...listParams } = await searchParams
-  const tab = rawTab === 'applicants' || rawTab === 'content' ? rawTab : 'recruit'
+  const tab = rawTab === 'applicants' ? 'applicants' : 'recruit' // 레거시 content 등은 공고 상세로
 
   const posting = await getPostingDetail(resolved.space.id, id)
   if (!posting) notFound()

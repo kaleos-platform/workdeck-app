@@ -1,6 +1,10 @@
 // 지원자 교차 목록(server component) — 목록 조회·필터는 공유 섹션이 처리한다.
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { UserX } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { RECRUITING_BLACKLIST_PATH } from '@/lib/deck-routes'
 import {
   ApplicationsListSection,
   type ApplicationsSearchParams,
@@ -15,11 +19,18 @@ export default async function ApplicationsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-4 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">지원자 목록</h1>
-        <p className="text-sm text-muted-foreground">
-          전체 공고의 지원서를 한 곳에서 검토하고 단계를 관리합니다.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">지원자 목록</h1>
+          <p className="text-sm text-muted-foreground">
+            전체 공고의 지원서를 한 곳에서 검토하고 단계를 관리합니다.
+          </p>
+        </div>
+        <Button variant="outline" asChild>
+          <Link href={RECRUITING_BLACKLIST_PATH}>
+            <UserX /> 블랙리스트
+          </Link>
+        </Button>
       </div>
 
       <ApplicationsListSection

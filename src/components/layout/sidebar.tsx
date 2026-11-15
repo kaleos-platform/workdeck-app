@@ -98,11 +98,7 @@ import {
   RECRUITING_HOME_PATH,
   RECRUITING_POSTINGS_PATH,
   RECRUITING_APPLICATIONS_PATH,
-  RECRUITING_BLACKLIST_PATH,
-  RECRUITING_MESSAGE_TEMPLATES_PATH,
-  RECRUITING_DETAIL_TEMPLATES_PATH,
-  RECRUITING_STORES_PATH,
-  RECRUITING_POSITIONS_PATH,
+  RECRUITING_SETTINGS_PATH,
   APPROVALS_PATH,
   SETTINGS_INTEGRATIONS_PATH,
   SETTINGS_AI_PATH,
@@ -198,13 +194,7 @@ const RECRUITING_MAIN_ROUTES = [
   { label: '홈', icon: Home, href: RECRUITING_HOME_PATH },
   { label: '공고 관리', icon: Briefcase, href: RECRUITING_POSTINGS_PATH },
   { label: '지원자', icon: Users, href: RECRUITING_APPLICATIONS_PATH },
-]
-const RECRUITING_SETTINGS_ITEMS: SidebarItem[] = [
-  { label: '공고 템플릿', href: RECRUITING_DETAIL_TEMPLATES_PATH },
-  { label: '메시지 템플릿', href: RECRUITING_MESSAGE_TEMPLATES_PATH },
-  { label: '매장 관리', href: RECRUITING_STORES_PATH },
-  { label: '직무 관리', href: RECRUITING_POSITIONS_PATH },
-  { label: '블랙리스트', href: RECRUITING_BLACKLIST_PATH },
+  { label: '설정', icon: Settings, href: RECRUITING_SETTINGS_PATH },
 ]
 
 const COUPANG_MAIN_ROUTES = [
@@ -728,13 +718,6 @@ export function Sidebar({
                 )
               })}
             </div>
-            <SidebarSection
-              label="설정"
-              icon={Settings}
-              items={RECRUITING_SETTINGS_ITEMS}
-              collapsed={collapsed}
-              onExpand={expand}
-            />
           </div>
         )}
 
