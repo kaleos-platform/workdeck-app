@@ -422,7 +422,10 @@ export const SpaceInvitationScalarFieldEnum = {
   acceptedAt: 'acceptedAt',
   acceptedUserId: 'acceptedUserId',
   revokedAt: 'revokedAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  lastSentAt: 'lastSentAt',
+  sendCount: 'sendCount',
+  lastSendFailed: 'lastSendFailed'
 } as const
 
 export type SpaceInvitationScalarFieldEnum = (typeof SpaceInvitationScalarFieldEnum)[keyof typeof SpaceInvitationScalarFieldEnum]

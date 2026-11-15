@@ -3,7 +3,7 @@ import {
   acceptInvitation,
   createInvitation,
   findInvitationByToken,
-  listPendingInvitations,
+  listInvitations,
   revokeInvitation,
 } from '../invitations'
 
@@ -49,7 +49,7 @@ d('Space 초대 (실 DB)', () => {
     })
     const found = await findInvitationByToken(token)
     expect(found).toMatchObject({ spaceName: 'E2E 초대', role: 'ADMIN', invitedByName: '소유자' })
-    expect(await listPendingInvitations(SP)).toHaveLength(1)
+    expect(await listInvitations(SP)).toHaveLength(1)
 
     const u = { id: INVITEE, email: EMAIL, emailConfirmed: true, name: null }
     const results = await Promise.allSettled([
@@ -68,7 +68,7 @@ d('Space 초대 (실 DB)', () => {
     expect(await prisma.spaceMember.count({ where: { userId: INVITEE } })).toBe(1)
   })
 
-  it('재초대는 이전 대기 초대를 닫고, 취소한 초대는 수락할 수 없다', async () => {
+  it('대기 중 재초대는 같은 행을 새 토큰으로 갱신하고 이전 토큰은 무효, 취소한 초대는 수락할 수 없다', async () => {
     const other = 'e2e-other@example.com'
     const first = await createInvitation({
       spaceId: SP,
@@ -76,13 +76,21 @@ d('Space 초대 (실 DB)', () => {
       role: 'MEMBER',
       invitedById: OWNER,
     })
+    // 쿨다운을 건너뛰도록 마지막 발송 시각을 과거로
+    await prisma.spaceInvitation.update({
+      where: { id: first.invitation.id },
+      data: { lastSentAt: new Date(Date.now() - 120_000) },
+    })
     const second = await createInvitation({
       spaceId: SP,
       email: other,
-      role: 'MEMBER',
+      role: 'ADMIN',
       invitedById: OWNER,
     })
-    expect((await findInvitationByToken(first.token))?.revokedAt).not.toBeNull()
+    expect(second.resent).toBe(true)
+    expect(second.invitation.id).toBe(first.invitation.id)
+    expect(await findInvitationByToken(first.token)).toBeNull()
+    expect((await findInvitationByToken(second.token))?.role).toBe('ADMIN')
     expect(await revokeInvitation(SP, second.invitation.id)).toBe(true)
     expect(await revokeInvitation('other-space', second.invitation.id)).toBe(false)
     await expect(
