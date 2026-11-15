@@ -76,6 +76,7 @@ const isCandidate = (t: string) =>
 
 // 순서대로 적용(계획 §1)
 const RULES: [RegExp, string][] = [
+  [/Google에서 Chat GPT 프로젝트를 주도/g, 'AI 프로젝트 주도'], // 사용자 결정: 이 줄만 중립화(Chat GPT 자체는 유지)
   [EMAIL, 'recruit@example.com'],
   [/010-1234-1234/g, '010-0000-0000'],
   [
@@ -157,22 +158,20 @@ function decide(block: Block, els: El[], e: El): Decision | null {
   if (stripped !== t && !isCandidate(stripped))
     return mk(t, 'keep', 'SPEAKER 의 PEAK 오탐 / 마스킹된 번호')
   if (/김워크/.test(t) && applyRules(t) === t && !t.match(PHONE))
-    return mk(t, 'review', '가상 인물명(결정 대상)')
-  if (/chat\s*gpt/i.test(t) && applyRules(t) === t) return mk(t, 'review', '타사 상표(결정 대상)')
+    return mk(t, 'keep', '가상 인물명 유지(사용자 결정)')
+  if (/chat\s*gpt/i.test(t) && applyRules(t) === t)
+    return mk(t, 'keep', '타사 상표 유지(사용자 결정)')
   let p = applyRules(t)
   let note = ''
-  let action: Decision['action'] = 'replace'
+  const action: Decision['action'] = 'replace'
   if (p === t) {
     const phones = t.match(PHONE) ?? []
-    if (phones.length > 0 && !/^(?:010-0000-0000|02-000-0000|000-0000-0000)$/.test(t.trim())) {
-      p = t.replace(PHONE, '000-0000-0000')
-      return mk(p, 'review', '규칙에 없는 전화형 — 제안: 000-0000-0000')
+    const masked = /^(?:010-0000-0000|02-000-0000|0+-0+-0+)$/
+    if (phones.length > 0 && !phones.every((ph) => masked.test(ph.replace(/\s/g, '')))) {
+      p = t.replace(PHONE, '02-000-0000') // 규칙에 없는 전화형(예: 123-123-1234)은 02-000-0000 (사용자 결정)
+      return mk(p, 'replace', '규칙에 없는 전화형 → 02-000-0000')
     }
     return mk(t, 'keep', '치환 규칙 해당 없음/이미 중립 값')
-  }
-  if (/오픈샐러드/.test(t)) {
-    action = 'review'
-    note = '가상 브랜드 고유명(결정 대상)'
   }
   if (p === '') note = '요소 삭제(단독 OPENING)'
   return mk(p, action, note)
