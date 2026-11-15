@@ -12,11 +12,49 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
-import { mfaStepUpPath } from '@/lib/auth/mfa-policy'
 
 type Member = { id: string; role: string; user: { email: string; name: string | null } }
-type Invitation = { id: string; email: string; role: string; expiresAt: string }
-type Created = { link: string; emailSent: boolean; emailSkipReason?: string; expiresAt?: string }
+type InviteState = 'pending' | 'accepted' | 'expired' | 'revoked'
+type Invitation = {
+  id: string
+  email: string
+  role: string
+  state: InviteState
+  expiresAt: string
+  lastSentAt: string | null
+  lastSendFailed: boolean
+  acceptedAt: string | null
+  revokedAt: string | null
+}
+type Created = { link: string; emailSent: boolean; resent?: boolean; expiresAt?: string }
+
+const STATE_BADGE: Record<InviteState, { label: string; className: string }> = {
+  pending: {
+    label: '대기',
+    className:
+      'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400',
+  },
+  accepted: {
+    label: '수락',
+    className:
+      'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400',
+  },
+  expired: { label: '만료', className: 'border-border bg-muted text-muted-foreground' },
+  revoked: { label: '취소', className: 'border-border bg-muted text-muted-foreground' },
+}
+
+const fmtDate = (v: string) => new Date(v).toLocaleDateString('ko-KR')
+const fmtDateTime = (v: string) =>
+  new Date(v).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' })
+
+function inviteMeta(i: Invitation): string {
+  if (i.state === 'accepted' && i.acceptedAt) return `${fmtDateTime(i.acceptedAt)} 수락`
+  if (i.state === 'revoked' && i.revokedAt) return `${fmtDateTime(i.revokedAt)} 취소`
+  if (i.state === 'expired') return `${fmtDate(i.expiresAt)} 만료`
+  return [`${fmtDate(i.expiresAt)} 만료`, i.lastSentAt && `${fmtDateTime(i.lastSentAt)} 발송`]
+    .filter(Boolean)
+    .join(' · ')
+}
 const NET_ERR = '네트워크 오류로 요청하지 못했습니다.'
 
 export function MembersCard() {
@@ -27,7 +65,6 @@ export function MembersCard() {
   const [members, setMembers] = useState<Member[]>([])
   const [invites, setInvites] = useState<Invitation[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [mfaNeeded, setMfaNeeded] = useState(false)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'ADMIN' | 'MEMBER'>('ADMIN')
   const [created, setCreated] = useState<Created | null>(null)
@@ -39,7 +76,6 @@ export function MembersCard() {
 
   const load = useCallback(async () => {
     setError(null)
-    setMfaNeeded(false)
     try {
       const res = await fetch('/api/spaces/members')
       const body = await res.json().catch(() => null)
@@ -54,13 +90,9 @@ export function MembersCard() {
       setLimitInput(body.approvalLimitKrw == null ? '' : String(body.approvalLimitKrw))
       if (body.myRole === 'OWNER') {
         const inv = await fetch(`/api/spaces/${body.spaceId}/invitations`)
-        // MFA(aal2)가 아니면 403 — 보기만 하는 화면이라 이동시키지 않고 메시지만(변경 동작에서 단계 인증으로 보낸다).
         const ib = await inv.json().catch(() => null)
         if (inv.ok) setInvites(ib.invitations)
-        else {
-          setError(ib?.message ?? '초대 목록을 불러오지 못했습니다')
-          setMfaNeeded(inv.status === 403 && ib?.code === 'MFA_REQUIRED')
-        }
+        else setError(ib?.message ?? '초대 목록을 불러오지 못했습니다')
       }
     } catch {
       setError(NET_ERR)
@@ -71,7 +103,8 @@ export function MembersCard() {
     void load()
   }, [load])
 
-  async function invite() {
+  // target 이 있으면 목록의 「다시 초대」 — 폼 입력은 건드리지 않는다.
+  async function invite(target?: { email: string; role: 'ADMIN' | 'MEMBER' }) {
     if (!spaceId) return
     setPending(true)
     setError(null)
@@ -80,7 +113,7 @@ export function MembersCard() {
       const res = await fetch(`/api/spaces/${spaceId}/invitations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), role }),
+        body: JSON.stringify(target ?? { email: email.trim(), role }),
       })
       if (await redirectIfMfaRequired(res)) return
       const body = await res.json().catch(() => null)
@@ -89,9 +122,9 @@ export function MembersCard() {
         expiresAt: body.expiresAt,
         link: body.link,
         emailSent: body.emailSent,
-        emailSkipReason: body.emailSkipReason,
+        resent: body.resent,
       })
-      setEmail('')
+      if (!target) setEmail('')
       await load()
     } catch {
       setError(NET_ERR)
@@ -113,6 +146,28 @@ export function MembersCard() {
       await load()
     } catch {
       setError(NET_ERR)
+    }
+  }
+
+  // 다시 보내기 — OWNER 만(AAL2 면제). 새 링크가 나오고 이전 링크는 무효.
+  async function resend(id: string) {
+    if (!spaceId) return
+    setPending(true)
+    setError(null)
+    setCopied(false)
+    try {
+      const res = await fetch(`/api/spaces/${spaceId}/invitations/${id}/resend`, { method: 'POST' })
+      const body = await res.json().catch(() => null)
+      if (!res.ok) {
+        await load()
+        return setError(body?.message ?? '다시 보내지 못했습니다')
+      }
+      setCreated({ link: body.link, emailSent: body.emailSent, expiresAt: body.expiresAt })
+      await load()
+    } catch {
+      setError(NET_ERR)
+    } finally {
+      setPending(false)
     }
   }
 
@@ -192,13 +247,11 @@ export function MembersCard() {
 
   const notice = !created
     ? null
-    : created.emailSent
-      ? '초대 메일을 보냈습니다. 아래 링크로도 전달할 수 있습니다.'
-      : created.emailSkipReason === 'already_registered'
-        ? '이미 가입된 이메일이라 메일을 보내지 않았습니다. 아래 링크를 복사해 전달하세요.'
-        : created.emailSkipReason === 'stale_resend'
-          ? '이전 초대 메일을 다시 보낼 수 없어 메일을 보내지 않았습니다. 아래 링크를 복사해 전달하세요.'
-          : '초대 메일을 보내지 못했습니다. 아래 링크를 복사해 전달하세요.'
+    : !created.emailSent
+      ? '메일을 보내지 못했습니다. 잠시 뒤 다시 보내거나 아래 링크를 복사해 전달하세요.'
+      : created.resent
+        ? '이미 대기 중인 초대가 있어 다시 보냈습니다.'
+        : '초대 메일을 보냈습니다. 메일이 오지 않으면 아래 링크를 전달하세요.'
 
   return (
     <Card>
@@ -206,22 +259,7 @@ export function MembersCard() {
         <CardTitle>구성원</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {error && (
-          <p className="text-sm text-destructive">
-            {error}
-            {mfaNeeded && (
-              <>
-                {' '}
-                <a
-                  className="underline"
-                  href={mfaStepUpPath(window.location.pathname + window.location.search)}
-                >
-                  인증하기
-                </a>
-              </>
-            )}
-          </p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <ul className="divide-y text-sm">
           {members.map((m) => (
             <li key={m.id} className="flex items-center justify-between gap-2 py-2">
@@ -312,7 +350,7 @@ export function MembersCard() {
                   <SelectItem value="MEMBER">MEMBER</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={invite} disabled={pending || !email.trim()}>
+              <Button onClick={() => invite()} disabled={pending || !email.trim()}>
                 {spaceName ? `「${spaceName}」에 초대` : '초대 보내기'}
               </Button>
             </div>
@@ -326,7 +364,7 @@ export function MembersCard() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  이 링크는 지금만 표시됩니다.
+                  메일이 안 오면 이 링크를 전달하세요. 지금만 표시됩니다.
                   {created.expiresAt &&
                     ` ${new Date(created.expiresAt).toLocaleDateString('ko-KR')}에 만료됩니다.`}
                 </p>
@@ -335,14 +373,48 @@ export function MembersCard() {
             {invites.length > 0 && (
               <ul className="divide-y text-sm">
                 {invites.map((i) => (
-                  <li key={i.id} className="flex items-center justify-between py-2">
-                    <span>
-                      {i.email} · {i.role} · {new Date(i.expiresAt).toLocaleDateString('ko-KR')}{' '}
-                      만료
+                  <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span>
+                        {i.email} · {i.role}
+                      </span>
+                      <span
+                        className={`rounded border px-1.5 py-0.5 text-xs ${STATE_BADGE[i.state].className}`}
+                      >
+                        {STATE_BADGE[i.state].label}
+                      </span>
+                      {i.state === 'pending' && i.lastSendFailed && (
+                        <span className="text-xs text-destructive">메일 실패</span>
+                      )}
+                      <span className="text-xs text-muted-foreground">{inviteMeta(i)}</span>
                     </span>
-                    <Button variant="ghost" size="sm" onClick={() => revoke(i.id)}>
-                      취소
-                    </Button>
+                    {i.state === 'pending' && (
+                      <span className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => resend(i.id)}
+                          disabled={pending}
+                        >
+                          다시 보내기
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => revoke(i.id)}>
+                          취소
+                        </Button>
+                      </span>
+                    )}
+                    {(i.state === 'expired' || i.state === 'revoked') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          invite({ email: i.email, role: i.role as 'ADMIN' | 'MEMBER' })
+                        }
+                        disabled={pending}
+                      >
+                        다시 초대
+                      </Button>
+                    )}
                   </li>
                 ))}
               </ul>
