@@ -1,7 +1,7 @@
 import { hasRole, type Role } from '@/lib/auth/roles'
 
 const LABEL: Record<Role, string> = {
-  OWNER: 'Space 소유자(OWNER)',
+  OWNER: '작업 공간 소유자(OWNER)',
   ADMIN: 'ADMIN 이상',
   MEMBER: '구성원',
 }

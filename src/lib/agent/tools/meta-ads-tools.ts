@@ -24,7 +24,7 @@ import type { ToolDefinition } from './types'
 const brand = z
   .string()
   .optional()
-  .describe('브랜드 키(Space 메타 광고 자격증명의 adAccounts 키). 없으면 기본 브랜드')
+  .describe('브랜드 키(작업 공간 메타 광고 자격증명의 adAccounts 키). 없으면 기본 브랜드')
 
 const listCampaigns: ToolDefinition = {
   name: 'meta_ads_list_campaigns',
@@ -83,7 +83,7 @@ const BREAKDOWNS = [
 const getInsights: ToolDefinition = {
   name: 'meta_ads_get_insights',
   description:
-    '계정·캠페인·광고세트·광고의 성과(지출·노출·클릭·전환·ROAS)를 반환합니다. object_id를 주지 않으면 브랜드 광고 계정 기준입니다. 이 Space 광고 계정에 속한 객체만 조회할 수 있습니다. 기간은 date_preset 또는 time_range(since·until), 일별은 time_increment=1, 분해는 breakdowns(age·gender·publisher_platform·platform_position·impression_device·hourly), 다음 페이지는 paging.cursors.after를 after로 넘깁니다.',
+    '계정·캠페인·광고세트·광고의 성과(지출·노출·클릭·전환·ROAS)를 반환합니다. object_id를 주지 않으면 브랜드 광고 계정 기준입니다. 이 작업 공간 광고 계정에 속한 객체만 조회할 수 있습니다. 기간은 date_preset 또는 time_range(since·until), 일별은 time_increment=1, 분해는 breakdowns(age·gender·publisher_platform·platform_position·impression_device·hourly), 다음 페이지는 paging.cursors.after를 after로 넘깁니다.',
   inputSchema: {
     brand,
     object_id: z
@@ -189,7 +189,7 @@ const after = z.string().min(1).max(512).optional().describe('이전 응답 pagi
 const getObject: ToolDefinition = {
   name: 'meta_ads_get_object',
   description:
-    '광고 세트·광고·소재·A/B 테스트 한 건의 상세를 반환합니다. adset: targeting·예산·기간·게재 상태·issues_info, ad: 게재 상태·검토 결과(ad_review_feedback)·소재, creative: object_story_spec·url_tags·degrees_of_freedom_spec, adstudy: cells·기간·쿨다운. 이 Space 광고 계정에 속한 객체만 조회합니다(adstudy는 cells의 캠페인·광고세트 소속을 하나씩 확인해 느릴 수 있고, cells 100개·항목 500개를 넘으면 거부합니다).',
+    '광고 세트·광고·소재·A/B 테스트 한 건의 상세를 반환합니다. adset: targeting·예산·기간·게재 상태·issues_info, ad: 게재 상태·검토 결과(ad_review_feedback)·소재, creative: object_story_spec·url_tags·degrees_of_freedom_spec, adstudy: cells·기간·쿨다운. 이 작업 공간 광고 계정에 속한 객체만 조회합니다(adstudy는 cells의 캠페인·광고세트 소속을 하나씩 확인해 느릴 수 있고, cells 100개·항목 500개를 넘으면 거부합니다).',
   inputSchema: {
     brand,
     type: z.enum(['adset', 'ad', 'creative', 'adstudy']),

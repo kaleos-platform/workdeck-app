@@ -18,7 +18,7 @@ import type { ToolDefinition } from './types'
 const brand = z
   .string()
   .optional()
-  .describe('브랜드 키(Space 네이버 검색광고 자격증명의 customers 키). 없으면 기본 브랜드')
+  .describe('브랜드 키(작업 공간 네이버 검색광고 자격증명의 customers 키). 없으면 기본 브랜드')
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 // 형식뿐 아니라 실제 달력 날짜인지 확인한다(2026-13-45 같은 값이 기간 상한 검사를 NaN 으로 통과하지 않게).
@@ -76,7 +76,7 @@ const REQUEST_TIMEOUT_MS = 20_000
 const listCustomers: ToolDefinition = {
   name: 'naver_ads_list_customers',
   description:
-    '이 Space 에 연결된 네이버 검색광고 광고 계정(브랜드 → CUSTOMER_ID)을 반환합니다. include_linked=true 면 API 키 계정이 관리하는 광고주 전체 목록(/customer-links, Space 에 연결되지 않은 계정 포함)도 함께 조회합니다 — 조회 대상 계정은 연결된 브랜드로만 고를 수 있습니다.',
+    '이 작업 공간에 연결된 네이버 검색광고 광고 계정(브랜드 → CUSTOMER_ID)을 반환합니다. include_linked=true 면 API 키 계정이 관리하는 광고주 전체 목록(/customer-links, 작업 공간에 연결되지 않은 계정 포함)도 함께 조회합니다 — 조회 대상 계정은 연결된 브랜드로만 고를 수 있습니다.',
   inputSchema: { include_linked: z.boolean().optional() },
   mode: 'read',
   scope: 'naver:read',

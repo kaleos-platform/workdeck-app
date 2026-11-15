@@ -68,7 +68,7 @@ d('Space 격리', () => {
     })
     await expect(
       runTool(tool('ads_get_kpi'), agentCtx(B), { startDate: '2026-10-01', endDate: '2026-10-07' })
-    ).rejects.toThrow('쿠팡 워크스페이스가 이 Space에 연결되어 있지 않습니다')
+    ).rejects.toThrow('쿠팡 워크스페이스가 이 작업 공간에 연결되어 있지 않습니다')
   })
 
   it('Space A 에이전트가 Space B의 같은 이름 비밀값을 쓰면 거부된다', async () => {

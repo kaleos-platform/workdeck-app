@@ -26,7 +26,8 @@ export function OsmuReviewSection({ requestId, photos }: { requestId: string; ph
         const json = await res.json().catch(() => ({}))
         if (!alive) return
         if (res.ok) setReview(json)
-        else setError(json.message ?? '소재를 불러오지 못했습니다(이 요청의 Space 에서 열어주세요)')
+        else
+          setError(json.message ?? '소재를 불러오지 못했습니다(이 요청의 작업 공간에서 열어주세요)')
       })
       .catch(() => alive && setError('소재를 불러오지 못했습니다'))
     return () => {

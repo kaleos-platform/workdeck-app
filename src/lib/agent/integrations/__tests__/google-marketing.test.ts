@@ -503,7 +503,7 @@ describe('google-marketing (포팅)', () => {
     const forged = { ...TARGET, gtm_container_id: '999' }
     await expect(
       action('gtm.workspace.create').validateCreate!(execCtx(), { target: forged, params: {} })
-    ).rejects.toThrow('구글 마케팅 대상 매핑이 바뀌었거나 이 Space에 등록되지 않은 대상입니다')
+    ).rejects.toThrow('구글 마케팅 대상 매핑이 바뀌었거나 이 작업 공간에 등록되지 않은 대상입니다')
     await expect(
       action('gtm.workspace.create').validateCreate!(execCtx(), {
         target: { ...TARGET, brand: 'nope' },
