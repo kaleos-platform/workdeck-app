@@ -37,7 +37,7 @@ export function DetailActionBar({
 
   return (
     <>
-      <div className="sticky bottom-0 z-10 -mx-1 mt-4 flex justify-center gap-2 border-t bg-background px-4 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] max-sm:[&>button]:flex-1">
+      <div className="sticky bottom-0 z-10 -mx-1 mt-auto flex justify-center gap-2 border-t bg-background px-4 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] max-sm:[&>button]:flex-1">
         <Button variant="outline" onClick={() => setStageOpen(true)}>
           모집 단계 변경
         </Button>

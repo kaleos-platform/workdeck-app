@@ -34,7 +34,8 @@ export function SmsComposer({ phone, name, postingTitle, positionName }: Props) 
   const [copied, setCopied] = useState(false)
   const digits = normalizeSmsPhone(phone)
   // 다이얼로그가 열린 뒤(클라이언트)에만 마운트되므로 hydration 불일치 없음
-  const touch = window.matchMedia?.('(pointer: coarse)').matches ?? false
+  const touch =
+    typeof window !== 'undefined' && (window.matchMedia?.('(pointer: coarse)').matches ?? false)
 
   useEffect(() => {
     fetch('/api/hiring-applicants/message-templates')

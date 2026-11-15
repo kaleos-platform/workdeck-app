@@ -55,7 +55,7 @@ export function MemoPanel({ applicationId, currentUserId, initial, legacyMemo }:
         <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
       </button>
 
-      <section className="hidden space-y-3 rounded-lg border p-4 lg:block">
+      <section className="hidden min-h-0 flex-col gap-3 rounded-lg border p-4 lg:flex lg:max-h-[calc(100dvh-6rem)]">
         <h2 className="text-sm font-semibold">메모</h2>
         {thread}
       </section>

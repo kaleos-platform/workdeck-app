@@ -115,86 +115,84 @@ export function CommentThread({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
         {legacyMemo && (
           <div className="rounded-md border bg-muted/40 p-3 text-sm">
             <p className="text-xs font-medium text-muted-foreground">이전 메모(오프닝워크)</p>
             <p className="mt-1 whitespace-pre-wrap">{legacyMemo}</p>
           </div>
         )}
-        {comments.length === 0 ? (
-          <p className="text-xs text-muted-foreground">아직 메모가 없습니다.</p>
-        ) : (
-          comments.map((c) => (
-            <div key={c.id} className="rounded-md border p-3 text-sm">
-              {editingId === c.id ? (
-                <div className="space-y-2">
-                  <Textarea
-                    value={editDraft}
-                    disabled={busy}
-                    aria-label="메모 수정 내용"
-                    maxLength={2000}
-                    onChange={(e) => setEditDraft(e.target.value)}
-                    rows={2}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
+        {comments.length === 0
+          ? !legacyMemo && <p className="text-xs text-muted-foreground">아직 메모가 없습니다.</p>
+          : comments.map((c) => (
+              <div key={c.id} className="rounded-md border p-3 text-sm">
+                {editingId === c.id ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={editDraft}
                       disabled={busy}
-                      onClick={() => setEditingId(null)}
-                    >
-                      취소
-                    </Button>
-                    <Button size="sm" onClick={() => saveEdit(c.id)} disabled={busy}>
-                      {busyId === c.id && <Loader2 className="mr-1 size-3.5 animate-spin" />}
-                      저장
-                    </Button>
+                      aria-label="메모 수정 내용"
+                      maxLength={2000}
+                      onChange={(e) => setEditDraft(e.target.value)}
+                      rows={2}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={busy}
+                        onClick={() => setEditingId(null)}
+                      >
+                        취소
+                      </Button>
+                      <Button size="sm" onClick={() => saveEdit(c.id)} disabled={busy}>
+                        {busyId === c.id && <Loader2 className="mr-1 size-3.5 animate-spin" />}
+                        저장
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <p className="whitespace-pre-wrap">{c.content}</p>
-                  <div className="mt-1.5 flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(c.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
-                      {c.editedAt && ' (수정됨)'}
-                    </span>
-                    {c.userId === currentUserId && (
-                      <div className="flex gap-1">
-                        <button
-                          type="button"
-                          className="text-muted-foreground hover:text-foreground"
-                          onClick={() => {
-                            setEditingId(c.id)
-                            setEditDraft(c.content)
-                          }}
-                          aria-label="수정"
-                          disabled={busy}
-                        >
-                          <Pencil className="size-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          className="text-muted-foreground hover:text-destructive"
-                          onClick={() => remove(c.id)}
-                          disabled={busy}
-                          aria-label="삭제"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          ))
-        )}
+                ) : (
+                  <>
+                    <p className="whitespace-pre-wrap">{c.content}</p>
+                    <div className="mt-1.5 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(c.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+                        {c.editedAt && ' (수정됨)'}
+                      </span>
+                      {c.userId === currentUserId && (
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              setEditingId(c.id)
+                              setEditDraft(c.content)
+                            }}
+                            aria-label="수정"
+                            disabled={busy}
+                          >
+                            <Pencil className="size-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => remove(c.id)}
+                            disabled={busy}
+                            aria-label="삭제"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
       </div>
 
-      <div className="space-y-2">
+      <div className="shrink-0 space-y-2">
         <Textarea
           value={draft}
           disabled={busy}

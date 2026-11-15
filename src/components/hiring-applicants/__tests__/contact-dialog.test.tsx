@@ -71,3 +71,31 @@ it('상태 안내 링크 탭에서 링크를 만들고 발송 이력을 보여�
   ).toBeInTheDocument()
   expect(refresh).toHaveBeenCalled()
 })
+
+it('탭을 오가도 만든 링크가 유지되고 링크 생성은 한 번만 호출된다', async () => {
+  await act(async () => {
+    render(<ContactDialog {...base} />)
+  })
+  await userEvent.click(screen.getByRole('tab', { name: '상태 안내 링크' }))
+  await userEvent.click(screen.getByRole('button', { name: /링크 생성/ }))
+  const url = `${window.location.origin}/p/status/abc`
+  expect(await screen.findByDisplayValue(url)).toBeInTheDocument()
+  const before = (global.fetch as jest.Mock).mock.calls.length
+  await userEvent.click(screen.getByRole('tab', { name: '문자' }))
+  await userEvent.click(screen.getByRole('tab', { name: '상태 안내 링크' }))
+  expect(screen.getByDisplayValue(url)).toBeVisible()
+  const calls = (global.fetch as jest.Mock).mock.calls.map((c) => String(c[0]))
+  // 탭 전환으로 추가 호출(템플릿 재조회·링크 재생성)이 없다
+  expect(calls).toHaveLength(before)
+  expect(calls.filter((u) => !u.includes('message-templates'))).toHaveLength(1)
+})
+
+it('전화번호를 정규화할 수 없으면 전화 걸기가 비활성이고 복사는 가능하다', async () => {
+  await act(async () => {
+    render(<ContactDialog {...base} phone="abc" />)
+  })
+  await userEvent.click(screen.getByRole('tab', { name: '전화' }))
+  expect(screen.queryByRole('link', { name: /전화 걸기/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /전화 걸기/ })).toBeDisabled()
+  expect(screen.getByRole('button', { name: /번호 복사/ })).toBeEnabled()
+})

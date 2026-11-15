@@ -65,7 +65,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
       </p>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="min-w-0 space-y-6 lg:col-span-2">
+        <div className="flex min-h-[calc(100dvh-14rem)] min-w-0 flex-col gap-6 lg:col-span-2">
           {/* 기본 정보 (복호화 PII — 서버 렌더) */}
           <section className="space-y-3">
             <h2 className="text-sm font-semibold">기본 정보</h2>

@@ -87,7 +87,7 @@ export function ContactDialog({
             </TabsTrigger>
             <TabsTrigger value="link">상태 안내 링크</TabsTrigger>
           </TabsList>
-          <TabsContent value="sms" className="pt-3">
+          <TabsContent value="sms" forceMount className="pt-3 data-[state=inactive]:hidden">
             <SmsComposer
               phone={phone}
               name={name}
@@ -95,7 +95,11 @@ export function ContactDialog({
               positionName={positionName}
             />
           </TabsContent>
-          <TabsContent value="tel" className="space-y-3 pt-3">
+          <TabsContent
+            value="tel"
+            forceMount
+            className="space-y-3 pt-3 data-[state=inactive]:hidden"
+          >
             <p className="text-sm">
               <span className="text-muted-foreground">받는 사람 </span>
               <span className="font-medium">
@@ -103,19 +107,30 @@ export function ContactDialog({
               </span>
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" asChild>
-                <a href={`tel:${digits ?? ''}`}>
+              {digits ? (
+                <Button size="sm" asChild>
+                  <a href={`tel:${digits}`}>
+                    <Phone className="mr-1 size-4" />
+                    전화 걸기
+                  </a>
+                </Button>
+              ) : (
+                <Button size="sm" disabled>
                   <Phone className="mr-1 size-4" />
                   전화 걸기
-                </a>
-              </Button>
+                </Button>
+              )}
               <Button size="sm" variant="outline" onClick={copyPhone}>
                 {copied ? <Check className="mr-1 size-4" /> : <Copy className="mr-1 size-4" />}
                 번호 복사
               </Button>
             </div>
           </TabsContent>
-          <TabsContent value="link" className="space-y-4 pt-3">
+          <TabsContent
+            value="link"
+            forceMount
+            className="space-y-4 pt-3 data-[state=inactive]:hidden"
+          >
             <StatusLinkPanel
               applicationId={applicationId}
               name={name}

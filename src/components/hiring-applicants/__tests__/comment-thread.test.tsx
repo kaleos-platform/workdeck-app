@@ -83,3 +83,14 @@ it('메모 문구를 쓰고, 이전 메모(오프닝워크)는 읽기 전용으�
   expect(screen.getByRole('button', { name: '메모 추가' })).toBeInTheDocument()
   expect(screen.getByLabelText('새 메모')).toBeInTheDocument()
 })
+
+it('이관 메모만 있고 코멘트가 없으면 "아직 메모가 없습니다"를 숨긴다', () => {
+  render(<CommentThread {...props} initial={[]} legacyMemo="이관된 메모" />)
+  expect(screen.getByText('이관된 메모')).toBeInTheDocument()
+  expect(screen.queryByText('아직 메모가 없습니다.')).not.toBeInTheDocument()
+})
+
+it('이관 메모도 코멘트도 없으면 빈 안내를 보여준다', () => {
+  render(<CommentThread {...props} initial={[]} />)
+  expect(screen.getByText('아직 메모가 없습니다.')).toBeInTheDocument()
+})
