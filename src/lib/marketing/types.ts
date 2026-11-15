@@ -44,6 +44,9 @@ export interface DeckLandingScreenshot {
   src: string
   alt: string
   caption?: string
+  /** 원본 픽셀 크기 — 없으면 1600×1000 비율로 자리를 잡는다 */
+  width?: number
+  height?: number
 }
 
 export interface DeckLandingWorkflowStep {

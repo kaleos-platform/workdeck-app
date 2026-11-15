@@ -83,7 +83,8 @@ export function DeckLanding({
         <WorkflowSection steps={content.workflow} gradient={meta.gradient} />
       ) : null}
 
-      {content.screenshots && content.screenshots.length > 0 ? (
+      {/* rows는 기능 행에 이미지가 이미 있으므로 하단 쇼케이스를 생략한다 */}
+      {content.featureStyle !== 'rows' && content.screenshots && content.screenshots.length > 0 ? (
         <ScreenshotShowcase screenshots={content.screenshots} />
       ) : null}
 
