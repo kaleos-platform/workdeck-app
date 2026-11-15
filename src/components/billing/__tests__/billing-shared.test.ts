@@ -1,4 +1,5 @@
 import {
+  discountRate,
   endsAtPeriodEnd,
   firstChargeAfterTrial,
   formatTrialEndDate,
@@ -111,5 +112,16 @@ describe('체험 종료 후 첫 결제일(정기결제 cron 09:00 KST)', () => {
   })
   test('정확히 09시 종료면 그 실행에서 결제', () => {
     expect(firstChargeAfterTrial('2026-11-22T00:00:00.000Z')).toBe('2026-11-22T00:00:00.000Z')
+  })
+})
+
+describe('discountRate — 쇼핑몰식 할인율(표시 금액 기준, 소수점 버림)', () => {
+  test('정가 22,000원 → 13,500원은 38%', () => {
+    expect(discountRate(22000, 13500)).toBe(38)
+  })
+  test('할인이 없거나 정가가 0이면 null', () => {
+    expect(discountRate(22000, 22000)).toBeNull()
+    expect(discountRate(22000, 25000)).toBeNull()
+    expect(discountRate(0, 0)).toBeNull()
   })
 })

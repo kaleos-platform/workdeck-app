@@ -19,9 +19,9 @@ import {
   firstChargeAfterTrial,
   formatDate,
   formatTrialEndDate,
-  formatWon,
   startCardRegistration,
 } from './billing-shared'
+import { DiscountPrice } from './discount-price'
 
 export type SubscribeTarget = {
   /** 구독할 업무 목록 — 구독 시작은 여러 건, 업무 추가는 1건 */
@@ -78,7 +78,6 @@ export function SubscribeDialog({
   if (!target) return null
 
   const supply = target.decks.reduce((sum, d) => sum + d.monthlyPrice, 0)
-  const total = Math.round(supply * 1.1)
   const listSupply = target.decks.reduce((sum, d) => sum + d.listPrice, 0)
   const note = discountNote(listSupply, supply)
   const names = target.decks.map((d) => d.name).join(', ')
@@ -126,14 +125,9 @@ export function SubscribeDialog({
           <div className="space-y-1.5 rounded-lg border bg-muted/30 p-4">
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-muted-foreground">월 결제 금액</span>
-              <span className="text-lg font-semibold tabular-nums">
-                {note && (
-                  // 할인 고객: 정가에 취소선을 긋고 실제 결제되는 할인가를 나란히 보여준다
-                  <span className="mr-1.5 text-sm font-normal text-muted-foreground line-through">
-                    {formatWon(Math.round(listSupply * 1.1))}
-                  </span>
-                )}
-                {formatWon(total)}
+              <span className="text-lg font-semibold">
+                {/* 할인 고객: 정가 취소선 · 할인율 · 결제 금액 강조 */}
+                <DiscountPrice listSupply={listSupply} supply={supply} />
                 <span className="text-sm font-normal text-muted-foreground">(VAT 포함)/월</span>
               </span>
             </div>
@@ -149,14 +143,7 @@ export function SubscribeDialog({
                   {target.decks.map((deck) => (
                     <li key={deck.id} className="flex justify-between">
                       <span>{deck.name}</span>
-                      <span>
-                        {formatWon(Math.round(deck.monthlyPrice * 1.1))}
-                        {deck.monthlyPrice < deck.listPrice && (
-                          <span className="ml-1 line-through">
-                            {formatWon(Math.round(deck.listPrice * 1.1))}
-                          </span>
-                        )}
-                      </span>
+                      <DiscountPrice listSupply={deck.listPrice} supply={deck.monthlyPrice} />
                     </li>
                   ))}
                 </ul>

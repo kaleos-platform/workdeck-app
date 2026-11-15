@@ -104,6 +104,7 @@ test('체험 중 업무에 D-Day 와 구독하기를 보이고, 누르면 구독
   expect(dialog).toHaveTextContent('13,500원(VAT 포함)/월')
   // 할인 고객: 정가 취소선 + 할인가 결제 안내
   expect(dialog.querySelector('.line-through')).toHaveTextContent('22,000원')
+  expect(dialog).toHaveTextContent('38%')
   expect(dialog).toHaveTextContent('이전 고객 할인가로 결제됩니다')
   expect(dialog).toHaveTextContent('결제 예정일')
   expect(dialog).toHaveTextContent('결제 예정일에 첫 결제, 이후 매월 같은 날 자동 결제')
