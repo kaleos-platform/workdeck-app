@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
         })
         if (linked?.spaceId && linked.spaceId !== guardSpaceId) {
           return errorResponse(
-            '이 Space 에 연결할 수 있는 쿠팡 워크스페이스가 없습니다. 다른 Space 에 이미 연결된 워크스페이스가 있습니다.',
+            '이 작업 공간에 연결할 수 있는 쿠팡 워크스페이스가 없습니다. 다른 작업 공간에 이미 연결된 워크스페이스가 있습니다.',
             409
           )
         }

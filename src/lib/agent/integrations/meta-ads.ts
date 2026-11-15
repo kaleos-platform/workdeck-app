@@ -225,7 +225,7 @@ export function assertMetaTarget(
   const resolved = resolveAdAccount(config, input.brand)
   if (input.adAccountId !== undefined && input.adAccountId !== resolved) {
     throw new ToolUserError(
-      '광고 계정 매핑이 바뀌었거나 이 Space에 등록되지 않은 계정입니다. 다시 제안하세요'
+      '광고 계정 매핑이 바뀌었거나 이 작업 공간에 등록되지 않은 계정입니다. 다시 제안하세요'
     )
   }
   if (META_BUDGET_ACTIONS.has(input.action)) {
@@ -456,7 +456,7 @@ export async function assertObjectInAccount(
     fields: 'account_id',
   })) as { account_id?: string }
   if (!obj.account_id || normalizeAdAccountId(obj.account_id) !== adAccountId) {
-    throw new ToolUserError('이 Space의 광고 계정에 속하지 않는 객체입니다')
+    throw new ToolUserError('이 작업 공간의 광고 계정에 속하지 않는 객체입니다')
   }
 }
 
@@ -498,7 +498,7 @@ async function assertCellsInAccount(cred: MetaCred, cells: unknown[], adAccountI
           !/^(act_)?\d+$/.test(id) ||
           normalizeAdAccountId(id) !== adAccountId
         ) {
-          throw new ToolUserError('이 Space의 광고 계정에 속하지 않는 객체입니다')
+          throw new ToolUserError('이 작업 공간의 광고 계정에 속하지 않는 객체입니다')
         }
         targets++
       }
@@ -547,7 +547,7 @@ export async function assertActionInAccount(
 
   if (action === 'adstudy.create') {
     if (String(params.business_id) !== accountBusiness) {
-      throw new ToolUserError('이 Space 광고 계정의 비즈니스가 아닙니다')
+      throw new ToolUserError('이 작업 공간 광고 계정의 비즈니스가 아닙니다')
     }
   } else {
     // ponytail: cells·cells 안 목록 모두 한 페이지(limit 100·500)만 본다. 다음 페이지가 있으면 거부(닫힌 쪽 실패).
@@ -558,7 +558,7 @@ export async function assertActionInAccount(
     )
     if (!study.business?.id) throw new ToolUserError(BUSINESS_UNVERIFIED)
     if (study.business.id !== accountBusiness) {
-      throw new ToolUserError('이 Space 광고 계정의 비즈니스가 아닙니다')
+      throw new ToolUserError('이 작업 공간 광고 계정의 비즈니스가 아닙니다')
     }
     const existing = graphList(study.cells)
     if (!existing)

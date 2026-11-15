@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
   if (!registered.ok && registered.reason === 'not_installed')
     return errorResponse('Slack 설치가 없습니다. 먼저 연동을 완료하세요', 404)
   if (!registered.ok)
-    return errorResponse('같은 Slack 워크스페이스의 다른 Space가 이미 쓰는 채널입니다', 409)
+    return errorResponse('같은 Slack 워크스페이스의 다른 작업 공간이 이미 쓰는 채널입니다', 409)
   return NextResponse.json({ channel: registered.channel })
 }
 

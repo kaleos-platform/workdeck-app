@@ -75,7 +75,7 @@ describe('slack_post', () => {
   it('Slack이 연결되지 않은 Space는 오류', async () => {
     p.slackInstallation.findUnique.mockResolvedValue(null)
     await expect(slackPostTool.execute(ctx, { channel: 'C1', text: 'x' })).rejects.toThrow(
-      '이 Space에 Slack이 연결되지 않았습니다'
+      '이 작업 공간에 Slack이 연결되지 않았습니다'
     )
     expect(post).not.toHaveBeenCalled()
   })
@@ -93,7 +93,7 @@ describe('slack_post', () => {
       .execute(ctx, { channel: 'C1', text: 'x', threadTs })
       .catch((e: Error) => e)) as Error
     expect(err).toBeInstanceOf(ToolUserError)
-    expect(err.message).toContain('워크덱 설정에서 이 Space의 에이전트 채널로 등록')
+    expect(err.message).toContain('워크덱 설정에서 이 작업 공간의 에이전트 채널로 등록')
     expect(post).not.toHaveBeenCalled()
   })
 

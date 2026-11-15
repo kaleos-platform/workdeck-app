@@ -30,7 +30,7 @@ async function actorPrefix(ctx: McpToolContext): Promise<string> {
 export const slackPostTool: ToolDefinition = {
   name: 'slack_post',
   description:
-    '이 Space의 에이전트 채널(또는 그 스레드)에 메시지를 보냅니다. channel은 채널 ID(C…), threadTs를 주면 스레드 답글입니다. 워크덱 설정에서 에이전트 채널로 등록한 채널만 가능하며(승인·알림 채널 제외), @channel/@here/@everyone·사용자 그룹 멘션은 허용하지 않습니다.',
+    '이 작업 공간의 에이전트 채널(또는 그 스레드)에 메시지를 보냅니다. channel은 채널 ID(C…), threadTs를 주면 스레드 답글입니다. 워크덱 설정에서 에이전트 채널로 등록한 채널만 가능하며(승인·알림 채널 제외), @channel/@here/@everyone·사용자 그룹 멘션은 허용하지 않습니다.',
   inputSchema: {
     channel: z.string().regex(/^[CG][A-Z0-9]{2,20}$/),
     text: z.string().min(1).max(4000),
@@ -54,7 +54,7 @@ export const slackPostTool: ToolDefinition = {
       where: { spaceId: ctx.spaceId },
       select: { teamId: true, botToken: true, botTokenIv: true },
     })
-    if (!installation) throw new ToolUserError('이 Space에 Slack이 연결되지 않았습니다')
+    if (!installation) throw new ToolUserError('이 작업 공간에 Slack이 연결되지 않았습니다')
     // 같은 team을 여러 Space가 공유하면 bot도 공유된다. 이 Space의 agent 채널에만 보낸다(운영 결정 — 승인·알림 채널 위장 방지).
     if (
       !(await isAgentChannelOfSpace({
@@ -64,7 +64,7 @@ export const slackPostTool: ToolDefinition = {
       }))
     ) {
       throw new ToolUserError(
-        '이 Space의 에이전트 채널이 아닙니다(승인·알림 채널에는 보낼 수 없습니다). 워크덱 설정에서 이 Space의 에이전트 채널로 등록한 뒤 다시 시도하세요'
+        '이 작업 공간의 에이전트 채널이 아닙니다(승인·알림 채널에는 보낼 수 없습니다). 워크덱 설정에서 이 작업 공간의 에이전트 채널로 등록한 뒤 다시 시도하세요'
       )
     }
 

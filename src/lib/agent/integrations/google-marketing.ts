@@ -336,7 +336,7 @@ export function actionUrl(action: string, params: P, t: GoogleTarget): URL {
 export function assertGoogleTarget(config: GoogleConfig, target: GoogleTarget): GoogleTarget {
   const mismatch = () =>
     new ToolUserError(
-      '구글 마케팅 대상 매핑이 바뀌었거나 이 Space에 등록되지 않은 대상입니다. 다시 제안하세요'
+      '구글 마케팅 대상 매핑이 바뀌었거나 이 작업 공간에 등록되지 않은 대상입니다. 다시 제안하세요'
     )
   let current: GoogleTarget
   try {

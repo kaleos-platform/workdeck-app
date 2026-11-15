@@ -28,6 +28,7 @@ export async function resolveMcpWorkspace(spaceId: string): Promise<{ id: string
     throw new ToolUserError('쿠팡 광고 카드가 활성화되지 않았습니다')
   })
   const workspace = await prisma.workspace.findUnique({ where: { spaceId }, select: { id: true } })
-  if (!workspace) throw new ToolUserError('쿠팡 워크스페이스가 이 Space에 연결되어 있지 않습니다')
+  if (!workspace)
+    throw new ToolUserError('쿠팡 워크스페이스가 이 작업 공간에 연결되어 있지 않습니다')
   return workspace
 }

@@ -4,7 +4,7 @@ import { findInvitationByToken, invitationState, maskEmail } from '@/lib/spaces/
 import { inviteView } from '@/lib/spaces/invite-page-state'
 import { InviteAccept } from '@/components/invite/invite-accept'
 
-export const metadata = { title: 'Workdeck Space 초대' }
+export const metadata = { title: 'Workdeck 작업 공간 초대' }
 
 const ROLE_LABEL = { ADMIN: '관리자(ADMIN)', MEMBER: '구성원(MEMBER)' } as const
 const INVALID_TEXT = {
@@ -39,7 +39,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
           <div className="space-y-1">
             <h1 className="text-2xl font-bold">{inv.spaceName}에 초대되었습니다</h1>
             <p className="text-sm text-muted-foreground">
-              {inv.invitedByName ?? 'Space 소유자'}님이 {ROLE_LABEL[inv.role]}로 초대했습니다.
+              {inv.invitedByName ?? '작업 공간 소유자'}님이 {ROLE_LABEL[inv.role]}로 초대했습니다.
               초대받은 이메일: {maskEmail(inv.email)}
             </p>
           </div>

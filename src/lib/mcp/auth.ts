@@ -98,15 +98,15 @@ export async function resolveUserPrincipal(
   if (requestedSpaceId) {
     return memberships.some((m) => m.spaceId === requestedSpaceId)
       ? asUser(requestedSpaceId)
-      : { ok: false, reason: '요청한 Space의 구성원이 아닙니다' }
+      : { ok: false, reason: '요청한 작업 공간의 구성원이 아닙니다' }
   }
   if (memberships.length === 1) return asUser(memberships[0].spaceId)
-  if (memberships.length === 0) return { ok: false, reason: '소속 Space가 없습니다' }
+  if (memberships.length === 0) return { ok: false, reason: '소속 작업 공간이 없습니다' }
   return {
     ok: false,
     reason:
-      `여러 Space에 속해 있어 Space를 정할 수 없습니다. ${SPACE_HEADER} 헤더를 보내거나, ` +
-      `Space 관리자에게 이 클라이언트(client_id=${clientId})를 연동 계정에 연결해 달라고 요청하세요.`,
+      `여러 작업 공간에 속해 있어 작업 공간을 정할 수 없습니다. ${SPACE_HEADER} 헤더를 보내거나, ` +
+      `작업 공간 관리자에게 이 클라이언트(client_id=${clientId})를 연동 계정에 연결해 달라고 요청하세요.`,
   }
 }
 

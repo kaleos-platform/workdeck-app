@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       select: { envSecretsEnabled: true },
     })
     if (!setting?.envSecretsEnabled)
-      return fail('이 Space에서는 wd run 비밀값 발급이 꺼져 있습니다', 403)
+      return fail('이 작업 공간에서는 wd run 비밀값 발급이 꺼져 있습니다', 403)
 
     const parsed = bodySchema.safeParse(await req.json().catch(() => null))
     if (!parsed.success) return fail('입력값이 올바르지 않습니다', 400)
