@@ -197,7 +197,10 @@ async function login() {
       /* 페이지 이동 중 */
     }
     if (status === 200) break
-    if (Date.now() - t0 > LOGIN_WAIT_MS) throw new Error('로그인 대기 시간(15분) 초과')
+    if (Date.now() - t0 > LOGIN_WAIT_MS) {
+      await ctx.close().catch(() => {}) // 브라우저를 닫아야 finally 의 프로필 삭제가 확실히 된다
+      throw new Error('로그인 대기 시간(15분) 초과')
+    }
     if (Date.now() - last > 30000) {
       console.log(
         `  대기 중… ${Math.round((Date.now() - t0) / 1000)}s (GET hiring-templates → ${status})`
@@ -522,13 +525,15 @@ async function rollbackCover(e: Entry) {
 // ---------- main ----------
 printPlan()
 if (MODE === 'plan') process.exit(0)
-const ctx = await login()
 const cleanup = () => rmProfile()
 process.on('SIGINT', () => {
   cleanup()
   process.exit(130)
 })
+// 로그인 대기 초과·오류로 끝나도 프로필(세션)을 지우도록 login 도 try 안에서 실행
+let ctx: Awaited<ReturnType<typeof login>> | undefined
 try {
+  ctx = await login()
   if (MODE === 'dry-run') await dryRun()
   else if (MODE === 'apply') {
     const blocks = blockEntries.filter((x) => selectable(x).ok)
@@ -618,7 +623,7 @@ try {
   }
 } finally {
   await new Promise((r) => setTimeout(r, 500))
-  await ctx.close()
+  await ctx?.close().catch(() => {})
   cleanup()
   console.log('프로필 디렉터리 삭제됨')
 }
