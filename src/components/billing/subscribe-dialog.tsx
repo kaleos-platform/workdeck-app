@@ -79,10 +79,8 @@ export function SubscribeDialog({
 
   const supply = target.decks.reduce((sum, d) => sum + d.monthlyPrice, 0)
   const total = Math.round(supply * 1.1)
-  const note = discountNote(
-    target.decks.reduce((sum, d) => sum + d.listPrice, 0),
-    supply
-  )
+  const listSupply = target.decks.reduce((sum, d) => sum + d.listPrice, 0)
+  const note = discountNote(listSupply, supply)
   const names = target.decks.map((d) => d.name).join(', ')
   const needsCard = !cardSummary
   const trialEnd =
@@ -124,6 +122,12 @@ export function SubscribeDialog({
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-muted-foreground">월 결제 금액</span>
               <span className="text-lg font-semibold tabular-nums">
+                {note && (
+                  // 할인 고객: 정가에 취소선을 긋고 실제 결제되는 할인가를 나란히 보여준다
+                  <span className="mr-1.5 text-sm font-normal text-muted-foreground line-through">
+                    {formatWon(Math.round(listSupply * 1.1))}
+                  </span>
+                )}
                 {formatWon(total)}
                 <span className="text-sm font-normal text-muted-foreground">(VAT 포함)/월</span>
               </span>
