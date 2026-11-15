@@ -22,7 +22,7 @@ const MESSAGES: Record<Reason, string> = {
   accepted: '이미 사용한 초대입니다',
   email_mismatch: '초대받은 이메일 계정으로 로그인하세요',
   email_unverified: '이메일 인증을 마친 뒤 수락하세요',
-  already_member: '이미 이 Space의 구성원입니다',
+  already_member: '이미 이 작업 공간의 구성원입니다',
   too_many: '대기 중인 초대가 너무 많습니다. 쓰지 않는 초대를 취소하세요',
 }
 
