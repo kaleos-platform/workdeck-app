@@ -13,7 +13,7 @@ export async function GET() {
 
   const items = await prisma.hiringMessageTemplate.findMany({
     where: { spaceId: resolved.space.id },
-    orderBy: { updatedAt: 'desc' },
+    orderBy: [{ updatedAt: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
     select: SELECT,
   })
   return NextResponse.json({ items })
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       })
       return tx.hiringMessageTemplate.findMany({
         where: { spaceId },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
         select: SELECT,
       })
     })

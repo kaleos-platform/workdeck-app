@@ -135,6 +135,6 @@ export const blacklistUpdateSchema = z.object({
 })
 
 export const messageTemplateSchema = z.object({
-  title: z.string().min(1).max(50),
-  content: z.string().min(1).max(1000),
+  title: z.string().trim().min(1).max(50),
+  content: z.string().trim().min(1).max(1000),
 })

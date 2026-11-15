@@ -67,7 +67,7 @@ export function SmsSender({ phone, name, postingTitle, positionName }: Props) {
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" disabled={!phone}>
           <MessageSquare className="mr-1 size-3.5" />
           문자 보내기
         </Button>
