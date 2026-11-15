@@ -26,7 +26,6 @@ import {
   loadTrialEnds,
   realignReservationOnly,
   reservedStart,
-  type DbClient,
 } from './trial-reservation'
 
 // dunning: 결제일 경과 +1·+3·+5일에 재시도, 3회 실패 시 EXPIRED
@@ -474,7 +473,7 @@ export async function startSubscription(spaceId: string, requestedDeckIds: strin
   const reservedIds = new Set(
     deckIds.filter((id) => (trialEnds.get(id)?.getTime() ?? 0) > now.getTime())
   )
-  const itemUpserts = (db: DbClient) =>
+  const itemUpserts = (db: Prisma.TransactionClient) =>
     products.map((p) =>
       db.subscriptionItem.upsert({
         where: {
@@ -501,7 +500,7 @@ export async function startSubscription(spaceId: string, requestedDeckIds: strin
         },
       })
     )
-  const endOthers = (db: DbClient) => [
+  const endOthers = (db: Prisma.TransactionClient) => [
     // 재시작에서 고르지 않은 업무는 해지로 보고 보장가도 소멸
     db.subscriptionItem.updateMany({
       where: {
