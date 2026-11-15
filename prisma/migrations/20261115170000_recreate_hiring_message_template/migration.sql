@@ -16,3 +16,6 @@ DO $$ BEGIN
   ALTER TABLE "HiringMessageTemplate" ADD CONSTRAINT "HiringMessageTemplate_spaceId_fkey" FOREIGN KEY ("spaceId") REFERENCES "Space"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- Data API 잠금
+ALTER TABLE "HiringMessageTemplate" ENABLE ROW LEVEL SECURITY;
