@@ -13,10 +13,7 @@ const props = { applicationId: 'app-qa', currentUserId: 'qa', initial: [comment]
 
 it('코멘트 시각은 실행 환경과 관계없이 한국 시간으로 표시한다', () => {
   render(
-    <CommentThread
-      {...props}
-      initial={[{ ...comment, createdAt: '2026-10-18T15:33:17.000Z' }]}
-    />
+    <CommentThread {...props} initial={[{ ...comment, createdAt: '2026-10-18T15:33:17.000Z' }]} />
   )
   expect(screen.getByText('2026. 10. 19. 오전 12:33:17')).toBeInTheDocument()
 })
@@ -31,7 +28,7 @@ it('추가 중 입력·편집·삭제를 잠그고 성공 응답을 반영한다
   ) as jest.Mock
   render(<CommentThread {...props} />)
   fireEvent.change(screen.getByRole('textbox'), { target: { value: '새 메모' } })
-  fireEvent.click(screen.getByRole('button', { name: '코멘트 추가' }))
+  fireEvent.click(screen.getByRole('button', { name: '메모 추가' }))
   expect(screen.getByRole('textbox')).toBeDisabled()
   expect(screen.getByRole('button', { name: '수정' })).toBeDisabled()
   expect(screen.getByRole('button', { name: '삭제' })).toBeDisabled()
@@ -73,4 +70,27 @@ it('삭제 실패는 코멘트를 유지하고 재시도 성공 시 제거한다
   expect(screen.getByText('기존 메모')).toBeInTheDocument()
   await act(async () => fireEvent.click(screen.getByRole('button', { name: '삭제' })))
   expect(screen.queryByText('기존 메모')).not.toBeInTheDocument()
+})
+
+it('메모 문구를 쓰고, 이전 메모(오프닝워크)는 읽기 전용으로 맨 위에 고정한다', () => {
+  render(<CommentThread {...props} legacyMemo="이관된 메모" />)
+  expect(screen.getByText('이전 메모(오프닝워크)')).toBeInTheDocument()
+  const legacy = screen.getByText('이관된 메모')
+  expect(legacy.compareDocumentPosition(screen.getByText('기존 메모'))).toBe(
+    Node.DOCUMENT_POSITION_FOLLOWING
+  )
+  expect(screen.getAllByRole('button', { name: '수정' })).toHaveLength(1)
+  expect(screen.getByRole('button', { name: '메모 추가' })).toBeInTheDocument()
+  expect(screen.getByLabelText('새 메모')).toBeInTheDocument()
+})
+
+it('이관 메모만 있고 코멘트가 없으면 "아직 메모가 없습니다"를 숨긴다', () => {
+  render(<CommentThread {...props} initial={[]} legacyMemo="이관된 메모" />)
+  expect(screen.getByText('이관된 메모')).toBeInTheDocument()
+  expect(screen.queryByText('아직 메모가 없습니다.')).not.toBeInTheDocument()
+})
+
+it('이관 메모도 코멘트도 없으면 빈 안내를 보여준다', () => {
+  render(<CommentThread {...props} initial={[]} />)
+  expect(screen.getByText('아직 메모가 없습니다.')).toBeInTheDocument()
 })
