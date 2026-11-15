@@ -15,11 +15,13 @@ type Props = {
   /** 토글 우측/상단에 함께 둘 부가 요소(예: 새 탭 열기 버튼) */
   actions?: ReactNode
   className?: string
+  /** 초기 미리보기 모드 — 기본 pc(빌드 위저드), 공고 상세는 mobile */
+  defaultMode?: PreviewMode
 }
 
 // 미리보기 컨테이너 — PC/모바일 폭 토글 + 중앙 정렬 폭 캡.
-export function PreviewFrame({ children, actions, className }: Props) {
-  const [mode, setMode] = useState<PreviewMode>('pc')
+export function PreviewFrame({ children, actions, className, defaultMode = 'pc' }: Props) {
+  const [mode, setMode] = useState<PreviewMode>(defaultMode)
 
   return (
     <div className={cn('space-y-3', className)}>

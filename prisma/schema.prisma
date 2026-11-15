@@ -550,7 +550,6 @@ model Space {
   hiringUploadSessions   HiringUploadSession[]
   hiringMigrationRecords HiringMigrationRecord[]
   hiringBlacklists       HiringBlacklist[]
-  hiringMessageTemplates HiringMessageTemplate[]
 
   // ─── 에이전트 승인 큐 (Agent) ───
   agentPendingActions AgentPendingAction[]
@@ -4571,22 +4570,6 @@ model HiringBlacklist {
   updatedAt DateTime @updatedAt
 
   @@index([spaceId, phoneHash])
-}
-
-// 지원자 알림 메시지 템플릿
-model HiringMessageTemplate {
-  id         String    @id @default(cuid())
-  spaceId    String
-  title      String
-  content    String
-  lastUsedAt DateTime?
-
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([spaceId])
 }
 
 // ═══════════════════════════════════════════

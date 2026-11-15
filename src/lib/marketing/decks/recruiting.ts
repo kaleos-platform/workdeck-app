@@ -40,8 +40,8 @@ const NEW_APPLICANT_ALERT_ROW = RECRUITING_EMAIL_LIVE
     }
 
 const NOTIFICATION_FAQ_ANSWER = RECRUITING_EMAIL_LIVE
-  ? '지원자가 이메일을 입력하면 접수 완료 메일이 가고, 담당자는 전날 새 지원자가 있을 때 매일 오전 9시에 요약 메일을 받습니다. 공고별로 끌 수 있습니다. 결과 안내는 메시지 템플릿과 결과 확인 링크로 빠르게 전달합니다. 카카오톡 알림은 제공하지 않습니다.'
-  : '지원서를 제출하면 지원 완료 화면이 바로 표시됩니다. 결과 안내는 메시지 템플릿과 지원자별 결과 확인 링크를 만들어 문자나 메신저로 빠르게 전달합니다. 카카오톡 알림은 제공하지 않습니다.'
+  ? '지원자가 이메일을 입력하면 접수 완료 메일이 가고, 담당자는 전날 새 지원자가 있을 때 매일 오전 9시에 요약 메일을 받습니다. 공고별로 끌 수 있습니다. 결과 안내는 지원자별 결과 확인 링크를 만들어 문자나 메신저로 전달합니다. 카카오톡 알림은 제공하지 않습니다.'
+  : '지원서를 제출하면 지원 완료 화면이 바로 표시됩니다. 결과 안내는 지원자별 결과 확인 링크를 만들어 문자나 메신저로 전달합니다. 카카오톡 알림은 제공하지 않습니다.'
 
 export const recruitingLanding: DeckLandingContent = {
   slug: 'recruiting',
@@ -111,7 +111,7 @@ export const recruitingLanding: DeckLandingContent = {
         { before: '팀원 초대', after: '멤버 초대', diff: '그대로', same: true },
         {
           before: '자주 쓰는 메시지 (휴대폰 문자앱으로 바로 열기)',
-          after: '메시지 템플릿 + 지원자별 결과 확인 링크 (복사해 문자·메신저로 전달)',
+          after: '지원자별 결과 확인 링크 (복사해 문자·메신저로 전달)',
           diff: '방식 다름',
           same: false,
         },
@@ -161,10 +161,10 @@ export const recruitingLanding: DeckLandingContent = {
     },
     {
       icon: 'message-square',
-      title: '메시지 템플릿 & 결과 안내',
-      headline: '안내 문구는 템플릿으로, 결과는 링크로',
+      title: '결과 안내 링크',
+      headline: '결과는 지원자별 링크 하나로',
       description:
-        '면접·합격·불합격 안내 문구를 템플릿으로 만들어 두고, 지원자별 결과 확인 링크를 바로 만들어 문자나 메신저로 빠르게 안내합니다.',
+        '면접·합격·불합격 등 상태별 결과 확인 링크를 지원자마다 만들어, 복사해서 문자나 메신저로 전달합니다.',
     },
     ...(RECRUITING_EMAIL_LIVE ? [EMAIL_FEATURE] : []),
     ...(RECRUITING_AI_LIVE ? [AI_FEATURE] : []),
@@ -200,7 +200,7 @@ export const recruitingLanding: DeckLandingContent = {
     {
       step: 3,
       title: '지원자 관리·결과 안내',
-      description: '접수된 지원자를 단계별로 관리하고 메시지 템플릿으로 결과를 안내합니다.',
+      description: '접수된 지원자를 단계별로 관리하고 지원자별 결과 확인 링크로 결과를 안내합니다.',
     },
   ],
   faq: [

@@ -139,14 +139,14 @@ export const RECRUITING_HOME_PATH = `${RECRUITING_BASE_PATH}/home`
 export const RECRUITING_POSTINGS_PATH = `${RECRUITING_BASE_PATH}/postings`
 export const RECRUITING_APPLICATIONS_PATH = `${RECRUITING_BASE_PATH}/applications`
 export const RECRUITING_BLACKLIST_PATH = `${RECRUITING_BASE_PATH}/blacklist`
-export const RECRUITING_MESSAGE_TEMPLATES_PATH = `${RECRUITING_BASE_PATH}/message-templates`
 export const RECRUITING_DETAIL_TEMPLATES_PATH = `${RECRUITING_BASE_PATH}/templates`
+export const RECRUITING_SETTINGS_PATH = `${RECRUITING_BASE_PATH}/settings`
 export const RECRUITING_STORES_PATH = `${RECRUITING_BASE_PATH}/settings/stores`
 export const RECRUITING_POSITIONS_PATH = `${RECRUITING_BASE_PATH}/settings/positions`
 
 export function getRecruitingPostingPath(
   id: string,
-  opts?: { tab?: 'applicants' | 'content' }
+  opts?: { tab?: 'recruit' | 'applicants' }
 ): string {
   const base = `${RECRUITING_POSTINGS_PATH}/${id}`
   return opts?.tab ? `${base}?tab=${opts.tab}` : base

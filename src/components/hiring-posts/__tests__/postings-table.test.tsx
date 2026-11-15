@@ -192,3 +192,11 @@ it('마감일 연장 팝업에서 연장하면 API를 호출하고 목록을 새
     closingDate: '2100-01-07',
   })
 })
+
+it('새 공고 옆에 공고 템플릿 링크가 있다', () => {
+  render(<PostingsTable {...props} />)
+  expect(screen.getByRole('link', { name: '공고 템플릿' })).toHaveAttribute(
+    'href',
+    '/d/recruiting/templates'
+  )
+})
