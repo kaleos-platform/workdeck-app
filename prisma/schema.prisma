@@ -605,6 +605,9 @@ model SpaceInvitation {
   acceptedUserId String?
   revokedAt      DateTime?
   createdAt      DateTime        @default(now())
+  lastSentAt     DateTime? // 마지막 발송 시도(쿨다운 기준)
+  sendCount      Int             @default(1) // 메일 발송 성공 횟수(다시 보내기 한도 판정)
+  lastSendFailed Boolean         @default(false)
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 

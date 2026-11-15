@@ -20,8 +20,18 @@ export type SpaceInvitationModel = runtime.Types.Result.DefaultSelection<Prisma.
 
 export type AggregateSpaceInvitation = {
   _count: SpaceInvitationCountAggregateOutputType | null
+  _avg: SpaceInvitationAvgAggregateOutputType | null
+  _sum: SpaceInvitationSumAggregateOutputType | null
   _min: SpaceInvitationMinAggregateOutputType | null
   _max: SpaceInvitationMaxAggregateOutputType | null
+}
+
+export type SpaceInvitationAvgAggregateOutputType = {
+  sendCount: number | null
+}
+
+export type SpaceInvitationSumAggregateOutputType = {
+  sendCount: number | null
 }
 
 export type SpaceInvitationMinAggregateOutputType = {
@@ -36,6 +46,9 @@ export type SpaceInvitationMinAggregateOutputType = {
   acceptedUserId: string | null
   revokedAt: Date | null
   createdAt: Date | null
+  lastSentAt: Date | null
+  sendCount: number | null
+  lastSendFailed: boolean | null
 }
 
 export type SpaceInvitationMaxAggregateOutputType = {
@@ -50,6 +63,9 @@ export type SpaceInvitationMaxAggregateOutputType = {
   acceptedUserId: string | null
   revokedAt: Date | null
   createdAt: Date | null
+  lastSentAt: Date | null
+  sendCount: number | null
+  lastSendFailed: boolean | null
 }
 
 export type SpaceInvitationCountAggregateOutputType = {
@@ -64,9 +80,20 @@ export type SpaceInvitationCountAggregateOutputType = {
   acceptedUserId: number
   revokedAt: number
   createdAt: number
+  lastSentAt: number
+  sendCount: number
+  lastSendFailed: number
   _all: number
 }
 
+
+export type SpaceInvitationAvgAggregateInputType = {
+  sendCount?: true
+}
+
+export type SpaceInvitationSumAggregateInputType = {
+  sendCount?: true
+}
 
 export type SpaceInvitationMinAggregateInputType = {
   id?: true
@@ -80,6 +107,9 @@ export type SpaceInvitationMinAggregateInputType = {
   acceptedUserId?: true
   revokedAt?: true
   createdAt?: true
+  lastSentAt?: true
+  sendCount?: true
+  lastSendFailed?: true
 }
 
 export type SpaceInvitationMaxAggregateInputType = {
@@ -94,6 +124,9 @@ export type SpaceInvitationMaxAggregateInputType = {
   acceptedUserId?: true
   revokedAt?: true
   createdAt?: true
+  lastSentAt?: true
+  sendCount?: true
+  lastSendFailed?: true
 }
 
 export type SpaceInvitationCountAggregateInputType = {
@@ -108,6 +141,9 @@ export type SpaceInvitationCountAggregateInputType = {
   acceptedUserId?: true
   revokedAt?: true
   createdAt?: true
+  lastSentAt?: true
+  sendCount?: true
+  lastSendFailed?: true
   _all?: true
 }
 
@@ -149,6 +185,18 @@ export type SpaceInvitationAggregateArgs<ExtArgs extends runtime.Types.Extension
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: SpaceInvitationAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: SpaceInvitationSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: SpaceInvitationMinAggregateInputType
@@ -179,6 +227,8 @@ export type SpaceInvitationGroupByArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   _count?: SpaceInvitationCountAggregateInputType | true
+  _avg?: SpaceInvitationAvgAggregateInputType
+  _sum?: SpaceInvitationSumAggregateInputType
   _min?: SpaceInvitationMinAggregateInputType
   _max?: SpaceInvitationMaxAggregateInputType
 }
@@ -195,7 +245,12 @@ export type SpaceInvitationGroupByOutputType = {
   acceptedUserId: string | null
   revokedAt: Date | null
   createdAt: Date
+  lastSentAt: Date | null
+  sendCount: number
+  lastSendFailed: boolean
   _count: SpaceInvitationCountAggregateOutputType | null
+  _avg: SpaceInvitationAvgAggregateOutputType | null
+  _sum: SpaceInvitationSumAggregateOutputType | null
   _min: SpaceInvitationMinAggregateOutputType | null
   _max: SpaceInvitationMaxAggregateOutputType | null
 }
@@ -230,6 +285,9 @@ export type SpaceInvitationWhereInput = {
   acceptedUserId?: Prisma.StringNullableFilter<"SpaceInvitation"> | string | null
   revokedAt?: Prisma.DateTimeNullableFilter<"SpaceInvitation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceInvitation"> | Date | string
+  lastSentAt?: Prisma.DateTimeNullableFilter<"SpaceInvitation"> | Date | string | null
+  sendCount?: Prisma.IntFilter<"SpaceInvitation"> | number
+  lastSendFailed?: Prisma.BoolFilter<"SpaceInvitation"> | boolean
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
 }
 
@@ -245,6 +303,9 @@ export type SpaceInvitationOrderByWithRelationInput = {
   acceptedUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   revokedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  lastSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  sendCount?: Prisma.SortOrder
+  lastSendFailed?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
 }
 
@@ -263,6 +324,9 @@ export type SpaceInvitationWhereUniqueInput = Prisma.AtLeast<{
   acceptedUserId?: Prisma.StringNullableFilter<"SpaceInvitation"> | string | null
   revokedAt?: Prisma.DateTimeNullableFilter<"SpaceInvitation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceInvitation"> | Date | string
+  lastSentAt?: Prisma.DateTimeNullableFilter<"SpaceInvitation"> | Date | string | null
+  sendCount?: Prisma.IntFilter<"SpaceInvitation"> | number
+  lastSendFailed?: Prisma.BoolFilter<"SpaceInvitation"> | boolean
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
 }, "id" | "tokenHash">
 
@@ -278,9 +342,14 @@ export type SpaceInvitationOrderByWithAggregationInput = {
   acceptedUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   revokedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  lastSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  sendCount?: Prisma.SortOrder
+  lastSendFailed?: Prisma.SortOrder
   _count?: Prisma.SpaceInvitationCountOrderByAggregateInput
+  _avg?: Prisma.SpaceInvitationAvgOrderByAggregateInput
   _max?: Prisma.SpaceInvitationMaxOrderByAggregateInput
   _min?: Prisma.SpaceInvitationMinOrderByAggregateInput
+  _sum?: Prisma.SpaceInvitationSumOrderByAggregateInput
 }
 
 export type SpaceInvitationScalarWhereWithAggregatesInput = {
@@ -298,6 +367,9 @@ export type SpaceInvitationScalarWhereWithAggregatesInput = {
   acceptedUserId?: Prisma.StringNullableWithAggregatesFilter<"SpaceInvitation"> | string | null
   revokedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SpaceInvitation"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceInvitation"> | Date | string
+  lastSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SpaceInvitation"> | Date | string | null
+  sendCount?: Prisma.IntWithAggregatesFilter<"SpaceInvitation"> | number
+  lastSendFailed?: Prisma.BoolWithAggregatesFilter<"SpaceInvitation"> | boolean
 }
 
 export type SpaceInvitationCreateInput = {
@@ -311,6 +383,9 @@ export type SpaceInvitationCreateInput = {
   acceptedUserId?: string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
+  lastSentAt?: Date | string | null
+  sendCount?: number
+  lastSendFailed?: boolean
   space: Prisma.SpaceCreateNestedOneWithoutInvitationsInput
 }
 
@@ -326,6 +401,9 @@ export type SpaceInvitationUncheckedCreateInput = {
   acceptedUserId?: string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
+  lastSentAt?: Date | string | null
+  sendCount?: number
+  lastSendFailed?: boolean
 }
 
 export type SpaceInvitationUpdateInput = {
@@ -339,6 +417,9 @@ export type SpaceInvitationUpdateInput = {
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sendCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastSendFailed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvitationsNestedInput
 }
 
@@ -354,6 +435,9 @@ export type SpaceInvitationUncheckedUpdateInput = {
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sendCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastSendFailed?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SpaceInvitationCreateManyInput = {
@@ -368,6 +452,9 @@ export type SpaceInvitationCreateManyInput = {
   acceptedUserId?: string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
+  lastSentAt?: Date | string | null
+  sendCount?: number
+  lastSendFailed?: boolean
 }
 
 export type SpaceInvitationUpdateManyMutationInput = {
@@ -381,6 +468,9 @@ export type SpaceInvitationUpdateManyMutationInput = {
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sendCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastSendFailed?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SpaceInvitationUncheckedUpdateManyInput = {
@@ -395,6 +485,9 @@ export type SpaceInvitationUncheckedUpdateManyInput = {
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sendCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastSendFailed?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SpaceInvitationListRelationFilter = {
@@ -419,6 +512,13 @@ export type SpaceInvitationCountOrderByAggregateInput = {
   acceptedUserId?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  lastSentAt?: Prisma.SortOrder
+  sendCount?: Prisma.SortOrder
+  lastSendFailed?: Prisma.SortOrder
+}
+
+export type SpaceInvitationAvgOrderByAggregateInput = {
+  sendCount?: Prisma.SortOrder
 }
 
 export type SpaceInvitationMaxOrderByAggregateInput = {
@@ -433,6 +533,9 @@ export type SpaceInvitationMaxOrderByAggregateInput = {
   acceptedUserId?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  lastSentAt?: Prisma.SortOrder
+  sendCount?: Prisma.SortOrder
+  lastSendFailed?: Prisma.SortOrder
 }
 
 export type SpaceInvitationMinOrderByAggregateInput = {
@@ -447,6 +550,13 @@ export type SpaceInvitationMinOrderByAggregateInput = {
   acceptedUserId?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  lastSentAt?: Prisma.SortOrder
+  sendCount?: Prisma.SortOrder
+  lastSendFailed?: Prisma.SortOrder
+}
+
+export type SpaceInvitationSumOrderByAggregateInput = {
+  sendCount?: Prisma.SortOrder
 }
 
 export type SpaceInvitationCreateNestedManyWithoutSpaceInput = {
@@ -502,6 +612,9 @@ export type SpaceInvitationCreateWithoutSpaceInput = {
   acceptedUserId?: string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
+  lastSentAt?: Date | string | null
+  sendCount?: number
+  lastSendFailed?: boolean
 }
 
 export type SpaceInvitationUncheckedCreateWithoutSpaceInput = {
@@ -515,6 +628,9 @@ export type SpaceInvitationUncheckedCreateWithoutSpaceInput = {
   acceptedUserId?: string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
+  lastSentAt?: Date | string | null
+  sendCount?: number
+  lastSendFailed?: boolean
 }
 
 export type SpaceInvitationCreateOrConnectWithoutSpaceInput = {
@@ -558,6 +674,9 @@ export type SpaceInvitationScalarWhereInput = {
   acceptedUserId?: Prisma.StringNullableFilter<"SpaceInvitation"> | string | null
   revokedAt?: Prisma.DateTimeNullableFilter<"SpaceInvitation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceInvitation"> | Date | string
+  lastSentAt?: Prisma.DateTimeNullableFilter<"SpaceInvitation"> | Date | string | null
+  sendCount?: Prisma.IntFilter<"SpaceInvitation"> | number
+  lastSendFailed?: Prisma.BoolFilter<"SpaceInvitation"> | boolean
 }
 
 export type SpaceInvitationCreateManySpaceInput = {
@@ -571,6 +690,9 @@ export type SpaceInvitationCreateManySpaceInput = {
   acceptedUserId?: string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
+  lastSentAt?: Date | string | null
+  sendCount?: number
+  lastSendFailed?: boolean
 }
 
 export type SpaceInvitationUpdateWithoutSpaceInput = {
@@ -584,6 +706,9 @@ export type SpaceInvitationUpdateWithoutSpaceInput = {
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sendCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastSendFailed?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SpaceInvitationUncheckedUpdateWithoutSpaceInput = {
@@ -597,6 +722,9 @@ export type SpaceInvitationUncheckedUpdateWithoutSpaceInput = {
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sendCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastSendFailed?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SpaceInvitationUncheckedUpdateManyWithoutSpaceInput = {
@@ -610,6 +738,9 @@ export type SpaceInvitationUncheckedUpdateManyWithoutSpaceInput = {
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sendCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastSendFailed?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -626,6 +757,9 @@ export type SpaceInvitationSelect<ExtArgs extends runtime.Types.Extensions.Inter
   acceptedUserId?: boolean
   revokedAt?: boolean
   createdAt?: boolean
+  lastSentAt?: boolean
+  sendCount?: boolean
+  lastSendFailed?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["spaceInvitation"]>
 
@@ -641,6 +775,9 @@ export type SpaceInvitationSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   acceptedUserId?: boolean
   revokedAt?: boolean
   createdAt?: boolean
+  lastSentAt?: boolean
+  sendCount?: boolean
+  lastSendFailed?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["spaceInvitation"]>
 
@@ -656,6 +793,9 @@ export type SpaceInvitationSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   acceptedUserId?: boolean
   revokedAt?: boolean
   createdAt?: boolean
+  lastSentAt?: boolean
+  sendCount?: boolean
+  lastSendFailed?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["spaceInvitation"]>
 
@@ -671,9 +811,12 @@ export type SpaceInvitationSelectScalar = {
   acceptedUserId?: boolean
   revokedAt?: boolean
   createdAt?: boolean
+  lastSentAt?: boolean
+  sendCount?: boolean
+  lastSendFailed?: boolean
 }
 
-export type SpaceInvitationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "email" | "role" | "tokenHash" | "invitedById" | "expiresAt" | "acceptedAt" | "acceptedUserId" | "revokedAt" | "createdAt", ExtArgs["result"]["spaceInvitation"]>
+export type SpaceInvitationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "email" | "role" | "tokenHash" | "invitedById" | "expiresAt" | "acceptedAt" | "acceptedUserId" | "revokedAt" | "createdAt" | "lastSentAt" | "sendCount" | "lastSendFailed", ExtArgs["result"]["spaceInvitation"]>
 export type SpaceInvitationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -701,6 +844,9 @@ export type $SpaceInvitationPayload<ExtArgs extends runtime.Types.Extensions.Int
     acceptedUserId: string | null
     revokedAt: Date | null
     createdAt: Date
+    lastSentAt: Date | null
+    sendCount: number
+    lastSendFailed: boolean
   }, ExtArgs["result"]["spaceInvitation"]>
   composites: {}
 }
@@ -1136,6 +1282,9 @@ export interface SpaceInvitationFieldRefs {
   readonly acceptedUserId: Prisma.FieldRef<"SpaceInvitation", 'String'>
   readonly revokedAt: Prisma.FieldRef<"SpaceInvitation", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"SpaceInvitation", 'DateTime'>
+  readonly lastSentAt: Prisma.FieldRef<"SpaceInvitation", 'DateTime'>
+  readonly sendCount: Prisma.FieldRef<"SpaceInvitation", 'Int'>
+  readonly lastSendFailed: Prisma.FieldRef<"SpaceInvitation", 'Boolean'>
 }
     
 
