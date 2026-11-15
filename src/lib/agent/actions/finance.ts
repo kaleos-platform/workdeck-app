@@ -38,7 +38,7 @@ async function assertInSpace(
         : await prisma.finAccount.findFirst({ where, select: { id: true } })
   if (!found) {
     const label = { transaction: '거래', category: '카테고리', account: '계좌' }[kind]
-    throw new ToolUserError(`이 Space 에서 ${label}를 찾을 수 없습니다: ${id}`)
+    throw new ToolUserError(`이 작업 공간에서 ${label}를 찾을 수 없습니다: ${id}`)
   }
 }
 

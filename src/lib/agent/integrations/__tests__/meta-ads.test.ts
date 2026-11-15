@@ -367,7 +367,7 @@ describe('meta-ads (포팅)', () => {
     fetchMock.mockResolvedValueOnce(ok({ account_id: '999' }))
     await expect(
       tool('meta_ads_get_insights').execute(ctx(), { brand: 'brand-a', object_id: '123' })
-    ).rejects.toThrow('이 Space의 광고 계정에 속하지 않는 객체입니다')
+    ).rejects.toThrow('이 작업 공간의 광고 계정에 속하지 않는 객체입니다')
   })
 
   describe('get_insights 확장', () => {
@@ -583,7 +583,7 @@ describe('meta-ads (포팅)', () => {
         adAccountId: 'act_999',
         params: { campaign_id: '1', status: 'PAUSED' },
       })
-    ).rejects.toThrow('광고 계정 매핑이 바뀌었거나 이 Space에 등록되지 않은 계정입니다')
+    ).rejects.toThrow('광고 계정 매핑이 바뀌었거나 이 작업 공간에 등록되지 않은 계정입니다')
     await expect(
       def.validateCreate!(execCtx(), {
         brand: 'brand-a',
@@ -698,7 +698,7 @@ describe('meta-ads (포팅)', () => {
         .mockResolvedValueOnce(ok({ account_id: '999' }))
       await expect(
         run({ business_id: '680', cells: [{ name: 'A', adsets: ['55'] }] })
-      ).rejects.toThrow('이 Space의 광고 계정에 속하지 않는 객체입니다')
+      ).rejects.toThrow('이 작업 공간의 광고 계정에 속하지 않는 객체입니다')
       expect(posts()).toHaveLength(0)
     })
 
@@ -730,7 +730,7 @@ describe('meta-ads (포팅)', () => {
         .mockResolvedValueOnce(ok({ account_id: '999' }))
       await expect(
         run({ study_id: '9', end_time: '2026-11-01' }, 'meta-ads.adstudy.update')
-      ).rejects.toThrow('이 Space의 광고 계정에 속하지 않는 객체입니다')
+      ).rejects.toThrow('이 작업 공간의 광고 계정에 속하지 않는 객체입니다')
       expect(new URL(fetchMock.mock.calls[1][0]).searchParams.get('fields')).toMatch(
         /^business,cells/
       )
@@ -889,7 +889,7 @@ describe('PR4 객체·영상·활동 조회', () => {
     fetchMock.mockResolvedValueOnce(ok({ account_id: '999' }))
     await expect(
       tool('meta_ads_get_object').execute(ctx(), { brand: 'brand-a', type: 'ad', object_id: '7' })
-    ).rejects.toThrow('이 Space의 광고 계정에 속하지 않는 객체입니다')
+    ).rejects.toThrow('이 작업 공간의 광고 계정에 속하지 않는 객체입니다')
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
@@ -903,7 +903,7 @@ describe('PR4 객체·영상·활동 조회', () => {
         type: 'adstudy',
         object_id: '9',
       })
-    ).rejects.toThrow('이 Space 광고 계정의 비즈니스가 아닙니다')
+    ).rejects.toThrow('이 작업 공간 광고 계정의 비즈니스가 아닙니다')
   })
 
   it('get_object: object_id 는 숫자만, type 은 정해진 값만', () => {

@@ -31,7 +31,7 @@ import type { ToolDefinition } from './types'
 const brand = z
   .string()
   .optional()
-  .describe('브랜드 키(Space 구글 마케팅 자격증명의 brands 키). 없으면 기본 브랜드')
+  .describe('브랜드 키(작업 공간 구글 마케팅 자격증명의 brands 키). 없으면 기본 브랜드')
 const query = z.record(z.string(), z.string()).optional()
 
 const runReport: ToolDefinition = {

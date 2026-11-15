@@ -39,7 +39,7 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
       select: { id: true, reorderConfig: { select: { excludeFromForecast: true } } },
     })
     if (!product)
-      throw new ToolUserError(`이 Space 에서 활성 상품을 찾을 수 없습니다: ${params.productId}`)
+      throw new ToolUserError(`이 작업 공간에서 활성 상품을 찾을 수 없습니다: ${params.productId}`)
     if (product.reorderConfig?.excludeFromForecast)
       throw new ToolUserError('발주 예측에서 제외된 상품입니다. 발주 설정에서 제외를 해제하세요.')
   },
@@ -105,7 +105,7 @@ const keywordUpdate: ActionDefinition<KeywordUpdateParams> = {
   retryableAfterFailure: true, // 실패 시 단일 트랜잭션이라 변경이 남지 않는다
   validateCreate: async (ctx, params) => {
     const cur = await readTargetKeywords(ctx.spaceId, params.target)
-    if (!cur) throw new ToolUserError('이 Space 에서 대상을 찾을 수 없습니다')
+    if (!cur) throw new ToolUserError('이 작업 공간에서 대상을 찾을 수 없습니다')
     // 그룹 소속 리스팅의 키워드는 채널상품 단위로 관리한다.
     if ('channelProductId' in cur && cur.channelProductId) {
       throw new ToolUserError(
