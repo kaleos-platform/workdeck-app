@@ -10,7 +10,6 @@ import { formatDateToYmdKst } from '@/lib/date-range'
 import {
   RECRUITING_POSTINGS_PATH,
   RECRUITING_APPLICATIONS_PATH,
-  RECRUITING_DETAIL_TEMPLATES_PATH,
   getRecruitingApplicationPath,
   getRecruitingPostingDetailPath,
 } from '@/lib/deck-routes'
@@ -39,43 +38,23 @@ export default async function RecruitingHomePage() {
         <div>
           <h1 className="text-2xl font-semibold">모집 관리</h1>
           <p className="text-sm text-muted-foreground">
-            지원자 처리 현황과 모집 중인 공고를 한눈에 확인하세요.
+            모집 중인 공고와 지원자 처리 현황을 한눈에 확인하세요.
           </p>
         </div>
         <NewPostingButton />
       </div>
 
-      <section aria-labelledby="home-pending" className="space-y-3">
-        <h2 id="home-pending" className="text-sm font-medium">
-          처리할 지원자
-        </h2>
-        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {strip.map((item) => (
-            <li key={item.label}>
-              <Link
-                href={item.href}
-                className="flex flex-col gap-1 rounded-md border px-4 py-3 hover:bg-muted/50 focus-visible:outline-2"
-              >
-                <span className="text-xs text-muted-foreground">{item.label}</span>
-                <span className="text-xl font-semibold tabular-nums">{item.value}명</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section aria-labelledby="home-open" className="space-y-3">
-        <h2 id="home-open" className="text-sm font-medium">
-          모집 중 공고
-        </h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 id="home-open" className="text-sm font-medium">
+            모집 중 공고
+          </h2>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={RECRUITING_POSTINGS_PATH}>전체 공고</Link>
+          </Button>
+        </div>
         {postings.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            모집 중인 공고가 없습니다.{' '}
-            <Link href={RECRUITING_POSTINGS_PATH} className="underline">
-              공고 관리
-            </Link>
-            에서 확인하세요.
-          </p>
+          <p className="text-sm text-muted-foreground">모집 중인 공고가 없습니다.</p>
         ) : (
           <ul className="divide-y rounded-md border">
             {postings.map((p) => (
@@ -102,6 +81,30 @@ export default async function RecruitingHomePage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section aria-labelledby="home-pending" className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <h2 id="home-pending" className="text-sm font-medium">
+            처리할 지원자
+          </h2>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={RECRUITING_APPLICATIONS_PATH}>전체 지원자</Link>
+          </Button>
+        </div>
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {strip.map((item) => (
+            <li key={item.label}>
+              <Link
+                href={item.href}
+                className="flex flex-col gap-1 rounded-md border px-4 py-3 hover:bg-muted/50 focus-visible:outline-2"
+              >
+                <span className="text-xs text-muted-foreground">{item.label}</span>
+                <span className="text-xl font-semibold tabular-nums">{item.value}명</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-labelledby="home-recent" className="space-y-3">
@@ -136,18 +139,6 @@ export default async function RecruitingHomePage() {
           </ul>
         )}
       </section>
-
-      <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" asChild>
-          <Link href={RECRUITING_APPLICATIONS_PATH}>전체 지원자</Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href={RECRUITING_POSTINGS_PATH}>전체 공고</Link>
-        </Button>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={RECRUITING_DETAIL_TEMPLATES_PATH}>공고 템플릿 관리</Link>
-        </Button>
-      </div>
     </div>
   )
 }

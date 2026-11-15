@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import RecruitingHomePage from '../../../../app/d/recruiting/home/page'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { getRecruitingHomeSummary } from '@/lib/hiring/home-summary'
@@ -36,9 +36,19 @@ it('빈 공간에서 안내 문구와 새 공고 버튼을 제공하고 현재 �
   expect(screen.getByText(/모집 중인 공고가 없습니다/)).toBeInTheDocument()
   expect(screen.getByText('공고를 발행하면 지원서가 이곳에 쌓입니다.')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: '새 공고' })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: '공고 템플릿 관리' })).toHaveAttribute(
+  expect(screen.queryByRole('link', { name: '공고 템플릿 관리' })).not.toBeInTheDocument()
+  // 공고 → 지원자 흐름: 모집 중 공고 → 처리할 지원자 → 최근 지원자, 전체 보기는 각 섹션 안
+  const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+  expect(headings).toEqual(['모집 중 공고', '처리할 지원자', '최근 지원자'])
+  const open = screen.getByRole('region', { name: '모집 중 공고' })
+  expect(within(open).getByRole('link', { name: '전체 공고' })).toHaveAttribute(
     'href',
-    '/d/recruiting/templates'
+    '/d/recruiting/postings'
+  )
+  const pending = screen.getByRole('region', { name: '처리할 지원자' })
+  expect(within(pending).getByRole('link', { name: '전체 지원자' })).toHaveAttribute(
+    'href',
+    '/d/recruiting/applications'
   )
 })
 
