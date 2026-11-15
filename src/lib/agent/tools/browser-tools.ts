@@ -33,7 +33,7 @@ export const browserTools: ToolDefinition[] = [
   {
     name: 'browser_get_write_job',
     description:
-      '같은 Space의 승인된 Ego 브라우저 작업 결과를 조회합니다. 승인 접수와 실제 저장·복원 결과는 별개이며, 결과 불명 또는 실행 만료 후 RUNNING은 수동 확인 대상입니다.',
+      '같은 작업 공간의 승인된 Ego 브라우저 작업 결과를 조회합니다. 승인 접수와 실제 저장·복원 결과는 별개이며, 결과 불명 또는 실행 만료 후 RUNNING은 수동 확인 대상입니다.',
     inputSchema: { jobId: z.string().min(1).max(100) },
     mode: 'read',
     scope: 'browser:read',

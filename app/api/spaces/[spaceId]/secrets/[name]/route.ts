@@ -162,7 +162,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       },
     })
     if (found !== allowedAgentIds.length) {
-      return errorResponse('이 Space의 에이전트만 허용할 수 있습니다', 400)
+      return errorResponse('이 작업 공간의 에이전트만 허용할 수 있습니다', 400)
     }
   }
 

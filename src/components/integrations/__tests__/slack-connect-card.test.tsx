@@ -23,7 +23,7 @@ it('채널 저장이 409면 서버 메시지를 보여주고, 보이는 Space �
       })
     )
     .mockResolvedValueOnce(
-      res(409, { message: '같은 Slack 워크스페이스의 다른 Space가 이미 쓰는 채널입니다' })
+      res(409, { message: '같은 Slack 워크스페이스의 다른 작업 공간이 이미 쓰는 채널입니다' })
     )
   render(<SlackConnectCard slackStatus={null} />)
 
@@ -32,7 +32,7 @@ it('채널 저장이 409면 서버 메시지를 보여주고, 보이는 Space �
   fireEvent.click(screen.getAllByRole('button', { name: '등록' })[0])
 
   expect((await screen.findByRole('alert')).textContent).toBe(
-    '같은 Slack 워크스페이스의 다른 Space가 이미 쓰는 채널입니다'
+    '같은 Slack 워크스페이스의 다른 작업 공간이 이미 쓰는 채널입니다'
   )
   expect(fetchMock.mock.calls[0][0]).toBe('/api/slack/channels')
   expect(fetchMock.mock.calls[1][0]).toBe('/api/slack/channels?spaceId=sp-a')
@@ -51,7 +51,7 @@ it('에이전트 채널을 나열·추가·해제하고, 추가 409면 서버 �
   fetchMock
     .mockResolvedValueOnce(loaded)
     .mockResolvedValueOnce(
-      res(409, { message: '같은 Slack 워크스페이스의 다른 Space가 이미 쓰는 채널입니다' })
+      res(409, { message: '같은 Slack 워크스페이스의 다른 작업 공간이 이미 쓰는 채널입니다' })
     )
     .mockResolvedValueOnce(res(200, { ok: true }))
     .mockResolvedValueOnce(loaded)
@@ -63,7 +63,7 @@ it('에이전트 채널을 나열·추가·해제하고, 추가 409면 서버 �
   fireEvent.change(screen.getByLabelText('에이전트 채널'), { target: { value: 'C_TAKEN' } })
   fireEvent.click(screen.getByRole('button', { name: '추가' }))
   expect((await screen.findByRole('alert')).textContent).toBe(
-    '같은 Slack 워크스페이스의 다른 Space가 이미 쓰는 채널입니다'
+    '같은 Slack 워크스페이스의 다른 작업 공간이 이미 쓰는 채널입니다'
   )
   expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({
     channelId: 'C_TAKEN',
