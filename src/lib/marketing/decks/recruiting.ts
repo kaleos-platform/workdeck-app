@@ -15,6 +15,12 @@ const EMAIL_FEATURE: DeckLandingFeature = {
   headline: '새 지원 소식을 메일로',
   description:
     '지원자가 이메일을 입력하면 제출 직후 접수 완료 메일이 가고, 회신하면 공고 담당자에게 전달됩니다. 담당자는 전날 새 지원자가 있으면 매일 오전 9시에 공고별 새 지원자 수를 요약 메일로 받습니다(지원자 개인정보는 담지 않습니다). 두 메일 모두 공고별로 끌 수 있습니다.',
+  image: {
+    src: '/marketing/recruiting/email.webp',
+    alt: '지원자가 받는 접수 완료 메일 — 회사 이름으로 발송',
+    width: 868,
+    height: 470,
+  },
 }
 
 const AI_FEATURE: DeckLandingFeature = {
@@ -23,6 +29,12 @@ const AI_FEATURE: DeckLandingFeature = {
   headline: '쓰던 AI에게 채용 현황을 물어보세요',
   description:
     'Claude처럼 MCP를 지원하는 AI를 연결하면 공고 목록과 지원 현황 집계를 조회하고, 새 공고 초안을 제안받을 수 있습니다. 초안은 관리자가 승인해야 「작성 중」 공고로 만들어지고 게시는 직접 합니다. 지원자 이름·연락처 같은 개인정보는 AI에 보내지 않습니다.',
+  image: {
+    src: '/marketing/recruiting/ai.webp',
+    alt: '승인 대기 화면 — AI가 제안한 채용 공고 초안',
+    width: 1972,
+    height: 660,
+  },
 }
 
 const NEW_APPLICANT_ALERT_ROW = RECRUITING_EMAIL_LIVE
@@ -40,15 +52,15 @@ const NEW_APPLICANT_ALERT_ROW = RECRUITING_EMAIL_LIVE
     }
 
 const NOTIFICATION_FAQ_ANSWER = RECRUITING_EMAIL_LIVE
-  ? '지원자가 이메일을 입력하면 접수 완료 메일이 가고, 담당자는 전날 새 지원자가 있을 때 매일 오전 9시에 요약 메일을 받습니다. 공고별로 끌 수 있습니다. 결과 안내는 지원자별 결과 확인 링크를 만들어 문자나 메신저로 전달합니다. 카카오톡 알림은 제공하지 않습니다.'
-  : '지원서를 제출하면 지원 완료 화면이 바로 표시됩니다. 결과 안내는 지원자별 결과 확인 링크를 만들어 문자나 메신저로 전달합니다. 카카오톡 알림은 제공하지 않습니다.'
+  ? '지원자가 이메일을 입력하면 접수 완료 메일이 가고, 담당자는 전날 새 지원자가 있을 때 매일 오전 9시에 요약 메일을 받습니다. 공고별로 끌 수 있습니다. 카카오톡 알림은 제공하지 않습니다.'
+  : '지원서를 제출하면 지원 완료 화면이 바로 표시됩니다. 카카오톡 알림은 제공하지 않습니다.'
 
 export const recruitingLanding: DeckLandingContent = {
   slug: 'recruiting',
   seo: {
     title: '모집 관리 — 생산직·인력파견 대규모 채용 공고부터 지원자 관리까지',
     description:
-      '채용 공고 제작, 간편 지원서, 지원자 통합 관리, 결과 안내까지 하나의 툴로. 생산직·인력파견·물류·매장 대규모 채용을 Workdeck 모집 관리로 체계화하세요. 신규 작업공간 7일 무료 체험.',
+      '채용 공고 제작, 간편 지원서, 지원자 통합 관리까지 하나의 툴로. 생산직·인력파견·물류·매장 대규모 채용을 Workdeck 모집 관리로 체계화하세요. 신규 작업공간 7일 무료 체험.',
     keywords: [
       '채용 관리',
       '채용 공고 제작',
@@ -66,7 +78,7 @@ export const recruitingLanding: DeckLandingContent = {
     headline: '채용 시간은 줄이고.',
     highlight: '지원자는 더 많이.',
     subcopy:
-      '생산직·인력파견처럼 반복되는 대규모 채용을, 공고 제작부터 지원자 관리와 결과 안내까지 한 곳에서 간편하게 관리하세요.',
+      '생산직·인력파견처럼 반복되는 대규모 채용을, 공고 제작부터 지원자 관리까지 한 곳에서 간편하게 관리하세요.',
     primaryCta: { label: '시작하기', href: '/signup' },
     secondaryCta: { label: '로그인', href: '/d/recruiting/login' },
     note: '7일 무료 체험 · 이후 월 22,000원(부가세 포함)',
@@ -91,7 +103,7 @@ export const recruitingLanding: DeckLandingContent = {
       rows: [
         {
           before: '공고 디자인 에디터·템플릿',
-          after: '공고 디자인 에디터·상세 템플릿',
+          after: '공고 디자인 에디터·공고 템플릿',
           diff: '그대로',
           same: true,
         },
@@ -111,7 +123,7 @@ export const recruitingLanding: DeckLandingContent = {
         { before: '팀원 초대', after: '멤버 초대', diff: '그대로', same: true },
         {
           before: '자주 쓰는 메시지 (휴대폰 문자앱으로 바로 열기)',
-          after: '지원자별 결과 확인 링크 (복사해 문자·메신저로 전달)',
+          after: '지원자별 결과 확인 링크로 전달',
           diff: '방식 다름',
           same: false,
         },
@@ -131,9 +143,9 @@ export const recruitingLanding: DeckLandingContent = {
         '지원서 양식을 따로 만들고 응답을 내려받아 합치는 사이, 대규모 지원자 확인과 연락에 누락이 생깁니다.',
     },
     {
-      title: '결과 안내와 재지원자 확인이 번거로움',
+      title: '재지원자 확인과 연락 정리가 번거로움',
       description:
-        '합격·불합격 안내 문구를 매번 다시 쓰고, 과거에 문제가 있었던 지원자를 다시 걸러내기도 어렵습니다.',
+        '누가 어느 단계까지 왔는지 따로 정리해야 하고, 과거에 문제가 있었던 지원자를 다시 걸러내기도 어렵습니다.',
     },
   ],
   featureStyle: 'rows',
@@ -143,7 +155,13 @@ export const recruitingLanding: DeckLandingContent = {
       title: '공고 디자인 에디터',
       headline: '디자인을 몰라도 공고를 빠르게',
       description:
-        '디자인 블록과 상세 템플릿으로 공고를 꾸밉니다. 다른 도구로 만든 공고 이미지도 이미지 블록으로 그대로 넣을 수 있습니다.',
+        '디자인 블록과 공고 템플릿으로 공고를 꾸미고, 지난 공고를 복사해 바로 시작할 수도 있습니다. 다른 도구로 만든 공고 이미지도 이미지 블록으로 그대로 넣고, 모바일 미리보기로 바로 확인합니다.',
+      image: {
+        src: '/marketing/recruiting/editor.webp',
+        alt: '공고 편집 화면 — 이미지·텍스트 블록과 모바일 미리보기',
+        width: 1880,
+        height: 860,
+      },
     },
     {
       icon: 'inbox',
@@ -151,20 +169,25 @@ export const recruitingLanding: DeckLandingContent = {
       headline: '공고마다 링크와 지원서가 바로',
       description:
         '게시한 공고마다 공개 링크와 HTML 코드가 생겨 어느 채용 채널에든 올릴 수 있습니다. 공고별 지원서 양식으로 별도 설문 도구 없이 지원자를 한 곳에 모읍니다.',
+      image: {
+        src: '/marketing/recruiting/posting.webp',
+        alt: '공고 상세 화면 — 접수 상태, HTML 복사, 공고 미리보기',
+        width: 1900,
+        height: 1200,
+      },
     },
     {
       icon: 'store',
       title: '지원자 통합 관리',
       headline: '모든 지원자를 한눈에',
       description:
-        '여러 공고의 지원자를 근무지·직무·채용 단계·기간별로 확인하고, 합격·불합격과 단계 변경을 일괄로 처리합니다. 메모와 엑셀 다운로드, 문제가 있었던 지원자를 기록하는 블랙리스트도 함께 씁니다.',
-    },
-    {
-      icon: 'message-square',
-      title: '결과 안내 링크',
-      headline: '결과는 지원자별 링크 하나로',
-      description:
-        '면접·합격·불합격 등 상태별 결과 확인 링크를 지원자마다 만들어, 복사해서 문자나 메신저로 전달합니다.',
+        '여러 공고의 지원자를 진행 상태별 탭과 근무지·직무 검색으로 확인하고, 합격·불합격과 단계 변경을 일괄로 처리합니다. 메모와 엑셀 다운로드, 문제가 있었던 지원자를 기록하는 블랙리스트도 함께 씁니다.',
+      image: {
+        src: '/marketing/recruiting/applicants.webp',
+        alt: '지원자 목록 화면 — 진행 상태 탭과 단계 배지',
+        width: 1916,
+        height: 1170,
+      },
     },
     ...(RECRUITING_EMAIL_LIVE ? [EMAIL_FEATURE] : []),
     ...(RECRUITING_AI_LIVE ? [AI_FEATURE] : []),
@@ -179,11 +202,14 @@ export const recruitingLanding: DeckLandingContent = {
     '배달·운송',
     '숙박·리조트',
   ],
+  // 랜딩은 기능 행 이미지로 보여 주고(rows면 쇼케이스 미렌더), 요금 페이지가 screenshots[0]을 쓴다
   screenshots: [
     {
-      src: '/marketing/recruiting/dashboard.png',
-      alt: '모집 관리 공고 목록 화면',
-      caption: '채용 공고 상태와 지원자 현황을 한눈에',
+      src: '/marketing/recruiting/applicants.webp',
+      alt: '모집 관리 지원자 목록 화면',
+      caption: '여러 공고의 지원자를 진행 상태별로 한눈에',
+      width: 1916,
+      height: 1170,
     },
   ],
   workflow: [
@@ -195,12 +221,13 @@ export const recruitingLanding: DeckLandingContent = {
     {
       step: 2,
       title: '공고 제작·게시',
-      description: '디자인 블록이나 상세 템플릿으로 공고를 꾸미고, 지원서 양식을 정해 게시합니다.',
+      description: '디자인 블록이나 공고 템플릿으로 공고를 꾸미고, 지원서 양식을 정해 게시합니다.',
     },
     {
       step: 3,
-      title: '지원자 관리·결과 안내',
-      description: '접수된 지원자를 단계별로 관리하고 지원자별 결과 확인 링크로 결과를 안내합니다.',
+      title: '지원자 관리',
+      description:
+        '접수된 지원자를 진행 상태별로 확인하고, 단계 변경과 합격·불합격을 일괄로 처리합니다.',
     },
   ],
   faq: [
