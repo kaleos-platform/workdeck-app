@@ -474,6 +474,10 @@ export function ImageBlock({
 
   async function upload(file: File) {
     if (uploadRef.current) return
+    if (file.size > 3 * 1024 * 1024) {
+      toast.error('이미지는 파일당 3MB 이하만 등록할 수 있습니다. 용량을 줄여 다시 선택해주세요.')
+      return
+    }
     uploadRef.current = true
     setUploading(true)
     try {
@@ -529,8 +533,8 @@ export function ImageBlock({
           <Upload /> {uploading ? '업로드 중…' : imagePath ? '이미지 교체' : '이미지 업로드'}
         </Button>
         <p className="text-xs text-muted-foreground">
-          권장: 가로 1280px 이상(표시 폭 640px · 선명도 2x) · JPG/PNG · 10MB 이하. 세로 길이는
-          자유입니다.
+          권장: 가로 1280px 이상(표시 폭 640px · 선명도 2x) · JPG/PNG · 파일당 3MB 이하. 큰 이미지는
+          용량을 줄여 등록해주세요. 세로 길이는 자유입니다.
         </p>
       </div>
       {failedFile && (
