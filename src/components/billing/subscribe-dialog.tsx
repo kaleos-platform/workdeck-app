@@ -16,6 +16,8 @@ import { Separator } from '@/components/ui/separator'
 import { buildMarketingUrl } from '@/lib/domain'
 import {
   discountNote,
+  firstChargeAfterTrial,
+  formatDate,
   formatTrialEndDate,
   formatWon,
   startCardRegistration,
@@ -87,6 +89,15 @@ export function SubscribeDialog({
     target.trialEndsAt && new Date(target.trialEndsAt).getTime() > Date.now()
       ? formatTrialEndDate(target.trialEndsAt)
       : null
+  // 결제 예정일: 체험 중이면 체험 종료 후 첫 정기결제 실행일, 아니면 확인 즉시
+  const payDate = trialEnd
+    ? formatDate(firstChargeAfterTrial(target.trialEndsAt!))
+    : '오늘 (확인 즉시)'
+  const payNote = trialEnd
+    ? '체험이 끝나면 이날 첫 결제가 진행되고, 이후 매월 같은 날 자동 결제됩니다. 이미 구독 중인 업무가 있으면 첫 결제는 다음 결제일까지 남은 기간만큼 일할로 계산되고, 그 뒤로 함께 결제됩니다.'
+    : target.isAddition && !target.chargesFullMonth
+      ? '이용 기간 중 추가하므로 오늘은 다음 결제일까지 남은 기간만큼 일할 결제하고, 이후 함께 결제됩니다.'
+      : '오늘 첫 달 요금을 결제하고, 이후 매월 같은 날 자동 결제됩니다.'
 
   return (
     <Dialog open onOpenChange={(open) => !open && !busy && !cardBusy && onCancel()}>
@@ -103,25 +114,26 @@ export function SubscribeDialog({
             {needsCard
               ? '카드를 등록하면 이어서 구독 내용을 확인할 수 있습니다. 등록 단계에서는 결제가 일어나지 않습니다.'
               : trialEnd
-                ? `${names} 업무를 구독합니다. 체험은 ${trialEnd}까지 그대로 이용하고, 그 다음 날부터 유료로 전환됩니다.`
+                ? `${names} 업무를 구독합니다. 체험은 ${trialEnd}까지 그대로 이용하고, 체험이 끝나면 유료로 전환됩니다.`
                 : `${names} 업무를 구독합니다.`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 text-sm">
           <div className="space-y-1.5 rounded-lg border bg-muted/30 p-4">
-            {trialEnd && (
-              <div className="flex items-baseline justify-between">
-                <span className="text-muted-foreground">오늘 결제 금액</span>
-                <span className="font-semibold">0원</span>
-              </div>
-            )}
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between gap-3">
               <span className="text-muted-foreground">월 결제 금액</span>
-              <span className="text-lg font-semibold">{formatWon(total)}</span>
+              <span className="text-lg font-semibold tabular-nums">
+                {formatWon(total)}
+                <span className="text-sm font-normal text-muted-foreground">(VAT 포함)/월</span>
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground">부가세 포함</p>
             {note && <p className="text-xs text-primary">{note}</p>}
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-muted-foreground">결제 예정일</span>
+              <span className="font-semibold tabular-nums">{payDate}</span>
+            </div>
+            <p className="text-xs break-keep text-muted-foreground">{payNote}</p>
             {target.decks.length > 1 && (
               <>
                 <Separator className="my-2" />
@@ -145,18 +157,6 @@ export function SubscribeDialog({
           </div>
 
           <ul className="space-y-1 text-xs break-keep text-muted-foreground">
-            <li>• 결제일로부터 1개월 단위로 자동 갱신되며, 언제든 해지할 수 있습니다.</li>
-            {trialEnd ? (
-              <li>
-                • 체험이 끝나면 첫 결제가 진행됩니다. 이미 구독 중인 업무가 있으면 다음 결제일까지
-                남은 기간만큼 일할 계산해 결제하고, 이후 함께 결제됩니다.
-              </li>
-            ) : (
-              target.isAddition &&
-              !target.chargesFullMonth && (
-                <li>• 이용 기간 중 추가하므로 남은 기간만큼 일할 계산된 금액이 즉시 청구됩니다.</li>
-              )
-            )}
             {trialEnd && <li>• 체험이 끝나기 전에 예약을 취소하면 결제되지 않습니다.</li>}
             <li>
               • 해지하면 결제한 기간의 마지막 날까지 이용할 수 있습니다. 자세한 기준은{' '}

@@ -100,7 +100,11 @@ test('체험 중 업무에 D-Day 와 구독하기를 보이고, 누르면 구독
   fireEvent.click(screen.getByRole('button', { name: '모집 관리 유료 구독하기' }))
   const dialog = screen.getByRole('dialog')
   expect(dialog).toHaveTextContent('구독을 예약할까요?')
-  expect(dialog).toHaveTextContent('오늘 결제 금액')
+  expect(dialog).not.toHaveTextContent('오늘 결제 금액')
+  expect(dialog).toHaveTextContent('13,500원(VAT 포함)/월')
+  expect(dialog).toHaveTextContent('결제 예정일')
+  expect(dialog).toHaveTextContent('체험이 끝나면 이날 첫 결제')
+  expect(dialog).not.toHaveTextContent('부가세 포함')
   expect(screen.getByRole('button', { name: '구독 예약' })).toBeInTheDocument()
 })
 
@@ -163,4 +167,18 @@ test('체험 예약만 있는 구독에 체험 끝난 업무를 더하면 일할
   fireEvent.click(screen.getByRole('button', { name: '모집 관리 추가 확인 열기' }))
   expect(screen.getByRole('dialog')).not.toHaveTextContent('일할')
   expect(screen.getByRole('button', { name: '구독 시작' })).toBeInTheDocument()
+})
+
+test('체험이 아닌 업무 구독은 결제 예정일을 오늘(확인 즉시)로 안내한다', () => {
+  render(
+    <MyDeckClient
+      {...base}
+      cardSummary="신한 1234"
+      billing={[{ ...bill, allowed: false, reason: 'LOCKED', trialEndsAt: '2026-01-01T00:00:00Z' }]}
+    />
+  )
+  fireEvent.click(screen.getByRole('button', { name: '모집 관리 추가 확인 열기' }))
+  const dialog = screen.getByRole('dialog')
+  expect(dialog).toHaveTextContent('오늘 (확인 즉시)')
+  expect(dialog).toHaveTextContent('오늘 첫 달 요금을 결제')
 })
