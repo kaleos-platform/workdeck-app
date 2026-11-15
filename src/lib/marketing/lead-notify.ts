@@ -1,5 +1,6 @@
 import 'server-only'
 import { buildAdminUrl, buildAppUrl } from '@/lib/domain'
+import { deckStartPath } from './deck-start'
 import { sendEmail } from '@/lib/email/send'
 import { emailBlocks, renderEmail } from '@/lib/email/layout'
 
@@ -20,13 +21,13 @@ export type LeadNotifyInput = {
 const TIMEOUT_MS = 5000
 const ADMIN_LEADS_URL = buildAdminUrl('/admin/leads')
 // preview·로컬 신청은 운영 채널·메일에서 구분되도록 제목 앞에 환경을 붙인다
-// 운영 수신 주소 — 운영 알림 수신처이자 신청자 메일의 회신 주소
-const OPS_ADDRESS = () => process.env.LEAD_NOTIFY_TO ?? 'hello@workdeck.work'
-
 const ENV_PREFIX =
   process.env.VERCEL_ENV === 'production'
     ? ''
     : `[${(process.env.VERCEL_ENV ?? 'local').toUpperCase()}] `
+
+// 운영 수신 주소 — 운영 알림 수신처이자 신청자 메일의 회신 주소
+const OPS_ADDRESS = () => process.env.LEAD_NOTIFY_TO ?? 'hello@workdeck.work'
 
 function escapeSlack(value: string) {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -98,39 +99,32 @@ function kstDate(now: Date) {
 }
 
 /**
- * 신청자 접수 확인 메일. 누구나 남의 주소를 넣을 수 있으므로 연락처·이메일 등 추가 개인정보는 넣지 않고,
- * 같은 주소·업무는 Resend 멱등 키로 하루 1통만 보낸다. 공개 여부(released)는 호출 측이 서버에서 판정한다.
+ * 신청자 접수 확인 메일. 누구나 남의 주소를 넣을 수 있으므로 신청자가 입력한 글(이름·회사명 등)은
+ * 한 글자도 넣지 않는다 — 워크덱 발신 메일에 임의 문구(피싱 URL 등)가 실리는 것을 막는다.
+ * 본문은 업무명(서버 값)과 공개 여부만으로 정해지고, 같은 주소·업무는 Resend 멱등 키로 하루 1통.
+ * 공개 여부(released)는 호출 측이 서버에서 판정한다.
  */
 export async function notifyApplicant(
-  lead: LeadNotifyInput,
+  lead: Pick<LeadNotifyInput, 'deck' | 'deckName' | 'email'>,
   opts: { released: boolean; now?: Date }
 ) {
-  const startUrl = buildAppUrl(
-    `/signup?redirectTo=${encodeURIComponent(`/my-deck?subscribe=${lead.deck}`)}`
-  )
+  const startUrl = buildAppUrl(deckStartPath(lead.deck))
   const kind = opts.released ? '도입 신청' : '출시 알림 신청'
   const next = opts.released
     ? '담당자가 확인 후 24시간 안에 이 메일 주소로 이용 방법을 안내드립니다.'
     : '업무가 출시되면 이 메일 주소로 가장 먼저 알려드립니다.'
-  const rows: Array<[string, string]> = [
-    ['업무', lead.deckName],
-    ['회사명', lead.companyName],
-    ['이름', lead.name],
-  ]
+  const title = `${lead.deckName} ${kind}이 접수됐습니다`
   const html = renderEmail({
-    preheader: `${lead.deckName} ${kind}이 접수됐습니다`,
+    preheader: title,
     header: { kind: 'workdeck', label: kind },
     body: [
-      emailBlocks.heading(`${lead.deckName} ${kind}이 접수됐습니다`),
-      emailBlocks.paragraph(`${lead.name}님, 워크덱에 관심 가져 주셔서 감사합니다. ${next}`),
-      emailBlocks.details(rows),
+      emailBlocks.heading(title),
+      emailBlocks.paragraph(`워크덱에 관심 가져 주셔서 감사합니다. ${next}`),
       ...(opts.released
         ? [
             emailBlocks.paragraph(
               '기다리지 않고 바로 써 보고 싶다면 가입 후 곧장 시작할 수 있습니다.',
-              {
-                muted: true,
-              }
+              { muted: true }
             ),
             emailBlocks.button('바로 시작하기', startUrl),
           ]
@@ -142,11 +136,9 @@ export async function notifyApplicant(
     ],
   })
   const text = [
-    `${lead.deckName} ${kind}이 접수됐습니다`,
+    title,
     '',
-    `${lead.name}님, 워크덱에 관심 가져 주셔서 감사합니다. ${next}`,
-    '',
-    ...rows.map(([k, v]) => `${k}: ${v}`),
+    `워크덱에 관심 가져 주셔서 감사합니다. ${next}`,
     ...(opts.released ? ['', `바로 시작하기: ${startUrl}`] : []),
     '',
     '문의는 이 메일에 회신해 주세요. 본인이 신청하지 않았다면 이 메일은 무시하셔도 됩니다.',
@@ -155,9 +147,10 @@ export async function notifyApplicant(
     from: process.env.LEAD_NOTIFY_FROM ?? 'Workdeck <noreply@workdeck.work>',
     to: lead.email,
     replyTo: OPS_ADDRESS(),
-    subject: `${ENV_PREFIX}[워크덱] ${lead.deckName} ${kind}이 접수됐습니다`,
+    subject: `${ENV_PREFIX}[워크덱] ${title}`,
     html,
     text,
-    idempotencyKey: `lead-confirm:${lead.deck}:${lead.email.toLowerCase()}:${kstDate(opts.now ?? new Date())}`,
+    // email 은 검증 스키마에서 이미 소문자·trim 처리된다
+    idempotencyKey: `lead-confirm:${lead.deck}:${lead.email}:${kstDate(opts.now ?? new Date())}`,
   })
 }

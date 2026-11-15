@@ -29,8 +29,8 @@ const lead = {
   deckName: '모집 관리',
   name: '<b>홍</b>',
   phone: '01012345678',
-  email: 'CEO@Brand.kr',
-  companyName: '의식주의',
+  email: 'ceo@brand.kr',
+  companyName: '의식주의 evil.example 확인',
   position: '대표',
   employeeCount: '10~49명',
 }
@@ -41,7 +41,7 @@ describe('신청자 접수 확인 메일', () => {
   it('공개 업무: 도입 신청 접수 제목·24시간 안내·바로 시작 버튼, 신청자에게 회신은 운영 주소로', async () => {
     await notifyApplicant(lead, { released: true, now: new Date('2026-11-16T03:00:00Z') })
     const arg = (sendEmail as jest.Mock).mock.calls[0][0]
-    expect(arg.to).toBe('CEO@Brand.kr')
+    expect(arg.to).toBe('ceo@brand.kr')
     expect(arg.subject).toContain('모집 관리 도입 신청이 접수됐습니다')
     expect(arg.replyTo).toBe('hello@workdeck.work')
     expect(arg.html).toContain('24시간')
@@ -58,15 +58,16 @@ describe('신청자 접수 확인 메일', () => {
     expect(arg.html).not.toContain('바로 시작하기')
   })
 
-  it('연락처·이메일은 본문에 넣지 않고 이름은 escape', async () => {
+  it('신청자가 입력한 글(이름·회사명·연락처·이메일)은 본문에 한 글자도 넣지 않는다', async () => {
     await notifyApplicant(lead, { released: true })
     const arg = (sendEmail as jest.Mock).mock.calls[0][0]
-    expect(arg.html).not.toContain('01012345678')
-    expect(arg.html).not.toContain('010-****')
-    expect(arg.html).not.toContain('CEO@Brand.kr')
-    expect(arg.text).not.toContain('CEO@Brand.kr')
-    expect(arg.html).not.toContain('<b>홍')
-    expect(arg.html).toContain('&lt;b&gt;홍')
+    for (const part of [arg.html, arg.text, arg.subject]) {
+      expect(part).not.toContain('홍')
+      expect(part).not.toContain('evil.example')
+      expect(part).not.toContain('의식주의')
+      expect(part).not.toContain('01012345678')
+      expect(part).not.toContain('ceo@brand.kr')
+    }
   })
 
   it('같은 주소·업무는 KST 하루 1통 (멱등 키)', async () => {

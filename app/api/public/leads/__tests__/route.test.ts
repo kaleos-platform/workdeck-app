@@ -53,6 +53,7 @@ it('허니팟이 채워지면 저장·알림 없이 200', async () => {
   expect(res.status).toBe(200)
   expect(create).not.toHaveBeenCalled()
   expect(notifySlack).not.toHaveBeenCalled()
+  expect(notifyApplicant).not.toHaveBeenCalled()
 })
 
 it('검증 실패는 400', async () => {

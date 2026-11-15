@@ -86,12 +86,12 @@ export async function POST(req: NextRequest) {
     deckName: DECK_META[deck as keyof typeof DECK_META].name,
     phone,
   }
-  // 공개 여부는 서버의 단일 출처로 판정(클라이언트 값 불신). 판정 실패 시 틀린 안내를 보내지 않도록 신청자 메일만 건너뛴다.
-  const releasedIds = await getReleasedDeckIds().catch(() => null)
+  // 공개 여부는 업무 공개 판정 단일 출처(getReleasedDeckIds — DB 실패 시 시드 기본값)로 정한다.
+  // 운영 알림을 그 조회 뒤로 미루지 않도록 신청자 메일 체인만 조회를 기다린다.
   const results = await Promise.allSettled([
     notifySlack(notify),
     notifyEmail(notify),
-    ...(releasedIds ? [notifyApplicant(notify, { released: releasedIds.includes(deck) })] : []),
+    getReleasedDeckIds().then((ids) => notifyApplicant(notify, { released: ids.includes(deck) })),
   ])
   for (const r of results) {
     // 개인정보가 섞이지 않도록 메시지만 남긴다

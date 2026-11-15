@@ -26,7 +26,7 @@
 
 - `src/lib/marketing/lead-notify.ts`: `notifyApplicant(lead, { released })` 추가.
 - `app/api/public/leads/route.ts`: `Promise.allSettled([notifySlack, notifyEmail, notifyApplicant])`. 실패는 기존처럼 로그만(접수 성공 유지).
-- `src/components/marketing/landing/deck-landing.tsx`·`src/lib/marketing/decks/recruiting.ts`(필요 시 다른 deck 파일): 완료 문구에 발송을 단정하지 않는 안내 추가: 「확인 메일이 보이지 않으면 스팸함을 확인하거나 hello@workdeck.work 로 알려 주세요」 (중복·시간당 초과·발송 실패 경로에서도 거짓이 되지 않게).
+- `src/components/marketing/landing/lead-form.tsx`: 완료 문구에 발송을 단정하지 않는 안내 추가: 「확인 메일이 보이지 않으면 스팸함을 확인하거나 hello@workdeck.work 로 알려 주세요」 (중복·시간당 초과·발송 실패 경로에서도 거짓이 되지 않게).
 - 테스트: `src/lib/marketing/__tests__/lead-notify.test.ts`, `app/api/public/leads/__tests__/route.test.ts`.
 
 ## 단계 (TDD)
@@ -49,4 +49,12 @@
 ## 리뷰 반영
 
 Codex 리뷰: 지적 1건 — 반영 1, 보류 0.
+
 - P2 완료 문구가 발송을 단정 → 발송 여부와 무관하게 참인 안내 문구로 변경.
+
+### 코드 리뷰 반영 (/code-review 10건 — 반영 9, 보류 1)
+
+- 메일 릴레이 악용(이름·회사명에 피싱 문구) → 신청자 입력값을 본문·제목에서 전부 제외. 본문은 업무명(서버 값)·공개 여부만으로 결정 → 같은 키 다른 본문 409 문제도 해소.
+- `getReleasedDeckIds` 는 실패 시 시드 기본값을 돌려주고 throw 하지 않음 → 죽은 catch 제거, 운영 알림이 조회를 기다리지 않도록 신청자 체인에만 연결.
+- 완료 문구를 「안내 메일이 늦어지면 문의」로(발송 단정 제거), 「바로 시작」 경로 `deckStartPath` 공용화, 주석 위치·중복 소문자 처리 정리, 허니팟 미발송 테스트 추가, 계획 파일 경로 정정.
+- 보류: 시간당 30건 상한을 운영 알림과 공유 — 스팸 폭주 시 정상 신청자 확인 메일도 생략되지만 악용 방어 우선(저장은 유지, 운영자는 어드민 리드 목록으로 확인 가능).
