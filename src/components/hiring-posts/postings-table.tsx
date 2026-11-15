@@ -30,6 +30,7 @@ import { NewPostingButton } from './new-posting-button'
 import { JOB_TYPE_LABELS } from './build-types'
 import { PostingStatusBadge, STATUS_LABELS, type PostingStatus } from './status-badge'
 import {
+  RECRUITING_DETAIL_TEMPLATES_PATH,
   RECRUITING_POSTINGS_PATH,
   getRecruitingPostingBuildPath,
   getHiringPublicApplyPath,
@@ -276,7 +277,12 @@ export function PostingsTable({
             ))}
           </TabsList>
         </Tabs>
-        <NewPostingButton />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href={RECRUITING_DETAIL_TEMPLATES_PATH}>공고 템플릿</Link>
+          </Button>
+          <NewPostingButton />
+        </div>
       </div>
       <p className="text-xs text-muted-foreground">
         상태 탭은 발행 상태 기준입니다. 마감일이 지난 공고는 접수가 중단되며, 목록을 새로고침해 접수

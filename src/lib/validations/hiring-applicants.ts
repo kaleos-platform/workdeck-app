@@ -133,8 +133,3 @@ export const blacklistCreateSchema = z.object({
 export const blacklistUpdateSchema = z.object({
   isActive: z.boolean(),
 })
-
-export const messageTemplateSchema = z.object({
-  title: z.string().min(1).max(100),
-  content: z.string().min(1).max(2000),
-})

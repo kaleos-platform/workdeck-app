@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Loader2, Send, Copy, Check } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -26,8 +26,6 @@ import { NOTIFICATION_LABELS } from '@/lib/hiring/application-shared'
 import { NOTIFICATION_TYPES } from '@/lib/validations/hiring-applicants'
 import type { HiringNotificationType } from '@/generated/prisma/client'
 
-type Template = { id: string; title: string; content: string }
-
 type Props = { applicationId: string }
 
 // 상태 알림 발송 — 공개열람 URL 생성(수동 복사). SMS/알림톡 미연동.
@@ -35,18 +33,9 @@ export function NotificationSender({ applicationId }: Props) {
   const [open, setOpen] = useState(false)
   const [notiType, setNotiType] = useState<HiringNotificationType>('INTERVIEW')
   const [detail, setDetail] = useState('')
-  const [templates, setTemplates] = useState<Template[]>([])
   const [sending, setSending] = useState(false)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (!open) return
-    fetch('/api/hiring-applicants/message-templates')
-      .then((r) => (r.ok ? r.json() : { items: [] }))
-      .then((d) => setTemplates(d.items ?? []))
-      .catch(() => setTemplates([]))
-  }, [open])
 
   async function send() {
     setSending(true)
@@ -136,24 +125,6 @@ export function NotificationSender({ applicationId }: Props) {
                 </SelectContent>
               </Select>
             </div>
-
-            {templates.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">템플릿 빠른 채우기</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {templates.map((t) => (
-                    <Button
-                      key={t.id}
-                      size="xs"
-                      variant="secondary"
-                      onClick={() => setDetail(t.content)}
-                    >
-                      {t.title}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium">상세 메시지</label>
