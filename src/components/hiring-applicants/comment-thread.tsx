@@ -1,13 +1,13 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { Loader2, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
-type Comment = {
+export type Comment = {
   id: string
   userId: string
   content: string
@@ -19,11 +19,25 @@ type Props = {
   applicationId: string
   currentUserId: string
   initial: Comment[]
+  // 오프닝 이관 단일 메모 — 읽기 전용으로 맨 위에 고정
+  legacyMemo?: string | null
+  // 제어 모드(같은 스레드를 여러 곳에 보여줄 때) — 주면 내부 상태 대신 사용
+  comments?: Comment[]
+  onCommentsChange?: Dispatch<SetStateAction<Comment[]>>
 }
 
-// 내부 코멘트(팀 메모) — 본인 코멘트만 수정/삭제.
-export function CommentThread({ applicationId, currentUserId, initial }: Props) {
-  const [comments, setComments] = useState<Comment[]>(initial)
+// 메모(팀 내부) — 본인 메모만 수정/삭제.
+export function CommentThread({
+  applicationId,
+  currentUserId,
+  initial,
+  legacyMemo,
+  comments: controlled,
+  onCommentsChange,
+}: Props) {
+  const [internal, setInternal] = useState<Comment[]>(initial)
+  const comments = controlled ?? internal
+  const setComments = onCommentsChange ?? setInternal
   const [draft, setDraft] = useState('')
   const [posting, setPosting] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -48,7 +62,7 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
       setComments((prev) => [...prev, comment])
       setDraft('')
     } catch {
-      toast.error('코멘트 등록에 실패했습니다')
+      toast.error('메모 등록에 실패했습니다')
     } finally {
       inFlight.current = false
       setPosting(false)
@@ -74,7 +88,7 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
       setComments((prev) => prev.map((c) => (c.id === id ? comment : c)))
       setEditingId(null)
     } catch {
-      toast.error('코멘트 수정에 실패했습니다')
+      toast.error('메모 수정에 실패했습니다')
     } finally {
       inFlight.current = false
       setBusyId(null)
@@ -93,7 +107,7 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
       if (!res.ok) throw new Error('삭제 실패')
       setComments((prev) => prev.filter((c) => c.id !== id))
     } catch {
-      toast.error('코멘트 삭제에 실패했습니다')
+      toast.error('메모 삭제에 실패했습니다')
     } finally {
       inFlight.current = false
       setBusyId(null)
@@ -103,8 +117,14 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
   return (
     <div className="space-y-3">
       <div className="space-y-2">
+        {legacyMemo && (
+          <div className="rounded-md border bg-muted/40 p-3 text-sm">
+            <p className="text-xs font-medium text-muted-foreground">이전 메모(오프닝워크)</p>
+            <p className="mt-1 whitespace-pre-wrap">{legacyMemo}</p>
+          </div>
+        )}
         {comments.length === 0 ? (
-          <p className="text-xs text-muted-foreground">아직 코멘트가 없습니다.</p>
+          <p className="text-xs text-muted-foreground">아직 메모가 없습니다.</p>
         ) : (
           comments.map((c) => (
             <div key={c.id} className="rounded-md border p-3 text-sm">
@@ -113,7 +133,7 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
                   <Textarea
                     value={editDraft}
                     disabled={busy}
-                    aria-label="코멘트 수정 내용"
+                    aria-label="메모 수정 내용"
                     maxLength={2000}
                     onChange={(e) => setEditDraft(e.target.value)}
                     rows={2}
@@ -178,16 +198,16 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
         <Textarea
           value={draft}
           disabled={busy}
-          aria-label="새 코멘트"
+          aria-label="새 메모"
           maxLength={2000}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="내부 코멘트를 남기세요 (지원자에게 보이지 않습니다)"
+          placeholder="메모를 남기세요 (지원자에게 보이지 않습니다)"
           rows={2}
         />
         <div className="flex justify-end">
           <Button size="sm" onClick={add} disabled={busy || !draft.trim()}>
             {posting && <Loader2 className="mr-1 size-3.5 animate-spin" />}
-            코멘트 추가
+            메모 추가
           </Button>
         </div>
       </div>
