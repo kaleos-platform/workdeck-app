@@ -9,7 +9,8 @@ import { sendInviteEmail } from '@/lib/spaces/invite-email'
 import {
   InvitationError,
   createInvitation,
-  listPendingInvitations,
+  listInvitations,
+  recordSendResult,
   normalizeEmail,
 } from '@/lib/spaces/invitations'
 
@@ -42,7 +43,7 @@ export async function POST(request: Request, { params }: Ctx) {
   }
   const email = normalizeEmail(parsed.data.email)
   try {
-    const { invitation, token, converted } = await createInvitation({
+    const { invitation, token, converted, resent } = await createInvitation({
       spaceId,
       email,
       role: parsed.data.role,
@@ -55,24 +56,45 @@ export async function POST(request: Request, { params }: Ctx) {
         to: 'ORGANIZATION',
         via: 'invitation',
       })
-    await writeAuditLog(g.userId, 'space.invitation.create', 'space_invitation', invitation.id, {
-      spaceId,
-      email,
-      role: parsed.data.role,
-    })
+    await writeAuditLog(
+      g.userId,
+      resent ? 'space.invitation.resend' : 'space.invitation.create',
+      'space_invitation',
+      invitation.id,
+      {
+        spaceId,
+        email,
+        role: parsed.data.role,
+      }
+    )
     // 요청 Host가 아니라 설정된 앱 origin — Host 헤더로 링크·redirectTo를 조작하지 못하게.
     const origin = getAppOrigin()
     const invitePath = `/invite/${token}`
-    const mail = await sendInviteEmail({ email, invitePath, origin })
+    const mail = await sendInviteEmail({
+      email,
+      invitePath,
+      origin,
+      invitationId: invitation.id,
+      spaceId,
+      inviterId: g.userId,
+      role: invitation.role,
+      expiresAt: invitation.expiresAt,
+    })
+    try {
+      await recordSendResult(invitation.id, mail.sent)
+    } catch (e) {
+      console.error('[invitations] 발송 결과 기록 실패', { invitationId: invitation.id, e })
+    }
     return NextResponse.json(
       {
         invitationId: invitation.id,
+        resent,
         link: `${origin}${invitePath}`,
         emailSent: mail.sent,
         ...(mail.sent ? {} : { emailSkipReason: mail.reason }),
         expiresAt: invitation.expiresAt,
       },
-      { status: 201 }
+      { status: resent ? 200 : 201 }
     )
   } catch (err) {
     if (err instanceof InvitationError)
@@ -81,9 +103,10 @@ export async function POST(request: Request, { params }: Ctx) {
   }
 }
 
+// 조회는 OWNER 만 — 보기만 하는 화면이라 AAL2 를 요구하지 않는다(변경 동작은 각 경로에서 단계 인증).
 export async function GET(_request: Request, { params }: Ctx) {
   const { spaceId } = await params
-  const g = await guard(spaceId)
-  if ('error' in g) return g.error
-  return NextResponse.json({ invitations: await listPendingInvitations(spaceId) })
+  const owner = await requireSpaceOwner(spaceId)
+  if ('error' in owner) return owner.error
+  return NextResponse.json({ invitations: await listInvitations(spaceId) })
 }
