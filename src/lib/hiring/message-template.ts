@@ -10,6 +10,7 @@ export function fillMessage(content: string, v: MessageVars): string {
     .replaceAll('{이름}', v.name ?? '')
     .replaceAll('{공고명}', v.postingTitle ?? '')
     .replaceAll('{직무}', v.positionName ?? '')
+    .replace(/[ \t]{2,}/g, ' ') // 빈 변수가 남긴 겹친 공백 정리
 }
 
 /** 숫자만 남기고 9~11자리가 아니면 null (sms: 링크에 쓸 수 없는 번호). */
