@@ -155,6 +155,17 @@ export function trialDday(
   return { label: days === 0 ? 'D-Day' : `D-${days}`, urgent: days <= 3 }
 }
 
+/**
+ * 체험 종료 후 첫 결제가 실제로 일어나는 날. 정기결제 cron 이 매일 00:00 UTC(09:00 KST)에 돌아
+ * 체험 종료 시각 이후 첫 실행에서 결제한다(vercel.json `/api/cron/billing-charge`).
+ */
+export function firstChargeAfterTrial(trialEndsAt: string): string {
+  const end = new Date(trialEndsAt)
+  const run = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()))
+  if (run.getTime() < end.getTime()) run.setUTCDate(run.getUTCDate() + 1)
+  return run.toISOString()
+}
+
 export function loadTossSdk(): Promise<void> {
   if (typeof window === 'undefined') return Promise.reject(new Error('브라우저 환경이 아닙니다'))
   if (window.TossPayments) return Promise.resolve()

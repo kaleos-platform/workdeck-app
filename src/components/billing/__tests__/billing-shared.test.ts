@@ -1,5 +1,6 @@
 import {
   endsAtPeriodEnd,
+  firstChargeAfterTrial,
   formatTrialEndDate,
   nextCycleSupplyTotal,
   trialDday,
@@ -98,5 +99,17 @@ describe('예약 반영 다음 결제액', () => {
     expect(nextCycleSupplyTotal(items, '2026-12-01T00:00:00Z', () => '2026-11-25T00:00:00Z')).toBe(
       30000
     )
+  })
+})
+
+describe('체험 종료 후 첫 결제일(정기결제 cron 09:00 KST)', () => {
+  test('09시 이후 종료면 다음 날 09시', () => {
+    expect(firstChargeAfterTrial('2026-11-22T05:30:00.000Z')).toBe('2026-11-23T00:00:00.000Z')
+  })
+  test('09시 이전 종료면 같은 날 09시', () => {
+    expect(firstChargeAfterTrial('2026-11-21T23:00:00.000Z')).toBe('2026-11-22T00:00:00.000Z')
+  })
+  test('정확히 09시 종료면 그 실행에서 결제', () => {
+    expect(firstChargeAfterTrial('2026-11-22T00:00:00.000Z')).toBe('2026-11-22T00:00:00.000Z')
   })
 })
