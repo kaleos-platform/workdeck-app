@@ -61,7 +61,12 @@ export function MemoPanel({ applicationId, currentUserId, initial, legacyMemo }:
       </section>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
+        <SheetContent
+          side="bottom"
+          className="max-h-[85dvh] overflow-y-auto"
+          // 열자마자 입력창에 포커스가 가면 모바일 키보드가 올라와 목록을 가린다
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <SheetHeader>
             <SheetTitle>메모</SheetTitle>
             <SheetDescription>팀 내부 메모입니다. 지원자에게 보이지 않습니다.</SheetDescription>
