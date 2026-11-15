@@ -15,6 +15,12 @@ const EMAIL_FEATURE: DeckLandingFeature = {
   headline: '새 지원 소식을 메일로',
   description:
     '지원자가 이메일을 입력하면 제출 직후 접수 완료 메일이 가고, 회신하면 공고 담당자에게 전달됩니다. 담당자는 전날 새 지원자가 있으면 매일 오전 9시에 공고별 새 지원자 수를 요약 메일로 받습니다(지원자 개인정보는 담지 않습니다). 두 메일 모두 공고별로 끌 수 있습니다.',
+  image: {
+    src: '/marketing/recruiting/email.webp',
+    alt: '지원자가 받는 접수 완료 메일 — 회사 이름으로 발송',
+    width: 868,
+    height: 470,
+  },
 }
 
 const AI_FEATURE: DeckLandingFeature = {
@@ -166,8 +172,8 @@ export const recruitingLanding: DeckLandingContent = {
       image: {
         src: '/marketing/recruiting/posting.webp',
         alt: '공고 상세 화면 — 접수 상태, HTML 복사, 공고 미리보기',
-        width: 1736,
-        height: 1120,
+        width: 1900,
+        height: 1200,
       },
     },
     {
