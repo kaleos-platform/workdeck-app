@@ -1,4 +1,5 @@
 import { DECK_META } from '@/lib/deck-meta'
+import { deckStartPath } from '@/lib/marketing/deck-start'
 import type { DeckLandingContent, DeckLandingLeadForm } from '@/lib/marketing/types'
 import { HeroSection } from './hero-section'
 import { PainPoints } from './pain-points'
@@ -38,7 +39,7 @@ export function DeckLanding({
 
   // [시작하기]는 이 업무를 보고 온 사람을 위한 CTA다. 가입 후 곧장 해당 업무의
   // 구독 확인 단계로 이어지도록 목적지를 실어 보낸다 (로그인 상태면 바로 도착).
-  const startHref = `/signup?redirectTo=${encodeURIComponent(`/my-deck?subscribe=${content.slug}`)}`
+  const startHref = deckStartPath(content.slug)
   const startCta = { ...content.hero.primaryCta, href: startHref }
   // 도입 신청 폼이 있으면 주 CTA 는 폼으로, 기존 [시작하기]는 보조 CTA 로 내린다.
   // 준비중이면 가입·구독 경로를 노출하지 않는다 (기존 이용 공간용 로그인만 유지).
