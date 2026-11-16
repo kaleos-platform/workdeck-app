@@ -88,3 +88,14 @@ node -e 'process.loadEnvFile("/Users/kaleos/projects/kaleos/workdeck-app/.env.lo
 ```
 
 최종 결과: 위 개발 환경 전달 방식의 `npm run build`가 2026-11-17 정상 종료(exit 0)했다. 385개 정적 페이지 생성과 production build를 완료했다.
+
+## 배포 캐시 patch 호환성 보완 (2026-11-17)
+
+Vercel이 이전 radius 전용 patch가 적용된 node_modules를 복구한 뒤 같은 파일명의 결합 font patch를 적용하면 postinstall이 실패했다. 기존 `@excalidraw+excalidraw+0.18.1.patch`를 원래 바이트 그대로 유지하고, 그 결과에서 font 변경만 적용하는 `@excalidraw+excalidraw+0.18.1+002+opening-fonts.patch`를 추가했다. 원본 npm 패키지와 기존 radius cache 양쪽에서 실제 patch-package CLI 적용·재적용 및 새 `.patch-package.json` cache 재사용을 검증한다. 여섯 runtime 파일은 이미 검증한 font 구현과 SHA-256이 일치하며 제품 동작 변경은 없다.
+
+```sh
+npm pack --offline --ignore-scripts @excalidraw/excalidraw@0.18.1 --pack-destination /tmp
+node scripts/verify-excalidraw-patches.mjs /tmp/excalidraw-excalidraw-0.18.1.tgz
+```
+
+배포에 성공한 적 없는 결합 patch를 단독 적용한 로컬 node_modules에는 sequence 상태 파일이 없어 새 구조를 자동 인식할 수 없다. 이 경우 Excalidraw 패키지만 원본으로 다시 설치한 뒤 표준 patch-package를 적용한다. 이를 지원하기 위한 runtime 우회나 검증 생략은 추가하지 않는다.
