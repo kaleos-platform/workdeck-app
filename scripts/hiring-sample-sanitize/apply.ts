@@ -167,15 +167,20 @@ async function api(
   )
 }
 
+// --keep-session: 리허설→롤백→전체 반영을 로그인 한 번으로 잇기 위해 이번 실행 종료 시 프로필(세션)을 남긴다.
+// 마지막 실행은 이 옵션 없이 돌려 프로필을 삭제한다. 시작 시에는 남은 프로필을 재사용한다.
+const KEEP_SESSION = process.argv.includes('--keep-session')
 const rmProfile = () => fs.rmSync(PROFILE, { recursive: true, force: true })
 
 async function login() {
   const { chromium } = createRequire('/tmp/pwtool/package.json')('playwright-core')
-  rmProfile() // 이전 실행 잔여 세션 제거 후 700 권한으로 새로 만든다
+  // 남은 프로필은 --keep-session 으로 이전 실행이 남긴 세션 — 재사용(700 권한 유지)
   fs.mkdirSync(PROFILE, { recursive: true, mode: 0o700 })
   fs.chmodSync(PROFILE, 0o700)
   console.log(
-    '세션은 실행 중에만 프로필(/tmp/tplaudit/admin-profile, 700)에 저장되고 종료 시 삭제됩니다.'
+    KEEP_SESSION
+      ? '세션을 프로필(/tmp/tplaudit/admin-profile, 700)에 남깁니다 — 마지막 실행은 --keep-session 없이 돌려 삭제하세요.'
+      : '세션은 프로필(/tmp/tplaudit/admin-profile, 700)에 저장되고 종료 시 삭제됩니다.'
   )
   const ctx = await chromium.launchPersistentContext(PROFILE, {
     executablePath: `${process.env.HOME}/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`,
@@ -264,6 +269,10 @@ async function classifyApply(e: Entry, d: Detail): Promise<Cls> {
   if (!cur) return { cls: 'mismatch', why: '블록 없음' }
   const h = sha(cur.data)
   if (h === e.originalDataSha256 && cur.imagePath === e.originalImagePath)
+    return { cls: 'original' }
+  // 롤백은 원본 바이트를 새 경로로 다시 올린다 → data 원본 + 바이트가 백업한 원본 해시와 같으면 원본으로 본다
+  const orig = state.originals[e.contentId]?.sha256
+  if (h === e.originalDataSha256 && orig && (await publicSha(cur.imagePath)) === orig)
     return { cls: 'original' }
   if (cur.imagePath !== e.originalImagePath && (e.op === 'image' || h === e.sanitizedDataSha256)) {
     if ((await publicSha(cur.imagePath)) === afterSha(e)) return { cls: 'applied' } // 바이트 해시 일치일 때만
@@ -525,7 +534,9 @@ async function rollbackCover(e: Entry) {
 // ---------- main ----------
 printPlan()
 if (MODE === 'plan') process.exit(0)
-const cleanup = () => rmProfile()
+const cleanup = () => {
+  if (!KEEP_SESSION) rmProfile()
+}
 process.on('SIGINT', () => {
   cleanup()
   process.exit(130)
@@ -625,5 +636,5 @@ try {
   await new Promise((r) => setTimeout(r, 500))
   await ctx?.close().catch(() => {})
   cleanup()
-  console.log('프로필 디렉터리 삭제됨')
+  console.log(KEEP_SESSION ? '세션 유지(--keep-session) — 프로필 남김' : '프로필 디렉터리 삭제됨')
 }
