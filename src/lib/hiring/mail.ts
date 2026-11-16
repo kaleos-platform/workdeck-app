@@ -156,7 +156,7 @@ type DigestItem = { title: string; count: number; url: string }
 export function buildDigestEmail(date: string, items: DigestItem[]) {
   const total = items.reduce((sum, i) => sum + i.count, 0)
   const [, m, d] = date.split('-').map(Number)
-  const head = `${m}월 ${d}일 새 지원자가 ${total}명 있습니다.`
+  const head = `${m}월 ${d}일 신규 지원자가 ${total}명 있습니다.`
   const guide =
     '지원자 정보는 워크덱 「모집 관리」에서 확인하세요. 알림은 공고 설정의 「새 지원자 일일 요약 메일」에서 끌 수 있습니다.'
   const listUrl = buildAppUrl(`${RECRUITING_BASE_PATH}/applications`)
@@ -172,7 +172,7 @@ export function buildDigestEmail(date: string, items: DigestItem[]) {
     preheader: head,
     header: { kind: 'workdeck', label: '모집 관리' },
     body: [
-      emailBlocks.heading(`${m}월 ${d}일 새 지원자 ${total}명`),
+      emailBlocks.heading(`${m}월 ${d}일 신규 지원자 ${total}명`),
       emailBlocks.paragraph(`공고 ${items.length}개에 새 지원서가 들어왔습니다.`, { muted: true }),
       emailBlocks.linkRows(
         items.map((i) => ({ label: i.title, value: `${i.count}명`, url: i.url }))
