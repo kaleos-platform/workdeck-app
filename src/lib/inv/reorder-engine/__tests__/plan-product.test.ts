@@ -1,4 +1,4 @@
-import { computeProductPlan, kstYesterday, type PlanOptionInput } from '../index'
+import { computeProductPlan, kstYesterday, MODEL_KEYS, type PlanOptionInput } from '../index'
 
 const NOW = new Date('2026-11-13T03:00:00Z')
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -44,6 +44,74 @@ const product = {
 }
 
 describe('computeProductPlan', () => {
+  it('전체 재고가 충분해도 연동 위치가 부족하면 모델 비교에 위치분리 최종수량을 표시한다', () => {
+    const input = {
+      options: [
+        opt({
+          optionId: 'a',
+          rocketQtyInWindow: 180,
+          stock: {
+            onHandQty: 100,
+            rocketOnHandQty: 0,
+            incomingQty: 0,
+            rocketIncomingQty: 0,
+            returnGradeQty: 0,
+          },
+        }),
+      ],
+      now: NOW,
+    }
+    const p = { ...product, roundUnit: 10, overrideModel: 'MA30' as const }
+    const [single] = computeProductPlan({ ...input, product: p })
+    const [layered] = computeProductPlan({ ...input, product: { ...p, layered: true } })
+    expect(single.models.MA30.qty).toBe(0)
+    expect(single.finalQty).toBe(0)
+    expect(layered.suggestedQty).toBe(0)
+    expect(layered.roundedSuggestedQty).toBe(0)
+    expect(layered.finalQty).toBe(100)
+    expect(layered.layered).toEqual({
+      rocketExpectedSales: 100,
+      rocketSafetyStock: 0,
+      linkedLocationNeedQty: 100,
+      linkedLocationQty: 100,
+      remainingQty: 0,
+    })
+    expect(layered.models.MA30.qty).toBe(layered.finalQty)
+  })
+
+  it.each(MODEL_KEYS)(
+    '%s 비교 수량은 모델을 선택한 위치분리 결과와 같다 (bias·안전재고·입고대기·라운딩)',
+    (selected) => {
+      const input = {
+        options: [
+          opt({
+            optionId: 'a',
+            qtyByDate: qtyByDate(90, (i) => (i < 60 ? 1 : 3)),
+            rocketQtyInWindow: 60,
+            totalQtyInWindow: 150,
+            biasFactor: 1.25,
+            safetyStockQty: 7,
+            stock: {
+              onHandQty: 100,
+              rocketOnHandQty: 3,
+              incomingQty: 20,
+              rocketIncomingQty: 20,
+              returnGradeQty: 0,
+            },
+          }),
+        ],
+        now: NOW,
+      }
+      const p = { ...product, layered: true, roundUnit: 10 }
+      const [baseline] = computeProductPlan({ ...input, product: { ...p, overrideModel: 'MA30' } })
+      const [r] = computeProductPlan({ ...input, product: { ...p, overrideModel: selected } })
+      expect(baseline.finalQty).toBe(80)
+      expect(r.models[selected].qty).toBe(r.finalQty)
+      expect(baseline.models[selected]).toEqual(r.models[selected])
+      expect(r.modelForecasts.rates[selected]).toBe(r.models[selected].dailyRate)
+    }
+  )
+
   it('(a) 커버일수 반영: rate 2, lead 20, cover 30, 재고 40, safety 10 → 70', () => {
     const [r] = computeProductPlan({
       options: [
@@ -115,6 +183,7 @@ describe('computeProductPlan', () => {
     expect(layered.layered!.linkedLocationQty).toBe(0)
     expect(layered.finalQty).toBe(single.finalQty)
     expect(layered.layered!.remainingQty).toBe(single.finalQty)
+    expect(layered.models).toEqual(single.models)
   })
 
   it('(c-2) 연동 위치로 입고 대기 100 → 로켓 gross 100 상쇄, 레이어드 = 단일 = 0', () => {
@@ -142,29 +211,46 @@ describe('computeProductPlan', () => {
     expect(single.finalQty).toBe(0)
     expect(layered.layered!.linkedLocationNeedQty).toBe(0)
     expect(layered.finalQty).toBe(0)
+    expect(layered.models.MA30.qty).toBe(0)
   })
 
-  it('(d) 이력 30일 옵션 → MANUAL, siblingAvgRate = 형제 선택 모델 일률 평균, 수량 = 수동값', () => {
-    const rs = computeProductPlan({
-      options: [
-        opt({ optionId: 'old1' }),
-        opt({ optionId: 'old2', qtyByDate: qtyByDate(90, () => 4) }),
-        opt({ optionId: 'new', qtyByDate: qtyByDate(30, () => 9), historyDays: 30 }),
-      ],
-      product: { ...product, overrideModel: 'MA30' },
-      manualQtyByOption: { new: 15 },
-      now: NOW,
-    })
-    const n = rs.find((r) => r.optionId === 'new')!
-    expect(n.isNewOption).toBe(true)
-    expect(n.selectedModel).toBe('MANUAL')
-    expect(n.siblingAvgRate).toBeCloseTo(3)
-    expect(n.finalQty).toBe(15)
-    expect(n.modelForecasts.selected).toBe('MANUAL')
-    const o = rs.find((r) => r.optionId === 'old1')!
-    expect(o.isNewOption).toBe(false)
-    expect(o.selectedModel).toBe('MA30')
-  })
+  it.each([false, true])(
+    '(d) layered=%s: 이력 30일 옵션 → MANUAL, 형제 평균과 수동 수량 보존',
+    (layered) => {
+      const rs = computeProductPlan({
+        options: [
+          opt({ optionId: 'old1' }),
+          opt({ optionId: 'old2', qtyByDate: qtyByDate(90, () => 4) }),
+          opt({ optionId: 'new', qtyByDate: qtyByDate(30, () => 9), historyDays: 30 }),
+        ],
+        product: { ...product, layered, roundUnit: 10, overrideModel: 'MA30' },
+        manualQtyByOption: { new: 15 },
+        now: NOW,
+      })
+      const n = rs.find((r) => r.optionId === 'new')!
+      expect(n.isNewOption).toBe(true)
+      expect(n.selectedModel).toBe('MANUAL')
+      expect(n.siblingAvgRate).toBeCloseTo(3)
+      expect(n.finalQty).toBe(15)
+      expect(n.suggestedQty).toBe(15)
+      expect(n.roundedSuggestedQty).toBe(15)
+      expect(n.layered).toEqual(
+        layered
+          ? {
+              rocketExpectedSales: 0,
+              rocketSafetyStock: 0,
+              linkedLocationNeedQty: 0,
+              linkedLocationQty: 0,
+              remainingQty: 15,
+            }
+          : null
+      )
+      expect(n.modelForecasts.selected).toBe('MANUAL')
+      const o = rs.find((r) => r.optionId === 'old1')!
+      expect(o.isNewOption).toBe(false)
+      expect(o.selectedModel).toBe('MA30')
+    }
+  )
 
   it('(d-2) 수동값 없으면 0, 형제 없으면 siblingAvgRate null', () => {
     const [n] = computeProductPlan({
