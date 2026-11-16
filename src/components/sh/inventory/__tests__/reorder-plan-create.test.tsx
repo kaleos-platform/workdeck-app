@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { toast } from 'sonner'
 import { ReorderPlanCreate } from '../reorder-plan-create'
 
 const push = jest.fn()
@@ -134,6 +135,50 @@ async function gotoCalcStep() {
 }
 
 describe('발주 위저드 Step ④ — 모델 비교·신상품·재고 확인', () => {
+  it('목표 커버일수 입력 중에는 저장하지 않고, 계산 다시 적용은 PATCH 완료 뒤 dryRun 한다', async () => {
+    await gotoCalcStep()
+    const originalFetch = fetchMock.getMockImplementation()!
+    let completePatch!: () => void
+    const patchPending = new Promise<void>((resolve) => {
+      completePatch = resolve
+    })
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      if (init?.method === 'PATCH') await patchPending
+      return originalFetch(url, init)
+    })
+    const callsBeforeEdit = fetchMock.mock.calls.length
+    const coverInput = screen.getByLabelText('목표 커버일수')
+    fireEvent.change(coverInput, { target: { value: '4' } })
+    fireEvent.change(coverInput, { target: { value: '45' } })
+    fireEvent.blur(coverInput)
+    expect(fetchMock).toHaveBeenCalledTimes(callsBeforeEdit)
+
+    fireEvent.click(screen.getByRole('button', { name: '계산 다시 적용' }))
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/sh/inventory/reorder/config/p1', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetCoverDays: 45 }),
+    })
+    expect(planBodies()).toHaveLength(1)
+    await act(async () => {
+      completePatch()
+    })
+    await waitFor(() => expect(planBodies()).toHaveLength(2))
+    expect(planBodies()[1]).toMatchObject({ dryRun: true })
+  })
+
+  it('목표 커버일수 0·366은 안내하고 PATCH·재계산하지 않는다', async () => {
+    await gotoCalcStep()
+    const callsBeforeEdit = fetchMock.mock.calls.length
+    for (const value of ['0', '366']) {
+      jest.mocked(toast.error).mockClear()
+      fireEvent.change(screen.getByLabelText('목표 커버일수'), { target: { value } })
+      fireEvent.click(screen.getByRole('button', { name: '계산 다시 적용' }))
+      expect(toast.error).toHaveBeenCalledWith('목표 커버일수는 1~365일로 입력하세요')
+      expect(fetchMock).toHaveBeenCalledTimes(callsBeforeEdit)
+    }
+  })
+
   it('추천 배지·오차(%)·재고 확인 필요·신상품 참고 문구를 표시한다', async () => {
     await gotoCalcStep()
     const blendRow = screen.getByText('혼합 이동평균').closest('tr')!
