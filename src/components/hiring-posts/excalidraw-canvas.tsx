@@ -14,8 +14,7 @@ import type {
   BinaryFileData,
 } from '@excalidraw/excalidraw/types'
 import '@excalidraw/excalidraw/index.css'
-// 이관 scene(fontFamily 1~5)의 한글을 Pretendard 로 렌더 — excalidraw 폰트 이름에
-// unicode-range(한글) @font-face 를 덮어씀. ssr:false 동적 import 라 편집기 번들에만 로드.
+// native Excalidraw 폰트의 한글 face. 이관 원본은 별도 alias로 등록한다.
 import './excalidraw-korean-fonts.css'
 import { toast } from 'sonner'
 import { Save } from 'lucide-react'
@@ -24,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT } from './build-types'
 import type { SaveHandle } from './use-queued-save'
+import { convertOpeningScene, hasOpeningFonts, loadOpeningFonts } from './opening-fonts'
 import type { BlockLink } from '@/lib/validations/hiring-posts'
 
 // 아트보드 규격 — 폭은 640 고정, 높이만 조절 (상수는 build-types 에서 공유)
@@ -254,12 +254,23 @@ export function ExcalidrawCanvas({
     if (Number.isFinite(n)) setHeight(n)
   }
 
+  const converted = useMemo(() => {
+    try {
+      return { data: initialData ? convertOpeningScene(initialData) : null, error: null }
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : '원본 디자인 글꼴을 확인할 수 없습니다.',
+      }
+    }
+  }, [initialData])
+
   // 재편집 복원용 initialData + 프레임 주입(잠금, 640×height, scene 상주).
   // ⚠️ 저장된 element 의 fractional `index`("a0" 등)를 그대로 넘기면 restore 가 element 를
   // 드롭해 빈 캔버스가 된다 → index 제거(배열 순서=z-order 재생성). 프레임이 이미 있으면
   // 재주입하지 않는다(저장→재편집 반복 시 프레임 누적 방지).
   const restored = useMemo<ExcalidrawInitialDataState>(() => {
-    const raw = initialData?.elements ?? []
+    const raw = converted.data?.elements ?? []
     const content = raw.map((e) => {
       const rest = { ...(e as Record<string, unknown>) }
       delete rest.index
@@ -297,7 +308,7 @@ export function ExcalidrawCanvas({
     return {
       elements: elements as never,
       appState: {
-        ...(initialData?.appState as object | undefined),
+        ...(converted.data?.appState as object | undefined),
         // 편집 뷰포트는 회색 — 흰색 아트보드(사각형 sentinel)와 색으로만 구분된다.
         // 저장 카드는 아트보드 흰 배경 + handleSave export 흰색 강제로 항상 흰색.
         viewBackgroundColor: '#f4f4f5',
@@ -307,10 +318,50 @@ export function ExcalidrawCanvas({
         // 프레임 외곽선(회색·둥근 모서리) 숨김 — 아트보드 흰색만으로 작업 영역 구분. clip 은 유지.
         frameRendering: { enabled: true, clip: true, name: false, outline: false },
       },
-      files: initialData?.files,
+      files: converted.data?.files,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData])
+  }, [converted])
+
+  const [fontRetry, setFontRetry] = useState(0)
+  const [fontLoad, setFontLoad] = useState<{ scene: typeof restored; error: string | null } | null>(
+    null
+  )
+  const needsFonts = hasOpeningFonts(restored.elements ?? [])
+  const fontError = converted.error ?? (fontLoad?.scene === restored ? fontLoad.error : null)
+  const fontsBlocked =
+    !!converted.error || (needsFonts && (fontLoad?.scene !== restored || !!fontError))
+
+  useEffect(() => {
+    if (!needsFonts && !converted.error) return
+    setApi(null)
+    baselineRef.current = null
+    dirtyRef.current = false
+    setDirty(false)
+    if (converted.error) return
+    let active = true
+    setFontLoad(null)
+    Promise.resolve(loadOpeningFonts(restored.elements ?? [])).then(
+      () => {
+        if (active) setFontLoad({ scene: restored, error: null })
+      },
+      (error: unknown) => {
+        if (active)
+          setFontLoad({
+            scene: restored,
+            error:
+              error instanceof Error ? error.message : '원본 디자인 글꼴을 불러오지 못했습니다.',
+          })
+      }
+    )
+    return () => {
+      active = false
+    }
+  }, [restored, needsFonts, converted.error, fontRetry])
+
+  useEffect(() => {
+    onBusyChange?.((fontsBlocked && !fontError) || exporting)
+  }, [fontsBlocked, fontError, exporting, onBusyChange])
 
   // 마운트 후 프레임(아트보드)으로 스크롤 — 레거시 scene 도 프레임 위치로 이동.
   // 안전망: dev StrictMode 이중 마운트로 initialData 가 유실돼 빈 캔버스가 되면 복원 재적용.
@@ -362,7 +413,7 @@ export function ExcalidrawCanvas({
   }
 
   async function handleSave() {
-    if (!api || exportRef.current) return
+    if (!api || fontsBlocked || exportRef.current) return
     const elements = api.getSceneElements()
     const appState = api.getAppState()
     const files = api.getFiles()
@@ -371,12 +422,11 @@ export function ExcalidrawCanvas({
       return
     }
     const frame = elements.find(isFrame)
-    // 한글 오버라이드 face 가 로드되기 전에 export 하면 PNG 가 폴백 폰트로 나간다.
-    // 각 excalidraw 폰트 이름 + 한글 텍스트로 명시 로드해 export 전 보장(load 실패는 무시).
+    // 현재 scene의 원본 alias를 다시 확인해 글꼴 로드 실패 시 저장을 차단한다.
     exportRef.current = true
     setExporting(true)
-    onBusyChange?.(true)
     try {
+      await loadOpeningFonts(elements)
       await ensureKoreanFontsLoaded()
       const blob = await exportToBlob({
         elements,
@@ -414,7 +464,6 @@ export function ExcalidrawCanvas({
     } finally {
       exportRef.current = false
       setExporting(false)
-      onBusyChange?.(false)
     }
   }
 
@@ -427,7 +476,7 @@ export function ExcalidrawCanvas({
               캔버스 높이
             </Label>
             <Input
-              disabled={saving || exporting}
+              disabled={saving || exporting || fontsBlocked}
               id="canvas-height"
               type="number"
               min={MIN_CANVAS_HEIGHT}
@@ -463,7 +512,11 @@ export function ExcalidrawCanvas({
               저장하지 않은 변경사항
             </span>
           )}
-          <Button size="sm" onClick={handleSave} disabled={saving || exporting || !api}>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={saving || exporting || fontsBlocked || !api}
+          >
             <Save /> {saving || exporting ? '저장 중…' : '카드저장'}
           </Button>
         </div>
@@ -472,7 +525,30 @@ export function ExcalidrawCanvas({
         inert={saving || exporting}
         className="relative min-h-0 flex-1 overflow-hidden rounded-lg border"
       >
-        <Excalidraw excalidrawAPI={setApi} initialData={restored} onChange={handleChange} />
+        {fontsBlocked ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+            {fontError ? (
+              <>
+                <p role="alert" className="text-sm text-destructive">
+                  {fontError}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFontRetry((attempt) => attempt + 1)}
+                >
+                  다시 시도
+                </Button>
+              </>
+            ) : (
+              <p role="status" className="text-sm text-muted-foreground">
+                원본 디자인 글꼴을 불러오는 중…
+              </p>
+            )}
+          </div>
+        ) : (
+          <Excalidraw excalidrawAPI={setApi} initialData={restored} onChange={handleChange} />
+        )}
         {hint && (
           <div
             className="pointer-events-none absolute z-[3] flex items-center justify-center p-4 text-center"
