@@ -335,12 +335,23 @@ const reviewFileSchema = z.strictObject({
     })
   ),
   images: z.array(sha256),
+  // 사람 검토는 해당 고객의 정확한 파일 키 해시와 원본 소유 브랜드에만 적용한다.
+  assetScopes: z
+    .array(
+      z.union([
+        z.strictObject({ ref: sha256, ownerBrandId: sourceId }),
+        // 소유 정보 없는 구형 공통 자산은 실물 검토한 원본 바이트까지 일치해야 한다.
+        z.strictObject({ ref: sha256, ownerBrandId: z.null(), sha256 }),
+      ])
+    )
+    .default([]),
 })
 export type ReviewApprovals = {
   reviewer: string
   reviewedAt: string
   items: Map<string, string>
   images: Set<string>
+  assetScopes: Map<string, { ownerBrandId: string | null; sha256?: string }>
 }
 
 export function parseReviewFile(raw: unknown, sourceSpaceId: string): ReviewApprovals {
@@ -352,5 +363,6 @@ export function parseReviewFile(raw: unknown, sourceSpaceId: string): ReviewAppr
     reviewedAt: parsed.data.reviewedAt,
     items: new Map(parsed.data.items.map((item) => [`${item.kind}:${item.id}`, item.contentHash])),
     images: new Set(parsed.data.images),
+    assetScopes: new Map(parsed.data.assetScopes.map((asset) => [asset.ref, asset])),
   }
 }
