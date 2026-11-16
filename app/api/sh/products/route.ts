@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
       include: {
         brand: { select: { id: true, name: true } },
         group: { select: { id: true, name: true } },
+        reorderConfig: { select: { excludeFromForecast: true } },
         options: {
           where: { deletedAt: null },
           select: { id: true, name: true, sku: true, retailPrice: true },

@@ -822,6 +822,7 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
           mode="product-with-all-options"
           onPickProduct={handlePickProduct}
           contextLabel="발주 계획"
+          showForecastExclusion
         />
       </div>
     )

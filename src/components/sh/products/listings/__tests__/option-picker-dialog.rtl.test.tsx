@@ -27,6 +27,7 @@ function setupFetch(matcher: (search: string) => boolean) {
                 name: '임산부 텐셀 모달 브이 팬티',
                 internalName: '임산부 팬티',
                 code: 'P-1',
+                reorderConfig: { excludeFromForecast: true },
                 options: [{ id: 'o1', name: '블랙 XL', sku: 'SKU-1' }],
               },
             ]
@@ -106,3 +107,26 @@ describe('OptionPickerDialog 키워드 칩', () => {
     expect(screen.getByLabelText('검색')).toHaveValue('임산부 텐셀 모달')
   })
 })
+
+test.each([true, false])(
+  '발주 예측 제외 배지는 opt-in=%s일 때만 표시하며 상품은 선택할 수 있다',
+  async (showForecastExclusion) => {
+    setupFetch(() => true)
+    const onPickProduct = jest.fn()
+    const user = userEvent.setup()
+    render(
+      <OptionPickerDialog
+        open
+        onOpenChange={() => {}}
+        mode="product-with-all-options"
+        onPickProduct={onPickProduct}
+        showForecastExclusion={showForecastExclusion || undefined}
+      />
+    )
+    const product = await screen.findByRole('button', { name: /임산부 팬티/ })
+    if (showForecastExclusion) expect(screen.getByText('발주 예측 제외')).toBeInTheDocument()
+    else expect(screen.queryByText('발주 예측 제외')).not.toBeInTheDocument()
+    await user.click(product)
+    expect(onPickProduct).toHaveBeenCalledWith('p1', [expect.objectContaining({ optionId: 'o1' })])
+  }
+)
