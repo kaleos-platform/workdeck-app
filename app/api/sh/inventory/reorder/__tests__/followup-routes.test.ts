@@ -31,30 +31,42 @@ const req = new NextRequest('http://localhost/api/sh')
 
 beforeEach(() => jest.clearAllMocks())
 
-test('목록은 ACTIVE 정산만 조회하며 계획 아이템의 모델을 정확도에 전달한다', async () => {
-  jest.mocked(prisma.reorderPlan.findMany).mockResolvedValue([])
-  jest.mocked(prisma.reorderPlan.findFirst).mockResolvedValue({
-    planNo: 'RP-1',
-    biasAdjustApplied: null,
-    items: [{ optionId: 'o1', forecastModel: 'MANUAL' }],
-    accuracies: [accuracy],
-  } as never)
-  jest
-    .mocked(prisma.invProductOption.findMany)
-    .mockResolvedValue([{ id: 'o1', name: '옵션', sku: null }] as never)
-  const body = await (await getPlans(req))!.json()
-  expect(body.latestAccuracy.accuracies[0]).toEqual(
-    expect.objectContaining({ forecastModel: 'MANUAL', actualOutbound: 10, wape: 0.5 })
-  )
-  expect(prisma.reorderPlan.findFirst).toHaveBeenCalledWith(
-    expect.objectContaining({
-      select: expect.objectContaining({
-        items: { select: { optionId: true, forecastModel: true } },
-        accuracies: expect.objectContaining({ where: { validity: 'ACTIVE' } }),
-      }),
-    })
-  )
-})
+test.each(['FINALIZED', 'CONSUMED'])(
+  '목록은 미대체 %s 계획의 ACTIVE 정산을 전달하고 대체·미측정 계획은 조회에서 제외한다',
+  async (status) => {
+    jest.mocked(prisma.reorderPlan.findMany).mockResolvedValue([])
+    jest.mocked(prisma.reorderPlan.findFirst).mockResolvedValue({
+      status,
+      planNo: 'RP-1',
+      biasAdjustApplied: null,
+      items: [{ optionId: 'o1', forecastModel: 'MANUAL' }],
+      accuracies: [accuracy],
+    } as never)
+    jest
+      .mocked(prisma.invProductOption.findMany)
+      .mockResolvedValue([{ id: 'o1', name: '옵션', sku: null }] as never)
+    const body = await (await getPlans(req))!.json()
+    expect(body.latestAccuracy.planNo).toBe('RP-1')
+    expect(body.latestAccuracy.accuracies[0]).toEqual(
+      expect.objectContaining({ forecastModel: 'MANUAL', actualOutbound: 10, wape: 0.5 })
+    )
+    expect(prisma.reorderPlan.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          spaceId: 's1',
+          status: { in: ['FINALIZED', 'CONSUMED'] },
+          supersededAt: null,
+          accuracies: { some: { validity: 'ACTIVE' } },
+        },
+        orderBy: { finalizedAt: 'desc' },
+        select: expect.objectContaining({
+          items: { select: { optionId: true, forecastModel: true } },
+          accuracies: expect.objectContaining({ where: { validity: 'ACTIVE' } }),
+        }),
+      })
+    )
+  }
+)
 
 test('상세는 실제 출고와 아이템 모델을 정확도에 전달한다', async () => {
   jest.mocked(prisma.reorderPlan.findUnique).mockResolvedValue({
