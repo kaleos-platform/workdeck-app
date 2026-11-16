@@ -172,6 +172,8 @@ describe('buildDigestEmail', () => {
       { title: 'B 공고', count: 1, url: 'https://app/x?posting=p2' },
     ])
     expect(mail.subject).toBe('[워크덱 모집 관리] 11월 12일 신규 지원자 4명')
+    expect(mail.html).toContain('11월 12일 신규 지원자 4명')
+    expect(mail.text.split('\n')[0]).toBe('11월 12일 신규 지원자가 4명 있습니다.')
     expect(mail.text).toContain('A 공고: 3명')
     expect(mail.html).toContain('https://app/x?posting=p1')
   })
