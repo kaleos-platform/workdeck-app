@@ -6,6 +6,7 @@
 // (forecastOutbound = dailyAvgForecast × leadTimeDays, actualOutbound = 해당 구간 실출고)
 // 발주 수량(totalFinalQty)과는 기준이 다르므로 두 값을 나누거나 섞어 표시하지 않는다.
 
+import { accuracyExclusionReason, type AccuracyEvaluationInput } from '@/lib/inv/reorder-accuracy'
 import { ActivityIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,7 +20,7 @@ import {
 } from '@/components/ui/table'
 import { Bar, Kpi, Panel, fmtPctSigned, fmtQty } from './reorder-ui'
 
-export type MonitorAccuracy = {
+export type MonitorAccuracy = AccuracyEvaluationInput & {
   optionId: string
   optionName: string | null
   sku: string | null
@@ -89,7 +90,8 @@ export function ReorderMonitor({ data, loading, onApplyToNextPlan }: Props) {
   const forecastTotal = rows.reduce((s, r) => s + r.forecastOutbound, 0)
   const actualTotal = rows.reduce((s, r) => s + r.actualOutbound, 0)
   const totalErr = forecastTotal > 0 ? (actualTotal - forecastTotal) / forecastTotal : 0
-  const accurateCount = rows.filter((r) => r.wape < 0.2).length
+  const evaluated = rows.filter((r) => accuracyExclusionReason(r) === null)
+  const accurateCount = evaluated.filter((r) => r.wape < 0.2).length
 
   // 자동 bias 보정 — 다음 계획 생성 시 서버가 이미 적용하는 계수(읽기 전용 노출).
   const autoFactors = data.biasAdjustApplied ? Object.values(data.biasAdjustApplied) : []
@@ -130,9 +132,9 @@ export function ReorderMonitor({ data, loading, onApplyToNextPlan }: Props) {
           />
           <Kpi
             label="정확 판정 옵션"
-            value={`${accurateCount}/${rows.length}`}
+            value={evaluated.length > 0 ? `${accurateCount}/${evaluated.length}` : '평가 대상 없음'}
             size="lg"
-            sub="WAPE 20% 미만"
+            sub={`WAPE 20% 미만 · 평가 ${evaluated.length}개 · 제외 ${rows.length - evaluated.length}개`}
           />
           {autoFactor !== null && (
             <Kpi
@@ -143,6 +145,9 @@ export function ReorderMonitor({ data, loading, onApplyToNextPlan }: Props) {
             />
           )}
         </div>
+        <p className="mt-4 text-xs text-muted-foreground">
+          평가 기준: 수동 입력·실판매 0건 제외. 재고부족·과잉 일수는 전체 행에 표시합니다.
+        </p>
         <p className="mt-4 text-xs text-muted-foreground">
           {autoFactor !== null ? (
             <>
@@ -177,7 +182,10 @@ export function ReorderMonitor({ data, loading, onApplyToNextPlan }: Props) {
           <TableBody>
             {rows.map((r) => {
               const max = Math.max(r.forecastOutbound, r.actualOutbound, 1)
-              const v = verdict(r.wape, r.bias)
+              const exclusionReason = accuracyExclusionReason(r)
+              const v = exclusionReason
+                ? { label: exclusionReason, className: 'text-muted-foreground' }
+                : verdict(r.wape, r.bias)
               return (
                 <TableRow key={r.optionId}>
                   <TableCell className="text-sm">
@@ -195,10 +203,10 @@ export function ReorderMonitor({ data, loading, onApplyToNextPlan }: Props) {
                     {fmtQty(r.actualOutbound)}
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
-                    {(r.wape * 100).toFixed(1)}%
+                    {exclusionReason ?? `${(r.wape * 100).toFixed(1)}%`}
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
-                    {fmtPctSigned(r.bias)}
+                    {exclusionReason ? '—' : fmtPctSigned(r.bias)}
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">

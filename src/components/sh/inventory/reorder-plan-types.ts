@@ -136,6 +136,8 @@ export type ProductInfo = {
 // GET /api/sh/inventory/reorder/plan/[id] 응답
 // 상세 GET이 반환하는 옵션별 적중률 (ACTIVE만, select 경량 필드)
 export type PlanDetailAccuracy = {
+  forecastModel: ForecastModel | null
+  actualOutbound: number
   optionId: string
   wape: number
   bias: number
@@ -155,6 +157,7 @@ export type PlanDetailResponse = {
 }
 
 export type ReorderPlanAccuracy = {
+  forecastModel: ForecastModel | null
   planId: string
   optionId: string
   evaluatedAt: string

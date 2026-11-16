@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Info, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -29,6 +30,7 @@ type ProductRow = {
   code: string | null
   msrp?: string | number | null
   brand?: { id: string; name: string } | null
+  reorderConfig?: { excludeFromForecast: boolean } | null
   options: {
     id: string
     name: string
@@ -57,9 +59,11 @@ type ProductWithOptions = {
   code: string | null
   brandName: string | null
   options: PickedOption[]
+  excludeFromForecast: boolean
 }
 
 type Props = {
+  showForecastExclusion?: boolean
   open: boolean
   onOpenChange: (v: boolean) => void
   // flat/two-step 모드: 단일 선택
@@ -107,6 +111,7 @@ export function OptionPickerDialog({
   keywordSource,
   initialTokenCount = 2,
   tokenized = false,
+  showForecastExclusion = false,
 }: Props) {
   const {
     keywordTokens,
@@ -177,6 +182,7 @@ export function OptionPickerDialog({
             productId: p.id,
             productName: displayName,
             code: p.code,
+            excludeFromForecast: p.reorderConfig?.excludeFromForecast ?? false,
             brandName,
             options: (p.options ?? []).map((o) => ({
               optionId: o.id,
@@ -433,6 +439,9 @@ export function OptionPickerDialog({
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="font-medium">{p.productName}</p>
+                            {showForecastExclusion && p.excludeFromForecast && (
+                              <Badge variant="outline">발주 예측 제외</Badge>
+                            )}
                             <p className="text-sm text-muted-foreground">
                               옵션 {p.options.length}개
                               {isMultiMode &&
