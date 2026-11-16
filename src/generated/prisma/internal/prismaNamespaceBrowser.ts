@@ -205,6 +205,7 @@ export const ModelName = {
   HiringApplicationNotification: 'HiringApplicationNotification',
   HiringBlacklist: 'HiringBlacklist',
   HiringMessageTemplate: 'HiringMessageTemplate',
+  HiringMessageSeed: 'HiringMessageSeed',
   BillingDeckProduct: 'BillingDeckProduct',
   SpaceDeckAccess: 'SpaceDeckAccess',
   SpaceSubscription: 'SpaceSubscription',
@@ -2873,6 +2874,14 @@ export const HiringMessageTemplateScalarFieldEnum = {
 } as const
 
 export type HiringMessageTemplateScalarFieldEnum = (typeof HiringMessageTemplateScalarFieldEnum)[keyof typeof HiringMessageTemplateScalarFieldEnum]
+
+
+export const HiringMessageSeedScalarFieldEnum = {
+  spaceId: 'spaceId',
+  seededAt: 'seededAt'
+} as const
+
+export type HiringMessageSeedScalarFieldEnum = (typeof HiringMessageSeedScalarFieldEnum)[keyof typeof HiringMessageSeedScalarFieldEnum]
 
 
 export const BillingDeckProductScalarFieldEnum = {

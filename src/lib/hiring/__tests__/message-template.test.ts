@@ -1,4 +1,4 @@
-import { fillMessage, normalizeSmsPhone } from '../message-template'
+import { fillMessage, normalizeSmsPhone, textToDoc, docToText } from '../message-template'
 
 it('변수를 치환하고 없는 값은 빈 문자열로 둔다', () => {
   expect(
@@ -19,4 +19,52 @@ it.each([
   [null, null],
 ])('전화번호 정규화 %s', (input, expected) => {
   expect(normalizeSmsPhone(input)).toBe(expected)
+})
+
+describe('textToDoc / docToText 왕복', () => {
+  it.each([
+    [''],
+    ['안녕'],
+    ['{이름}'],
+    ['{이름}{공고명}{직무}'],
+    ['{이름}님\n\n{공고명}'],
+    ['끝 줄바꿈\n'],
+    ['\n\n'],
+    ['{기타} 는 {이름} 과 다름'],
+    ['{이름'],
+  ])('%j', (text) => {
+    expect(docToText(textToDoc(text))).toBe(text)
+  })
+
+  it('토큰은 노드, 알 수 없는 {기타}는 텍스트, 빈 줄은 빈 문단', () => {
+    const doc = textToDoc('{이름}{기타}\n')
+    expect(doc.content).toEqual([
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'messageVariable', attrs: { key: '이름' } },
+          { type: 'text', text: '{기타}' },
+        ],
+      },
+      { type: 'paragraph' },
+    ])
+  })
+
+  it('hardBreak도 줄바꿈으로 직렬화', () => {
+    expect(
+      docToText({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'a' },
+              { type: 'hardBreak' },
+              { type: 'text', text: 'b' },
+            ],
+          },
+        ],
+      })
+    ).toBe('a\nb')
+  })
 })
