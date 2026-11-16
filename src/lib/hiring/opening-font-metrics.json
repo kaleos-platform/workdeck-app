@@ -1,0 +1,38 @@
+{
+  "1": {
+    "unitsPerEm": 2048,
+    "ascender": 1950,
+    "descender": -494,
+    "lineHeight": 1.4
+  },
+  "2": {
+    "unitsPerEm": 1000,
+    "ascender": 885,
+    "descender": -145,
+    "lineHeight": 1.4
+  },
+  "3": {
+    "unitsPerEm": 1000,
+    "ascender": 800,
+    "descender": -200,
+    "lineHeight": 1.4
+  },
+  "4": {
+    "unitsPerEm": 2048,
+    "ascender": 1927,
+    "descender": -560,
+    "lineHeight": 1.4
+  },
+  "5": {
+    "unitsPerEm": 1000,
+    "ascender": 968,
+    "descender": -251,
+    "lineHeight": 1.4
+  },
+  "6": {
+    "unitsPerEm": 1000,
+    "ascender": 1000,
+    "descender": -145,
+    "lineHeight": 1.4
+  }
+}
