@@ -119,7 +119,16 @@
 - 원인: `computeProductPlan`의 `models[k].qty`는 전체 재고를 합산 차감한 `roundedQty`를 사용했지만 선택 모델의 `finalQty`는 연동 위치와 나머지 위치의 부족분을 분리했다. 옵션 내부의 작은 helper로 기존 위치분리 입력 계산을 공유하여, layered 비교 수량만 같은 `split.finalQty`를 사용하도록 수정했다. 비layered는 기존 `roundedQty`를 유지한다. 선택 모델의 최종수량·추천/선택 기준·저장 로직은 변경하지 않았다.
 - 수정 전 회귀 테스트에서 MA30 비교 0/최종 100, MA90 비교 0/최종 30의 불일치를 재현했다. 수정 후 5개 모델 비교, 판매 비중 0·1, 로켓 입고대기, bias·안전재고·라운딩, 비layered 및 MANUAL 보존을 검증했다.
 - 목표 커버일수 mock QA 2개를 추가했다. 입력·blur 중 PATCH 없음, 「계산 다시 적용」의 config PATCH 완료 후 dryRun 순서, 0·366 입력 시 안내만 표시하고 PATCH·재계산하지 않음을 확인했다. UI 구현은 변경하지 않았고 모든 fetch는 mock이다.
-- 로컬 관련 테스트 **23 suites / 146 tests 통과**. lint는 오류 0건(기존 경고 63건), `npm run typecheck`, production build와 `git diff --check`가 통과했다. 현재 develop의 Excalidraw 패치를 기존 node_modules에 반영하기 위해 `npm run postinstall` 후 빌드를 실행했다. 독립 코드 검토에서 중요 지적은 없었다. 수정 후 운영 브라우저 재검증·배포는 후속 단계다.
+- 로컬 관련 테스트 **23 suites / 146 tests 통과**. lint는 오류 0건(기존 경고 63건), `npm run typecheck`, production build와 `git diff --check`가 통과했다. 현재 develop의 Excalidraw 패치를 기존 node_modules에 반영하기 위해 `npm run postinstall` 후 빌드를 실행했다. 독립 코드 검토에서 중요 지적은 없었다. 수정은 개발 PR [#1495](https://github.com/kaleos-platform/workdeck-app/pull/1495), 운영 PR [#1496](https://github.com/kaleos-platform/workdeck-app/pull/1496)로 병합했다. main `1798ceb9`의 Production 배포가 **11-17 01:05:54 KST** 성공했고, 운영 도메인이 같은 deployment `dpl_2j6gsfRfy8uHruosF76mgPRTLkgq`를 가리키며 `READY`임을 확인했다. 두 PR의 migration-lint·rls-lockdown·visual-smoke·Vercel 검사가 모두 통과했다. 운영 릴리스 기준 관련 7 suites / 60 tests와 build도 통과했다. 로그인 200·인증 없는 API 401을 확인했으며, 로그인 브라우저 재검증은 별도로 진행한다.
+
+### 비교표 수정 배포 후 실제 QA (11-17 01:08~01:09 KST)
+
+- 동일 Ego TaskSpace `204`, hello@ameaning.co.kr, 의식주의에서 저장 없는 QA를 재실행했다. 계정 메뉴가 열린 상태의 클릭 차단은 Escape로 메뉴를 닫아 복구했다. 강제 클릭·DOM 수정·권한 우회는 하지 않았다.
+- **MA90 210개 / MA30 390개**: UI 비교표, UI 최종 합계, dryRun 응답의 선택 모델 `models.qty` 합계와 `finalQty` 합계가 모두 일치했다. 수정 전 비교표의 0개·190개 표시가 해소됐다.
+- 요청은 모두 `dryRun:true`, 응답 200이었다. 금지된 요청·운영 쓰기는 0건이다. MANUAL은 기존 두 상품에 대상 옵션이 없어 실운영 검증 대상 없음으로 유지한다.
+- 01:09 KST 별도 읽기 전용 ORM 확인: QA 전후 설정이 동일하며 두 상품의 발주 계획 수는 **0 → 0건**이었다. 재고 확정은 실행하지 않았다.
+- 기본 MA90으로 로컬 선택을 되돌릴 때 stale ref 오류가 발생해 더 조작하지 않고 **MA30 미리보기 상태로 handOff**했다. 이는 저장된 설정 변경이 아니다.
+- 증거: `/tmp/workdeck-reorder-qa-20261117/postdeploy-result.json`, `postdeploy-ma90.png`, `postdeploy-ma30.png`. 운영 재확인은 완료됐으며, 남은 항목은 다음 정기 자동 대조의 두 반품 SKU 반영 확인과 실물 증빙 확인이다. 정기 실행을 수동으로 트리거하지 않는다.
 
 ### 담당자 확인 요청 초안 (아직 전송하지 않음)
 
