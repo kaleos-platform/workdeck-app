@@ -1,0 +1,77 @@
+[
+  {
+    "file": "Pretendard-Regular.woff2",
+    "sha256": "4e41850060e16cfe3f70a4a30a8b22e559fe2699b0e926a1e25cdef86b76f58e",
+    "copyright": "Copyright © 2022 Kil Hyung-jin"
+  },
+  {
+    "file": "Pretendard-SemiBold.woff2",
+    "sha256": "2ee9142b214cf6ed0c80bdb7ef4984acacaa1ad27b561db0332558589ece5f0a",
+    "copyright": "Copyright © 2022 Kil Hyung-jin"
+  },
+  {
+    "file": "Pretendard-Bold.woff2",
+    "sha256": "02e180faceba652b660a64d5f07458beb9e0cc3201034e6b88546789ad027044",
+    "copyright": "Copyright © 2022 Kil Hyung-jin"
+  },
+  {
+    "file": "Pretendard-ExtraBold.woff2",
+    "sha256": "d5fa615af06b2c88ff8d41663566d82aea3e712bbb04026dd038c23689f8cea9",
+    "copyright": "Copyright © 2022 Kil Hyung-jin"
+  },
+  {
+    "file": "GangwonPower.otf",
+    "sha256": "62db7c653a10db9c94f03c914cb9a39709354f6be818540a9aae65fa66829562",
+    "copyright": "COPYRIGHT BY GANGWON PROVINCIAL OFFICE OF EDUCATION. ALL RIGHTS RESERVED."
+  },
+  {
+    "file": "MaruBuri-Light.ttf",
+    "sha256": "d13423f5f1441dba9b063af14c073a46e435651fbd81299d9cccc5a4cf3e0c07",
+    "copyright": "© NAVER Corp. © NAVER Cultural Foundation Corp."
+  },
+  {
+    "file": "MaruBuri-Regular.ttf",
+    "sha256": "803429881927c79dbb49497274244e72b672c56e0503f28262503f77524cba7a",
+    "copyright": "© NAVER Corp. © NAVER Cultural Foundation Corp."
+  },
+  {
+    "file": "MaruBuri-SemiBold.ttf",
+    "sha256": "2d86f0b4950955fb69f069c415d01a51bbbbcf03682d59a6adab7f5b05d16fe5",
+    "copyright": "© NAVER Corp. © NAVER Cultural Foundation Corp."
+  },
+  {
+    "file": "MaruBuri-Bold.ttf",
+    "sha256": "13aa1058c135e8f0b2c41de4e5e7866b18f970a15db2b1a290227e52dc02aba8",
+    "copyright": "© NAVER Corp. © NAVER Cultural Foundation Corp."
+  },
+  {
+    "file": "Vidaloka-Regular.ttf",
+    "sha256": "197c6b38e07665d7902ab9cbc0be4bddf109f2383d0ebddfa84aa4d9cc69fc60",
+    "copyright": "Copyright (c) 2011, Cyreal (www.cyreal.org) with Reserved Font Name \"Vidaloka\"."
+  },
+  {
+    "file": "Montserrat-Light.ttf",
+    "sha256": "432fceb450f7070e792ca90076b4a4650a7cb3866f24237193d31a3eedd4f513",
+    "copyright": "Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)"
+  },
+  {
+    "file": "Montserrat-SemiBold.ttf",
+    "sha256": "e23dc6d21070d45a1840c2b8217fc17ddd8a502a4db652748ec2f40d3603dc2d",
+    "copyright": "Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)"
+  },
+  {
+    "file": "Montserrat-ExtraBold.ttf",
+    "sha256": "ebc2e02bb921205b44f09ba0a5fa7d1174d0f120e873e00b3576d660e0310fb5",
+    "copyright": "Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)"
+  },
+  {
+    "file": "Montserrat-Black.ttf",
+    "sha256": "b813c7144bfb180729a648910c8eaf8be36cb8effac81c63b0a770b6125470b0",
+    "copyright": "Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)"
+  },
+  {
+    "file": "GangwonEduHyeonok.ttf",
+    "sha256": "2255b17c57a200ead14706c0412f5c9a813a1cf6f17664bbf1e16753065f3cb5",
+    "copyright": "COPYRIGHT BY GANGWON PROVINCIAL OFFICE OF EDUCATION. ALL RIGHTS RESERVED."
+  }
+]

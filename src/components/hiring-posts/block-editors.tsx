@@ -414,6 +414,7 @@ export function DesignBlock({
     const data =
       obj && 'elements' in obj
         ? {
+            source: typeof obj.source === 'string' ? obj.source : undefined,
             elements: obj.elements as never,
             appState: obj.appState as never,
             files: obj.files as never,
