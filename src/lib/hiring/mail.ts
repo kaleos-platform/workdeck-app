@@ -181,7 +181,7 @@ export function buildDigestEmail(date: string, items: DigestItem[]) {
     ],
     footer: [guide, 'Workdeck · workdeck.work'],
   })
-  return { subject: `[워크덱 모집 관리] 어제 새 지원자 ${total}명`, text, html }
+  return { subject: `[워크덱 모집 관리] ${m}월 ${d}일 신규 지원자 ${total}명`, text, html }
 }
 
 function isUniqueViolation(error: unknown) {
