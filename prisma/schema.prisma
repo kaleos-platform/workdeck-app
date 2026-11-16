@@ -551,6 +551,7 @@ model Space {
   hiringMigrationRecords HiringMigrationRecord[]
   hiringBlacklists       HiringBlacklist[]
   hiringMessageTemplates HiringMessageTemplate[]
+  hiringMessageSeed      HiringMessageSeed?
 
   // ─── 에이전트 승인 큐 (Agent) ───
   agentPendingActions AgentPendingAction[]
@@ -4589,6 +4590,14 @@ model HiringMessageTemplate {
   updatedAt DateTime @updatedAt
 
   @@index([spaceId])
+}
+
+// 자주 쓰는 메시지 예시 자동 추가 기록 — 공간당 한 번만 seed
+model HiringMessageSeed {
+  spaceId  String   @id
+  seededAt DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 }
 
 // ═══════════════════════════════════════════
