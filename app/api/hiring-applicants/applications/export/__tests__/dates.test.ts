@@ -55,6 +55,71 @@ beforeEach(() => {
   ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([])
 })
 
+it('유한 숫자와 boolean을 문자열로 보존하고 빈 값·문자 배열·수식 문자열을 유지한다', async () => {
+  const app = { id: 'synthetic', createdAt: new Date('2026-09-01'), stage: 'HIRING', hiringStage: 'APPLIED', posting: null }
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    { ...app, applicationEntries: [
+      { key: 'zero', label: '영', value: 0 },
+      { key: 'false', label: '거짓', value: false },
+      { key: 'number', label: '숫자', value: 123.5 },
+      { key: 'true', label: '참', value: true },
+      { key: 'list', label: '목록', value: ['가', '나'] },
+      { key: 'formula', label: '수식', value: '=SUM(1,2)' },
+      { key: 'empty', label: '빈값', value: null },
+    ] },
+    { ...app, id: 'other', applicationEntries: [{ key: 'empty', label: '빈값', value: '있음' }] },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  expect(response!.status).toBe(200)
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  const sheet = workbook.Sheets['지원자']
+  const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: '' })
+  expect(rows[1].slice(11)).toEqual(['0', 'false', '123.5', 'true', '가, 나', '=SUM(1,2)', ''])
+  expect(sheet.Q2).toMatchObject({ t: 's', v: '=SUM(1,2)' })
+  expect(sheet.Q2.f).toBeUndefined()
+})
+
+it.each([{}, [123], ['가', false], [['중첩']], NaN, Infinity, -Infinity])(
+  '지원하지 않는 합성 답변 %p은 불완전한 Excel 대신 422를 반환한다', async (value) => {
+    ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([{
+      id: 'synthetic', createdAt: new Date('2026-09-01'), stage: 'HIRING', hiringStage: 'APPLIED',
+      posting: null, applicationEntries: [{ key: 'custom', label: '질문', value }],
+    }])
+    const response = await GET(new NextRequest('http://localhost/api/export'))
+    expect(response!.status).toBe(422)
+    expect((await response!.json()).message).toContain('기간이나 공고별로 범위를 좁혀')
+  }
+)
+
+it('기존 누락 value는 같은 열의 공란으로 남긴다', async () => {
+  const app = { createdAt: new Date('2026-09-01'), stage: 'HIRING', hiringStage: 'APPLIED', posting: null }
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    { ...app, id: 'missing', applicationEntries: [{ key: 'custom', label: '질문' }] },
+    { ...app, id: 'present', applicationEntries: [{ key: 'custom', label: '질문', value: '답변' }] },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  expect(response!.status).toBe(200)
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  const rows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets['지원자'], { header: 1, defval: '' })
+  expect(rows[1][11]).toBe('')
+  expect(rows[2][11]).toBe('답변')
+})
+
+it('같은 질문 키와 라벨의 중복 답변은 손실된 Excel 대신 422를 반환한다', async () => {
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([{
+    id: 'synthetic', createdAt: new Date('2026-09-01'), stage: 'HIRING', hiringStage: 'APPLIED', posting: null,
+    applicationEntries: [
+      { key: 'custom', label: '질문', value: '첫 답변' },
+      { key: 'custom', label: '질문', value: '다른 답변' },
+    ],
+  }])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  expect(response!.status).toBe(422)
+  const body = await response!.json()
+  expect(body.message).toContain('기간이나 공고별로 범위를 좁혀')
+  expect(JSON.stringify(body)).not.toMatch(/첫 답변|다른 답변/)
+})
+
 it('근무지와 직무 조건을 지원자 목록과 Excel에 함께 적용한다', async () => {
   const params = { store: '  강남  ', position: '서빙' }
   await runApplicationsPage({ searchParams: Promise.resolve(params) })
