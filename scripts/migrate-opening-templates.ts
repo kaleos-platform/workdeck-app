@@ -554,6 +554,17 @@ async function main() {
   const dryRun = args.includes('--dry-run')
   const includeCustom = args.includes('--include-custom')
 
+  // 2026-11-16 운영 샘플 29개의 opening·피크 브랜드를 정리했다(scripts/hiring-sample-sanitize).
+  // 재실행하면 contents 를 opening 원본으로 교체해 브랜드·연락처·로고가 되살아나므로 명시 플래그 없이는 막는다.
+  if (!dryRun && !args.includes('--allow-reimport-overwrites-branding-cleanup')) {
+    console.error(
+      '[중단] 재이관은 샘플 템플릿 브랜드 정리분을 opening 원본으로 덮어씁니다. ' +
+        'docs/superpowers/plans/2026-11-16-recruiting-sample-template-branding.md 확인 후 ' +
+        '--allow-reimport-overwrites-branding-cleanup 를 붙여 실행하세요.'
+    )
+    process.exit(1)
+  }
+
   const openingEnv = loadOpeningEnv()
   const { templates, contentById } = await loadFromOpening(openingEnv)
   const plans = templates.map((t) => planTemplate(t, contentById, includeCustom))
