@@ -58,6 +58,7 @@ describe('GET /api/sh/nbaesong/settings', () => {
           startDate: '2026-10-01',
           representativeChannelId: 'rep-1',
           backfilledThrough: '2026-10-24',
+          locationId: null,
           channelId: 'nb-1',
         },
       ],
@@ -65,6 +66,32 @@ describe('GET /api/sh/nbaesong/settings', () => {
     })
     expect(JSON.stringify(body)).not.toMatch(/SECRET|clientSecret|clientId|encryptedPayload/)
     expect(findCred.mock.calls[0][0]?.select).toEqual({ config: true, lastError: true })
+  })
+
+  test('스토어별 locationId는 공통 locationId와 구분해 반환한다', async () => {
+    findCred.mockResolvedValue({
+      config: {
+        locationId: 'default-location',
+        stores: [
+          { key: 'shop1', label: '스토어1', startDate: '2026-10-01', locationId: 'store-location' },
+          { key: 'shop2', label: '스토어2', startDate: '2026-10-02' },
+        ],
+      },
+      lastError: null,
+    } as never)
+    findChannels.mockResolvedValue([])
+    const body = await (await GET())!.json()
+    expect(body.locationId).toBe('default-location')
+    expect(
+      body.stores.map((store: { key: string; locationId: string | null }) => ({
+        key: store.key,
+        locationId: store.locationId,
+      }))
+    ).toEqual([
+      { key: 'shop1', locationId: 'store-location' },
+      { key: 'shop2', locationId: null },
+    ])
+    expect(JSON.stringify(body)).not.toMatch(/SECRET|clientSecret|clientId|encryptedPayload/)
   })
 
   test('미설정이면 configured=false', async () => {

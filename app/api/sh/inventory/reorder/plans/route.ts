@@ -1,7 +1,7 @@
 // GET /api/sh/inventory/reorder/plans
 // 발주 계획 목록 조회 (최근 50건) + 가장 최근 CONSUMED 계획의 적중률
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(_req: NextRequest) {
@@ -45,7 +45,9 @@ export async function GET(_req: NextRequest) {
     select: {
       planNo: true,
       biasAdjustApplied: true,
+      items: { select: { optionId: true, forecastModel: true } },
       accuracies: {
+        where: { validity: 'ACTIVE' },
         select: {
           optionId: true,
           wape: true,
@@ -72,12 +74,16 @@ export async function GET(_req: NextRequest) {
     for (const o of opts) optionNameById.set(o.id, { name: o.name, sku: o.sku })
   }
 
+  const forecastModelByOption = new Map(
+    latestConsumed?.items.map((item) => [item.optionId, item.forecastModel])
+  )
   const latestAccuracy = latestConsumed
     ? {
         planNo: latestConsumed.planNo,
         biasAdjustApplied: latestConsumed.biasAdjustApplied as object | null,
         accuracies: latestConsumed.accuracies.map((a) => ({
           optionId: a.optionId,
+          forecastModel: forecastModelByOption.get(a.optionId) ?? null,
           optionName: optionNameById.get(a.optionId)?.name ?? null,
           sku: optionNameById.get(a.optionId)?.sku ?? null,
           // Decimal → number (클라이언트가 그대로 산술에 사용)

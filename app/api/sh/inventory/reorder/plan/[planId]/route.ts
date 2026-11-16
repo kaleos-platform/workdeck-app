@@ -38,6 +38,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
         where: { validity: 'ACTIVE' }, // revert로 SUPERSEDED/INVALIDATED된 stale 결과 제외
         select: {
           optionId: true,
+          actualOutbound: true,
           wape: true,
           bias: true,
           stockoutDays: true,
@@ -132,6 +133,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
     }
   }
 
+  const forecastModelByOption = new Map(
+    plan.items.map((item) => [item.optionId, item.forecastModel])
+  )
+
   return NextResponse.json({
     plan: {
       id: plan.id,
@@ -183,6 +188,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
     productInfo: Array.from(productInfoMap.values()),
     accuracies: plan.accuracies.map((a) => ({
       ...a,
+      forecastModel: forecastModelByOption.get(a.optionId) ?? null,
       wape: Number(a.wape),
       bias: Number(a.bias),
     })),
