@@ -99,3 +99,13 @@ node scripts/verify-excalidraw-patches.mjs /tmp/excalidraw-excalidraw-0.18.1.tgz
 ```
 
 배포에 성공한 적 없는 결합 patch를 단독 적용한 로컬 node_modules에는 sequence 상태 파일이 없어 새 구조를 자동 인식할 수 없다. 이 경우 Excalidraw 패키지만 원본으로 다시 설치한 뒤 표준 patch-package를 적용한다. 이를 지원하기 위한 runtime 우회나 검증 생략은 추가하지 않는다.
+
+## develop 배포 검증과 운영 릴리스 준비 (2026-11-17)
+
+- 캐시 호환 수정 fb1ef12b의 PR Preview에서 기존 패치·002 패치 적용과 Vercel build 성공. migration-lint·rls-lockdown·visual-smoke 모두 통과 후 #1493을 develop에 squash 병합(04a4a078).
+- develop 고정 Preview URL에서 전용 테스트 계정 로그인 → 내 워크덱 모집 관리 카드 확인 → 테스트 공간 임시 DRAFT 공고 생성 → 원본 source의 디자인 주입 → 실제 공고 꾸미기/편집기에서 한글·영문·숫자 두 줄 수정 → 카드저장 → 재오픈을 확인했다. 저장 scene의 fontFamily=11600, source 제거, 실제 textarea family=Pretendard-600/weight=600, JPEG 생성, page error 0.
+- 최초 scene에 링크가 없으면 카드저장 시 링크 기본값 PATCH가 먼저 발생한다. 이 응답에는 원본 family가 남아 있으므로, 실제 디자인 저장(imageBase64 포함)의 응답과 재오픈 결과를 검증했다. 제품 코드의 추가 변경은 없었다.
+- 임시 공고를 제목·DRAFT 상태로 확인한 뒤 정상 API로 삭제했고 GET 404로 제거를 확인했다. AAK와 운영 고객 데이터에 쓰지 않았다.
+- 운영에는 main(980c4599) 기준 별도 release 브랜치에 이번 두 커밋만 cherry-pick했다. 기존 main의 3MB 이미지 업로드 제한은 보존했다. 변경 범위 33파일 확인, 별도 검토 PASS.
+- main 기준 릴리스 checkout에서 31 tests, 실제 패치 새 설치·이전 캐시 업그레이드·재실행 및 production build 통과.
+- 시각 증거: `docs/decks/recruiting/assets/opening-fonts-preview-qa.png`(develop에서 재오픈한 실제 편집기).

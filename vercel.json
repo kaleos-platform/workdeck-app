@@ -1,6 +1,12 @@
 {
   "framework": "nextjs",
-  "git": { "deploymentEnabled": { "fix/hiring-cleanup-source-no-preview": false } },
+  "git": {
+    "deploymentEnabled": {
+      "fix/hiring-cleanup-source-no-preview": false,
+      "fix/recruiting-excel-no-preview": false,
+      "fix/recruiting-image-size-limit": false
+    }
+  },
   "buildCommand": "find .next -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} + 2>/dev/null; npx prisma migrate deploy && next build",
   "installCommand": "npm install",
   "ignoreCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then exit 1; fi; git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)*.md' ':(exclude).github'",

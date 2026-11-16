@@ -36,3 +36,11 @@ Space WorkerToken의 `x-worker-api-key` 인증만 claim/report할 수 있다. �
 - 독립 코드 리뷰에서 결과 신원 검사·JSON 파싱 오류·wrapper timeout 뒤 재호출 문제를 찾아 수정하고 회귀 테스트 추가.
 - 실제 읽기 전용 사전 조회 `cafe24-dev-preflight-20261114-191657`는 `login_required`로 중단됨. TaskSpace 166 정리 완료. 원본 해시를 아직 확보하지 않았으며 실제 저장·복원은 검증하지 않았다.
 - 운영 migration·호스트 쓰기 설정·실제 외부 저장은 이 검증에 포함하지 않는다. 재로그인 → 사전 조회 → 구체적 diff 웹 승인 → 실제 roundtrip 순서로 진행한다.
+
+## 브라우저 시작 전 중단의 수동 1회 복구
+
+`POST /api/browser/write-jobs/[id]/recover-unstarted`는 원래 claim 소유자인 동일 Space WorkerToken만 호출할 수 있다. 요청 본문은 `{ "claimId": "원래 claim ID" }`만 받는다. 이 API는 자동 재시도나 새 승인을 생성하지 않는다.
+
+원래 작업의 만료 전이며 승인 액션이 `EXECUTED`인 경우에만, 엄격한 원본 보고서가 `ABORTED`, `taskSpaceId: null`, `taskSpaceFinished: true`이고 저장·복원 해시가 없음을 확인해 `PENDING`으로 되돌린다. 브라우저가 생성됐거나 결과가 불명확한 작업은 복구할 수 없다. 원본 payload·hash·action·expiresAt을 유지하며 기간을 연장하지 않는다.
+
+복구 CAS는 Space·토큰·claim·상태·보고서 JSON·만료를 함께 검사하므로 동시 요청 중 하나만 성공한다. 원본 보고서와 복구 시각·소유자는 `report.recovery`에 보존한다. claim 응답의 `recoveryAttempt`는 최초 실행은 `0`, 복구 실행은 `1`이며 호스트는 복구 실행에 별도 `recovery` 디렉터리를 사용한다. 최종 report에서도 이력을 보존하고, 복구 실행이 다시 시작 전에 중단되더라도 두 번째 복구는 허용하지 않는다.
