@@ -959,11 +959,60 @@ describe('prepare', () => {
         'ASSET_SCOPE_MISMATCH',
       ])
     })
-    it('관리자를 공유하지 않는 브랜드를 형제로 주면 원본을 읽기 전에 중단한다', async () => {
+    it('관리자를 공유하지 않는 브랜드를 형제로 주면 공고를 읽기 전에 중단한다', async () => {
       const rows = sourceRows()
       rows.siblings = []
-      await expect(prepare(rows, undefined, ['8'])).rejects.toThrow('SIBLING_BRAND_UNVERIFIED')
+      const source = fakeSource(rows)
+      await expect(
+        prepareOpeningCustomer(source.client, readObject, {
+          brandId: '9',
+          webOrigin: 'https://opening.work',
+          siblingBrandIds: ['8'],
+        })
+      ).rejects.toThrow('SIBLING_BRAND_UNVERIFIED')
+      expect(source.queries.some((sql) => /FROM posting/.test(sql))).toBe(false)
+    })
+    it('자기 자신은 형제로 줄 수 없다(쿼리가 돌려줘도)', async () => {
+      const rows = sourceRows()
+      rows.siblings = [{ id: '9' }]
       await expect(prepare(rows, undefined, ['9'])).rejects.toThrow('SIBLING_BRAND_UNVERIFIED')
+    })
+    it('형제 확인은 활성 관리자·활성 회원·활성 브랜드·자기 제외 조건으로 묻는다', async () => {
+      const rows = sourceRows()
+      rows.siblings = [{ id: '8' }]
+      const source = fakeSource(rows)
+      await prepareOpeningCustomer(source.client, readObject, {
+        brandId: '9',
+        webOrigin: 'https://opening.work',
+        siblingBrandIds: ['8'],
+      })
+      const sql = source.queries.find((q) => /FROM brand_member/.test(q))!.replace(/\s+/g, ' ')
+      for (const cond of [
+        "bm.member_type = 'admin'",
+        'bm.status = 1',
+        'm.status = 1',
+        "sib.member_type = 'admin'",
+        'sib.status = 1',
+        'b.status = 1',
+        'sib.brand_id <> $1',
+      ])
+        expect(sql).toContain(cond)
+    })
+    it('형제를 지정해도 소유 불명 파일·디자인은 막는다', async () => {
+      const rows = sourceRows()
+      rows.files.find((row) => row.file_key === key)!.owner_brand_id = null
+      rows.siblings = [{ id: '8' }]
+      let result = await prepare(rows, undefined, ['8'])
+      expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+        'ASSET_SCOPE_UNKNOWN',
+      ])
+      const rows2 = sourceRows()
+      Object.assign(rows2.contents.find((row) => row.id === '70')!, { owner_brand_id: null })
+      rows2.siblings = [{ id: '8' }]
+      result = await prepare(rows2, undefined, ['8'])
+      expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toContain(
+        'RESOURCE_SCOPE_MISMATCH'
+      )
     })
     it('형제를 주지 않으면 기존처럼 막는다', async () => {
       const rows = sourceRows()
@@ -986,6 +1035,20 @@ describe('prepare', () => {
       webOrigin: 'https://opening.work',
     })
     expect(result.summary.postings.warnings.OPENING_URL_REMAINS).toBeUndefined()
+  })
+
+  it('scene 요소 링크의 오프닝 주소는 계속 남은 링크로 센다', async () => {
+    const read: OpeningObjectReader = async (input) => {
+      if (input.key !== 'content_data/a.json') return readObject(input)
+      const scene = textScene() as { elements: Record<string, unknown>[] }
+      scene.elements = scene.elements.map((el) => ({ ...el, link: 'https://opening.work/brand/1' }))
+      return Buffer.from(JSON.stringify({ ...scene, source: 'https://opening.work' }))
+    }
+    const result = await prepareOpeningCustomer(fakeSource().client, read, {
+      brandId: '9',
+      webOrigin: 'https://opening.work',
+    })
+    expect(result.summary.postings.warnings.OPENING_URL_REMAINS).toBeGreaterThan(0)
   })
 
   it.each([

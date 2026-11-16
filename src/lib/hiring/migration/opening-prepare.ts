@@ -140,6 +140,7 @@ export async function readOpeningSource(
          JOIN member m ON m.id = bm.member_id AND m.status = 1
          JOIN brand_member sib ON sib.member_id = bm.member_id
            AND sib.member_type = 'admin' AND sib.status = 1
+         JOIN brand b ON b.id = sib.brand_id AND b.status = 1
          WHERE bm.brand_id = $1 AND bm.member_type = 'admin' AND bm.status = 1
            AND sib.brand_id = ANY($2::bigint[]) AND sib.brand_id <> $1`,
         [brandId, siblingBrandIds]
@@ -470,7 +471,7 @@ async function buildCustomerPackets(
 ) {
   const { snapshotAt, brand } = source
   const siblings = new Set(source.siblingBrandIds)
-  // 형제 브랜드 소유로 허용한 파일·디자인(사람 검토 때 따로 보인다)
+  // 형제 브랜드 소유로 참조된 파일·디자인 수(검토용 참고 수치 — 그 항목이 결국 보류돼도 센다)
   const siblingFiles = new Set<string>()
   const siblingContents = new Set<string>()
   const ownedBySibling = (owner: string | null) => owner !== null && siblings.has(owner)
@@ -919,8 +920,15 @@ async function buildCustomerPackets(
       }
       // 본문 글자·scene 링크의 opening 주소는 12/18에 끊긴다. 자동 치환하지 않고 건수만 알린다.
       // scene 최상위 source(Excalidraw가 적는 작성 앱 주소)는 화면에 안 보이는 메타데이터라 세지 않는다.
+      const isOpeningOrigin = (v: string) => {
+        try {
+          return new URL(v).origin === new URL(webOrigin).origin
+        } catch {
+          return false
+        }
+      }
       const visible = JSON.stringify(candidate.content, (k, v) =>
-        k === 'source' && typeof v === 'string' && v.startsWith(webOrigin) ? undefined : v
+        k === 'source' && typeof v === 'string' && isOpeningOrigin(v) ? undefined : v
       )
       if (visible.replaceAll(applyUrl, '').includes(webHost)) warn('OPENING_URL_REMAINS')
       entry.contactHits = scanContacts(candidate)
