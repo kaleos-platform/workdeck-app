@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { MessageContentEditor, MessagePreview } from './message-content-editor'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 type Template = { id: string; title: string; content: string; updatedAt: string }
@@ -19,7 +19,6 @@ export function TemplatesManager() {
   const [content, setContent] = useState('')
   const [saving, setSaving] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
-  const [addingSamples, setAddingSamples] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -77,24 +76,6 @@ export function TemplatesManager() {
     }
   }
 
-  async function addSamples() {
-    if (addingSamples) return
-    setAddingSamples(true)
-    try {
-      const res = await fetch('/api/hiring-applicants/message-templates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ samples: true }),
-      })
-      if (!res.ok && res.status !== 409) throw new Error()
-      await load()
-    } catch {
-      toast.error('예시 메시지를 추가하지 못했습니다')
-    } finally {
-      setAddingSamples(false)
-    }
-  }
-
   async function remove(id: string) {
     setBusyId(id)
     try {
@@ -112,10 +93,7 @@ export function TemplatesManager() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
-          {'{이름}'} {'{공고명}'} {'{직무}'}를 쓰면 보낼 때 지원자 정보로 바뀝니다.
-        </p>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Button size="sm" onClick={startNew} disabled={editingId === 'new'}>
           <Plus className="mr-1 size-4" />새 메시지
         </Button>
@@ -136,13 +114,9 @@ export function TemplatesManager() {
       {loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
       ) : items.length === 0 && editingId !== 'new' ? (
-        <div className="flex flex-col items-start gap-2">
-          <p className="text-sm text-muted-foreground">등록된 자주 쓰는 메시지가 없습니다.</p>
-          <Button size="sm" variant="outline" onClick={addSamples} disabled={addingSamples}>
-            {addingSamples && <Loader2 className="mr-1 size-4 animate-spin" />}
-            예시 메시지 3개 추가
-          </Button>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          등록된 자주 쓰는 메시지가 없습니다. 「새 메시지」로 추가하세요.
+        </p>
       ) : (
         <div className="space-y-3">
           {items.map((t) =>
@@ -182,7 +156,7 @@ export function TemplatesManager() {
                   </CardAction>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm whitespace-pre-wrap text-muted-foreground">{t.content}</p>
+                  <MessagePreview content={t.content} />
                 </CardContent>
               </Card>
             )
@@ -214,8 +188,11 @@ function TemplateEditor({
     <Card>
       <CardContent className="space-y-3 pt-6">
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">제목</label>
+          <label htmlFor="message-template-title" className="text-sm font-medium">
+            제목
+          </label>
           <Input
+            id="message-template-title"
             value={title}
             maxLength={50}
             onChange={(e) => onTitle(e.target.value)}
@@ -223,14 +200,8 @@ function TemplateEditor({
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">내용</label>
-          <Textarea
-            value={content}
-            onChange={(e) => onContent(e.target.value)}
-            rows={5}
-            maxLength={1000}
-            placeholder="지원자에게 보낼 메시지 내용"
-          />
+          <span className="text-sm font-medium">내용</span>
+          <MessageContentEditor value={content} onChange={onContent} maxLength={1000} />
         </div>
         <div className="flex justify-end gap-2">
           <Button variant="outline" size="sm" onClick={onCancel} disabled={saving}>

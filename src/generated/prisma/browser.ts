@@ -790,6 +790,11 @@ export type HiringBlacklist = Prisma.HiringBlacklistModel
  */
 export type HiringMessageTemplate = Prisma.HiringMessageTemplateModel
 /**
+ * Model HiringMessageSeed
+ * 
+ */
+export type HiringMessageSeed = Prisma.HiringMessageSeedModel
+/**
  * Model BillingDeckProduct
  * 
  */
