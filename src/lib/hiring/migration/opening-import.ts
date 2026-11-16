@@ -435,6 +435,7 @@ export function safeMigrationSummary(summary: object) {
     removedSections: ['managerSections', 'disabledSections', 'templateDynamicSections'],
     refused: ['postings', 'templates'],
     sameNameInTarget: ['stores', 'positions'],
+    siblingOwned: ['files', 'contents'],
   }
   for (const [group, keys] of Object.entries(fields)) {
     const source = input[group]
