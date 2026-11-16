@@ -136,9 +136,30 @@ export function computeProductPlan(input: {
         incomingQty: o.stock.incomingQty,
         roundUnit: product.roundUnit,
       })
+    const layeredFor = (gross: number) => {
+      const share = o.totalQtyInWindow > 0 ? o.rocketQtyInWindow / o.totalQtyInWindow : 0
+      const rocketGross = gross * share
+      const rocketSafetyStock = o.safetyStockQty * share
+      const split = computeLayeredRoundedSplit({
+        rocketGross,
+        directGross: gross - rocketGross,
+        safetyStockQty: o.safetyStockQty,
+        linkedLocationSafetyStockQty: rocketSafetyStock,
+        // computeOrderQty 와 같은 기준(음수 현재고는 0)
+        totalPlannedStock: Math.max(o.stock.onHandQty, 0) + o.stock.incomingQty,
+        rocketPlannedStock: o.stock.rocketOnHandQty + o.stock.rocketIncomingQty,
+        roundUnit: product.roundUnit,
+      })
+      return { rocketGross, rocketSafetyStock, split }
+    }
     const models = {} as Record<ModelKey, { dailyRate: number; qty: number }>
-    for (const k of MODEL_KEYS)
-      models[k] = { dailyRate: rates[k], qty: qtyFor(rates[k]).roundedQty }
+    for (const k of MODEL_KEYS) {
+      const r = qtyFor(rates[k])
+      models[k] = {
+        dailyRate: rates[k],
+        qty: product.layered ? layeredFor(r.gross).split.finalQty : r.roundedQty,
+      }
+    }
 
     const selectedModel: SelectedModel = isNew ? 'MANUAL' : productModel
     let dailyRate: number
@@ -172,19 +193,7 @@ export function computeProductPlan(input: {
       roundedSuggestedQty = r.roundedQty
       finalQty = r.roundedQty
       if (product.layered) {
-        const share = o.totalQtyInWindow > 0 ? o.rocketQtyInWindow / o.totalQtyInWindow : 0
-        const rocketGross = r.gross * share
-        const rocketSafetyStock = o.safetyStockQty * share
-        const split = computeLayeredRoundedSplit({
-          rocketGross,
-          directGross: r.gross - rocketGross,
-          safetyStockQty: o.safetyStockQty,
-          linkedLocationSafetyStockQty: rocketSafetyStock,
-          // computeOrderQty 와 같은 기준(음수 현재고는 0)
-          totalPlannedStock: Math.max(o.stock.onHandQty, 0) + o.stock.incomingQty,
-          rocketPlannedStock: o.stock.rocketOnHandQty + o.stock.rocketIncomingQty,
-          roundUnit: product.roundUnit,
-        })
+        const { rocketGross, rocketSafetyStock, split } = layeredFor(r.gross)
         finalQty = split.finalQty
         layered = {
           rocketExpectedSales: rocketGross,
