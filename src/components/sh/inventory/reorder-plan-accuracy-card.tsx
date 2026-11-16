@@ -3,8 +3,9 @@
 import { TrendingDownIcon, TrendingUpIcon, AlertTriangleIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { accuracyExclusionReason, type AccuracyEvaluationInput } from '@/lib/inv/reorder-accuracy'
 // 집계에 필요한 최소 필드만 — 목록(ReorderPlanAccuracy)·상세(PlanDetailAccuracy) 양쪽 호환
-type AccuracyLike = {
+type AccuracyLike = AccuracyEvaluationInput & {
   wape: number
   bias: number
   stockoutDays: number
@@ -12,10 +13,11 @@ type AccuracyLike = {
 }
 
 type AggregatedAccuracy = {
-  wape: number
-  bias: number
+  wape: number | null
+  bias: number | null
   stockoutDays: number
   overstockDays: number
+  evaluatedCount: number
   optionCount: number
   planNo: string
   biasAdjustApplied: Record<string, number> | null
@@ -27,8 +29,11 @@ function aggregateAccuracy(
   biasAdjustApplied: Record<string, number> | null
 ): AggregatedAccuracy | null {
   if (accuracies.length === 0) return null
-  const wape = accuracies.reduce((sum, a) => sum + a.wape, 0) / accuracies.length
-  const bias = accuracies.reduce((sum, a) => sum + a.bias, 0) / accuracies.length
+  const evaluated = accuracies.filter((a) => accuracyExclusionReason(a) === null)
+  const wape =
+    evaluated.length > 0 ? evaluated.reduce((sum, a) => sum + a.wape, 0) / evaluated.length : null
+  const bias =
+    evaluated.length > 0 ? evaluated.reduce((sum, a) => sum + a.bias, 0) / evaluated.length : null
   const stockoutDays = accuracies.reduce((sum, a) => sum + a.stockoutDays, 0)
   const overstockDays = accuracies.reduce((sum, a) => sum + a.overstockDays, 0)
   return {
@@ -37,6 +42,7 @@ function aggregateAccuracy(
     stockoutDays,
     overstockDays,
     optionCount: accuracies.length,
+    evaluatedCount: evaluated.length,
     planNo,
     biasAdjustApplied,
   }
@@ -65,8 +71,8 @@ export function ReorderPlanAccuracyCard({
   const agg = aggregateAccuracy(accuracies, planNo, biasAdjustApplied)
   if (!agg) return null
 
-  const biasPercent = (agg.bias * 100).toFixed(1)
-  const biasPositive = agg.bias > 0
+  const biasPercent = agg.bias !== null ? (agg.bias * 100).toFixed(1) : null
+  const biasPositive = agg.bias !== null && agg.bias > 0
   const adjustFactors = biasAdjustApplied ? Object.values(biasAdjustApplied) : []
   const avgFactor =
     adjustFactors.length > 0
@@ -80,7 +86,7 @@ export function ReorderPlanAccuracyCard({
           <TrendingDownIcon className="h-4 w-4 text-muted-foreground" />
           {titleLabel} — {agg.planNo}
           <span className="text-xs font-normal text-muted-foreground">
-            ({agg.optionCount}개 옵션 평균)
+            (평가 {agg.evaluatedCount}개 · 제외 {agg.optionCount - agg.evaluatedCount}개)
           </span>
         </CardTitle>
       </CardHeader>
@@ -89,28 +95,35 @@ export function ReorderPlanAccuracyCard({
           {/* WAPE */}
           <div className="space-y-0.5">
             <p className="text-xs text-muted-foreground">WAPE (주지표)</p>
-            <Badge variant="outline" className={wapeBadgeVariant(agg.wape)}>
-              {(agg.wape * 100).toFixed(1)}%
+            <Badge
+              variant="outline"
+              className={agg.wape !== null ? wapeBadgeVariant(agg.wape) : undefined}
+            >
+              {agg.wape !== null ? `${(agg.wape * 100).toFixed(1)}%` : '평가 대상 없음'}
             </Badge>
           </div>
 
           {/* Bias */}
           <div className="space-y-0.5">
             <p className="text-xs text-muted-foreground">Bias%</p>
-            <div className="flex items-center gap-1">
-              {biasPositive ? (
-                <TrendingUpIcon className="h-3.5 w-3.5 text-amber-500" />
-              ) : (
-                <TrendingDownIcon className="h-3.5 w-3.5 text-blue-500" />
-              )}
-              <span className="text-sm font-medium tabular-nums">
-                {biasPositive ? '+' : ''}
-                {biasPercent}%
-              </span>
-              <span className="text-xs text-muted-foreground">
-                ({biasPositive ? '과예측' : '과소예측'})
-              </span>
-            </div>
+            {agg.bias === null ? (
+              <span className="text-sm text-muted-foreground">평가 대상 없음</span>
+            ) : (
+              <div className="flex items-center gap-1">
+                {biasPositive ? (
+                  <TrendingUpIcon className="h-3.5 w-3.5 text-amber-500" />
+                ) : (
+                  <TrendingDownIcon className="h-3.5 w-3.5 text-blue-500" />
+                )}
+                <span className="text-sm font-medium tabular-nums">
+                  {biasPositive ? '+' : ''}
+                  {biasPercent}%
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({biasPositive ? '과예측' : '과소예측'})
+                </span>
+              </div>
+            )}
           </div>
 
           {/* 재고부족일 */}
@@ -137,6 +150,9 @@ export function ReorderPlanAccuracyCard({
           )}
         </div>
 
+        <p className="mt-3 text-xs text-muted-foreground">
+          WAPE·Bias 평가 기준: 수동 입력·실판매 0건 제외. 재고부족·과잉 일수는 전체 합계입니다.
+        </p>
         {avgFactor !== null && (
           <p className="mt-3 text-xs text-muted-foreground">
             직전 계획의 Bias를 기반으로 이번 예측에 보정계수(×{avgFactor.toFixed(3)})가

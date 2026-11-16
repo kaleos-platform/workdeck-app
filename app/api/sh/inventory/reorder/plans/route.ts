@@ -1,7 +1,7 @@
 // GET /api/sh/inventory/reorder/plans
-// 발주 계획 목록 조회 (최근 50건) + 가장 최근 CONSUMED 계획의 적중률
+// 발주 계획 목록 조회 (최근 50건) + 가장 최근 측정된 미대체 계획의 적중률
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(_req: NextRequest) {
@@ -38,14 +38,21 @@ export async function GET(_req: NextRequest) {
     }
   })
 
-  // 가장 최근 CONSUMED 계획의 적중률 정보
-  const latestConsumed = await prisma.reorderPlan.findFirst({
-    where: { spaceId, status: 'CONSUMED' },
+  // 가장 최근 측정된 미대체 계획의 적중률 정보
+  const latestMeasured = await prisma.reorderPlan.findFirst({
+    where: {
+      spaceId,
+      status: { in: ['FINALIZED', 'CONSUMED'] },
+      supersededAt: null,
+      accuracies: { some: { validity: 'ACTIVE' } },
+    },
     orderBy: { finalizedAt: 'desc' },
     select: {
       planNo: true,
       biasAdjustApplied: true,
+      items: { select: { optionId: true, forecastModel: true } },
       accuracies: {
+        where: { validity: 'ACTIVE' },
         select: {
           optionId: true,
           wape: true,
@@ -62,7 +69,7 @@ export async function GET(_req: NextRequest) {
   })
 
   // 옵션명 — 모니터링 표에서 optionId만으로는 읽을 수 없다.
-  const accuracyOptionIds = latestConsumed?.accuracies.map((a) => a.optionId) ?? []
+  const accuracyOptionIds = latestMeasured?.accuracies.map((a) => a.optionId) ?? []
   const optionNameById = new Map<string, { name: string; sku: string | null }>()
   if (accuracyOptionIds.length > 0) {
     const opts = await prisma.invProductOption.findMany({
@@ -72,12 +79,16 @@ export async function GET(_req: NextRequest) {
     for (const o of opts) optionNameById.set(o.id, { name: o.name, sku: o.sku })
   }
 
-  const latestAccuracy = latestConsumed
+  const forecastModelByOption = new Map(
+    latestMeasured?.items.map((item) => [item.optionId, item.forecastModel])
+  )
+  const latestAccuracy = latestMeasured
     ? {
-        planNo: latestConsumed.planNo,
-        biasAdjustApplied: latestConsumed.biasAdjustApplied as object | null,
-        accuracies: latestConsumed.accuracies.map((a) => ({
+        planNo: latestMeasured.planNo,
+        biasAdjustApplied: latestMeasured.biasAdjustApplied as object | null,
+        accuracies: latestMeasured.accuracies.map((a) => ({
           optionId: a.optionId,
+          forecastModel: forecastModelByOption.get(a.optionId) ?? null,
           optionName: optionNameById.get(a.optionId)?.name ?? null,
           sku: optionNameById.get(a.optionId)?.sku ?? null,
           // Decimal → number (클라이언트가 그대로 산술에 사용)
