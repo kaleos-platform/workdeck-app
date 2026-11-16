@@ -112,7 +112,11 @@ const FIXED_WORK_DAYS: Record<string, number[]> = {
   mon_to_sat: [1, 2, 3, 4, 5, 6],
 }
 
-export async function readOpeningSource(client: OpeningSourceClient, brandId: string) {
+export async function readOpeningSource(
+  client: OpeningSourceClient,
+  brandId: string,
+  siblingBrandIds: string[] = []
+) {
   const select = async <T>(sql: string, params: unknown[]) =>
     (await client.query(sql, params)).rows as T[]
   // 같은 시점을 보도록 REPEATABLE READ로 묶는다. READ ONLY라 쓰기는 DB가 거부한다.
@@ -127,6 +131,24 @@ export async function readOpeningSource(client: OpeningSourceClient, brandId: st
       [brandId]
     )
     if (!brand) throw Error('SOURCE_BRAND_NOT_FOUND')
+    // 형제 브랜드: 같은 활성 관리자를 둔 브랜드만, 운영자가 지정한 정확한 id로. 대상 브랜드 공고·템플릿이
+    // 참조하는 파일·디자인의 소유 판정에만 쓰고 형제 브랜드 자체의 공고·템플릿·매장·직무는 읽지 않는다.
+    if (siblingBrandIds.length) {
+      const verified = await select<{ id: string }>(
+        `SELECT DISTINCT sib.brand_id::text AS id
+         FROM brand_member bm
+         JOIN member m ON m.id = bm.member_id AND m.status = 1
+         JOIN brand_member sib ON sib.member_id = bm.member_id
+           AND sib.member_type = 'admin' AND sib.status = 1
+         JOIN brand b ON b.id = sib.brand_id AND b.status = 1
+         WHERE bm.brand_id = $1 AND bm.member_type = 'admin' AND bm.status = 1
+           AND sib.brand_id = ANY($2::bigint[]) AND sib.brand_id <> $1`,
+        [brandId, siblingBrandIds]
+      )
+      const ok = new Set(verified.map((row) => row.id))
+      if (siblingBrandIds.some((id) => id === brandId || !ok.has(id)))
+        throw Error('SIBLING_BRAND_UNVERIFIED')
+    }
     const overview = await select<PostingOverview>(
       'SELECT id::text, status, created_at, updated_at FROM posting WHERE brand_id = $1',
       [brandId]
@@ -265,6 +287,7 @@ export async function readOpeningSource(client: OpeningSourceClient, brandId: st
       contents,
       files,
       sharedKeys,
+      siblingBrandIds,
     }
   } catch (error) {
     await client.query('ROLLBACK').catch(() => undefined)
@@ -432,11 +455,11 @@ const placeholderBind: AssetBinder = async (asset) => ({
 export async function prepareOpeningCustomer(
   client: OpeningSourceClient,
   readObject: OpeningObjectReader,
-  options: { brandId: string; webOrigin: string; review?: unknown }
+  options: { brandId: string; webOrigin: string; review?: unknown; siblingBrandIds?: string[] }
 ) {
   const review =
     options.review === undefined ? undefined : parseReviewFile(options.review, options.brandId)
-  const source = await readOpeningSource(client, options.brandId)
+  const source = await readOpeningSource(client, options.brandId, options.siblingBrandIds ?? [])
   return buildCustomerPackets(source, readObject, options.webOrigin, review)
 }
 
@@ -447,6 +470,11 @@ async function buildCustomerPackets(
   review?: ReviewApprovals
 ) {
   const { snapshotAt, brand } = source
+  const siblings = new Set(source.siblingBrandIds)
+  // 형제 브랜드 소유로 참조된 파일·디자인 수(검토용 참고 수치 — 그 항목이 결국 보류돼도 센다)
+  const siblingFiles = new Set<string>()
+  const siblingContents = new Set<string>()
+  const ownedBySibling = (owner: string | null) => owner !== null && siblings.has(owner)
   const sourceSnapshotAt = new Date(snapshotAt).toISOString()
   const reasonCounts: Record<string, number> = {}
   const warningCounts: Record<string, number> = {}
@@ -491,13 +519,27 @@ async function buildCustomerPackets(
       !file.storage
     )
       throw Error('ASSET_FILE_REJECTED')
+    const reviewedAsset = review?.assetScopes.get(hashKey(key))
     // 섹션이 직접 가리키는 키는 다른 고객 파일일 수 있어 소유를 확인한다.
-    if (owned && file.owner_brand_id !== brand.id && !(allowShared && source.sharedKeys.has(key)))
-      throw Error(file.owner_brand_id ? 'ASSET_SCOPE_MISMATCH' : 'ASSET_SCOPE_UNKNOWN')
+    if (owned && file.owner_brand_id !== brand.id && !(allowShared && source.sharedKeys.has(key))) {
+      const reviewedOwner =
+        file.owner_brand_id !== null && reviewedAsset?.ownerBrandId === file.owner_brand_id
+      const reviewedShared = file.owner_brand_id === null && reviewedAsset?.ownerBrandId === null
+      if (!ownedBySibling(file.owner_brand_id) && !reviewedOwner && !reviewedShared)
+        throw Error(file.owner_brand_id ? 'ASSET_SCOPE_MISMATCH' : 'ASSET_SCOPE_UNKNOWN')
+      if (ownedBySibling(file.owner_brand_id)) siblingFiles.add(key)
+    }
     if (!objects.has(key)) objects.set(key, readObject({ bucket: file.storage, key }))
-    return (objects.get(key) as Promise<Uint8Array>).catch(() => {
+    const bytes = await (objects.get(key) as Promise<Uint8Array>).catch(() => {
       throw Error('ASSET_READ_FAILED')
     })
+    if (
+      file.owner_brand_id === null &&
+      reviewedAsset?.ownerBrandId === null &&
+      createHash('sha256').update(bytes).digest('hex') !== reviewedAsset.sha256
+    )
+      throw Error('ASSET_REVIEW_STALE')
+    return bytes
   }
   const stripped = new Map<string, Promise<Asset>>()
   // design: 디자인 블록의 내보낸 이미지 — 편집기 저장 한도에 맞춰 JPEG로 압축한다.
@@ -675,7 +717,10 @@ async function buildCustomerPackets(
       const row = contentById.get(id)
       if (!row) throw Error('CONTENT_MISSING_RESOURCE')
       if (row.status !== 1 || row.content_type !== 'excalidraw') throw Error('RESOURCE_UNSUPPORTED')
-      if (row.owner_brand_id !== brand.id) throw Error('RESOURCE_SCOPE_MISMATCH')
+      if (row.owner_brand_id !== brand.id) {
+        if (!ownedBySibling(row.owner_brand_id)) throw Error('RESOURCE_SCOPE_MISMATCH')
+        siblingContents.add(id)
+      }
       const asset = await readAsset(row.image_key, ['content_image'], true, true)
       const sceneKey = text(row.file_key)
       if (type === 'content' && !sceneKey) throw Error('CONTENT_MISSING_SCENE')
@@ -885,8 +930,18 @@ async function buildCustomerPackets(
         },
       }
       // 본문 글자·scene 링크의 opening 주소는 12/18에 끊긴다. 자동 치환하지 않고 건수만 알린다.
-      if (JSON.stringify(candidate.content).replaceAll(applyUrl, '').includes(webHost))
-        warn('OPENING_URL_REMAINS')
+      // scene 최상위 source(Excalidraw가 적는 작성 앱 주소)는 화면에 안 보이는 메타데이터라 세지 않는다.
+      const isOpeningOrigin = (v: string) => {
+        try {
+          return new URL(v).origin === new URL(webOrigin).origin
+        } catch {
+          return false
+        }
+      }
+      const visible = JSON.stringify(candidate.content, (k, v) =>
+        k === 'source' && typeof v === 'string' && isOpeningOrigin(v) ? undefined : v
+      )
+      if (visible.replaceAll(applyUrl, '').includes(webHost)) warn('OPENING_URL_REMAINS')
       entry.contactHits = scanContacts(candidate)
       addHits(entry.contactHits, 'postingsHit')
       const packet = parseCandidate(postingPacketSchema, candidate, 'posting')
@@ -1024,6 +1079,7 @@ async function buildCustomerPackets(
       heldReasons: orgReasons.positions,
     },
     removedSections: removed,
+    siblingOwned: { files: siblingFiles.size, contents: siblingContents.size },
   }
   const manifest = {
     summary,

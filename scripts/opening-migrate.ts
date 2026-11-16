@@ -13,6 +13,8 @@
  *   DIRECT_URL이 DATABASE_URL보다 우선하며 둘 중 하나가 환경에 있으면 .env.local을 읽지 않는다.
  *   이 경우 OPENING_CA_FILE 등 필요한 값도 환경에 직접 제공한다. 접속 정보는 출력하지 않는다.
  *   OPENING_AWS_PROFILE(기본 peak)로 S3 이미지·scene을 읽는다. OPENING_WEB_URL 기본 https://opening.work.
+ *   --sibling-brands 8,9 : 같은 활성 관리자를 둔 다른 브랜드 id. 대상 브랜드 공고·템플릿이 참조하는 그 브랜드 소유
+ *   파일·디자인만 허용한다(공고 복사로 섞인 경우). 관리자 공유가 확인되지 않으면 SIBLING_BRAND_UNVERIFIED.
  *   --out 은 저장소 밖의 빈 폴더만 허용한다. 이미지 안 글자는 검사하지 못하므로 폴더를 고객 자료로 다룬다.
  *
  * 사람 검토(연락처 적중 해제·이미지 확인, scene 내장 이미지 포함):
@@ -20,7 +22,8 @@
  *   2) 내용을 읽고 승인할 것만 담은 파일을 만든다(저장소 밖):
  *      { "sourceSpaceId": "123", "reviewer": "이름", "reviewedAt": "2026-11-01",
  *        "items": [{ "kind": "template", "id": "40", "contentHash": "<candidates.json 값>" }],
- *        "images": ["<sha256>"] }
+ *        "images": ["<sha256>"],
+ *        "assetScopes": [{ "ref": "<sha256(검토한 원본 파일 키)>", "ownerBrandId": "<원본 소유 브랜드>" }] }
  *   3) prepare ... --review-file review.json --out /secure/dir --write-packets
  *      승인은 내용 해시에 묶이므로 내용이 바뀌면 다시 검토해야 한다(REVIEW_STALE).
  *   검토 폴더에는 연락처 원문이 있다. 소유자 전용(0700/0600)으로 쓰며 끝나면 지운다.
@@ -152,10 +155,15 @@ async function prepare(args: string[]) {
       'write-packets': { type: 'boolean', default: false },
       'review-dir': { type: 'string' },
       'review-file': { type: 'string' },
+      'sibling-brands': { type: 'string' },
     },
   })
   const brandId = values['brand-id']
   if (!/^[1-9]\d{0,18}$/.test(brandId ?? '')) throw Error('EXPLICIT_SCOPE_REQUIRED')
+  // 같은 관리자의 다른 브랜드(쉼표 구분 정확한 id). 공고·템플릿이 참조하는 그 브랜드 소유 파일·디자인만 허용한다.
+  const siblingBrandIds = values['sibling-brands']?.split(',').map((id) => id.trim()) ?? []
+  if (siblingBrandIds.some((id) => !/^[1-9]\d{0,18}$/.test(id)))
+    throw Error('SIBLING_BRANDS_INVALID')
   if (values['write-packets'] && !values.out) throw Error('OUT_DIR_REQUIRED')
   // 원본을 읽기 전에 거부한다.
   const outDir = values['write-packets'] ? assertOutDir(values.out as string, repoRoot) : null
@@ -173,6 +181,7 @@ async function prepare(args: string[]) {
       brandId: brandId as string,
       webOrigin: process.env.OPENING_WEB_URL ?? 'https://opening.work',
       review,
+      siblingBrandIds,
     })
     if (outDir) writePacketSet(outDir, prepared)
     if (reviewDir) writeReviewDir(reviewDir, prepared.review)

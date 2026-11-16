@@ -276,6 +276,8 @@ function sourceRows(extra: Record<string, unknown[]> = {}) {
     ],
     sampleTemplates: [] as unknown[],
     sampleContents: [] as unknown[],
+    // 형제 브랜드 확인 쿼리 응답(활성 관리자를 공유하는 브랜드 id)
+    siblings: [] as { id: string }[],
     ...extra,
   }
 }
@@ -311,6 +313,7 @@ function fakeSource(rows = sourceRows()) {
         [/SELECT id::text, status, image_key, data FROM detail_template/, rows.sampleTemplates],
         [/SELECT id::text, source_id::text, status, image_key FROM content/, rows.sampleContents],
         [/now\(\)/, [{ snapshot_at: snapshotAt }]],
+        [/FROM brand_member/, rows.siblings],
         [/FROM brand/, [{ id: '9', name: '합성브랜드' }]],
         [/status, created_at, updated_at FROM posting/, rows.overview],
         [/FROM posting WHERE id/, rows.postings],
@@ -333,11 +336,12 @@ const readObject: OpeningObjectReader = async ({ key }) => {
   if (key === 'content_data/c.json') return Buffer.from(JSON.stringify(textScene()))
   return png([...key].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 200)
 }
-const prepare = (rows = sourceRows(), review?: unknown) =>
+const prepare = (rows = sourceRows(), review?: unknown, siblingBrandIds?: string[]) =>
   prepareOpeningCustomer(fakeSource(rows).client, readObject, {
     brandId: '9',
     webOrigin: 'https://opening.work',
     review,
+    siblingBrandIds,
   })
 const reviewFile = (overrides: Record<string, unknown> = {}) => ({
   sourceSpaceId: '9',
@@ -706,6 +710,20 @@ describe('이미지·scene 정제', () => {
     expect(diag).toEqual(['other|unknown|ASSET_UNSUPPORTED_TYPE', 'image/png|png|OK'])
   })
 
+  it('단일 AVIF 자산은 해상도를 유지한 결정적 PNG로 변환한다', async () => {
+    const avif = await sharp(await png(7))
+      .avif()
+      .toBuffer()
+    const first = await cleanImage(avif)
+    const second = await cleanImage(avif)
+    expect(first.mimeType).toBe('image/png')
+    expect(Buffer.from(first.bytes).equals(Buffer.from(second.bytes))).toBe(true)
+    const input = await sharp(avif).metadata()
+    const output = await sharp(first.bytes).metadata()
+    expect(output).toMatchObject({ format: 'png', width: input.width, height: input.height })
+    expect(output.exif).toBeUndefined()
+  })
+
   it('독립 SVG 자산도 PNG가 된다', async () => {
     const clean = await cleanImage(Buffer.from(svg))
     expect(clean.mimeType).toBe('image/png')
@@ -923,6 +941,187 @@ describe('prepare', () => {
     ]
     result = await prepare(rows)
     expect(result.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+  })
+
+  it('사람이 확인한 정확한 파일 키·소유 브랜드만 예외 허용한다', async () => {
+    const rows = sourceRows()
+    const key = 'posting_detail/u/사람이름.png'
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+    const ref = createHash('sha256').update(key).digest('hex')
+    const review = reviewFile({ assetScopes: [{ ref, ownerBrandId: '8' }] })
+    const allowed = await prepare(rows, review)
+    expect(allowed.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '7'
+    const changedOwner = await prepare(rows, review)
+    expect(changedOwner.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_MISMATCH',
+    ])
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = null
+    const unknown = await prepare(rows, review)
+    expect(unknown.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_UNKNOWN',
+    ])
+  })
+
+  it('소유 정보 없는 공통 자산은 명시적으로 검토한 원본 바이트만 허용한다', async () => {
+    const rows = sourceRows()
+    const key = 'posting_detail/u/사람이름.png'
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = null
+    const raw = await readObject({ bucket: 'bucket', key })
+    const scope = {
+      ref: createHash('sha256').update(key).digest('hex'),
+      ownerBrandId: null,
+      sha256: createHash('sha256').update(raw).digest('hex'),
+    }
+    const result = await prepare(rows, reviewFile({ assetScopes: [scope] }))
+    expect(result.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+    const stale = await prepare(
+      rows,
+      reviewFile({ assetScopes: [{ ...scope, sha256: 'a'.repeat(64) }] })
+    )
+    expect(stale.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_REVIEW_STALE',
+    ])
+    await expect(
+      prepare(rows, reviewFile({ assetScopes: [{ ref: scope.ref, ownerBrandId: null }] }))
+    ).rejects.toThrow('REVIEW_FILE_INVALID')
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+    const otherOwner = await prepare(rows, reviewFile({ assetScopes: [scope] }))
+    expect(otherOwner.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_MISMATCH',
+    ])
+  })
+
+  it('다른 파일 키의 소유권 검토로 허용 범위를 넓히지 않는다', async () => {
+    const rows = sourceRows()
+    rows.files.find((row) => row.file_key === 'posting_detail/u/사람이름.png')!.owner_brand_id = '8'
+    const review = reviewFile({ assetScopes: [{ ref: 'a'.repeat(64), ownerBrandId: '8' }] })
+    const result = await prepare(rows, review)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_MISMATCH',
+    ])
+  })
+
+  describe('형제 브랜드(같은 관리자) 소유 파일·디자인', () => {
+    const key = 'posting_detail/u/사람이름.png'
+    it('확인된 형제 브랜드 소유 파일은 허용하고 따로 집계한다', async () => {
+      const rows = sourceRows()
+      rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+      rows.siblings = [{ id: '8' }]
+      const result = await prepare(rows, undefined, ['8'])
+      expect(result.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+      expect(result.summary.siblingOwned).toEqual({ files: 1, contents: 0 })
+    })
+    it('형제 브랜드 소유 디자인 content도 허용한다', async () => {
+      const rows = sourceRows()
+      rows.contents.find((row) => row.id === '70')!.owner_brand_id = '8'
+      rows.files.find((row) => row.file_key === 'content_image/a.png')!.owner_brand_id = '8'
+      rows.siblings = [{ id: '8' }]
+      const result = await prepare(rows, undefined, ['8'])
+      expect(result.manifest.postings.find((p) => p.id === '1')?.reasons ?? []).not.toContain(
+        'RESOURCE_SCOPE_MISMATCH'
+      )
+      expect(result.summary.siblingOwned.contents).toBe(1)
+    })
+    it('지정하지 않은 다른 브랜드 소유는 계속 막는다', async () => {
+      const rows = sourceRows()
+      rows.files.find((row) => row.file_key === key)!.owner_brand_id = '7'
+      rows.siblings = [{ id: '8' }]
+      const result = await prepare(rows, undefined, ['8'])
+      expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+        'ASSET_SCOPE_MISMATCH',
+      ])
+    })
+    it('관리자를 공유하지 않는 브랜드를 형제로 주면 공고를 읽기 전에 중단한다', async () => {
+      const rows = sourceRows()
+      rows.siblings = []
+      const source = fakeSource(rows)
+      await expect(
+        prepareOpeningCustomer(source.client, readObject, {
+          brandId: '9',
+          webOrigin: 'https://opening.work',
+          siblingBrandIds: ['8'],
+        })
+      ).rejects.toThrow('SIBLING_BRAND_UNVERIFIED')
+      expect(source.queries.some((sql) => /FROM posting/.test(sql))).toBe(false)
+    })
+    it('자기 자신은 형제로 줄 수 없다(쿼리가 돌려줘도)', async () => {
+      const rows = sourceRows()
+      rows.siblings = [{ id: '9' }]
+      await expect(prepare(rows, undefined, ['9'])).rejects.toThrow('SIBLING_BRAND_UNVERIFIED')
+    })
+    it('형제 확인은 활성 관리자·활성 회원·활성 브랜드·자기 제외 조건으로 묻는다', async () => {
+      const rows = sourceRows()
+      rows.siblings = [{ id: '8' }]
+      const source = fakeSource(rows)
+      await prepareOpeningCustomer(source.client, readObject, {
+        brandId: '9',
+        webOrigin: 'https://opening.work',
+        siblingBrandIds: ['8'],
+      })
+      const sql = source.queries.find((q) => /FROM brand_member/.test(q))!.replace(/\s+/g, ' ')
+      for (const cond of [
+        "bm.member_type = 'admin'",
+        'bm.status = 1',
+        'm.status = 1',
+        "sib.member_type = 'admin'",
+        'sib.status = 1',
+        'b.status = 1',
+        'sib.brand_id <> $1',
+      ])
+        expect(sql).toContain(cond)
+    })
+    it('형제를 지정해도 소유 불명 파일·디자인은 막는다', async () => {
+      const rows = sourceRows()
+      rows.files.find((row) => row.file_key === key)!.owner_brand_id = null
+      rows.siblings = [{ id: '8' }]
+      let result = await prepare(rows, undefined, ['8'])
+      expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+        'ASSET_SCOPE_UNKNOWN',
+      ])
+      const rows2 = sourceRows()
+      Object.assign(rows2.contents.find((row) => row.id === '70')!, { owner_brand_id: null })
+      rows2.siblings = [{ id: '8' }]
+      result = await prepare(rows2, undefined, ['8'])
+      expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toContain(
+        'RESOURCE_SCOPE_MISMATCH'
+      )
+    })
+    it('형제를 주지 않으면 기존처럼 막는다', async () => {
+      const rows = sourceRows()
+      rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+      rows.siblings = [{ id: '8' }]
+      const result = await prepare(rows)
+      expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+        'ASSET_SCOPE_MISMATCH',
+      ])
+    })
+  })
+
+  it('scene 메타데이터 source 의 오프닝 주소는 남은 링크로 세지 않는다', async () => {
+    const read: OpeningObjectReader = async (input) =>
+      input.key === 'content_data/a.json'
+        ? Buffer.from(JSON.stringify({ ...textScene(), source: 'https://opening.work' }))
+        : readObject(input)
+    const result = await prepareOpeningCustomer(fakeSource().client, read, {
+      brandId: '9',
+      webOrigin: 'https://opening.work',
+    })
+    expect(result.summary.postings.warnings.OPENING_URL_REMAINS).toBeUndefined()
+  })
+
+  it('scene 요소 링크의 오프닝 주소는 계속 남은 링크로 센다', async () => {
+    const read: OpeningObjectReader = async (input) => {
+      if (input.key !== 'content_data/a.json') return readObject(input)
+      const scene = textScene() as { elements: Record<string, unknown>[] }
+      scene.elements = scene.elements.map((el) => ({ ...el, link: 'https://opening.work/brand/1' }))
+      return Buffer.from(JSON.stringify({ ...scene, source: 'https://opening.work' }))
+    }
+    const result = await prepareOpeningCustomer(fakeSource().client, read, {
+      brandId: '9',
+      webOrigin: 'https://opening.work',
+    })
+    expect(result.summary.postings.warnings.OPENING_URL_REMAINS).toBeGreaterThan(0)
   })
 
   it.each([
