@@ -710,6 +710,20 @@ describe('이미지·scene 정제', () => {
     expect(diag).toEqual(['other|unknown|ASSET_UNSUPPORTED_TYPE', 'image/png|png|OK'])
   })
 
+  it('단일 AVIF 자산은 해상도를 유지한 결정적 PNG로 변환한다', async () => {
+    const avif = await sharp(await png(7))
+      .avif()
+      .toBuffer()
+    const first = await cleanImage(avif)
+    const second = await cleanImage(avif)
+    expect(first.mimeType).toBe('image/png')
+    expect(Buffer.from(first.bytes).equals(Buffer.from(second.bytes))).toBe(true)
+    const input = await sharp(avif).metadata()
+    const output = await sharp(first.bytes).metadata()
+    expect(output).toMatchObject({ format: 'png', width: input.width, height: input.height })
+    expect(output.exif).toBeUndefined()
+  })
+
   it('독립 SVG 자산도 PNG가 된다', async () => {
     const clean = await cleanImage(Buffer.from(svg))
     expect(clean.mimeType).toBe('image/png')
@@ -927,6 +941,65 @@ describe('prepare', () => {
     ]
     result = await prepare(rows)
     expect(result.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+  })
+
+  it('사람이 확인한 정확한 파일 키·소유 브랜드만 예외 허용한다', async () => {
+    const rows = sourceRows()
+    const key = 'posting_detail/u/사람이름.png'
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+    const ref = createHash('sha256').update(key).digest('hex')
+    const review = reviewFile({ assetScopes: [{ ref, ownerBrandId: '8' }] })
+    const allowed = await prepare(rows, review)
+    expect(allowed.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '7'
+    const changedOwner = await prepare(rows, review)
+    expect(changedOwner.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_MISMATCH',
+    ])
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = null
+    const unknown = await prepare(rows, review)
+    expect(unknown.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_UNKNOWN',
+    ])
+  })
+
+  it('소유 정보 없는 공통 자산은 명시적으로 검토한 원본 바이트만 허용한다', async () => {
+    const rows = sourceRows()
+    const key = 'posting_detail/u/사람이름.png'
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = null
+    const raw = await readObject({ bucket: 'bucket', key })
+    const scope = {
+      ref: createHash('sha256').update(key).digest('hex'),
+      ownerBrandId: null,
+      sha256: createHash('sha256').update(raw).digest('hex'),
+    }
+    const result = await prepare(rows, reviewFile({ assetScopes: [scope] }))
+    expect(result.manifest.postings.find((p) => p.id === '1')?.status).toBe('included')
+    const stale = await prepare(
+      rows,
+      reviewFile({ assetScopes: [{ ...scope, sha256: 'a'.repeat(64) }] })
+    )
+    expect(stale.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_REVIEW_STALE',
+    ])
+    await expect(
+      prepare(rows, reviewFile({ assetScopes: [{ ref: scope.ref, ownerBrandId: null }] }))
+    ).rejects.toThrow('REVIEW_FILE_INVALID')
+    rows.files.find((row) => row.file_key === key)!.owner_brand_id = '8'
+    const otherOwner = await prepare(rows, reviewFile({ assetScopes: [scope] }))
+    expect(otherOwner.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_MISMATCH',
+    ])
+  })
+
+  it('다른 파일 키의 소유권 검토로 허용 범위를 넓히지 않는다', async () => {
+    const rows = sourceRows()
+    rows.files.find((row) => row.file_key === 'posting_detail/u/사람이름.png')!.owner_brand_id = '8'
+    const review = reviewFile({ assetScopes: [{ ref: 'a'.repeat(64), ownerBrandId: '8' }] })
+    const result = await prepare(rows, review)
+    expect(result.manifest.postings.find((p) => p.id === '1')?.reasons).toEqual([
+      'ASSET_SCOPE_MISMATCH',
+    ])
   })
 
   describe('형제 브랜드(같은 관리자) 소유 파일·디자인', () => {

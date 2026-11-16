@@ -22,7 +22,8 @@
  *   2) 내용을 읽고 승인할 것만 담은 파일을 만든다(저장소 밖):
  *      { "sourceSpaceId": "123", "reviewer": "이름", "reviewedAt": "2026-11-01",
  *        "items": [{ "kind": "template", "id": "40", "contentHash": "<candidates.json 값>" }],
- *        "images": ["<sha256>"] }
+ *        "images": ["<sha256>"],
+ *        "assetScopes": [{ "ref": "<sha256(검토한 원본 파일 키)>", "ownerBrandId": "<원본 소유 브랜드>" }] }
  *   3) prepare ... --review-file review.json --out /secure/dir --write-packets
  *      승인은 내용 해시에 묶이므로 내용이 바뀌면 다시 검토해야 한다(REVIEW_STALE).
  *   검토 폴더에는 연락처 원문이 있다. 소유자 전용(0700/0600)으로 쓰며 끝나면 지운다.

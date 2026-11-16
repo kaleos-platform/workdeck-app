@@ -519,16 +519,27 @@ async function buildCustomerPackets(
       !file.storage
     )
       throw Error('ASSET_FILE_REJECTED')
+    const reviewedAsset = review?.assetScopes.get(hashKey(key))
     // 섹션이 직접 가리키는 키는 다른 고객 파일일 수 있어 소유를 확인한다.
     if (owned && file.owner_brand_id !== brand.id && !(allowShared && source.sharedKeys.has(key))) {
-      if (!ownedBySibling(file.owner_brand_id))
+      const reviewedOwner =
+        file.owner_brand_id !== null && reviewedAsset?.ownerBrandId === file.owner_brand_id
+      const reviewedShared = file.owner_brand_id === null && reviewedAsset?.ownerBrandId === null
+      if (!ownedBySibling(file.owner_brand_id) && !reviewedOwner && !reviewedShared)
         throw Error(file.owner_brand_id ? 'ASSET_SCOPE_MISMATCH' : 'ASSET_SCOPE_UNKNOWN')
-      siblingFiles.add(key)
+      if (ownedBySibling(file.owner_brand_id)) siblingFiles.add(key)
     }
     if (!objects.has(key)) objects.set(key, readObject({ bucket: file.storage, key }))
-    return (objects.get(key) as Promise<Uint8Array>).catch(() => {
+    const bytes = await (objects.get(key) as Promise<Uint8Array>).catch(() => {
       throw Error('ASSET_READ_FAILED')
     })
+    if (
+      file.owner_brand_id === null &&
+      reviewedAsset?.ownerBrandId === null &&
+      createHash('sha256').update(bytes).digest('hex') !== reviewedAsset.sha256
+    )
+      throw Error('ASSET_REVIEW_STALE')
+    return bytes
   }
   const stripped = new Map<string, Promise<Asset>>()
   // design: 디자인 블록의 내보낸 이미지 — 편집기 저장 한도에 맞춰 JPEG로 압축한다.

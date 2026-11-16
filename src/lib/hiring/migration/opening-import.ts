@@ -461,6 +461,7 @@ export function safeMigrationSummary(summary: object) {
     'ASSET_FILE_REJECTED',
     'ASSET_SCOPE_MISMATCH',
     'ASSET_SCOPE_UNKNOWN',
+    'ASSET_REVIEW_STALE',
     'ASSET_READ_FAILED',
     'ASSET_KEY_MISSING',
     'ASSET_TOO_LARGE',

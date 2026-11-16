@@ -54,12 +54,32 @@ async function rasterizeSvg(bytes: Uint8Array) {
   }
 }
 
+// AVIF 컨테이너만 후보로 받고 실제 AV1·단일 프레임 여부는 디코더로 확인한다.
+const isAvif = (bytes: Uint8Array) =>
+  Buffer.from(bytes.subarray(4, 8)).toString('ascii') === 'ftyp' &&
+  Buffer.from(bytes.subarray(8, 32)).includes(Buffer.from('avif'))
+
 export type CleanImage = { bytes: Uint8Array; mimeType: ImageMime }
 
 export async function cleanImage(bytes: Uint8Array): Promise<CleanImage> {
   const mimeType = sniffImage(bytes)
   if (mimeType) return { bytes: await stripImageMetadata(bytes, mimeType), mimeType }
   if (isSvg(bytes)) return { bytes: await rasterizeSvg(bytes), mimeType: 'image/png' }
+  if (isAvif(bytes)) {
+    try {
+      const metadata = await sharp(bytes).metadata()
+      if (metadata.compression !== 'av1' || (metadata.pages ?? 1) !== 1)
+        throw Error('ASSET_UNSUPPORTED_TYPE')
+      // 원래 방향·투명도를 보존하며 메타데이터 없는 PNG로 바꾼다.
+      return {
+        bytes: new Uint8Array(await sharp(bytes).rotate().png().toBuffer()),
+        mimeType: 'image/png',
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message === 'ASSET_UNSUPPORTED_TYPE') throw error
+      throw undecodable(error)
+    }
+  }
   throw Error('ASSET_UNSUPPORTED_TYPE')
 }
 
@@ -84,7 +104,8 @@ export async function lossyCompress(clean: CleanImage, to: 'webp' | 'jpeg'): Pro
 }
 
 export const sniffLabel = (bytes: Uint8Array) =>
-  sniffImage(bytes)?.replace('image/', '') ?? (isSvg(bytes) ? 'svg' : 'unknown')
+  sniffImage(bytes)?.replace('image/', '') ??
+  (isSvg(bytes) ? 'svg' : isAvif(bytes) ? 'avif' : 'unknown')
 
 // 형식 진단용. 값·id 없이 선언 형식|실제 형식|결과만 남긴다.
 export function imageDiagKey(declared: string, sniffed: string, outcome: string) {
