@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Mode = 'WORKDECK' | 'BYOK'
 type Provider = 'OPENAI' | 'ANTHROPIC' | 'GEMINI'
@@ -82,7 +82,7 @@ export function AiSettingsForm() {
   async function save() {
     setSaving(true)
     try {
-      const res = await fetch('/api/settings/ai', {
+      const res = await fetchWithMfa('/api/settings/ai', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -124,7 +124,7 @@ export function AiSettingsForm() {
   async function disconnect() {
     setSaving(true)
     try {
-      const res = await fetch('/api/settings/ai', { method: 'DELETE' })
+      const res = await fetchWithMfa('/api/settings/ai', { method: 'DELETE' })
       if (await redirectIfMfaRequired(res)) return
       if (!res.ok) throw new Error('해제에 실패했습니다')
       toast.success('저장된 키를 삭제하고 워크덱 제공 AI로 전환했습니다.')

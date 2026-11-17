@@ -1,7 +1,17 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AgentTokensCard } from '../agent-tokens-card'
 
-jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn(async () => false) }))
+// fetchWithMfa 는 실제 구현을 쓰고, 단계 인증 다이얼로그·세션만 대체한다.
+jest.mock('@/lib/auth/mfa-client', () => ({
+  ...jest.requireActual('@/lib/auth/mfa-client'),
+  redirectIfMfaRequired: jest.fn(async () => false),
+}))
+jest.mock('@/components/auth/mfa-step-up-dialog', () => ({
+  requestMfaStepUp: jest.fn(async () => 'verified'),
+}))
+jest.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({ auth: { getSession: jest.fn(async () => ({})) } }),
+}))
 
 const res = (body: unknown, status = 200) => {
   const r = { ok: status < 400, status, json: async () => body, clone: () => r }
@@ -85,4 +95,28 @@ it('Space 이름을 못 받으면 대화상자 제목은 기존 문구다', asyn
   await screen.findByText('테스트 에이전트')
   fireEvent.click(screen.getByRole('button', { name: '토큰 발급' }))
   expect(await screen.findByRole('heading', { name: '토큰 발급' })).toBeInTheDocument()
+})
+
+it('권한 저장이 MFA_REQUIRED 여도 인증 후 같은 PATCH 를 다시 보내 저장하고 닫는다', async () => {
+  const base = fetchMock.getMockImplementation()!
+  let patches = 0
+  fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+    if (url === '/api/spaces/sp-1/agents/ag1' && init?.method === 'PATCH') {
+      patches += 1
+      return patches === 1 ? res({ code: 'MFA_REQUIRED' }, 403) : res({ ok: true })
+    }
+    return base(url, init)
+  })
+  render(<AgentTokensCard />)
+  await screen.findByText('테스트 에이전트')
+  fireEvent.click(screen.getByRole('button', { name: '권한 수정' }))
+  fireEvent.click(await screen.findByRole('button', { name: '저장' }))
+  await waitFor(() => expect(patches).toBe(2))
+  const bodies = fetchMock.mock.calls.filter((c) => c[1]?.method === 'PATCH').map((c) => c[1].body)
+  expect(bodies[0]).toBe(bodies[1])
+  await waitFor(() =>
+    expect(screen.queryByRole('button', { name: '저장' })).not.toBeInTheDocument()
+  )
+  const listCalls = fetchMock.mock.calls.filter((c) => c[0] === '/api/spaces/sp-1/agents')
+  expect(listCalls.length).toBeGreaterThanOrEqual(2)
 })

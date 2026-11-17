@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { SCOPES } from '@/lib/agent/identity/principal'
 import { flaggedTokenExpiry } from '@/lib/integrations/attention'
 import { CopyCodeBlock } from './copy-code-block'
@@ -105,7 +105,7 @@ export function AgentTokensCard({ onChanged }: { onChanged?: () => void }) {
     setError(null)
     setPending(true)
     try {
-      const res = await fetch(`/api/spaces/${spaceId}/agents${path}`, {
+      const res = await fetchWithMfa(`/api/spaces/${spaceId}/agents${path}`, {
         headers: { 'Content-Type': 'application/json' },
         ...init,
       })

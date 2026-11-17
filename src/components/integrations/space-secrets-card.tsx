@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { isExpiringSoon } from '@/lib/integrations/attention'
 
 type SecretConfig = {
@@ -114,7 +114,10 @@ export function SpaceSecretsCard({ onChanged }: { onChanged?: () => void }) {
   async function call(path: string, init: RequestInit, failMessage: string) {
     setPending(true)
     try {
-      const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...init })
+      const res = await fetchWithMfa(path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...init,
+      })
       if (await redirectIfMfaRequired(res)) return { ok: false as const, message: null }
       const body = await res.json().catch(() => null)
       if (!res.ok) return { ok: false as const, message: body?.message ?? failMessage }
