@@ -4,7 +4,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
 import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { buttonBlockStyle } from '@/lib/hiring/button-color'
-import { formatPay, formatWorkDays, formatWorkTime } from '@/components/hiring-public/posting-labels'
+import {
+  formatPay,
+  formatWorkDays,
+  formatWorkTime,
+} from '@/components/hiring-public/posting-labels'
 import { PostingStatusBadge, type PostingStatus } from './status-badge'
 import {
   getPostingAssetPublicUrl,
@@ -16,6 +20,7 @@ import {
 
 type Props = {
   status: PostingStatus
+  closingDate?: string | null
   title: string
   positions: WizardPositionData[]
   stores: WizardStore[]
@@ -27,6 +32,7 @@ type Props = {
 // 공개 공고 페이지 미러 — wizard 로컬 상태에서 즉시 렌더.
 export function PostingPreview({
   status,
+  closingDate,
   title,
   positions,
   stores,
@@ -43,7 +49,7 @@ export function PostingPreview({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <div className="text-xs font-medium text-muted-foreground">공고 미리보기</div>
-            <PostingStatusBadge status={status} />
+            <PostingStatusBadge status={status} closingDate={closingDate} />
           </div>
         </div>
 
@@ -85,7 +91,7 @@ export function ContentBlockPreview({
 }) {
   if (c.contentType === 'image' || c.contentType === 'design') {
     if (!c.imagePath) return null
-    // eslint-disable-next-line @next/next/no-img-element
+
     const img = (
       <img src={getPostingAssetPublicUrl(c.imagePath)} alt="" className="w-full rounded-md" />
     )

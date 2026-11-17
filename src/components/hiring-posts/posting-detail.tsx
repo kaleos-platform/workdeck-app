@@ -116,7 +116,7 @@ export function PostingDetail({
             </Link>
           </Button>
           <h1 className="text-2xl font-semibold">{posting.title}</h1>
-          <PostingStatusBadge status={status} />
+          <PostingStatusBadge status={status} closingDate={closingDate} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {locked && (
@@ -249,7 +249,7 @@ export function PostingDetail({
                   ? '접수 시작 전 · 공고를 발행해야 지원서를 받을 수 있습니다.'
                   : status === 'ACTIVE' && !expired
                     ? '지원서 접수 중'
-                    : '접수 마감 · 현재 지원서를 받지 않습니다.'}
+                    : '마감 · 현재 지원서를 받지 않습니다.'}
               </p>
               {expired && (
                 <p className="text-sm font-semibold text-destructive">

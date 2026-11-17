@@ -25,6 +25,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { closePosting } from './close-posting'
 import { CloseConfirmDialog } from './close-confirm-dialog'
 import { ExtendDeadlineDialog } from './extend-deadline-dialog'
+import { getPostingDisplayStatus } from '@/lib/hiring/posting-status'
 import { canExtendDeadline } from './extend-posting'
 import { NewPostingButton } from './new-posting-button'
 import { JOB_TYPE_LABELS } from './build-types'
@@ -46,7 +47,6 @@ export type PostingRow = {
   closingDate: string | null
   createdAt: string
   applicantCount: number
-  receptionExpired: boolean
 }
 
 const STATUS_TABS: Array<{ value: 'ALL' | PostingStatus; label: string }> = [
@@ -285,8 +285,7 @@ export function PostingsTable({
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        상태 탭은 발행 상태 기준입니다. 마감일이 지난 공고는 접수가 중단되며, 목록을 새로고침해 접수
-        상태를 확인할 수 있습니다.
+        마감일이 지난 공고는 「마감」으로 표시되며 지원서를 받지 않습니다.
       </p>
 
       <div className="rounded-lg border">
@@ -323,29 +322,24 @@ export function PostingsTable({
               postings.map((p) => (
                 <TableRow
                   key={p.id}
-                  className="cursor-pointer hover:bg-muted/40"
+                  className="group cursor-pointer hover:bg-muted/40"
                   onClick={(e) => {
                     // 링크·버튼·메뉴 클릭은 각자 처리하므로 행 클릭 이동과 겹치지 않게 한다.
                     if ((e.target as HTMLElement).closest('a, button, [role="menuitem"]')) return
                     router.push(getRecruitingPostingDetailPath(p.id))
                   }}
                 >
-                  <TableCell className="sticky left-0 z-10 bg-background font-medium">
+                  <TableCell className="sticky left-0 z-10 bg-background font-medium group-hover:bg-[color-mix(in_oklab,var(--muted)_40%,var(--background))]">
                     <Link
                       href={getRecruitingPostingDetailPath(p.id)}
-                      className="block truncate hover:underline"
+                      className="block truncate"
                       title={p.title}
                     >
                       {p.title}
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col items-start gap-1">
-                      <PostingStatusBadge status={p.status} />
-                      {p.receptionExpired && (
-                        <span className="text-xs font-semibold text-destructive">접수 마감</span>
-                      )}
-                    </div>
+                    <PostingStatusBadge status={p.status} closingDate={p.closingDate} />
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     <Link
@@ -386,7 +380,7 @@ export function PostingsTable({
                           )}
                           복사
                         </DropdownMenuItem>
-                        {p.status === 'ACTIVE' && !p.receptionExpired && (
+                        {getPostingDisplayStatus(p.status, p.closingDate) === 'OPEN' && (
                           <DropdownMenuItem onSelect={() => handleCopyApplyLink(p.uuid)}>
                             <Link2 className="size-4" />
                             지원서 링크 복사

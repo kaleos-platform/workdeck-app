@@ -38,7 +38,6 @@ it('행 제목과 지원자 수는 링크이고 메뉴에 발행 공고용 항�
     closingDate: null,
     createdAt: '2026-11-01T00:00:00.000Z',
     applicantCount: 3,
-    receptionExpired: false,
   }
   const fetchMock = jest
     .fn()
@@ -138,7 +137,6 @@ const baseRow: PostingRow = {
   closingDate: '2099-12-31T00:00:00.000Z',
   createdAt: '2026-11-01T00:00:00.000Z',
   applicantCount: 0,
-  receptionExpired: false,
 }
 
 async function menuNames(row: PostingRow) {
@@ -159,7 +157,7 @@ it('행 메뉴 항목은 상태와 접수 만료 여부에 따라 달라진다',
     '마감일 연장',
     '마감',
   ])
-  expect(await menuNames({ ...baseRow, receptionExpired: true })).toEqual([
+  expect(await menuNames({ ...baseRow, closingDate: '2000-01-01T00:00:00.000Z' })).toEqual([
     '수정',
     '복사',
     '마감일 연장',
