@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { mfaStepUpPath } from '@/lib/auth/mfa-policy'
 
 type Status = {
@@ -51,7 +51,7 @@ export function OsmuConnections() {
   async function send(method: 'PUT' | 'DELETE', body?: object, done?: string) {
     setBusy(true)
     try {
-      const res = await fetch(API, {
+      const res = await fetchWithMfa(API, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: body ? JSON.stringify(body) : undefined,

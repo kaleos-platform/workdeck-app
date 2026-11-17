@@ -5,6 +5,7 @@ import { OsmuConnections } from '../osmu-connections'
 jest.mock('sonner', () => ({ toast: { error: jest.fn(), success: jest.fn() } }))
 const redirect = jest.fn()
 jest.mock('@/lib/auth/mfa-client', () => ({
+  fetchWithMfa: (...a: Parameters<typeof fetch>) => fetch(...a),
   redirectIfMfaRequired: async (res: {
     status: number
     clone: () => { json: () => Promise<{ code?: string }> }

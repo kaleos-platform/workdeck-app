@@ -36,7 +36,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { useCurrentSpaceName } from '@/hooks/use-current-space'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type ApiCredentialResponse = {
   vendorId: string
@@ -141,7 +141,7 @@ export function CoupangApiCard() {
     }
     setIsSaving(true)
     try {
-      const res = await fetch('/api/collection/api-credentials', {
+      const res = await fetchWithMfa('/api/collection/api-credentials', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -186,7 +186,7 @@ export function CoupangApiCard() {
   async function handleDelete() {
     setIsDeleting(true)
     try {
-      const res = await fetch('/api/collection/api-credentials', { method: 'DELETE' })
+      const res = await fetchWithMfa('/api/collection/api-credentials', { method: 'DELETE' })
       if (await redirectIfMfaRequired(res)) return
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))

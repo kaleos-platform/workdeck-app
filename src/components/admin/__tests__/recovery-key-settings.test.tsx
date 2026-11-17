@@ -1,7 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { RecoveryKeySettings } from '../recovery-key-settings'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
-jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn() }))
+jest.mock('@/lib/auth/mfa-client', () => ({
+  fetchWithMfa: (...a: Parameters<typeof fetch>) => fetch(...a),
+  redirectIfMfaRequired: jest.fn(),
+}))
 const missing = {
   keyId: 'k1',
   stored: false,

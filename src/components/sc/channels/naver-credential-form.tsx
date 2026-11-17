@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Upload, AlertCircle, CheckCircle2, RefreshCw, Info } from 'lucide-react'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Props = {
   channelId: string
@@ -77,7 +77,7 @@ export function NaverCredentialForm({ channelId, hasExistingCredential = false }
 
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/sc/channels/${channelId}/credentials`, {
+      const res = await fetchWithMfa(`/api/sc/channels/${channelId}/credentials`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

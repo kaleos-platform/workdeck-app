@@ -2,7 +2,10 @@ import { act, render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SpaceSecretsCard } from '../space-secrets-card'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
-jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn(async () => false) }))
+jest.mock('@/lib/auth/mfa-client', () => ({
+  fetchWithMfa: (...a: Parameters<typeof fetch>) => fetch(...a),
+  redirectIfMfaRequired: jest.fn(async () => false),
+}))
 
 const KEY = 'SK_TEST_0123456789abcdef'
 const res = (body: unknown, status = 200) => {

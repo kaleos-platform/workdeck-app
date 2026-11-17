@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Kind = 'COOKIE' | 'OAUTH' | 'API_KEY'
 
@@ -54,7 +54,7 @@ export function CredentialForm({ channelId }: Props) {
 
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/sc/channels/${channelId}/credentials`, {
+      const res = await fetchWithMfa(`/api/sc/channels/${channelId}/credentials`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
