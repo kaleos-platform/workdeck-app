@@ -32,7 +32,6 @@ const AI_FEATURE: DeckLandingFeature = {
   image: {
     src: '/marketing/recruiting/ai.webp',
     alt: 'AI 대화에서 공고별 지원 현황을 조회하고 공고 초안을 제안하면, 워크덱 승인 대기에 올라오는 예시',
-    caption: 'Claude는 Anthropic, ChatGPT는 OpenAI, Gemini는 Google의 상표입니다.',
     width: 1600,
     height: 1000,
   },
@@ -173,8 +172,6 @@ export const recruitingLanding: DeckLandingContent = {
       image: {
         src: '/marketing/recruiting/posting.webp',
         alt: '공고 상세 페이지와 간편 지원서, 공고 링크와 HTML 코드를 알바몬·사람인·알바천국·잡코리아 공고 상세에 붙여넣는 예시',
-        caption:
-          '알바몬·사람인·알바천국·잡코리아 로고는 각 사의 상표이며, 워크덱과 제휴 관계가 아닙니다.',
         width: 1600,
         height: 1000,
       },

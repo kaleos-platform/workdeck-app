@@ -20,7 +20,7 @@
 - `public/marketing/recruiting/*.webp` — 결과 5장 교체(파일명 유지 or 새 이름 + 이전 파일 삭제)
 - `docs/design/illustrations/recruiting/assets/logos/*` + `SOURCES.md` — 외부 서비스 공식 로고(출처 URL 기록). 일러스트 webp에 구워지므로 `public/`에는 두지 않음
 - `src/lib/marketing/decks/recruiting.ts` — image width/height·alt, AI 문구(연결 확인 결과 반영), 상표 소유 문구 위치
-- `src/components/marketing/landing/feature-rows.tsx` — `image.caption`을 figcaption으로 렌더(상표 고지)
+- ~~feature-rows 상표 고지 캡션~~ — 사용자 결정(11-18)으로 랜딩 상표 고지 제거, 출처·소유는 `SOURCES.md`에만 기록
 
 ## 검증
 
@@ -61,4 +61,4 @@
 - 사용자 「계속 진행」(시안 1 회신 대기 중 받은 지시)으로 나머지 4장 제작, 운영 반영 전 5장 확인 요청. 같은 톤(800×500, 2배 렌더 1600×1000, webp 58~82KB).
 - 링크·지원서: 공개 공고/지원서 실화면(qa2 평택 공고) 기준, HTML 조각은 `render-embed-html` 출력 구조, 로고 4개 원본 그대로.
 - 지원자: 실제 탭·「N개 선택됨」 일괄 상태 변경 바·「메모 남기기」. 이메일: `mail.ts` 실제 제목·본문·공고별 메일 설정 라벨. AI: 중립 채팅 UI + 승인 대기 카드(실제 문구), 「승인 후 작성 중 공고」 명시.
-- 상표 고지: 링크 행·AI 행 이미지 캡션, 테스트로 고정.
+- 상표 고지: 사용자 결정(11-18)으로 랜딩 이미지 밑 고지 문구 제거.

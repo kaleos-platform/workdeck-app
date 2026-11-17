@@ -24,14 +24,6 @@ describe('recruiting 랜딩 데이터', () => {
     }
   })
 
-  // 일러스트에 외부 서비스 로고가 들어간 행은 상표 소유 고지를 함께 둔다(제휴 오해 방지)
-  it('외부 로고가 든 이미지에 상표 고지를 붙인다', () => {
-    const caption = (title: string) =>
-      recruitingLanding.features.find((f) => f.title === title)?.image?.caption ?? ''
-    expect(caption('공고 링크 & 간편 지원서')).toMatch(/알바몬.*사람인.*알바천국.*잡코리아.*상표/)
-    expect(caption('AI 연동')).toMatch(/Anthropic.*OpenAI.*Google.*상표/)
-  })
-
   it('요금 페이지가 쓰는 대표 스크린샷을 유지한다', () => {
     const shot = recruitingLanding.screenshots?.[0]
     expect(shot).toBeDefined()
