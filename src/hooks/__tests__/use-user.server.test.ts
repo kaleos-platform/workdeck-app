@@ -15,19 +15,32 @@ test('사용자와 멤버십은 렌더링 안에서 공유하고 다음 요청�
     let membershipCalls = 0
     const originalLoad = Module._load
     let userModule
+    let membershipModule
+    let cookieModule
     Module._load = function (id, ...args) {
       if (id === '@/lib/supabase/server') return { createClient: async () => ({ auth: { getUser: async () => {
         userCalls++
         return { data: { user: userId ? { id: userId } : null } }
       } } }) }
       if (id === '@/hooks/use-user') return userModule.exports
-      if (id === '@/lib/prisma') return { prisma: { spaceMember: { findFirst: async ({ where }) => {
+      // 멤버십 해석은 실제 current-space 모듈(cache 포함)을 쓰고 DB 조회 횟수만 센다
+      if (id === '@/lib/prisma') return { prisma: { spaceMember: { findMany: async ({ where }) => {
         membershipCalls++
-        return { space: { id: where.userId, name: where.userId }, role: 'OWNER' }
+        return [{ space: { id: where.userId, name: where.userId }, role: 'OWNER', createdAt: new Date(0) }]
       } } } }
+      if (id === '@/lib/spaces/current-space') return membershipModule.exports
+      if (id === '@/lib/spaces/current-space-cookie' || id === './current-space-cookie') return cookieModule.exports
+      if (id === 'server-only') return {}
+      // resolveSpaceContext 경로가 쓰지 않는 의존성 — 실제 모듈은 DB·암호화를 끌어온다
+      if (id === '@/lib/billing/entitlement') return { assertDeckWritable: async () => null }
+      if (id === '@/lib/worker-auth') return {}
+      if (id === '@/lib/inv/resolve-coupang-workspace') return {}
       if (id === '@/lib/coupang-ads/server-timing') return { measureCoupangAds: (_name, fn) => fn() }
       if (id === 'next/server') return { NextResponse: { json: (_body, init) => ({ status: init.status }) } }
-      if (id === 'next/headers') return { headers: async () => new Headers() }
+      if (id === 'next/headers') return {
+        headers: async () => new Headers(),
+        cookies: async () => ({ get: () => undefined }),
+      }
       return originalLoad.call(this, id, ...args)
     }
     function load(file) {
@@ -40,6 +53,8 @@ test('사용자와 멤버십은 렌더링 안에서 공유하고 다음 요청�
       }).outputText, path)
       return m
     }
+    cookieModule = load('src/lib/spaces/current-space-cookie.ts')
+    membershipModule = load('src/lib/spaces/current-space.ts')
     userModule = load('src/hooks/use-user.ts')
     const { getUser } = userModule.exports
     const { resolveSpaceContext } = load('src/lib/api-helpers.ts').exports

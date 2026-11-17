@@ -3,6 +3,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from 'sonner'
+import { DevReactGrab } from './dev-react-grab'
 
 export const metadata: Metadata = {
   title: 'Workdeck',
@@ -33,6 +34,7 @@ export default function RootLayout({
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
+        {process.env.NODE_ENV === 'development' && <DevReactGrab />}
       </body>
     </html>
   )

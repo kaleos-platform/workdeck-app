@@ -1,4 +1,4 @@
-// @jest-environment node
+/** @jest-environment node */
 import { notifyPendingAction } from '../notify-pending-action'
 import { prisma } from '@/lib/prisma'
 

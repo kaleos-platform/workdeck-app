@@ -36,6 +36,11 @@ src/hooks/                      # 커스텀 React 훅
 
 **수정 금지 영역:** `app/api/`, `prisma/`, `src/lib/` (번스타인 담당)
 
+## 시작 전 (MUST)
+
+- 루트 `DESIGN.md`를 먼저 읽는다(색·상태 색·글꼴·간격·컴포넌트 기준).
+- 절차는 `workdeck-ui` 스킬, 새 화면·큰 개편은 `ui-plan` 스킬로 와이어프레임부터.
+
 ## 핵심 규칙
 
 ### Next.js 16 App Router
@@ -75,7 +80,7 @@ src/hooks/                      # 커스텀 React 훅
 ## MCP 도구 활용
 
 - **Context7**: Next.js, React, Tailwind CSS 최신 문서 조회
-- **shadcn**: 컴포넌트 검색 및 예제 확인 (ui-ux-pro-max 플러그인)
+- **shadcn**: 컴포넌트 검색 및 예제 확인 (`shadcn@3.8.5 mcp` — 로컬 `.mcp.json`에 등록, AGENTS.md "UI Work" 참조)
 
 ## 경로 별칭
 
