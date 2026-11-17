@@ -111,6 +111,21 @@ export async function resolveUserPrincipal(
 }
 
 /**
+ * OAuth access token 의 세션이 아직 살아 있는지. 사용자가 계정 설정에서 AI 앱 연결을 해제하면(revokeGrant)
+ * Supabase 가 그 클라이언트의 세션을 지우므로, 서명이 유효한 토큰도 만료 전에 즉시 막힌다.
+ * Supabase `/user` 의 OAuth 토큰 허용은 임시 호환이라 쓰지 않고 auth.sessions 를 직접 본다.
+ */
+async function oauthSessionAlive(sessionId: unknown, userId: string, clientId: string) {
+  if (typeof sessionId !== 'string' || !sessionId) return false
+  const rows = await prisma.$queryRaw<{ ok: number }[]>`
+    SELECT 1 AS ok FROM auth.sessions
+    WHERE id = ${sessionId}::uuid AND user_id = ${userId}::uuid AND oauth_client_id = ${clientId}::uuid
+      AND (not_after IS NULL OR not_after > now())
+    LIMIT 1`
+  return rows.length > 0
+}
+
+/**
  * MCP bearer 토큰 검증기(withMcpAuth). 사람(Supabase OAuth JWT)과 에이전트(wdk_agt_) 토큰을 모두 받는다.
  * 결과 extra = { spaceId, actor, scopes } 또는 { authError }.
  *
@@ -154,6 +169,7 @@ export async function verifyToken(
     const expectedIss = `${(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '')}/auth/v1`
     if (!sub || !clientId) return undefined
     if (!audIncludes(claims.aud, 'authenticated') || claims.iss !== expectedIss) return undefined
+    if (!(await oauthSessionAlive(claims.session_id, sub, clientId))) return undefined
 
     const resolution = await resolveUserPrincipal(sub, clientId, req.headers.get(SPACE_HEADER))
     if (!resolution) return undefined
