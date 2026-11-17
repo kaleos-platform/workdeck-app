@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<!-- 모집 관리 랜딩 「지원자 통합 관리」 행 일러스트. 실제 지원자 목록(applications-table: 진행 단계 탭·검색·선택 후 상태 일괄 변경 바)과 메모 패널을 단순화해 재구성.
+     이름은 실제 목록처럼 가운데 글자를 가린 가상 데이터. 렌더: gstack browse viewport 860x560 --scale 2 → screenshot --selector .canvas → cwebp -->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: transparent; }
+  .canvas {
+    width: 800px; height: 500px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #eef4ff 0%, #f6f8fb 55%, #fff7ed 100%);
+    border-radius: 20px;
+  }
+  .panel {
+    position: absolute; background: #fff; border-radius: 16px;
+    box-shadow: 0 20px 50px -20px rgba(15, 23, 42, .35), 0 0 0 1px rgba(15, 23, 42, .06);
+  }
+  .list { left: 28px; top: 30px; width: 560px; height: 440px; padding: 18px 18px 0; overflow: hidden; }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; }
+  .h-title { font-size: 17px; font-weight: 800; color: #0f172a; }
+  .h-sub { font-size: 10px; color: #64748b; margin-top: 3px; }
+  .h-btns { display: flex; gap: 6px; }
+  .btn { font-size: 10px; font-weight: 700; border: 1px solid #e2e8f0; border-radius: 7px; padding: 5px 9px; color: #0f172a; }
+  .search { margin-top: 12px; display: flex; gap: 6px; }
+  .search div { flex: 1; height: 26px; border: 1px solid #e2e8f0; border-radius: 7px; font-size: 9.5px; color: #94a3b8; padding: 0 9px; display: flex; align-items: center; }
+  .search div:first-child { flex: 1.5; }
+  .tabs { margin-top: 12px; display: flex; gap: 16px; border-bottom: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
+  .tabs span { padding-bottom: 7px; }
+  .tabs .on { color: #0f172a; font-weight: 800; border-bottom: 2px solid #0f172a; }
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 10.5px; }
+  th { text-align: left; font-size: 9.5px; color: #64748b; font-weight: 600; padding: 8px 6px; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; color: #1e293b; white-space: nowrap; }
+  tr.sel td { background: #f5f8ff; }
+  .cb { width: 13px; height: 13px; border-radius: 3px; border: 1.5px solid #cbd5e1; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; font-weight: 800; vertical-align: middle; }
+  tr.sel .cb { background: #2563eb; border-color: #2563eb; }
+  .b { font-size: 9.5px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: #f1f5f9; color: #334155; }
+  .b.ok { background: #ecfdf5; color: #047857; box-shadow: inset 0 0 0 1px #a7f3d0; }
+  .b.no { background: #fef2f2; color: #b91c1c; box-shadow: inset 0 0 0 1px #fecaca; }
+  .date { color: #94a3b8; text-align: right; }
+  .memo-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; margin-left: 5px; vertical-align: 1px; }
+
+  /* 일괄 변경 바 */
+  .bar {
+    position: absolute; left: 112px; top: 418px; display: flex; align-items: center; gap: 10px;
+    background: #0f172a; color: #fff; border-radius: 12px; padding: 8px 10px 8px 14px; font-size: 11px; font-weight: 700;
+    box-shadow: 0 16px 30px -12px rgba(15, 23, 42, .6);
+  }
+  .bar .x { color: #94a3b8; font-weight: 500; }
+  .bar .sel { background: rgba(255,255,255,.1); border-radius: 7px; padding: 5px 10px; font-weight: 600; display: flex; gap: 14px; }
+  .bar .go { background: #fff; color: #0f172a; border-radius: 7px; padding: 5px 11px; }
+
+  /* 메모 */
+  .memo { left: 560px; top: 112px; width: 214px; padding: 14px; }
+  .m-name { font-size: 13px; font-weight: 800; color: #0f172a; }
+  .m-post { font-size: 9.5px; color: #64748b; margin-top: 2px; }
+  .m-stage { margin-top: 8px; display: flex; gap: 5px; }
+  .m-title { margin-top: 12px; font-size: 10.5px; font-weight: 700; color: #0f172a; }
+  .note { margin-top: 6px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 9px; padding: 8px 9px; font-size: 9.5px; line-height: 1.55; color: #334155; }
+  .note small { display: block; color: #94a3b8; font-size: 8.5px; margin-top: 3px; }
+  .m-input { margin-top: 8px; border: 1px solid #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.15); border-radius: 9px; padding: 8px 9px; font-size: 9.5px; color: #0f172a; }
+  .caret { display: inline-block; width: 1.5px; height: 11px; background: #2563eb; vertical-align: -2px; }
+  .m-save { margin-top: 7px; text-align: right; }
+  .m-save span { font-size: 9.5px; font-weight: 700; background: #18181b; color: #fff; padding: 5px 10px; border-radius: 7px; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="panel list">
+    <div class="head">
+      <div><div class="h-title">지원자 목록</div><div class="h-sub">전체 공고의 지원서를 한 곳에서 검토하고 단계를 관리합니다.</div></div>
+      <div class="h-btns"><span class="btn">엑셀 내보내기</span><span class="btn">블랙리스트</span></div>
+    </div>
+    <div class="search"><div>이름 · 휴대폰 끝 4자리</div><div>지원 근무지</div><div>지원 직무</div></div>
+    <div class="tabs"><span class="on">전체 16</span><span>서류 접수 8</span><span>면접 4</span><span>최종 제안 1</span><span>합격 2</span><span>불합격 1</span></div>
+    <table>
+      <tr><th style="width:26px"><span class="cb"></span></th><th>이름</th><th>공고</th><th>진행 상태</th></tr>
+      <tr class="sel"><td><span class="cb">✓</span></td><td>오*아</td><td>[화성] 식품 생산직 2교대 모집</td><td><span class="b">면접</span></td></tr>
+      <tr class="sel"><td><span class="cb">✓</span></td><td>강*준</td><td>[화성] 식품 생산직 2교대 모집</td><td><span class="b">면접</span></td></tr>
+      <tr><td><span class="cb"></span></td><td>윤*아</td><td>[화성] 식품 생산직 2교대 모집</td><td><span class="b ok">합격</span></td></tr>
+      <tr class="sel"><td><span class="cb">✓</span></td><td>한*린</td><td>[평택] 물류센터 상하차 주간조 모집</td><td><span class="b">면접</span></td></tr>
+      <tr><td><span class="cb"></span></td><td>신*원</td><td>[성수] 플래그십 매장 스태프 모집</td><td><span class="b">서류 접수</span></td></tr>
+      <tr><td><span class="cb"></span></td><td>정*준</td><td>[평택] 물류센터 상하차 주간조 모집</td><td><span class="b no">불합격</span></td></tr>
+      <tr><td><span class="cb"></span></td><td>서*나</td><td>[성수] 플래그십 매장 스태프 모집</td><td><span class="b">서류 접수</span></td></tr>
+    </table>
+  </div>
+
+  <div class="bar"><span>3개 선택됨</span><span class="sel">합격 <span class="x">▾</span></span><span class="go">적용</span><span class="x">✕</span></div>
+
+  <div class="panel memo">
+    <div class="m-name">강*준</div>
+    <div class="m-post">[화성] 식품 생산직 2교대 모집</div>
+    <div class="m-stage"><span class="b">면접</span></div>
+    <div class="m-title">메모</div>
+    <div class="note">야간 근무 가능, 월요일부터 출근 희망<small>김담당 · 11. 16.</small></div>
+    <div class="m-input">면접 참석 확인<span class="caret"></span></div>
+    <div class="m-save"><span>메모 남기기</span></div>
+  </div>
+</div>
+</body>
+</html>

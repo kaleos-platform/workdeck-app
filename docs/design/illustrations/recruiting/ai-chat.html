@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<!-- 모집 관리 랜딩 「AI 연동」 행 일러스트. 특정 앱을 흉내 내지 않은 중립 채팅 UI로, 워크덱 MCP 도구(hiring_get_application_stats·hiring_propose_posting_draft)
+     호출 결과와 워크덱 승인 대기 화면을 단순화해 재구성. 로고 출처: assets/logos/SOURCES.md(색·비율 변경 금지).
+     렌더: gstack browse viewport 860x560 --scale 2 → screenshot --selector .canvas → cwebp -->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: transparent; }
+  .canvas {
+    width: 800px; height: 500px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #eef4ff 0%, #f6f8fb 55%, #fff7ed 100%);
+    border-radius: 20px;
+  }
+  .panel {
+    position: absolute; background: #fff; border-radius: 16px;
+    box-shadow: 0 20px 50px -20px rgba(15, 23, 42, .35), 0 0 0 1px rgba(15, 23, 42, .06);
+  }
+  /* AI 로고 */
+  .ais { left: 28px; top: 28px; display: flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 999px; }
+  .ai { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #0f172a; }
+  .ai img { width: 18px; height: 18px; }
+  .sep { width: 1px; height: 14px; background: #e2e8f0; }
+  .ais-note { font-size: 10px; color: #64748b; font-weight: 600; margin-left: 4px; }
+
+  /* 채팅 */
+  .chat { left: 28px; top: 78px; width: 456px; height: 396px; padding: 16px 16px; overflow: hidden; }
+  .msg { display: flex; margin-bottom: 10px; }
+  .me { justify-content: flex-end; }
+  .bubble { max-width: 330px; font-size: 11px; line-height: 1.55; color: #0f172a; }
+  .me .bubble { background: #f1f5f9; border-radius: 14px 14px 4px 14px; padding: 8px 12px; }
+  .bot .bubble { padding: 2px 0; }
+  .avatar { width: 22px; height: 22px; border-radius: 50%; background: #0f172a; color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; margin-right: 8px; flex-shrink: 0; }
+  .tool { display: inline-flex; align-items: center; gap: 5px; font-size: 9px; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 3px 7px; margin-bottom: 6px; }
+  .tool b { color: #2563eb; }
+  .tool .ok { color: #047857; font-weight: 800; }
+  table { border-collapse: collapse; margin-top: 5px; font-size: 10px; width: 320px; }
+  th { text-align: left; color: #64748b; font-weight: 600; font-size: 9px; padding: 4px 6px; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 4px 6px; border-bottom: 1px solid #f1f5f9; }
+  td.n { text-align: right; font-weight: 700; }
+  th.n { text-align: right; }
+  .composer { position: absolute; left: 16px; right: 16px; bottom: 14px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 9px 12px; font-size: 10.5px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; }
+  .send { width: 22px; height: 22px; border-radius: 50%; background: #0f172a; color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+
+  /* 워크덱 승인 */
+  .approve { left: 498px; top: 172px; width: 274px; padding: 14px; }
+  .a-head { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: #0f172a; }
+  .w { width: 18px; height: 18px; border-radius: 5px; background: #2563eb; color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+  .a-sub { font-size: 9px; color: #64748b; margin-top: 3px; }
+  .item { margin-top: 10px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; }
+  .chips { display: flex; gap: 4px; }
+  .chip { font-size: 8.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; border: 1px solid #e2e8f0; color: #334155; }
+  .chip.wait { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+  .i-title { margin-top: 7px; font-size: 10.5px; font-weight: 700; color: #0f172a; line-height: 1.45; }
+  .i-meta { margin-top: 3px; font-size: 9px; color: #64748b; }
+  .acts { margin-top: 9px; display: flex; gap: 6px; justify-content: flex-end; }
+  .b { font-size: 9.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; }
+  .b.no { border: 1px solid #e2e8f0; color: #0f172a; }
+  .b.yes { background: #18181b; color: #fff; }
+  .result { margin-top: 9px; font-size: 9px; color: #047857; background: #ecfdf5; border-radius: 7px; padding: 6px 8px; line-height: 1.5; }
+  .lock { left: 498px; top: 418px; width: 274px; padding: 9px 12px; font-size: 9.5px; color: #475569; display: flex; gap: 6px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="panel ais">
+    <span class="ai"><img src="assets/logos/claude.svg" alt="" />Claude</span><span class="sep"></span>
+    <span class="ai"><img src="assets/logos/chatgpt.svg" alt="" />ChatGPT</span><span class="sep"></span>
+    <span class="ai"><img src="assets/logos/gemini.svg" alt="" />Gemini</span>
+    <span class="ais-note">MCP로 워크덱 연결</span>
+  </div>
+
+  <div class="panel chat">
+    <div class="msg me"><div class="bubble">최근 한 달 공고별 지원 현황 알려줘</div></div>
+    <div class="msg bot"><span class="avatar">✦</span><div class="bubble">
+      <span class="tool">워크덱 <b>지원 현황 조회</b><span class="ok">✓</span></span><br />
+      최근 30일 지원 <b>16건</b>입니다. 면접 단계가 4명 있어요.
+      <table>
+        <tr><th>공고</th><th class="n">지원</th><th class="n">면접</th><th class="n">합격</th></tr>
+        <tr><td>[평택] 물류센터 상하차 주간조</td><td class="n">7</td><td class="n">2</td><td class="n">1</td></tr>
+        <tr><td>[화성] 식품 생산직 2교대</td><td class="n">5</td><td class="n">1</td><td class="n">1</td></tr>
+        <tr><td>[성수] 플래그십 매장 스태프</td><td class="n">4</td><td class="n">1</td><td class="n">0</td></tr>
+      </table>
+    </div></div>
+    <div class="msg me"><div class="bubble">평택 공고처럼 야간조 공고 초안 만들어줘</div></div>
+    <div class="msg bot"><span class="avatar">✦</span><div class="bubble">
+      <span class="tool">워크덱 <b>공고 초안 제안</b><span class="ok">✓</span></span><br />
+      「[평택] 물류센터 야간조 상하차 모집」 초안을 워크덱 승인 대기에 올렸어요.
+    </div></div>
+    <div class="composer">메시지 입력<span class="send">↑</span></div>
+  </div>
+
+  <div class="panel approve">
+    <div class="a-head"><span class="w">W</span>승인 대기</div>
+    <div class="a-sub">AI가 요청한 작업을 검토하고 승인하거나 거부하세요.</div>
+    <div class="item">
+      <div class="chips"><span class="chip">모집 관리</span><span class="chip wait">대기중</span></div>
+      <div class="i-title">채용 공고 초안: 「[평택] 물류센터 야간조 상하차 모집」 (직무 1개)</div>
+      <div class="i-meta">에이전트 채용 도우미 AI · MCP</div>
+      <div class="acts"><span class="b no">거부</span><span class="b yes">승인</span></div>
+    </div>
+    <div class="result">승인하면 「작성 중」 공고로 만들어집니다. 게시는 직접 합니다.</div>
+  </div>
+  <div class="panel lock">🔒 지원자 이름·연락처는 AI에 보내지 않습니다</div>
+</div>
+</body>
+</html>
