@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { POST } from '../route'
 import { prisma } from '@/lib/prisma'
 import { resolveDeckContext } from '@/lib/api-helpers'
+import { defaultClosingDate } from '@/lib/hiring/postings'
 
 jest.mock('@/lib/api-helpers', () => ({
   resolveDeckContext: jest.fn(),
@@ -83,7 +84,7 @@ it('카드 제목·내용·순서와 직무·매장·지원서 설정을 보존�
   expect(data).toMatchObject({
     title: '원본 (복사)',
     status: 'DRAFT',
-    closingDate: null,
+    closingDate: defaultClosingDate(),
     authorUserId: 'current-user',
     applicationEntries: source.applicationEntries,
     notificationEnabled: false,

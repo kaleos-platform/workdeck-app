@@ -7,6 +7,11 @@ import { buildAppUrl } from '@/lib/domain'
 import { getHiringPublicPostingPath, RECRUITING_BASE_PATH } from '@/lib/deck-routes'
 import { parseApplicationEntriesSchema } from '@/lib/validations/hiring-applicants'
 import { idempotencyKeyFor } from './write-tools'
+import {
+  closedPostingWhere,
+  getPostingDisplayStatus,
+  openPostingWhere,
+} from '@/lib/hiring/posting-status'
 import { ToolUserError } from './errors'
 import type { ToolDefinition } from './types'
 
@@ -36,7 +41,7 @@ async function findPosting(spaceId: string, postingId: string) {
 const listPostings: ToolDefinition = {
   name: 'hiring_list_postings',
   description:
-    '채용 공고 목록을 반환합니다(제목·상태·마감일·발행일·지원자 수·공개 URL·편집 URL). status 로 DRAFT(작성 중)/ACTIVE(발행됨)/CLOSED(마감)/ARCHIVED(보관)를 거를 수 있습니다. 최신 작성순 최대 200개. 지원자 개인정보는 제공하지 않습니다.',
+    '채용 공고 목록을 반환합니다(제목·상태·화면 상태·마감일·발행일·지원자 수·공개 URL·편집 URL). status 로 DRAFT(작성 중)/ACTIVE(모집중: 발행됐고 마감일이 지나지 않음)/CLOSED(마감: 직접 마감했거나 마감일이 지남)/ARCHIVED(보관)를 거를 수 있습니다. 응답의 status 는 저장 상태이고 displayStatus(DRAFT/OPEN/CLOSED/ARCHIVED)가 웹 화면에 보이는 상태입니다(발행됨이어도 마감일이 지나면 CLOSED). 최신 작성순 최대 200개. 지원자 개인정보는 제공하지 않습니다.',
   inputSchema: { status: z.enum(STATUSES).optional() },
   mode: 'read',
   scope: 'hiring:read',
@@ -44,7 +49,14 @@ const listPostings: ToolDefinition = {
     await requireDeck(ctx.spaceId, DECK)
     const status = params.status as (typeof STATUSES)[number] | undefined
     const rows = await prisma.hiringPosting.findMany({
-      where: { spaceId: ctx.spaceId, ...(status && { status }) },
+      where: {
+        spaceId: ctx.spaceId,
+        ...(status === 'ACTIVE'
+          ? openPostingWhere()
+          : status === 'CLOSED'
+            ? closedPostingWhere()
+            : status && { status }),
+      },
       orderBy: { createdAt: 'desc' },
       take: 200,
       select: {
@@ -63,6 +75,7 @@ const listPostings: ToolDefinition = {
         id: p.id,
         title: p.title,
         status: p.status,
+        displayStatus: getPostingDisplayStatus(p.status, p.closingDate),
         closingDate: iso(p.closingDate),
         publishedAt: iso(p.publishedAt),
         createdAt: iso(p.createdAt),
@@ -77,7 +90,7 @@ const listPostings: ToolDefinition = {
 const getPosting: ToolDefinition = {
   name: 'hiring_get_posting',
   description:
-    '공고 하나의 모집 조건을 반환합니다: 제목·상태·마감일, 모집 직무별 근무 조건(고용 형태·급여·근무 요일/시간·인원·경력·학력·담당 업무·자격 요건), 모집 장소 이름, 지원서 항목(라벨·형식·필수 여부). 공고 수정 제안(hiring_propose_posting_update) 전에 현재 값을 확인할 때 쓰세요.',
+    '공고 하나의 모집 조건을 반환합니다: 제목·상태(status 저장 상태, displayStatus 화면 상태)·마감일, 모집 직무별 근무 조건(고용 형태·급여·근무 요일/시간·인원·경력·학력·담당 업무·자격 요건), 모집 장소 이름, 지원서 항목(라벨·형식·필수 여부). 공고 수정 제안(hiring_propose_posting_update) 전에 현재 값을 확인할 때 쓰세요.',
   inputSchema: { postingId: z.string() },
   mode: 'read',
   scope: 'hiring:read',
@@ -107,6 +120,7 @@ const getPosting: ToolDefinition = {
       id: posting.id,
       title: posting.title,
       status: posting.status,
+      displayStatus: getPostingDisplayStatus(posting.status, posting.closingDate),
       editable: posting.status === 'DRAFT' && !posting.publishedAt,
       closingDate: iso(posting.closingDate),
       publishedAt: iso(posting.publishedAt),

@@ -47,7 +47,10 @@ export type CreatePostingInput = z.infer<typeof createPostingSchema>
 export const updatePostingSchema = z.object({
   title: emptyToUndefined.pipe(z.string().min(1, '제목을 입력하세요').max(200)).optional(),
   closingDate: z
-    .preprocess((v) => (v === null || v === '' ? null : v), z.union([z.string(), z.null()]))
+    .preprocess(
+      (v) => (v === null || v === '' ? null : v),
+      z.union([z.string().date('올바른 마감일을 입력하세요'), z.null()])
+    )
     .optional(),
   notificationEnabled: z.boolean().optional(),
 })

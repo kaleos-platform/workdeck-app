@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { getDaysAgoStrKst, getTodayStrKst, parseYmdDateKst } from '@/lib/date-range'
 import { countApplicationsByStatus } from './applications'
+import { openPostingWhere } from './posting-status'
 
 /** 모집 관리 홈 요약 — 모든 조회는 spaceId·deletedAt 으로 스코프하고 이름은 마스킹값만 읽는다. */
 export async function getRecruitingHomeSummary(spaceId: string) {
@@ -11,14 +12,7 @@ export async function getRecruitingHomeSummary(spaceId: string) {
     countApplicationsByStatus(spaceId, { from: weekAgo }),
     // 모집 중 = 발행(ACTIVE) + 마감일이 없거나 오늘(KST) 이후. isHiringDeadlinePassed 와 같은 기준.
     prisma.hiringPosting.findMany({
-      where: {
-        spaceId,
-        status: 'ACTIVE',
-        OR: [
-          { closingDate: null },
-          { closingDate: { gte: new Date(`${getTodayStrKst()}T00:00:00Z`) } },
-        ],
-      },
+      where: { spaceId, ...openPostingWhere() },
       orderBy: [{ closingDate: { sort: 'asc', nulls: 'last' } }, { id: 'desc' }],
       take: 5,
       select: { id: true, uuid: true, title: true, closingDate: true },

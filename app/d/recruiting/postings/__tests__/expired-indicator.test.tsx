@@ -73,18 +73,19 @@ jest.mock('@/lib/hiring/posting-list', () => ({
 
 afterEach(() => jest.useRealTimers())
 
-it('발행된 공고만 한국 마감일이 지난 뒤 접수 마감을 표시한다', async () => {
+it('발행 공고는 한국 마감일이 지나면 모집중 대신 마감 하나만 표시한다', async () => {
   jest.useFakeTimers().setSystemTime(new Date('2026-11-02T14:59:59Z'))
   const result = render(await PostingsPage({ searchParams: Promise.resolve({}) }))
   const row = (title: string) => within(screen.getByText(title).closest('tr')!)
-  expect(row('지난 발행 공고').getByText('발행됨')).toBeInTheDocument()
-  expect(row('지난 발행 공고').getByText('접수 마감')).toBeInTheDocument()
-  expect(row('오늘 마감 공고').queryByText('접수 마감')).not.toBeInTheDocument()
-  expect(row('마감일 지난 초안').queryByText('접수 마감')).not.toBeInTheDocument()
-  expect(row('상시 모집 공고').queryByText('접수 마감')).not.toBeInTheDocument()
+  expect(row('지난 발행 공고').getByText('마감')).toBeInTheDocument()
+  expect(row('지난 발행 공고').queryByText('모집중')).not.toBeInTheDocument()
+  expect(row('지난 발행 공고').queryByText('접수 마감')).not.toBeInTheDocument()
+  expect(row('오늘 마감 공고').getByText('모집중')).toBeInTheDocument()
+  expect(row('마감일 지난 초안').getByText('작성 중')).toBeInTheDocument()
+  expect(row('상시 모집 공고').getByText('모집중')).toBeInTheDocument()
   expect(row('직접 마감 공고').getByText('마감')).toBeInTheDocument()
-  expect(row('직접 마감 공고').queryByText('접수 마감')).not.toBeInTheDocument()
   jest.setSystemTime(new Date('2026-11-02T15:00:00Z'))
   result.rerender(await PostingsPage({ searchParams: Promise.resolve({}) }))
-  expect(row('오늘 마감 공고').getByText('접수 마감')).toBeInTheDocument()
+  expect(row('오늘 마감 공고').getByText('마감')).toBeInTheDocument()
+  expect(row('오늘 마감 공고').queryByText('모집중')).not.toBeInTheDocument()
 })

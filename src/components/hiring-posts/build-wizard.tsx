@@ -167,7 +167,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
               </p>
             </div>
           </div>
-          <PostingStatusBadge status={state.status} />
+          <PostingStatusBadge status={state.status} closingDate={state.closingDate || null} />
         </div>
 
         <WizardStepper current={step} onSelect={selectStep} disabled={leaving} />
@@ -248,7 +248,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
                     ) => patch(p)}
                   />
                 </Section>
-                <Section title="지원서 마감일">
+                <Section title="모집 기간">
                   <StepFormSettings
                     ref={settingsRef}
                     postingId={data.posting.id}
@@ -367,6 +367,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
               >
                 <PostingPreview
                   status={state.status}
+                  closingDate={state.closingDate || null}
                   title={state.title}
                   positions={state.positions}
                   stores={state.stores}
