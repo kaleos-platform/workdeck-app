@@ -7,6 +7,7 @@ jest.mock('@/lib/agent/identity/agent-token', () => ({
 }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    $queryRaw: jest.fn(),
     user: { findUnique: jest.fn() },
     spaceAgent: { findUnique: jest.fn() },
     spaceMember: { findUnique: jest.fn(), findMany: jest.fn() },
@@ -18,6 +19,7 @@ import { verifyAgentToken } from '@/lib/agent/identity/agent-token'
 import { verifyToken } from '../auth'
 
 const p = prisma as unknown as {
+  $queryRaw: jest.Mock
   user: { findUnique: jest.Mock }
   spaceAgent: { findUnique: jest.Mock }
   spaceMember: { findUnique: jest.Mock; findMany: jest.Mock }
@@ -32,6 +34,7 @@ const claims = (over: Record<string, unknown> = {}) => ({
       aud: 'authenticated',
       iss: `${URL_}/auth/v1`,
       client_id: 'cid-1',
+      session_id: 'sess-1',
       ...over,
     },
   },
@@ -46,6 +49,45 @@ describe('verifyToken', () => {
     delete process.env.MCP_ALLOWED_CLIENT_IDS
     p.user.findUnique.mockResolvedValue({ id: 'u1' })
     p.spaceAgent.findUnique.mockResolvedValue(null)
+    p.$queryRaw.mockResolvedValue([{ ok: 1 }])
+  })
+
+  describe('OAuth 세션 생존 확인(연결 해제 즉시 차단)', () => {
+    beforeEach(() => {
+      p.spaceMember.findMany.mockResolvedValue([{ spaceId: 'sp1', role: 'MEMBER' }])
+    })
+
+    it('세션 행이 없으면(연결 해제됨) 401', async () => {
+      getClaims.mockResolvedValue(claims())
+      p.$queryRaw.mockResolvedValue([])
+      expect(await verifyToken(req(), 'jwt')).toBeUndefined()
+    })
+
+    it('session_id 클레임이 없으면 DB 조회 없이 401', async () => {
+      getClaims.mockResolvedValue(claims({ session_id: undefined }))
+      expect(await verifyToken(req(), 'jwt')).toBeUndefined()
+      expect(p.$queryRaw).not.toHaveBeenCalled()
+    })
+
+    it('client_id 없는 브라우저 세션 JWT는 세션 조회 전에 거부', async () => {
+      getClaims.mockResolvedValue(claims({ client_id: undefined }))
+      expect(await verifyToken(req(), 'jwt')).toBeUndefined()
+      expect(p.$queryRaw).not.toHaveBeenCalled()
+    })
+
+    it('세션 조회 DB 오류는 401(토큰 원문 미노출)', async () => {
+      getClaims.mockResolvedValue(claims())
+      p.$queryRaw.mockRejectedValue(new Error('db down'))
+      jest.spyOn(console, 'error').mockImplementation(() => {})
+      expect(await verifyToken(req(), 'jwt')).toBeUndefined()
+    })
+
+    it('세션이 살아 있으면 기존대로 통과', async () => {
+      getClaims.mockResolvedValue(claims())
+      const info = await verifyToken(req(), 'jwt')
+      expect(info).toBeDefined()
+      expect(p.$queryRaw).toHaveBeenCalledTimes(1)
+    })
   })
 
   it('에이전트 토큰 → principal을 extra에 담는다', async () => {
