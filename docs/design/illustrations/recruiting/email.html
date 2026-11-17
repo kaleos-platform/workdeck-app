@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<!-- 모집 관리 랜딩 「이메일 알림」 행 일러스트. 실제 메일(src/lib/hiring/mail.ts + email/layout.ts)과 공고 메일 설정(posting-mail-settings)을 단순화해 재구성.
+     렌더: gstack browse viewport 860x560 --scale 2 → screenshot --selector .canvas → cwebp -->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: transparent; }
+  .canvas {
+    width: 800px; height: 500px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #eef4ff 0%, #f6f8fb 55%, #fff7ed 100%);
+    border-radius: 20px;
+  }
+  .panel {
+    position: absolute; background: #fff; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 20px 50px -20px rgba(15, 23, 42, .35), 0 0 0 1px rgba(15, 23, 42, .06);
+  }
+  .tag { position: absolute; font-size: 10.5px; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
+  .tag.a { background: #dbeafe; color: #1d4ed8; }
+  .tag.m { background: #ffedd5; color: #c2410c; }
+
+  .mhead { display: flex; align-items: center; gap: 9px; padding: 11px 14px; border-bottom: 1px solid #f1f5f9; }
+  .av { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; }
+  .from { font-size: 10.5px; font-weight: 700; color: #0f172a; }
+  .from small { font-weight: 500; color: #94a3b8; }
+  .subj { font-size: 9.5px; color: #475569; margin-top: 1px; }
+  .time { margin-left: auto; font-size: 9px; color: #94a3b8; }
+  .mbody { background: #f4f4f5; padding: 14px; }
+  .card { background: #fff; border: 1px solid #e4e4e7; border-radius: 8px; padding: 14px 16px; }
+  .brand { font-size: 11.5px; font-weight: 800; color: #18181b; display: flex; align-items: center; gap: 6px; }
+  .w { width: 17px; height: 17px; border-radius: 4px; background: #2563eb; color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+  .brand small { font-weight: 600; color: #71717a; }
+  .h { margin-top: 10px; font-size: 14px; font-weight: 800; color: #18181b; }
+  .p { margin-top: 5px; font-size: 9.5px; color: #3f3f46; line-height: 1.55; }
+  .p.muted { color: #71717a; }
+  .info { margin-top: 8px; background: #f4f4f5; border-radius: 6px; padding: 8px 10px; font-size: 9px; color: #18181b; }
+  .info div { display: flex; gap: 10px; margin: 2px 0; }
+  .info span { color: #71717a; width: 42px; flex-shrink: 0; }
+  .rows { margin-top: 8px; }
+  .row { display: flex; justify-content: space-between; font-size: 9.5px; padding: 6px 0; border-bottom: 1px solid #e4e4e7; color: #2563eb; }
+  .row b { color: #18181b; }
+  .btn { display: inline-block; margin-top: 10px; background: #18181b; color: #fff; font-size: 9.5px; font-weight: 700; padding: 6px 11px; border-radius: 6px; }
+  .foot { font-size: 8.5px; color: #71717a; margin-top: 8px; line-height: 1.5; padding: 0 2px; }
+
+  .applicant { left: 28px; top: 62px; width: 360px; }
+  .manager { left: 412px; top: 128px; width: 360px; }
+
+  .settings { left: 28px; top: 372px; width: 360px; padding: 10px 14px; overflow: visible; }
+  .set { display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 600; color: #0f172a; padding: 4px 0; }
+  .sw { width: 28px; height: 16px; border-radius: 999px; background: #2563eb; position: relative; }
+  .sw::after { content: ''; position: absolute; right: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+  .s-title { font-size: 9.5px; color: #64748b; font-weight: 700; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <span class="tag a" style="left:28px;top:30px">지원자에게 · 제출 직후</span>
+  <div class="panel applicant">
+    <div class="mhead">
+      <div class="av" style="background:#64748b">한</div>
+      <div><div class="from">한빛인력 via Workdeck</div><div class="subj">[지원 접수 완료] [평택] 물류센터 상하차 주간조 모집</div></div>
+      <div class="time">오전 10:24</div>
+    </div>
+    <div class="mbody">
+      <div class="card">
+        <div class="brand">한빛인력</div>
+        <div class="h">지원서가 접수되었습니다</div>
+        <div class="p">「[평택] 물류센터 상하차 주간조 모집」 지원서가 정상적으로 접수되었습니다.</div>
+        <div class="info">
+          <div><span>공고</span>[평택] 물류센터 상하차 주간조 모집</div>
+          <div><span>접수 시각</span>2026년 11월 16일 10:24 (한국 시간)</div>
+        </div>
+        <div class="p">문의 사항은 이 메일에 회신하면 채용 담당자에게 전달됩니다.</div>
+      </div>
+      <div class="foot">한빛인력 채용 공고에 지원하신 분께 발송된 메일입니다.<br />Workdeck으로 발송</div>
+    </div>
+  </div>
+
+  <span class="tag m" style="left:412px;top:96px">담당자에게 · 매일 오전 9시</span>
+  <div class="panel manager">
+    <div class="mhead">
+      <div class="av" style="background:#2563eb">W</div>
+      <div><div class="from">Workdeck 모집 관리</div><div class="subj">[워크덱 모집 관리] 11월 16일 신규 지원자 9명</div></div>
+      <div class="time">오전 9:00</div>
+    </div>
+    <div class="mbody">
+      <div class="card">
+        <div class="brand"><span class="w">W</span>Workdeck <small>모집 관리</small></div>
+        <div class="h">11월 16일 신규 지원자 9명</div>
+        <div class="p muted">공고 3개에 새 지원서가 들어왔습니다.</div>
+        <div class="rows">
+          <div class="row">[평택] 물류센터 상하차 주간조 모집<b>4명</b></div>
+          <div class="row">[화성] 식품 생산직 2교대 모집<b>3명</b></div>
+          <div class="row">[성수] 플래그십 매장 스태프 모집<b>2명</b></div>
+        </div>
+        <span class="btn">모집 관리에서 확인</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel settings">
+    <div class="s-title">공고별 메일 설정</div>
+    <div class="set">지원 접수 메일 보내기<span class="sw"></span></div>
+    <div class="set">새 지원자 일일 요약 메일<span class="sw"></span></div>
+  </div>
+</div>
+</body>
+</html>

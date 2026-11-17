@@ -17,9 +17,9 @@ const EMAIL_FEATURE: DeckLandingFeature = {
     '지원자가 이메일을 입력하면 제출 직후 접수 완료 메일이 가고, 회신하면 공고 담당자에게 전달됩니다. 담당자는 전날 새 지원자가 있으면 매일 오전 9시에 공고별 새 지원자 수를 요약 메일로 받습니다(지원자 개인정보는 담지 않습니다). 두 메일 모두 공고별로 끌 수 있습니다.',
   image: {
     src: '/marketing/recruiting/email.webp',
-    alt: '지원자가 받는 접수 완료 메일 — 회사 이름으로 발송',
-    width: 868,
-    height: 470,
+    alt: '지원자가 받는 접수 완료 메일과 담당자가 매일 오전 9시에 받는 새 지원자 요약 메일, 공고별 메일 설정',
+    width: 1600,
+    height: 1000,
   },
 }
 
@@ -28,12 +28,12 @@ const AI_FEATURE: DeckLandingFeature = {
   title: 'AI 연동',
   headline: '쓰던 AI에게 채용 현황을 물어보세요',
   description:
-    'Claude처럼 MCP를 지원하는 AI를 연결하면 공고 목록과 지원 현황 집계를 조회하고, 새 공고 초안을 제안받을 수 있습니다. 초안은 관리자가 승인해야 「작성 중」 공고로 만들어지고 게시는 직접 합니다. 지원자 이름·연락처 같은 개인정보는 AI에 보내지 않습니다.',
+    'Claude·ChatGPT·Gemini처럼 MCP를 지원하는 AI를 연결하면 공고 목록과 지원 현황 집계를 조회하고, 새 공고 초안을 제안받을 수 있습니다. 초안은 관리자가 승인해야 「작성 중」 공고로 만들어지고 게시는 직접 합니다. 지원자 이름·연락처 같은 개인정보는 AI에 보내지 않습니다.',
   image: {
     src: '/marketing/recruiting/ai.webp',
-    alt: '승인 대기 화면 — AI가 제안한 채용 공고 초안',
-    width: 1972,
-    height: 660,
+    alt: 'AI 대화에서 공고별 지원 현황을 조회하고 공고 초안을 제안하면, 워크덱 승인 대기에 올라오는 예시',
+    width: 1600,
+    height: 1000,
   },
 }
 
@@ -158,9 +158,9 @@ export const recruitingLanding: DeckLandingContent = {
         '디자인 블록과 공고 템플릿으로 공고를 꾸미고, 지난 공고를 복사해 바로 시작할 수도 있습니다. 다른 도구로 만든 공고 이미지도 이미지 블록으로 그대로 넣고, 모바일 미리보기로 바로 확인합니다.',
       image: {
         src: '/marketing/recruiting/editor.webp',
-        alt: '공고 편집 화면 — 이미지·텍스트 블록과 모바일 미리보기',
-        width: 1880,
-        height: 860,
+        alt: '워크덱 제공 공고 템플릿 갤러리에서 템플릿을 고르고, 블록 에디터와 모바일 미리보기로 공고를 고치는 화면',
+        width: 1600,
+        height: 1000,
       },
     },
     {
@@ -171,9 +171,9 @@ export const recruitingLanding: DeckLandingContent = {
         '게시한 공고마다 공개 링크와 HTML 코드가 생겨 어느 채용 채널에든 올릴 수 있습니다. 공고별 지원서 양식으로 별도 설문 도구 없이 지원자를 한 곳에 모읍니다.',
       image: {
         src: '/marketing/recruiting/posting.webp',
-        alt: '공고 상세 화면 — 접수 상태, HTML 복사, 공고 미리보기',
-        width: 1900,
-        height: 1200,
+        alt: '공고 상세 페이지와 간편 지원서, 공고 링크와 HTML 코드를 알바몬·사람인·알바천국·잡코리아 공고 상세에 붙여넣는 예시',
+        width: 1600,
+        height: 1000,
       },
     },
     {
@@ -184,9 +184,9 @@ export const recruitingLanding: DeckLandingContent = {
         '여러 공고의 지원자를 진행 상태별 탭과 근무지·직무 검색으로 확인하고, 합격·불합격과 단계 변경을 일괄로 처리합니다. 메모와 엑셀 다운로드, 문제가 있었던 지원자를 기록하는 블랙리스트도 함께 씁니다.',
       image: {
         src: '/marketing/recruiting/applicants.webp',
-        alt: '지원자 목록 화면 — 진행 상태 탭과 단계 배지',
-        width: 1916,
-        height: 1170,
+        alt: '지원자 목록 화면 — 진행 상태 탭, 여러 명 선택 후 상태 일괄 변경, 지원자 메모',
+        width: 1600,
+        height: 1000,
       },
     },
     ...(RECRUITING_EMAIL_LIVE ? [EMAIL_FEATURE] : []),
@@ -208,8 +208,8 @@ export const recruitingLanding: DeckLandingContent = {
       src: '/marketing/recruiting/applicants.webp',
       alt: '모집 관리 지원자 목록 화면',
       caption: '여러 공고의 지원자를 진행 상태별로 한눈에',
-      width: 1916,
-      height: 1170,
+      width: 1600,
+      height: 1000,
     },
   ],
   workflow: [
