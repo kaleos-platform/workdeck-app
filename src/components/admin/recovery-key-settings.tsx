@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import type { RecoveryKeyStatus } from '@/lib/admin/recovery-key'
 
 const endpoint = '/api/admin/recovery-key'
@@ -28,7 +28,7 @@ export function RecoveryKeySettings() {
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch(endpoint, { cache: 'no-store' })
+      const res = await fetchWithMfa(endpoint, { cache: 'no-store' })
       if (await redirectIfMfaRequired(res)) return
       const body = await res.json()
       if (!res.ok)
@@ -50,7 +50,7 @@ export function RecoveryKeySettings() {
     setError(null)
     setNotice(null)
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetchWithMfa(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),

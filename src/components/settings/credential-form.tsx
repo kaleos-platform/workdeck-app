@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch'
 import { Loader2, CheckCircle2, XCircle, Eye, EyeOff, Pencil, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentSpaceName } from '@/hooks/use-current-space'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type CredentialFormValues = {
   loginId: string
@@ -94,7 +94,7 @@ export function CredentialForm() {
 
     setStatus('testing')
     try {
-      const res = await fetch('/api/collection/credentials', {
+      const res = await fetchWithMfa('/api/collection/credentials', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),

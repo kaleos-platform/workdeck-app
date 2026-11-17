@@ -2,7 +2,10 @@ import { render, screen, waitFor, fireEvent, within } from '@testing-library/rea
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { MembersCard } from '../members-card'
 
-jest.mock('@/lib/auth/mfa-client', () => ({ redirectIfMfaRequired: jest.fn() }))
+jest.mock('@/lib/auth/mfa-client', () => ({
+  fetchWithMfa: (...a: Parameters<typeof fetch>) => fetch(...a),
+  redirectIfMfaRequired: jest.fn(),
+}))
 const mfaRedirect = redirectIfMfaRequired as jest.Mock
 
 const json = (body: unknown, status = 200) =>

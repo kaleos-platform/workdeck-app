@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Member = { id: string; role: string; user: { email: string; name: string | null } }
 type InviteState = 'pending' | 'accepted' | 'expired' | 'revoked'
@@ -110,7 +110,7 @@ export function MembersCard() {
     setError(null)
     setCopied(false)
     try {
-      const res = await fetch(`/api/spaces/${spaceId}/invitations`, {
+      const res = await fetchWithMfa(`/api/spaces/${spaceId}/invitations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(target ?? { email: email.trim(), role }),
@@ -137,7 +137,9 @@ export function MembersCard() {
     if (!spaceId || !confirm('이 초대를 취소할까요?')) return
     setError(null)
     try {
-      const res = await fetch(`/api/spaces/${spaceId}/invitations/${id}`, { method: 'DELETE' })
+      const res = await fetchWithMfa(`/api/spaces/${spaceId}/invitations/${id}`, {
+        method: 'DELETE',
+      })
       // 목록은 AAL2 없이 보이지만 취소는 AAL2 — 필요하면 단계 인증으로 보낸다.
       if (await redirectIfMfaRequired(res)) return
       if (!res.ok) {
@@ -178,7 +180,7 @@ export function MembersCard() {
     setError(null)
     setPending(true)
     try {
-      const res = await fetch(url, init)
+      const res = await fetchWithMfa(url, init)
       if (await redirectIfMfaRequired(res)) return false
       if (!res.ok) {
         const body = await res.json().catch(() => null)

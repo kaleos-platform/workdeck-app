@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCurrentSpace } from '@/hooks/use-current-space'
-import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Option = { id: string; name: string; externalSource?: string | null }
 
@@ -138,7 +138,7 @@ export function NaverNbaesongCard() {
 
     setSaving(true)
     try {
-      const res = await fetch(`/api/spaces/${space.id}/credentials/naver-commerce`, {
+      const res = await fetchWithMfa(`/api/spaces/${space.id}/credentials/naver-commerce`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
