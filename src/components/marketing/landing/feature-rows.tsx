@@ -43,14 +43,21 @@ export function FeatureRows({ features, gradient }: FeatureRowsProps) {
           return (
             <div key={feature.title} className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
               <div className={index % 2 === 1 ? 'lg:order-2' : ''}>{text}</div>
-              <figure className="overflow-hidden rounded-xl border bg-background shadow-sm">
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  width={image.width ?? 1600}
-                  height={image.height ?? 1000}
-                  className="h-auto w-full"
-                />
+              <figure>
+                <div className="overflow-hidden rounded-xl border bg-background shadow-sm">
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    width={image.width ?? 1600}
+                    height={image.height ?? 1000}
+                    className="h-auto w-full"
+                  />
+                </div>
+                {image.caption ? (
+                  <figcaption className="mt-2 text-xs break-keep text-muted-foreground">
+                    {image.caption}
+                  </figcaption>
+                ) : null}
               </figure>
             </div>
           )

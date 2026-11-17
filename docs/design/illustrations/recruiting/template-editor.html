@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<!-- 모집 관리 랜딩 「공고 디자인」 행 일러스트. 실제 앱 화면(공고 템플릿 갤러리·공고 꾸미기)을 단순화해 재구성.
+     렌더: gstack browse viewport 800x500 --scale 2 → screenshot --selector .canvas → cwebp -->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: transparent; }
+  .canvas {
+    width: 800px; height: 500px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #eef4ff 0%, #f6f8fb 55%, #fff7ed 100%);
+    border-radius: 20px;
+  }
+  .panel {
+    position: absolute; background: #fff; border-radius: 16px;
+    box-shadow: 0 20px 50px -20px rgba(15, 23, 42, .35), 0 0 0 1px rgba(15, 23, 42, .06);
+  }
+  /* 템플릿 갤러리 */
+  .gallery { left: 28px; top: 34px; width: 430px; padding: 18px 18px 20px; }
+  .g-title { font-size: 17px; font-weight: 800; color: #0f172a; }
+  .tabs { display: inline-flex; gap: 4px; margin-top: 10px; padding: 3px; background: #f1f5f9; border-radius: 8px; font-size: 11.5px; }
+  .tabs span { padding: 5px 10px; border-radius: 6px; color: #64748b; }
+  .tabs .on { background: #fff; color: #0f172a; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .grid { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .card { border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #fff; position: relative; }
+  .card img { display: block; width: 100%; height: 118px; object-fit: cover; object-position: top; }
+  .card .name { font-size: 10px; color: #334155; padding: 6px 7px 7px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card.sel { border: 2px solid #2563eb; box-shadow: 0 6px 18px -6px rgba(37, 99, 235, .55); }
+  .check {
+    position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%;
+    background: #2563eb; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  .use-btn {
+    position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%);
+    background: #0f172a; color: #fff; font-size: 10.5px; font-weight: 700; padding: 6px 10px; border-radius: 7px; white-space: nowrap;
+  }
+  /* 에디터 */
+  .editor { left: 360px; top: 118px; width: 412px; height: 352px; padding: 16px; }
+  .e-head { display: flex; align-items: center; justify-content: space-between; }
+  .e-title { font-size: 13.5px; font-weight: 800; color: #0f172a; }
+  .steps { display: flex; gap: 6px; font-size: 10px; color: #94a3b8; margin-top: 4px; }
+  .steps b { color: #2563eb; }
+  .badge { font-size: 10px; font-weight: 700; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 999px; }
+  .e-body { display: flex; gap: 14px; margin-top: 12px; }
+  .blocks { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+  .blk {
+    display: flex; align-items: center; gap: 8px; font-size: 11px; color: #1e293b; font-weight: 600;
+    border: 1px solid #e2e8f0; border-radius: 9px; padding: 8px 9px; background: #fff;
+  }
+  .blk .ic { width: 22px; height: 22px; border-radius: 6px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+  .blk .sub { margin-left: auto; font-size: 9.5px; color: #64748b; font-weight: 500; }
+  .blk.active { border-color: #2563eb; background: #f8fbff; }
+  .blk.edit .edit-pill { margin-left: auto; font-size: 9.5px; color: #fff; background: #2563eb; padding: 3px 7px; border-radius: 6px; font-weight: 700; }
+  .caret { display: inline-block; width: 1.5px; height: 12px; background: #2563eb; vertical-align: -2px; margin-left: 1px; }
+  .add { font-size: 10.5px; color: #2563eb; font-weight: 700; border: 1.5px dashed #bfdbfe; border-radius: 9px; padding: 7px; text-align: center; }
+  .phone {
+    width: 142px; height: 274px; border-radius: 20px; background: #0f172a; padding: 7px; flex-shrink: 0;
+  }
+  .screen { width: 100%; height: 100%; border-radius: 14px; overflow: hidden; background: #fff; position: relative; }
+  .screen img { display: block; width: 100%; }
+  .screen .txt { padding: 7px 8px; font-size: 7.5px; line-height: 1.5; color: #334155; }
+  .screen .apply { position: absolute; left: 8px; right: 8px; bottom: 8px; background: #2563eb; color: #fff; font-size: 8.5px; font-weight: 700; text-align: center; padding: 6px; border-radius: 6px; }
+  .label-mobile { font-size: 9.5px; color: #64748b; text-align: center; margin-top: 5px; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="panel gallery">
+    <div class="g-title">공고 템플릿</div>
+    <div class="tabs"><span>내 템플릿</span><span class="on">워크덱 제공 29</span></div>
+    <div class="grid">
+      <div class="card"><img src="assets/tpl0.png" alt="" /><div class="name">[생산/제조] 베이직</div></div>
+      <div class="card"><img src="assets/tpl1.png" alt="" /><div class="name">[콜센터] 베이직</div></div>
+      <div class="card"><img src="assets/tpl2.png" alt="" /><div class="name">[F&amp;B] 매장사진 강조</div></div>
+      <div class="card"><img src="assets/tpl3.png" alt="" /><div class="name">[F&amp;B] 캐주얼</div></div>
+      <div class="card sel"><img src="assets/tpl4.png" alt="" /><div class="name">[물류] 베이직</div><div class="check">✓</div></div>
+      <div class="card"><img src="assets/tpl5.png" alt="" /><div class="name">[콜센터] 클린+블루</div></div>
+    </div>
+  </div>
+
+  <div class="panel editor">
+    <div class="e-head">
+      <div>
+        <div class="e-title">[송파] 물류센터 상하차 모집</div>
+        <div class="steps"><span>① 기본 정보</span><span>·</span><b>② 공고 꾸미기</b></div>
+      </div>
+      <span class="badge">작성 중</span>
+    </div>
+    <div class="e-body">
+      <div class="blocks">
+        <div class="blk active"><span class="ic">▣</span>대표 이미지<span class="sub">이미지 블록</span></div>
+        <div class="blk edit"><span class="ic">T</span>회사 소개<span class="caret"></span><span class="edit-pill">편집 중</span></div>
+        <div class="blk"><span class="ic">≡</span>모집 부문 · 근무 조건<span class="sub">일급 130,000원</span></div>
+        <div class="blk"><span class="ic">✎</span>디자인 블록<span class="sub">직접 그리기</span></div>
+        <div class="blk"><span class="ic">→</span>지원하기 버튼<span class="sub">간편 지원서</span></div>
+        <div class="add">+ 블록 추가</div>
+      </div>
+      <div>
+        <div class="phone"><div class="screen">
+          <img src="assets/tpl4.png" alt="" />
+          <div class="txt">통근버스 운행, 주말 단기 가능. 경력 없어도 첫날부터 교육합니다.</div>
+          <div class="apply">간편 지원하기</div>
+        </div></div>
+        <div class="label-mobile">모바일 미리보기</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
