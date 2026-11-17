@@ -117,4 +117,26 @@ describe('fetchWithMfa', () => {
     expect(stepUp).toHaveBeenCalledTimes(1)
     expect(order).toEqual(['start:/a', 'end:/a', 'start:/b', 'end:/b'])
   })
+
+  test('unavailable(인증 정보 조회 실패) → 이동 없이 MFA_UNAVAILABLE, fetch 1회', async () => {
+    fetchMock.mockResolvedValueOnce(mfaRes())
+    const res = await fetchWithMfa('/api/x', init, { stepUp: async () => 'unavailable' })
+    expect(res.status).toBe(403)
+    expect((await res.json()).code).toBe('MFA_UNAVAILABLE')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(toast.error).toHaveBeenCalled()
+  })
+
+  test('앞선 재전송이 실패(reject)해도 다음 순번은 진행된다', async () => {
+    fetchMock
+      .mockResolvedValueOnce(mfaRes())
+      .mockResolvedValueOnce(mfaRes())
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce(okRes(2))
+    const stepUp = async () => 'verified' as const
+    const a = fetchWithMfa('/api/a', init, { stepUp })
+    const b = fetchWithMfa('/api/b', init, { stepUp })
+    await expect(a).rejects.toThrow('network')
+    expect(await (await b).json()).toEqual({ ok: 2 })
+  })
 })

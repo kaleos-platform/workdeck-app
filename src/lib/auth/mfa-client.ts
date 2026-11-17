@@ -2,11 +2,20 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { mfaStepUpPath } from './mfa-policy'
 
-export type MfaStepUpResult = 'verified' | 'cancelled' | 'enroll'
+export type MfaStepUpResult = 'verified' | 'cancelled' | 'enroll' | 'unavailable'
 type MfaDeps = { stepUp: () => Promise<MfaStepUpResult> }
 
 const CANCELLED_MESSAGE = '2단계 인증을 취소해 저장하지 않았습니다'
 const RETRY_FAILED_MESSAGE = '인증은 완료됐지만 저장하지 못했습니다. 다시 시도해 주세요'
+const UNAVAILABLE_MESSAGE = '2단계 인증 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요'
+
+// Response.json 정적 메서드는 구형 Safari 에 없다.
+function mfaError(message: string, code: string) {
+  return new Response(JSON.stringify({ message, code }), {
+    status: 403,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
 
 // 다이얼로그 모듈은 필요할 때만 불러와 mfa-client 를 가볍게 둔다.
 const defaultDeps: MfaDeps = {
@@ -52,18 +61,20 @@ export async function fetchWithMfa(
     if (result === 'enroll') return res
     if (result === 'cancelled') {
       toast.error(CANCELLED_MESSAGE)
-      return Response.json({ message: CANCELLED_MESSAGE, code: 'MFA_CANCELLED' }, { status: 403 })
+      return mfaError(CANCELLED_MESSAGE, 'MFA_CANCELLED')
     }
+    if (result === 'unavailable') {
+      toast.error(UNAVAILABLE_MESSAGE)
+      return mfaError(UNAVAILABLE_MESSAGE, 'MFA_UNAVAILABLE')
+    }
+    // ponytail: 앞선 재전송이 응답 없이 멈추면 뒤 순번도 기다린다 — 필요해지면 prev 대기에 시간 제한
     await prev
     // 인증으로 갱신된 세션이 저장소(쿠키)에 반영되도록 한 번 읽고 재전송한다.
     await createClient().auth.getSession()
     const retried = await fetch(input, init)
     if (await isMfaRequired(retried)) {
       toast.error(RETRY_FAILED_MESSAGE)
-      return Response.json(
-        { message: RETRY_FAILED_MESSAGE, code: 'MFA_RETRY_FAILED' },
-        { status: 403 }
-      )
+      return mfaError(RETRY_FAILED_MESSAGE, 'MFA_RETRY_FAILED')
     }
     return retried
   } finally {

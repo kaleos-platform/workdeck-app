@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createClient } from '@/lib/supabase/client'
 import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
+import { isMfaFresh } from '@/lib/auth/mfa-policy'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-type StepUpResult = 'verified' | 'cancelled' | 'enroll'
+type StepUpResult = 'verified' | 'cancelled' | 'enroll' | 'unavailable'
 
 function StepUpDialog({
   factorId,
@@ -94,8 +95,14 @@ function StepUpDialog({
  * 인증 기기가 없으면 다이얼로그 없이 'enroll' — 등록(QR)은 /auth/mfa 페이지에서만 한다.
  */
 export async function requestMfaStepUp(): Promise<StepUpResult> {
-  const listed = await withAuthTimeout(createClient().auth.mfa.listFactors())
-  const factor = listed?.data?.all.find((f) => f.factor_type === 'totp' && f.status === 'verified')
+  const supabase = createClient()
+  // 다른 요청의 인증으로 이미 aal2 가 됐으면(연속 클릭 등) 다시 묻지 않는다.
+  const aal = await withAuthTimeout(supabase.auth.mfa.getAuthenticatorAssuranceLevel())
+  if (aal && !aal.error && aal.data && isMfaFresh(aal.data)) return 'verified'
+  const listed = await withAuthTimeout(supabase.auth.mfa.listFactors())
+  // 조회 실패·지연을 '기기 없음'으로 보면 등록 페이지로 이동해 입력이 사라진다 — 따로 알린다.
+  if (!listed || listed.error || !listed.data) return 'unavailable'
+  const factor = listed.data.all.find((f) => f.factor_type === 'totp' && f.status === 'verified')
   if (!factor) return 'enroll'
 
   return new Promise<StepUpResult>((resolve) => {

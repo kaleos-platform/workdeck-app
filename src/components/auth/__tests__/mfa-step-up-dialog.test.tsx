@@ -3,8 +3,11 @@ import { requestMfaStepUp } from '../mfa-step-up-dialog'
 
 const listFactors = jest.fn()
 const challengeAndVerify = jest.fn()
+const getAuthenticatorAssuranceLevel = jest.fn()
 jest.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({ auth: { mfa: { listFactors, challengeAndVerify } } }),
+  createClient: () => ({
+    auth: { mfa: { listFactors, challengeAndVerify, getAuthenticatorAssuranceLevel } },
+  }),
 }))
 
 const totp = { id: 'f1', factor_type: 'totp', status: 'verified' }
@@ -12,6 +15,28 @@ const totp = { id: 'f1', factor_type: 'totp', status: 'verified' }
 beforeEach(() => {
   listFactors.mockReset().mockResolvedValue({ data: { all: [totp] }, error: null })
   challengeAndVerify.mockReset()
+  getAuthenticatorAssuranceLevel.mockReset().mockResolvedValue({
+    data: { currentLevel: 'aal1', currentAuthenticationMethods: [] },
+    error: null,
+  })
+})
+
+it('이미 aal2(30일 이내)면 다이얼로그 없이 verified', async () => {
+  getAuthenticatorAssuranceLevel.mockResolvedValue({
+    data: {
+      currentLevel: 'aal2',
+      currentAuthenticationMethods: [{ method: 'totp', timestamp: Math.floor(Date.now() / 1000) }],
+    },
+    error: null,
+  })
+  await expect(requestMfaStepUp()).resolves.toBe('verified')
+  expect(listFactors).not.toHaveBeenCalled()
+  expect(screen.queryByText('2단계 인증')).not.toBeInTheDocument()
+})
+
+it('인증 기기 조회 실패는 enroll 이 아니라 unavailable(등록 페이지 이동 방지)', async () => {
+  listFactors.mockResolvedValue({ data: null, error: { message: 'down' } })
+  await expect(requestMfaStepUp()).resolves.toBe('unavailable')
 })
 
 it('verified TOTP 기기가 없으면 렌더 없이 enroll', async () => {
