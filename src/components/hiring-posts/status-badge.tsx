@@ -1,16 +1,26 @@
 import { Badge } from '@/components/ui/badge'
+import { getPostingDisplayStatus } from '@/lib/hiring/posting-status'
 
 export type PostingStatus = 'DRAFT' | 'ACTIVE' | 'CLOSED' | 'ARCHIVED'
 
 export const STATUS_LABELS: Record<PostingStatus, string> = {
   DRAFT: '작성 중',
-  ACTIVE: '발행됨',
+  ACTIVE: '모집중',
   CLOSED: '마감',
   ARCHIVED: '보관',
 }
 
 // DRAFT=secondary, ACTIVE=emerald 쌍, CLOSED=neutral, ARCHIVED=ghost (DESIGN.md §3.2)
-export function PostingStatusBadge({ status }: { status: PostingStatus }) {
+// closingDate 를 주면 마감일이 지난 발행 공고를 「마감」으로 표시한다.
+export function PostingStatusBadge({
+  status: stored,
+  closingDate,
+}: {
+  status: PostingStatus
+  closingDate?: Date | string | null
+}) {
+  const display = getPostingDisplayStatus(stored, closingDate)
+  const status: PostingStatus = display === 'OPEN' ? 'ACTIVE' : display
   if (status === 'ACTIVE') {
     return (
       <Badge
