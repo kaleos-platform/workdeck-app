@@ -1,0 +1,63 @@
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { requireOperator, writeAuditLog } from '@/lib/admin/auth'
+import { errorResponse } from '@/lib/api-helpers'
+import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@/generated/prisma/client'
+
+export const runtime = 'nodejs'
+
+const bodySchema = z.object({ action: z.enum(['approve', 'hold']) }).strict()
+
+// POST /api/admin/opening-migrations/[id] — 승인(PLANNED→APPROVED) / 보류(MATCHED·PLANNED·BLOCKED·FAILED→HELD)
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireOperator()
+  if (!auth.ok) return auth.response
+
+  const { id } = await params
+  const parsed = bodySchema.safeParse(await request.json().catch(() => null))
+  if (!parsed.success) return errorResponse('잘못된 요청입니다', 400)
+
+  const job = await prisma.openingMigrationJob.findUnique({
+    where: { id },
+    select: { id: true, status: true, summary: true, updatedAt: true, openingBrandId: true },
+  })
+  if (!job) return errorResponse('이전 job을 찾을 수 없습니다', 404)
+
+  // 상태 전이는 조건부 update 로만 하고, 감사 로그와 같은 transaction 으로 묶는다.
+  // 동시에 두 번 눌러도 한 번만 반영된다(count 로 판정).
+  const action = parsed.data.action
+  const snapshot = (job.summary as { snapshot?: Prisma.InputJsonValue } | null)?.snapshot
+  if (action === 'approve' && (job.status !== 'PLANNED' || !snapshot))
+    return errorResponse('승인할 수 없는 상태입니다', 409)
+  const applied = await prisma.$transaction(async (tx) => {
+    const result =
+      action === 'approve'
+        ? // updatedAt 을 함께 걸어, 읽은 뒤 재계획으로 summary 가 바뀐 경우 낡은 snapshot 을 확정하지 않는다.
+          await tx.openingMigrationJob.updateMany({
+            where: { id, status: 'PLANNED', updatedAt: job.updatedAt },
+            data: {
+              status: 'APPROVED',
+              approvedBy: auth.user.id,
+              approvedAt: new Date(),
+              approvedSnapshot: snapshot,
+            },
+          })
+        : await tx.openingMigrationJob.updateMany({
+            where: { id, status: { in: ['MATCHED', 'PLANNED', 'BLOCKED', 'FAILED'] } },
+            data: { status: 'HELD', contactHitsEnc: null, contactHitsIv: null },
+          })
+    if (result.count !== 1) return false
+    await writeAuditLog(
+      auth.user.id,
+      `openingMigration.${action}`,
+      'openingMigrationJob',
+      id,
+      { openingBrandId: job.openingBrandId },
+      tx
+    )
+    return true
+  })
+  if (!applied) return errorResponse('이미 처리되었거나 상태가 바뀌었습니다', 409)
+  return NextResponse.json({ ok: true })
+}

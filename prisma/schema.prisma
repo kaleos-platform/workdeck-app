@@ -187,6 +187,9 @@ model User {
   // Workdeck OS: 공간 멤버십
   spaceMemberships SpaceMember[]
 
+  // 오프닝 고객 자동 이전 job (가입 사용자 매칭)
+  openingMigrationJobs OpeningMigrationJob[]
+
   // 발주 계획 (작성자)
   reorderPlans ReorderPlan[]
 
@@ -5054,4 +5057,54 @@ model ScMediaCopy {
   media   ScMedia          @relation(fields: [mediaId], references: [id], onDelete: Cascade)
 
   @@unique([requestId, mediaId, md5])
+}
+
+// 오프닝 고객 자동 대조·이전 job — 오프닝 브랜드 단위 예약(openingBrandId unique).
+// 워커(scripts/opening-auto-migrate.ts)와 어드민 큐(app/api/admin/opening-migrations)가 공유한다.
+// 계획: docs/superpowers/plans/2026-11-18-opening-auto-migration.md
+enum OpeningMigrationStatus {
+  MATCHED
+  PLANNED
+  BLOCKED
+  APPROVED
+  APPLYING
+  APPLIED
+  GRANTED
+  DONE
+  GRANT_MANUAL
+  FAILED
+  HELD
+}
+
+model OpeningMigrationJob {
+  id             String                 @id @default(cuid())
+  openingBrandId String                 @unique
+  userId         String? // backfill 행은 null
+  targetSpaceId  String?
+  status         OpeningMigrationStatus @default(MATCHED)
+
+  summary      Json? // 건수·경고 코드·브랜드명만
+  blockReasons String[]
+
+  // 연락처 감지 항목 제목·조각(field-crypto 암호화). DONE·HELD·FAILED 확정 시 null.
+  contactHitsEnc String?
+  contactHitsIv  String?
+
+  approvedBy       String?
+  approvedAt       DateTime?
+  packetDir        String?
+  approvedSnapshot Json? // 이전 대상 전체 snapshot (apply 직전 재검증 기준)
+  applyStartedAt   DateTime?
+  grantAt          DateTime?
+  mailSentAt       DateTime?
+  error            String? // 고정 코드만
+  attempts         Int       @default(0)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([userId])
 }

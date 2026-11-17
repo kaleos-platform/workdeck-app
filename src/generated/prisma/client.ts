@@ -901,3 +901,8 @@ export type ScPublishRequest = Prisma.ScPublishRequestModel
  * 
  */
 export type ScMediaCopy = Prisma.ScMediaCopyModel
+/**
+ * Model OpeningMigrationJob
+ * 
+ */
+export type OpeningMigrationJob = Prisma.OpeningMigrationJobModel
