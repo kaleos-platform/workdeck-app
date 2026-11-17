@@ -53,6 +53,7 @@ const listSchema = z
           id: z.string(),
           title: z.string(),
           status: z.string(),
+          displayStatus: z.string(),
           closingDate: iso,
           publishedAt: iso,
           createdAt: iso,
@@ -86,6 +87,7 @@ const postingSchema = z
     id: z.string(),
     title: z.string(),
     status: z.string(),
+    displayStatus: z.string(),
     editable: z.boolean(),
     closingDate: iso,
     publishedAt: iso,
@@ -156,8 +158,39 @@ it('hiring_list_postings: 응답 스키마에 개인정보 필드가 없다', as
   listSchema.parse(r)
   expectNoPii(r)
   const args = db.hiringPosting.findMany.mock.calls[0][0]
-  expect(args.where).toEqual({ spaceId: 'sp-1', status: 'ACTIVE' })
+  expect(args.where).toMatchObject({
+    spaceId: 'sp-1',
+    status: 'ACTIVE',
+    OR: [{ closingDate: null }, { closingDate: { gte: expect.any(Date) } }],
+  })
   expect(JSON.stringify(args.select)).not.toMatch(PII_COLUMNS)
+})
+
+it('hiring_list_postings: 만료된 발행 공고는 displayStatus CLOSED, 마감 필터는 계산 조건', async () => {
+  const base = {
+    uuid: 'u',
+    publishedAt: null,
+    createdAt: new Date('2026-10-30T00:00:00Z'),
+    _count: { applications: 0 },
+  }
+  db.hiringPosting.findMany.mockResolvedValue([
+    { ...base, id: 'old', title: 'a', status: 'ACTIVE', closingDate: new Date('2000-01-01') },
+    { ...base, id: 'manual', title: 'b', status: 'CLOSED', closingDate: null },
+    { ...base, id: 'live', title: 'c', status: 'ACTIVE', closingDate: null },
+  ])
+  const r = (await tool('hiring_list_postings').execute(ctx, { status: 'CLOSED' })) as {
+    postings: Array<{ id: string; status: string; displayStatus: string }>
+  }
+  expect(r.postings.map((p) => [p.id, p.status, p.displayStatus])).toEqual([
+    ['old', 'ACTIVE', 'CLOSED'],
+    ['manual', 'CLOSED', 'CLOSED'],
+    ['live', 'ACTIVE', 'OPEN'],
+  ])
+  const args = db.hiringPosting.findMany.mock.calls.at(-1)[0]
+  expect(args.where).toMatchObject({
+    spaceId: 'sp-1',
+    OR: [{ status: 'CLOSED' }, { status: 'ACTIVE', closingDate: { lt: expect.any(Date) } }],
+  })
 })
 
 it('hiring_get_posting: 모집 조건·지원서 항목 라벨만, 담당자 연락처 없음', async () => {

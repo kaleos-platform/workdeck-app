@@ -7,3 +7,11 @@ export function isHiringDeadlinePassed(
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(now)
   return closingDate.toISOString().slice(0, 10) < today
 }
+
+/** 기본 마감일(KST 오늘 + 14일) 'YYYY-MM-DD' — 상시 모집을 해제할 때 복원값으로 쓴다. */
+export function defaultClosingDateStr(now = new Date()): string {
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(now)
+  const date = new Date(`${today}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + 14)
+  return date.toISOString().slice(0, 10)
+}

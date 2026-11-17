@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import type { PostingListStatus } from './postings'
+import { closedPostingWhere, openPostingWhere } from './posting-status'
 import { jobTypeEnum } from '@/lib/validations/hiring-posts'
 
 const PAGE_SIZE = 50
@@ -37,7 +38,13 @@ export async function listPostingPage(
       : 1
   const where = {
     spaceId,
-    ...(status !== 'ALL' ? { status } : {}),
+    ...(status === 'ACTIVE'
+      ? openPostingWhere()
+      : status === 'CLOSED'
+        ? closedPostingWhere()
+        : status !== 'ALL'
+          ? { status }
+          : {}),
     ...(q ? { title: { contains: escapeLike(q), mode: 'insensitive' as const } } : {}),
     ...(store
       ? {

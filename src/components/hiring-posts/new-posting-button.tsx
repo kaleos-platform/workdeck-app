@@ -20,7 +20,13 @@ import { getRecruitingPostingBuildPath } from '@/lib/deck-routes'
 import { copyPosting } from './copy-posting'
 import { PostingStatusBadge, type PostingStatus } from './status-badge'
 
-type RecentPosting = { id: string; title: string; status: PostingStatus; createdAt: string }
+type RecentPosting = {
+  id: string
+  title: string
+  status: PostingStatus
+  closingDate: string | null
+  createdAt: string
+}
 
 type TemplateRef = { id: string; name: string }
 
@@ -209,7 +215,7 @@ export function NewPostingButton({
                         <span className="min-w-0 flex-1 truncate text-sm font-medium">
                           {p.title}
                         </span>
-                        <PostingStatusBadge status={p.status} />
+                        <PostingStatusBadge status={p.status} closingDate={p.closingDate} />
                         <span className="shrink-0 text-xs text-muted-foreground">
                           {new Date(p.createdAt).toLocaleDateString('ko-KR', {
                             dateStyle: 'medium',

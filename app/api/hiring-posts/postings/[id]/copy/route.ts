@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { defaultClosingDate } from '@/lib/hiring/postings'
 
 type Params = { params: Promise<{ id: string }> }
 
-// 공고 복사 — DRAFT 상태로 새 공고 생성 (마감일 제외)
+// 공고 복사 — DRAFT 상태로 새 공고 생성 (마감일은 새 초안과 같은 기본값)
 export async function POST(_req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
@@ -33,7 +34,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
         applicationEntries: source.applicationEntries ?? undefined,
         detail: source.detail ?? undefined,
         notificationEnabled: source.notificationEnabled,
-        closingDate: null,
+        closingDate: defaultClosingDate(),
         // managerNameEnc 등 enc 필드는 null 유지
       },
       select: { id: true },

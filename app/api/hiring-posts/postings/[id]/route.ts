@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { updatePostingSchema } from '@/lib/validations/hiring-posts'
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { getPostingDetail } from '@/lib/hiring/postings'
 
 type Params = { params: Promise<{ id: string }> }
@@ -30,7 +31,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const existing = await prisma.hiringPosting.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true, status: true, publishedAt: true },
+    select: { id: true, status: true, publishedAt: true, closingDate: true },
   })
   if (!existing) return errorResponse('공고를 찾을 수 없습니다', 404)
   if (isPostingRecruitmentLocked(existing))
@@ -49,6 +50,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const { title, closingDate, notificationEnabled } = parsed.data
+    // 기존 값을 그대로 두는 저장은 허용하고, 바뀐 날짜가 KST 오늘 이전이면 거부한다.
+    if (
+      closingDate &&
+      closingDate !== existing.closingDate?.toISOString().slice(0, 10) &&
+      isHiringDeadlinePassed(new Date(closingDate))
+    )
+      return errorResponse('오늘 이전 날짜는 마감일로 선택할 수 없습니다', 400)
     const posting = await tx.hiringPosting.update({
       where: { id },
       data: {
