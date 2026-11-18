@@ -162,9 +162,11 @@ async function matchUsers(db: PrismaClient) {
   ).filter((user) => !checked.has(user.id) && !jobUsers.has(user.id))
   if (!users.length) return out({ status: 'MATCH_NONE' })
 
-  const userByHash = new Map<string, string>()
+  // 대소문자·공백만 다른 두 계정은 같은 hash 로 겹친다. 모두 남겨야 MULTI_USER 차단이 빠지지 않는다.
+  const usersByHash = new Map<string, Set<string>>()
   for (const user of users)
-    for (const hash of emailHashVariants(user.email, hmacKey)) userByHash.set(hash, user.id)
+    for (const hash of emailHashVariants(user.email, hmacKey))
+      usersByHash.set(hash, (usersByHash.get(hash) ?? new Set()).add(user.id))
 
   const client = await connectOpening()
   const brandsByUser = new Map<string, string[]>()
@@ -176,16 +178,15 @@ async function matchUsers(db: PrismaClient) {
          JOIN brand b ON b.id = bm.brand_id
         WHERE m.email_hash = ANY($1) AND bm.member_type = 'admin' AND bm.status = 1
           AND m.status = 1 AND b.status = 1`,
-      [[...userByHash.keys()]]
+      [[...usersByHash.keys()]]
     )
     await client.query('ROLLBACK')
-    for (const row of rows) {
-      const userId = userByHash.get(row.email_hash)
-      if (!userId) continue
-      const brands = brandsByUser.get(userId) ?? []
-      if (!brands.includes(row.brand_id)) brands.push(row.brand_id)
-      brandsByUser.set(userId, brands)
-    }
+    for (const row of rows)
+      for (const userId of usersByHash.get(row.email_hash) ?? []) {
+        const brands = brandsByUser.get(userId) ?? []
+        if (!brands.includes(row.brand_id)) brands.push(row.brand_id)
+        brandsByUser.set(userId, brands)
+      }
   } finally {
     await client.end().catch(() => {})
   }
@@ -365,7 +366,13 @@ async function failExhausted(db: PrismaClient) {
   for (const job of jobs) {
     const result = await db.openingMigrationJob.updateMany({
       where: { id: job.id, status: job.status },
-      data: { status: 'FAILED', error: 'PLAN_RETRY_EXHAUSTED' },
+      // 확정된 실패 job 에 연락처 조각을 남기지 않는다(review 폴더는 cleanupReviewDirs 가 지운다).
+      data: {
+        status: 'FAILED',
+        error: 'PLAN_RETRY_EXHAUSTED',
+        contactHitsEnc: null,
+        contactHitsIv: null,
+      },
     })
     if (result.count === 1) {
       out({ status: 'FAILED', jobId: job.id, code: 'PLAN_RETRY_EXHAUSTED' })
