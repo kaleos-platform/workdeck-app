@@ -30,6 +30,9 @@ describe('canTransition', () => {
     ['APPLYING', 'APPLIED'],
     ['APPLIED', 'GRANTED'],
     ['GRANTED', 'DONE'],
+    ['APPROVED', 'DONE'], // 1차: 수동 적용 완료
+    ['APPROVED', 'HELD'],
+    ['APPROVED', 'BLOCKED'], // 승인 뒤 MULTI_USER 발견
   ]
   it.each(allowed)('%s → %s 허용', (from, to) => expect(canTransition(from, to)).toBe(true))
 

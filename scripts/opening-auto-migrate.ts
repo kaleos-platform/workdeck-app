@@ -204,16 +204,38 @@ async function matchUsers(db: PrismaClient) {
     data: plan.creates,
     skipDuplicates: true,
   })
-  // 이미 다른 사용자에게 예약된 브랜드는 기존 job 에 MULTI_USER 를 조건부로 추가한다(승인 이후 상태는 건드리지 않음).
-  for (const openingBrandId of plan.blockExisting)
-    await db.openingMigrationJob.updateMany({
+  // 이미 다른 사용자에게 예약된 브랜드는 기존 job 에 MULTI_USER 를 조건부로 추가한다.
+  // 적용 전(APPROVED 포함)이면 BLOCKED 로 되돌려 승인을 무효화하고, 적용이 시작된 뒤면 운영자에게 알린다.
+  for (const openingBrandId of plan.blockExisting) {
+    const blocked = await db.openingMigrationJob.updateMany({
       where: {
         openingBrandId,
-        status: { in: ['MATCHED', 'PLANNED', 'BLOCKED'] },
+        status: { in: ['MATCHED', 'PLANNED', 'BLOCKED', 'APPROVED'] },
         NOT: { blockReasons: { has: 'MULTI_USER' } },
       },
-      data: { status: 'BLOCKED', blockReasons: { push: 'MULTI_USER' } },
+      data: {
+        status: 'BLOCKED',
+        blockReasons: { push: 'MULTI_USER' },
+        approvedBy: null,
+        approvedAt: null,
+        approvedSnapshot: Prisma.DbNull,
+      },
     })
+    if (blocked.count) continue
+    const late = await db.openingMigrationJob.findFirst({
+      where: {
+        openingBrandId,
+        userId: { not: null },
+        status: { notIn: ['MATCHED', 'PLANNED', 'BLOCKED', 'APPROVED', 'HELD'] },
+        NOT: { blockReasons: { has: 'MULTI_USER' } },
+      },
+      select: { status: true },
+    })
+    if (late)
+      await notify(
+        `[오프닝 이전] 브랜드 ${openingBrandId} ${late.status} 이후 다른 가입자 매칭 — 수동 확인 필요`
+      )
+  }
   for (const id of plan.checkedUserIds) checked.add(id)
   writeChecked(checked)
   out({
