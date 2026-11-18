@@ -1,6 +1,6 @@
 /**
  * PATCH — scope·상태·OAuth 클라이언트 바인딩 변경 (Space ADMIN 이상).
- * 권한을 넓힐 수 있는 변경(scope·ACTIVE·OAuth 바인딩·초안 자동 실행 켜기)은 MFA(aal2) 필요, DISABLED만이면 불필요.
+ * 권한을 넓힐 수 있는 변경(scope·ACTIVE·OAuth 바인딩)은 MFA(aal2) 필요, DISABLED만이면 불필요.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -21,7 +21,6 @@ const patchSchema = z.object({
   scopes: z.array(z.string()).optional(),
   status: z.enum(['ACTIVE', 'DISABLED']).optional(),
   oauthClientId: z.string().trim().min(1).max(200).nullable().optional(),
-  autoExecuteDrafts: z.boolean().optional(),
 })
 
 export async function PATCH(req: NextRequest, { params }: Ctx) {
@@ -47,16 +46,11 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   } catch (err) {
     return errorResponse(err instanceof Error ? err.message : 'scope 오류', 400)
   }
-  const { status, oauthClientId, autoExecuteDrafts } = parsed.data
-  if (autoExecuteDrafts !== undefined && agent.kind !== 'agent') {
-    return errorResponse('초안 자동 실행은 에이전트에만 설정할 수 있습니다', 400)
+  const { status, oauthClientId } = parsed.data
+  if (scopes?.includes('draft:create') && agent.kind !== 'agent') {
+    return errorResponse('초안 바로 만들기 권한은 에이전트에만 줄 수 있습니다', 400)
   }
-  if (
-    scopes !== undefined ||
-    status === 'ACTIVE' ||
-    oauthClientId !== undefined ||
-    autoExecuteDrafts === true
-  ) {
+  if (scopes !== undefined || status === 'ACTIVE' || oauthClientId !== undefined) {
     const mfa = await requireAal2()
     if (mfa) return mfa
   }
@@ -66,32 +60,35 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   }
 
   try {
-    const updated = await prisma.spaceAgent.update({
-      where: { id: agent.id },
-      data: {
-        scopes,
-        status,
-        oauthClientId,
-        // 켠 관리자 이름으로 초안 액션이 실행된다 — 켠 사람·시각을 남기고 끄면 지운다.
-        ...(autoExecuteDrafts === undefined
-          ? {}
-          : {
-              autoExecuteDrafts,
-              autoExecuteEnabledById: autoExecuteDrafts ? auth.userId : null,
-              autoExecuteEnabledAt: autoExecuteDrafts ? new Date() : null,
-            }),
-      },
-      select: {
-        id: true,
-        name: true,
-        kind: true,
-        scopes: true,
-        status: true,
-        oauthClientId: true,
-        autoExecuteDrafts: true,
-        autoExecuteEnabledById: true,
-        autoExecuteEnabledAt: true,
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      // draft:create 부여자 기록 — 행을 잠근 뒤 트랜잭션 안에서 읽은 현재 scopes 와 비교해
+      // 새로 들어오면 부여자=저장한 관리자, 빠지면 초기화, 유지면 그대로 둔다(오래된 목록 저장과의 경합 방지).
+      let grant = {}
+      if (scopes !== undefined) {
+        const rows = await tx.$queryRaw<Array<{ scopes: string[] }>>`
+          SELECT "scopes" FROM "SpaceAgentIdentity" WHERE "id" = ${agent.id} FOR UPDATE`
+        const had = rows[0]?.scopes.includes('draft:create') === true
+        const has = scopes.includes('draft:create')
+        if (!had && has) {
+          grant = { autoExecuteEnabledById: auth.userId, autoExecuteEnabledAt: new Date() }
+        } else if (had && !has) {
+          grant = { autoExecuteEnabledById: null, autoExecuteEnabledAt: null }
+        }
+      }
+      return tx.spaceAgent.update({
+        where: { id: agent.id },
+        data: { scopes, status, oauthClientId, ...grant },
+        select: {
+          id: true,
+          name: true,
+          kind: true,
+          scopes: true,
+          status: true,
+          oauthClientId: true,
+          autoExecuteEnabledById: true,
+          autoExecuteEnabledAt: true,
+        },
+      })
     })
     await writeAuditLog(auth.userId, 'space.agent.update', 'space_agent', agent.id, {
       spaceId,
@@ -99,7 +96,6 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       scopes: updated.scopes,
       status: updated.status,
       oauthClientId: updated.oauthClientId,
-      autoExecuteDrafts: updated.autoExecuteDrafts,
     })
     return NextResponse.json({ agent: updated })
   } catch (err) {

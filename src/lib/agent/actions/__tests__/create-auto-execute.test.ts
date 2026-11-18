@@ -1,5 +1,5 @@
 /** @jest-environment node */
-// createPendingAction — 「초안 자동 실행」: 대상 액션·토큰 있는 에이전트·스위치 켜짐일 때만 승인 없이 실행한다.
+// createPendingAction — 「초안 자동 실행」: 대상 액션·토큰 있는 에이전트에 draft:create+액션 쓰기 scope 가 있을 때만 승인 없이 실행한다.
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { notifyPendingAction } from '@/lib/slack/notify-pending-action'
@@ -25,6 +25,7 @@ jest.mock('../registry', () => ({
       return {
         ...base,
         autoExecutable: true,
+        autoScope: 'sellerhub:write',
         resultUrl: (r: { planId: string }, c: { spaceId: string }) =>
           `https://app.test/plans/${r.planId}?spaceId=${c.spaceId}`,
       }
@@ -53,16 +54,16 @@ beforeEach(() => {
   jest.clearAllMocks()
   p.agentPendingAction.create.mockResolvedValue({ id: 'a1', spaceId: 'sp1', expiresAt })
   p.spaceAgent.findFirst.mockResolvedValue({
-    autoExecuteDrafts: true,
+    scopes: ['sellerhub:write', 'draft:create'],
     autoExecuteEnabledById: 'admin1',
   })
 })
 
-test('켜짐 → 켠 관리자로 승인·실행, executed + resultUrl, 승인 알림 없음', async () => {
+test('draft:create 있음 → 부여 관리자로 승인·실행, executed + resultUrl, 승인 알림 없음', async () => {
   approve.mockResolvedValue({ ok: true, status: 'EXECUTED', result: { planId: 'pl1' } })
   const res = await createPendingAction(draft)
   expect(approve).toHaveBeenCalledWith('a1', 'admin1', {
-    autoGate: { agentId: 'ag1', tokenId: 'tok1' },
+    autoGate: { agentId: 'ag1', tokenId: 'tok1', requiredScope: 'sellerhub:write' },
   })
   expect(p.spaceAgent.findFirst).toHaveBeenCalledWith(
     expect.objectContaining({ where: { id: 'ag1', spaceId: 'sp1' } })
@@ -76,11 +77,15 @@ test('켜짐 → 켠 관리자로 승인·실행, executed + resultUrl, 승인 �
   expect(notify).not.toHaveBeenCalled()
 })
 
-test('꺼짐 → 승인 대기 + 알림', async () => {
-  p.spaceAgent.findFirst.mockResolvedValue({
-    autoExecuteDrafts: false,
-    autoExecuteEnabledById: null,
-  })
+test.each([
+  [
+    'draft:create 없음(쓰기 scope 만)',
+    { scopes: ['sellerhub:write'], autoExecuteEnabledById: 'admin1' },
+  ],
+  ['쓰기 scope 없음', { scopes: ['draft:create'], autoExecuteEnabledById: 'admin1' }],
+  ['부여자 없음', { scopes: ['sellerhub:write', 'draft:create'], autoExecuteEnabledById: null }],
+])('%s → 승인 대기 + 알림', async (_n, agentRow) => {
+  p.spaceAgent.findFirst.mockResolvedValue(agentRow)
   const res = await createPendingAction(draft)
   expect(approve).not.toHaveBeenCalled()
   expect(res.status).toBe('pending_approval')
@@ -101,7 +106,7 @@ test.each([
 test.each([
   ['관리자 강등(FORBIDDEN)', { ok: false, status: 'FORBIDDEN', message: '권한 부족' }, '권한 부족'],
   [
-    '게이트 거부(스위치 꺼짐·토큰 폐기)',
+    '게이트 거부(scope 회수·토큰 폐기)',
     { ok: false, status: 'BLOCKED', message: '초안 자동 실행 조건이 맞지 않습니다' },
     '초안 자동 실행 조건이 맞지 않습니다',
   ],

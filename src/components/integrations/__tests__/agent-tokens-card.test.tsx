@@ -121,33 +121,20 @@ it('권한 저장이 MFA_REQUIRED 여도 인증 후 같은 PATCH 를 다시 보�
   expect(listCalls.length).toBeGreaterThanOrEqual(2)
 })
 
-it('초안 자동 실행 스위치는 PATCH autoExecuteDrafts 를 보내고 켠 사람을 보여 준다', async () => {
-  const on = {
-    ...agent,
-    autoExecuteDrafts: true,
-    autoExecuteEnabledByName: '에디',
-    autoExecuteEnabledAt: '2026-11-18T00:00:00Z',
-  }
-  fetchMock.mockImplementation((url: string, init?: RequestInit) => {
-    if (url.startsWith('/api/spaces/members')) return res({ spaceId: 'sp-1' })
-    if (url === '/api/spaces/sp-1/agents/ag1' && init?.method === 'PATCH') return res({ agent: on })
-    if (url === '/api/spaces/sp-1/agents') return res({ agents: [agent] })
-    return res({}, 404)
-  })
+it('초안 자동 실행 스위치는 없고 권한 수정에 「초안 바로 만들기」 그룹이 있다', async () => {
   render(<AgentTokensCard />)
-  const sw = await screen.findByRole('switch', { name: '테스트 에이전트 초안 자동 실행' })
-  expect(sw).not.toBeChecked()
-  fireEvent.click(sw)
-  await waitFor(() => {
-    const c = fetchMock.mock.calls.find((x) => x[1]?.method === 'PATCH')
-    expect(JSON.parse(c![1].body)).toEqual({ autoExecuteDrafts: true })
-  })
+  await screen.findByText('테스트 에이전트')
+  expect(screen.queryByText('초안 자동 실행')).not.toBeInTheDocument()
+  expect(screen.queryByRole('switch', { name: /초안 자동 실행/ })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '권한 수정' }))
+  expect(await screen.findByText('초안 바로 만들기(승인 없이)')).toBeInTheDocument()
+  expect(screen.getByText('draft:create')).toBeInTheDocument()
 })
 
-it('켜진 에이전트는 켠 사람 이름을 표시한다', async () => {
+it('draft:create 가 있는 에이전트는 부여한 사람 이름을 표시한다', async () => {
   const on = {
     ...agent,
-    autoExecuteDrafts: true,
+    scopes: ['sellerhub:write', 'draft:create'],
     autoExecuteEnabledByName: '에디',
     autoExecuteEnabledAt: '2026-11-18T00:00:00Z',
   }
@@ -159,5 +146,5 @@ it('켜진 에이전트는 켠 사람 이름을 표시한다', async () => {
         : res({}, 404)
   )
   render(<AgentTokensCard />)
-  expect(await screen.findByText(/에디님이 켬/)).toBeInTheDocument()
+  expect(await screen.findByText(/에디님이 부여/)).toBeInTheDocument()
 })

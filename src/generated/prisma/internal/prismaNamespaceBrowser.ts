@@ -448,6 +448,7 @@ export const AgentPendingActionScalarFieldEnum = {
   requesterSlackUserId: 'requesterSlackUserId',
   workId: 'workId',
   actorTokenId: 'actorTokenId',
+  autoExecuted: 'autoExecuted',
   status: 'status',
   expiresAt: 'expiresAt',
   decidedBy: 'decidedBy',
