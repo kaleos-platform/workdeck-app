@@ -44,10 +44,9 @@ import { openingTlsConfig } from '@/lib/hiring/migration/opening-tls'
 // 대상을 프로세스 환경변수로 지정하면 .env.local을 읽지 않는다. 개발 키가 운영 실행에 섞이지 않게 한다.
 if (!process.env.DATABASE_URL && !process.env.DIRECT_URL) config({ path: '.env.local' })
 
-import { execFile } from 'node:child_process'
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { parseArgs, promisify } from 'node:util'
+import { parseArgs } from 'node:util'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { createClient } from '@supabase/supabase-js'
 import { Client } from 'pg'
@@ -59,29 +58,16 @@ import {
   safeMigrationSummary,
   safeMigrationStatus,
   writeImportIssues,
-  type PacketSet,
   type TargetStorage,
 } from '@/lib/hiring/migration/opening-import'
 import {
   assertOutDir,
   prepareOpeningCustomer,
   writeReviewDir,
-  type OpeningObjectReader,
-  type PreparedCustomer,
 } from '@/lib/hiring/migration/opening-prepare'
+import { readPacketSet, readS3, writePacketSet } from '@/lib/hiring/migration/opening-run'
 
-const run = promisify(execFile)
 const repoRoot = resolve(__dirname, '..')
-
-const readS3: OpeningObjectReader = async ({ bucket, key }) => {
-  const profile = process.env.OPENING_AWS_PROFILE ?? 'peak'
-  const { stdout } = await run(
-    'aws',
-    ['--profile', profile, 's3', 'cp', `s3://${bucket}/${key}`, '-'],
-    { encoding: 'buffer', maxBuffer: 64 * 1024 * 1024 }
-  )
-  return stdout
-}
 
 function readReviewFile(path: string | undefined): unknown {
   if (!path) return undefined
@@ -89,34 +75,6 @@ function readReviewFile(path: string | undefined): unknown {
     return JSON.parse(readFileSync(path, 'utf8'))
   } catch {
     throw Error('REVIEW_FILE_INVALID')
-  }
-}
-
-function writePacketSet(root: string, prepared: PreparedCustomer) {
-  for (const dir of ['postings', 'templates', 'assets'])
-    mkdirSync(join(root, dir), { recursive: true, mode: 0o700 })
-  const write = (path: string, data: string | Uint8Array) =>
-    writeFileSync(join(root, path), data, { mode: 0o600 })
-  write('manifest.json', JSON.stringify(prepared.manifest, null, 2))
-  write('org.json', JSON.stringify(prepared.org))
-  for (const packet of prepared.postings)
-    write(`postings/${packet.sourcePostingId}.json`, JSON.stringify(packet))
-  for (const packet of prepared.templates)
-    write(`templates/${packet.sourceTemplateId}.json`, JSON.stringify(packet))
-  for (const [sha256, bytes] of prepared.assets) write(`assets/${sha256}`, bytes)
-}
-
-function readPacketSet(dir: string): PacketSet {
-  const readJson = (path: string): unknown => JSON.parse(readFileSync(join(dir, path), 'utf8'))
-  const readAll = (folder: string) =>
-    readdirSync(join(dir, folder))
-      .filter((name) => name.endsWith('.json'))
-      .sort()
-      .map((name) => readJson(join(folder, name)))
-  return {
-    org: readJson('org.json'),
-    templates: readAll('templates'),
-    postings: readAll('postings'),
   }
 }
 
@@ -175,6 +133,7 @@ async function prepare(args: string[]) {
   const client = new Client(
     openingTlsConfig(connectionString, readFileSync(process.env.OPENING_CA_FILE, 'utf8'))
   )
+  client.on('error', () => {}) // 유휴 연결 오류가 처리되지 않은 이벤트로 원문을 남기지 않게 한다.
   await client.connect()
   try {
     const prepared = await prepareOpeningCustomer(client, readS3, {

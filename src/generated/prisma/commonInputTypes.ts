@@ -1972,6 +1972,23 @@ export type EnumScPublishRequestStateWithAggregatesFilter<$PrismaModel = never> 
   _max?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel>
 }
 
+export type EnumOpeningMigrationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.OpeningMigrationStatus | Prisma.EnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.OpeningMigrationStatus[] | Prisma.ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OpeningMigrationStatus[] | Prisma.ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOpeningMigrationStatusFilter<$PrismaModel> | $Enums.OpeningMigrationStatus
+}
+
+export type EnumOpeningMigrationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OpeningMigrationStatus | Prisma.EnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.OpeningMigrationStatus[] | Prisma.ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OpeningMigrationStatus[] | Prisma.ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOpeningMigrationStatusWithAggregatesFilter<$PrismaModel> | $Enums.OpeningMigrationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOpeningMigrationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOpeningMigrationStatusFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -3874,6 +3891,23 @@ export type NestedEnumScPublishRequestStateWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel>
   _max?: Prisma.NestedEnumScPublishRequestStateFilter<$PrismaModel>
+}
+
+export type NestedEnumOpeningMigrationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.OpeningMigrationStatus | Prisma.EnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.OpeningMigrationStatus[] | Prisma.ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OpeningMigrationStatus[] | Prisma.ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOpeningMigrationStatusFilter<$PrismaModel> | $Enums.OpeningMigrationStatus
+}
+
+export type NestedEnumOpeningMigrationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OpeningMigrationStatus | Prisma.EnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.OpeningMigrationStatus[] | Prisma.ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OpeningMigrationStatus[] | Prisma.ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOpeningMigrationStatusWithAggregatesFilter<$PrismaModel> | $Enums.OpeningMigrationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOpeningMigrationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOpeningMigrationStatusFilter<$PrismaModel>
 }
 
 
