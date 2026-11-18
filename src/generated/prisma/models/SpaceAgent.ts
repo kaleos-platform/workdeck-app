@@ -31,6 +31,9 @@ export type SpaceAgentMinAggregateOutputType = {
   kind: string | null
   status: string | null
   oauthClientId: string | null
+  autoExecuteDrafts: boolean | null
+  autoExecuteEnabledById: string | null
+  autoExecuteEnabledAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -42,6 +45,9 @@ export type SpaceAgentMaxAggregateOutputType = {
   kind: string | null
   status: string | null
   oauthClientId: string | null
+  autoExecuteDrafts: boolean | null
+  autoExecuteEnabledById: string | null
+  autoExecuteEnabledAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -54,6 +60,9 @@ export type SpaceAgentCountAggregateOutputType = {
   scopes: number
   status: number
   oauthClientId: number
+  autoExecuteDrafts: number
+  autoExecuteEnabledById: number
+  autoExecuteEnabledAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -67,6 +76,9 @@ export type SpaceAgentMinAggregateInputType = {
   kind?: true
   status?: true
   oauthClientId?: true
+  autoExecuteDrafts?: true
+  autoExecuteEnabledById?: true
+  autoExecuteEnabledAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -78,6 +90,9 @@ export type SpaceAgentMaxAggregateInputType = {
   kind?: true
   status?: true
   oauthClientId?: true
+  autoExecuteDrafts?: true
+  autoExecuteEnabledById?: true
+  autoExecuteEnabledAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -90,6 +105,9 @@ export type SpaceAgentCountAggregateInputType = {
   scopes?: true
   status?: true
   oauthClientId?: true
+  autoExecuteDrafts?: true
+  autoExecuteEnabledById?: true
+  autoExecuteEnabledAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -175,6 +193,9 @@ export type SpaceAgentGroupByOutputType = {
   scopes: string[]
   status: string
   oauthClientId: string | null
+  autoExecuteDrafts: boolean
+  autoExecuteEnabledById: string | null
+  autoExecuteEnabledAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: SpaceAgentCountAggregateOutputType | null
@@ -208,6 +229,9 @@ export type SpaceAgentWhereInput = {
   scopes?: Prisma.StringNullableListFilter<"SpaceAgent">
   status?: Prisma.StringFilter<"SpaceAgent"> | string
   oauthClientId?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
+  autoExecuteDrafts?: Prisma.BoolFilter<"SpaceAgent"> | boolean
+  autoExecuteEnabledById?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
+  autoExecuteEnabledAt?: Prisma.DateTimeNullableFilter<"SpaceAgent"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -222,6 +246,9 @@ export type SpaceAgentOrderByWithRelationInput = {
   scopes?: Prisma.SortOrder
   status?: Prisma.SortOrder
   oauthClientId?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoExecuteDrafts?: Prisma.SortOrder
+  autoExecuteEnabledById?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoExecuteEnabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -240,6 +267,9 @@ export type SpaceAgentWhereUniqueInput = Prisma.AtLeast<{
   kind?: Prisma.StringFilter<"SpaceAgent"> | string
   scopes?: Prisma.StringNullableListFilter<"SpaceAgent">
   status?: Prisma.StringFilter<"SpaceAgent"> | string
+  autoExecuteDrafts?: Prisma.BoolFilter<"SpaceAgent"> | boolean
+  autoExecuteEnabledById?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
+  autoExecuteEnabledAt?: Prisma.DateTimeNullableFilter<"SpaceAgent"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -254,6 +284,9 @@ export type SpaceAgentOrderByWithAggregationInput = {
   scopes?: Prisma.SortOrder
   status?: Prisma.SortOrder
   oauthClientId?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoExecuteDrafts?: Prisma.SortOrder
+  autoExecuteEnabledById?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoExecuteEnabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SpaceAgentCountOrderByAggregateInput
@@ -272,6 +305,9 @@ export type SpaceAgentScalarWhereWithAggregatesInput = {
   scopes?: Prisma.StringNullableListFilter<"SpaceAgent">
   status?: Prisma.StringWithAggregatesFilter<"SpaceAgent"> | string
   oauthClientId?: Prisma.StringNullableWithAggregatesFilter<"SpaceAgent"> | string | null
+  autoExecuteDrafts?: Prisma.BoolWithAggregatesFilter<"SpaceAgent"> | boolean
+  autoExecuteEnabledById?: Prisma.StringNullableWithAggregatesFilter<"SpaceAgent"> | string | null
+  autoExecuteEnabledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SpaceAgent"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceAgent"> | Date | string
 }
@@ -283,6 +319,9 @@ export type SpaceAgentCreateInput = {
   scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
   status?: string
   oauthClientId?: string | null
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: string | null
+  autoExecuteEnabledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutAgentsInput
@@ -297,6 +336,9 @@ export type SpaceAgentUncheckedCreateInput = {
   scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
   status?: string
   oauthClientId?: string | null
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: string | null
+  autoExecuteEnabledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tokens?: Prisma.AgentTokenUncheckedCreateNestedManyWithoutAgentInput
@@ -309,6 +351,9 @@ export type SpaceAgentUpdateInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutAgentsNestedInput
@@ -323,6 +368,9 @@ export type SpaceAgentUncheckedUpdateInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tokens?: Prisma.AgentTokenUncheckedUpdateManyWithoutAgentNestedInput
@@ -336,6 +384,9 @@ export type SpaceAgentCreateManyInput = {
   scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
   status?: string
   oauthClientId?: string | null
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: string | null
+  autoExecuteEnabledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -347,6 +398,9 @@ export type SpaceAgentUpdateManyMutationInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -359,6 +413,9 @@ export type SpaceAgentUncheckedUpdateManyInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -394,6 +451,9 @@ export type SpaceAgentCountOrderByAggregateInput = {
   scopes?: Prisma.SortOrder
   status?: Prisma.SortOrder
   oauthClientId?: Prisma.SortOrder
+  autoExecuteDrafts?: Prisma.SortOrder
+  autoExecuteEnabledById?: Prisma.SortOrder
+  autoExecuteEnabledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -405,6 +465,9 @@ export type SpaceAgentMaxOrderByAggregateInput = {
   kind?: Prisma.SortOrder
   status?: Prisma.SortOrder
   oauthClientId?: Prisma.SortOrder
+  autoExecuteDrafts?: Prisma.SortOrder
+  autoExecuteEnabledById?: Prisma.SortOrder
+  autoExecuteEnabledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -416,6 +479,9 @@ export type SpaceAgentMinOrderByAggregateInput = {
   kind?: Prisma.SortOrder
   status?: Prisma.SortOrder
   oauthClientId?: Prisma.SortOrder
+  autoExecuteDrafts?: Prisma.SortOrder
+  autoExecuteEnabledById?: Prisma.SortOrder
+  autoExecuteEnabledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -497,6 +563,9 @@ export type SpaceAgentCreateWithoutSpaceInput = {
   scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
   status?: string
   oauthClientId?: string | null
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: string | null
+  autoExecuteEnabledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tokens?: Prisma.AgentTokenCreateNestedManyWithoutAgentInput
@@ -509,6 +578,9 @@ export type SpaceAgentUncheckedCreateWithoutSpaceInput = {
   scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
   status?: string
   oauthClientId?: string | null
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: string | null
+  autoExecuteEnabledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tokens?: Prisma.AgentTokenUncheckedCreateNestedManyWithoutAgentInput
@@ -551,6 +623,9 @@ export type SpaceAgentScalarWhereInput = {
   scopes?: Prisma.StringNullableListFilter<"SpaceAgent">
   status?: Prisma.StringFilter<"SpaceAgent"> | string
   oauthClientId?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
+  autoExecuteDrafts?: Prisma.BoolFilter<"SpaceAgent"> | boolean
+  autoExecuteEnabledById?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
+  autoExecuteEnabledAt?: Prisma.DateTimeNullableFilter<"SpaceAgent"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
 }
@@ -562,6 +637,9 @@ export type SpaceAgentCreateWithoutTokensInput = {
   scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
   status?: string
   oauthClientId?: string | null
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: string | null
+  autoExecuteEnabledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutAgentsInput
@@ -575,6 +653,9 @@ export type SpaceAgentUncheckedCreateWithoutTokensInput = {
   scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
   status?: string
   oauthClientId?: string | null
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: string | null
+  autoExecuteEnabledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -602,6 +683,9 @@ export type SpaceAgentUpdateWithoutTokensInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutAgentsNestedInput
@@ -615,6 +699,9 @@ export type SpaceAgentUncheckedUpdateWithoutTokensInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -626,6 +713,9 @@ export type SpaceAgentCreateManySpaceInput = {
   scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
   status?: string
   oauthClientId?: string | null
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: string | null
+  autoExecuteEnabledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -637,6 +727,9 @@ export type SpaceAgentUpdateWithoutSpaceInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tokens?: Prisma.AgentTokenUpdateManyWithoutAgentNestedInput
@@ -649,6 +742,9 @@ export type SpaceAgentUncheckedUpdateWithoutSpaceInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tokens?: Prisma.AgentTokenUncheckedUpdateManyWithoutAgentNestedInput
@@ -661,6 +757,9 @@ export type SpaceAgentUncheckedUpdateManyWithoutSpaceInput = {
   scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
   status?: Prisma.StringFieldUpdateOperationsInput | string
   oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -704,6 +803,9 @@ export type SpaceAgentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   scopes?: boolean
   status?: boolean
   oauthClientId?: boolean
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: boolean
+  autoExecuteEnabledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -719,6 +821,9 @@ export type SpaceAgentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   scopes?: boolean
   status?: boolean
   oauthClientId?: boolean
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: boolean
+  autoExecuteEnabledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -732,6 +837,9 @@ export type SpaceAgentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   scopes?: boolean
   status?: boolean
   oauthClientId?: boolean
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: boolean
+  autoExecuteEnabledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -745,11 +853,14 @@ export type SpaceAgentSelectScalar = {
   scopes?: boolean
   status?: boolean
   oauthClientId?: boolean
+  autoExecuteDrafts?: boolean
+  autoExecuteEnabledById?: boolean
+  autoExecuteEnabledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SpaceAgentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "kind" | "scopes" | "status" | "oauthClientId" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceAgent"]>
+export type SpaceAgentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "kind" | "scopes" | "status" | "oauthClientId" | "autoExecuteDrafts" | "autoExecuteEnabledById" | "autoExecuteEnabledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceAgent"]>
 export type SpaceAgentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   tokens?: boolean | Prisma.SpaceAgent$tokensArgs<ExtArgs>
@@ -776,6 +887,9 @@ export type $SpaceAgentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     scopes: string[]
     status: string
     oauthClientId: string | null
+    autoExecuteDrafts: boolean
+    autoExecuteEnabledById: string | null
+    autoExecuteEnabledAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["spaceAgent"]>
@@ -1210,6 +1324,9 @@ export interface SpaceAgentFieldRefs {
   readonly scopes: Prisma.FieldRef<"SpaceAgent", 'String[]'>
   readonly status: Prisma.FieldRef<"SpaceAgent", 'String'>
   readonly oauthClientId: Prisma.FieldRef<"SpaceAgent", 'String'>
+  readonly autoExecuteDrafts: Prisma.FieldRef<"SpaceAgent", 'Boolean'>
+  readonly autoExecuteEnabledById: Prisma.FieldRef<"SpaceAgent", 'String'>
+  readonly autoExecuteEnabledAt: Prisma.FieldRef<"SpaceAgent", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"SpaceAgent", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SpaceAgent", 'DateTime'>
 }

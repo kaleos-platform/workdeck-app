@@ -10,6 +10,7 @@ import { readTargetKeywords, applyKeywordsToTarget } from '@/lib/sh/keyword-appl
 import { applyKeywordOps } from '@/lib/sh/keyword-review'
 import { lastChangeAt, isMeasuring, MEASURE_DAYS } from '@/lib/sh/keyword-review-query'
 import { keywordListSchema } from '@/lib/sh/schemas'
+import { buildAppUrl } from '@/lib/domain'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
 function def<T>(d: ActionDefinition<T>): ActionDefinition {
@@ -32,6 +33,13 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
   title: '발주 계획 생성',
   paramsSchema: reorderPlanParams,
   requiredRole: 'ADMIN',
+  autoExecutable: true,
+  resultUrl: (result, ctx) => {
+    const planId = (result as { planId?: string } | null)?.planId
+    return planId
+      ? buildAppUrl(`/d/seller-ops/inventory/reorder/plans/${planId}?spaceId=${ctx.spaceId}`)
+      : null
+  },
   // 제안 시점 검증 — 다른 Space 의 상품 id 로 승인 불가 액션이 큐에 쌓이지 않게(실행 시점에도 spaceId 로 막는다).
   validateCreate: async (ctx, params) => {
     const product = await prisma.invProduct.findFirst({

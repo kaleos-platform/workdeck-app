@@ -111,6 +111,8 @@ const createDraft = def<PostingDraftParams>({
   title: '채용 공고 초안 작성',
   paramsSchema: postingDraftParams,
   requiredRole: 'ADMIN',
+  autoExecutable: true,
+  resultUrl: (result) => (result as { editUrl?: string } | null)?.editUrl ?? null,
   retryableAfterFailure: true,
   async validateCreate(ctx, params) {
     await requireDeck(ctx.spaceId, DECK)

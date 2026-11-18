@@ -120,3 +120,44 @@ it('권한 저장이 MFA_REQUIRED 여도 인증 후 같은 PATCH 를 다시 보�
   const listCalls = fetchMock.mock.calls.filter((c) => c[0] === '/api/spaces/sp-1/agents')
   expect(listCalls.length).toBeGreaterThanOrEqual(2)
 })
+
+it('초안 자동 실행 스위치는 PATCH autoExecuteDrafts 를 보내고 켠 사람을 보여 준다', async () => {
+  const on = {
+    ...agent,
+    autoExecuteDrafts: true,
+    autoExecuteEnabledByName: '에디',
+    autoExecuteEnabledAt: '2026-11-18T00:00:00Z',
+  }
+  fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+    if (url.startsWith('/api/spaces/members')) return res({ spaceId: 'sp-1' })
+    if (url === '/api/spaces/sp-1/agents/ag1' && init?.method === 'PATCH') return res({ agent: on })
+    if (url === '/api/spaces/sp-1/agents') return res({ agents: [agent] })
+    return res({}, 404)
+  })
+  render(<AgentTokensCard />)
+  const sw = await screen.findByRole('switch', { name: '테스트 에이전트 초안 자동 실행' })
+  expect(sw).not.toBeChecked()
+  fireEvent.click(sw)
+  await waitFor(() => {
+    const c = fetchMock.mock.calls.find((x) => x[1]?.method === 'PATCH')
+    expect(JSON.parse(c![1].body)).toEqual({ autoExecuteDrafts: true })
+  })
+})
+
+it('켜진 에이전트는 켠 사람 이름을 표시한다', async () => {
+  const on = {
+    ...agent,
+    autoExecuteDrafts: true,
+    autoExecuteEnabledByName: '에디',
+    autoExecuteEnabledAt: '2026-11-18T00:00:00Z',
+  }
+  fetchMock.mockImplementation((url: string) =>
+    url.startsWith('/api/spaces/members')
+      ? res({ spaceId: 'sp-1' })
+      : url === '/api/spaces/sp-1/agents'
+        ? res({ agents: [on] })
+        : res({}, 404)
+  )
+  render(<AgentTokensCard />)
+  expect(await screen.findByText(/에디님이 켬/)).toBeInTheDocument()
+})
