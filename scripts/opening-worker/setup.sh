@@ -254,10 +254,9 @@ case "${1:-}" in
     elif [ "$ST" = 2 ]; then
       FAIL=1; echo '{"iam":"lookup_failed"}'
     fi
-    # SG 는 마지막에 닫는다: DB·IAM 회수가 모두 확인된 뒤에만. 실패면 열어 두어 revoke 를 다시 돌릴 수 있게 한다.
-    if [ "$FAIL" != 0 ]; then
-      echo '{"sg":"kept_for_retry"}'
-    elif CIDRS=$(worker_cidrs); then
+    # SG 는 다른 회수의 성공 여부와 무관하게 마지막에 항상 닫는다(회수 요청 뒤 DB 접근이 남지 않게).
+    # DB·IAM 이 실패했으면 재시도는 `setup.sh sg`(현재 IP 재허용) 후 `setup.sh revoke` 다.
+    if CIDRS=$(worker_cidrs); then
       for cidr in $CIDRS; do revoke_cidr "$cidr" || FAIL=1; done
       LEFT=$(worker_cidrs) || LEFT=lookup_failed
       [ -z "$LEFT" ] || { FAIL=1; echo '{"sg":"rules_remaining_or_unknown"}'; }
@@ -268,7 +267,7 @@ case "${1:-}" in
       for k in opening-reader-url opening-reader-kind s3-credentials opening-hmac-key workdeck-direct-url encryption-key-v1; do kc_del $k; done
       echo '{"revoked":["launchd","sg","db-role","iam-user","keychain"]}'
     else
-      echo '{"code":"REVOKE_INCOMPLETE","keychain":"kept_for_retry"}'; exit 1
+      echo '{"code":"REVOKE_INCOMPLETE","keychain":"kept_for_retry","retry":"setup.sh sg && setup.sh revoke"}'; exit 1
     fi
     ;;
   *)
