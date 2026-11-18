@@ -79,7 +79,10 @@ async function main() {
                 AND has_column_privilege(current_user, a.attrelid, a.attnum, 'SELECT')) AS readable_columns,
            (SELECT count(*)::int FROM t WHERE NOT home AND has_table_privilege(current_user, t.oid, 'SELECT')) AS readable_elsewhere,
            (SELECT count(*)::int FROM pg_namespace n WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
-              AND n.nspname NOT LIKE 'pg_%' AND has_schema_privilege(current_user, n.oid, 'CREATE')) AS create_schemas,
+              AND n.nspname NOT LIKE 'pg_%' AND has_schema_privilege(current_user, n.oid, 'CREATE')
+              AND NOT has_schema_privilege('public', n.oid, 'CREATE')) AS create_schemas,
+           (SELECT count(*)::int FROM pg_namespace n WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+              AND n.nspname NOT LIKE 'pg_%' AND has_schema_privilege('public', n.oid, 'CREATE')) AS public_create_schemas,
            (SELECT array_agg(a.attname ORDER BY a.attname) FROM pg_attribute a JOIN t ON t.oid = a.attrelid
              WHERE t.home AND t.relname = 'member' AND a.attnum > 0 AND NOT a.attisdropped
                AND has_column_privilege(current_user, a.attrelid, a.attnum, 'SELECT')) AS member_columns,
@@ -101,8 +104,11 @@ async function main() {
     out.readableTableNamesOk =
       ((priv.readable_tables ?? []) as string[]).join(',') === [...ALLOWED_TABLES].sort().join(',')
     out.readableElsewhere = priv.readable_elsewhere
-    // 어떤 스키마에도 객체를 만들 수 없어야 한다(PUBLIC 상속 포함). read-only 기본값은 세션에서 바꿀 수 있어 경계가 아니다.
+    // 이 역할에 직접(또는 PUBLIC 이 아닌 경로로) 주어진 CREATE 는 없어야 한다. read-only 기본값은 세션에서 바꿀 수 있어 경계가 아니다.
     out.createSchemas = priv.create_schemas
+    // PG14 기본값(PUBLIC 의 public 스키마 CREATE)은 오프닝 DB 공용 설정이라 경고로만 보고한다(사용자 결정 11-18).
+    // 새 객체를 만들 수는 있어도 기존 데이터를 읽거나 바꾸지는 못한다.
+    out.publicCreateSchemasWarn = priv.public_create_schemas
     out.memberColumns = priv.member_columns ?? []
     out.memberTotalColumns = priv.member_total_columns
     out.memberships = priv.memberships
