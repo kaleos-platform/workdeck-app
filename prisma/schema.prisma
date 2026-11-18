@@ -725,6 +725,11 @@ model SpaceAgent {
   // 구성원 세션은 이 연동 계정으로 기록되고 이 Space에 고정된다.
   oauthClientId String?  @unique
 
+  // 초안 자동 실행 — 켜면 발주 계획·공고 초안 생성 액션을 승인 없이 실행한다(켠 관리자 이름으로 기록).
+  autoExecuteDrafts      Boolean   @default(false)
+  autoExecuteEnabledById String?
+  autoExecuteEnabledAt   DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

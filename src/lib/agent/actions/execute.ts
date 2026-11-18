@@ -58,7 +58,14 @@ export async function approveAndExecute(
   actionId: string,
   deciderId: string,
   /** 호출자가 전문을 보여주는 웹 단건 승인일 때만 true. 기본값은 Slack·일괄처럼 미확인으로 본다. */
-  opts: { webReviewed?: boolean } = {}
+  opts: {
+    webReviewed?: boolean
+    /**
+     * 「초안 자동 실행」 경로 — 게이트 트랜잭션 안에서 에이전트·토큰 행을 잠그고 스위치·토큰 상태를 다시 확인한다.
+     * 하나라도 맞지 않으면 전이하지 않는다(액션은 PENDING 유지). 스위치 끄기·토큰 폐기와 행 잠금으로 직렬화된다.
+     */
+    autoGate?: { agentId: string; tokenId: string }
+  } = {}
 ): Promise<DecisionOutcome> {
   const now = new Date()
 
@@ -86,10 +93,41 @@ export async function approveAndExecute(
   // 게이트: PENDING 이고 아직 만료되지 않은 경우에만 APPROVED 로 전이.
   // expiresAt 을 보지 않으면 EXPIRED 전환(목록 lazy expire·하루 1회 cron) 전의
   // 만료 액션이 그대로 승인·실행된다 — 가격 쓰기의 6시간 만료가 무효가 된다.
-  const gate = await prisma.agentPendingAction.updateMany({
-    where: { id: actionId, status: 'PENDING', expiresAt: { gt: now } },
-    data: { status: 'APPROVED', decidedBy: deciderId, decidedAt: now },
-  })
+  const transition = (db: Pick<typeof prisma, 'agentPendingAction'>) =>
+    db.agentPendingAction.updateMany({
+      where: { id: actionId, status: 'PENDING', expiresAt: { gt: now } },
+      data: { status: 'APPROVED', decidedBy: deciderId, decidedAt: now },
+    })
+  const autoGate = opts.autoGate
+  const gate = autoGate
+    ? await prisma.$transaction(async (tx) => {
+        const agents = await tx.$queryRaw<
+          Array<{
+            status: string
+            autoExecuteDrafts: boolean
+            autoExecuteEnabledById: string | null
+          }>
+        >`SELECT "status", "autoExecuteDrafts", "autoExecuteEnabledById" FROM "SpaceAgentIdentity" WHERE "id" = ${autoGate.agentId} FOR UPDATE`
+        const tokens = await tx.$queryRaw<
+          Array<{ revokedAt: Date | null; expiresAt: Date | null }>
+        >`
+          SELECT "revokedAt", "expiresAt" FROM "AgentToken"
+          WHERE "id" = ${autoGate.tokenId} AND "agentId" = ${autoGate.agentId} FOR UPDATE`
+        const agent = agents[0]
+        const token = tokens[0]
+        const open =
+          agent?.status === 'ACTIVE' &&
+          agent.autoExecuteDrafts === true &&
+          agent.autoExecuteEnabledById === deciderId &&
+          token !== undefined &&
+          token.revokedAt === null &&
+          (token.expiresAt === null || token.expiresAt > now)
+        return open ? transition(tx) : null
+      })
+    : await transition(prisma)
+  if (gate === null) {
+    return { ok: false, status: 'BLOCKED', message: '초안 자동 실행 조건이 맞지 않습니다' }
+  }
   if (gate.count !== 1) {
     // count=0 의 사유를 나눠야 사용자가 영문을 안다.
     const current = await prisma.agentPendingAction.findUnique({
