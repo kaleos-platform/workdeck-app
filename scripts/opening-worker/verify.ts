@@ -53,6 +53,10 @@ async function main() {
   )
   op.on('error', () => {})
   await op.connect()
+  // 워커(connectOpening)와 같은 세션 설정: 기본 트랜잭션을 읽기 전용으로 연다.
+  await op.query('SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY')
+  const apiAccount = process.env.OPENING_READER_KIND === 'api'
+  out.readerKind = apiAccount ? 'api' : 'role'
   let samples: { storage: string; file_key: string }[] = []
   try {
     await op.query('BEGIN')
@@ -73,7 +77,7 @@ async function main() {
            (SELECT count(*)::int FROM t WHERE has_table_privilege(current_user, t.oid, 'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')) AS writable_tables,
            (SELECT count(*)::int FROM pg_attribute a JOIN t ON t.oid = a.attrelid WHERE a.attnum > 0 AND NOT a.attisdropped
               AND has_column_privilege(current_user, a.attrelid, a.attnum, 'INSERT,UPDATE,REFERENCES')) AS writable_columns,
-           (SELECT array_agg(relname ORDER BY relname) FROM t WHERE home AND has_table_privilege(current_user, t.oid, 'SELECT')) AS readable_tables,
+           (SELECT array_agg(relname::text ORDER BY relname) FROM t WHERE home AND has_table_privilege(current_user, t.oid, 'SELECT')) AS readable_tables,
            (SELECT array_agg(DISTINCT (CASE WHEN t.home THEN '' ELSE '~' END) || t.relname || '.' || a.attname)
               FROM pg_attribute a JOIN t ON t.oid = a.attrelid WHERE a.attnum > 0 AND NOT a.attisdropped
                 AND has_column_privilege(current_user, a.attrelid, a.attnum, 'SELECT')) AS readable_columns,
@@ -83,7 +87,7 @@ async function main() {
               AND NOT has_schema_privilege('public', n.oid, 'CREATE')) AS create_schemas,
            (SELECT count(*)::int FROM pg_namespace n WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
               AND n.nspname NOT LIKE 'pg_%' AND has_schema_privilege('public', n.oid, 'CREATE')) AS public_create_schemas,
-           (SELECT array_agg(a.attname ORDER BY a.attname) FROM pg_attribute a JOIN t ON t.oid = a.attrelid
+           (SELECT array_agg(a.attname::text ORDER BY a.attname) FROM pg_attribute a JOIN t ON t.oid = a.attrelid
              WHERE t.home AND t.relname = 'member' AND a.attnum > 0 AND NOT a.attisdropped
                AND has_column_privilege(current_user, a.attrelid, a.attnum, 'SELECT')) AS member_columns,
            (SELECT count(*)::int FROM pg_attribute a JOIN t ON t.oid = a.attrelid
@@ -95,6 +99,7 @@ async function main() {
     out.writableTables = priv.writable_tables
     out.writableColumns = priv.writable_columns
     out.readableTables = (priv.readable_tables ?? []).length
+    out.readableTableList = priv.readable_tables ?? []
     // 허용 목록 밖에서 읽을 수 있는 컬럼(다른 스키마는 ~ 접두사). PUBLIC 의 컬럼 단위 권한까지 잡는다.
     out.unexpectedReadableColumns = ((priv.readable_columns ?? []) as string[]).filter((tc) => {
       const [table, column] = tc.split('.')
@@ -116,6 +121,15 @@ async function main() {
     out.readOnlyDefault = (
       await op.query('SHOW transaction_read_only')
     ).rows[0].transaction_read_only
+    // 실제 쓰기 시도가 읽기 전용(25006)으로 거부되는지. 앱 계정은 권한상 쓰기 가능하므로 이것이 경계다.
+    await op.query('SAVEPOINT probe')
+    try {
+      await op.query('UPDATE brand SET id = id WHERE false')
+      out.writeRejected = 'NOT_REJECTED'
+    } catch (error) {
+      out.writeRejected = (error as { code?: string }).code ?? 'UNKNOWN'
+    }
+    await op.query('ROLLBACK TO SAVEPOINT probe')
     samples = (
       await op.query(
         `SELECT DISTINCT ON (storage, split_part(file_key, '/', 1)) storage, file_key FROM file
@@ -136,21 +150,31 @@ async function main() {
   out.s3Prefixes = samples.length
   out.s3Readable = s3Ok
   const memberColumns = out.memberColumns as string[]
-  const ok =
-    out.writableTables === 0 &&
-    out.writableColumns === 0 &&
-    out.readableTables === 12 &&
-    out.readableTableNamesOk === true &&
-    out.unexpectedReadableColumns === 0 &&
-    out.readableElsewhere === 0 &&
-    out.createSchemas === 0 &&
-    memberColumns.join(',') === 'email_hash,id,status' &&
-    Number(out.memberTotalColumns) > 3 &&
-    out.memberships === 0 &&
-    out.elevated === false &&
+  const readable = (out.readableTableList ?? []) as string[]
+  out.missingTables = ALLOWED_TABLES.filter((t) => !readable.includes(t)).length
+  const common =
+    out.missingTables === 0 &&
     out.readOnlyDefault === 'on' &&
+    out.writeRejected === '25006' &&
+    ['email_hash', 'id', 'status'].every((c) => memberColumns.includes(c)) &&
     samples.length > 0 &&
     s3Ok === samples.length
+  // 전용 역할이면 카탈로그 유효 권한 경계까지, 앱 계정이면 세션 읽기 전용만 요구한다(권한 항목은 참고로만 출력).
+  const ok = apiAccount
+    ? common
+    : common &&
+      out.writableTables === 0 &&
+      out.writableColumns === 0 &&
+      out.readableTables === 12 &&
+      out.readableTableNamesOk === true &&
+      out.unexpectedReadableColumns === 0 &&
+      out.readableElsewhere === 0 &&
+      out.createSchemas === 0 &&
+      memberColumns.join(',') === 'email_hash,id,status' &&
+      Number(out.memberTotalColumns) > 3 &&
+      out.memberships === 0 &&
+      out.elevated === false
+  delete out.readableTableList
   console.log(JSON.stringify({ status: ok ? 'VERIFIED' : 'CHECK_FAILED', ...out }))
   if (!ok) process.exitCode = 1
 }
@@ -161,6 +185,15 @@ main().catch((error) => {
     JSON.stringify({
       status: 'BLOCKED',
       code: /^[A-Z_0-9]+$/.test(message) ? message : 'VERIFY_FAILED',
+      // 진단용(OPENING_VERIFY_DEBUG=1): 오류 원문 앞부분만, URL·이메일은 가린다.
+      ...(process.env.OPENING_VERIFY_DEBUG === '1'
+        ? {
+            detail: message
+              .slice(0, 160)
+              .replace(/\S+:\/\/\S+/g, '<url>')
+              .replace(/\S+@\S+/g, '<email>'),
+          }
+        : {}),
     })
   )
   process.exitCode = 1
