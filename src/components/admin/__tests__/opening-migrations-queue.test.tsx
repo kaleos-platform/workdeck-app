@@ -183,6 +183,8 @@ test('DECRYPT_FAILED 면 복호화 실패 안내를 보인다', () => {
   render(<OpeningMigrationsQueue jobs={[job({ contactHits: 'DECRYPT_FAILED' })]} />)
   openRow('owner@example.com')
   expect(screen.getByText(/복호화하지 못했습니다/)).toBeInTheDocument()
+  // 조각을 볼 수 없으면 검토 없이 승인되므로 승인 버튼을 숨긴다
+  expect(screen.queryByRole('button', { name: '승인' })).not.toBeInTheDocument()
 })
 
 test('MATCHED 행(진행 중 탭)은 보류만 노출한다', () => {

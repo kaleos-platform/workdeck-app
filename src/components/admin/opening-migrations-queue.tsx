@@ -303,7 +303,7 @@ function Detail({
         <p className="text-xs text-muted-foreground">(완료·보류 시 삭제)</p>
       </section>
       <div className="flex gap-2">
-        {job.status === 'PLANNED' && job.hasSnapshot && (
+        {job.status === 'PLANNED' && job.hasSnapshot && job.contactHits !== 'DECRYPT_FAILED' && (
           <Button disabled={busy} onClick={onApprove}>
             승인
           </Button>

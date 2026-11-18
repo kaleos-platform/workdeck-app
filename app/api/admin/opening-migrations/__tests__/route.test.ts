@@ -148,6 +148,18 @@ test('PLANNED 가 아니거나 snapshot 이 없으면 승인은 409', async () =
   expect(jobs.updateMany).not.toHaveBeenCalled()
 })
 
+test('연락처 조각을 복호화하지 못하면 승인은 409, 복호화되면 통과', async () => {
+  jobs.findUnique.mockResolvedValue({ ...planned, contactHitsEnc: 'enc', contactHitsIv: 'iv' })
+  ;(decryptField as jest.Mock).mockImplementationOnce(() => {
+    throw new Error('bad key')
+  })
+  expect((await POST(request({ action: 'approve' }), { params })).status).toBe(409)
+  expect(jobs.updateMany).not.toHaveBeenCalled()
+  ;(decryptField as jest.Mock).mockReturnValueOnce('[]')
+  jobs.updateMany.mockResolvedValue({ count: 1 })
+  expect((await POST(request({ action: 'approve' }), { params })).status).toBe(200)
+})
+
 test('보류는 MATCHED·PLANNED·BLOCKED·FAILED·APPROVED 에서만, contactHits 를 비운다', async () => {
   jobs.updateMany.mockResolvedValue({ count: 1 })
   expect((await POST(request({ action: 'hold' }), { params })).status).toBe(200)

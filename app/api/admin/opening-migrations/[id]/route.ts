@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireOperator, writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
+import { decryptField } from '@/lib/crypto/field-crypto'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
 
@@ -26,7 +27,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const job = await prisma.openingMigrationJob.findUnique({
     where: { id },
-    select: { id: true, status: true, summary: true, updatedAt: true, openingBrandId: true },
+    select: {
+      id: true,
+      status: true,
+      summary: true,
+      updatedAt: true,
+      openingBrandId: true,
+      contactHitsEnc: true,
+      contactHitsIv: true,
+    },
   })
   if (!job) return errorResponse('이전 job을 찾을 수 없습니다', 404)
 
@@ -36,6 +45,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const snapshot = (job.summary as { snapshot?: Prisma.InputJsonValue } | null)?.snapshot
   if (action === 'approve' && (job.status !== 'PLANNED' || !snapshot))
     return errorResponse('승인할 수 없는 상태입니다', 409)
+  // 연락처 조각을 운영자가 볼 수 없으면(복호화 실패) 검토 없이 승인되므로 막는다.
+  // 승인 update 는 updatedAt 조건이라 여기서 확인한 조각이 그대로 확정된다.
+  if (action === 'approve' && job.contactHitsEnc) {
+    try {
+      decryptField('pii', job.contactHitsEnc, job.contactHitsIv ?? '')
+    } catch {
+      return errorResponse('연락처 조각을 확인할 수 없어 승인할 수 없습니다', 409)
+    }
+  }
   // 낡은 화면에서 승인하지 않도록, 화면이 본 updatedAt 이 지금과 다르면 거절한다.
   if (
     parsed.data.updatedAt &&
