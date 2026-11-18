@@ -61,10 +61,11 @@ export async function approveAndExecute(
   opts: {
     webReviewed?: boolean
     /**
-     * 「초안 자동 실행」 경로 — 게이트 트랜잭션 안에서 에이전트·토큰 행을 잠그고 스위치·토큰 상태를 다시 확인한다.
-     * 하나라도 맞지 않으면 전이하지 않는다(액션은 PENDING 유지). 스위치 끄기·토큰 폐기와 행 잠금으로 직렬화된다.
+     * 「초안 바로 만들기」 경로 — 게이트 트랜잭션 안에서 에이전트·토큰 행을 잠그고 scope(draft:create·requiredScope)·
+     * 부여자·토큰 상태를 다시 확인한다. 하나라도 맞지 않으면 전이하지 않는다(액션은 PENDING 유지).
+     * scope 회수·토큰 폐기와 행 잠금으로 직렬화된다.
      */
-    autoGate?: { agentId: string; tokenId: string }
+    autoGate?: { agentId: string; tokenId: string; requiredScope: string }
   } = {}
 ): Promise<DecisionOutcome> {
   const now = new Date()
@@ -96,7 +97,12 @@ export async function approveAndExecute(
   const transition = (db: Pick<typeof prisma, 'agentPendingAction'>) =>
     db.agentPendingAction.updateMany({
       where: { id: actionId, status: 'PENDING', expiresAt: { gt: now } },
-      data: { status: 'APPROVED', decidedBy: deciderId, decidedAt: now },
+      data: {
+        status: 'APPROVED',
+        decidedBy: deciderId,
+        decidedAt: now,
+        ...(opts.autoGate ? { autoExecuted: true } : {}),
+      },
     })
   const autoGate = opts.autoGate
   const gate = autoGate
@@ -104,10 +110,10 @@ export async function approveAndExecute(
         const agents = await tx.$queryRaw<
           Array<{
             status: string
-            autoExecuteDrafts: boolean
+            scopes: string[]
             autoExecuteEnabledById: string | null
           }>
-        >`SELECT "status", "autoExecuteDrafts", "autoExecuteEnabledById" FROM "SpaceAgentIdentity" WHERE "id" = ${autoGate.agentId} FOR UPDATE`
+        >`SELECT "status", "scopes", "autoExecuteEnabledById" FROM "SpaceAgentIdentity" WHERE "id" = ${autoGate.agentId} FOR UPDATE`
         const tokens = await tx.$queryRaw<
           Array<{ revokedAt: Date | null; expiresAt: Date | null }>
         >`
@@ -117,7 +123,8 @@ export async function approveAndExecute(
         const token = tokens[0]
         const open =
           agent?.status === 'ACTIVE' &&
-          agent.autoExecuteDrafts === true &&
+          agent.scopes.includes('draft:create') &&
+          agent.scopes.includes(autoGate.requiredScope) &&
           agent.autoExecuteEnabledById === deciderId &&
           token !== undefined &&
           token.revokedAt === null &&
@@ -177,6 +184,14 @@ export async function approveAndExecute(
   const def = getActionDefinition(action.actionType)
   if (!def) return fail(`알 수 없는 액션 유형: ${action.actionType}`)
 
+  // 자동 실행이면 결과물 표시용으로 에이전트 이름을 싣는다.
+  const autoAgent = opts.autoGate
+    ? await prisma.spaceAgent.findFirst({
+        where: { id: action.actorId, spaceId: action.spaceId },
+        select: { name: true },
+      })
+    : null
+
   // 실행 컨텍스트: 제안한 원래 행위자·요청자·workId와 승인자를 따로 싣는다.
   // workId가 없는 레거시 액션은 act_<id>로 묶는다(같은 액션의 감사 행끼리는 이어진다).
   const ctx: ActionExecContext = {
@@ -188,6 +203,7 @@ export async function approveAndExecute(
     deciderId,
     actionId,
     decryptedCredentialIds: [],
+    ...(opts.autoGate ? { autoExecuted: true, actorName: autoAgent?.name } : {}),
   }
 
   // 실행 의도를 먼저 남긴다. 못 남기면 실행하지 않는다(외부 쓰기가 감사 없이 일어나지 않게).

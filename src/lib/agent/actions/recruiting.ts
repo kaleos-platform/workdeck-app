@@ -112,6 +112,7 @@ const createDraft = def<PostingDraftParams>({
   paramsSchema: postingDraftParams,
   requiredRole: 'ADMIN',
   autoExecutable: true,
+  autoScope: 'hiring:write',
   resultUrl: (result) => (result as { editUrl?: string } | null)?.editUrl ?? null,
   retryableAfterFailure: true,
   async validateCreate(ctx, params) {

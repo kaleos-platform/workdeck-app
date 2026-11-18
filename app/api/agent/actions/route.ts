@@ -51,6 +51,22 @@ export async function GET(req: NextRequest) {
 
   // 행위자·요청자는 사람이 읽는 이름으로 — id(cuid)를 UI에 그대로 보이지 않는다.
   const labels = await describeActors(rows)
+  // 자동 실행된 액션은 승인자 대신 「에이전트 자동 생성 · 권한 부여: 관리자」로 표시한다(수동 승인은 그대로).
+  const autoRows = rows.filter((r) => r.autoExecuted)
+  const [autoAgents, autoDeciders] = autoRows.length
+    ? await Promise.all([
+        prisma.spaceAgent.findMany({
+          where: { id: { in: autoRows.map((r) => r.actorId) }, spaceId },
+          select: { id: true, name: true },
+        }),
+        prisma.user.findMany({
+          where: { id: { in: autoRows.map((r) => r.decidedBy).filter((x): x is string => !!x) } },
+          select: { id: true, name: true },
+        }),
+      ])
+    : [[], []]
+  const agentNames = new Map(autoAgents.map((a) => [a.id, a.name]))
+  const deciderNames = new Map(autoDeciders.map((u) => [u.id, u.name]))
   // 승인자가 실제로 실행될 파라미터를 보도록 payload를 내려주되, 비밀로 보이는 값은 서버에서 가린다.
   // Space 승인 한도는 행마다 같다 — 한 번만 조회한다.
   const space = await prisma.space.findUnique({
@@ -63,7 +79,11 @@ export async function GET(req: NextRequest) {
       payload: maskParams(r.payload),
       beforeState: maskParams(r.beforeState),
       result: maskParams(r.result),
-      actorLabel: labels[i],
+      actorLabel: r.autoExecuted
+        ? `${agentNames.get(r.actorId) ?? '에이전트'} 자동 생성 · 권한 부여: ${
+            (r.decidedBy && deciderNames.get(r.decidedBy)) || '관리자'
+          }`
+        : labels[i],
       spendKrw: spendKrwOf(r) ?? null,
       requiredRole:
         r.status === 'PENDING'

@@ -638,6 +638,8 @@ model AgentPendingAction {
   workId               String?
   // 제안에 쓰인 토큰 id (wd run 승인 흐름용). 없으면 null.
   actorTokenId         String?
+  // draft:create 권한으로 승인 없이 자동 실행된 액션(autoGate 전이에서만 true). 표시 분기용.
+  autoExecuted         Boolean           @default(false)
 
   status     AgentActionStatus @default(PENDING)
   expiresAt  DateTime // createPendingAction에서 now+72h로 설정 (앱 계산)
@@ -725,7 +727,8 @@ model SpaceAgent {
   // 구성원 세션은 이 연동 계정으로 기록되고 이 Space에 고정된다.
   oauthClientId String?  @unique
 
-  // 초안 자동 실행 — 켜면 발주 계획·공고 초안 생성 액션을 승인 없이 실행한다(켠 관리자 이름으로 기록).
+  // autoExecuteDrafts 는 미사용(2026-11-18, 스위치 → scope draft:create 로 대체). 운영 컬럼이라 DROP 하지 않는다.
+  // autoExecuteEnabledById/At = scope draft:create 를 부여한 관리자·시각(PATCH 가 기록).
   autoExecuteDrafts      Boolean   @default(false)
   autoExecuteEnabledById String?
   autoExecuteEnabledAt   DateTime?

@@ -28,6 +28,7 @@ export type AgentPendingActionDTO = {
   status: AgentActionStatusValue
   expiresAt: string
   decidedBy: string | null
+  autoExecuted?: boolean // draft:create 권한으로 승인 없이 자동 실행됨 — actorLabel 이 자동 생성 문구
   decidedAt: string | null
   executedAt: string | null
   result: unknown
