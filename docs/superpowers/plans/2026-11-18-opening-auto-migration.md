@@ -166,3 +166,14 @@
 4. APPLIED·GRANTED 재개 처리기 없음 → 상태별 처리기 표(grant=APPLIED, mail=GRANTED), mailSentAt 선기록 후 종료는 MAIL_UNCERTAIN.
 5. 예약과 plan 건너뛰기 충돌 → unique는 match insert에만, plan은 MATCHED·NO_TARGET_SPACE만 조회.
 6. backfill userId 불가 → userId nullable, 영구 기록·원장으로 대상 Space 검증, 5개 미완료 시 워커 시작 거부.
+
+## 5단계 인프라 확정(2026-11-18) — `scripts/opening-worker/`
+
+- `setup.sh sg|db|iam|secrets|verify|launchd|revoke` 단계별 실행. 관리자 자격 증명(`peak` 프로필·오프닝 운영 env)은 이 스크립트 안에서만 쓴다.
+- DB: 전용 역할 `workdeck_opening_reader` — 같은 이름 역할은 소유 객체·다른 DB 접근이 없을 때만 지우고 재생성, 12개 테이블 SELECT + member(id·status·email_hash), read-only 기본값·statement_timeout.
+- S3: IAM `workdeck-opening-reader` — 워커가 읽는 target_type 4종의 `storage/첫경로/*` GetObject 만. 키 ID·secret 은 키체인 단일 JSON 항목.
+- SG: 설명 `workdeck-opening-auto-worker` 규칙을 현재 공인 IP 하나만 유지.
+- 비밀값은 키체인(`workdeck-opening-worker.*`), `security -i` stdin 으로 저장(argv 미노출). `run.sh` 가 실행 때만 환경으로 넘긴다.
+- `verify`: 카탈로그 유효 권한(쓰기 테이블·컬럼 0, 허용 밖 읽기 컬럼 0, CREATE 0, 멤버십 0, 승격 없음) + target_type prefix 별 S3 읽기.
+- `revoke`: 원격 회수가 모두 확인돼야 키체인을 지운다.
+- Codex 적대적 검토 7회(지적 16건 반영, 소유권 이전 경쟁 1건은 ponytail 주석으로 수용) — 마지막 approve.
