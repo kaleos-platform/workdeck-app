@@ -19,6 +19,7 @@ DIRECT_URL=$(need workdeck-direct-url) || exit 1; export DIRECT_URL
 OPENING_SOURCE_URL=$(need opening-reader-url) || exit 1; export OPENING_SOURCE_URL
 OPENING_HMAC_KEY=$(need opening-hmac-key) || exit 1; export OPENING_HMAC_KEY
 ENCRYPTION_KEY_V1=$(need encryption-key-v1) || exit 1; export ENCRYPTION_KEY_V1
+OPENING_READER_KIND=$(kc_get opening-reader-kind); export OPENING_READER_KIND
 need s3-credentials >/dev/null || exit 1
 export OPENING_CA_FILE=$CA_DIR/rds-global-bundle.pem MIGRATION_CA_FILE=$CA_DIR/supabase-prod-ca-2021.crt
 [ -s "$OPENING_CA_FILE" ] && [ -s "$MIGRATION_CA_FILE" ] || { echo '{"status":"BLOCKED","code":"CA_MISSING"}'; exit 1; }
@@ -31,8 +32,9 @@ chmod 600 "$AWS_CFG"
 export AWS_CONFIG_FILE=$AWS_CFG AWS_SHARED_CREDENTIALS_FILE=/dev/null OPENING_AWS_PROFILE=opening-reader
 
 cd "$REPO" || exit 1
-TSX=$REPO/node_modules/.bin/tsx
+# tsx 는 저장소 의존성이 아니다(기존 스크립트도 npx tsx). 버전을 고정하고 첫 실행 뒤에는 npx 캐시를 쓴다.
+TSX=(npx --yes tsx@4.23.15)
 if [ "${1:-}" = "--verify" ]; then
-  exec "$TSX" "$HERE/verify.ts"
+  exec "${TSX[@]}" "$HERE/verify.ts"
 fi
-exec "$TSX" scripts/opening-auto-migrate.ts "$@"
+exec "${TSX[@]}" scripts/opening-auto-migrate.ts "$@"

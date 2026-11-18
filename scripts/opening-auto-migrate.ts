@@ -141,7 +141,11 @@ async function connectOpening() {
   client.on('error', () => {})
   try {
     await client.connect()
+    // 앱 계정(opening_api_prod, 쓰기 권한 있음)을 쓰므로 세션 기본값부터 읽기 전용으로 둔다.
+    // 이후 모든 쿼리(트랜잭션 밖 조회 포함)가 쓰기를 DB 에서 거부당한다.
+    await client.query('SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY')
   } catch {
+    await client.end().catch(() => {})
     throw Error('OPENING_DB_CONNECT_FAILED')
   }
   return client
