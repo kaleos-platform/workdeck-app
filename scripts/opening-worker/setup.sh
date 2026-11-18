@@ -244,8 +244,10 @@ case "${1:-}" in
         unset ADMIN ;;
       *) FAIL=1; echo '{"db":"role_lookup_failed"}' ;;
     esac
-    # SG 는 DB 확인·삭제가 끝난 뒤에 닫는다(먼저 닫으면 위 조회가 접속하지 못한다).
-    if CIDRS=$(worker_cidrs); then
+    # SG 는 DB 역할 부재·삭제가 확인된 뒤에만 닫는다. 실패면 열어 두어 revoke 를 다시 돌릴 수 있게 한다.
+    if [ "$FAIL" != 0 ]; then
+      echo '{"sg":"kept_for_db_retry"}'
+    elif CIDRS=$(worker_cidrs); then
       for cidr in $CIDRS; do revoke_cidr "$cidr" || FAIL=1; done
       LEFT=$(worker_cidrs) || LEFT=lookup_failed
       [ -z "$LEFT" ] || { FAIL=1; echo '{"sg":"rules_remaining_or_unknown"}'; }
