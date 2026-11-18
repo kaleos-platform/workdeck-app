@@ -31,6 +31,9 @@ const AGENT_SELECT = {
   scopes: true,
   status: true,
   oauthClientId: true,
+  autoExecuteDrafts: true,
+  autoExecuteEnabledById: true,
+  autoExecuteEnabledAt: true,
   createdAt: true,
   tokens: {
     select: { id: true, expiresAt: true, revokedAt: true, lastUsedAt: true, createdAt: true },
@@ -46,7 +49,25 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
     select: AGENT_SELECT,
     orderBy: { createdAt: 'asc' },
   })
-  return NextResponse.json({ agents })
+  // 초안 자동 실행을 켠 관리자 이름(이메일은 노출하지 않는다).
+  const enablerIds = [
+    ...new Set(agents.map((a) => a.autoExecuteEnabledById).filter(Boolean)),
+  ] as string[]
+  const enablers = enablerIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: enablerIds } },
+        select: { id: true, name: true },
+      })
+    : []
+  const nameById = new Map(enablers.map((u) => [u.id, u.name]))
+  return NextResponse.json({
+    agents: agents.map((a) => ({
+      ...a,
+      autoExecuteEnabledByName: a.autoExecuteEnabledById
+        ? (nameById.get(a.autoExecuteEnabledById) ?? null)
+        : null,
+    })),
+  })
 }
 
 export async function POST(req: NextRequest, { params }: Ctx) {

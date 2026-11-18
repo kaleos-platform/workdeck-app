@@ -266,7 +266,7 @@ function parseOrThrow<T>(schema: z.ZodType<T>, params: unknown): T {
 const proposeDraft: ToolDefinition = {
   name: 'hiring_propose_posting_draft',
   description:
-    '새 채용 공고 초안(제목·마감일·모집 직무별 근무 조건)을 제안합니다. 즉시 만들어지지 않고 승인 대기에 올라가며, 관리자(ADMIN)가 승인하면 「작성 중(DRAFT)」 공고로 생성됩니다. 발행은 사람이 웹에서 합니다. closingDate 는 YYYY-MM-DD(null=상시 모집, 생략=오늘+14일).',
+    '새 채용 공고 초안(제목·마감일·모집 직무별 근무 조건)을 제안합니다. 에이전트의 「초안 자동 실행」이 켜져 있으면 바로 「작성 중(DRAFT)」 공고를 만들고 링크(resultUrl)를 돌려주며(status=executed), 아니면 승인 대기에 올라가 관리자(ADMIN)가 승인하면 생성됩니다. 발행은 사람이 웹에서 합니다. closingDate 는 YYYY-MM-DD(null=상시 모집, 생략=오늘+14일).',
   inputSchema: {
     title: z.string(),
     closingDate: z.string().nullable().optional(),

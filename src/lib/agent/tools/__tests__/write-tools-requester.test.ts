@@ -51,3 +51,24 @@ it.each(writeTools.map((t) => [t.name, t] as const))(
     )
   }
 )
+
+it('발주 계획 멱등 키는 KST 날짜 단위 — 같은 날 같은 요청=같은 키, 다음 날=새 키, 토큰 id 전달', async () => {
+  const tool = writeTools.find((t) => t.name === 'sellerhub_create_reorder_plan')!
+  const c = createPendingAction as jest.Mock
+  c.mockClear()
+  jest.useFakeTimers({ now: new Date('2026-11-18T03:00:00Z') })
+  try {
+    const tctx = { ...ctx, actorTokenId: 'tok1' }
+    await tool.execute(tctx, { productId: 'p1' })
+    jest.setSystemTime(new Date('2026-11-18T14:00:00Z')) // KST 23시 — 같은 날
+    await tool.execute(tctx, { productId: 'p1' })
+    jest.setSystemTime(new Date('2026-11-25T03:00:00Z'))
+    await tool.execute(tctx, { productId: 'p1' })
+    const keys = c.mock.calls.map((x) => x[0].idempotencyKey)
+    expect(keys[0]).toBe(keys[1])
+    expect(keys[2]).not.toBe(keys[0])
+    expect(c.mock.calls[0][0].actorTokenId).toBe('tok1')
+  } finally {
+    jest.useRealTimers()
+  }
+})
