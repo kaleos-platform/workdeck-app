@@ -1,10 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -24,16 +32,55 @@ type AdminUserListItem = {
   spaceMemberships: { spaceId: string; spaceName: string; role: string }[]
 }
 
+type SortKey = 'createdAt' | 'email' | 'name' | 'spaces'
+type SortDir = 'asc' | 'desc'
+const ALL = 'all'
+
+function SortHead({
+  label,
+  k,
+  sort,
+  dir,
+  onSort,
+}: {
+  label: string
+  k: SortKey
+  sort: SortKey
+  dir: SortDir
+  onSort: (k: SortKey) => void
+}) {
+  const active = sort === k
+  const Icon = !active ? ArrowUpDown : dir === 'asc' ? ArrowUp : ArrowDown
+  return (
+    <TableHead aria-sort={active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined}>
+      <button
+        type="button"
+        onClick={() => onSort(k)}
+        className="inline-flex items-center gap-1 hover:text-foreground"
+      >
+        {label}
+        <Icon className={active ? 'size-3.5' : 'size-3.5 opacity-40'} />
+      </button>
+    </TableHead>
+  )
+}
+
 export function UsersTable() {
   const router = useRouter()
   const [q, setQ] = useState('')
   const [debouncedQ, setDebouncedQ] = useState('')
   const [source, setSource] = useState('')
   const [debouncedSource, setDebouncedSource] = useState('')
+  const [role, setRole] = useState(ALL)
+  const [spaces, setSpaces] = useState(ALL)
+  const [sort, setSort] = useState<SortKey>('createdAt')
+  const [dir, setDir] = useState<SortDir>('desc')
   const [users, setUsers] = useState<AdminUserListItem[]>([])
-  const [cursor, setCursor] = useState<string | null>(null)
+  const [nextOffset, setNextOffset] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
+  // 검색·정렬·필터가 바뀌면 증가 — 늦게 도착한 "더 보기" 응답이 새 목록에 섞이지 않게 한다
+  const listVersion = useRef(0)
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -43,18 +90,36 @@ export function UsersTable() {
     return () => clearTimeout(t)
   }, [q, source])
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    const params = new URLSearchParams()
+  function buildParams() {
+    const params = new URLSearchParams({ sort, dir })
     if (debouncedQ) params.set('q', debouncedQ)
     if (debouncedSource) params.set('source', debouncedSource)
+    if (role !== ALL) params.set('role', role)
+    if (spaces !== ALL) params.set('spaces', spaces)
+    return params
+  }
+
+  function onSort(k: SortKey) {
+    if (k === sort) {
+      setDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSort(k)
+      // 가입일·Space 수는 큰 값부터, 이메일·이름은 가나다순부터
+      setDir(k === 'createdAt' || k === 'spaces' ? 'desc' : 'asc')
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false
+    listVersion.current += 1
+    setLoading(true)
+    const params = buildParams()
     fetch(`/api/admin/users?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         if (cancelled) return
         setUsers(data.users ?? [])
-        setCursor(data.nextCursor ?? null)
+        setNextOffset(data.nextOffset ?? null)
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -62,20 +127,21 @@ export function UsersTable() {
     return () => {
       cancelled = true
     }
-  }, [debouncedQ, debouncedSource])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- buildParams 는 아래 값들로만 결정된다
+  }, [debouncedQ, debouncedSource, role, spaces, sort, dir])
 
   async function loadMore() {
-    if (!cursor) return
+    if (nextOffset === null) return
+    const version = listVersion.current
     setLoadingMore(true)
-    const params = new URLSearchParams()
-    if (debouncedQ) params.set('q', debouncedQ)
-    if (debouncedSource) params.set('source', debouncedSource)
-    params.set('cursor', cursor)
+    const params = buildParams()
+    params.set('offset', String(nextOffset))
     try {
       const res = await fetch(`/api/admin/users?${params.toString()}`)
       const data = await res.json()
+      if (version !== listVersion.current) return
       setUsers((prev) => [...prev, ...(data.users ?? [])])
-      setCursor(data.nextCursor ?? null)
+      setNextOffset(data.nextOffset ?? null)
     } finally {
       setLoadingMore(false)
     }
@@ -96,17 +162,37 @@ export function UsersTable() {
           onChange={(e) => setSource(e.target.value)}
           className="max-w-xs"
         />
+        <Select value={role} onValueChange={setRole}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>전체 상태</SelectItem>
+            <SelectItem value="operator">운영자</SelectItem>
+            <SelectItem value="user">일반 사용자</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={spaces} onValueChange={setSpaces}>
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Space 전체</SelectItem>
+            <SelectItem value="some">Space 소속 있음</SelectItem>
+            <SelectItem value="none">Space 소속 없음</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>이메일</TableHead>
-              <TableHead>이름</TableHead>
-              <TableHead>소속 Space</TableHead>
+              <SortHead label="이메일" k="email" sort={sort} dir={dir} onSort={onSort} />
+              <SortHead label="이름" k="name" sort={sort} dir={dir} onSort={onSort} />
+              <SortHead label="소속 Space" k="spaces" sort={sort} dir={dir} onSort={onSort} />
               <TableHead>가입 경로</TableHead>
-              <TableHead>가입일</TableHead>
+              <SortHead label="가입일" k="createdAt" sort={sort} dir={dir} onSort={onSort} />
               <TableHead>상태</TableHead>
             </TableRow>
           </TableHeader>
@@ -144,7 +230,7 @@ export function UsersTable() {
         </Table>
       </div>
 
-      {cursor && (
+      {nextOffset !== null && (
         <Button variant="outline" onClick={loadMore} disabled={loadingMore} className="self-center">
           {loadingMore ? '불러오는 중...' : '더 보기'}
         </Button>

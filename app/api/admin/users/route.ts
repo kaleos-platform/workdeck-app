@@ -4,15 +4,30 @@ import { prisma } from '@/lib/prisma'
 
 const PAGE_SIZE = 50
 
-// GET /api/admin/users — 검색(email·name 부분일치) + 가입 경로(source) 필터 + 커서 페이지네이션
+// 정렬 키 → orderBy. id 를 마지막에 붙여 페이지 사이 순서를 고정한다.
+// 이름 NULL 정렬은 Prisma 커서와 맞지 않아(경계 행 누락) offset 페이지네이션을 쓴다.
+const SORTS = {
+  createdAt: (dir: 'asc' | 'desc') => ({ createdAt: dir }),
+  email: (dir: 'asc' | 'desc') => ({ email: dir }),
+  name: (dir: 'asc' | 'desc') => ({ name: { sort: dir, nulls: 'last' as const } }),
+  spaces: (dir: 'asc' | 'desc') => ({ spaceMemberships: { _count: dir } }),
+}
+
+// GET /api/admin/users — 검색(email·name 부분일치) + 가입 경로(source)·운영자(role)·Space 소속(spaces) 필터
+// + 정렬(sort=createdAt|email|name|spaces, dir=asc|desc) + offset 페이지네이션
 export async function GET(request: NextRequest) {
   const auth = await requireOperator()
   if (!auth.ok) return auth.response
 
   const url = new URL(request.url)
   const q = url.searchParams.get('q')?.trim()
-  const cursor = url.searchParams.get('cursor')
+  const offset = Math.max(0, Math.floor(Number(url.searchParams.get('offset')) || 0))
   const source = url.searchParams.get('source')?.trim()
+  const role = url.searchParams.get('role') // operator | user
+  const spaces = url.searchParams.get('spaces') // some | none
+  const sortParam = url.searchParams.get('sort') ?? 'createdAt'
+  const sortKey = (sortParam in SORTS ? sortParam : 'createdAt') as keyof typeof SORTS
+  const dir = url.searchParams.get('dir') === 'asc' ? 'asc' : 'desc'
 
   const where = {
     ...(q
@@ -25,13 +40,17 @@ export async function GET(request: NextRequest) {
       : {}),
     // 가입 경로(utm_source) 필터
     ...(source ? { signupSource: { path: ['utm_source'], equals: source } } : {}),
+    ...(role === 'operator' ? { platformRole: 'OPERATOR' as const } : {}),
+    ...(role === 'user' ? { platformRole: null } : {}),
+    ...(spaces === 'some' ? { spaceMemberships: { some: {} } } : {}),
+    ...(spaces === 'none' ? { spaceMemberships: { none: {} } } : {}),
   }
 
   const users = await prisma.user.findMany({
     where,
-    orderBy: { id: 'asc' },
+    orderBy: [SORTS[sortKey](dir), { id: 'asc' }],
     take: PAGE_SIZE + 1,
-    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    skip: offset,
     select: {
       id: true,
       email: true,
@@ -65,6 +84,6 @@ export async function GET(request: NextRequest) {
         role: m.role,
       })),
     })),
-    nextCursor: hasMore ? page[page.length - 1].id : null,
+    nextOffset: hasMore ? offset + page.length : null,
   })
 }
