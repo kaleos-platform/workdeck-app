@@ -22,6 +22,7 @@ describe('canTransition', () => {
     ['MATCHED', 'PLANNED'],
     ['MATCHED', 'BLOCKED'],
     ['BLOCKED', 'PLANNED'],
+    ['BLOCKED', 'FAILED'], // 재계획 재시도 상한(PLAN_RETRY_EXHAUSTED)
     ['PLANNED', 'APPROVED'],
     ['PLANNED', 'HELD'],
     ['FAILED', 'HELD'],

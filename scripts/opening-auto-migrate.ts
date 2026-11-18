@@ -349,15 +349,22 @@ async function cleanupReviewDirs(db: PrismaClient) {
   for (const { id } of jobs) rmSync(join(ROOT, id, 'review'), { recursive: true, force: true })
 }
 
-// 재시도 상한에 닿은 MATCHED 는 FAILED 로 옮겨 큐에서 조용히 사라지지 않게 한다.
+// 재시도 상한에 닿은 job 은 FAILED 로 옮겨 큐에서 조용히 사라지지 않게 한다.
+// MATCHED 와, 대상 Space 가 생긴 뒤 재계획을 시도하던 BLOCKED[NO_TARGET_SPACE] 둘 다 대상이다.
 async function failExhausted(db: PrismaClient) {
   const jobs = await db.openingMigrationJob.findMany({
-    where: { status: 'MATCHED', attempts: { gte: MAX_ATTEMPTS } },
-    select: { id: true, openingBrandId: true },
+    where: {
+      attempts: { gte: MAX_ATTEMPTS },
+      OR: [
+        { status: 'MATCHED' },
+        { status: 'BLOCKED', blockReasons: { equals: ['NO_TARGET_SPACE'] } },
+      ],
+    },
+    select: { id: true, openingBrandId: true, status: true },
   })
   for (const job of jobs) {
     const result = await db.openingMigrationJob.updateMany({
-      where: { id: job.id, status: 'MATCHED' },
+      where: { id: job.id, status: job.status },
       data: { status: 'FAILED', error: 'PLAN_RETRY_EXHAUSTED' },
     })
     if (result.count === 1) {
