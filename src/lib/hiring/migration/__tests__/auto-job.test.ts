@@ -159,6 +159,16 @@ describe('buildAutoReview', () => {
 })
 
 describe('extractContactFragments', () => {
+  it('서로 다른 연락처가 많아도 자르지 않는다(운영자가 모두 검토해야 승인 가능)', () => {
+    const text = Array.from({ length: 12 }, (_, i) => `지점${i} 010-1234-${String(1000 + i)}`).join(
+      ' / '.padEnd(30, '.')
+    )
+    const [result] = extractContactFragments([
+      { kind: 'posting', id: '1', title: '공고', texts: [{ path: 'a', text, flagged: true }] },
+    ])
+    expect(result.fragments.length).toBeGreaterThanOrEqual(12)
+  })
+
   it('항목 제목과 감지 문구 앞뒤 20자 조각만 남긴다', () => {
     const long = `${'가'.repeat(50)} 010-1234-5678 ${'나'.repeat(50)}`
     const [result] = extractContactFragments([

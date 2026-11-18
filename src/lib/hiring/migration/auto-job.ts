@@ -145,7 +145,6 @@ export function buildAutoReview(candidates: Candidates, jobId: string, reviewedA
 export type ContactFragments = { kind: string; id: string; title: string; fragments: string[] }
 
 const CONTEXT = 20
-const MAX_FRAGMENTS = 10
 
 // 연락처 감지 항목의 제목 + 감지 문구 앞뒤 20자 조각만. 운영자 전용(암호화 저장)이다.
 export function extractContactFragments(
@@ -177,7 +176,8 @@ export function extractContactFragments(
       kind: item.kind,
       id: item.id,
       title: item.title ?? '',
-      fragments: [...new Set(fragments)].slice(0, MAX_FRAGMENTS),
+      // 자르지 않는다: 표시되지 않은 연락처는 운영자가 검토할 수 없다(승인 전제).
+      fragments: [...new Set(fragments)],
     }
   })
 }
