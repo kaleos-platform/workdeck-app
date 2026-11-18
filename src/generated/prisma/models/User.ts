@@ -204,6 +204,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceNullableScalarRelationFilter, Prisma.WorkspaceWhereInput> | null
   spaceMemberships?: Prisma.SpaceMemberListRelationFilter
+  openingMigrationJobs?: Prisma.OpeningMigrationJobListRelationFilter
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
 }
 
@@ -218,6 +219,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
   spaceMemberships?: Prisma.SpaceMemberOrderByRelationAggregateInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobOrderByRelationAggregateInput
   reorderPlans?: Prisma.ReorderPlanOrderByRelationAggregateInput
 }
 
@@ -235,6 +237,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceNullableScalarRelationFilter, Prisma.WorkspaceWhereInput> | null
   spaceMemberships?: Prisma.SpaceMemberListRelationFilter
+  openingMigrationJobs?: Prisma.OpeningMigrationJobListRelationFilter
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
 }, "id" | "email">
 
@@ -277,6 +280,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
 }
 
@@ -291,6 +295,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
@@ -305,6 +310,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
 }
 
@@ -319,6 +325,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
@@ -391,6 +398,11 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -449,6 +461,22 @@ export type UserUpdateOneRequiredWithoutReorderPlansNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReorderPlansInput, Prisma.UserUpdateWithoutReorderPlansInput>, Prisma.UserUncheckedUpdateWithoutReorderPlansInput>
 }
 
+export type UserCreateNestedOneWithoutOpeningMigrationJobsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOpeningMigrationJobsInput, Prisma.UserUncheckedCreateWithoutOpeningMigrationJobsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOpeningMigrationJobsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutOpeningMigrationJobsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOpeningMigrationJobsInput, Prisma.UserUncheckedCreateWithoutOpeningMigrationJobsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOpeningMigrationJobsInput
+  upsert?: Prisma.UserUpsertWithoutOpeningMigrationJobsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOpeningMigrationJobsInput, Prisma.UserUpdateWithoutOpeningMigrationJobsInput>, Prisma.UserUncheckedUpdateWithoutOpeningMigrationJobsInput>
+}
+
 export type UserCreateWithoutWorkspaceInput = {
   id: string
   email: string
@@ -459,6 +487,7 @@ export type UserCreateWithoutWorkspaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
 }
 
@@ -472,6 +501,7 @@ export type UserUncheckedCreateWithoutWorkspaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
@@ -501,6 +531,7 @@ export type UserUpdateWithoutWorkspaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
 }
 
@@ -514,6 +545,7 @@ export type UserUncheckedUpdateWithoutWorkspaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
@@ -527,6 +559,7 @@ export type UserCreateWithoutSpaceMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
 }
 
@@ -540,6 +573,7 @@ export type UserUncheckedCreateWithoutSpaceMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
@@ -569,6 +603,7 @@ export type UserUpdateWithoutSpaceMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
 }
 
@@ -582,6 +617,7 @@ export type UserUncheckedUpdateWithoutSpaceMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
@@ -596,6 +632,7 @@ export type UserCreateWithoutReorderPlansInput = {
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReorderPlansInput = {
@@ -609,6 +646,7 @@ export type UserUncheckedCreateWithoutReorderPlansInput = {
   updatedAt?: Date | string
   workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReorderPlansInput = {
@@ -638,6 +676,7 @@ export type UserUpdateWithoutReorderPlansInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReorderPlansInput = {
@@ -651,6 +690,79 @@ export type UserUncheckedUpdateWithoutReorderPlansInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutOpeningMigrationJobsInput = {
+  id: string
+  email: string
+  name?: string | null
+  avatarUrl?: string | null
+  platformRole?: $Enums.PlatformRole | null
+  signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
+  spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserUncheckedCreateWithoutOpeningMigrationJobsInput = {
+  id: string
+  email: string
+  name?: string | null
+  avatarUrl?: string | null
+  platformRole?: $Enums.PlatformRole | null
+  signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+  spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserCreateOrConnectWithoutOpeningMigrationJobsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutOpeningMigrationJobsInput, Prisma.UserUncheckedCreateWithoutOpeningMigrationJobsInput>
+}
+
+export type UserUpsertWithoutOpeningMigrationJobsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutOpeningMigrationJobsInput, Prisma.UserUncheckedUpdateWithoutOpeningMigrationJobsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutOpeningMigrationJobsInput, Prisma.UserUncheckedCreateWithoutOpeningMigrationJobsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutOpeningMigrationJobsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutOpeningMigrationJobsInput, Prisma.UserUncheckedUpdateWithoutOpeningMigrationJobsInput>
+}
+
+export type UserUpdateWithoutOpeningMigrationJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
+  spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutOpeningMigrationJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+  spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 
@@ -660,11 +772,13 @@ export type UserUncheckedUpdateWithoutReorderPlansInput = {
 
 export type UserCountOutputType = {
   spaceMemberships: number
+  openingMigrationJobs: number
   reorderPlans: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   spaceMemberships?: boolean | UserCountOutputTypeCountSpaceMembershipsArgs
+  openingMigrationJobs?: boolean | UserCountOutputTypeCountOpeningMigrationJobsArgs
   reorderPlans?: boolean | UserCountOutputTypeCountReorderPlansArgs
 }
 
@@ -688,6 +802,13 @@ export type UserCountOutputTypeCountSpaceMembershipsArgs<ExtArgs extends runtime
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountOpeningMigrationJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OpeningMigrationJobWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountReorderPlansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ReorderPlanWhereInput
 }
@@ -704,6 +825,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   workspace?: boolean | Prisma.User$workspaceArgs<ExtArgs>
   spaceMemberships?: boolean | Prisma.User$spaceMembershipsArgs<ExtArgs>
+  openingMigrationJobs?: boolean | Prisma.User$openingMigrationJobsArgs<ExtArgs>
   reorderPlans?: boolean | Prisma.User$reorderPlansArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -745,6 +867,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.User$workspaceArgs<ExtArgs>
   spaceMemberships?: boolean | Prisma.User$spaceMembershipsArgs<ExtArgs>
+  openingMigrationJobs?: boolean | Prisma.User$openingMigrationJobsArgs<ExtArgs>
   reorderPlans?: boolean | Prisma.User$reorderPlansArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -756,6 +879,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     workspace: Prisma.$WorkspacePayload<ExtArgs> | null
     spaceMemberships: Prisma.$SpaceMemberPayload<ExtArgs>[]
+    openingMigrationJobs: Prisma.$OpeningMigrationJobPayload<ExtArgs>[]
     reorderPlans: Prisma.$ReorderPlanPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1163,6 +1287,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   workspace<T extends Prisma.User$workspaceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$workspaceArgs<ExtArgs>>): Prisma.Prisma__WorkspaceClient<runtime.Types.Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   spaceMemberships<T extends Prisma.User$spaceMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$spaceMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  openingMigrationJobs<T extends Prisma.User$openingMigrationJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$openingMigrationJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OpeningMigrationJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reorderPlans<T extends Prisma.User$reorderPlansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reorderPlansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1629,6 +1754,30 @@ export type User$spaceMembershipsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.SpaceMemberScalarFieldEnum | Prisma.SpaceMemberScalarFieldEnum[]
+}
+
+/**
+ * User.openingMigrationJobs
+ */
+export type User$openingMigrationJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OpeningMigrationJob
+   */
+  select?: Prisma.OpeningMigrationJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OpeningMigrationJob
+   */
+  omit?: Prisma.OpeningMigrationJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OpeningMigrationJobInclude<ExtArgs> | null
+  where?: Prisma.OpeningMigrationJobWhereInput
+  orderBy?: Prisma.OpeningMigrationJobOrderByWithRelationInput | Prisma.OpeningMigrationJobOrderByWithRelationInput[]
+  cursor?: Prisma.OpeningMigrationJobWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OpeningMigrationJobScalarFieldEnum | Prisma.OpeningMigrationJobScalarFieldEnum[]
 }
 
 /**

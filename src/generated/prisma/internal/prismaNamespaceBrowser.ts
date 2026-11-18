@@ -222,7 +222,8 @@ export const ModelName = {
   ScSourceVersion: 'ScSourceVersion',
   ScMedia: 'ScMedia',
   ScPublishRequest: 'ScPublishRequest',
-  ScMediaCopy: 'ScMediaCopy'
+  ScMediaCopy: 'ScMediaCopy',
+  OpeningMigrationJob: 'OpeningMigrationJob'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3179,6 +3180,32 @@ export const ScMediaCopyScalarFieldEnum = {
 } as const
 
 export type ScMediaCopyScalarFieldEnum = (typeof ScMediaCopyScalarFieldEnum)[keyof typeof ScMediaCopyScalarFieldEnum]
+
+
+export const OpeningMigrationJobScalarFieldEnum = {
+  id: 'id',
+  openingBrandId: 'openingBrandId',
+  userId: 'userId',
+  targetSpaceId: 'targetSpaceId',
+  status: 'status',
+  summary: 'summary',
+  blockReasons: 'blockReasons',
+  contactHitsEnc: 'contactHitsEnc',
+  contactHitsIv: 'contactHitsIv',
+  approvedBy: 'approvedBy',
+  approvedAt: 'approvedAt',
+  packetDir: 'packetDir',
+  approvedSnapshot: 'approvedSnapshot',
+  applyStartedAt: 'applyStartedAt',
+  grantAt: 'grantAt',
+  mailSentAt: 'mailSentAt',
+  error: 'error',
+  attempts: 'attempts',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OpeningMigrationJobScalarFieldEnum = (typeof OpeningMigrationJobScalarFieldEnum)[keyof typeof OpeningMigrationJobScalarFieldEnum]
 
 
 export const SortOrder = {

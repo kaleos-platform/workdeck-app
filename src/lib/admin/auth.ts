@@ -66,9 +66,11 @@ export async function writeAuditLog(
   action: string,
   targetType: string,
   targetId: string,
-  meta?: Record<string, unknown>
+  meta?: Record<string, unknown>,
+  // 상태 변경과 같은 transaction 에 묶을 때 tx 를 넘긴다.
+  client: Pick<Prisma.TransactionClient, 'adminAuditLog'> = prisma
 ): Promise<void> {
-  await prisma.adminAuditLog.create({
+  await client.adminAuditLog.create({
     data: {
       actorUserId,
       action,

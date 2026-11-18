@@ -555,7 +555,8 @@ export const ModelName = {
   ScSourceVersion: 'ScSourceVersion',
   ScMedia: 'ScMedia',
   ScPublishRequest: 'ScPublishRequest',
-  ScMediaCopy: 'ScMediaCopy'
+  ScMediaCopy: 'ScMediaCopy',
+  OpeningMigrationJob: 'OpeningMigrationJob'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -571,7 +572,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "browserWriteJob" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringUploadCleanup" | "hiringCleanupCursor" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "hiringMessageSeed" | "billingDeckProduct" | "spaceDeckAccess" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "browserWriteJob" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringUploadCleanup" | "hiringCleanupCursor" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "hiringMessageSeed" | "billingDeckProduct" | "spaceDeckAccess" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy" | "openingMigrationJob"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -13303,6 +13304,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OpeningMigrationJob: {
+      payload: Prisma.$OpeningMigrationJobPayload<ExtArgs>
+      fields: Prisma.OpeningMigrationJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OpeningMigrationJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OpeningMigrationJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>
+        }
+        findFirst: {
+          args: Prisma.OpeningMigrationJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OpeningMigrationJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>
+        }
+        findMany: {
+          args: Prisma.OpeningMigrationJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>[]
+        }
+        create: {
+          args: Prisma.OpeningMigrationJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>
+        }
+        createMany: {
+          args: Prisma.OpeningMigrationJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OpeningMigrationJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>[]
+        }
+        delete: {
+          args: Prisma.OpeningMigrationJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>
+        }
+        update: {
+          args: Prisma.OpeningMigrationJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.OpeningMigrationJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OpeningMigrationJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OpeningMigrationJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.OpeningMigrationJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpeningMigrationJobPayload>
+        }
+        aggregate: {
+          args: Prisma.OpeningMigrationJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOpeningMigrationJob>
+        }
+        groupBy: {
+          args: Prisma.OpeningMigrationJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpeningMigrationJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OpeningMigrationJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpeningMigrationJobCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -16282,6 +16357,32 @@ export const ScMediaCopyScalarFieldEnum = {
 export type ScMediaCopyScalarFieldEnum = (typeof ScMediaCopyScalarFieldEnum)[keyof typeof ScMediaCopyScalarFieldEnum]
 
 
+export const OpeningMigrationJobScalarFieldEnum = {
+  id: 'id',
+  openingBrandId: 'openingBrandId',
+  userId: 'userId',
+  targetSpaceId: 'targetSpaceId',
+  status: 'status',
+  summary: 'summary',
+  blockReasons: 'blockReasons',
+  contactHitsEnc: 'contactHitsEnc',
+  contactHitsIv: 'contactHitsIv',
+  approvedBy: 'approvedBy',
+  approvedAt: 'approvedAt',
+  packetDir: 'packetDir',
+  approvedSnapshot: 'approvedSnapshot',
+  applyStartedAt: 'applyStartedAt',
+  grantAt: 'grantAt',
+  mailSentAt: 'mailSentAt',
+  error: 'error',
+  attempts: 'attempts',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OpeningMigrationJobScalarFieldEnum = (typeof OpeningMigrationJobScalarFieldEnum)[keyof typeof OpeningMigrationJobScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -17686,6 +17787,20 @@ export type EnumScPublishRequestStateFieldRefInput<$PrismaModel> = FieldRefInput
 export type ListEnumScPublishRequestStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScPublishRequestState[]'>
     
 
+
+/**
+ * Reference to a field of type 'OpeningMigrationStatus'
+ */
+export type EnumOpeningMigrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OpeningMigrationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'OpeningMigrationStatus[]'
+ */
+export type ListEnumOpeningMigrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OpeningMigrationStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -17953,6 +18068,7 @@ export type GlobalOmitConfig = {
   scMedia?: Prisma.ScMediaOmit
   scPublishRequest?: Prisma.ScPublishRequestOmit
   scMediaCopy?: Prisma.ScMediaCopyOmit
+  openingMigrationJob?: Prisma.OpeningMigrationJobOmit
 }
 
 /* Types for Logging */
