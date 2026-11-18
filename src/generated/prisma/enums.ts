@@ -891,3 +891,20 @@ export const ScPublishRequestState = {
 } as const
 
 export type ScPublishRequestState = (typeof ScPublishRequestState)[keyof typeof ScPublishRequestState]
+
+
+export const OpeningMigrationStatus = {
+  MATCHED: 'MATCHED',
+  PLANNED: 'PLANNED',
+  BLOCKED: 'BLOCKED',
+  APPROVED: 'APPROVED',
+  APPLYING: 'APPLYING',
+  APPLIED: 'APPLIED',
+  GRANTED: 'GRANTED',
+  DONE: 'DONE',
+  GRANT_MANUAL: 'GRANT_MANUAL',
+  FAILED: 'FAILED',
+  HELD: 'HELD'
+} as const
+
+export type OpeningMigrationStatus = (typeof OpeningMigrationStatus)[keyof typeof OpeningMigrationStatus]

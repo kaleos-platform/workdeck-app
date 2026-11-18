@@ -263,6 +263,9 @@ function walkStrings(
   }
 }
 
+// 연락처 감지 조각 추출용. scanText와 같은 패턴(전역 플래그라 matchAll로만 쓴다).
+export const CONTACT_PATTERNS = { phone: PHONE, email: EMAIL, keyword: KEYWORD }
+
 export function scanContacts(value: unknown, hits: ContactHits = emptyHits()) {
   walkStrings(value, (text, trail) => scanText(text, hits, trail), [])
   return hits
