@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { GET } from '../route'
 import { POST } from '../[id]/route'
 
+jest.mock('server-only', () => ({}))
 jest.mock('@/lib/admin/auth', () => ({ requireOperator: jest.fn(), writeAuditLog: jest.fn() }))
 jest.mock('@/lib/crypto/field-crypto', () => ({ decryptField: jest.fn() }))
 jest.mock('@/lib/prisma', () => ({
@@ -72,6 +73,40 @@ test('GET 은 연락처 조각을 복호화하고 Space 이름을 붙인다', as
     targetSpaceName: '공간',
     contactHits: [{ title: 't', fragments: ['f'] }],
   })
+})
+
+test('GET 은 snapshot 을 내려주지 않고 hasSnapshot 으로만 알린다', async () => {
+  jobs.findMany.mockResolvedValue([
+    {
+      id: 'j1',
+      openingBrandId: '1',
+      user: null,
+      targetSpaceId: null,
+      status: 'PLANNED',
+      summary: { brandName: '가', snapshot: { items: [{ sourceId: 'x' }] } },
+      blockReasons: [],
+      contactHitsEnc: null,
+      contactHitsIv: null,
+    },
+  ])
+  ;(prisma.space.findMany as jest.Mock).mockResolvedValue([])
+  const body = await (await GET()).json()
+  expect(body.jobs[0].hasSnapshot).toBe(true)
+  expect(body.jobs[0].summary).toEqual({ brandName: '가' })
+})
+
+test('승인 요청의 updatedAt 이 현재와 다르면 409, 같으면 통과', async () => {
+  jobs.updateMany.mockResolvedValue({ count: 1 })
+  const stale = await POST(request({ action: 'approve', updatedAt: '2026-11-17T00:00:00.000Z' }), {
+    params,
+  })
+  expect(stale.status).toBe(409)
+  expect(jobs.updateMany).not.toHaveBeenCalled()
+  const fresh = await POST(
+    request({ action: 'approve', updatedAt: planned.updatedAt.toISOString() }),
+    { params }
+  )
+  expect(fresh.status).toBe(200)
 })
 
 test('승인은 PLANNED 조건부 update 로 snapshot 을 확정하고 감사 로그를 남긴다', async () => {

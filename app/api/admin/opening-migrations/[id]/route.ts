@@ -7,7 +7,9 @@ import type { Prisma } from '@/generated/prisma/client'
 
 export const runtime = 'nodejs'
 
-const bodySchema = z.object({ action: z.enum(['approve', 'hold']) }).strict()
+const bodySchema = z
+  .object({ action: z.enum(['approve', 'hold']), updatedAt: z.string().datetime().optional() })
+  .strict()
 
 // POST /api/admin/opening-migrations/[id] — 승인(PLANNED→APPROVED) / 보류(MATCHED·PLANNED·BLOCKED·FAILED→HELD)
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -30,6 +32,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const snapshot = (job.summary as { snapshot?: Prisma.InputJsonValue } | null)?.snapshot
   if (action === 'approve' && (job.status !== 'PLANNED' || !snapshot))
     return errorResponse('승인할 수 없는 상태입니다', 409)
+  // 낡은 화면에서 승인하지 않도록, 화면이 본 updatedAt 이 지금과 다르면 거절한다.
+  if (
+    parsed.data.updatedAt &&
+    new Date(parsed.data.updatedAt).getTime() !== job.updatedAt.getTime()
+  )
+    return errorResponse('이미 처리되었거나 상태가 바뀌었습니다', 409)
   const applied = await prisma.$transaction(async (tx) => {
     const result =
       action === 'approve'
