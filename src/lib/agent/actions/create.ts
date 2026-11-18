@@ -4,26 +4,55 @@ import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { buildAppUrl } from '@/lib/domain'
 import { notifyPendingAction } from '@/lib/slack/notify-pending-action'
 import { getActionDefinition } from './registry'
-import type { ActionExecContext, PendingActionDraft, PendingActionResult } from './types'
+import { approveAndExecute } from './execute'
+import type {
+  ActionDefinition,
+  ActionExecContext,
+  PendingActionDraft,
+  PendingActionResult,
+} from './types'
 
 // 승인 만료 기본 72시간.
 const DEFAULT_TTL_HOURS = 72
 
-function toResult(action: { id: string; spaceId: string; expiresAt: Date }): PendingActionResult {
-  return {
-    status: 'pending_approval',
+// 저장된 액션의 실제 상태 → 응답 status. 상태가 없거나 PENDING 이면 승인 대기.
+const STATUS_MAP: Record<string, PendingActionResult['status']> = {
+  APPROVED: 'executing',
+  EXECUTED: 'executed',
+  FAILED: 'failed',
+  REJECTED: 'rejected',
+  EXPIRED: 'expired',
+}
+
+interface StoredAction {
+  id: string
+  spaceId: string
+  expiresAt: Date
+  status?: string
+  actionType?: string
+  result?: unknown
+  error?: string | null
+}
+
+function toResult(action: StoredAction): PendingActionResult {
+  const base: PendingActionResult = {
+    status: STATUS_MAP[action.status ?? ''] ?? 'pending_approval',
     actionId: action.id,
     // 두 Space 이상 구성원도 선택 화면 없이 바로 열리도록 Space를 링크에 싣는다.
     approvalUrl: buildAppUrl(`/approvals?spaceId=${action.spaceId}&action=${action.id}`),
     expiresAt: action.expiresAt.toISOString(),
   }
+  if (base.status === 'executed') {
+    const def = action.actionType ? getActionDefinition(action.actionType) : undefined
+    base.result = action.result ?? null
+    base.resultUrl = def?.resultUrl?.(action.result, { spaceId: action.spaceId }) ?? null
+  }
+  if (base.status === 'failed') base.error = action.error ?? undefined
+  return base
 }
 
 // idempotencyKey 는 전역 unique 라 다른 Space 의 액션과 부딪힐 수 있다 — 그 액션은 돌려주지 않고 거부한다.
-function toResultInSpace(
-  action: { id: string; spaceId: string; expiresAt: Date },
-  spaceId: string
-): PendingActionResult {
+function toResultInSpace(action: StoredAction, spaceId: string): PendingActionResult {
   if (action.spaceId !== spaceId) {
     throw new ToolUserError('이미 다른 공간에서 사용한 idempotencyKey 입니다')
   }
@@ -43,6 +72,82 @@ function toResultInSpace(
 // FAILED 는 외부 API 가 이미 실행됐을 수 있어(응답 타임아웃 등) 액션이 retryableAfterFailure 로
 // "실패하면 아무것도 남지 않는다"고 선언한 경우에만 허용한다.
 const NEVER_EXECUTED: string[] = ['REJECTED', 'EXPIRED']
+
+const AUTO_SKIPPED = '초안 자동 실행 조건이 맞지 않아 승인 대기로 등록했습니다'
+
+/**
+ * 「초안 자동 실행」 — 대상 액션·토큰 있는 에이전트·스위치 켜짐일 때만 켠 관리자 이름으로 승인+실행한다.
+ * result 가 있으면 그대로 응답(알림 없음), 없으면 승인 대기로 남은 것(skipped 는 자동 실행을 시도했다는 뜻).
+ */
+async function tryAutoExecute(
+  def: ActionDefinition,
+  draft: PendingActionDraft,
+  action: { id: string; spaceId: string; expiresAt: Date }
+): Promise<{ result?: PendingActionResult; skipped?: string }> {
+  if (!def.autoExecutable || draft.actor.type !== 'agent' || !draft.actorTokenId) return {}
+  const agent = await prisma.spaceAgent.findFirst({
+    where: { id: draft.actor.id, spaceId: draft.spaceId },
+    select: { autoExecuteDrafts: true, autoExecuteEnabledById: true },
+  })
+  if (!agent?.autoExecuteDrafts || !agent.autoExecuteEnabledById) return {}
+
+  // 실패·경합 뒤에는 DB 의 실제 상태를 다시 읽어 응답한다.
+  const reread = async (): Promise<StoredAction> => {
+    const cur = await prisma.agentPendingAction.findUnique({
+      where: { id: action.id },
+      select: {
+        id: true,
+        spaceId: true,
+        expiresAt: true,
+        status: true,
+        actionType: true,
+        result: true,
+        error: true,
+      },
+    })
+    return cur ?? { ...action }
+  }
+  let outcome
+  try {
+    outcome = await approveAndExecute(action.id, agent.autoExecuteEnabledById, {
+      autoGate: { agentId: draft.actor.id, tokenId: draft.actorTokenId },
+    })
+  } catch (err) {
+    console.error(
+      '[agent] 초안 자동 실행 중 오류',
+      action.id,
+      err instanceof Error ? err.name : err
+    )
+    outcome = { ok: false as const, status: 'CONFLICT' as const, message: '' }
+  }
+  if (outcome.ok) {
+    return {
+      result: {
+        ...toResult({
+          ...action,
+          status: 'EXECUTED',
+          actionType: draft.actionType,
+          result: outcome.result,
+        }),
+      },
+    }
+  }
+  switch (outcome.status) {
+    case 'FAILED':
+      return { result: { ...toResult({ ...action, status: 'FAILED' }), error: outcome.error } }
+    case 'EXPIRED':
+      return { result: toResult({ ...action, status: 'EXPIRED' }) }
+    case 'CONFLICT': {
+      const cur = await reread()
+      return cur.status && cur.status !== 'PENDING'
+        ? { result: toResult(cur) }
+        : { skipped: AUTO_SKIPPED }
+    }
+    default:
+      // FORBIDDEN·BLOCKED(·REJECTED 불가) — 액션은 PENDING 그대로.
+      return { skipped: 'message' in outcome ? outcome.message : AUTO_SKIPPED }
+  }
+}
 
 export async function createPendingAction(draft: PendingActionDraft): Promise<PendingActionResult> {
   const def = getActionDefinition(draft.actionType)
@@ -67,7 +172,15 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
   if (draft.idempotencyKey) {
     const existing = await prisma.agentPendingAction.findUnique({
       where: { idempotencyKey: draft.idempotencyKey },
-      select: { id: true, spaceId: true, expiresAt: true, status: true },
+      select: {
+        id: true,
+        spaceId: true,
+        expiresAt: true,
+        status: true,
+        actionType: true,
+        result: true,
+        error: true,
+      },
     })
     if (existing) {
       const ended =
@@ -130,10 +243,16 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
       },
       select: { id: true, spaceId: true, expiresAt: true },
     })
+    // 초안 자동 실행 — 승인 대기로 남지 않은 경우 알림 없이 실제 상태로 응답한다.
+    const auto = await tryAutoExecute(def, draft, action)
+    if (auto.result) return auto.result
     // 신규 생성 경로에서만 Slack 알림(멱등·경합 패자 경로는 제외 — 중복 알림 방지).
     // notify 내부가 전부 try/catch + 타임아웃이라 await해도 액션 생성을 막지 않는다.
     await notifyPendingAction(action.id)
-    return toResult(action)
+    return {
+      ...toResult(action),
+      ...(auto.skipped ? { autoExecuteSkipped: auto.skipped } : {}),
+    }
   } catch (err) {
     // idempotencyKey 경합 — 다른 요청이 먼저 생성. 승자를 재조회해 반환.
     if (
@@ -144,7 +263,15 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
     ) {
       const winner = await prisma.agentPendingAction.findUnique({
         where: { idempotencyKey: draft.idempotencyKey },
-        select: { id: true, spaceId: true, expiresAt: true },
+        select: {
+          id: true,
+          spaceId: true,
+          expiresAt: true,
+          status: true,
+          actionType: true,
+          result: true,
+          error: true,
+        },
       })
       if (winner) return toResultInSpace(winner, draft.spaceId)
     }

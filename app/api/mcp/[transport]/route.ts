@@ -41,10 +41,22 @@ const handler = createMcpHandler(
                 : { result, workId: ctx.workId }
             // write tool은 즉시 실행되지 않고 승인 큐에 등록된다 — "실행 완료"로 오인 안내하지 않도록 분기한다.
             // def.mode가 아니라 결과 status로만 판단한다(바로 실행되는 write 도구가 생길 수 있다).
-            const isPending = structuredContent.status === 'pending_approval'
-            const text = isPending
-              ? `승인 대기 큐에 등록했습니다(승인 후 실행됨). 승인 URL: ${structuredContent.approvalUrl ?? '(웹 승인 큐)'} (workId: ${ctx.workId})`
-              : `${def.name} 실행 완료 (workId: ${ctx.workId}): ${JSON.stringify(result)}`
+            // 초안 자동 실행이 켜진 에이전트는 executed·failed 등 실제 상태로 돌아온다.
+            const status = structuredContent.status
+            const pendingText = `승인 대기 큐에 등록했습니다(승인 후 실행됨). 승인 URL: ${structuredContent.approvalUrl ?? '(웹 승인 큐)'} (workId: ${ctx.workId})`
+            const text =
+              status === 'pending_approval'
+                ? pendingText
+                : status === 'executed' && typeof structuredContent.actionId === 'string'
+                  ? `초안을 만들었습니다: ${structuredContent.resultUrl ?? '(링크 없음)'} (workId: ${ctx.workId})`
+                  : status === 'executing' && typeof structuredContent.actionId === 'string'
+                    ? `실행 중입니다 (workId: ${ctx.workId})`
+                    : status === 'failed' && typeof structuredContent.actionId === 'string'
+                      ? `실행 실패: ${structuredContent.error ?? '알 수 없는 오류'} (workId: ${ctx.workId})`
+                      : (status === 'expired' || status === 'rejected') &&
+                          typeof structuredContent.actionId === 'string'
+                        ? `실행되지 않았습니다(${status === 'expired' ? '승인 기간 만료' : '거절됨'}) (workId: ${ctx.workId})`
+                        : `${def.name} 실행 완료 (workId: ${ctx.workId}): ${JSON.stringify(result)}`
             return {
               structuredContent,
               content: [{ type: 'text', text }],

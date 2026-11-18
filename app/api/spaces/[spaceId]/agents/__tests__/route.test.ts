@@ -250,6 +250,70 @@ describe('/api/spaces/[spaceId]/agents', () => {
       })
     })
 
+    it('초안 자동 실행 켜기는 aal2가 필요하고 켠 관리자·시각을 기록한다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      aal2.mockResolvedValue(mfaRes())
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })
+      const body = json({ autoExecuteDrafts: true }, 'PATCH')
+      const denied = await patchAgent(body, params({ spaceId: 'sp1', agentId: 'ag1' }))
+      expect(denied.status).toBe(403)
+      expect(p.spaceAgent.update).not.toHaveBeenCalled()
+
+      aal2.mockResolvedValue(null)
+      p.spaceAgent.update.mockResolvedValue({
+        id: 'ag1',
+        scopes: [],
+        status: 'ACTIVE',
+        autoExecuteDrafts: true,
+      })
+      const res = await patchAgent(
+        json({ autoExecuteDrafts: true }, 'PATCH'),
+        params({ spaceId: 'sp1', agentId: 'ag1' })
+      )
+      expect(res.status).toBe(200)
+      const data = p.spaceAgent.update.mock.calls[0][0].data
+      expect(data).toMatchObject({ autoExecuteDrafts: true, autoExecuteEnabledById: 'u1' })
+      expect(data.autoExecuteEnabledAt).toBeInstanceOf(Date)
+      expect(audit.mock.calls[0][4]).toMatchObject({
+        changed: ['autoExecuteDrafts'],
+        autoExecuteDrafts: true,
+      })
+    })
+
+    it('초안 자동 실행 끄기는 aal2 없이 되고 켠 사람·시각을 지운다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      aal2.mockResolvedValue(mfaRes())
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })
+      p.spaceAgent.update.mockResolvedValue({
+        id: 'ag1',
+        scopes: [],
+        status: 'ACTIVE',
+        autoExecuteDrafts: false,
+      })
+      const res = await patchAgent(
+        json({ autoExecuteDrafts: false }, 'PATCH'),
+        params({ spaceId: 'sp1', agentId: 'ag1' })
+      )
+      expect(res.status).toBe(200)
+      expect(aal2).not.toHaveBeenCalled()
+      expect(p.spaceAgent.update.mock.calls[0][0].data).toMatchObject({
+        autoExecuteDrafts: false,
+        autoExecuteEnabledById: null,
+        autoExecuteEnabledAt: null,
+      })
+    })
+
+    it('연동 계정에는 초안 자동 실행을 설정할 수 없다(400)', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'integration' })
+      const res = await patchAgent(
+        json({ autoExecuteDrafts: true }, 'PATCH'),
+        params({ spaceId: 'sp1', agentId: 'ag1' })
+      )
+      expect(res.status).toBe(400)
+      expect(p.spaceAgent.update).not.toHaveBeenCalled()
+    })
+
     it('빈 PATCH는 400, 쓰기·감사 로그 없음', async () => {
       admin.mockResolvedValue({ userId: 'u1' })
       p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })

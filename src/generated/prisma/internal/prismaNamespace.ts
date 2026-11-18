@@ -13605,6 +13605,9 @@ export const SpaceAgentScalarFieldEnum = {
   scopes: 'scopes',
   status: 'status',
   oauthClientId: 'oauthClientId',
+  autoExecuteDrafts: 'autoExecuteDrafts',
+  autoExecuteEnabledById: 'autoExecuteEnabledById',
+  autoExecuteEnabledAt: 'autoExecuteEnabledAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

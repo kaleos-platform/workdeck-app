@@ -56,6 +56,13 @@ export interface ActionDefinition<TParams = Record<string, unknown>> {
    * 거절은 막지 않는다.
    */
   requiresWebReview?: (params: TParams) => boolean
+  /**
+   * true 면 에이전트의 「초안 자동 실행」 스위치가 켜졌을 때 승인 없이 바로 실행한다.
+   * 워크덱 안에 초안을 새로 만드는 액션만 true(외부 반영·돈·덮어쓰기 금지).
+   */
+  autoExecutable?: boolean
+  /** 실행 결과에서 확인 링크를 만든다(자동 실행 응답용). */
+  resultUrl?: (result: unknown, ctx: { spaceId: string }) => string | null
   // 생성 시점 가드 (선택) — throw하면 액션 생성 자체가 거부된다.
   // snapshot과 달리 실패해도 생성이 진행되지 않는다 — 사람이 실행 불가능한
   // 액션(예: 연동 안 된 space)을 승인 큐에서 보는 사고를 막는다.
@@ -83,8 +90,14 @@ export interface PendingActionDraft {
 
 // createPendingAction 반환 — MCP write tool이 그대로 노출한다.
 export interface PendingActionResult {
-  status: 'pending_approval'
+  status: 'pending_approval' | 'executing' | 'executed' | 'failed' | 'expired' | 'rejected'
   actionId: string
   approvalUrl: string
   expiresAt: string // ISO
+  // 자동 실행으로 끝난 경우
+  resultUrl?: string | null
+  result?: unknown
+  error?: string
+  // 자동 실행 대상이었지만 승인 대기로 남은 사유
+  autoExecuteSkipped?: string
 }

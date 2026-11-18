@@ -42,6 +42,9 @@ type Agent = {
   kind: 'agent' | 'integration'
   scopes: string[]
   status: 'ACTIVE' | 'DISABLED'
+  autoExecuteDrafts: boolean
+  autoExecuteEnabledAt: string | null
+  autoExecuteEnabledByName: string | null
   tokens: Token[]
 }
 // 발급 직후 한 번만 보여 줄 토큰 — 대화상자를 닫으면 버린다.
@@ -129,6 +132,18 @@ export function AgentTokensCard() {
       await load()
   }
 
+  // 켜기는 MFA 필요 — mutate 가 단계 인증으로 보낸다.
+  async function toggleAuto(a: Agent, on: boolean) {
+    if (
+      await mutate(
+        `/${a.id}`,
+        { method: 'PATCH', body: JSON.stringify({ autoExecuteDrafts: on }) },
+        '초안 자동 실행을 바꾸지 못했습니다'
+      )
+    )
+      await load()
+  }
+
   async function revoke(a: Agent, t: Token) {
     if (!confirm(`${a.name}의 토큰을 폐기할까요? 이 토큰을 쓰는 연결은 즉시 끊깁니다.`)) return
     if (await mutate(`/${a.id}/tokens/${t.id}`, { method: 'DELETE' }, '토큰을 폐기하지 못했습니다'))
@@ -206,6 +221,32 @@ export function AgentTokensCard() {
                 />
               </div>
             </div>
+            {a.kind === 'agent' && (
+              <div className="flex items-start justify-between gap-3 rounded-md bg-muted/40 p-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor={`auto-${a.id}`} className="font-medium">
+                    초안 자동 실행
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    발주 계획·모집 공고 초안은 승인 없이 바로 만들고 링크를 남깁니다. 켠 관리자
+                    이름으로 기록됩니다
+                  </p>
+                  {a.autoExecuteDrafts && (
+                    <p className="text-xs text-muted-foreground">
+                      {a.autoExecuteEnabledByName ?? '관리자'}님이 켬 ·{' '}
+                      {fmt(a.autoExecuteEnabledAt)}
+                    </p>
+                  )}
+                </div>
+                <Switch
+                  id={`auto-${a.id}`}
+                  checked={a.autoExecuteDrafts}
+                  onCheckedChange={(v) => toggleAuto(a, v)}
+                  disabled={pending}
+                  aria-label={`${a.name} 초안 자동 실행`}
+                />
+              </div>
+            )}
             <div className="flex flex-wrap gap-1">
               {a.scopes.length === 0 && <span className="text-muted-foreground">권한 없음</span>}
               {a.scopes.map((s) => (

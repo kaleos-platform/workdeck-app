@@ -285,6 +285,11 @@ function formatReport(data: unknown): string {
 // write tool(pending_approval) 결과 포맷.
 function formatPendingAction(data: unknown): string {
   const d = (data ?? {}) as Record<string, unknown>
+  if (d.status === 'executed') return `초안을 만들었습니다: ${d.resultUrl ?? '(링크 없음)'}`
+  if (d.status === 'executing') return '실행 중입니다.'
+  if (d.status === 'failed') return `실행 실패: ${d.error ?? '알 수 없는 오류'}`
+  if (d.status === 'expired') return '승인 기간이 지나 실행되지 않았습니다.'
+  if (d.status === 'rejected') return '거절되어 실행되지 않았습니다.'
   const url = d.approvalUrl ?? buildAppUrl('/approvals')
   return [
     '승인 대기 큐에 등록했습니다. 관리자 승인 후에 실제로 실행됩니다.',
