@@ -39,7 +39,21 @@ strip_ssl() { V="$1" node -e '
   const u = new URL(process.env.V)
   for (const k of [...u.searchParams.keys()]) if (/^(ssl|uselibpqcompat)/i.test(k)) u.searchParams.delete(k)
   process.stdout.write(u.toString())'; }
-admin_url() { local e; e=$(opening_env); strip_ssl "$(env_val "$e" DATABASE_URL)"; }
+# 역할 생성·회수에는 오프닝 DB 관리자 계정이 필요하다(API 계정 opening_api_prod 는 CREATEROLE 없음).
+# 관리자 비밀번호는 실행 전에 키체인 임시 항목에 직접 넣는다(대화형 입력, argv 미노출):
+#   security add-generic-password -a workdeck -s workdeck-opening-worker.opening-admin-temp -w
+# 접속 호스트·DB 는 API env 의 DATABASE_URL 을 쓰고 사용자만 OPENING_ADMIN_USER(기본 opening_prod_admin)로 바꾼다.
+# 쓰고 나면 임시 항목을 지운다.
+admin_url() {
+  local e api pw
+  pw=$(security find-generic-password -a workdeck -s "$KC.opening-admin-temp" -w 2>/dev/null) || { echo '{"code":"ADMIN_PASSWORD_NOT_IN_KEYCHAIN"}' >&2; return 1; }
+  e=$(opening_env); api=$(strip_ssl "$(env_val "$e" DATABASE_URL)"); unset e
+  U="$api" N="${OPENING_ADMIN_USER:-opening_prod_admin}" P="$pw" node -e '
+    const u = new URL(process.env.U); u.username = process.env.N; u.password = encodeURIComponent(process.env.P)
+    process.stdout.write(u.toString())'
+}
+admin_api_url() { local e; e=$(opening_env); strip_ssl "$(env_val "$e" DATABASE_URL)"; }
+admin_done() { kc_del opening-admin-temp; }
 admin() { OPENING_ADMIN_URL="$1" CA="$CA_DIR/rds-global-bundle.pem" MODE="$2" node "$HERE/opening-admin.mjs"; }
 
 ensure_ca() {
@@ -54,7 +68,7 @@ ensure_ca() {
 worker_cidrs() {
   local out
   out=$($PEAK ec2 describe-security-groups --group-ids $SG \
-    --query "SecurityGroups[0].IpPermissions[?FromPort==\`5432\`].IpRanges[?Description=='$DESC'].CidrIp[]" --output text) || return 1
+    --query "SecurityGroups[0].IpPermissions[?FromPort==\`5432\`].IpRanges[] | [?Description=='$DESC'].CidrIp" --output text) || return 1
   [ "$out" = None ] && out=""
   printf '%s' "$out"
 }
@@ -95,7 +109,7 @@ case "${1:-}" in
     ;;
   db)
     ensure_ca
-    ADMIN=$(admin_url); [ -n "$ADMIN" ] || { echo '{"code":"SOURCE_URL_NOT_FOUND"}'; exit 1; }
+    ADMIN=$(admin_url) && [ -n "$ADMIN" ] || exit 1
     PW=$(openssl rand -hex 24)
     printf '%s' "$PW" | admin "$ADMIN" grant || { unset ADMIN PW; exit 1; }
     READER=$(U="$ADMIN" P="$PW" node -e '
@@ -104,10 +118,11 @@ case "${1:-}" in
     unset ADMIN PW
     kc_put opening-reader-url "$READER" && echo '{"keychain":"opening-reader-url"}' || { echo '{"code":"KEYCHAIN_WRITE_FAILED"}'; exit 1; }
     unset READER
+    admin_done && echo '{"adminTemp":"deleted"}'
     ;;
   iam)
     ensure_ca
-    ADMIN=$(admin_url); ROWS=$(admin "$ADMIN" prefixes) || { unset ADMIN; exit 1; }; unset ADMIN
+    API=$(admin_api_url); ROWS=$(admin "$API" prefixes) || { unset API; exit 1; }; unset API
     # 첫 경로 조각이 있는 키만 prefix 로 좁힌다. 경로 없는 키·prefix 가 너무 많으면 사람 판단으로 넘긴다.
     RES=$(printf '%s' "$ROWS" | node -e '
       const rows = JSON.parse(require("fs").readFileSync(0, "utf8"))
@@ -215,8 +230,7 @@ case "${1:-}" in
       FAIL=1; echo '{"sg":"lookup_failed"}'
     fi
     ensure_ca
-    ADMIN=$(admin_url)
-    if [ -n "$ADMIN" ]; then admin "$ADMIN" drop || FAIL=1; else FAIL=1; echo '{"db":"admin_url_missing"}'; fi
+    if ADMIN=$(admin_url) && [ -n "$ADMIN" ]; then admin "$ADMIN" drop || FAIL=1; admin_done; else FAIL=1; echo '{"db":"admin_password_missing"}'; fi
     unset ADMIN
     iam_user_state; ST=$?
     if [ "$ST" = 0 ]; then
