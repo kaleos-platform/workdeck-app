@@ -9,7 +9,7 @@ import { Client } from 'pg'
 import { openingTlsConfig } from '@/lib/hiring/migration/opening-tls'
 import { readS3 } from '@/lib/hiring/migration/opening-run'
 
-// scripts/opening-worker/opening-admin.cjs 의 TABLES 와 같아야 한다.
+// scripts/opening-worker/opening-admin.mjs 의 TABLES 와 같아야 한다.
 const ALLOWED_TABLES = [
   'address',
   'brand',
