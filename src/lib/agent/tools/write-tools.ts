@@ -107,7 +107,7 @@ const financeCreateClassRuleTool: ToolDefinition = {
 const sellerhubCreateReorderPlanTool: ToolDefinition = {
   name: 'sellerhub_create_reorder_plan',
   description:
-    '상품의 발주 계획(초안)을 생성하도록 요청합니다. 에이전트의 「초안 자동 실행」이 켜져 있으면 바로 만들고 링크(resultUrl)를 돌려주며(status=executed), 아니면 승인 대기 큐에 등록되어 관리자(ADMIN) 승인 후에 생성됩니다. 발주 화면 위저드 기본값과 같은 계산(sellerhub_get_reorder_preview 와 동일 — 로켓그로스 분리·SKU 배분·자체·3PL 입고 위치)으로 승인 시점 데이터 기준 다시 계산됩니다. 수량은 지정할 수 없습니다. 상품 전체를 계획하려면 optionIds 를 넘기지 마세요(넘기면 그 옵션만 계획).',
+    '상품의 발주 계획(초안)을 생성하도록 요청합니다. 에이전트에 `draft:create`(초안 바로 만들기) 권한이 있으면 승인 없이 바로 만들고 resultUrl 을 돌려줍니다. 없으면 승인 대기로 등록됩니다. 만들기 전에 사용자에게 대상·수량을 보여 주고 확인을 받으세요. 승인 대기면 관리자(ADMIN) 승인 후에 생성됩니다. 발주 화면 위저드 기본값과 같은 계산(sellerhub_get_reorder_preview 와 동일 — 로켓그로스 분리·SKU 배분·자체·3PL 입고 위치)으로 승인 시점 데이터 기준 다시 계산됩니다. 수량은 지정할 수 없습니다. 상품 전체를 계획하려면 optionIds 를 넘기지 마세요(넘기면 그 옵션만 계획).',
   inputSchema: {
     productId: z.string(),
     optionIds: z.array(z.string()).optional(),

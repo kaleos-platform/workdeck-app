@@ -12,11 +12,18 @@ jest.mock('@/lib/agent/identity/oauth-client-consent', () => ({
   hasActiveOAuthConsent: jest.fn(),
 }))
 jest.mock('@/lib/admin/auth', () => ({ writeAuditLog: jest.fn() }))
-jest.mock('@/lib/prisma', () => ({
-  prisma: {
-    spaceAgent: { findMany: jest.fn(), create: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
-  },
-}))
+jest.mock('@/lib/prisma', () => {
+  const spaceAgent = {
+    findMany: jest.fn(),
+    create: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+  }
+  const tx = { $queryRaw: jest.fn(), spaceAgent }
+  return {
+    prisma: { spaceAgent, $transaction: jest.fn((fn: (t: typeof tx) => unknown) => fn(tx)), tx },
+  }
+})
 
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { issueAgentToken, revokeAgentToken } from '@/lib/agent/identity/agent-token'
@@ -33,7 +40,10 @@ const admin = requireSpaceAdmin as jest.Mock
 const aal2 = requireAal2 as jest.Mock
 const audit = writeAuditLog as jest.Mock
 const mfaRes = () => new Response(JSON.stringify({ code: 'MFA_REQUIRED' }), { status: 403 })
-const p = prisma as unknown as { spaceAgent: Record<string, jest.Mock> }
+const p = prisma as unknown as {
+  spaceAgent: Record<string, jest.Mock>
+  tx: { $queryRaw: jest.Mock }
+}
 const params = <T>(v: T) => ({ params: Promise.resolve(v) })
 const json = (body: unknown, method = 'POST') =>
   new NextRequest('http://x/api', { method, body: JSON.stringify(body) })
@@ -250,68 +260,91 @@ describe('/api/spaces/[spaceId]/agents', () => {
       })
     })
 
-    it('초안 자동 실행 켜기는 aal2가 필요하고 켠 관리자·시각을 기록한다', async () => {
+    const patchScopes = (scopes: string[], currentScopes: string[], kind = 'agent') => {
       admin.mockResolvedValue({ userId: 'u1' })
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind })
+      p.tx.$queryRaw.mockResolvedValue([{ scopes: currentScopes }])
+      p.spaceAgent.update.mockResolvedValue({ id: 'ag1', scopes, status: 'ACTIVE' })
+      return patchAgent(json({ scopes }, 'PATCH'), params({ spaceId: 'sp1', agentId: 'ag1' }))
+    }
+
+    it('draft:create 가 새로 들어오면 aal2 필요, 행을 잠그고 부여자·시각을 기록한다', async () => {
       aal2.mockResolvedValue(mfaRes())
-      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })
-      const body = json({ autoExecuteDrafts: true }, 'PATCH')
-      const denied = await patchAgent(body, params({ spaceId: 'sp1', agentId: 'ag1' }))
+      const denied = await patchScopes(['sellerhub:write', 'draft:create'], ['sellerhub:write'])
       expect(denied.status).toBe(403)
       expect(p.spaceAgent.update).not.toHaveBeenCalled()
 
       aal2.mockResolvedValue(null)
-      p.spaceAgent.update.mockResolvedValue({
-        id: 'ag1',
-        scopes: [],
-        status: 'ACTIVE',
-        autoExecuteDrafts: true,
-      })
-      const res = await patchAgent(
-        json({ autoExecuteDrafts: true }, 'PATCH'),
-        params({ spaceId: 'sp1', agentId: 'ag1' })
-      )
+      const res = await patchScopes(['sellerhub:write', 'draft:create'], ['sellerhub:write'])
       expect(res.status).toBe(200)
+      expect(String(p.tx.$queryRaw.mock.calls[0][0])).toContain('FOR UPDATE')
       const data = p.spaceAgent.update.mock.calls[0][0].data
-      expect(data).toMatchObject({ autoExecuteDrafts: true, autoExecuteEnabledById: 'u1' })
+      expect(data).toMatchObject({ autoExecuteEnabledById: 'u1' })
       expect(data.autoExecuteEnabledAt).toBeInstanceOf(Date)
-      expect(audit.mock.calls[0][4]).toMatchObject({
-        changed: ['autoExecuteDrafts'],
-        autoExecuteDrafts: true,
-      })
     })
 
-    it('초안 자동 실행 끄기는 aal2 없이 되고 켠 사람·시각을 지운다', async () => {
-      admin.mockResolvedValue({ userId: 'u1' })
-      aal2.mockResolvedValue(mfaRes())
-      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })
-      p.spaceAgent.update.mockResolvedValue({
-        id: 'ag1',
-        scopes: [],
-        status: 'ACTIVE',
-        autoExecuteDrafts: false,
-      })
-      const res = await patchAgent(
-        json({ autoExecuteDrafts: false }, 'PATCH'),
-        params({ spaceId: 'sp1', agentId: 'ag1' })
-      )
+    it('이미 있던 draft:create 를 유지하는 저장은 부여자를 바꾸지 않는다(잠근 현재값 기준)', async () => {
+      const res = await patchScopes(['draft:create', 'ads:read'], ['draft:create'])
       expect(res.status).toBe(200)
-      expect(aal2).not.toHaveBeenCalled()
+      const data = p.spaceAgent.update.mock.calls[0][0].data
+      expect(data).not.toHaveProperty('autoExecuteEnabledById')
+      expect(data).not.toHaveProperty('autoExecuteEnabledAt')
+    })
+
+    it('draft:create 를 빼면 부여자·시각을 지운다', async () => {
+      const res = await patchScopes(['ads:read'], ['draft:create'])
+      expect(res.status).toBe(200)
       expect(p.spaceAgent.update.mock.calls[0][0].data).toMatchObject({
-        autoExecuteDrafts: false,
         autoExecuteEnabledById: null,
         autoExecuteEnabledAt: null,
       })
     })
 
-    it('연동 계정에는 초안 자동 실행을 설정할 수 없다(400)', async () => {
+    it('오래된 목록 기준 저장이어도 잠근 현재값으로 판단한다(이미 회수된 뒤 다시 넣으면 새 부여)', async () => {
+      // 화면은 draft:create 가 있던 시점이지만 DB 는 이미 회수됨 → 새로 들어온 것으로 본다.
+      const res = await patchScopes(['draft:create'], [])
+      expect(res.status).toBe(200)
+      expect(p.spaceAgent.update.mock.calls[0][0].data.autoExecuteEnabledById).toBe('u1')
+    })
+
+    it('연동 계정에는 draft:create 를 줄 수 없다(400)', async () => {
+      const res = await patchScopes(['draft:create'], [], 'integration')
+      expect(res.status).toBe(400)
+      expect(p.spaceAgent.update).not.toHaveBeenCalled()
+    })
+
+    it('autoExecuteDrafts 입력은 더 이상 받지 않는다(변경 항목 없음 400)', async () => {
       admin.mockResolvedValue({ userId: 'u1' })
-      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'integration' })
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })
       const res = await patchAgent(
         json({ autoExecuteDrafts: true }, 'PATCH'),
         params({ spaceId: 'sp1', agentId: 'ag1' })
       )
       expect(res.status).toBe(400)
       expect(p.spaceAgent.update).not.toHaveBeenCalled()
+    })
+
+    it('생성 시 draft:create 가 있으면 부여자·시각을 기록한다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      p.spaceAgent.create.mockResolvedValue({ id: 'ag9', name: 'x', kind: 'agent', scopes: [] })
+      const res = await createAgent(
+        json({ name: 'x', kind: 'agent', scopes: ['hiring:write', 'draft:create'] }),
+        params({ spaceId: 'sp1' })
+      )
+      expect(res.status).toBe(201)
+      const data = p.spaceAgent.create.mock.calls[0][0].data
+      expect(data.autoExecuteEnabledById).toBe('u1')
+      expect(data.autoExecuteEnabledAt).toBeInstanceOf(Date)
+    })
+
+    it('생성 시 연동 계정에 draft:create 는 400', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      const res = await createAgent(
+        json({ name: 'x', kind: 'integration', scopes: ['draft:create'] }),
+        params({ spaceId: 'sp1' })
+      )
+      expect(res.status).toBe(400)
+      expect(p.spaceAgent.create).not.toHaveBeenCalled()
     })
 
     it('빈 PATCH는 400, 쓰기·감사 로그 없음', async () => {

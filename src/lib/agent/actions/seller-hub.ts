@@ -34,6 +34,7 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
   paramsSchema: reorderPlanParams,
   requiredRole: 'ADMIN',
   autoExecutable: true,
+  autoScope: 'sellerhub:write',
   resultUrl: (result, ctx) => {
     const planId = (result as { planId?: string } | null)?.planId
     return planId
@@ -74,7 +75,10 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
     }
     const created = (await run({
       ...base,
-      memo: params.memo,
+      // 자동 실행이면 계획 메모 앞에 누가 만들었는지 남긴다.
+      memo: ctx.autoExecuted
+        ? `[${ctx.actorName ?? '에이전트'} 자동 생성] ${params.memo ?? ''}`
+        : params.memo,
       // 입고 위치는 활성 위치만 — 재고가 남은 비활성 위치는 목록엔 있어도 기본값이 될 수 없다
       ownLocationId: preview.ownLocations?.find((l) => l.isActive !== false)?.id ?? null,
       skipLlmRationale: true,

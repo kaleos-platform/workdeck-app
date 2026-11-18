@@ -26,6 +26,8 @@ export const SCOPES = [
   'secret:env',
   'hiring:read',
   'hiring:write',
+  // 초안 바로 만들기 — 대상 초안 생성 액션(발주 계획·공고 초안)을 승인 없이 실행. 에이전트 전용, 대상 write scope 도 함께 필요.
+  'draft:create',
 ] as const
 
 export type Scope = (typeof SCOPES)[number]
