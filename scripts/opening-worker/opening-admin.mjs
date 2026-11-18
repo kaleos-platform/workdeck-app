@@ -2,6 +2,7 @@
 //   MODE=grant   읽기 역할 생성/회전 — 기존 권한·멤버십을 모두 지우고 허용 목록만 부여
 //   MODE=prefixes 워커가 읽는 파일(target_type 4종)의 storage·첫 경로 조각 목록(IAM 범위 산정)
 //   MODE=drop    역할 삭제 후 부재 확인
+//   MODE=exists  역할 존재 여부만(API 계정으로도 가능)
 //   비밀번호는 stdin 으로 받는다(argv·환경에 남기지 않음).
 import fs from 'node:fs'
 import pg from 'pg'
@@ -58,6 +59,11 @@ const FILE_TYPES = ['posting_detail_img', 'posting_detail', 'content_image', 'co
         [FILE_TYPES]
       )
       process.stdout.write(JSON.stringify(rows))
+      return
+    }
+    if (mode === 'exists') {
+      // 어느 계정으로도 pg_roles 는 읽을 수 있다(회수 전 잔존 확인용).
+      console.log(JSON.stringify({ role: (await exists()) ? 'present' : 'absent' }))
       return
     }
     if (mode === 'drop') {
