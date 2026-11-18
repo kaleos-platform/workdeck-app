@@ -244,16 +244,6 @@ case "${1:-}" in
         unset ADMIN ;;
       *) FAIL=1; echo '{"db":"role_lookup_failed"}' ;;
     esac
-    # SG 는 DB 역할 부재·삭제가 확인된 뒤에만 닫는다. 실패면 열어 두어 revoke 를 다시 돌릴 수 있게 한다.
-    if [ "$FAIL" != 0 ]; then
-      echo '{"sg":"kept_for_db_retry"}'
-    elif CIDRS=$(worker_cidrs); then
-      for cidr in $CIDRS; do revoke_cidr "$cidr" || FAIL=1; done
-      LEFT=$(worker_cidrs) || LEFT=lookup_failed
-      [ -z "$LEFT" ] || { FAIL=1; echo '{"sg":"rules_remaining_or_unknown"}'; }
-    else
-      FAIL=1; echo '{"sg":"lookup_failed"}'
-    fi
     iam_user_state; ST=$?
     if [ "$ST" = 0 ]; then
       KEYS=$($PEAK iam list-access-keys --user-name $IAM_USER --query 'AccessKeyMetadata[].AccessKeyId' --output text) || FAIL=1
@@ -263,6 +253,16 @@ case "${1:-}" in
       iam_user_state; [ $? = 1 ] || { FAIL=1; echo '{"iam":"user_remaining_or_unknown"}'; }
     elif [ "$ST" = 2 ]; then
       FAIL=1; echo '{"iam":"lookup_failed"}'
+    fi
+    # SG 는 마지막에 닫는다: DB·IAM 회수가 모두 확인된 뒤에만. 실패면 열어 두어 revoke 를 다시 돌릴 수 있게 한다.
+    if [ "$FAIL" != 0 ]; then
+      echo '{"sg":"kept_for_retry"}'
+    elif CIDRS=$(worker_cidrs); then
+      for cidr in $CIDRS; do revoke_cidr "$cidr" || FAIL=1; done
+      LEFT=$(worker_cidrs) || LEFT=lookup_failed
+      [ -z "$LEFT" ] || { FAIL=1; echo '{"sg":"rules_remaining_or_unknown"}'; }
+    else
+      FAIL=1; echo '{"sg":"lookup_failed"}'
     fi
     if [ "$FAIL" = 0 ]; then
       for k in opening-reader-url opening-reader-kind s3-credentials opening-hmac-key workdeck-direct-url encryption-key-v1; do kc_del $k; done
