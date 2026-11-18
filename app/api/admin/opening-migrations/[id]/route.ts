@@ -8,10 +8,14 @@ import type { Prisma } from '@/generated/prisma/client'
 export const runtime = 'nodejs'
 
 const bodySchema = z
-  .object({ action: z.enum(['approve', 'hold']), updatedAt: z.string().datetime().optional() })
+  .object({
+    action: z.enum(['approve', 'hold', 'complete']),
+    updatedAt: z.string().datetime().optional(),
+  })
   .strict()
 
-// POST /api/admin/opening-migrations/[id] — 승인(PLANNED→APPROVED) / 보류(MATCHED·PLANNED·BLOCKED·FAILED→HELD)
+// POST /api/admin/opening-migrations/[id] — 승인(PLANNED→APPROVED) / 수동 적용 완료(APPROVED→DONE)
+// / 보류(MATCHED·PLANNED·BLOCKED·FAILED·APPROVED→HELD). 1차에는 적용 처리기가 없어 APPROVED 를 운영자가 닫는다.
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireOperator()
   if (!auth.ok) return auth.response
@@ -51,10 +55,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
               approvedSnapshot: snapshot,
             },
           })
-        : await tx.openingMigrationJob.updateMany({
-            where: { id, status: { in: ['MATCHED', 'PLANNED', 'BLOCKED', 'FAILED'] } },
-            data: { status: 'HELD', contactHitsEnc: null, contactHitsIv: null },
-          })
+        : action === 'complete'
+          ? await tx.openingMigrationJob.updateMany({
+              where: { id, status: 'APPROVED' },
+              data: { status: 'DONE', contactHitsEnc: null, contactHitsIv: null },
+            })
+          : await tx.openingMigrationJob.updateMany({
+              where: {
+                id,
+                status: { in: ['MATCHED', 'PLANNED', 'BLOCKED', 'FAILED', 'APPROVED'] },
+              },
+              data: { status: 'HELD', contactHitsEnc: null, contactHitsIv: null },
+            })
     if (result.count !== 1) return false
     await writeAuditLog(
       auth.user.id,

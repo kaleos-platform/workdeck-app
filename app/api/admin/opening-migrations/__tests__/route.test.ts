@@ -148,11 +148,11 @@ test('PLANNED 가 아니거나 snapshot 이 없으면 승인은 409', async () =
   expect(jobs.updateMany).not.toHaveBeenCalled()
 })
 
-test('보류는 MATCHED·PLANNED·BLOCKED·FAILED 에서만, contactHits 를 비운다', async () => {
+test('보류는 MATCHED·PLANNED·BLOCKED·FAILED·APPROVED 에서만, contactHits 를 비운다', async () => {
   jobs.updateMany.mockResolvedValue({ count: 1 })
   expect((await POST(request({ action: 'hold' }), { params })).status).toBe(200)
   expect(jobs.updateMany).toHaveBeenCalledWith({
-    where: { id: 'j1', status: { in: ['MATCHED', 'PLANNED', 'BLOCKED', 'FAILED'] } },
+    where: { id: 'j1', status: { in: ['MATCHED', 'PLANNED', 'BLOCKED', 'FAILED', 'APPROVED'] } },
     data: { status: 'HELD', contactHitsEnc: null, contactHitsIv: null },
   })
   jobs.updateMany.mockResolvedValue({ count: 0 })
@@ -193,4 +193,28 @@ test('감사 로그 기록이 실패하면 상태 변경도 반영되지 않도�
   jobs.updateMany.mockResolvedValue({ count: 1 })
   await POST(request({ action: 'hold' }), { params })
   expect(prisma.$transaction).toHaveBeenCalledTimes(1)
+})
+
+test('수동 적용 완료는 APPROVED 조건부 update 로 DONE 처리하고 조각을 비우며 감사 로그를 남긴다', async () => {
+  jobs.updateMany.mockResolvedValue({ count: 1 })
+  jobs.findUnique.mockResolvedValue({ ...planned, status: 'APPROVED' })
+  expect((await POST(request({ action: 'complete' }), { params })).status).toBe(200)
+  expect(jobs.updateMany).toHaveBeenCalledWith({
+    where: { id: 'j1', status: 'APPROVED' },
+    data: { status: 'DONE', contactHitsEnc: null, contactHitsIv: null },
+  })
+  expect(writeAuditLog).toHaveBeenCalledWith(
+    'op',
+    'openingMigration.complete',
+    'openingMigrationJob',
+    'j1',
+    expect.anything(),
+    prisma
+  )
+})
+
+test('PLANNED 에서 complete 는 조건부 update 가 0건이라 409', async () => {
+  jobs.updateMany.mockResolvedValue({ count: 0 })
+  expect((await POST(request({ action: 'complete' }), { params })).status).toBe(409)
+  expect(writeAuditLog).not.toHaveBeenCalled()
 })

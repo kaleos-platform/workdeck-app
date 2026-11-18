@@ -144,7 +144,28 @@ const TABS = [
 ] as const
 
 // POST hold 가 API 에서 허용되는 상태(app/api/admin/opening-migrations/[id]/route.ts 와 동일)
-const HOLDABLE = ['MATCHED', 'PLANNED', 'BLOCKED', 'FAILED']
+// 확인 Dialog 문구. 보류·완료 표시는 되돌릴 수 없는 종결 동작이다.
+const CONFIRM: Record<Action, { title: string; body: string; button: string }> = {
+  approve: {
+    title: '이전을 승인할까요?',
+    body: '승인 대상이 맞는지 한 번 더 확인하세요. 적용은 아직 수동으로 진행됩니다.',
+    button: '승인 확정',
+  },
+  hold: {
+    title: '이전을 보류할까요?',
+    body: '보류하면 자동 이전 대상에서 빠지고 되돌릴 수 없습니다. 연락처 조각도 삭제됩니다.',
+    button: '보류 확정',
+  },
+  complete: {
+    title: '수동 적용을 완료로 표시할까요?',
+    body: '기존 이전 도구로 적용·보장가·완료 메일을 마쳤을 때만 누르세요. 완료로 표시하면 되돌릴 수 없습니다.',
+    button: '완료 확정',
+  },
+}
+
+const HOLDABLE = ['MATCHED', 'PLANNED', 'BLOCKED', 'FAILED', 'APPROVED']
+
+type Action = 'approve' | 'hold' | 'complete'
 
 const WARNING_CLASS =
   'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400'
@@ -204,11 +225,13 @@ function Detail({
   busy,
   onApprove,
   onHold,
+  onComplete,
 }: {
   job: OpeningMigrationJobRow
   busy: boolean
   onApprove: () => void
   onHold: () => void
+  onComplete: () => void
 }) {
   const postings = group(job.summary, 'postings')
   const templates = group(job.summary, 'templates')
@@ -285,6 +308,11 @@ function Detail({
             승인
           </Button>
         )}
+        {job.status === 'APPROVED' && (
+          <Button disabled={busy} onClick={onComplete}>
+            수동 적용 완료로 표시
+          </Button>
+        )}
         {HOLDABLE.includes(job.status) && (
           <Button variant="outline" disabled={busy} onClick={onHold}>
             보류
@@ -299,14 +327,14 @@ export function OpeningMigrationsQueue({ jobs }: { jobs: OpeningMigrationJobRow[
   const router = useRouter()
   const [tab, setTab] = useState<(typeof TABS)[number]['value']>('pending')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [confirming, setConfirming] = useState<'approve' | 'hold' | null>(null)
+  const [confirming, setConfirming] = useState<Action | null>(null)
   const [busy, setBusy] = useState(false)
 
   const current = TABS.find((item) => item.value === tab) ?? TABS[0]
   const rows = jobs.filter((job) => (current.statuses as readonly string[]).includes(job.status))
   const selected = jobs.find((job) => job.id === selectedId) ?? null
 
-  async function act(job: OpeningMigrationJobRow, action: 'approve' | 'hold') {
+  async function act(job: OpeningMigrationJobRow, action: Action) {
     setBusy(true)
     try {
       const res = await fetchWithMfa(`/api/admin/opening-migrations/${job.id}`, {
@@ -332,7 +360,13 @@ export function OpeningMigrationsQueue({ jobs }: { jobs: OpeningMigrationJobRow[
         if (res.status === 409) router.refresh()
         return
       }
-      toast.success(action === 'approve' ? '승인했습니다' : '보류했습니다')
+      toast.success(
+        action === 'approve'
+          ? '승인했습니다'
+          : action === 'complete'
+            ? '완료로 표시했습니다'
+            : '보류했습니다'
+      )
       setConfirming(null)
       setSelectedId(null)
       router.refresh()
@@ -434,6 +468,7 @@ export function OpeningMigrationsQueue({ jobs }: { jobs: OpeningMigrationJobRow[
               busy={busy}
               onApprove={() => setConfirming('approve')}
               onHold={() => setConfirming('hold')}
+              onComplete={() => setConfirming('complete')}
             />
           )}
         </SheetContent>
@@ -445,16 +480,12 @@ export function OpeningMigrationsQueue({ jobs }: { jobs: OpeningMigrationJobRow[
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {confirming === 'hold' ? '이전을 보류할까요?' : '이전을 승인할까요?'}
-            </DialogTitle>
+            <DialogTitle>{confirming ? CONFIRM[confirming].title : ''}</DialogTitle>
             <DialogDescription>
               브랜드 {selected ? `${brandName(selected)} #${selected.openingBrandId}` : ''}
-              {confirming === 'approve' && ` / 가입자 ${selected?.userEmail ?? '—'}`}
+              {confirming !== 'hold' && ` / 가입자 ${selected?.userEmail ?? '—'}`}
               <br />
-              {confirming === 'hold'
-                ? '보류하면 자동 이전 대상에서 빠지고 되돌릴 수 없습니다. 연락처 조각도 삭제됩니다.'
-                : '승인 대상이 맞는지 한 번 더 확인하세요. 적용은 아직 수동으로 진행됩니다.'}
+              {confirming ? CONFIRM[confirming].body : ''}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -466,7 +497,7 @@ export function OpeningMigrationsQueue({ jobs }: { jobs: OpeningMigrationJobRow[
               disabled={busy}
               onClick={() => selected && confirming && void act(selected, confirming)}
             >
-              {confirming === 'hold' ? '보류 확정' : '승인 확정'}
+              {confirming ? CONFIRM[confirming].button : ''}
             </Button>
           </DialogFooter>
         </DialogContent>

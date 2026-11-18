@@ -101,11 +101,18 @@ test('차단 행에는 승인 버튼이 없고 보류만 있다', () => {
   expect(screen.getByRole('button', { name: '보류' })).toBeInTheDocument()
 })
 
-test('진행 중·완료·보류 행에는 보류 버튼도 없다', () => {
+test('완료 행에는 승인·보류 버튼이 없다', () => {
+  render(<OpeningMigrationsQueue jobs={jobs} />)
+  openTab(/^완료/)
+  fireEvent.click(screen.getByText('카페오닝 #5'))
+  expect(screen.queryByRole('button', { name: '보류' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '승인' })).not.toBeInTheDocument()
+})
+
+test('승인됨 상태는 수동 적용 대기로 표기한다', () => {
   render(<OpeningMigrationsQueue jobs={jobs} />)
   openTab(/^진행 중/)
   openRow('approved@example.com')
-  expect(screen.queryByRole('button', { name: '보류' })).not.toBeInTheDocument()
   expect(screen.getAllByText('승인됨 — 수동 적용 대기')).toHaveLength(2) // 표 + 상세
 })
 
@@ -278,4 +285,38 @@ test('MFA 취소(403 MFA_*)면 추가 토스트를 띄우지 않는다', async (
   await waitFor(() => expect(fetch).toHaveBeenCalled())
   await waitFor(() => expect(screen.getByRole('button', { name: '보류 확정' })).not.toBeDisabled())
   expect(toast.error).not.toHaveBeenCalled()
+})
+
+test('APPROVED 행 상세에 완료 표시·보류 버튼이 있고 승인은 없다', () => {
+  render(<OpeningMigrationsQueue jobs={jobs} />)
+  openTab(/^진행 중/)
+  openRow('approved@example.com')
+  expect(screen.getByRole('button', { name: '수동 적용 완료로 표시' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '보류' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '승인' })).not.toBeInTheDocument()
+})
+
+test('완료 표시는 확인 창에 안내·브랜드·이메일을 보이고 확정 시 complete 를 POST 한다', async () => {
+  const { toast } = jest.requireMock('sonner')
+  render(<OpeningMigrationsQueue jobs={jobs} />)
+  openTab(/^진행 중/)
+  openRow('approved@example.com')
+  fireEvent.click(screen.getByRole('button', { name: '수동 적용 완료로 표시' }))
+  const dialog = await screen.findByRole('dialog', { name: /완료/ })
+  expect(
+    within(dialog).getByText(/기존 이전 도구로 적용·보장가·완료 메일을 마쳤을 때만/)
+  ).toBeInTheDocument()
+  expect(within(dialog).getByText(/되돌릴 수 없습니다/)).toBeInTheDocument()
+  expect(within(dialog).getByText(/카페오닝 #4/)).toBeInTheDocument()
+  expect(within(dialog).getByText(/approved@example\.com/)).toBeInTheDocument()
+  expect(fetch).not.toHaveBeenCalled()
+  fireEvent.click(within(dialog).getByRole('button', { name: '완료 확정' }))
+  await waitFor(() =>
+    expect(fetch).toHaveBeenCalledWith('/api/admin/opening-migrations/a', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'complete' }),
+    })
+  )
+  await waitFor(() => expect(toast.success).toHaveBeenCalledWith('완료로 표시했습니다'))
 })
