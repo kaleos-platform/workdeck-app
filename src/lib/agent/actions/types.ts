@@ -20,6 +20,10 @@ export interface ActionExecContext {
   decryptedCredentialIds: string[]
   // 제안에 쓰인 AgentToken.id(없으면 토큰 없이 만든 제안) — execute 시점에만 채워진다.
   actorTokenId?: string | null
+  // draft:create 권한으로 승인 없이 자동 실행 중인지 — 결과물에 자동 생성 표시를 남길 때 쓴다.
+  autoExecuted?: boolean
+  // 제안한 에이전트 이름 — autoExecuted 일 때만 채워진다.
+  actorName?: string
 }
 
 /**
@@ -57,10 +61,12 @@ export interface ActionDefinition<TParams = Record<string, unknown>> {
    */
   requiresWebReview?: (params: TParams) => boolean
   /**
-   * true 면 에이전트의 「초안 자동 실행」 스위치가 켜졌을 때 승인 없이 바로 실행한다.
+   * true 면 에이전트에 scope `draft:create` 와 autoScope 가 있을 때 승인 없이 바로 실행한다.
    * 워크덱 안에 초안을 새로 만드는 액션만 true(외부 반영·돈·덮어쓰기 금지).
    */
   autoExecutable?: boolean
+  /** 자동 실행에 draft:create 와 함께 필요한 이 액션의 쓰기 scope. autoExecutable 이면 반드시 지정. */
+  autoScope?: 'sellerhub:write' | 'hiring:write'
   /** 실행 결과에서 확인 링크를 만든다(자동 실행 응답용). */
   resultUrl?: (result: unknown, ctx: { spaceId: string }) => string | null
   // 생성 시점 가드 (선택) — throw하면 액션 생성 자체가 거부된다.

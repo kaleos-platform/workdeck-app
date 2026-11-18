@@ -31,7 +31,6 @@ const AGENT_SELECT = {
   scopes: true,
   status: true,
   oauthClientId: true,
-  autoExecuteDrafts: true,
   autoExecuteEnabledById: true,
   autoExecuteEnabledAt: true,
   createdAt: true,
@@ -49,7 +48,7 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
     select: AGENT_SELECT,
     orderBy: { createdAt: 'asc' },
   })
-  // 초안 자동 실행을 켠 관리자 이름(이메일은 노출하지 않는다).
+  // draft:create 를 부여한 관리자 이름(이메일은 노출하지 않는다).
   const enablerIds = [
     ...new Set(agents.map((a) => a.autoExecuteEnabledById).filter(Boolean)),
   ] as string[]
@@ -85,6 +84,10 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   } catch (err) {
     return errorResponse(err instanceof Error ? err.message : 'scope 오류', 400)
   }
+  const grantsDraft = scopes.includes('draft:create')
+  if (grantsDraft && parsed.data.kind !== 'agent') {
+    return errorResponse('초안 바로 만들기 권한은 에이전트에만 줄 수 있습니다', 400)
+  }
   if (parsed.data.oauthClientId && parsed.data.kind !== 'integration') {
     return errorResponse('OAuth 클라이언트는 연동 계정에만 연결할 수 있습니다', 400)
   }
@@ -103,6 +106,10 @@ export async function POST(req: NextRequest, { params }: Ctx) {
         kind: parsed.data.kind,
         scopes,
         oauthClientId: parsed.data.oauthClientId,
+        // 새 행이라 잠금 경합이 없다 — draft:create 를 준 관리자·시각을 바로 기록한다.
+        ...(grantsDraft
+          ? { autoExecuteEnabledById: auth.userId, autoExecuteEnabledAt: new Date() }
+          : {}),
       },
       select: AGENT_SELECT,
     })

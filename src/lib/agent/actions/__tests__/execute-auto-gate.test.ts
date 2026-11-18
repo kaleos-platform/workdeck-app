@@ -1,11 +1,12 @@
 /** @jest-environment node */
-// approveAndExecute autoGate — 게이트 트랜잭션 안에서 스위치·토큰을 다시 확인한다. 안 맞으면 전이하지 않는다.
+// approveAndExecute autoGate — 게이트 트랜잭션 안에서 scope·부여자·토큰을 다시 확인한다. 안 맞으면 전이하지 않는다.
 import { prisma } from '@/lib/prisma'
 import { approveAndExecute } from '../execute'
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     agentPendingAction: { findUnique: jest.fn(), updateMany: jest.fn(), update: jest.fn() },
+    spaceAgent: { findFirst: jest.fn() },
     $transaction: jest.fn(),
   },
 }))
@@ -29,11 +30,18 @@ jest.mock('../registry', () => ({
 
 const p = prisma as unknown as {
   agentPendingAction: { findUnique: jest.Mock; updateMany: jest.Mock; update: jest.Mock }
+  spaceAgent: { findFirst: jest.Mock }
   $transaction: jest.Mock
 }
 const tx = { $queryRaw: jest.fn(), agentPendingAction: { updateMany: jest.fn() } }
-const gateOpts = { autoGate: { agentId: 'ag1', tokenId: 'tok1' } }
-const okAgent = { status: 'ACTIVE', autoExecuteDrafts: true, autoExecuteEnabledById: 'admin1' }
+const gateOpts = {
+  autoGate: { agentId: 'ag1', tokenId: 'tok1', requiredScope: 'sellerhub:write' },
+}
+const okAgent = {
+  status: 'ACTIVE',
+  scopes: ['sellerhub:write', 'draft:create'],
+  autoExecuteEnabledById: 'admin1',
+}
 const okToken = { revokedAt: null, expiresAt: null }
 
 function setup(agent: unknown, token: unknown) {
@@ -65,6 +73,7 @@ beforeEach(() => {
       payload: {},
     })
   p.agentPendingAction.update.mockResolvedValue({})
+  p.spaceAgent.findFirst.mockResolvedValue({ name: '에밀리' })
 })
 
 test('조건이 맞으면 트랜잭션 안에서 전이하고 실행한다', async () => {
@@ -74,11 +83,18 @@ test('조건이 맞으면 트랜잭션 안에서 전이하고 실행한다', asy
   expect(tx.agentPendingAction.updateMany).toHaveBeenCalled()
   expect(p.agentPendingAction.updateMany).not.toHaveBeenCalled()
   expect(String(tx.$queryRaw.mock.calls[0][0])).toContain('FOR UPDATE')
+  // 자동 실행 표시 — 전이에 autoExecuted, 실행 ctx 에 autoExecuted·actorName
+  expect(tx.agentPendingAction.updateMany.mock.calls[0][0].data).toMatchObject({
+    status: 'APPROVED',
+    autoExecuted: true,
+  })
+  expect(execute.mock.calls[0][0]).toMatchObject({ autoExecuted: true, actorName: '에밀리' })
 })
 
 test.each([
-  ['스위치 꺼짐', { ...okAgent, autoExecuteDrafts: false }, okToken],
-  ['켠 사람이 다름', { ...okAgent, autoExecuteEnabledById: 'other' }, okToken],
+  ['draft:create 회수', { ...okAgent, scopes: ['sellerhub:write'] }, okToken],
+  ['쓰기 scope 회수', { ...okAgent, scopes: ['draft:create'] }, okToken],
+  ['부여자가 다름', { ...okAgent, autoExecuteEnabledById: 'other' }, okToken],
   ['에이전트 비활성', { ...okAgent, status: 'DISABLED' }, okToken],
   ['토큰 폐기', okAgent, { revokedAt: new Date(), expiresAt: null }],
   ['토큰 만료', okAgent, { revokedAt: null, expiresAt: new Date(Date.now() - 1000) }],
@@ -96,4 +112,6 @@ test('autoGate 없으면 기존처럼 트랜잭션 없이 전이한다', async (
   const r = await approveAndExecute('a1', 'admin1')
   expect(r).toMatchObject({ ok: true })
   expect(p.$transaction).not.toHaveBeenCalled()
+  expect(p.agentPendingAction.updateMany.mock.calls[0][0].data).not.toHaveProperty('autoExecuted')
+  expect(execute.mock.calls[0][0]).not.toHaveProperty('autoExecuted')
 })

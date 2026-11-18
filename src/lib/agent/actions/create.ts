@@ -76,7 +76,8 @@ const NEVER_EXECUTED: string[] = ['REJECTED', 'EXPIRED']
 const AUTO_SKIPPED = '초안 자동 실행 조건이 맞지 않아 승인 대기로 등록했습니다'
 
 /**
- * 「초안 자동 실행」 — 대상 액션·토큰 있는 에이전트·스위치 켜짐일 때만 켠 관리자 이름으로 승인+실행한다.
+ * 「초안 바로 만들기」 — 대상 액션·토큰 있는 에이전트에 scope draft:create(+액션 쓰기 scope)가 있을 때만
+ * 그 권한을 부여한 관리자 이름으로 승인+실행한다.
  * result 가 있으면 그대로 응답(알림 없음), 없으면 승인 대기로 남은 것(skipped 는 자동 실행을 시도했다는 뜻).
  */
 async function tryAutoExecute(
@@ -84,12 +85,19 @@ async function tryAutoExecute(
   draft: PendingActionDraft,
   action: { id: string; spaceId: string; expiresAt: Date }
 ): Promise<{ result?: PendingActionResult; skipped?: string }> {
-  if (!def.autoExecutable || draft.actor.type !== 'agent' || !draft.actorTokenId) return {}
+  const requiredScope = def.autoScope
+  if (!def.autoExecutable || !requiredScope || draft.actor.type !== 'agent' || !draft.actorTokenId)
+    return {}
   const agent = await prisma.spaceAgent.findFirst({
     where: { id: draft.actor.id, spaceId: draft.spaceId },
-    select: { autoExecuteDrafts: true, autoExecuteEnabledById: true },
+    select: { scopes: true, autoExecuteEnabledById: true },
   })
-  if (!agent?.autoExecuteDrafts || !agent.autoExecuteEnabledById) return {}
+  if (
+    !agent?.autoExecuteEnabledById ||
+    !agent.scopes.includes('draft:create') ||
+    !agent.scopes.includes(requiredScope)
+  )
+    return {}
 
   // 실패·경합 뒤에는 DB 의 실제 상태를 다시 읽어 응답한다.
   const reread = async (): Promise<StoredAction> => {
@@ -110,7 +118,7 @@ async function tryAutoExecute(
   let outcome
   try {
     outcome = await approveAndExecute(action.id, agent.autoExecuteEnabledById, {
-      autoGate: { agentId: draft.actor.id, tokenId: draft.actorTokenId },
+      autoGate: { agentId: draft.actor.id, tokenId: draft.actorTokenId, requiredScope },
     })
   } catch (err) {
     console.error(
