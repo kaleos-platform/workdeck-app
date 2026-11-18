@@ -1,7 +1,10 @@
 #!/bin/bash
 # 오프닝 자동 이전 워커(맥미니) 인프라 설정. 단계별로 실행하고 결과를 확인한 뒤 다음 단계로 간다.
 #   setup.sh sg        오프닝 RDS SG 에 맥미니 현재 공인 IP 하나만 허용(이전 워커 IP 규칙은 제거)
-#   setup.sh db        오프닝 RDS 읽기 역할 생성·회전(기존 권한 초기화 → 테이블 SELECT, member 3컬럼)
+#   setup.sh db-api    오프닝 앱 계정(opening_api_prod) 접속 주소를 운영 env(S3)에서 꺼내 키체인에 저장
+#                      — 관리자 비밀번호를 몰라 전용 역할을 못 만들 때(사용자 결정 11-19). 워커는 세션을 읽기 전용으로 연다.
+#                      오프닝 종료(12/19) 때 revoke 로 지운다.
+#   setup.sh db        (관리자 계정이 있을 때) 전용 읽기 역할 생성·회전(테이블 SELECT, member 3컬럼)
 #   setup.sh iam       S3 읽기 IAM 사용자(워커가 읽는 파일 prefix 만 GetObject) + 키 회전 → 키체인
 #   setup.sh secrets   워크덱 운영 DIRECT_URL·ENCRYPTION_KEY_V1(Vault 사본)·OPENING_HMAC_KEY → 키체인
 #   setup.sh verify    키체인 값만으로 권한 경계·양쪽 DB·S3 읽기 확인(쓰기 없음)
@@ -107,6 +110,12 @@ case "${1:-}" in
     [ "$FAIL" = 0 ] && [ "$LEFT" = 1 ] && [ "$NOW" = "$IP/32" ] \
       && echo '{"sg":"ok","workerRules":1}' || { echo "{\"code\":\"SG_NOT_CLEAN\",\"workerRules\":$LEFT}"; exit 1; }
     ;;
+  db-api)
+    API=$(admin_api_url); [ -n "$API" ] || { echo '{"code":"SOURCE_URL_NOT_FOUND"}'; exit 1; }
+    kc_put opening-reader-url "$API" && kc_put opening-reader-kind api \
+      && echo '{"keychain":"opening-reader-url","kind":"api"}' || { unset API; echo '{"code":"KEYCHAIN_WRITE_FAILED"}'; exit 1; }
+    unset API
+    ;;
   db)
     ensure_ca
     ADMIN=$(admin_url) && [ -n "$ADMIN" ] || exit 1
@@ -116,7 +125,7 @@ case "${1:-}" in
       const u = new URL(process.env.U); u.username = "workdeck_opening_reader"; u.password = process.env.P
       process.stdout.write(u.toString())')
     unset ADMIN PW
-    kc_put opening-reader-url "$READER" && echo '{"keychain":"opening-reader-url"}' || { echo '{"code":"KEYCHAIN_WRITE_FAILED"}'; exit 1; }
+    kc_put opening-reader-url "$READER" && kc_put opening-reader-kind role && echo '{"keychain":"opening-reader-url","kind":"role"}' || { echo '{"code":"KEYCHAIN_WRITE_FAILED"}'; exit 1; }
     unset READER
     admin_done && echo '{"adminTemp":"deleted"}'
     ;;
@@ -230,7 +239,11 @@ case "${1:-}" in
       FAIL=1; echo '{"sg":"lookup_failed"}'
     fi
     ensure_ca
-    if ADMIN=$(admin_url) && [ -n "$ADMIN" ]; then admin "$ADMIN" drop || FAIL=1; admin_done; else FAIL=1; echo '{"db":"admin_password_missing"}'; fi
+    KIND=$(security find-generic-password -a workdeck -s "$KC.opening-reader-kind" -w 2>/dev/null)
+    if [ "$KIND" = api ]; then
+      echo '{"db":"api_account_not_ours"}'   # 앱 계정은 지우지 않는다. 키체인 항목만 아래에서 지운다.
+    elif ADMIN=$(admin_url) && [ -n "$ADMIN" ]; then admin "$ADMIN" drop || FAIL=1; admin_done
+    else FAIL=1; echo '{"db":"admin_password_missing"}'; fi
     unset ADMIN
     iam_user_state; ST=$?
     if [ "$ST" = 0 ]; then
@@ -243,7 +256,7 @@ case "${1:-}" in
       FAIL=1; echo '{"iam":"lookup_failed"}'
     fi
     if [ "$FAIL" = 0 ]; then
-      for k in opening-reader-url s3-credentials opening-hmac-key workdeck-direct-url encryption-key-v1; do kc_del $k; done
+      for k in opening-reader-url opening-reader-kind s3-credentials opening-hmac-key workdeck-direct-url encryption-key-v1; do kc_del $k; done
       echo '{"revoked":["launchd","sg","db-role","iam-user","keychain"]}'
     else
       echo '{"code":"REVOKE_INCOMPLETE","keychain":"kept_for_retry"}'; exit 1
