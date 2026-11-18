@@ -231,13 +231,6 @@ case "${1:-}" in
   revoke)
     launchctl bootout "gui/$(id -u)/ai.workdeck.opening-migrate" 2>/dev/null
     rm -f "$HOME/Library/LaunchAgents/ai.workdeck.opening-migrate.plist"
-    if CIDRS=$(worker_cidrs); then
-      for cidr in $CIDRS; do revoke_cidr "$cidr" || FAIL=1; done
-      LEFT=$(worker_cidrs) || LEFT=lookup_failed
-      [ -z "$LEFT" ] || { FAIL=1; echo '{"sg":"rules_remaining_or_unknown"}'; }
-    else
-      FAIL=1; echo '{"sg":"lookup_failed"}'
-    fi
     ensure_ca
     # 앱 계정(opening_api_prod)은 우리 것이 아니라 지우지 않는다. 다만 과거에 만든 전용 역할이 남았는지는
     # 표시(kind)와 무관하게 실제로 확인하고, 남아 있으면 관리자 계정으로 지운다.
@@ -251,6 +244,14 @@ case "${1:-}" in
         unset ADMIN ;;
       *) FAIL=1; echo '{"db":"role_lookup_failed"}' ;;
     esac
+    # SG 는 DB 확인·삭제가 끝난 뒤에 닫는다(먼저 닫으면 위 조회가 접속하지 못한다).
+    if CIDRS=$(worker_cidrs); then
+      for cidr in $CIDRS; do revoke_cidr "$cidr" || FAIL=1; done
+      LEFT=$(worker_cidrs) || LEFT=lookup_failed
+      [ -z "$LEFT" ] || { FAIL=1; echo '{"sg":"rules_remaining_or_unknown"}'; }
+    else
+      FAIL=1; echo '{"sg":"lookup_failed"}'
+    fi
     iam_user_state; ST=$?
     if [ "$ST" = 0 ]; then
       KEYS=$($PEAK iam list-access-keys --user-name $IAM_USER --query 'AccessKeyMetadata[].AccessKeyId' --output text) || FAIL=1
