@@ -239,12 +239,18 @@ case "${1:-}" in
       FAIL=1; echo '{"sg":"lookup_failed"}'
     fi
     ensure_ca
-    KIND=$(security find-generic-password -a workdeck -s "$KC.opening-reader-kind" -w 2>/dev/null)
-    if [ "$KIND" = api ]; then
-      echo '{"db":"api_account_not_ours"}'   # 앱 계정은 지우지 않는다. 키체인 항목만 아래에서 지운다.
-    elif ADMIN=$(admin_url) && [ -n "$ADMIN" ]; then admin "$ADMIN" drop || FAIL=1; admin_done
-    else FAIL=1; echo '{"db":"admin_password_missing"}'; fi
-    unset ADMIN
+    # 앱 계정(opening_api_prod)은 우리 것이 아니라 지우지 않는다. 다만 과거에 만든 전용 역할이 남았는지는
+    # 표시(kind)와 무관하게 실제로 확인하고, 남아 있으면 관리자 계정으로 지운다.
+    API=$(admin_api_url)
+    ROLE_STATE=$(admin "$API" exists 2>/dev/null); unset API
+    case "$ROLE_STATE" in
+      *absent*) echo '{"db":"reader_role_absent"}' ;;
+      *present*)
+        if ADMIN=$(admin_url) && [ -n "$ADMIN" ]; then admin "$ADMIN" drop || FAIL=1; admin_done
+        else FAIL=1; echo '{"db":"reader_role_present_admin_password_missing"}'; fi
+        unset ADMIN ;;
+      *) FAIL=1; echo '{"db":"role_lookup_failed"}' ;;
+    esac
     iam_user_state; ST=$?
     if [ "$ST" = 0 ]; then
       KEYS=$($PEAK iam list-access-keys --user-name $IAM_USER --query 'AccessKeyMetadata[].AccessKeyId' --output text) || FAIL=1

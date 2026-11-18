@@ -99,6 +99,7 @@ async function main() {
     out.writableTables = priv.writable_tables
     out.writableColumns = priv.writable_columns
     out.readableTables = (priv.readable_tables ?? []).length
+    out.readableTableList = priv.readable_tables ?? []
     // 허용 목록 밖에서 읽을 수 있는 컬럼(다른 스키마는 ~ 접두사). PUBLIC 의 컬럼 단위 권한까지 잡는다.
     out.unexpectedReadableColumns = ((priv.readable_columns ?? []) as string[]).filter((tc) => {
       const [table, column] = tc.split('.')
@@ -149,7 +150,10 @@ async function main() {
   out.s3Prefixes = samples.length
   out.s3Readable = s3Ok
   const memberColumns = out.memberColumns as string[]
+  const readable = (out.readableTableList ?? []) as string[]
+  out.missingTables = ALLOWED_TABLES.filter((t) => !readable.includes(t)).length
   const common =
+    out.missingTables === 0 &&
     out.readOnlyDefault === 'on' &&
     out.writeRejected === '25006' &&
     ['email_hash', 'id', 'status'].every((c) => memberColumns.includes(c)) &&
@@ -170,6 +174,7 @@ async function main() {
       Number(out.memberTotalColumns) > 3 &&
       out.memberships === 0 &&
       out.elevated === false
+  delete out.readableTableList
   console.log(JSON.stringify({ status: ok ? 'VERIFIED' : 'CHECK_FAILED', ...out }))
   if (!ok) process.exitCode = 1
 }
