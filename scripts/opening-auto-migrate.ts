@@ -253,6 +253,11 @@ async function targetFor(db: PrismaClient, userId: string) {
 }
 
 async function planJob(db: PrismaClient, job: QueueJob, targetSpaceId: string | null) {
+  // 계획 시작 시점의 차단 사유. 계획 중에 다른 경로(MULTI_USER 추가 등)가 바꿨으면 저장하지 않는다.
+  const before = await db.openingMigrationJob.findUniqueOrThrow({
+    where: { id: job.id },
+    select: { blockReasons: true },
+  })
   const jobDir = join(ROOT, job.id)
   rmSync(jobDir, { recursive: true, force: true })
   mkdirSync(jobDir, { recursive: true, mode: 0o700 })
@@ -314,9 +319,9 @@ async function planJob(db: PrismaClient, job: QueueJob, targetSpaceId: string | 
       warnings: result.warnings,
       snapshot: result.snapshot,
     }
-    // 조건부 update: 그 사이 상태가 바뀌었으면 반영하지 않는다.
+    // 조건부 update: 그 사이 상태나 차단 사유가 바뀌었으면 반영하지 않는다.
     const updated = await db.openingMigrationJob.updateMany({
-      where: { id: job.id, status: job.status },
+      where: { id: job.id, status: job.status, blockReasons: { equals: before.blockReasons } },
       data: {
         status: next,
         targetSpaceId,
