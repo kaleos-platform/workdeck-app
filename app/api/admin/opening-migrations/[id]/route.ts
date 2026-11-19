@@ -4,6 +4,7 @@ import { requireOperator, writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
 import { decryptField } from '@/lib/crypto/field-crypto'
 import { prisma } from '@/lib/prisma'
+import { lockOwnerSpaces } from '@/lib/spaces/owner-space-lock'
 import type { Prisma } from '@/generated/prisma/client'
 
 export const runtime = 'nodejs'
@@ -30,6 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     select: {
       id: true,
       status: true,
+      userId: true,
       summary: true,
       updatedAt: true,
       openingBrandId: true,
@@ -61,6 +63,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   )
     return errorResponse('이미 처리되었거나 상태가 바뀌었습니다', 409)
   const applied = await prisma.$transaction(async (tx) => {
+    // Space 생성과 직렬화한 뒤 OWNER Space 수를 다시 센다 — 2개 이상이면 대상이 모호해 승인하지 않는다.
+    if (action === 'approve' && job.userId) {
+      await lockOwnerSpaces(tx, job.userId)
+      const owned = await tx.spaceMember.count({ where: { userId: job.userId, role: 'OWNER' } })
+      if (owned > 1) return 'MULTIPLE_OWNER_SPACES' as const
+    }
     const result =
       action === 'approve'
         ? // updatedAt 을 함께 걸어, 읽은 뒤 재계획으로 summary 가 바뀐 경우 낡은 snapshot 을 확정하지 않는다.
@@ -96,6 +104,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     )
     return true
   })
+  if (applied === 'MULTIPLE_OWNER_SPACES')
+    return errorResponse('작업 공간이 여러 개라 승인할 수 없습니다(MULTIPLE_OWNER_SPACES)', 409)
   if (!applied) return errorResponse('이미 처리되었거나 상태가 바뀌었습니다', 409)
   return NextResponse.json({ ok: true })
 }
