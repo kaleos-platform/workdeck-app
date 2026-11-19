@@ -114,7 +114,7 @@ describe('planNext', () => {
   const queue = (over: Partial<QueueDeps>): QueueDeps => ({
     nextMatched: async () => null,
     blockedRetries: async () => [],
-    targetFor: async () => 's',
+    targetFor: async () => ({ spaceId: 's', multipleOwners: false }),
     touch: jest.fn(async () => {}),
     plan: jest.fn(async () => {}),
     fail: jest.fn(async () => {}),
@@ -125,29 +125,65 @@ describe('planNext', () => {
     const d = queue({
       nextMatched: async () => job('new', 'MATCHED'),
       blockedRetries: async () => Array.from({ length: 20 }, (_, i) => job(`b${i}`, 'BLOCKED')),
-      targetFor: async (userId) => (userId === 'unew' ? 's' : null),
+      targetFor: async (userId) => ({
+        spaceId: userId === 'unew' ? 's' : null,
+        multipleOwners: false,
+      }),
     })
     expect(await planNext(d)).toEqual({ status: 'PLANNED', jobId: 'new' })
-    expect(d.plan).toHaveBeenCalledWith(job('new', 'MATCHED'), 's')
+    expect(d.plan).toHaveBeenCalledWith(job('new', 'MATCHED'), {
+      spaceId: 's',
+      multipleOwners: false,
+    })
     expect(d.touch).not.toHaveBeenCalled()
   })
 
   it('MATCHED 가 없으면 대상 Space 없는 BLOCKED 는 touch 로 순환시키고 대상이 생긴 행을 계획한다', async () => {
     const d = queue({
       blockedRetries: async () => [job('b1', 'BLOCKED'), job('b2', 'BLOCKED')],
-      targetFor: async (userId) => (userId === 'ub2' ? 's2' : null),
+      targetFor: async (userId) => ({
+        spaceId: userId === 'ub2' ? 's2' : null,
+        multipleOwners: false,
+      }),
     })
     expect(await planNext(d)).toEqual({ status: 'PLANNED', jobId: 'b2' })
     expect(d.touch).toHaveBeenCalledWith('b1')
-    expect(d.plan).toHaveBeenCalledWith(job('b2', 'BLOCKED'), 's2')
+    expect(d.plan).toHaveBeenCalledWith(job('b2', 'BLOCKED'), {
+      spaceId: 's2',
+      multipleOwners: false,
+    })
   })
 
   it('모두 대상 없음이면 PLAN_NONE', async () => {
     const d = queue({
       blockedRetries: async () => [job('b1', 'BLOCKED')],
-      targetFor: async () => null,
+      targetFor: async () => ({ spaceId: null, multipleOwners: false }),
     })
     expect(await planNext(d)).toEqual({ status: 'PLAN_NONE' })
+  })
+
+  it('다중 OWNER 행은 touch 로 순환시키지 않고 계획해 차단 사유를 갱신한다', async () => {
+    const multi = { spaceId: null, multipleOwners: true }
+    const d = queue({
+      blockedRetries: async () => [job('b1', 'BLOCKED')],
+      targetFor: async () => multi,
+    })
+    expect(await planNext(d)).toEqual({ status: 'PLANNED', jobId: 'b1' })
+    expect(d.touch).not.toHaveBeenCalled()
+    expect(d.plan).toHaveBeenCalledWith(job('b1', 'BLOCKED'), multi)
+  })
+
+  it('이미 MULTIPLE_OWNER_SPACES 로 기록된 행은 여전히 다중 OWNER 면 touch 만, 1개로 줄면 재계획', async () => {
+    const stuck: QueueJob = { ...job('b1', 'BLOCKED'), blockReasons: ['MULTIPLE_OWNER_SPACES'] }
+    const still = queue({
+      blockedRetries: async () => [stuck],
+      targetFor: async () => ({ spaceId: null, multipleOwners: true }),
+    })
+    expect(await planNext(still)).toEqual({ status: 'PLAN_NONE' })
+    expect(still.touch).toHaveBeenCalledWith('b1')
+    expect(still.plan).not.toHaveBeenCalled()
+    const reduced = queue({ blockedRetries: async () => [stuck] })
+    expect(await planNext(reduced)).toEqual({ status: 'PLANNED', jobId: 'b1' })
   })
 
   it('plan 실패는 고정 코드로 fail 처리한다', async () => {

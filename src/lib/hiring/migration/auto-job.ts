@@ -57,16 +57,26 @@ export type SpaceCandidate = {
   recruitingActive: boolean
 }
 
-// 사용자가 OWNER이고 모집 관리가 켜진 가장 오래된 Space. 없으면 null.
-export function pickTargetSpace(spaces: SpaceCandidate[]): string | null {
-  const eligible = spaces
-    .filter((space) => space.role === 'OWNER' && space.recruitingActive)
+export type TargetChoice = {
+  spaceId: string | null
+  // OWNER Space 가 2개 이상이면 자동으로 고르지 않는다 — 운영자가 수동 흐름에서 대상을 정한다.
+  multipleOwners: boolean
+}
+
+// 사용자가 OWNER이고 모집 관리가 켜진 가장 오래된 Space. OWNER Space 가 2개 이상이면 대상 없음.
+export function pickTargetSpace(spaces: SpaceCandidate[]): TargetChoice {
+  const owned = spaces.filter((space) => space.role === 'OWNER')
+  if (owned.length > 1) return { spaceId: null, multipleOwners: true }
+  const eligible = owned
+    .filter((space) => space.recruitingActive)
     .sort((a, b) => a.memberSince.getTime() - b.memberSince.getTime())
-  return eligible[0]?.id ?? null
+  return { spaceId: eligible[0]?.id ?? null, multipleOwners: false }
 }
 
 export type PlanInput = {
   targetSpaceId: string | null
+  // OWNER Space 가 2개 이상이라 대상을 고르지 못한 경우(NO_TARGET_SPACE 대신 MULTIPLE_OWNER_SPACES)
+  multipleOwners?: boolean
   // 같은 사용자에게 매칭된 오프닝 브랜드 수
   brandCount: number
   // prepare summary 중 분류에 쓰는 부분
@@ -103,7 +113,8 @@ export function classifyPlan(input: PlanInput): PlanClassification {
     (input.summary.siblingOwned?.files ?? 0) + (input.summary.siblingOwned?.contents ?? 0)
 
   const blockReasons: string[] = []
-  if (!input.targetSpaceId) blockReasons.push('NO_TARGET_SPACE')
+  if (input.multipleOwners) blockReasons.push('MULTIPLE_OWNER_SPACES')
+  else if (!input.targetSpaceId) blockReasons.push('NO_TARGET_SPACE')
   if (input.brandCount > 1) blockReasons.push('MULTI_BRAND')
   if (has(OWNERSHIP_REASONS)) blockReasons.push('OWNERSHIP_MISMATCH')
   // 워커는 siblingBrandIds 를 넘기지 않으므로 형제 브랜드 자산은 보통 ASSET_SCOPE_MISMATCH(=OWNERSHIP_MISMATCH)로
@@ -282,4 +293,16 @@ export function assertBackfillMatches(status: 'DONE' | 'HELD', space: string, sp
   const ok =
     status === 'DONE' && space !== 'none' ? found.size === 1 && found.has(space) : found.size === 0
   if (!ok) throw Error('BACKFILL_LEDGER_MISMATCH')
+}
+
+export type CloseableJob = { status: string; userId: string | null; blockReasons: string[] }
+
+// backfill --close-job 판정. DONE 으로 닫을 수 있는 건 (1) HELD 이고 userId 가 없는 backfill 행,
+// (2) MULTIPLE_OWNER_SPACES 로 막혀 수동 이전한 BLOCKED 행이다. 이미 DONE 이면 EXISTS_DONE(보고만), 그 밖은 거부한다.
+export function decideCloseJob(job: CloseableJob | null): 'UPDATE' | 'EXISTS_DONE' {
+  if (job?.status === 'DONE') return 'EXISTS_DONE'
+  if (job?.status === 'HELD' && job.userId === null) return 'UPDATE'
+  if (job?.status === 'BLOCKED' && job.blockReasons.includes('MULTIPLE_OWNER_SPACES'))
+    return 'UPDATE'
+  throw Error('CLOSE_JOB_NOT_ELIGIBLE')
 }

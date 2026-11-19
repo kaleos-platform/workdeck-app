@@ -74,6 +74,7 @@ const CODE_LABELS: Record<string, string> = {
   LEDGER_CONFLICT: '이미 이전된 항목 충돌',
   TARGET_HAS_DATA: '대상 Space에 기존 데이터',
   NO_TARGET_SPACE: '모집 관리 Space 없음',
+  MULTIPLE_OWNER_SPACES: '여러 작업 공간(대상 지정 필요)',
   IMPORT_REFUSED: '이전 거부 항목',
   REVIEW_INCOMPLETE: '검토 미완료',
   SIBLING_ASSET: '형제 브랜드 자산',

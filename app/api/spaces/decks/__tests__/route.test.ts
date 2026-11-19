@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveSpaceContext } from '@/lib/api-helpers'
+import { ensureFinanceSeeded, seedFinanceCategories } from '@/lib/finance/kifrs-seed'
 import { canUseDeck, ensureTrialStarted } from '@/lib/billing/entitlement'
 import { findClosedDecks } from '@/lib/billing/deck-release'
 import { POST } from '../route'
@@ -31,7 +32,7 @@ jest.mock('@/lib/finance/kifrs-seed', () => ({
 const p = prisma as unknown as {
   deckApp: { findUnique: jest.Mock }
   billingDeckProduct: { findUnique: jest.Mock }
-  deckInstance: { findUnique: jest.Mock; create: jest.Mock }
+  deckInstance: { findUnique: jest.Mock; create: jest.Mock; update: jest.Mock }
 }
 
 const req = (deckAppId: string) =>
@@ -64,7 +65,7 @@ describe('POST /api/spaces/decks — 준비중 가드', () => {
     jest.mocked(findClosedDecks).mockResolvedValue(['finance'])
     const res = (await POST(req('finance')))!
     expect(res?.status).toBe(403)
-    expect(findClosedDecks).toHaveBeenCalledWith('s1', ['finance'])
+    expect(findClosedDecks).toHaveBeenCalledWith('s1', ['finance'], prisma)
     expect(ensureTrialStarted).not.toHaveBeenCalled()
     expect(p.deckInstance.create).not.toHaveBeenCalled()
   })
@@ -87,5 +88,34 @@ describe('POST /api/spaces/decks — 준비중 가드', () => {
     const res = await POST(req('finance'))
     expect(res?.status).toBe(402)
     expect(p.deckInstance.create).not.toHaveBeenCalled()
+  })
+})
+
+describe('POST /api/spaces/decks — 추출 후 동작 불변', () => {
+  beforeEach(() => jest.mocked(findClosedDecks).mockResolvedValue([]))
+
+  it('이미 활성이면 409, finance 는 시드 복구만 하고 체험·생성은 건드리지 않는다', async () => {
+    p.deckInstance.findUnique.mockResolvedValue({ id: 'i1', isActive: true })
+    const res = await POST(req('finance'))
+    expect(res?.status).toBe(409)
+    expect(ensureFinanceSeeded).toHaveBeenCalledWith('s1')
+    expect(ensureTrialStarted).not.toHaveBeenCalled()
+    expect(p.deckInstance.create).not.toHaveBeenCalled()
+  })
+
+  it('비활성 인스턴스는 재활성하고 200', async () => {
+    p.deckInstance.findUnique.mockResolvedValue({ id: 'i1', isActive: false })
+    p.deckInstance.update.mockResolvedValue({ id: 'i1', deckAppId: 'finance', isActive: true })
+    const res = await POST(req('finance'))
+    expect(res?.status).toBe(200)
+    expect(p.deckInstance.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'i1' }, data: { isActive: true } })
+    )
+  })
+
+  it('finance 신규 추가는 transaction 뒤에 계정과목을 시드한다', async () => {
+    const res = await POST(req('finance'))
+    expect(res?.status).toBe(201)
+    expect(seedFinanceCategories).toHaveBeenCalledWith('s1')
   })
 })
