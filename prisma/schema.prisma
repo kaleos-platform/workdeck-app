@@ -641,8 +641,10 @@ model AgentPendingAction {
   workId               String?
   // 제안에 쓰인 토큰 id (wd run 승인 흐름용). 없으면 null.
   actorTokenId         String?
-  // draft:create 권한으로 승인 없이 자동 실행된 액션(autoGate 전이에서만 true). 표시 분기용.
+  // 쓰기 권한으로 승인 없이 바로 실행된 액션(autoGate 전이에서만 true). 표시 분기용.
   autoExecuted         Boolean           @default(false)
+  // 바로 실행 알림(Slack) 전송 실패 사유. 실행 결과와 무관, 승인 내역에 「실행 알림 실패」로 표시.
+  notifyError          String?
 
   status     AgentActionStatus @default(PENDING)
   expiresAt  DateTime // createPendingAction에서 now+72h로 설정 (앱 계산)
@@ -730,11 +732,16 @@ model SpaceAgent {
   // 구성원 세션은 이 연동 계정으로 기록되고 이 Space에 고정된다.
   oauthClientId String?  @unique
 
-  // autoExecuteDrafts 는 미사용(2026-11-18, 스위치 → scope draft:create 로 대체). 운영 컬럼이라 DROP 하지 않는다.
-  // autoExecuteEnabledById/At = scope draft:create 를 부여한 관리자·시각(PATCH 가 기록).
+  // autoExecuteDrafts·autoExecuteEnabledById/At 는 미사용(2026-11-20, draft:create 폐지 → writeGrants 로 대체). 운영 컬럼이라 DROP 하지 않는다.
   autoExecuteDrafts      Boolean   @default(false)
   autoExecuteEnabledById String?
   autoExecuteEnabledAt   DateTime?
+  // 권한 정리 전 scopes 원본(롤백용). 2026-11-20 마이그레이션이 한 번 복사한다.
+  scopesBackup String[] @default([])
+  // 쓰기 scope 별 부여자 기록: { "<xxx:write>": { userId, at(ISO) } }. 바로 실행 게이트가 읽는다.
+  writeGrants  Json     @default("{}")
+  // 권한 저장 횟수 — 0 이면 배포 후 한 번도 저장 안 된 행(ROLLBACK.sql 이 구분).
+  scopesVersion Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

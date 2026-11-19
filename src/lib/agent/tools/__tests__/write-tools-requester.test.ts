@@ -72,3 +72,26 @@ it('발주 계획 멱등 키는 KST 날짜 단위 — 같은 날 같은 요청=�
     jest.useRealTimers()
   }
 })
+
+// 바로 실행(내부) 도구는 토큰 id·인증된 구성원을 제안에 싣는다 — 게이트가 에이전트 토큰·연동 계정 결정자를 확인하는 근거.
+it.each([
+  'finance_classify_transactions',
+  'sellerhub_create_reorder_plan',
+  'sellerhub_propose_keyword_update',
+  'ads_trigger_analysis',
+])('%s → actorTokenId·authenticatedUserId 를 그대로 싣는다', async (name) => {
+  ;(createPendingAction as jest.Mock).mockClear()
+  const tool = writeTools.find((t) => t.name === name)!
+  await tool.execute(
+    {
+      ...ctx,
+      actor: { type: 'integration', id: 'ig1' },
+      actorTokenId: 'tok1',
+      authenticatedUserId: 'member1',
+    },
+    ARGS[name]
+  )
+  expect(createPendingAction).toHaveBeenCalledWith(
+    expect.objectContaining({ actorTokenId: 'tok1', authenticatedUserId: 'member1' })
+  )
+})

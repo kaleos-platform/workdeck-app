@@ -38,6 +38,7 @@ export type AgentPendingActionMinAggregateOutputType = {
   workId: string | null
   actorTokenId: string | null
   autoExecuted: boolean | null
+  notifyError: string | null
   status: $Enums.AgentActionStatus | null
   expiresAt: Date | null
   decidedBy: string | null
@@ -65,6 +66,7 @@ export type AgentPendingActionMaxAggregateOutputType = {
   workId: string | null
   actorTokenId: string | null
   autoExecuted: boolean | null
+  notifyError: string | null
   status: $Enums.AgentActionStatus | null
   expiresAt: Date | null
   decidedBy: string | null
@@ -94,6 +96,7 @@ export type AgentPendingActionCountAggregateOutputType = {
   workId: number
   actorTokenId: number
   autoExecuted: number
+  notifyError: number
   status: number
   expiresAt: number
   decidedBy: number
@@ -124,6 +127,7 @@ export type AgentPendingActionMinAggregateInputType = {
   workId?: true
   actorTokenId?: true
   autoExecuted?: true
+  notifyError?: true
   status?: true
   expiresAt?: true
   decidedBy?: true
@@ -151,6 +155,7 @@ export type AgentPendingActionMaxAggregateInputType = {
   workId?: true
   actorTokenId?: true
   autoExecuted?: true
+  notifyError?: true
   status?: true
   expiresAt?: true
   decidedBy?: true
@@ -180,6 +185,7 @@ export type AgentPendingActionCountAggregateInputType = {
   workId?: true
   actorTokenId?: true
   autoExecuted?: true
+  notifyError?: true
   status?: true
   expiresAt?: true
   decidedBy?: true
@@ -283,6 +289,7 @@ export type AgentPendingActionGroupByOutputType = {
   workId: string | null
   actorTokenId: string | null
   autoExecuted: boolean
+  notifyError: string | null
   status: $Enums.AgentActionStatus
   expiresAt: Date
   decidedBy: string | null
@@ -334,6 +341,7 @@ export type AgentPendingActionWhereInput = {
   workId?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   actorTokenId?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   autoExecuted?: Prisma.BoolFilter<"AgentPendingAction"> | boolean
+  notifyError?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   status?: Prisma.EnumAgentActionStatusFilter<"AgentPendingAction"> | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFilter<"AgentPendingAction"> | Date | string
   decidedBy?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
@@ -366,6 +374,7 @@ export type AgentPendingActionOrderByWithRelationInput = {
   workId?: Prisma.SortOrderInput | Prisma.SortOrder
   actorTokenId?: Prisma.SortOrderInput | Prisma.SortOrder
   autoExecuted?: Prisma.SortOrder
+  notifyError?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   decidedBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -402,6 +411,7 @@ export type AgentPendingActionWhereUniqueInput = Prisma.AtLeast<{
   workId?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   actorTokenId?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   autoExecuted?: Prisma.BoolFilter<"AgentPendingAction"> | boolean
+  notifyError?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   status?: Prisma.EnumAgentActionStatusFilter<"AgentPendingAction"> | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFilter<"AgentPendingAction"> | Date | string
   decidedBy?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
@@ -433,6 +443,7 @@ export type AgentPendingActionOrderByWithAggregationInput = {
   workId?: Prisma.SortOrderInput | Prisma.SortOrder
   actorTokenId?: Prisma.SortOrderInput | Prisma.SortOrder
   autoExecuted?: Prisma.SortOrder
+  notifyError?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   decidedBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -469,6 +480,7 @@ export type AgentPendingActionScalarWhereWithAggregatesInput = {
   workId?: Prisma.StringNullableWithAggregatesFilter<"AgentPendingAction"> | string | null
   actorTokenId?: Prisma.StringNullableWithAggregatesFilter<"AgentPendingAction"> | string | null
   autoExecuted?: Prisma.BoolWithAggregatesFilter<"AgentPendingAction"> | boolean
+  notifyError?: Prisma.StringNullableWithAggregatesFilter<"AgentPendingAction"> | string | null
   status?: Prisma.EnumAgentActionStatusWithAggregatesFilter<"AgentPendingAction"> | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"AgentPendingAction"> | Date | string
   decidedBy?: Prisma.StringNullableWithAggregatesFilter<"AgentPendingAction"> | string | null
@@ -498,6 +510,7 @@ export type AgentPendingActionCreateInput = {
   workId?: string | null
   actorTokenId?: string | null
   autoExecuted?: boolean
+  notifyError?: string | null
   status?: $Enums.AgentActionStatus
   expiresAt: Date | string
   decidedBy?: string | null
@@ -530,6 +543,7 @@ export type AgentPendingActionUncheckedCreateInput = {
   workId?: string | null
   actorTokenId?: string | null
   autoExecuted?: boolean
+  notifyError?: string | null
   status?: $Enums.AgentActionStatus
   expiresAt: Date | string
   decidedBy?: string | null
@@ -560,6 +574,7 @@ export type AgentPendingActionUpdateInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -592,6 +607,7 @@ export type AgentPendingActionUncheckedUpdateInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -623,6 +639,7 @@ export type AgentPendingActionCreateManyInput = {
   workId?: string | null
   actorTokenId?: string | null
   autoExecuted?: boolean
+  notifyError?: string | null
   status?: $Enums.AgentActionStatus
   expiresAt: Date | string
   decidedBy?: string | null
@@ -652,6 +669,7 @@ export type AgentPendingActionUpdateManyMutationInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -682,6 +700,7 @@ export type AgentPendingActionUncheckedUpdateManyInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -722,6 +741,7 @@ export type AgentPendingActionCountOrderByAggregateInput = {
   workId?: Prisma.SortOrder
   actorTokenId?: Prisma.SortOrder
   autoExecuted?: Prisma.SortOrder
+  notifyError?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   decidedBy?: Prisma.SortOrder
@@ -750,6 +770,7 @@ export type AgentPendingActionMaxOrderByAggregateInput = {
   workId?: Prisma.SortOrder
   actorTokenId?: Prisma.SortOrder
   autoExecuted?: Prisma.SortOrder
+  notifyError?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   decidedBy?: Prisma.SortOrder
@@ -777,6 +798,7 @@ export type AgentPendingActionMinOrderByAggregateInput = {
   workId?: Prisma.SortOrder
   actorTokenId?: Prisma.SortOrder
   autoExecuted?: Prisma.SortOrder
+  notifyError?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   decidedBy?: Prisma.SortOrder
@@ -874,6 +896,7 @@ export type AgentPendingActionCreateWithoutSpaceInput = {
   workId?: string | null
   actorTokenId?: string | null
   autoExecuted?: boolean
+  notifyError?: string | null
   status?: $Enums.AgentActionStatus
   expiresAt: Date | string
   decidedBy?: string | null
@@ -904,6 +927,7 @@ export type AgentPendingActionUncheckedCreateWithoutSpaceInput = {
   workId?: string | null
   actorTokenId?: string | null
   autoExecuted?: boolean
+  notifyError?: string | null
   status?: $Enums.AgentActionStatus
   expiresAt: Date | string
   decidedBy?: string | null
@@ -964,6 +988,7 @@ export type AgentPendingActionScalarWhereInput = {
   workId?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   actorTokenId?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   autoExecuted?: Prisma.BoolFilter<"AgentPendingAction"> | boolean
+  notifyError?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
   status?: Prisma.EnumAgentActionStatusFilter<"AgentPendingAction"> | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFilter<"AgentPendingAction"> | Date | string
   decidedBy?: Prisma.StringNullableFilter<"AgentPendingAction"> | string | null
@@ -993,6 +1018,7 @@ export type AgentPendingActionCreateWithoutBrowserWriteJobInput = {
   workId?: string | null
   actorTokenId?: string | null
   autoExecuted?: boolean
+  notifyError?: string | null
   status?: $Enums.AgentActionStatus
   expiresAt: Date | string
   decidedBy?: string | null
@@ -1024,6 +1050,7 @@ export type AgentPendingActionUncheckedCreateWithoutBrowserWriteJobInput = {
   workId?: string | null
   actorTokenId?: string | null
   autoExecuted?: boolean
+  notifyError?: string | null
   status?: $Enums.AgentActionStatus
   expiresAt: Date | string
   decidedBy?: string | null
@@ -1069,6 +1096,7 @@ export type AgentPendingActionUpdateWithoutBrowserWriteJobInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1100,6 +1128,7 @@ export type AgentPendingActionUncheckedUpdateWithoutBrowserWriteJobInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1129,6 +1158,7 @@ export type AgentPendingActionCreateManySpaceInput = {
   workId?: string | null
   actorTokenId?: string | null
   autoExecuted?: boolean
+  notifyError?: string | null
   status?: $Enums.AgentActionStatus
   expiresAt: Date | string
   decidedBy?: string | null
@@ -1158,6 +1188,7 @@ export type AgentPendingActionUpdateWithoutSpaceInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1188,6 +1219,7 @@ export type AgentPendingActionUncheckedUpdateWithoutSpaceInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1218,6 +1250,7 @@ export type AgentPendingActionUncheckedUpdateManyWithoutSpaceInput = {
   workId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorTokenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notifyError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumAgentActionStatusFieldUpdateOperationsInput | $Enums.AgentActionStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1250,6 +1283,7 @@ export type AgentPendingActionSelect<ExtArgs extends runtime.Types.Extensions.In
   workId?: boolean
   actorTokenId?: boolean
   autoExecuted?: boolean
+  notifyError?: boolean
   status?: boolean
   expiresAt?: boolean
   decidedBy?: boolean
@@ -1282,6 +1316,7 @@ export type AgentPendingActionSelectCreateManyAndReturn<ExtArgs extends runtime.
   workId?: boolean
   actorTokenId?: boolean
   autoExecuted?: boolean
+  notifyError?: boolean
   status?: boolean
   expiresAt?: boolean
   decidedBy?: boolean
@@ -1313,6 +1348,7 @@ export type AgentPendingActionSelectUpdateManyAndReturn<ExtArgs extends runtime.
   workId?: boolean
   actorTokenId?: boolean
   autoExecuted?: boolean
+  notifyError?: boolean
   status?: boolean
   expiresAt?: boolean
   decidedBy?: boolean
@@ -1344,6 +1380,7 @@ export type AgentPendingActionSelectScalar = {
   workId?: boolean
   actorTokenId?: boolean
   autoExecuted?: boolean
+  notifyError?: boolean
   status?: boolean
   expiresAt?: boolean
   decidedBy?: boolean
@@ -1358,7 +1395,7 @@ export type AgentPendingActionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type AgentPendingActionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "deckKey" | "actionType" | "payload" | "summary" | "beforeState" | "source" | "actorType" | "actorId" | "requesterUserId" | "requesterSlackUserId" | "workId" | "actorTokenId" | "autoExecuted" | "status" | "expiresAt" | "decidedBy" | "decidedAt" | "executedAt" | "result" | "error" | "idempotencyKey" | "slackChannelId" | "slackMessageTs" | "createdAt" | "updatedAt", ExtArgs["result"]["agentPendingAction"]>
+export type AgentPendingActionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "deckKey" | "actionType" | "payload" | "summary" | "beforeState" | "source" | "actorType" | "actorId" | "requesterUserId" | "requesterSlackUserId" | "workId" | "actorTokenId" | "autoExecuted" | "notifyError" | "status" | "expiresAt" | "decidedBy" | "decidedAt" | "executedAt" | "result" | "error" | "idempotencyKey" | "slackChannelId" | "slackMessageTs" | "createdAt" | "updatedAt", ExtArgs["result"]["agentPendingAction"]>
 export type AgentPendingActionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   browserWriteJob?: boolean | Prisma.AgentPendingAction$browserWriteJobArgs<ExtArgs>
@@ -1392,6 +1429,7 @@ export type $AgentPendingActionPayload<ExtArgs extends runtime.Types.Extensions.
     workId: string | null
     actorTokenId: string | null
     autoExecuted: boolean
+    notifyError: string | null
     status: $Enums.AgentActionStatus
     expiresAt: Date
     decidedBy: string | null
@@ -1844,6 +1882,7 @@ export interface AgentPendingActionFieldRefs {
   readonly workId: Prisma.FieldRef<"AgentPendingAction", 'String'>
   readonly actorTokenId: Prisma.FieldRef<"AgentPendingAction", 'String'>
   readonly autoExecuted: Prisma.FieldRef<"AgentPendingAction", 'Boolean'>
+  readonly notifyError: Prisma.FieldRef<"AgentPendingAction", 'String'>
   readonly status: Prisma.FieldRef<"AgentPendingAction", 'AgentActionStatus'>
   readonly expiresAt: Prisma.FieldRef<"AgentPendingAction", 'DateTime'>
   readonly decidedBy: Prisma.FieldRef<"AgentPendingAction", 'String'>

@@ -55,6 +55,7 @@ const unregister = [
     title: '일반',
     paramsSchema: z.object({}),
     requiredRole: 'ADMIN',
+    scope: 'finance:write',
     execute: async () => void executed.push(PLAIN),
   }),
   __registerActionForTest({
@@ -63,6 +64,7 @@ const unregister = [
     title: '지출',
     paramsSchema: z.object({ amountKrw: z.number().nullable() }),
     requiredRole: 'ADMIN',
+    scope: 'finance:write',
     spendKrw: (p: { amountKrw: number | null }) => p.amountKrw,
     execute: async () => void executed.push(SPEND),
   } as never),

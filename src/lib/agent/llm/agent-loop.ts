@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import { toolDefinitions } from '@/lib/agent/tools'
 import type { McpToolContext, ToolDefinition } from '@/lib/agent/tools'
+import { canPostSlack } from '@/lib/agent/identity/principal'
 import { runTool, toolErrorMessage } from '@/lib/agent/tools/run-tool'
 import type { ConversationTurn } from './conversation'
 
@@ -15,7 +16,7 @@ import type { ConversationTurn } from './conversation'
  *  - stop_reason === "tool_use"면 모든 tool_use 블록을 실행하고 tool_result 전부를 단일 user 메시지로 반환.
  *  - 최대 8 iteration. 초과 시 폴백 텍스트.
  *  - tool ctx는 MCP와 같은 McpToolContext(내장 에이전트 actor=system). ctx.scopes 밖의 도구는 모델에 노출하지 않는다
- *    (내장 에이전트는 slack:write가 없어 승인 큐를 거치지 않는 slack_post가 빠진다 — 노출되는 write는 승인 큐 경유).
+ *    (내장 에이전트는 actor=system 이라 승인 큐를 거치지 않는 slack_post가 빠진다 — 노출되는 write는 승인 큐 경유).
  */
 
 const DEFAULT_MODEL = 'claude-opus-4-8'
@@ -34,7 +35,9 @@ function toInputSchema(def: ToolDefinition): Record<string, unknown> {
 // ctx.scopes로 쓸 수 있는 도구만 Anthropic tool 배열로 변환(scope 밖 도구는 runTool도 거부한다).
 function buildAnthropicTools(ctx: McpToolContext): Anthropic.Tool[] {
   return toolDefinitions
-    .filter((def) => !def.scope || ctx.scopes.includes(def.scope))
+    .filter((def) =>
+      def.scope ? ctx.scopes.includes(def.scope) : def.name !== 'slack_post' || canPostSlack(ctx)
+    )
     .map((def) => ({
       name: def.name,
       description: def.description,

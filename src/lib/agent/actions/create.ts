@@ -3,8 +3,10 @@ import { ToolUserError } from '@/lib/agent/tools/errors'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { buildAppUrl } from '@/lib/domain'
 import { notifyPendingAction } from '@/lib/slack/notify-pending-action'
+import { notifyAutoExecuted, resolveApprovalsTarget } from '@/lib/slack/notify-auto-executed'
 import { getActionDefinition } from './registry'
 import { approveAndExecute } from './execute'
+import { isExternalParams } from './decision-policy'
 import type {
   ActionDefinition,
   ActionExecContext,
@@ -32,6 +34,7 @@ interface StoredAction {
   actionType?: string
   result?: unknown
   error?: string | null
+  autoExecuted?: boolean
 }
 
 function toResult(action: StoredAction): PendingActionResult {
@@ -73,31 +76,59 @@ function toResultInSpace(action: StoredAction, spaceId: string): PendingActionRe
 // "실패하면 아무것도 남지 않는다"고 선언한 경우에만 허용한다.
 const NEVER_EXECUTED: string[] = ['REJECTED', 'EXPIRED']
 
-const AUTO_SKIPPED = '초안 자동 실행 조건이 맞지 않아 승인 대기로 등록했습니다'
+const AUTO_SKIPPED = '바로 실행 조건이 맞지 않아 승인 대기로 등록했습니다'
 
 /**
- * 「초안 바로 만들기」 — 대상 액션·토큰 있는 에이전트에 scope draft:create(+액션 쓰기 scope)가 있을 때만
- * 그 권한을 부여한 관리자 이름으로 승인+실행한다.
- * result 가 있으면 그대로 응답(알림 없음), 없으면 승인 대기로 남은 것(skipped 는 자동 실행을 시도했다는 뜻).
+ * 「쓰기 권한 바로 실행」 — 워크덱 안에서 끝나는(external 아님) 액션을, 그 업무 쓰기 scope 가 있는
+ * 에이전트(부여자 기록 필요)·연동 계정·구성원 본인 세션(인증된 구성원)이 제안했을 때 승인 없이 실행한다.
+ * 결정자: agent = writeGrants[scope].userId(쓰기 권한을 준 관리자), integration = MCP 인증 구성원(authenticatedUserId).
+ * Space 에 유효한 Slack 실행 알림 대상이 없으면 바로 실행하지 않는다(승인 대기 → 기존 알림 경로).
+ * result 가 있으면 그대로 응답(실행 알림은 여기서 보낸다), 없으면 승인 대기로 남은 것(skipped 는 시도했다는 뜻).
  */
 async function tryAutoExecute(
   def: ActionDefinition,
+  params: unknown,
   draft: PendingActionDraft,
   action: { id: string; spaceId: string; expiresAt: Date }
 ): Promise<{ result?: PendingActionResult; skipped?: string }> {
-  const requiredScope = def.autoScope
-  if (!def.autoExecutable || !requiredScope || draft.actor.type !== 'agent' || !draft.actorTokenId)
+  if (isExternalParams(def, params)) return {}
+  const requiredScope = def.scope
+  const kind = draft.actor.type
+  if (kind !== 'agent' && kind !== 'integration' && kind !== 'user') return {}
+  if (kind === 'agent' && !draft.actorTokenId) return {}
+  if (kind !== 'agent' && !draft.authenticatedUserId) return {}
+  // 구성원 본인 세션은 행위자 id 가 곧 인증된 구성원이어야 한다.
+  if (kind === 'user' && draft.authenticatedUserId !== draft.actor.id) return {}
+
+  let deciderId: string | null | undefined
+  try {
+    if (kind === 'user') {
+      // SpaceAgent 행이 없다 — scope 는 runTool 이 principal 로 이미 검사했다.
+      deciderId = draft.authenticatedUserId
+    } else {
+      const agent = await prisma.spaceAgent.findFirst({
+        where: { id: draft.actor.id, spaceId: draft.spaceId },
+        select: { scopes: true, writeGrants: true },
+      })
+      if (!agent?.scopes.includes(requiredScope)) return {}
+      deciderId =
+        kind === 'agent'
+          ? ((agent.writeGrants ?? {}) as Record<string, { userId?: string } | undefined>)[
+              requiredScope
+            ]?.userId
+          : draft.authenticatedUserId
+    }
+    if (!deciderId) return {}
+    // 실행 알림을 보낼 곳이 없으면 사후 확인 수단이 없다 — 승인 대기로 남긴다.
+    if (!(await resolveApprovalsTarget(draft.spaceId))) return {}
+  } catch (err) {
+    console.error(
+      '[agent] 바로 실행 사전 확인 실패',
+      action.id,
+      err instanceof Error ? err.name : err
+    )
     return {}
-  const agent = await prisma.spaceAgent.findFirst({
-    where: { id: draft.actor.id, spaceId: draft.spaceId },
-    select: { scopes: true, autoExecuteEnabledById: true },
-  })
-  if (
-    !agent?.autoExecuteEnabledById ||
-    !agent.scopes.includes('draft:create') ||
-    !agent.scopes.includes(requiredScope)
-  )
-    return {}
+  }
 
   // 실패·경합 뒤에는 DB 의 실제 상태를 다시 읽어 응답한다.
   const reread = async (): Promise<StoredAction> => {
@@ -111,45 +142,53 @@ async function tryAutoExecute(
         actionType: true,
         result: true,
         error: true,
+        autoExecuted: true,
       },
     })
     return cur ?? { ...action }
   }
   let outcome
   try {
-    outcome = await approveAndExecute(action.id, agent.autoExecuteEnabledById, {
-      autoGate: { agentId: draft.actor.id, tokenId: draft.actorTokenId, requiredScope },
+    outcome = await approveAndExecute(action.id, deciderId, {
+      autoGate: {
+        kind,
+        ...(kind === 'user' ? {} : { agentId: draft.actor.id }),
+        ...(kind === 'agent' ? { tokenId: draft.actorTokenId ?? undefined } : {}),
+        requiredScope,
+      },
     })
   } catch (err) {
-    console.error(
-      '[agent] 초안 자동 실행 중 오류',
-      action.id,
-      err instanceof Error ? err.name : err
-    )
+    console.error('[agent] 바로 실행 중 오류', action.id, err instanceof Error ? err.name : err)
     outcome = { ok: false as const, status: 'CONFLICT' as const, message: '' }
   }
   if (outcome.ok) {
-    return {
-      result: {
-        ...toResult({
-          ...action,
-          status: 'EXECUTED',
-          actionType: draft.actionType,
-          result: outcome.result,
-        }),
-      },
-    }
+    const result = toResult({
+      ...action,
+      status: 'EXECUTED',
+      actionType: draft.actionType,
+      result: outcome.result,
+    })
+    await notifyAutoExecuted(action.id, { resultUrl: result.resultUrl })
+    return { result }
   }
   switch (outcome.status) {
     case 'FAILED':
+      await notifyAutoExecuted(action.id)
       return { result: { ...toResult({ ...action, status: 'FAILED' }), error: outcome.error } }
     case 'EXPIRED':
       return { result: toResult({ ...action, status: 'EXPIRED' }) }
     case 'CONFLICT': {
       const cur = await reread()
-      return cur.status && cur.status !== 'PENDING'
-        ? { result: toResult(cur) }
-        : { skipped: AUTO_SKIPPED }
+      if (!cur.status || cur.status === 'PENDING') return { skipped: AUTO_SKIPPED }
+      const result = toResult(cur)
+      // 바로 실행이 끝났는데 응답 단계에서 예외·경합이 난 경우에도 실행 알림은 보낸다.
+      if (cur.autoExecuted && (cur.status === 'EXECUTED' || cur.status === 'FAILED')) {
+        await notifyAutoExecuted(
+          action.id,
+          cur.status === 'EXECUTED' ? { resultUrl: result.resultUrl } : {}
+        )
+      }
+      return { result }
     }
     default:
       // FORBIDDEN·BLOCKED(·REJECTED 불가) — 액션은 PENDING 그대로.
@@ -251,8 +290,8 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
       },
       select: { id: true, spaceId: true, expiresAt: true },
     })
-    // 초안 자동 실행 — 승인 대기로 남지 않은 경우 알림 없이 실제 상태로 응답한다.
-    const auto = await tryAutoExecute(def, draft, action)
+    // 바로 실행 — 승인 대기로 남지 않은 경우 실행 알림(Slack)을 보내고 실제 상태로 응답한다.
+    const auto = await tryAutoExecute(def, params, draft, action)
     if (auto.result) return auto.result
     // 신규 생성 경로에서만 Slack 알림(멱등·경합 패자 경로는 제외 — 중복 알림 방지).
     // notify 내부가 전부 try/catch + 타임아웃이라 await해도 액션 생성을 막지 않는다.

@@ -31,6 +31,7 @@ const testAction: ActionDefinition = {
   title: 'entitlement 가드 테스트 액션',
   paramsSchema: z.object({ value: z.number() }),
   requiredRole: 'ADMIN',
+  scope: 'finance:write',
   async execute(_ctx, params) {
     execCount += 1
     return { doubled: (params as { value: number }).value * 2 }

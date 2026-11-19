@@ -106,6 +106,8 @@ const postPublish: ActionDefinition<PostPublishParams> = {
   title: '세일즈 콘텐츠 게시물 발행 예약',
   paramsSchema: postPublishParams,
   requiredRole: 'ADMIN',
+  scope: 'sc:write',
+  external: true, // 블로그·SNS 발행
   // 실행은 단일 트랜잭션(외부 호출 없음) — 실패하면 아무것도 남지 않아 같은 내용 재제안을 허용한다.
   retryableAfterFailure: true,
   validateCreate: async (ctx, params) => {
@@ -338,6 +340,7 @@ const setupApply: ActionDefinition<SetupApplyParams> = {
   title: '세일즈 콘텐츠 채널·브랜드 프로필·상품 등록·보충',
   paramsSchema: setupApplyParams,
   requiredRole: 'ADMIN',
+  scope: 'sc:write', // 내부: 단일 DB 트랜잭션(외부 호출 없음)
   retryableAfterFailure: true,
   validateCreate: async (ctx, params) => {
     await requireDeck(ctx.spaceId, 'sales-content')

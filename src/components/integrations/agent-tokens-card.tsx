@@ -43,8 +43,8 @@ type Agent = {
   kind: 'agent' | 'integration'
   scopes: string[]
   status: 'ACTIVE' | 'DISABLED'
-  autoExecuteEnabledAt: string | null
-  autoExecuteEnabledByName: string | null
+  // 쓰기 scope 별 부여자 — 바로 실행 게이트의 근거. 없으면 아직 부여자 기록이 없는 기존 쓰기 권한.
+  writeGrants?: Record<string, { userId: string; at: string; name: string | null }>
   tokens: Token[]
 }
 // 발급 직후 한 번만 보여 줄 토큰 — 대화상자를 닫으면 버린다.
@@ -53,19 +53,33 @@ type EditTarget = { mode: 'create' } | { mode: 'scopes'; agent: Agent }
 
 const NET_ERR = '네트워크 오류로 요청하지 못했습니다.'
 const KIND_LABEL = { agent: '에이전트', integration: '연동 계정' } as const
-const SCOPE_GROUPS = [
-  { label: '읽기', scopes: SCOPES.filter((s) => s.endsWith(':read')) },
-  { label: '쓰기(제안)', scopes: SCOPES.filter((s) => s.endsWith(':write')) },
-  // 에이전트(kind=agent)에게만 노출 — 연동 계정에는 ENV 비밀값을 주지 않는다.
-  { label: '개발 키(wd run)', scopes: ['secret:env'], agentOnly: true },
-  {
-    label: '초안 바로 만들기(승인 없이)',
-    scopes: ['draft:create'],
-    agentOnly: true,
-    description:
-      '발주 계획·모집 공고 초안을 승인 없이 바로 만듭니다. 이 권한을 준 관리자 이름으로 기록됩니다',
-  },
-] as { label: string; scopes: string[]; agentOnly?: boolean; description?: string }[]
+// 업무별 읽기/쓰기. 쓰기는 워크덱 안에서 끝나는 작업만 바로 실행하고 외부 반영은 승인을 거친다.
+const DECK_ROWS = [
+  { key: 'sellerhub', label: '브랜드 운영' },
+  { key: 'finance', label: '재무 관리' },
+  { key: 'ads', label: '쿠팡 광고 관리' },
+  { key: 'meta', label: '메타 광고' },
+  { key: 'google', label: '구글 마케팅' },
+  { key: 'naver', label: '네이버 광고' },
+  { key: 'sc', label: '세일즈 콘텐츠' },
+  { key: 'hiring', label: '모집 관리' },
+]
+const WRITE_LABEL = '쓰기(워크덱 안 작업은 바로 실행, 외부 반영은 승인)'
+const SAVE_NOTICE =
+  '저장하면 체크된 쓰기 권한이 바로 실행으로 동작하고 저장한 분 이름으로 기록됩니다.'
+const NO_GRANT_NOTE = '다시 저장하면 바로 실행으로 바뀝니다'
+const hasScope = (s: string) => (SCOPES as readonly string[]).includes(s)
+// 비밀값 권한 — secret:env(개발 키 wd run)는 에이전트에게만 노출한다(연동 계정에는 ENV 비밀값을 주지 않는다).
+const SECRET_SCOPES = [
+  { scope: 'secret:read', label: '읽기' },
+  { scope: 'secret:write', label: '쓰기(외부 API 호출은 OWNER 승인)' },
+  { scope: 'secret:env', label: '개발 키(wd run)', agentOnly: true },
+]
+// 쓰기 scope 옆에 보여 줄 부여자 문구.
+function grantNote(a: Pick<Agent, 'writeGrants'>, scope: string): string {
+  const g = a.writeGrants?.[scope]
+  return g ? `${g.name ?? '관리자'}님이 부여` : NO_GRANT_NOTE
+}
 const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString('ko-KR') : '-')
 const tokenState = (t: Token) =>
   t.revokedAt ? '폐기' : t.expiresAt && new Date(t.expiresAt) < new Date() ? '만료' : '활성'
@@ -230,12 +244,18 @@ export function AgentTokensCard({ onChanged }: { onChanged?: () => void }) {
                   {s}
                 </Badge>
               ))}
-              {a.scopes.includes('draft:create') && (
-                <span className="text-xs text-muted-foreground">
-                  {a.autoExecuteEnabledByName ?? '관리자'}님이 부여 · {fmt(a.autoExecuteEnabledAt)}
-                </span>
-              )}
             </div>
+            {a.scopes.some((x) => x.endsWith(':write') && !x.startsWith('secret:')) && (
+              <ul className="space-y-0.5 text-xs text-muted-foreground">
+                {a.scopes
+                  .filter((x) => x.endsWith(':write') && !x.startsWith('secret:'))
+                  .map((x) => (
+                    <li key={x}>
+                      <span className="font-mono">{x}</span> · {grantNote(a, x)}
+                    </li>
+                  ))}
+              </ul>
+            )}
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -349,10 +369,9 @@ function AgentDialog({
   const [kind, setKind] = useState<Agent['kind']>('agent')
   const [scopes, setScopes] = useState<string[]>(creating ? [] : target.agent.scopes)
   const effKind = creating ? kind : target.agent.kind
-  const groups = SCOPE_GROUPS.filter((g) => !g.agentOnly || effKind === 'agent')
+  const secretRows = SECRET_SCOPES.filter((r) => !r.agentOnly || effKind === 'agent')
   // 연동 계정으로 바꿨다면 숨겨진 에이전트 전용 권한을 보내지 않는다.
-  const saveScopes =
-    effKind === 'agent' ? scopes : scopes.filter((s) => s !== 'secret:env' && s !== 'draft:create')
+  const saveScopes = effKind === 'agent' ? scopes : scopes.filter((s) => s !== 'secret:env')
   const flip = (s: string, on: boolean) =>
     setScopes((prev) => (on ? [...prev, s] : prev.filter((x) => x !== s)))
 
@@ -363,9 +382,7 @@ function AgentDialog({
           <DialogTitle>
             {creating ? '에이전트 추가' : `권한 수정 — ${target.agent.name}`}
           </DialogTitle>
-          <DialogDescription>
-            쓰기 권한은 &quot;제안 가능&quot;을 뜻합니다. 실제 실행은 구성원 승인 뒤에 이뤄집니다.
-          </DialogDescription>
+          <DialogDescription>{SAVE_NOTICE}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 text-sm">
           {creating && (
@@ -389,23 +406,67 @@ function AgentDialog({
               </Select>
             </div>
           )}
-          {groups.map((g) => (
-            <div key={g.label} className="space-y-2">
-              <p className="font-medium">{g.label}</p>
-              {g.description && <p className="text-xs text-muted-foreground">{g.description}</p>}
-              <div className="grid grid-cols-2 gap-2">
-                {g.scopes.map((s) => (
-                  <label key={s} className="flex items-center gap-2 font-mono text-xs">
-                    <Checkbox
-                      checked={scopes.includes(s)}
-                      onCheckedChange={(v) => flip(s, v === true)}
-                    />
-                    {s}
-                  </label>
-                ))}
-              </div>
+          <div className="space-y-2">
+            <div className="grid grid-cols-[8rem_5rem_1fr] items-center gap-x-2 text-xs text-muted-foreground">
+              <span />
+              <span>읽기</span>
+              <span>{WRITE_LABEL}</span>
             </div>
-          ))}
+            {DECK_ROWS.map((d) => {
+              const read = `${d.key}:read`
+              const write = `${d.key}:write`
+              return (
+                <div
+                  key={d.key}
+                  className="grid grid-cols-[8rem_5rem_1fr] items-center gap-x-2 text-sm"
+                >
+                  <span>{d.label}</span>
+                  <span>
+                    {hasScope(read) && (
+                      <Checkbox
+                        aria-label={read}
+                        checked={scopes.includes(read)}
+                        onCheckedChange={(v) => flip(read, v === true)}
+                      />
+                    )}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    {hasScope(write) && (
+                      <>
+                        <Checkbox
+                          aria-label={write}
+                          checked={scopes.includes(write)}
+                          onCheckedChange={(v) => flip(write, v === true)}
+                        />
+                        {!creating &&
+                          target.agent.scopes.includes(write) &&
+                          scopes.includes(write) && (
+                            <span className="text-xs text-muted-foreground">
+                              {grantNote(target.agent, write)}
+                            </span>
+                          )}
+                      </>
+                    )}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          <div className="space-y-2">
+            <p className="font-medium">비밀값</p>
+            <div className="grid grid-cols-2 gap-2">
+              {secretRows.map((r) => (
+                <label key={r.scope} className="flex items-center gap-2 text-xs">
+                  <Checkbox
+                    aria-label={r.scope}
+                    checked={scopes.includes(r.scope)}
+                    onCheckedChange={(v) => flip(r.scope, v === true)}
+                  />
+                  {r.label}
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
