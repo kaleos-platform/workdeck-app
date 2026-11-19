@@ -14,6 +14,7 @@ import {
   pickTargetSpace,
   planMatches,
   assertBackfillMatches,
+  decideCloseJob,
   type JobStatus,
 } from '../auto-job'
 
@@ -69,23 +70,31 @@ describe('emailHashVariants', () => {
 
 describe('pickTargetSpace', () => {
   const at = (day: number) => new Date(`2026-01-0${day}T00:00:00Z`)
-  it('없으면 null', () => expect(pickTargetSpace([])).toBeNull())
+  it('없으면 대상 없음', () =>
+    expect(pickTargetSpace([])).toEqual({ spaceId: null, multipleOwners: false }))
   it('OWNER 가 아니거나 모집 관리가 꺼진 Space 는 제외한다', () => {
     expect(
       pickTargetSpace([
         { id: 'a', role: 'MEMBER', memberSince: at(1), recruitingActive: true },
         { id: 'b', role: 'OWNER', memberSince: at(2), recruitingActive: false },
       ])
-    ).toBeNull()
+    ).toEqual({ spaceId: null, multipleOwners: false })
   })
-  it('여러 개면 가장 오래된 1곳', () => {
+  it('OWNER Space 가 1개이고 모집 관리가 켜져 있으면 그 Space', () => {
+    expect(
+      pickTargetSpace([
+        { id: 'm', role: 'MEMBER', memberSince: at(1), recruitingActive: true },
+        { id: 'o', role: 'OWNER', memberSince: at(2), recruitingActive: true },
+      ])
+    ).toEqual({ spaceId: 'o', multipleOwners: false })
+  })
+  it('OWNER Space 가 2개 이상이면 모집 관리 여부와 무관하게 대상 없음 + multipleOwners', () => {
     expect(
       pickTargetSpace([
         { id: 'new', role: 'OWNER', memberSince: at(3), recruitingActive: true },
-        { id: 'old', role: 'OWNER', memberSince: at(1), recruitingActive: true },
-        { id: 'mid', role: 'OWNER', memberSince: at(2), recruitingActive: true },
+        { id: 'old', role: 'OWNER', memberSince: at(1), recruitingActive: false },
       ])
-    ).toBe('old')
+    ).toEqual({ spaceId: null, multipleOwners: true })
   })
 })
 
@@ -315,5 +324,47 @@ describe('assertBackfillMatches', () => {
   it('HELD/none 은 원장 행 0건이어야 한다', () => {
     expect(() => assertBackfillMatches('HELD', 'none', [])).not.toThrow()
     expect(() => assertBackfillMatches('HELD', 'none', ['s'])).toThrow('BACKFILL_LEDGER_MISMATCH')
+  })
+})
+
+describe('classifyPlan 다중 OWNER', () => {
+  const base = {
+    targetSpaceId: null,
+    brandCount: 1,
+    summary: {},
+    conflicts: 0,
+    targetHasData: false,
+  }
+  it('multipleOwners 는 NO_TARGET_SPACE 대신 MULTIPLE_OWNER_SPACES 만 낸다', () => {
+    expect(classifyPlan({ ...base, multipleOwners: true }).blockReasons).toEqual([
+      'MULTIPLE_OWNER_SPACES',
+    ])
+    expect(classifyPlan(base).blockReasons).toEqual(['NO_TARGET_SPACE'])
+  })
+})
+
+describe('decideCloseJob', () => {
+  const job = (status: string, userId: string | null, blockReasons: string[] = []) => ({
+    status,
+    userId,
+    blockReasons,
+  })
+  it('HELD 이고 userId 가 없는 backfill 행은 UPDATE', () => {
+    expect(decideCloseJob(job('HELD', null))).toBe('UPDATE')
+  })
+  it('MULTIPLE_OWNER_SPACES 로 막힌 BLOCKED 행은 사용자 매칭이어도 UPDATE', () => {
+    expect(decideCloseJob(job('BLOCKED', 'u', ['MULTIPLE_OWNER_SPACES']))).toBe('UPDATE')
+  })
+  it('이미 DONE 이면 EXISTS_DONE', () => {
+    expect(decideCloseJob(job('DONE', null))).toBe('EXISTS_DONE')
+  })
+  it('행이 없거나 다른 사유·상태면 거부', () => {
+    for (const j of [
+      null,
+      job('HELD', 'u'),
+      job('BLOCKED', null, ['NO_TARGET_SPACE']),
+      job('PLANNED', null, ['MULTIPLE_OWNER_SPACES']),
+    ])
+      expect(() => decideCloseJob(j)).toThrow('CLOSE_JOB_NOT_ELIGIBLE')
   })
 })

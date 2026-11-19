@@ -38,6 +38,7 @@ import {
   emailHashVariants,
   pickTargetSpace,
   planMatches,
+  type TargetChoice,
 } from '@/lib/hiring/migration/auto-job'
 import {
   MAX_ATTEMPTS,
@@ -278,12 +279,32 @@ async function targetFor(db: PrismaClient, userId: string) {
   )
 }
 
-async function planJob(db: PrismaClient, job: QueueJob, targetSpaceId: string | null) {
-  // 계획 시작 시점의 차단 사유. 계획 중에 다른 경로(MULTI_USER 추가 등)가 바꿨으면 저장하지 않는다.
-  const before = await db.openingMigrationJob.findUniqueOrThrow({
-    where: { id: job.id },
-    select: { blockReasons: true },
-  })
+async function planJob(db: PrismaClient, job: QueueJob, target: TargetChoice) {
+  const targetSpaceId = target.spaceId
+  // 큐에서 고를 때(대상 선택 전) 읽은 차단 사유를 기준으로 삼는다. 대상 선택 뒤 다시 읽으면 그 사이
+  // Space 생성(MULTIPLE_OWNER_SPACES)·MULTI_USER 추가가 바꾼 값을 기준으로 삼아 낡은 계획이 덮어쓴다.
+  const before = { blockReasons: job.blockReasons ?? [] }
+  // 다중 OWNER 는 대상이 모호하므로 원본을 읽지 않고(prepare·packet·review 폴더 없음) 차단 사유만 기록한다.
+  if (target.multipleOwners) {
+    if (!canTransition(job.status, 'BLOCKED')) throw Error('TRANSITION_DENIED')
+    const blocked = await db.openingMigrationJob.updateMany({
+      where: { id: job.id, status: job.status, blockReasons: { equals: before.blockReasons } },
+      data: {
+        status: 'BLOCKED',
+        targetSpaceId: null,
+        blockReasons: ['MULTIPLE_OWNER_SPACES'],
+        error: null,
+      },
+    })
+    if (blocked.count !== 1) throw Error('JOB_STATE_CHANGED')
+    out({
+      status: 'BLOCKED',
+      jobId: job.id,
+      brandId: job.openingBrandId,
+      blockReasons: ['MULTIPLE_OWNER_SPACES'],
+    })
+    return
+  }
   const jobDir = join(ROOT, job.id)
   rmSync(jobDir, { recursive: true, force: true })
   mkdirSync(jobDir, { recursive: true, mode: 0o700 })
@@ -321,6 +342,7 @@ async function planJob(db: PrismaClient, job: QueueJob, targetSpaceId: string | 
         jobId: job.id,
         userId: job.userId,
         targetSpaceId,
+        multipleOwners: target.multipleOwners,
         brandCount: 1,
         packetsDir: packets,
         today: new Date().toISOString().slice(0, 10),
@@ -390,6 +412,7 @@ async function failExhausted(db: PrismaClient) {
       OR: [
         { status: 'MATCHED' },
         { status: 'BLOCKED', blockReasons: { equals: ['NO_TARGET_SPACE'] } },
+        { status: 'BLOCKED', blockReasons: { equals: ['MULTIPLE_OWNER_SPACES'] } },
       ],
     },
     select: { id: true, openingBrandId: true, status: true },
@@ -418,12 +441,14 @@ async function planStep(db: PrismaClient) {
     userId: true,
     openingBrandId: true,
     status: true,
+    blockReasons: true,
   } as const
   const toJob = (row: {
     id: string
     userId: string | null
     openingBrandId: string
     status: string
+    blockReasons: string[]
   }) => ({ ...row, userId: row.userId as string, status: row.status as QueueJob['status'] })
   const outcome = await planNext({
     nextMatched: async () => {
@@ -441,7 +466,10 @@ async function planStep(db: PrismaClient) {
             status: 'BLOCKED',
             attempts: { lt: MAX_ATTEMPTS },
             userId: { not: null },
-            blockReasons: { equals: ['NO_TARGET_SPACE'] },
+            OR: [
+              { blockReasons: { equals: ['NO_TARGET_SPACE'] } },
+              { blockReasons: { equals: ['MULTIPLE_OWNER_SPACES'] } },
+            ],
           },
           orderBy: { updatedAt: 'asc' },
           take: 20,

@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { fetchWithMfa } from '@/lib/auth/mfa-client'
 import {
   Table,
   TableBody,
@@ -78,6 +80,12 @@ export function UserDetail({ userId }: { userId: string }) {
   const [addSpaceId, setAddSpaceId] = useState('')
   const [addRole, setAddRole] = useState<'ADMIN' | 'MEMBER'>('ADMIN')
   const [addPending, setAddPending] = useState(false)
+  const [newSpaceName, setNewSpaceName] = useState('')
+  const [enableRecruiting, setEnableRecruiting] = useState(true)
+  const [createPending, setCreatePending] = useState(false)
+  const [createResult, setCreateResult] = useState<{ spaceId: string; message: string } | null>(
+    null
+  )
   const [blockingSpaces, setBlockingSpaces] = useState<{ id: string; name: string }[]>([])
 
   const load = useCallback(async () => {
@@ -148,6 +156,49 @@ export function UserDetail({ userId }: { userId: string }) {
       }
     } finally {
       setAddPending(false)
+    }
+  }
+
+  async function createSpace() {
+    const name = newSpaceName.trim()
+    if (!name) return
+    if (
+      !confirm(
+        `${user?.email ?? '이 사용자'}를 OWNER 로 하는 새 Space "${name}"을(를) 만듭니다. 계속할까요?`
+      )
+    )
+      return
+    setCreatePending(true)
+    try {
+      const res = await fetchWithMfa(`/api/admin/users/${userId}/spaces`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, enableRecruiting }),
+      })
+      const data = await res.json().catch(() => null)
+      if (res.status === 201 && data?.space?.id) {
+        const blocked = Number(data.blockedJobs ?? 0)
+        setCreateResult({
+          spaceId: data.space.id,
+          message:
+            blocked > 0
+              ? `새 Space 를 만들었습니다. 진행 중이던 오프닝 이전 job ${blocked}건은 차단되어 다시 계획해야 합니다.`
+              : '새 Space 를 만들었습니다.',
+        })
+        setNewSpaceName('')
+        await load()
+        router.refresh()
+      } else if (res.status === 409 && data?.spaceId) {
+        setCreateResult({ spaceId: data.spaceId, message: '같은 이름의 Space 가 이미 있습니다.' })
+        await load()
+        router.refresh()
+      } else {
+        alert(data?.message ?? 'Space 생성에 실패했습니다')
+      }
+    } catch {
+      alert('Space 생성 요청에 실패했습니다')
+    } finally {
+      setCreatePending(false)
     }
   }
 
@@ -319,6 +370,35 @@ export function UserDetail({ userId }: { userId: string }) {
               Space에 추가
             </Button>
           </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
+            <Input
+              className="w-80"
+              aria-label="새 Space 이름"
+              placeholder="새 Space 이름"
+              maxLength={60}
+              value={newSpaceName}
+              onChange={(e) => setNewSpaceName(e.target.value)}
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={enableRecruiting}
+                onCheckedChange={(checked) => setEnableRecruiting(checked === true)}
+              />
+              모집 관리 켜기
+            </label>
+            <Button
+              size="sm"
+              onClick={createSpace}
+              disabled={createPending || !newSpaceName.trim()}
+            >
+              새 Space 만들기
+            </Button>
+          </div>
+          {createResult && (
+            <p className="mt-2 text-sm text-muted-foreground" role="status">
+              {createResult.message} Space ID: <code>{createResult.spaceId}</code>
+            </p>
+          )}
         </CardContent>
       </Card>
 
