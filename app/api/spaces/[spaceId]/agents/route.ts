@@ -10,6 +10,7 @@ import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { parseScopes } from '@/lib/agent/identity/principal'
+import { computeWriteGrants } from '@/lib/agent/identity/write-grants'
 import {
   OAUTH_CONSENT_REQUIRED,
   hasActiveOAuthConsent,
@@ -31,8 +32,7 @@ const AGENT_SELECT = {
   scopes: true,
   status: true,
   oauthClientId: true,
-  autoExecuteEnabledById: true,
-  autoExecuteEnabledAt: true,
+  writeGrants: true,
   createdAt: true,
   tokens: {
     select: { id: true, expiresAt: true, revokedAt: true, lastUsedAt: true, createdAt: true },
@@ -48,23 +48,32 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
     select: AGENT_SELECT,
     orderBy: { createdAt: 'asc' },
   })
-  // draft:create 를 부여한 관리자 이름(이메일은 노출하지 않는다).
-  const enablerIds = [
-    ...new Set(agents.map((a) => a.autoExecuteEnabledById).filter(Boolean)),
-  ] as string[]
-  const enablers = enablerIds.length
+  // 쓰기 권한을 부여한 관리자 이름(이메일은 노출하지 않는다).
+  const grantorIds = [
+    ...new Set(
+      agents.flatMap((a) =>
+        Object.values((a.writeGrants ?? {}) as Record<string, { userId?: string }>).map(
+          (g) => g.userId
+        )
+      )
+    ),
+  ].filter((id): id is string => typeof id === 'string')
+  const grantors = grantorIds.length
     ? await prisma.user.findMany({
-        where: { id: { in: enablerIds } },
+        where: { id: { in: grantorIds } },
         select: { id: true, name: true },
       })
     : []
-  const nameById = new Map(enablers.map((u) => [u.id, u.name]))
+  const nameById = new Map(grantors.map((u) => [u.id, u.name]))
   return NextResponse.json({
-    agents: agents.map((a) => ({
+    agents: agents.map(({ writeGrants, ...a }) => ({
       ...a,
-      autoExecuteEnabledByName: a.autoExecuteEnabledById
-        ? (nameById.get(a.autoExecuteEnabledById) ?? null)
-        : null,
+      // { "<scope>:write": { userId, at, name } } — 화면의 「OOO님이 부여」용
+      writeGrants: Object.fromEntries(
+        Object.entries((writeGrants ?? {}) as Record<string, { userId: string; at: string }>).map(
+          ([scope, g]) => [scope, { ...g, name: nameById.get(g.userId) ?? null }]
+        )
+      ),
     })),
   })
 }
@@ -84,10 +93,6 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   } catch (err) {
     return errorResponse(err instanceof Error ? err.message : 'scope 오류', 400)
   }
-  const grantsDraft = scopes.includes('draft:create')
-  if (grantsDraft && parsed.data.kind !== 'agent') {
-    return errorResponse('초안 바로 만들기 권한은 에이전트에만 줄 수 있습니다', 400)
-  }
   if (parsed.data.oauthClientId && parsed.data.kind !== 'integration') {
     return errorResponse('OAuth 클라이언트는 연동 계정에만 연결할 수 있습니다', 400)
   }
@@ -106,10 +111,9 @@ export async function POST(req: NextRequest, { params }: Ctx) {
         kind: parsed.data.kind,
         scopes,
         oauthClientId: parsed.data.oauthClientId,
-        // 새 행이라 잠금 경합이 없다 — draft:create 를 준 관리자·시각을 바로 기록한다.
-        ...(grantsDraft
-          ? { autoExecuteEnabledById: auth.userId, autoExecuteEnabledAt: new Date() }
-          : {}),
+        // 새 행이라 잠금 경합이 없다 — 쓰기 권한을 준 관리자·시각을 바로 기록한다.
+        writeGrants: computeWriteGrants({}, scopes, auth.userId, new Date()) as object,
+        scopesVersion: 1,
       },
       select: AGENT_SELECT,
     })

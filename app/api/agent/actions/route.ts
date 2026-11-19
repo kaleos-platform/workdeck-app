@@ -25,6 +25,19 @@ const VALID_STATUS: AgentActionStatus[] = [
   'EXPIRED',
 ]
 
+// 바로 실행 라벨 — 행위자 종류별: user=구성원 직접 실행, integration=연동 계정 + 실행 구성원, agent=권한 부여자.
+function autoLabel(
+  r: { actorType: string; actorId: string; decidedBy: string | null },
+  agentNames: Map<string, string>,
+  userNames: Map<string, string | null>
+): string {
+  const decider = (r.decidedBy && userNames.get(r.decidedBy)) || '관리자'
+  if (r.actorType === 'user') return `${decider} 직접 실행`
+  const agent = agentNames.get(r.actorId) ?? '에이전트'
+  if (r.actorType === 'integration') return `${agent} 바로 실행 · 실행 구성원: ${decider}`
+  return `${agent} 바로 실행 · 권한 부여: ${decider}`
+}
+
 export async function GET(req: NextRequest) {
   const resolved = await resolveRequestedSpaceContext(req.nextUrl.searchParams.get('spaceId'))
   if ('error' in resolved) return resolved.error
@@ -51,7 +64,8 @@ export async function GET(req: NextRequest) {
 
   // 행위자·요청자는 사람이 읽는 이름으로 — id(cuid)를 UI에 그대로 보이지 않는다.
   const labels = await describeActors(rows)
-  // 자동 실행된 액션은 승인자 대신 「에이전트 자동 생성 · 권한 부여: 관리자」로 표시한다(수동 승인은 그대로).
+  // 바로 실행된 액션은 승인자 대신 「에이전트 바로 실행 · 권한 부여: 관리자」로 표시한다(수동 승인은 그대로).
+  // 실행 알림(Slack) 전송에 실패했으면 「실행 알림 실패」를 덧붙인다.
   const autoRows = rows.filter((r) => r.autoExecuted)
   const [autoAgents, autoDeciders] = autoRows.length
     ? await Promise.all([
@@ -80,9 +94,7 @@ export async function GET(req: NextRequest) {
       beforeState: maskParams(r.beforeState),
       result: maskParams(r.result),
       actorLabel: r.autoExecuted
-        ? `${agentNames.get(r.actorId) ?? '에이전트'} 자동 생성 · 권한 부여: ${
-            (r.decidedBy && deciderNames.get(r.decidedBy)) || '관리자'
-          }`
+        ? `${autoLabel(r, agentNames, deciderNames)}${r.notifyError ? ' · 실행 알림 실패' : ''}`
         : labels[i],
       spendKrw: spendKrwOf(r) ?? null,
       requiredRole:

@@ -15,6 +15,9 @@ export interface McpToolContext {
   workId: string
   requesterUserId: string | null
   requesterSlackUserId: string | null
+  // MCP principal 이 인증한 구성원 User.id(연동 계정 OAuth 세션). Slack 요청자 해석값(requesterUserId)과 달리
+  // 바로 실행의 결정자로 쓸 수 있는 유일한 값 — buildToolContext 만 채운다.
+  authenticatedUserId?: string
   decryptedCredentialIds: string[]
   // 에이전트 토큰 호출이면 AgentToken.id. 제안에 저장해 승인 실행 때 토큰 폐기를 재확인한다.
   actorTokenId?: string
@@ -30,6 +33,6 @@ export interface ToolDefinition {
   description: string // 한국어
   inputSchema: z.ZodRawShape
   mode: ToolMode
-  scope: Scope | null // null은 whoami만 — scope-contract 테스트가 강제
+  scope: Scope | null // null은 whoami·slack_post(업무 쓰기 scope 보유 여부를 execute 가 검사)만 — scope-contract 테스트가 강제
   execute: (ctx: McpToolContext, params: Record<string, unknown>) => Promise<unknown>
 }

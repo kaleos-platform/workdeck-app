@@ -121,30 +121,51 @@ it('권한 저장이 MFA_REQUIRED 여도 인증 후 같은 PATCH 를 다시 보�
   expect(listCalls.length).toBeGreaterThanOrEqual(2)
 })
 
-it('초안 자동 실행 스위치는 없고 권한 수정에 「초안 바로 만들기」 그룹이 있다', async () => {
-  render(<AgentTokensCard />)
-  await screen.findByText('테스트 에이전트')
-  expect(screen.queryByText('초안 자동 실행')).not.toBeInTheDocument()
-  expect(screen.queryByRole('switch', { name: /초안 자동 실행/ })).not.toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: '권한 수정' }))
-  expect(await screen.findByText('초안 바로 만들기(승인 없이)')).toBeInTheDocument()
-  expect(screen.getByText('draft:create')).toBeInTheDocument()
-})
-
-it('draft:create 가 있는 에이전트는 부여한 사람 이름을 표시한다', async () => {
-  const on = {
-    ...agent,
-    scopes: ['sellerhub:write', 'draft:create'],
-    autoExecuteEnabledByName: '에디',
-    autoExecuteEnabledAt: '2026-11-18T00:00:00Z',
-  }
+const listWith = (a: object) =>
   fetchMock.mockImplementation((url: string) =>
     url.startsWith('/api/spaces/members')
       ? res({ spaceId: 'sp-1' })
       : url === '/api/spaces/sp-1/agents'
-        ? res({ agents: [on] })
+        ? res({ agents: [a] })
         : res({}, 404)
   )
+
+it('권한 수정은 업무별 읽기/쓰기 + 비밀값만 보이고 초안 바로 만들기·browser·slack 선택은 없다', async () => {
+  render(<AgentTokensCard />)
+  await screen.findByText('테스트 에이전트')
+  fireEvent.click(screen.getByRole('button', { name: '권한 수정' }))
+  expect(
+    await screen.findByText('쓰기(워크덱 안 작업은 바로 실행, 외부 반영은 승인)')
+  ).toBeInTheDocument()
+  expect(
+    screen.getByText(
+      '저장하면 체크된 쓰기 권한이 바로 실행으로 동작하고 저장한 분 이름으로 기록됩니다.'
+    )
+  ).toBeInTheDocument()
+  expect(screen.getByRole('checkbox', { name: 'sellerhub:write' })).toBeInTheDocument()
+  expect(screen.getByRole('checkbox', { name: 'secret:read' })).toBeInTheDocument()
+  expect(screen.getByRole('checkbox', { name: 'secret:env' })).toBeInTheDocument()
+  expect(screen.queryByText(/초안 바로 만들기/)).not.toBeInTheDocument()
+  for (const gone of ['draft:create', 'slack:write', 'browser:read', 'browser:write'])
+    expect(screen.queryByRole('checkbox', { name: gone })).not.toBeInTheDocument()
+})
+
+it('쓰기 권한 옆에 부여한 사람 이름을 표시하고, 부여자 없는 기존 쓰기는 다시 저장 안내를 보인다', async () => {
+  listWith({
+    ...agent,
+    scopes: ['sellerhub:write', 'hiring:write'],
+    writeGrants: { 'sellerhub:write': { userId: 'u1', at: '2026-11-20T00:00:00Z', name: '에디' } },
+  })
   render(<AgentTokensCard />)
   expect(await screen.findByText(/에디님이 부여/)).toBeInTheDocument()
+  expect(screen.getByText(/다시 저장하면 바로 실행으로 바뀝니다/)).toBeInTheDocument()
+})
+
+it('연동 계정에는 secret:env 선택을 보이지 않는다', async () => {
+  listWith({ ...agent, kind: 'integration' })
+  render(<AgentTokensCard />)
+  await screen.findByText('테스트 에이전트')
+  fireEvent.click(screen.getByRole('button', { name: '권한 수정' }))
+  await screen.findByText('비밀값')
+  expect(screen.queryByRole('checkbox', { name: 'secret:env' })).not.toBeInTheDocument()
 })

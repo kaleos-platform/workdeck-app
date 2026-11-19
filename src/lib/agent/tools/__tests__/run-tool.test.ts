@@ -80,17 +80,49 @@ describe('runTool', () => {
     const extra = { spaceId: 'sp1', actor: { type: 'user', id: 'u1' }, scopes: [...ALL_SCOPES] }
     expect(readAuthExtra(extra)).toEqual({ ok: true, principal: extra })
   })
-  it('systemToolContext는 내장 에이전트 actor와 slack:write를 뺀 scope, 요청자는 비어 있다', () => {
+  it('systemToolContext는 내장 에이전트(system) actor, 요청자는 비어 있다', () => {
     const c = systemToolContext('sp1')
     expect(c.actor).toEqual({ type: 'system', id: 'workdeck-agent' })
     expect(c.scopes).toContain('ads:write')
-    expect(c.scopes).not.toContain('slack:write')
     expect(c).toMatchObject({ requesterUserId: null, requesterSlackUserId: null })
   })
-  it('내장 에이전트(systemToolContext)는 slack_post를 scope로 거부당한다', async () => {
-    await expect(runTool(slackPostTool, systemToolContext('sp1'), {})).rejects.toThrow(
-      new ToolScopeError('slack:write')
+  it('내장 에이전트(systemToolContext)는 slack_post를 서버에서 거부당한다(actor=system)', async () => {
+    await expect(
+      runTool(slackPostTool, systemToolContext('sp1'), { channel: 'C0123ABC', text: 'x' })
+    ).rejects.toThrow('업무 쓰기 권한이 있는 에이전트·연동 계정만')
+  })
+  it('buildToolContext: 인증된 구성원만 authenticatedUserId 로 담는다', async () => {
+    const c = buildToolContext(
+      {
+        spaceId: 'sp1',
+        actor: { type: 'integration', id: 'ig1' },
+        scopes: [],
+        requesterUserId: 'm1',
+      },
+      {}
     )
+    expect(c.authenticatedUserId).toBe('m1')
+    expect(
+      buildToolContext({ spaceId: 'sp1', actor: { type: 'agent', id: 'a' }, scopes: [] }, {})
+    ).not.toHaveProperty('authenticatedUserId')
+  })
+  it('buildToolContext: 구성원 본인 세션(actor=user)은 actor.id 가 authenticatedUserId', () => {
+    const c = buildToolContext(
+      { spaceId: 'sp1', actor: { type: 'user', id: 'u9' }, scopes: [] },
+      {}
+    )
+    expect(c.authenticatedUserId).toBe('u9')
+  })
+  it('readAuthExtra: 저장된 폐지 scope 는 조용히 버린다', () => {
+    const r = readAuthExtra({
+      spaceId: 'sp1',
+      actor: { type: 'agent', id: 'a' },
+      scopes: ['draft:create', 'slack:write', 'browser:write', 'sellerhub:write'],
+    })
+    expect(r).toEqual({
+      ok: true,
+      principal: { spaceId: 'sp1', actor: { type: 'agent', id: 'a' }, scopes: ['sellerhub:write'] },
+    })
   })
   it('splitMetaArgs: requesterSlackUserId는 메타로 빼고 도구 인자에 넘기지 않는다', () => {
     expect(splitMetaArgs({ requesterSlackUserId: 'U123', a: 1 })).toEqual({

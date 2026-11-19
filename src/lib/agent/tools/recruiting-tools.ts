@@ -249,6 +249,7 @@ async function propose(
     requesterSlackUserId: ctx.requesterSlackUserId,
     workId: ctx.workId,
     actorTokenId: ctx.actorTokenId,
+    authenticatedUserId: ctx.authenticatedUserId,
     // 같은 날 같은 내용만 중복으로 본다 — 다음 달 같은 제목 초안·A→B→A 되돌리기는 새 제안
     idempotencyKey: idempotencyKeyFor(actionType, ctx.spaceId, {
       params: actionParams,
@@ -266,7 +267,7 @@ function parseOrThrow<T>(schema: z.ZodType<T>, params: unknown): T {
 const proposeDraft: ToolDefinition = {
   name: 'hiring_propose_posting_draft',
   description:
-    '새 채용 공고 초안(제목·마감일·모집 직무별 근무 조건)을 제안합니다. 에이전트에 `draft:create`(초안 바로 만들기) 권한이 있으면 승인 없이 바로 만들고 resultUrl 을 돌려줍니다. 없으면 승인 대기로 등록됩니다. 만들기 전에 사용자에게 대상·수량을 보여 주고 확인을 받으세요. 바로 만들면 「작성 중(DRAFT)」 공고이고, 승인 대기면 관리자(ADMIN)가 승인하면 생성됩니다. 발행은 사람이 웹에서 합니다. closingDate 는 YYYY-MM-DD(null=상시 모집, 생략=오늘+14일).',
+    '새 채용 공고 초안(제목·마감일·모집 직무별 근무 조건)을 제안합니다. 쓰기 권한이 있으면 바로 실행되고 결과 링크를 돌려줍니다. 실행 전에 사용자에게 대상·내용을 확인받으세요. 만들어지는 공고는 「작성 중(DRAFT)」이며 발행은 사람이 웹에서 합니다. closingDate 는 YYYY-MM-DD(null=상시 모집, 생략=오늘+14일).',
   inputSchema: {
     title: z.string(),
     closingDate: z.string().nullable().optional(),
@@ -285,7 +286,7 @@ const proposeDraft: ToolDefinition = {
 const proposeUpdate: ToolDefinition = {
   name: 'hiring_propose_posting_update',
   description:
-    '「작성 중(DRAFT)」이고 한 번도 발행되지 않은 공고의 제목·마감일·모집 직무 수정을 제안합니다. positions 를 주면 기존 직무 전체를 이 목록으로 바꿉니다(같은 이름 직무의 기준정보 연결은 유지). 승인 대기에 올라가며 관리자(ADMIN) 승인 후 반영되고, 공고는 계속 DRAFT 입니다. 발행된 적 있는 공고는 수정할 수 없으니 hiring_propose_posting_draft 로 새 초안을 제안하세요.',
+    '「작성 중(DRAFT)」이고 한 번도 발행되지 않은 공고의 제목·마감일·모집 직무 수정을 제안합니다. positions 를 주면 기존 직무 전체를 이 목록으로 바꿉니다(같은 이름 직무의 기준정보 연결은 유지). 쓰기 권한이 있으면 바로 실행되고 결과 링크를 돌려줍니다. 실행 전에 사용자에게 대상·내용을 확인받으세요. 공고는 계속 DRAFT 이고 바꾸기 전 내용은 승인 내역에 남습니다. 발행된 적 있는 공고는 수정할 수 없으니 hiring_propose_posting_draft 로 새 초안을 제안하세요.',
   inputSchema: {
     postingId: z.string(),
     title: z.string().optional(),

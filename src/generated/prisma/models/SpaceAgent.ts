@@ -20,8 +20,18 @@ export type SpaceAgentModel = runtime.Types.Result.DefaultSelection<Prisma.$Spac
 
 export type AggregateSpaceAgent = {
   _count: SpaceAgentCountAggregateOutputType | null
+  _avg: SpaceAgentAvgAggregateOutputType | null
+  _sum: SpaceAgentSumAggregateOutputType | null
   _min: SpaceAgentMinAggregateOutputType | null
   _max: SpaceAgentMaxAggregateOutputType | null
+}
+
+export type SpaceAgentAvgAggregateOutputType = {
+  scopesVersion: number | null
+}
+
+export type SpaceAgentSumAggregateOutputType = {
+  scopesVersion: number | null
 }
 
 export type SpaceAgentMinAggregateOutputType = {
@@ -34,6 +44,7 @@ export type SpaceAgentMinAggregateOutputType = {
   autoExecuteDrafts: boolean | null
   autoExecuteEnabledById: string | null
   autoExecuteEnabledAt: Date | null
+  scopesVersion: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +59,7 @@ export type SpaceAgentMaxAggregateOutputType = {
   autoExecuteDrafts: boolean | null
   autoExecuteEnabledById: string | null
   autoExecuteEnabledAt: Date | null
+  scopesVersion: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -63,11 +75,22 @@ export type SpaceAgentCountAggregateOutputType = {
   autoExecuteDrafts: number
   autoExecuteEnabledById: number
   autoExecuteEnabledAt: number
+  scopesBackup: number
+  writeGrants: number
+  scopesVersion: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type SpaceAgentAvgAggregateInputType = {
+  scopesVersion?: true
+}
+
+export type SpaceAgentSumAggregateInputType = {
+  scopesVersion?: true
+}
 
 export type SpaceAgentMinAggregateInputType = {
   id?: true
@@ -79,6 +102,7 @@ export type SpaceAgentMinAggregateInputType = {
   autoExecuteDrafts?: true
   autoExecuteEnabledById?: true
   autoExecuteEnabledAt?: true
+  scopesVersion?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -93,6 +117,7 @@ export type SpaceAgentMaxAggregateInputType = {
   autoExecuteDrafts?: true
   autoExecuteEnabledById?: true
   autoExecuteEnabledAt?: true
+  scopesVersion?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -108,6 +133,9 @@ export type SpaceAgentCountAggregateInputType = {
   autoExecuteDrafts?: true
   autoExecuteEnabledById?: true
   autoExecuteEnabledAt?: true
+  scopesBackup?: true
+  writeGrants?: true
+  scopesVersion?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -151,6 +179,18 @@ export type SpaceAgentAggregateArgs<ExtArgs extends runtime.Types.Extensions.Int
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: SpaceAgentAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: SpaceAgentSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: SpaceAgentMinAggregateInputType
@@ -181,6 +221,8 @@ export type SpaceAgentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   _count?: SpaceAgentCountAggregateInputType | true
+  _avg?: SpaceAgentAvgAggregateInputType
+  _sum?: SpaceAgentSumAggregateInputType
   _min?: SpaceAgentMinAggregateInputType
   _max?: SpaceAgentMaxAggregateInputType
 }
@@ -196,9 +238,14 @@ export type SpaceAgentGroupByOutputType = {
   autoExecuteDrafts: boolean
   autoExecuteEnabledById: string | null
   autoExecuteEnabledAt: Date | null
+  scopesBackup: string[]
+  writeGrants: runtime.JsonValue
+  scopesVersion: number
   createdAt: Date
   updatedAt: Date
   _count: SpaceAgentCountAggregateOutputType | null
+  _avg: SpaceAgentAvgAggregateOutputType | null
+  _sum: SpaceAgentSumAggregateOutputType | null
   _min: SpaceAgentMinAggregateOutputType | null
   _max: SpaceAgentMaxAggregateOutputType | null
 }
@@ -232,6 +279,9 @@ export type SpaceAgentWhereInput = {
   autoExecuteDrafts?: Prisma.BoolFilter<"SpaceAgent"> | boolean
   autoExecuteEnabledById?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
   autoExecuteEnabledAt?: Prisma.DateTimeNullableFilter<"SpaceAgent"> | Date | string | null
+  scopesBackup?: Prisma.StringNullableListFilter<"SpaceAgent">
+  writeGrants?: Prisma.JsonFilter<"SpaceAgent">
+  scopesVersion?: Prisma.IntFilter<"SpaceAgent"> | number
   createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -249,6 +299,9 @@ export type SpaceAgentOrderByWithRelationInput = {
   autoExecuteDrafts?: Prisma.SortOrder
   autoExecuteEnabledById?: Prisma.SortOrderInput | Prisma.SortOrder
   autoExecuteEnabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scopesBackup?: Prisma.SortOrder
+  writeGrants?: Prisma.SortOrder
+  scopesVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -270,6 +323,9 @@ export type SpaceAgentWhereUniqueInput = Prisma.AtLeast<{
   autoExecuteDrafts?: Prisma.BoolFilter<"SpaceAgent"> | boolean
   autoExecuteEnabledById?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
   autoExecuteEnabledAt?: Prisma.DateTimeNullableFilter<"SpaceAgent"> | Date | string | null
+  scopesBackup?: Prisma.StringNullableListFilter<"SpaceAgent">
+  writeGrants?: Prisma.JsonFilter<"SpaceAgent">
+  scopesVersion?: Prisma.IntFilter<"SpaceAgent"> | number
   createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -287,11 +343,16 @@ export type SpaceAgentOrderByWithAggregationInput = {
   autoExecuteDrafts?: Prisma.SortOrder
   autoExecuteEnabledById?: Prisma.SortOrderInput | Prisma.SortOrder
   autoExecuteEnabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scopesBackup?: Prisma.SortOrder
+  writeGrants?: Prisma.SortOrder
+  scopesVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SpaceAgentCountOrderByAggregateInput
+  _avg?: Prisma.SpaceAgentAvgOrderByAggregateInput
   _max?: Prisma.SpaceAgentMaxOrderByAggregateInput
   _min?: Prisma.SpaceAgentMinOrderByAggregateInput
+  _sum?: Prisma.SpaceAgentSumOrderByAggregateInput
 }
 
 export type SpaceAgentScalarWhereWithAggregatesInput = {
@@ -308,6 +369,9 @@ export type SpaceAgentScalarWhereWithAggregatesInput = {
   autoExecuteDrafts?: Prisma.BoolWithAggregatesFilter<"SpaceAgent"> | boolean
   autoExecuteEnabledById?: Prisma.StringNullableWithAggregatesFilter<"SpaceAgent"> | string | null
   autoExecuteEnabledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SpaceAgent"> | Date | string | null
+  scopesBackup?: Prisma.StringNullableListFilter<"SpaceAgent">
+  writeGrants?: Prisma.JsonWithAggregatesFilter<"SpaceAgent">
+  scopesVersion?: Prisma.IntWithAggregatesFilter<"SpaceAgent"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceAgent"> | Date | string
 }
@@ -322,6 +386,9 @@ export type SpaceAgentCreateInput = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: string | null
   autoExecuteEnabledAt?: Date | string | null
+  scopesBackup?: Prisma.SpaceAgentCreatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutAgentsInput
@@ -339,6 +406,9 @@ export type SpaceAgentUncheckedCreateInput = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: string | null
   autoExecuteEnabledAt?: Date | string | null
+  scopesBackup?: Prisma.SpaceAgentCreatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   tokens?: Prisma.AgentTokenUncheckedCreateNestedManyWithoutAgentInput
@@ -354,6 +424,9 @@ export type SpaceAgentUpdateInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutAgentsNestedInput
@@ -371,6 +444,9 @@ export type SpaceAgentUncheckedUpdateInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tokens?: Prisma.AgentTokenUncheckedUpdateManyWithoutAgentNestedInput
@@ -387,6 +463,9 @@ export type SpaceAgentCreateManyInput = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: string | null
   autoExecuteEnabledAt?: Date | string | null
+  scopesBackup?: Prisma.SpaceAgentCreatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -401,6 +480,9 @@ export type SpaceAgentUpdateManyMutationInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -416,6 +498,9 @@ export type SpaceAgentUncheckedUpdateManyInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -454,8 +539,15 @@ export type SpaceAgentCountOrderByAggregateInput = {
   autoExecuteDrafts?: Prisma.SortOrder
   autoExecuteEnabledById?: Prisma.SortOrder
   autoExecuteEnabledAt?: Prisma.SortOrder
+  scopesBackup?: Prisma.SortOrder
+  writeGrants?: Prisma.SortOrder
+  scopesVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type SpaceAgentAvgOrderByAggregateInput = {
+  scopesVersion?: Prisma.SortOrder
 }
 
 export type SpaceAgentMaxOrderByAggregateInput = {
@@ -468,6 +560,7 @@ export type SpaceAgentMaxOrderByAggregateInput = {
   autoExecuteDrafts?: Prisma.SortOrder
   autoExecuteEnabledById?: Prisma.SortOrder
   autoExecuteEnabledAt?: Prisma.SortOrder
+  scopesVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -482,8 +575,13 @@ export type SpaceAgentMinOrderByAggregateInput = {
   autoExecuteDrafts?: Prisma.SortOrder
   autoExecuteEnabledById?: Prisma.SortOrder
   autoExecuteEnabledAt?: Prisma.SortOrder
+  scopesVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type SpaceAgentSumOrderByAggregateInput = {
+  scopesVersion?: Prisma.SortOrder
 }
 
 export type SpaceAgentScalarRelationFilter = {
@@ -537,7 +635,16 @@ export type SpaceAgentCreatescopesInput = {
   set: string[]
 }
 
+export type SpaceAgentCreatescopesBackupInput = {
+  set: string[]
+}
+
 export type SpaceAgentUpdatescopesInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type SpaceAgentUpdatescopesBackupInput = {
   set?: string[]
   push?: string | string[]
 }
@@ -566,6 +673,9 @@ export type SpaceAgentCreateWithoutSpaceInput = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: string | null
   autoExecuteEnabledAt?: Date | string | null
+  scopesBackup?: Prisma.SpaceAgentCreatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   tokens?: Prisma.AgentTokenCreateNestedManyWithoutAgentInput
@@ -581,6 +691,9 @@ export type SpaceAgentUncheckedCreateWithoutSpaceInput = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: string | null
   autoExecuteEnabledAt?: Date | string | null
+  scopesBackup?: Prisma.SpaceAgentCreatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   tokens?: Prisma.AgentTokenUncheckedCreateNestedManyWithoutAgentInput
@@ -626,6 +739,9 @@ export type SpaceAgentScalarWhereInput = {
   autoExecuteDrafts?: Prisma.BoolFilter<"SpaceAgent"> | boolean
   autoExecuteEnabledById?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
   autoExecuteEnabledAt?: Prisma.DateTimeNullableFilter<"SpaceAgent"> | Date | string | null
+  scopesBackup?: Prisma.StringNullableListFilter<"SpaceAgent">
+  writeGrants?: Prisma.JsonFilter<"SpaceAgent">
+  scopesVersion?: Prisma.IntFilter<"SpaceAgent"> | number
   createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
 }
@@ -640,6 +756,9 @@ export type SpaceAgentCreateWithoutTokensInput = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: string | null
   autoExecuteEnabledAt?: Date | string | null
+  scopesBackup?: Prisma.SpaceAgentCreatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutAgentsInput
@@ -656,6 +775,9 @@ export type SpaceAgentUncheckedCreateWithoutTokensInput = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: string | null
   autoExecuteEnabledAt?: Date | string | null
+  scopesBackup?: Prisma.SpaceAgentCreatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -686,6 +808,9 @@ export type SpaceAgentUpdateWithoutTokensInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutAgentsNestedInput
@@ -702,6 +827,9 @@ export type SpaceAgentUncheckedUpdateWithoutTokensInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -716,6 +844,9 @@ export type SpaceAgentCreateManySpaceInput = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: string | null
   autoExecuteEnabledAt?: Date | string | null
+  scopesBackup?: Prisma.SpaceAgentCreatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -730,6 +861,9 @@ export type SpaceAgentUpdateWithoutSpaceInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tokens?: Prisma.AgentTokenUpdateManyWithoutAgentNestedInput
@@ -745,6 +879,9 @@ export type SpaceAgentUncheckedUpdateWithoutSpaceInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tokens?: Prisma.AgentTokenUncheckedUpdateManyWithoutAgentNestedInput
@@ -760,6 +897,9 @@ export type SpaceAgentUncheckedUpdateManyWithoutSpaceInput = {
   autoExecuteDrafts?: Prisma.BoolFieldUpdateOperationsInput | boolean
   autoExecuteEnabledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   autoExecuteEnabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scopesBackup?: Prisma.SpaceAgentUpdatescopesBackupInput | string[]
+  writeGrants?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scopesVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -806,6 +946,9 @@ export type SpaceAgentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: boolean
   autoExecuteEnabledAt?: boolean
+  scopesBackup?: boolean
+  writeGrants?: boolean
+  scopesVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -824,6 +967,9 @@ export type SpaceAgentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: boolean
   autoExecuteEnabledAt?: boolean
+  scopesBackup?: boolean
+  writeGrants?: boolean
+  scopesVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -840,6 +986,9 @@ export type SpaceAgentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: boolean
   autoExecuteEnabledAt?: boolean
+  scopesBackup?: boolean
+  writeGrants?: boolean
+  scopesVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -856,11 +1005,14 @@ export type SpaceAgentSelectScalar = {
   autoExecuteDrafts?: boolean
   autoExecuteEnabledById?: boolean
   autoExecuteEnabledAt?: boolean
+  scopesBackup?: boolean
+  writeGrants?: boolean
+  scopesVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SpaceAgentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "kind" | "scopes" | "status" | "oauthClientId" | "autoExecuteDrafts" | "autoExecuteEnabledById" | "autoExecuteEnabledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceAgent"]>
+export type SpaceAgentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "kind" | "scopes" | "status" | "oauthClientId" | "autoExecuteDrafts" | "autoExecuteEnabledById" | "autoExecuteEnabledAt" | "scopesBackup" | "writeGrants" | "scopesVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceAgent"]>
 export type SpaceAgentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   tokens?: boolean | Prisma.SpaceAgent$tokensArgs<ExtArgs>
@@ -890,6 +1042,9 @@ export type $SpaceAgentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     autoExecuteDrafts: boolean
     autoExecuteEnabledById: string | null
     autoExecuteEnabledAt: Date | null
+    scopesBackup: string[]
+    writeGrants: runtime.JsonValue
+    scopesVersion: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["spaceAgent"]>
@@ -1327,6 +1482,9 @@ export interface SpaceAgentFieldRefs {
   readonly autoExecuteDrafts: Prisma.FieldRef<"SpaceAgent", 'Boolean'>
   readonly autoExecuteEnabledById: Prisma.FieldRef<"SpaceAgent", 'String'>
   readonly autoExecuteEnabledAt: Prisma.FieldRef<"SpaceAgent", 'DateTime'>
+  readonly scopesBackup: Prisma.FieldRef<"SpaceAgent", 'String[]'>
+  readonly writeGrants: Prisma.FieldRef<"SpaceAgent", 'Json'>
+  readonly scopesVersion: Prisma.FieldRef<"SpaceAgent", 'Int'>
   readonly createdAt: Prisma.FieldRef<"SpaceAgent", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SpaceAgent", 'DateTime'>
 }

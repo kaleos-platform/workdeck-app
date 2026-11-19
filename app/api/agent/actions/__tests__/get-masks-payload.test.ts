@@ -53,7 +53,7 @@ it('GET 응답의 payload는 서버에서 비밀 값을 가린다', async () => 
   expect(actions[0].spendKrw).toBeNull()
 })
 
-it('GET 은 자동 실행 액션만 「에이전트 자동 생성 · 권한 부여: 관리자」로 표시하고 수동 승인은 기존 라벨을 둔다', async () => {
+it('GET 은 바로 실행 액션만 「에이전트 바로 실행 · 권한 부여: 관리자」로 표시하고 수동 승인은 기존 라벨을 둔다', async () => {
   const row = {
     spaceId: 'sp-1',
     actionType: 'unknown.action',
@@ -68,11 +68,17 @@ it('GET 은 자동 실행 액션만 「에이전트 자동 생성 · 권한 부�
   ;(prisma.agentPendingAction.findMany as jest.Mock).mockResolvedValue([
     { ...row, id: 'auto', autoExecuted: true },
     { ...row, id: 'manual', autoExecuted: false },
+    { ...row, id: 'nofy', autoExecuted: true, notifyError: 'Slack 전송 실패: x' },
+    { ...row, id: 'usr', autoExecuted: true, actorType: 'user', actorId: 'admin1' },
+    { ...row, id: 'itg', autoExecuted: true, actorType: 'integration' },
   ])
-  ;(describeActors as jest.Mock).mockResolvedValueOnce(['라벨0', '라벨'])
+  ;(describeActors as jest.Mock).mockResolvedValueOnce(['라벨0', '라벨', '라벨2', 'u', 'i'])
   const res = await GET(new NextRequest('http://x/api/agent/actions?spaceId=sp-1'))
   const { actions } = await res.json()
-  expect(actions[0].actorLabel).toBe('에밀리 자동 생성 · 권한 부여: 에디')
+  expect(actions[0].actorLabel).toBe('에밀리 바로 실행 · 권한 부여: 에디')
   expect(actions[0].autoExecuted).toBe(true)
   expect(actions[1].actorLabel).toBe('라벨')
+  expect(actions[3].actorLabel).toBe('에디 직접 실행')
+  expect(actions[4].actorLabel).toBe('에밀리 바로 실행 · 실행 구성원: 에디')
+  expect(actions[2].actorLabel).toBe('에밀리 바로 실행 · 권한 부여: 에디 · 실행 알림 실패')
 })

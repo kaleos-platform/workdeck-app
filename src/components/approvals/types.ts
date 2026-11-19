@@ -28,7 +28,8 @@ export type AgentPendingActionDTO = {
   status: AgentActionStatusValue
   expiresAt: string
   decidedBy: string | null
-  autoExecuted?: boolean // draft:create 권한으로 승인 없이 자동 실행됨 — actorLabel 이 자동 생성 문구
+  autoExecuted?: boolean // 쓰기 권한으로 승인 없이 바로 실행됨 — actorLabel 이 바로 실행 문구
+  notifyError?: string | null // 바로 실행 Slack 알림 전송 실패 사유 — actorLabel 에 「실행 알림 실패」
   decidedAt: string | null
   executedAt: string | null
   result: unknown

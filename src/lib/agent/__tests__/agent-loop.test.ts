@@ -48,7 +48,7 @@ jest.mock('@/lib/agent/tools', () => {
         description: 'slack',
         inputSchema: {},
         mode: 'write',
-        scope: 'slack:write',
+        scope: null,
         execute: jest.fn(),
       },
     ],
@@ -109,7 +109,7 @@ describe('runAgentLoop', () => {
     expect(toolResultMsg.content[0].type).toBe('tool_result')
   })
 
-  test('내장 에이전트에는 scope 밖 도구(slack_post)를 노출하지 않는다', async () => {
+  test('내장 에이전트에는 slack_post 를 노출하지 않는다(actor=system)', async () => {
     mockCreate.mockResolvedValueOnce({
       stop_reason: 'end_turn',
       content: [{ type: 'text', text: 'ok' }],

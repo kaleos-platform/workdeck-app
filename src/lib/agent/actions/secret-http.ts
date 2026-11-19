@@ -32,6 +32,8 @@ const secretHttpRequest: ActionDefinition<Params> = {
   title: '외부 API 요청(비밀값 사용)',
   paramsSchema,
   requiredRole: 'OWNER',
+  scope: 'secret:write',
+  external: true, // 외부 API 호출
   expiryHours: 24,
   validateCreate: async (ctx, p) => {
     normalizePath(p.path)

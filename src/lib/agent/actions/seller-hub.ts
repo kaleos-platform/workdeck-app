@@ -33,8 +33,7 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
   title: '발주 계획 생성',
   paramsSchema: reorderPlanParams,
   requiredRole: 'ADMIN',
-  autoExecutable: true,
-  autoScope: 'sellerhub:write',
+  scope: 'sellerhub:write', // 내부: DRAFT 계획만 만든다
   resultUrl: (result, ctx) => {
     const planId = (result as { planId?: string } | null)?.planId
     return planId
@@ -114,6 +113,7 @@ const keywordUpdate: ActionDefinition<KeywordUpdateParams> = {
   title: '키워드 묶음 반영',
   paramsSchema: keywordUpdateParams,
   requiredRole: 'ADMIN',
+  scope: 'sellerhub:write', // 내부: 워크덱 DB 키워드 저장·변경 이력만(applyKeywordsToTarget 에 외부 호출 없음)
   retryableAfterFailure: true, // 실패 시 단일 트랜잭션이라 변경이 남지 않는다
   validateCreate: async (ctx, params) => {
     const cur = await readTargetKeywords(ctx.spaceId, params.target)

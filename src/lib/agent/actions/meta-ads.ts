@@ -43,6 +43,8 @@ function defineMetaAction(name: MetaActionName): ActionDefinition<Params> {
     title: `메타 광고: ${name}`,
     paramsSchema,
     requiredRole: 'ADMIN',
+    scope: 'meta:write',
+    external: true, // 광고 변경·지출
     // 예산 파라미터가 Space.approvalLimitKrw(null=0)를 넘으면 OWNER만 승인한다(requiredDecisionRole).
     spendKrw: (p) => (META_BUDGET_ACTIONS.has(name) ? metaSpendKrw(p.params) : null),
     expiryHours: 24,
