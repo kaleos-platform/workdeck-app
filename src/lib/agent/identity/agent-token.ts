@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 import { prisma } from '@/lib/prisma'
 import { timingSafeEqualString } from '@/lib/crypto/timing-safe'
 import { hashWorkerToken, workerTokenExpiry } from '@/lib/worker-auth'
-import { parseScopes, type McpPrincipal } from './principal'
+import { parseStoredScopes, type McpPrincipal } from './principal'
 
 /**
  * 에이전트 토큰: `wdk_agt_<tokenId>.<secret>`.
@@ -90,7 +90,7 @@ export async function verifyAgentToken(
   return {
     spaceId: row.agent.spaceId,
     actor: { type: row.agent.kind as 'agent' | 'integration', id: row.agent.id },
-    scopes: parseScopes(row.agent.scopes),
+    scopes: parseStoredScopes(row.agent.scopes),
     tokenId: row.id,
   }
 }

@@ -45,6 +45,8 @@ function define(action: string): ActionDefinition<Params> {
     paramsSchema,
     // GTM 게시(version.publish)는 운영 사이트 태그를 바꾸므로 OWNER. 나머지는 ADMIN.
     requiredRole: action === 'gtm.version.publish' ? 'OWNER' : 'ADMIN',
+    scope: 'google:write',
+    external: true, // GA4·GTM 외부 변경
     expiryHours: 24,
     // 생성 시점(MCP 제안·세션 POST 모두): params 허용 목록, payload target이 현재 매핑과 같은지,
     // 최종 URL이 브랜드 범위인지. Google API는 부르지 않는다(config만 본다).

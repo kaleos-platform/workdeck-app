@@ -29,6 +29,7 @@ const testAction: ActionDefinition = {
   title: '테스트 액션',
   paramsSchema,
   requiredRole: 'ADMIN',
+  scope: 'finance:write',
   async execute(_ctx, params) {
     execCount += 1
     return { doubled: (params as { value: number }).value * 2 }
@@ -43,6 +44,7 @@ const failAction: ActionDefinition = {
   title: '실패 테스트 액션',
   paramsSchema: z.object({}),
   requiredRole: 'ADMIN',
+  scope: 'finance:write',
   async execute() {
     throw new Error('의도된 실패')
   },

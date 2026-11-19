@@ -48,6 +48,10 @@ const reclassify: ActionDefinition<z.infer<typeof reclassifyParams>> = {
   title: '거래 재분류',
   paramsSchema: reclassifyParams,
   requiredRole: 'ADMIN',
+  scope: 'finance:write',
+  // learn 기본/true 면 분류 규칙을 만들거나 덮어써 이후 자동 분류에 영향을 주고 이전 규칙 복구 근거가 없다 → 승인.
+  // learn: false 는 거래 1건 분류만 바꾼다 → 바로 실행.
+  external: (params) => params.learn !== false,
   validateCreate: async (ctx, params) => {
     await assertInSpace('transaction', params.transactionId, ctx.spaceId)
     await assertInSpace('category', params.categoryId, ctx.spaceId)
@@ -120,6 +124,8 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
   title: '분류 규칙 추가',
   paramsSchema: classruleParams,
   requiredRole: 'ADMIN',
+  scope: 'finance:write',
+  external: true, // 규칙은 이후 자동 분류 전체에 영향
   validateCreate: async (ctx, params) => {
     await assertInSpace('category', params.categoryId, ctx.spaceId)
     if (params.accountId) await assertInSpace('account', params.accountId, ctx.spaceId)

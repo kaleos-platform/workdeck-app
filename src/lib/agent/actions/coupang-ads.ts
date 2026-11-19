@@ -42,6 +42,7 @@ const analysisTrigger: ActionDefinition<z.infer<typeof analysisTriggerParams>> =
   title: 'AI 분석 실행',
   paramsSchema: analysisTriggerParams,
   requiredRole: 'ADMIN',
+  scope: 'ads:write', // 내부: AnalysisReport PENDING 행만 만든다(광고 변경 없음)
   validateCreate: async (ctx, params) => {
     await requireSpaceWorkspace(ctx.spaceId, params.workspaceId)
   },
@@ -84,6 +85,8 @@ const executionApprove: ActionDefinition<z.infer<typeof executionApproveParams>>
   title: '실행 태스크 승인',
   paramsSchema: executionApproveParams,
   requiredRole: 'ADMIN',
+  scope: 'ads:write',
+  external: true, // 쿠팡 광고 입찰·키워드 반영(워커가 브라우저로 실행)
   validateCreate: async (ctx, params) => {
     await requireSpaceWorkspace(ctx.spaceId, params.workspaceId)
   },

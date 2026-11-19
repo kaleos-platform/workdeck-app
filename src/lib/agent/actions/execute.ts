@@ -5,7 +5,14 @@ import { isPrismaError } from '@/lib/agent/tools/run-tool'
 import type { ActorType } from '@/lib/agent/identity/principal'
 import type { ActionExecContext } from './types'
 import { getActionDefinition } from './registry'
-import { deciderDenial, needsWebReview, WEB_REVIEW_REQUIRED } from './decision-policy'
+import { hasRole, type Role } from '@/lib/auth/roles'
+import {
+  deciderDenial,
+  isExternalAction,
+  needsWebReview,
+  requiredDecisionRole,
+  WEB_REVIEW_REQUIRED,
+} from './decision-policy'
 
 // 결정 결과 — API·Slack 핸들러가 그대로 응답에 쓴다.
 export type DecisionOutcome =
@@ -61,11 +68,18 @@ export async function approveAndExecute(
   opts: {
     webReviewed?: boolean
     /**
-     * 「초안 바로 만들기」 경로 — 게이트 트랜잭션 안에서 에이전트·토큰 행을 잠그고 scope(draft:create·requiredScope)·
-     * 부여자·토큰 상태를 다시 확인한다. 하나라도 맞지 않으면 전이하지 않는다(액션은 PENDING 유지).
-     * scope 회수·토큰 폐기와 행 잠금으로 직렬화된다.
+     * 「쓰기 권한 바로 실행」 경로 — 게이트 트랜잭션 안에서 에이전트(·토큰) 행과 결정자 SpaceMember 행을 잠그고
+     * ACTIVE·scope·부여자(agent)·토큰 상태·결정자 소속과 역할을 다시 확인한다. 하나라도 맞지 않으면 전이하지 않는다(액션은 PENDING 유지).
+     * scope 회수·토큰 폐기·결정자 강등/제거와 행 잠금으로 직렬화된다.
+     *  - agent: 토큰 필수, writeGrants[requiredScope].userId === deciderId
+     *  - integration: deciderId 는 MCP principal 이 인증한 구성원(호출자가 보장), 부여자 대조는 하지 않는다
      */
-    autoGate?: { agentId: string; tokenId: string; requiredScope: string }
+    autoGate?: {
+      kind: 'agent' | 'integration' | 'user'
+      agentId?: string // user(구성원 본인 세션)는 에이전트 행이 없다
+      tokenId?: string
+      requiredScope: string
+    }
   } = {}
 ): Promise<DecisionOutcome> {
   const now = new Date()
@@ -89,6 +103,10 @@ export async function approveAndExecute(
     }
     const blocked = await assertDeckWritable(pre.spaceId, pre.deckKey)
     if (blocked) return { ok: false, status: 'BLOCKED', message: blocked }
+    // 바로 실행은 외부 반영 액션에 쓰지 않는다 — 호출자가 잘못 요청해도 여기서 막는다.
+    if (opts.autoGate && isExternalAction(pre)) {
+      return { ok: false, status: 'BLOCKED', message: '외부 반영 액션은 승인이 필요합니다' }
+    }
   }
 
   // 게이트: PENDING 이고 아직 만료되지 않은 경우에만 APPROVED 로 전이.
@@ -105,35 +123,53 @@ export async function approveAndExecute(
       },
     })
   const autoGate = opts.autoGate
+  const requiredRole: Role | null =
+    autoGate && pre ? await requiredDecisionRole(pre, 'approve') : null
   const gate = autoGate
     ? await prisma.$transaction(async (tx) => {
-        const agents = await tx.$queryRaw<
-          Array<{
-            status: string
-            scopes: string[]
-            autoExecuteEnabledById: string | null
-          }>
-        >`SELECT "status", "scopes", "autoExecuteEnabledById" FROM "SpaceAgentIdentity" WHERE "id" = ${autoGate.agentId} FOR UPDATE`
-        const tokens = await tx.$queryRaw<
-          Array<{ revokedAt: Date | null; expiresAt: Date | null }>
-        >`
+        // user(구성원 본인 세션)는 에이전트 행이 없어 결정자 SpaceMember 행만 잠근다(scope 는 runTool 이 검사).
+        const agents =
+          autoGate.kind === 'user'
+            ? []
+            : await tx.$queryRaw<
+                Array<{ status: string; scopes: string[]; writeGrants: unknown }>
+              >`SELECT "status", "scopes", "writeGrants" FROM "SpaceAgentIdentity" WHERE "id" = ${autoGate.agentId} AND "spaceId" = ${pre?.spaceId} FOR UPDATE`
+        const tokens =
+          autoGate.kind === 'agent'
+            ? await tx.$queryRaw<Array<{ revokedAt: Date | null; expiresAt: Date | null }>>`
           SELECT "revokedAt", "expiresAt" FROM "AgentToken"
-          WHERE "id" = ${autoGate.tokenId} AND "agentId" = ${autoGate.agentId} FOR UPDATE`
+          WHERE "id" = ${autoGate.tokenId ?? ''} AND "agentId" = ${autoGate.agentId} FOR UPDATE`
+            : []
+        // 결정자 강등·제거 경합 — 소속·역할을 이 트랜잭션 안에서 잠그고 다시 확인한다.
+        const members = await tx.$queryRaw<Array<{ role: string }>>`
+          SELECT "role"::text AS "role" FROM "SpaceMember"
+          WHERE "spaceId" = ${pre?.spaceId} AND "userId" = ${deciderId} FOR UPDATE`
         const agent = agents[0]
         const token = tokens[0]
+        const member = members[0]
+        const grants = (agent?.writeGrants ?? {}) as Record<string, { userId?: string } | undefined>
+        const tokenOk =
+          autoGate.kind !== 'agent' ||
+          (token !== undefined &&
+            token.revokedAt === null &&
+            (token.expiresAt === null || token.expiresAt > now))
+        const grantOk =
+          autoGate.kind !== 'agent' || grants[autoGate.requiredScope]?.userId === deciderId
+        const agentOk =
+          autoGate.kind === 'user' ||
+          (agent?.status === 'ACTIVE' && agent.scopes.includes(autoGate.requiredScope))
         const open =
-          agent?.status === 'ACTIVE' &&
-          agent.scopes.includes('draft:create') &&
-          agent.scopes.includes(autoGate.requiredScope) &&
-          agent.autoExecuteEnabledById === deciderId &&
-          token !== undefined &&
-          token.revokedAt === null &&
-          (token.expiresAt === null || token.expiresAt > now)
+          agentOk &&
+          grantOk &&
+          tokenOk &&
+          member !== undefined &&
+          requiredRole !== null &&
+          hasRole(member.role as Role, requiredRole)
         return open ? transition(tx) : null
       })
     : await transition(prisma)
   if (gate === null) {
-    return { ok: false, status: 'BLOCKED', message: '초안 자동 실행 조건이 맞지 않습니다' }
+    return { ok: false, status: 'BLOCKED', message: '바로 실행 조건이 맞지 않습니다' }
   }
   if (gate.count !== 1) {
     // count=0 의 사유를 나눠야 사용자가 영문을 안다.
@@ -184,7 +220,7 @@ export async function approveAndExecute(
   const def = getActionDefinition(action.actionType)
   if (!def) return fail(`알 수 없는 액션 유형: ${action.actionType}`)
 
-  // 자동 실행이면 결과물 표시용으로 에이전트 이름을 싣는다.
+  // 바로 실행이면 결과물 표시용으로 에이전트 이름을 싣는다.
   const autoAgent = opts.autoGate
     ? await prisma.spaceAgent.findFirst({
         where: { id: action.actorId, spaceId: action.spaceId },

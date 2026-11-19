@@ -1,6 +1,6 @@
 import {
   ALL_SCOPES,
-  parseScopes,
+  parseStoredScopes,
   type Actor,
   type McpPrincipal,
 } from '@/lib/agent/identity/principal'
@@ -35,7 +35,11 @@ export function readAuthExtra(
     return { ok: false, reason: '인증 정보가 없습니다' }
   }
   try {
-    const principal: McpPrincipal = { spaceId: e.spaceId, actor, scopes: parseScopes(e.scopes) }
+    const principal: McpPrincipal = {
+      spaceId: e.spaceId,
+      actor,
+      scopes: parseStoredScopes(e.scopes),
+    }
     if (typeof e.requesterUserId === 'string') principal.requesterUserId = e.requesterUserId
     if (typeof e.tokenId === 'string') principal.tokenId = e.tokenId
     return { ok: true, principal }
@@ -55,23 +59,29 @@ export function buildToolContext(
     workId: meta.workId ?? newWorkId(),
     requesterUserId: principal.requesterUserId ?? null,
     requesterSlackUserId: null,
+    // principal 에서 온 인증된 구성원만 — withRequester(Slack 해석값)가 덮어쓰지 않는 별도 필드.
+    // 구성원 본인 OAuth 세션(actor=user)은 actor.id 가 인증된 구성원이다.
+    ...(principal.actor.type === 'user'
+      ? { authenticatedUserId: principal.actor.id }
+      : principal.requesterUserId
+        ? { authenticatedUserId: principal.requesterUserId }
+        : {}),
     ...(principal.tokenId ? { actorTokenId: principal.tokenId } : {}),
     decryptedCredentialIds: [],
   }
 }
 
-const SYSTEM_SCOPES = ALL_SCOPES.filter((s) => s !== 'slack:write')
-
 /**
- * Slack 멘션으로 동작하는 workdeck 내장 에이전트의 컨텍스트. 쓰기는 여전히 승인 큐만 거친다.
- * slack:write는 뺀다 — slack_post는 승인 큐를 거치지 않는 예외라, 멘션한 누구나(미확인·외부 발신자 포함)
- * 내장 LLM을 시켜 봇 이름으로 게시하게 할 수 있기 때문이다. slack_post는 SpaceAgent(MCP)만 쓴다.
+ * Slack 멘션으로 동작하는 workdeck 내장 에이전트의 컨텍스트. 쓰기는 여전히 승인 큐만 거친다
+ * (actor=system 은 바로 실행 대상이 아니다).
+ * slack_post 는 막는다 — 승인 큐를 거치지 않는 예외라, 멘션한 누구나(미확인·외부 발신자 포함)
+ * 내장 LLM을 시켜 봇 이름으로 게시하게 할 수 있기 때문이다. slack-tools.ts 가 actor=system 을 서버에서 거부한다.
  */
 export function systemToolContext(spaceId: string): McpToolContext {
   return {
     spaceId,
     actor: { type: 'system', id: 'workdeck-agent' },
-    scopes: SYSTEM_SCOPES,
+    scopes: ALL_SCOPES,
     workId: newWorkId(),
     requesterUserId: null,
     requesterSlackUserId: null,
