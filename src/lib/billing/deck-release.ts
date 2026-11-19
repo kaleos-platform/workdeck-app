@@ -2,6 +2,7 @@ import 'server-only'
 
 import { revalidateTag, unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@/generated/prisma/client'
 import { DECK_CATALOG_DEFAULTS } from './catalog-defaults'
 
 /**
@@ -40,23 +41,26 @@ export function isDeckSellable(product: {
 }
 
 /** 이 공간에서 새로 추가·구독할 수 없는 업무 id (준비중이면서 설치·구독 이력 없음) */
-export async function findClosedDecks(spaceId: string, deckIds: string[]): Promise<string[]> {
+export async function findClosedDecks(
+  spaceId: string,
+  deckIds: string[],
+  // transaction 안에서 부르면 같은 연결을 쓴다(풀이 1개여도 교착하지 않도록 순차 조회).
+  db: Prisma.TransactionClient = prisma
+): Promise<string[]> {
   if (deckIds.length === 0) return []
-  const [products, instances, items] = await Promise.all([
-    prisma.billingDeckProduct.findMany({
-      where: { id: { in: deckIds } },
-      select: { id: true, released: true },
-    }),
-    prisma.deckInstance.findMany({
-      where: { spaceId, deckAppId: { in: deckIds } },
-      select: { deckAppId: true },
-    }),
-    prisma.subscriptionItem.findMany({
-      // 종료된 구독 이력(보장가 lockedPrice 보존)도 기존 고객으로 본다
-      where: { subscription: { spaceId }, deckAppId: { in: deckIds } },
-      select: { deckAppId: true },
-    }),
-  ])
+  const products = await db.billingDeckProduct.findMany({
+    where: { id: { in: deckIds } },
+    select: { id: true, released: true },
+  })
+  const instances = await db.deckInstance.findMany({
+    where: { spaceId, deckAppId: { in: deckIds } },
+    select: { deckAppId: true },
+  })
+  const items = await db.subscriptionItem.findMany({
+    // 종료된 구독 이력(보장가 lockedPrice 보존)도 기존 고객으로 본다
+    where: { subscription: { spaceId }, deckAppId: { in: deckIds } },
+    select: { deckAppId: true },
+  })
   const open = new Set([
     ...products.filter(isDeckReleased).map((p) => p.id),
     ...instances.map((i) => i.deckAppId),

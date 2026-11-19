@@ -13,6 +13,8 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     openingMigrationJob: { findMany: jest.fn(), findUnique: jest.fn(), updateMany: jest.fn() },
     space: { findMany: jest.fn() },
+    spaceMember: { count: jest.fn() },
+    $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   },
 }))
@@ -229,4 +231,24 @@ test('PLANNED 에서 complete 는 조건부 update 가 0건이라 409', async ()
   jobs.updateMany.mockResolvedValue({ count: 0 })
   expect((await POST(request({ action: 'complete' }), { params })).status).toBe(409)
   expect(writeAuditLog).not.toHaveBeenCalled()
+})
+
+test('승인은 사용자 단위 lock 을 잡고 OWNER Space 가 2개 이상이면 409 이며 상태를 바꾸지 않는다', async () => {
+  jobs.findUnique.mockResolvedValue({ ...planned, userId: 'u1' })
+  const members = prisma.spaceMember as unknown as { count: jest.Mock }
+  members.count.mockResolvedValue(2)
+  const res = await POST(request({ action: 'approve' }), { params })
+  expect(res.status).toBe(409)
+  expect((await res.json()).message).toContain('MULTIPLE_OWNER_SPACES')
+  expect(prisma.$executeRaw).toHaveBeenCalledTimes(1)
+  expect(members.count).toHaveBeenCalledWith({ where: { userId: 'u1', role: 'OWNER' } })
+  expect(jobs.updateMany).not.toHaveBeenCalled()
+  expect(writeAuditLog).not.toHaveBeenCalled()
+})
+
+test('OWNER Space 가 1개면 사용자 job 도 정상 승인된다', async () => {
+  jobs.findUnique.mockResolvedValue({ ...planned, userId: 'u1' })
+  ;(prisma.spaceMember as unknown as { count: jest.Mock }).count.mockResolvedValue(1)
+  jobs.updateMany.mockResolvedValue({ count: 1 })
+  expect((await POST(request({ action: 'approve' }), { params })).status).toBe(200)
 })

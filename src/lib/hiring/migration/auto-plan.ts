@@ -9,6 +9,7 @@ import {
   extractContactFragments,
   type Candidates,
   type PlanInput,
+  type TargetChoice,
   type PacketSnapshot,
 } from './auto-job'
 
@@ -44,6 +45,7 @@ export async function computePlan<P extends PreparedLike>(
     jobId: string
     userId: string
     targetSpaceId: string | null
+    multipleOwners?: boolean
     brandCount: number
     packetsDir: string
     today: string
@@ -87,6 +89,7 @@ export async function computePlan<P extends PreparedLike>(
   const targetHasData = input.targetSpaceId ? await deps.targetHasData(input.targetSpaceId) : false
   const { blockReasons, warnings } = classifyPlan({
     targetSpaceId: input.targetSpaceId,
+    multipleOwners: input.multipleOwners,
     brandCount: input.brandCount,
     summary: prepared.summary,
     conflicts: dry.conflicts,
@@ -131,22 +134,23 @@ export type QueueJob = {
   userId: string
   openingBrandId: string
   status: 'MATCHED' | 'BLOCKED'
+  blockReasons?: string[]
 }
 export type QueueDeps = {
   // MATCHED(attempts 미만) 중 가장 오래된 1건
   nextMatched: () => Promise<QueueJob | null>
-  // NO_TARGET_SPACE 만으로 막힌 BLOCKED, updatedAt 오래된 순
+  // NO_TARGET_SPACE 또는 MULTIPLE_OWNER_SPACES 만으로 막힌 BLOCKED, updatedAt 오래된 순
   blockedRetries: () => Promise<QueueJob[]>
-  targetFor: (userId: string) => Promise<string | null>
+  targetFor: (userId: string) => Promise<TargetChoice>
   // 건너뛴 행의 updatedAt 을 갱신해 다음 주기에 뒤로 보낸다(순환).
   touch: (id: string) => Promise<void>
-  plan: (job: QueueJob, targetSpaceId: string | null) => Promise<void>
+  plan: (job: QueueJob, target: TargetChoice) => Promise<void>
   fail: (job: QueueJob, code: string) => Promise<void>
 }
 
 // 한 주기에 1건. 새 MATCHED 를 먼저 처리하고, 그다음에야 NO_TARGET_SPACE 재시도를 본다.
 export async function planNext(deps: QueueDeps) {
-  const run = async (job: QueueJob, target: string | null) => {
+  const run = async (job: QueueJob, target: TargetChoice) => {
     try {
       await deps.plan(job, target)
       return { status: 'PLANNED' as const, jobId: job.id }
@@ -159,8 +163,10 @@ export async function planNext(deps: QueueDeps) {
   if (matched) return run(matched, await deps.targetFor(matched.userId))
   for (const job of await deps.blockedRetries()) {
     const target = await deps.targetFor(job.userId)
-    // 대상 Space 가 아직 없으면 원본을 다시 읽지 않고 순환만 시킨다.
-    if (!target) {
+    // 대상 Space 가 아직 없거나 이미 MULTIPLE_OWNER_SPACES 로 기록된 채 여전히 다중 OWNER 면 원본을 다시 읽지 않고 순환만 시킨다.
+    // 아직 기록되지 않은 다중 OWNER 는 plan 이 짧은 경로로 차단 사유만 갱신한다.
+    const alreadyMultiple = job.blockReasons?.includes('MULTIPLE_OWNER_SPACES') ?? false
+    if (!target.spaceId && (!target.multipleOwners || alreadyMultiple)) {
       await deps.touch(job.id)
       continue
     }
