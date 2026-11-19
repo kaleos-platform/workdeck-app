@@ -35,6 +35,7 @@ const testAction: ActionDefinition = {
   title: 'Slack 가드 테스트',
   paramsSchema: z.object({}),
   requiredRole: 'ADMIN',
+  scope: 'finance:write',
   async execute() {
     execCount += 1
     return { ok: true }

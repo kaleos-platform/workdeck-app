@@ -20,6 +20,7 @@ const okAction: ActionDefinition = {
   title: 't',
   paramsSchema: z.object({}),
   requiredRole: 'ADMIN',
+  scope: 'finance:write',
   async execute(ctx) {
     seen = ctx
     ctx.decryptedCredentialIds.push('cred-e2e')
@@ -32,6 +33,7 @@ const failAction: ActionDefinition = {
   title: 't',
   paramsSchema: z.object({}),
   requiredRole: 'ADMIN',
+  scope: 'finance:write',
   async execute() {
     throw new Error('의도된 실패')
   },

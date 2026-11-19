@@ -10,6 +10,7 @@ import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { parseScopes } from '@/lib/agent/identity/principal'
+import { computeWriteGrants } from '@/lib/agent/identity/write-grants'
 import {
   OAUTH_CONSENT_REQUIRED,
   hasActiveOAuthConsent,
@@ -47,9 +48,6 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     return errorResponse(err instanceof Error ? err.message : 'scope 오류', 400)
   }
   const { status, oauthClientId } = parsed.data
-  if (scopes?.includes('draft:create') && agent.kind !== 'agent') {
-    return errorResponse('초안 바로 만들기 권한은 에이전트에만 줄 수 있습니다', 400)
-  }
   if (scopes !== undefined || status === 'ACTIVE' || oauthClientId !== undefined) {
     const mfa = await requireAal2()
     if (mfa) return mfa
@@ -61,18 +59,32 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
   try {
     const updated = await prisma.$transaction(async (tx) => {
-      // draft:create 부여자 기록 — 행을 잠근 뒤 트랜잭션 안에서 읽은 현재 scopes 와 비교해
-      // 새로 들어오면 부여자=저장한 관리자, 빠지면 초기화, 유지면 그대로 둔다(오래된 목록 저장과의 경합 방지).
+      // 쓰기 권한 부여자 기록 — 행을 잠근 뒤 트랜잭션 안에서 읽은 현재 기록과 합쳐 계산한다
+      // (오래된 목록 저장·동시 저장과의 경합 방지). 같은 목록 재저장도 허용 — 기록 없는 쓰기 scope 는 새로 채워진다.
       let grant = {}
       if (scopes !== undefined) {
-        const rows = await tx.$queryRaw<Array<{ scopes: string[] }>>`
-          SELECT "scopes" FROM "SpaceAgentIdentity" WHERE "id" = ${agent.id} FOR UPDATE`
-        const had = rows[0]?.scopes.includes('draft:create') === true
-        const has = scopes.includes('draft:create')
-        if (!had && has) {
-          grant = { autoExecuteEnabledById: auth.userId, autoExecuteEnabledAt: new Date() }
-        } else if (had && !has) {
-          grant = { autoExecuteEnabledById: null, autoExecuteEnabledAt: null }
+        const rows = await tx.$queryRaw<Array<{ writeGrants: unknown }>>`
+          SELECT "writeGrants" FROM "SpaceAgentIdentity" WHERE "id" = ${agent.id} FOR UPDATE`
+        // 기록된 부여자가 아직 ADMIN 이상인지 — 탈퇴·강등이면 이번에 저장하는 관리자로 다시 기록한다.
+        const prevGrants = (rows[0]?.writeGrants ?? {}) as Record<string, { userId?: string }>
+        const grantorIds = [...new Set(Object.values(prevGrants).map((g) => g?.userId))].filter(
+          (x): x is string => typeof x === 'string'
+        )
+        const stillAdmin = grantorIds.length
+          ? await tx.spaceMember.findMany({
+              where: { spaceId, userId: { in: grantorIds }, role: { in: ['ADMIN', 'OWNER'] } },
+              select: { userId: true },
+            })
+          : []
+        grant = {
+          writeGrants: computeWriteGrants(
+            rows[0]?.writeGrants,
+            scopes,
+            auth.userId,
+            new Date(),
+            new Set(stillAdmin.map((m) => m.userId))
+          ) as object,
+          scopesVersion: { increment: 1 },
         }
       }
       return tx.spaceAgent.update({
@@ -85,8 +97,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
           scopes: true,
           status: true,
           oauthClientId: true,
-          autoExecuteEnabledById: true,
-          autoExecuteEnabledAt: true,
+          writeGrants: true,
         },
       })
     })

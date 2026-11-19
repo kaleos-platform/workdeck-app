@@ -13,6 +13,8 @@ export const browserActions: ActionDefinition[] = [
     title: 'Cafe24 개발 스킨 주석 저장·검증·원본 복원',
     paramsSchema: roundtripParams,
     requiredRole: 'ADMIN',
+    scope: 'sellerhub:write',
+    external: true, // 외부 사이트(Cafe24) 조작
     expiryHours: 1,
     requiresWebReview: () => true,
     snapshot: async (_ctx, input) => {

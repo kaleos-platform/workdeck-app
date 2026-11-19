@@ -29,7 +29,7 @@ export function idempotencyKeyFor(actionType: string, spaceId: string, params: u
 const financeClassifyTransactionsTool: ToolDefinition = {
   name: 'finance_classify_transactions',
   description:
-    '거래의 계정과목을 변경(재분류)하도록 요청합니다. 즉시 실행되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN) 승인 후에 실제로 반영됩니다.',
+    '거래의 계정과목을 변경(재분류)합니다. learn 을 false 로 주면 이 거래 1건만 바꾸므로 쓰기 권한이 있으면 바로 실행되고 결과 링크를 돌려줍니다. 실행 전에 사용자에게 대상·내용을 확인받으세요. learn 을 생략하거나 true 로 주면 분류 규칙을 학습해 이후 자동 분류에 영향을 주므로 즉시 실행되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN) 승인 후에 반영됩니다.',
   inputSchema: {
     transactionId: z.string(),
     categoryId: z.string(),
@@ -54,6 +54,8 @@ const financeClassifyTransactionsTool: ToolDefinition = {
       actor: ctx.actor,
       requesterUserId: ctx.requesterUserId,
       requesterSlackUserId: ctx.requesterSlackUserId,
+      actorTokenId: ctx.actorTokenId,
+      authenticatedUserId: ctx.authenticatedUserId,
       workId: ctx.workId,
       idempotencyKey: idempotencyKeyFor(
         'finance.transaction.reclassify',
@@ -107,7 +109,7 @@ const financeCreateClassRuleTool: ToolDefinition = {
 const sellerhubCreateReorderPlanTool: ToolDefinition = {
   name: 'sellerhub_create_reorder_plan',
   description:
-    '상품의 발주 계획(초안)을 생성하도록 요청합니다. 에이전트에 `draft:create`(초안 바로 만들기) 권한이 있으면 승인 없이 바로 만들고 resultUrl 을 돌려줍니다. 없으면 승인 대기로 등록됩니다. 만들기 전에 사용자에게 대상·수량을 보여 주고 확인을 받으세요. 승인 대기면 관리자(ADMIN) 승인 후에 생성됩니다. 발주 화면 위저드 기본값과 같은 계산(sellerhub_get_reorder_preview 와 동일 — 로켓그로스 분리·SKU 배분·자체·3PL 입고 위치)으로 승인 시점 데이터 기준 다시 계산됩니다. 수량은 지정할 수 없습니다. 상품 전체를 계획하려면 optionIds 를 넘기지 마세요(넘기면 그 옵션만 계획).',
+    '상품의 발주 계획(초안)을 생성합니다. 쓰기 권한이 있으면 바로 실행되고 결과 링크를 돌려줍니다. 실행 전에 사용자에게 대상·내용을 확인받으세요. 발주 화면 위저드 기본값과 같은 계산(sellerhub_get_reorder_preview 와 동일 — 로켓그로스 분리·SKU 배분·자체·3PL 입고 위치)으로 승인 시점 데이터 기준 다시 계산됩니다. 수량은 지정할 수 없습니다. 상품 전체를 계획하려면 optionIds 를 넘기지 마세요(넘기면 그 옵션만 계획).',
   inputSchema: {
     productId: z.string(),
     optionIds: z.array(z.string()).optional(),
@@ -132,6 +134,7 @@ const sellerhubCreateReorderPlanTool: ToolDefinition = {
       actor: ctx.actor,
       requesterUserId: ctx.requesterUserId,
       requesterSlackUserId: ctx.requesterSlackUserId,
+      authenticatedUserId: ctx.authenticatedUserId,
       workId: ctx.workId,
       actorTokenId: ctx.actorTokenId,
       // 같은 날 같은 요청만 중복으로 본다 — 다음 주 같은 상품 요청은 새 계획
@@ -147,7 +150,7 @@ const sellerhubCreateReorderPlanTool: ToolDefinition = {
 const sellerhubProposeKeywordUpdateTool: ToolDefinition = {
   name: 'sellerhub_propose_keyword_update',
   description:
-    '상품(채널상품 또는 단독 리스팅) 1개의 키워드 추가·삭제 묶음을 제안합니다. target 은 channelProductId 또는 listingId 중 정확히 하나, add ≤10, remove ≤30, evidence(단어별 {orders, clicks})와 note 는 선택입니다. 상품명은 바꾸지 않습니다. 같은 상품에 승인 대기 제안이 있으면 거부됩니다. 즉시 반영되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN) 승인 시 반영되고 변경 이력이 자동 기록됩니다.',
+    '상품(채널상품 또는 단독 리스팅) 1개의 키워드 추가·삭제 묶음을 제안합니다. target 은 channelProductId 또는 listingId 중 정확히 하나, add ≤10, remove ≤30, evidence(단어별 {orders, clicks})와 note 는 선택입니다. 상품명은 바꾸지 않습니다. 같은 상품에 승인 대기 제안이 있으면 거부됩니다. 쓰기 권한이 있으면 바로 실행되고 결과 링크를 돌려줍니다. 실행 전에 사용자에게 대상·내용을 확인받으세요. 변경 이력이 자동 기록됩니다.',
   inputSchema: {
     target: z.object({ channelProductId: z.string().optional(), listingId: z.string().optional() }),
     add: z.array(z.string()).max(10),
@@ -180,6 +183,8 @@ const sellerhubProposeKeywordUpdateTool: ToolDefinition = {
       actor: ctx.actor,
       requesterUserId: ctx.requesterUserId,
       requesterSlackUserId: ctx.requesterSlackUserId,
+      actorTokenId: ctx.actorTokenId,
+      authenticatedUserId: ctx.authenticatedUserId,
       workId: ctx.workId,
       idempotencyKey: idempotencyKeyFor('seller-hub.keywords.update', ctx.spaceId, actionParams),
     })
@@ -191,7 +196,7 @@ const sellerhubProposeKeywordUpdateTool: ToolDefinition = {
 const adsTriggerAnalysisTool: ToolDefinition = {
   name: 'ads_trigger_analysis',
   description:
-    'AI 광고 분석을 실행하도록 요청합니다. 즉시 실행되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN) 승인 후에 분석이 트리거됩니다.',
+    'AI 광고 분석을 실행합니다. 쓰기 권한이 있으면 바로 실행되고 결과 링크를 돌려줍니다. 실행 전에 사용자에게 대상·내용을 확인받으세요. 분석 결과는 완료된 뒤 광고 분석 화면에서 확인합니다.',
   inputSchema: {
     from: z.string(),
     to: z.string(),
@@ -219,6 +224,8 @@ const adsTriggerAnalysisTool: ToolDefinition = {
       actor: ctx.actor,
       requesterUserId: ctx.requesterUserId,
       requesterSlackUserId: ctx.requesterSlackUserId,
+      actorTokenId: ctx.actorTokenId,
+      authenticatedUserId: ctx.authenticatedUserId,
       workId: ctx.workId,
       idempotencyKey: idempotencyKeyFor('coupang-ads.analysis.trigger', ctx.spaceId, actionParams),
     })

@@ -4,6 +4,7 @@ import { decryptBotToken } from '@/lib/slack/token-crypto'
 import { postMessage } from '@/lib/slack/client'
 import { escapeMrkdwn } from '@/lib/slack/mrkdwn'
 import { isAgentChannelOfSpace } from '@/lib/slack/tenant'
+import { canPostSlack } from '@/lib/agent/identity/principal'
 import { ToolUserError } from './errors'
 import type { McpToolContext, ToolDefinition } from './types'
 
@@ -40,8 +41,13 @@ export const slackPostTool: ToolDefinition = {
       .optional(),
   },
   mode: 'write',
-  scope: 'slack:write',
+  scope: null, // 업무 쓰기 scope 보유는 아래 canPostSlack 이 검사한다
   async execute(ctx, params) {
+    if (!canPostSlack(ctx)) {
+      throw new ToolUserError(
+        'slack_post 는 업무 쓰기 권한이 있는 에이전트·연동 계정만 사용할 수 있습니다'
+      )
+    }
     const text = params.text as string
     if (MASS_MENTION_RE.test(text)) {
       throw new ToolUserError(

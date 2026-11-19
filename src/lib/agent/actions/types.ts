@@ -1,6 +1,8 @@
 import type { z } from 'zod'
 import type { SpaceMemberRole } from '@/lib/api-helpers'
-import type { Actor } from '@/lib/agent/identity/principal'
+import type { Actor, Scope } from '@/lib/agent/identity/principal'
+
+export type WriteScope = Extract<Scope, `${string}:write`>
 
 // 승인 큐 액션의 실행 컨텍스트 — 항상 spaceId 스코프.
 export interface ActionExecContext {
@@ -20,7 +22,7 @@ export interface ActionExecContext {
   decryptedCredentialIds: string[]
   // 제안에 쓰인 AgentToken.id(없으면 토큰 없이 만든 제안) — execute 시점에만 채워진다.
   actorTokenId?: string | null
-  // draft:create 권한으로 승인 없이 자동 실행 중인지 — 결과물에 자동 생성 표시를 남길 때 쓴다.
+  // 쓰기 권한으로 승인 없이 바로 실행 중인지 — 결과물에 자동 생성 표시를 남길 때 쓴다.
   autoExecuted?: boolean
   // 제안한 에이전트 이름 — autoExecuted 일 때만 채워진다.
   actorName?: string
@@ -60,13 +62,14 @@ export interface ActionDefinition<TParams = Record<string, unknown>> {
    * 거절은 막지 않는다.
    */
   requiresWebReview?: (params: TParams) => boolean
+  /** 이 액션이 속한 업무의 쓰기 scope. 에이전트·연동 계정이 이 scope 를 가져야 제안할 수 있고, 바로 실행 게이트도 이 scope 를 본다. */
+  scope: WriteScope
   /**
-   * true 면 에이전트에 scope `draft:create` 와 autoScope 가 있을 때 승인 없이 바로 실행한다.
-   * 워크덱 안에 초안을 새로 만드는 액션만 true(외부 반영·돈·덮어쓰기 금지).
+   * 밖으로 나가는 쓰기(외부 서비스 반영·발행·외부 API·광고·분류 규칙처럼 이후 동작에 영향)면 true — 쓰기 권한이 있어도
+   * 승인 대기. 생략(false)이면 워크덱 안에서 끝나고 고칠 수 있는 작업이라 쓰기 권한 + 부여자 기록이 있으면 바로 실행한다.
+   * 파라미터에 따라 달라지면 함수로 둔다(예: finance 재분류는 학습(learn !== false)일 때만 외부).
    */
-  autoExecutable?: boolean
-  /** 자동 실행에 draft:create 와 함께 필요한 이 액션의 쓰기 scope. autoExecutable 이면 반드시 지정. */
-  autoScope?: 'sellerhub:write' | 'hiring:write'
+  external?: boolean | ((params: TParams) => boolean)
   /** 실행 결과에서 확인 링크를 만든다(자동 실행 응답용). */
   resultUrl?: (result: unknown, ctx: { spaceId: string }) => string | null
   // 생성 시점 가드 (선택) — throw하면 액션 생성 자체가 거부된다.
@@ -91,6 +94,8 @@ export interface PendingActionDraft {
   requesterSlackUserId?: string | null
   workId?: string | null
   actorTokenId?: string | null
+  // MCP principal 이 인증한 구성원(연동 계정 바로 실행의 결정자). Slack 요청자 해석값이 아니다.
+  authenticatedUserId?: string | null
   idempotencyKey?: string
 }
 
@@ -104,6 +109,6 @@ export interface PendingActionResult {
   resultUrl?: string | null
   result?: unknown
   error?: string
-  // 자동 실행 대상이었지만 승인 대기로 남은 사유
+  // 바로 실행 대상이었지만 승인 대기로 남은 사유
   autoExecuteSkipped?: string
 }

@@ -19,9 +19,15 @@ jest.mock('@/lib/prisma', () => {
     findFirst: jest.fn(),
     update: jest.fn(),
   }
-  const tx = { $queryRaw: jest.fn(), spaceAgent }
+  const user = { findMany: jest.fn() }
+  const tx = { $queryRaw: jest.fn(), spaceAgent, spaceMember: { findMany: jest.fn() } }
   return {
-    prisma: { spaceAgent, $transaction: jest.fn((fn: (t: typeof tx) => unknown) => fn(tx)), tx },
+    prisma: {
+      spaceAgent,
+      user,
+      $transaction: jest.fn((fn: (t: typeof tx) => unknown) => fn(tx)),
+      tx,
+    },
   }
 })
 
@@ -42,7 +48,8 @@ const audit = writeAuditLog as jest.Mock
 const mfaRes = () => new Response(JSON.stringify({ code: 'MFA_REQUIRED' }), { status: 403 })
 const p = prisma as unknown as {
   spaceAgent: Record<string, jest.Mock>
-  tx: { $queryRaw: jest.Mock }
+  user: Record<string, jest.Mock>
+  tx: { $queryRaw: jest.Mock; spaceMember: { findMany: jest.Mock } }
 }
 const params = <T>(v: T) => ({ params: Promise.resolve(v) })
 const json = (body: unknown, method = 'POST') =>
@@ -260,57 +267,110 @@ describe('/api/spaces/[spaceId]/agents', () => {
       })
     })
 
-    const patchScopes = (scopes: string[], currentScopes: string[], kind = 'agent') => {
+    const patchScopes = (
+      scopes: string[],
+      currentGrants: Record<string, unknown>,
+      kind = 'agent'
+    ) => {
       admin.mockResolvedValue({ userId: 'u1' })
       p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind })
-      p.tx.$queryRaw.mockResolvedValue([{ scopes: currentScopes }])
+      p.tx.$queryRaw.mockResolvedValue([{ writeGrants: currentGrants }])
       p.spaceAgent.update.mockResolvedValue({ id: 'ag1', scopes, status: 'ACTIVE' })
       return patchAgent(json({ scopes }, 'PATCH'), params({ spaceId: 'sp1', agentId: 'ag1' }))
     }
+    // 기본: 기록된 부여자는 모두 아직 ADMIN 이상
+    beforeEach(() => {
+      p.tx.spaceMember.findMany.mockImplementation(
+        async (a: { where: { userId: { in: string[] } } }) =>
+          a.where.userId.in.map((userId) => ({ userId }))
+      )
+    })
+    const grantsOf = () => p.spaceAgent.update.mock.calls[0][0].data.writeGrants
 
-    it('draft:create 가 새로 들어오면 aal2 필요, 행을 잠그고 부여자·시각을 기록한다', async () => {
+    it('쓰기 scope 저장은 aal2 필요, 행을 잠그고 새 쓰기 scope 에 저장한 관리자·시각을 기록한다', async () => {
       aal2.mockResolvedValue(mfaRes())
-      const denied = await patchScopes(['sellerhub:write', 'draft:create'], ['sellerhub:write'])
+      const denied = await patchScopes(['sellerhub:write'], {})
       expect(denied.status).toBe(403)
       expect(p.spaceAgent.update).not.toHaveBeenCalled()
 
       aal2.mockResolvedValue(null)
-      const res = await patchScopes(['sellerhub:write', 'draft:create'], ['sellerhub:write'])
+      const res = await patchScopes(['sellerhub:write', 'ads:read'], {})
       expect(res.status).toBe(200)
       expect(String(p.tx.$queryRaw.mock.calls[0][0])).toContain('FOR UPDATE')
-      const data = p.spaceAgent.update.mock.calls[0][0].data
-      expect(data).toMatchObject({ autoExecuteEnabledById: 'u1' })
-      expect(data.autoExecuteEnabledAt).toBeInstanceOf(Date)
+      expect(grantsOf()).toEqual({ 'sellerhub:write': { userId: 'u1', at: expect.any(String) } })
+      expect(p.spaceAgent.update.mock.calls[0][0].data.scopesVersion).toEqual({ increment: 1 })
     })
 
-    it('이미 있던 draft:create 를 유지하는 저장은 부여자를 바꾸지 않는다(잠근 현재값 기준)', async () => {
-      const res = await patchScopes(['draft:create', 'ads:read'], ['draft:create'])
+    it('이미 부여자가 있는 쓰기 scope 는 유지하고, 빠진 scope 의 기록은 지운다', async () => {
+      const prev = {
+        'sellerhub:write': { userId: 'admin0', at: '2026-11-19T00:00:00.000Z' },
+        'hiring:write': { userId: 'admin0', at: '2026-11-19T00:00:00.000Z' },
+      }
+      const res = await patchScopes(['sellerhub:write', 'finance:write'], prev)
       expect(res.status).toBe(200)
-      const data = p.spaceAgent.update.mock.calls[0][0].data
-      expect(data).not.toHaveProperty('autoExecuteEnabledById')
-      expect(data).not.toHaveProperty('autoExecuteEnabledAt')
-    })
-
-    it('draft:create 를 빼면 부여자·시각을 지운다', async () => {
-      const res = await patchScopes(['ads:read'], ['draft:create'])
-      expect(res.status).toBe(200)
-      expect(p.spaceAgent.update.mock.calls[0][0].data).toMatchObject({
-        autoExecuteEnabledById: null,
-        autoExecuteEnabledAt: null,
+      expect(grantsOf()).toEqual({
+        'sellerhub:write': prev['sellerhub:write'],
+        'finance:write': { userId: 'u1', at: expect.any(String) },
       })
     })
 
-    it('오래된 목록 기준 저장이어도 잠근 현재값으로 판단한다(이미 회수된 뒤 다시 넣으면 새 부여)', async () => {
-      // 화면은 draft:create 가 있던 시점이지만 DB 는 이미 회수됨 → 새로 들어온 것으로 본다.
-      const res = await patchScopes(['draft:create'], [])
+    it('부여자가 탈퇴했거나 강등됐으면(ADMIN 미만) 재저장한 관리자로 바꾼다', async () => {
+      const prev = { 'sellerhub:write': { userId: 'gone', at: '2026-11-19T00:00:00.000Z' } }
+      p.tx.spaceMember.findMany.mockResolvedValue([]) // 탈퇴·강등 → ADMIN 이상 목록에 없음
+      const res = await patchScopes(['sellerhub:write'], prev)
       expect(res.status).toBe(200)
-      expect(p.spaceAgent.update.mock.calls[0][0].data.autoExecuteEnabledById).toBe('u1')
+      expect(grantsOf()).toEqual({ 'sellerhub:write': { userId: 'u1', at: expect.any(String) } })
+      expect(p.tx.spaceMember.findMany.mock.calls[0][0].where).toMatchObject({
+        spaceId: 'sp1',
+        userId: { in: ['gone'] },
+        role: { in: ['ADMIN', 'OWNER'] },
+      })
     })
 
-    it('연동 계정에는 draft:create 를 줄 수 없다(400)', async () => {
-      const res = await patchScopes(['draft:create'], [], 'integration')
-      expect(res.status).toBe(400)
-      expect(p.spaceAgent.update).not.toHaveBeenCalled()
+    it('부여자가 아직 ADMIN 이상이면 재저장해도 기록은 그대로', async () => {
+      const prev = { 'sellerhub:write': { userId: 'admin0', at: '2026-11-19T00:00:00.000Z' } }
+      const res = await patchScopes(['sellerhub:write'], prev)
+      expect(res.status).toBe(200)
+      expect(grantsOf()).toEqual(prev)
+    })
+
+    it('같은 목록 재저장도 허용 — 부여자 없는 기존 쓰기 scope 는 저장한 관리자로 채워진다', async () => {
+      const res = await patchScopes(['sellerhub:write'], {})
+      expect(res.status).toBe(200)
+      expect(grantsOf()).toEqual({ 'sellerhub:write': { userId: 'u1', at: expect.any(String) } })
+    })
+
+    it('오래된 목록 기준 저장이어도 잠근 현재 기록으로 계산한다(이미 회수된 뒤 다시 넣으면 새 부여)', async () => {
+      const res = await patchScopes(['hiring:write'], {})
+      expect(res.status).toBe(200)
+      expect(grantsOf()['hiring:write'].userId).toBe('u1')
+    })
+
+    it.each(['draft:create', 'slack:write', 'browser:read', 'browser:write'])(
+      '폐지된 scope %s 입력은 400',
+      async (legacy) => {
+        const res = await patchScopes([legacy], {})
+        expect(res.status).toBe(400)
+        expect(p.spaceAgent.update).not.toHaveBeenCalled()
+      }
+    )
+
+    it('연동 계정도 쓰기 scope 를 받을 수 있다', async () => {
+      const res = await patchScopes(['sellerhub:write'], {}, 'integration')
+      expect(res.status).toBe(200)
+    })
+
+    it('status 만 바꾸면 writeGrants·scopesVersion 은 건드리지 않는다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', kind: 'agent' })
+      p.spaceAgent.update.mockResolvedValue({ id: 'ag1', scopes: [], status: 'DISABLED' })
+      await patchAgent(
+        json({ status: 'DISABLED' }, 'PATCH'),
+        params({ spaceId: 'sp1', agentId: 'ag1' })
+      )
+      const data = p.spaceAgent.update.mock.calls[0][0].data
+      expect(data).not.toHaveProperty('writeGrants')
+      expect(data).not.toHaveProperty('scopesVersion')
     })
 
     it('autoExecuteDrafts 입력은 더 이상 받지 않는다(변경 항목 없음 400)', async () => {
@@ -324,20 +384,20 @@ describe('/api/spaces/[spaceId]/agents', () => {
       expect(p.spaceAgent.update).not.toHaveBeenCalled()
     })
 
-    it('생성 시 draft:create 가 있으면 부여자·시각을 기록한다', async () => {
+    it('생성 시 쓰기 scope 마다 부여자·시각을 기록하고 scopesVersion 1', async () => {
       admin.mockResolvedValue({ userId: 'u1' })
       p.spaceAgent.create.mockResolvedValue({ id: 'ag9', name: 'x', kind: 'agent', scopes: [] })
       const res = await createAgent(
-        json({ name: 'x', kind: 'agent', scopes: ['hiring:write', 'draft:create'] }),
+        json({ name: 'x', kind: 'agent', scopes: ['hiring:write', 'ads:read'] }),
         params({ spaceId: 'sp1' })
       )
       expect(res.status).toBe(201)
       const data = p.spaceAgent.create.mock.calls[0][0].data
-      expect(data.autoExecuteEnabledById).toBe('u1')
-      expect(data.autoExecuteEnabledAt).toBeInstanceOf(Date)
+      expect(data.writeGrants).toEqual({ 'hiring:write': { userId: 'u1', at: expect.any(String) } })
+      expect(data.scopesVersion).toBe(1)
     })
 
-    it('생성 시 연동 계정에 draft:create 는 400', async () => {
+    it('생성 시 폐지된 scope 는 400', async () => {
       admin.mockResolvedValue({ userId: 'u1' })
       const res = await createAgent(
         json({ name: 'x', kind: 'integration', scopes: ['draft:create'] }),
@@ -345,6 +405,25 @@ describe('/api/spaces/[spaceId]/agents', () => {
       )
       expect(res.status).toBe(400)
       expect(p.spaceAgent.create).not.toHaveBeenCalled()
+    })
+
+    it('목록은 부여자 이름을 writeGrants 에 붙여 돌려준다', async () => {
+      admin.mockResolvedValue({ userId: 'u1' })
+      p.spaceAgent.findMany.mockResolvedValue([
+        {
+          id: 'ag1',
+          scopes: ['hiring:write'],
+          writeGrants: { 'hiring:write': { userId: 'u7', at: 'T' } },
+        },
+      ])
+      p.user.findMany.mockResolvedValue([{ id: 'u7', name: '에디' }])
+      const res = await listAgents(new NextRequest('http://x/api'), params({ spaceId: 'sp1' }))
+      const body = await res.json()
+      expect(body.agents[0].writeGrants['hiring:write']).toEqual({
+        userId: 'u7',
+        at: 'T',
+        name: '에디',
+      })
     })
 
     it('빈 PATCH는 400, 쓰기·감사 로그 없음', async () => {

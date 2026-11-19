@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { prisma } from '@/lib/prisma'
 import { AGENT_TOKEN_PREFIX, verifyAgentToken } from '@/lib/agent/identity/agent-token'
-import { ALL_SCOPES, parseScopes, type McpPrincipal } from '@/lib/agent/identity/principal'
+import { ALL_SCOPES, parseStoredScopes, type McpPrincipal } from '@/lib/agent/identity/principal'
 
 // 쿠키 없는 stateless Supabase 클라이언트 — bearer 토큰 검증 전용.
 // 세션/쿠키 저장을 끄고 순수 JWKS 검증에만 사용한다.
@@ -77,7 +77,7 @@ export async function resolveUserPrincipal(
       principal: {
         spaceId: bound.spaceId,
         actor: { type: 'integration', id: bound.id },
-        scopes: parseScopes(bound.scopes),
+        scopes: parseStoredScopes(bound.scopes),
         requesterUserId: userId,
       },
     }

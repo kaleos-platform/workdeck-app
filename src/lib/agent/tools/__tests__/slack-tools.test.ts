@@ -10,6 +10,7 @@ import { prisma } from '@/lib/prisma'
 import { postMessage } from '@/lib/slack/client'
 import { isAgentChannelOfSpace } from '@/lib/slack/tenant'
 import { ToolUserError } from '../errors'
+import { ALL_SCOPES } from '@/lib/agent/identity/principal'
 import { slackPostTool } from '../slack-tools'
 import type { McpToolContext } from '../types'
 
@@ -22,7 +23,7 @@ const post = postMessage as jest.Mock
 const ctx: McpToolContext = {
   spaceId: 'sp1',
   actor: { type: 'agent', id: 'ag1' },
-  scopes: ['slack:write'],
+  scopes: ['sellerhub:write'],
   workId: 'wk',
   requesterUserId: null,
   requesterSlackUserId: null,
@@ -130,5 +131,40 @@ describe('slack_post', () => {
       .catch((e: Error) => e)) as Error
     expect(err).toBeInstanceOf(ToolUserError)
     expect(err.message).toContain('not_in_channel')
+  })
+
+  // 별도 slack scope 없이 행위자 종류·업무 쓰기 scope 로 서버에서 거른다.
+  it.each([
+    ['쓰기 scope 있는 agent', { type: 'agent' as const, id: 'a' }, ['finance:write'], true],
+    [
+      '쓰기 scope 있는 integration',
+      { type: 'integration' as const, id: 'a' },
+      ['hiring:write'],
+      true,
+    ],
+    ['쓰기 scope 없는 agent(읽기만)', { type: 'agent' as const, id: 'a' }, ['ads:read'], false],
+    [
+      '비밀값 쓰기만 있는 agent',
+      { type: 'agent' as const, id: 'a' },
+      ['secret:write', 'secret:env'],
+      false,
+    ],
+    [
+      'system(내장 에이전트·전체 scope)',
+      { type: 'system' as const, id: 'workdeck-agent' },
+      ALL_SCOPES,
+      false,
+    ],
+    ['인증된 구성원 user(전체 scope)', { type: 'user' as const, id: 'u1' }, ALL_SCOPES, true],
+    ['쓰기 scope 없는 user', { type: 'user' as const, id: 'u1' }, ['ads:read'], false],
+  ])('%s → 허용 %s', async (_n, actor, scopes, allowed) => {
+    const c = { ...ctx, actor, scopes } as McpToolContext
+    const r = slackPostTool.execute(c, { channel: 'C1', text: 'x' })
+    if (allowed) {
+      await expect(r).resolves.toMatchObject({ ok: true })
+    } else {
+      await expect(r).rejects.toThrow('업무 쓰기 권한이 있는 에이전트·연동 계정만')
+      expect(post).not.toHaveBeenCalled()
+    }
   })
 })

@@ -7,6 +7,7 @@
 import { prisma } from '@/lib/prisma'
 import { hasRole, type Role } from '@/lib/auth/roles'
 import { getActionDefinition } from './registry'
+import type { ActionDefinition } from './types'
 
 export async function requiredDecisionRole(
   action: { spaceId: string; actionType: string; payload: unknown },
@@ -78,4 +79,28 @@ export function needsWebReview(action: { actionType: string; payload: unknown })
   } catch {
     return true
   }
+}
+
+/** 액션이 외부 반영(승인 필수)인지 — 정의가 없거나 파라미터를 해석할 수 없으면 안전하게 외부로 본다. */
+export function isExternalAction(action: { actionType: string; payload: unknown }): boolean {
+  const def = getActionDefinition(action.actionType)
+  if (!def) return true
+  const parsed = def.paramsSchema.safeParse(action.payload)
+  return parsed.success ? isExternalParams(def, parsed.data) : true
+}
+
+/** 이미 검증된 파라미터로 외부 반영 여부를 판단한다. */
+export function isExternalParams(
+  def: Pick<ActionDefinition, 'external'>,
+  params: unknown
+): boolean {
+  const e = def.external
+  if (typeof e === 'function') {
+    try {
+      return e(params as Record<string, unknown>)
+    } catch {
+      return true
+    }
+  }
+  return e === true
 }

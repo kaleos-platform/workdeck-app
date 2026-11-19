@@ -21,6 +21,7 @@ d('AgentPendingAction 행위자 컬럼', () => {
       title: 't',
       paramsSchema: z.object({}),
       requiredRole: 'ADMIN',
+      scope: 'finance:write',
       execute: async () => null,
     })
     await prisma.user.upsert({

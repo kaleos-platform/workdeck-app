@@ -13625,6 +13625,7 @@ export const AgentPendingActionScalarFieldEnum = {
   workId: 'workId',
   actorTokenId: 'actorTokenId',
   autoExecuted: 'autoExecuted',
+  notifyError: 'notifyError',
   status: 'status',
   expiresAt: 'expiresAt',
   decidedBy: 'decidedBy',
@@ -13684,6 +13685,9 @@ export const SpaceAgentScalarFieldEnum = {
   autoExecuteDrafts: 'autoExecuteDrafts',
   autoExecuteEnabledById: 'autoExecuteEnabledById',
   autoExecuteEnabledAt: 'autoExecuteEnabledAt',
+  scopesBackup: 'scopesBackup',
+  writeGrants: 'writeGrants',
+  scopesVersion: 'scopesVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

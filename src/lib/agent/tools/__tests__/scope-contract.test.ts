@@ -4,9 +4,9 @@ jest.mock('@/lib/prisma', () => ({ prisma: {} }))
 import { toolDefinitions } from '../index'
 
 describe('도구 scope 계약', () => {
-  it('whoami만 scope가 null이다', () => {
+  it('whoami·slack_post만 scope가 null이다(slack_post 는 execute 가 업무 쓰기 scope 검사)', () => {
     const nulls = toolDefinitions.filter((t) => t.scope === null).map((t) => t.name)
-    expect(nulls).toEqual(['whoami'])
+    expect(nulls).toEqual(['whoami', 'slack_post'])
   })
   it.each(toolDefinitions.filter((t) => t.scope !== null).map((t) => [t.name, t] as const))(
     '%s: write면 :write, read면 :read',
