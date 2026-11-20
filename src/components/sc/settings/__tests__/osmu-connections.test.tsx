@@ -72,4 +72,31 @@ describe('OsmuConnections', () => {
       expect(toast.error).toHaveBeenCalledWith('노션 데이터베이스 링크를 확인해주세요')
     )
   })
+
+  it('상태 조회가 403이면 서버 메시지를 화면에 보여준다', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(reply(403, { message: '권한이 없습니다' })) as never
+    render(<OsmuConnections />)
+    expect(await screen.findByText('권한이 없습니다')).toBeInTheDocument()
+  })
+
+  it('저장이 402면 서버 메시지를 화면에도 보여준다', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(reply(200, { notion: null, drive: null, mfaReady: true }))
+      .mockResolvedValueOnce(reply(402, { message: '구독이 만료되었습니다' })) as never
+    await submit()
+    expect(await screen.findByText('구독이 만료되었습니다')).toBeInTheDocument()
+  })
+
+  it('only="drive"면 드라이브 섹션만 그린다', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(reply(200, { notion: null, drive: null, mfaReady: true })) as never
+    render(<OsmuConnections only="drive" embedded />)
+    expect(await screen.findByRole('button', { name: '드라이브 계정 만들기' })).toBeInTheDocument()
+    expect(screen.queryByLabelText(/통합 토큰/)).toBeNull()
+    expect(screen.queryByText(/구글 드라이브 — 사진/)).toBeNull()
+  })
 })

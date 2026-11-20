@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
+import { isExpiringSoon } from '@/lib/integrations/attention'
 
 type SecretConfig = {
   baseUrl: string
@@ -56,7 +57,13 @@ const hostOf = (url: string) => {
 const secretPath = (spaceId: string, name: string) =>
   `/api/spaces/${spaceId}/secrets/${encodeURIComponent(name)}`
 
-export function SpaceSecretsCard() {
+export function SpaceSecretsCard({
+  onChanged,
+  embedded = false,
+}: {
+  onChanged?: () => void
+  embedded?: boolean
+}) {
   const [spaceId, setSpaceId] = useState<string | null>(null)
   const [spaceName, setSpaceName] = useState<string | null>(null)
   const [secrets, setSecrets] = useState<SecretMeta[]>([])
@@ -137,6 +144,7 @@ export function SpaceSecretsCard() {
     if (!r.ok) return r.message ?? ''
     setEdit(null)
     await load()
+    onChanged?.()
     return null
   }
 
@@ -171,24 +179,31 @@ export function SpaceSecretsCard() {
     if (!r.ok) return r.message && setError(r.message)
     if (revealed?.name === name) clearReveal()
     await load()
+    onChanged?.()
   }
+
+  const expiresSoon = (s: (typeof secrets)[number]) =>
+    !!s.config && 'expiresAt' in s.config && isExpiringSoon(s.config.expiresAt)
+  const sortedSecrets = [...secrets].sort((a, b) => Number(expiresSoon(b)) - Number(expiresSoon(a)))
 
   const agentName = (id: string) => agents.find((a) => a.id === id)?.name ?? id
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <LockKeyhole className="h-5 w-5" />
-          {spaceName ? `「${spaceName}」 비밀값` : '비밀값'}
-        </CardTitle>
-        <CardDescription>
-          에이전트가 외부 API를 호출할 때 쓰는 키와 로그인(ID/PW)을 암호화해 보관합니다. API 키는
-          에이전트가 값을 보지 못하고 등록된 조회 operation만 호출합니다. 개발 키(wd run)는 허용된
-          에이전트의 명령 실행 환경에 값이 그대로 전달되므로 읽기 전용·대상 한정 키만 등록하세요.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
+    <Card className={embedded ? 'border-0 bg-transparent py-0 shadow-none' : undefined}>
+      {!embedded && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LockKeyhole className="h-5 w-5" />
+            {spaceName ? `「${spaceName}」 비밀값` : '비밀값'}
+          </CardTitle>
+          <CardDescription>
+            에이전트가 외부 API를 호출할 때 쓰는 키와 로그인(ID/PW)을 암호화해 보관합니다. API 키는
+            에이전트가 값을 보지 못하고 등록된 조회 operation만 호출합니다. 개발 키(wd run)는 허용된
+            에이전트의 명령 실행 환경에 값이 그대로 전달되므로 읽기 전용·대상 한정 키만 등록하세요.
+          </CardDescription>
+        </CardHeader>
+      )}
+      <CardContent className={embedded ? 'space-y-4 px-0 text-sm' : 'space-y-4 text-sm'}>
         {error && <p className="text-destructive">{error}</p>}
         <div className="flex flex-wrap items-center gap-4">
           <Button size="sm" onClick={() => setEdit({ name: '' })} disabled={!spaceId}>
@@ -207,7 +222,7 @@ export function SpaceSecretsCard() {
           )}
         </div>
         {secrets.length === 0 && <p className="text-muted-foreground">등록된 비밀값이 없습니다.</p>}
-        {secrets.map((s) => (
+        {sortedSecrets.map((s) => (
           <div key={s.name} className="space-y-2 rounded-md border p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-mono font-medium">{s.name}</span>
