@@ -6,11 +6,24 @@ import { Prisma } from '@/generated/prisma/client'
 import { productionRunStatusTransitionSchema } from '@/lib/sh/schemas'
 import { applyBatchInbound, MovementError } from '@/lib/inv/movement-processor'
 import { isExternalLogisticsLocation } from '@/lib/inv/reorder-engine'
+import {
+  buildOwnInboundItem,
+  loadLastReconAt,
+  loadStockInFacts,
+  lockLocationRows,
+  lockRunRow,
+  lockStockLevelRows,
+  parseStockInAllocations,
+  reconciledAfter,
+  revertBlockedReason,
+} from '@/lib/sh/production-stock-in'
 
 type Params = { params: Promise<{ runId: string }> }
 
-// 생산 차수 상태 전환 — PLANNED ↔ ORDERED ↔ STOCKED_IN
-// STOCKED_IN 전환 시 모든 옵션 수량을 지정된 보관 위치에 INBOUND 처리.
+// 생산 차수 상태 전환 — PLANNED ↔ ORDERED ↔ STOCKED_IN (모든 상태 변경의 유일한 경로)
+// STOCKED_IN 은 상태·위치 분배만 기록하고 재고는 늘리지 않는다. ownStockIn=true 일 때만 자체 위치
+// 분배분을 같은 tx 에서 INBOUND 한다(이후 차수의 [사무실 입고 등록]으로도 가능).
+// STOCKED_IN → ORDERED/PLANNED 되돌리기는 등록된 입고·확정 대조가 없을 때만 허용.
 export async function POST(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
@@ -61,23 +74,66 @@ export async function POST(req: NextRequest, { params }: Params) {
     return errorResponse(`이미 ${input.status} 상태입니다`, 409)
   }
 
-  // 입고 완료(STOCKED_IN)는 종료 상태 — ORDERED/PLANNED 로 되돌리는 역행 전환을 차단한다.
-  // 되돌려도 이미 반영된 INBOUND 재고는 역산되지 않고(그 사이 판매·이동으로 소비됐을 수 있어
-  // 맹목적 역산은 재고를 음수로 만든다), 재전환 시 INBOUND 가 재실행돼 재고가 이중 계상된다.
-  // 정정이 필요하면 재고 조정(ADJUSTMENT)으로 처리한다.
-  if (existing.status === 'STOCKED_IN') {
-    return errorResponse(
-      '이미 입고 완료된 차수는 되돌릴 수 없습니다. 재고 조정으로 처리하세요',
-      409
-    )
-  }
-
   const transitionDate = new Date(input.transitionDate)
   if (isNaN(transitionDate.getTime())) {
     return errorResponse('전환 일자가 올바르지 않습니다', 400)
   }
 
-  // STOCKED_IN 전환: 옵션별 보관 위치 분배 INBOUND + 상태 + 타임스탬프 + 실입고량 기록
+  // 입고 완료 되돌리기 — 분배 기록이 있고, 이 차수로 등록된 INBOUND 가 없고, 분배 위치에
+  // stockedInAt 이후 확정 대조가 없을 때만. 판정은 tx 안에서(행 잠금 + 상태 선점 후) 해
+  // own-stock-in 과 직렬화한다.
+  if (existing.status === 'STOCKED_IN') {
+    try {
+      await prisma.$transaction(
+        async (tx) => {
+          await lockRunRow(tx, runId)
+          const claimed = await tx.productionRun.updateMany({
+            where: { id: runId, status: 'STOCKED_IN' },
+            data: { status: input.status },
+          })
+          if (claimed.count !== 1) {
+            throw new MovementError(
+              '차수 상태가 이미 변경되었습니다. 새로고침 후 다시 시도하세요',
+              409
+            )
+          }
+          const run = await tx.productionRun.findUniqueOrThrow({
+            where: { id: runId },
+            select: { id: true, stockedInAt: true, externalStockIns: true },
+          })
+          // 분배 위치 행을 잠근 뒤(own-stock-in 과 같은 순서) 판정한다
+          await lockLocationRows(
+            tx,
+            parseStockInAllocations(run.externalStockIns).map((a) => a.locationId)
+          )
+          const facts = (await loadStockInFacts(tx, resolved.space.id, [run])).get(runId)!
+          const reason = revertBlockedReason(run, facts)
+          if (reason) throw new MovementError(reason, 409)
+          await tx.productionRun.update({
+            where: { id: runId },
+            data: {
+              externalStockIns: Prisma.DbNull,
+              stockedInAt: null,
+              completedAt: null,
+              stockInLocationId: null,
+            },
+          })
+          await tx.productionRunItem.updateMany({ where: { runId }, data: { stockedInQty: null } })
+          await tx.productionRunSet.updateMany({
+            where: { runId },
+            data: { stockedInSetQty: null },
+          })
+        },
+        { maxWait: 10_000, timeout: 60_000 }
+      )
+    } catch (e) {
+      if (e instanceof MovementError) return errorResponse(e.message, e.status)
+      throw e
+    }
+    return NextResponse.json({ run: { id: runId, status: input.status } })
+  }
+
+  // STOCKED_IN 전환: 상태 + 타임스탬프 + 실입고량 + 전체 위치 분배 기록 (ownStockIn 이면 자체분 INBOUND)
   // 실입고량은 발주 수량과 달라도 됨(양방향). 미입고 옵션은 분배 부재로 표현(stockedInQty=0).
   if (input.status === 'STOCKED_IN') {
     if (existing.items.length === 0) {
@@ -162,27 +218,26 @@ export async function POST(req: NextRequest, { params }: Params) {
     // ── INBOUND + 상태 갱신을 단일 트랜잭션으로 원자화 ──
     // claim → applyBatchInbound → item/set 갱신이 하나의 tx 안에서 all-or-nothing 처리됨.
     // 상태 선점(updateMany where status=existing.status)으로 동시 요청을 직렬화해 이중 입고를 방지한다.
-    const brandPart = existing.brand?.name ? ` · ${existing.brand.name}` : ''
-    // 외부 물류 위치(3PL·쿠팡)는 외부 파일 대조로만 재고가 반영된다 — INBOUND 하지 않고
-    // externalStockIns 로 기록해 대조 전까지 "생산 중"으로 계산한다 (이중 계상 방지).
-    const ownAllocations = allocations.filter(
-      (a) => !isExternalLogisticsLocation(locationById.get(a.locationId)!)
-    )
-    const externalStockIns = allocations.filter((a) =>
-      isExternalLogisticsLocation(locationById.get(a.locationId)!)
-    )
+    // 모든 분배(외부·자체)를 externalStockIns 에 기록한다. 외부 물류 위치(3PL·쿠팡)는 외부 파일
+    // 대조로만, 자체 위치는 INBOUND(ownStockIn 또는 이후 사무실 입고 등록)로만 재고에 반영된다.
+    // 대조·등록 전까지는 발주 계산에서 「입고 예정」으로 본다 (이중 계상 방지).
+    const ownAllocations = input.ownStockIn
+      ? allocations.filter((a) => !isExternalLogisticsLocation(locationById.get(a.locationId)!))
+      : []
     const batchItems = ownAllocations.map((a) => {
       const it = itemByOptionId.get(a.optionId)!
-      const loc = locationById.get(a.locationId)!
-      const productName = it.option.product.internalName ?? it.option.product.name
-      return {
+      return buildOwnInboundItem({
+        runId: existing.id,
+        runNo: existing.runNo,
+        brandName: existing.brand?.name ?? null,
+        productName: it.option.product.internalName ?? it.option.product.name,
+        optionName: it.option.name,
         optionId: a.optionId,
         locationId: a.locationId,
+        locationName: locationById.get(a.locationId)!.name,
         quantity: a.quantity,
-        reason: `생산 입고 - 차수 ${existing.runNo}${brandPart} · ${productName} / ${it.option.name} · ${a.quantity}개 · 위치 ${loc.name} · 입고일 ${input.transitionDate}`,
-        // 옵션×위치별 granular 추적키 — 차수·위치별 입고 내역 후속 조회/집계용 (P3.5).
-        referenceId: `prodrun:${existing.id}:${a.optionId}:${a.locationId}`,
-      }
+        dateStr: input.transitionDate,
+      })
     })
 
     let movementResults: Array<{ optionId: string; locationId: string; stockLevelAfter: number }>
@@ -197,7 +252,7 @@ export async function POST(req: NextRequest, { params }: Params) {
               stockedInAt: transitionDate,
               completedAt: transitionDate, // 레거시 호환
               stockInLocationId: distinctLocationIds.length === 1 ? distinctLocationIds[0] : null,
-              externalStockIns: externalStockIns.length > 0 ? externalStockIns : Prisma.DbNull,
+              externalStockIns: allocations.length > 0 ? allocations : Prisma.DbNull,
             },
           })
           if (claimed.count !== 1) {
@@ -207,7 +262,27 @@ export async function POST(req: NextRequest, { params }: Params) {
             )
           }
 
-          // 전부 외부 위치면 자체 INBOUND 없음 — 빈 목록으로 호출하지 않는다
+          // 자체 위치 INBOUND 는 그 위치에 이미 대조가 반영됐으면 이중 계상이므로 거부한다
+          if (batchItems.length > 0) {
+            const ownLocIds = [...new Set(batchItems.map((b) => b.locationId))]
+            await lockLocationRows(tx, ownLocIds)
+            await lockStockLevelRows(tx, batchItems)
+            const lastRecon = await loadLastReconAt(tx, resolved.space.id, {
+              since: transitionDate,
+              locationIds: ownLocIds,
+            })
+            const hit = ownLocIds.find((id) =>
+              reconciledAfter(lastRecon.get(id), transitionDate, true)
+            )
+            if (hit) {
+              throw new MovementError(
+                `재고 대조로 이미 반영된 위치입니다: ${locationById.get(hit)!.name}. 사무실 입고 등록을 해제하세요`,
+                409
+              )
+            }
+          }
+
+          // ownStockIn 아님/자체 분배 없음 → INBOUND 없음 — 빈 목록으로 호출하지 않는다
           const results =
             batchItems.length > 0
               ? await applyBatchInbound(tx, resolved.space.id, batchItems, transitionDate)
