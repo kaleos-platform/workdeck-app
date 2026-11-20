@@ -3,7 +3,11 @@ import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { MyDeckClient } from '@/components/my-deck/my-deck-client'
 import { listMemberships, resolveCurrentMembership } from '@/lib/spaces/current-space'
-import { isCheckoutPausedFor, resolveEntitlement } from '@/lib/billing/entitlement'
+import {
+  findTrialUsedElsewhere,
+  isCheckoutPausedFor,
+  resolveEntitlement,
+} from '@/lib/billing/entitlement'
 import { isReservationOnly } from '@/lib/billing/reservation-rules'
 import { effectivePrice } from '@/lib/billing/pricing'
 import { findClosedDecks } from '@/lib/billing/deck-release'
@@ -93,6 +97,14 @@ export default async function MyDeckPage({
     }),
   ])
 
+  // 소유자가 다른 작업 공간에서 이미 체험한 업무 — 체험 없이 구독부터 시작한다.
+  const trialUsedElsewhere = new Set(
+    await findTrialUsedElsewhere(
+      space.id,
+      billingProducts.map((p) => p.id)
+    )
+  )
+
   const availableDecks = await prisma.deckApp.findMany({
     where:
       activeDeckIds.length > 0
@@ -152,6 +164,7 @@ export default async function MyDeckPage({
         reason: entitlement.decks[product.id]?.reason ?? null,
         trialEndsAt: entitlement.decks[product.id]?.trialEndsAt?.toISOString() ?? null,
         graceEndsAt: entitlement.decks[product.id]?.graceEndsAt?.toISOString() ?? null,
+        trialUsedElsewhere: trialUsedElsewhere.has(product.id),
       }))}
     />
   )

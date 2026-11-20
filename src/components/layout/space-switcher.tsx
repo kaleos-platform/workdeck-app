@@ -1,9 +1,10 @@
 'use client'
 import { useState, useSyncExternalStore } from 'react'
-import { ChevronsUpDown, Info, Loader2 } from 'lucide-react'
+import { ChevronsUpDown, Info, Loader2, Plus } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -11,8 +12,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CreateSpaceDialog } from '@/components/layout/create-space-dialog'
+import { MAX_OWNED_SPACES } from '@/lib/spaces/owned-space-limit'
 import type { Role } from '@/lib/auth/roles'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 export type SpaceItem = { id: string; name: string; role: Role }
 
@@ -67,8 +71,9 @@ function useSwitchSpace(currentSpaceId: string | null, navigate: Navigate) {
   )
   const [error, setError] = useState<string | null>(null)
 
-  async function switchTo(spaceId: string) {
-    if (switching || spaceId === currentSpaceId) return
+  /** 성공하면 true(페이지가 내려간다), 막히거나 실패하면 false. */
+  async function switchTo(spaceId: string): Promise<boolean> {
+    if (switching || spaceId === currentSpaceId) return false
     setSwitching(true)
     setError(null)
     try {
@@ -80,13 +85,14 @@ function useSwitchSpace(currentSpaceId: string | null, navigate: Navigate) {
       if (res.ok) {
         // 전체 새로고침 — 라우터 캐시와 새 작업 공간에 없는 업무 경로를 함께 피한다. 페이지가 내려갈 때까지 잠근다.
         navigate('/my-deck')
-        return
+        return true
       }
       setError(FAIL_MESSAGE[res.status] ?? '작업 공간을 바꾸지 못했습니다. 다시 시도하세요.')
     } catch {
       setError('네트워크 오류로 바꾸지 못했습니다. 다시 시도하세요.')
     }
     setSwitching(false)
+    return false
   }
 
   return { pending, error, switchTo }
@@ -137,7 +143,7 @@ function SpaceMenuItems({
   )
 }
 
-/** 사이드바 상단 현재 작업 공간 카드. 2개 이상이면 눌러서 전환. */
+/** 사이드바 상단 현재 작업 공간 카드. 눌러서 전환하거나(1개여도) 새 작업 공간을 만든다. */
 export function SpaceSwitcher({
   spaces,
   currentSpaceId,
@@ -150,10 +156,14 @@ export function SpaceSwitcher({
   navigate?: Navigate
 }) {
   const { pending, error, switchTo } = useSwitchSpace(currentSpaceId, navigate)
+  const [createOpen, setCreateOpen] = useState(false)
+  // 닫힐 때마다 Dialog 를 다시 마운트해 입력값·오류를 비운다(성공 경로 포함).
+  const [createKey, setCreateKey] = useState(0)
   const current = spaces.find((s) => s.id === currentSpaceId)
   if (!current) return null
-  const multi = spaces.length > 1
   const role = ROLE_LABEL[current.role]
+  const ownedCount = spaces.filter((s) => s.role === 'OWNER').length
+  const limitReached = ownedCount >= MAX_OWNED_SPACES
 
   const body = collapsed ? (
     <Initial name={current.name} className="bg-white/10 text-white" />
@@ -167,12 +177,11 @@ export function SpaceSwitcher({
       <span className="flex-shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-medium text-zinc-200">
         {role}
       </span>
-      {multi &&
-        (pending ? (
-          <Loader2 className="size-4 flex-shrink-0 animate-spin text-zinc-400" />
-        ) : (
-          <ChevronsUpDown className="size-4 flex-shrink-0 text-zinc-400" />
-        ))}
+      {pending ? (
+        <Loader2 className="size-4 flex-shrink-0 animate-spin text-zinc-400" />
+      ) : (
+        <ChevronsUpDown className="size-4 flex-shrink-0 text-zinc-400" />
+      )}
     </>
   )
   const boxClass = cn(
@@ -182,28 +191,58 @@ export function SpaceSwitcher({
 
   return (
     <div className={cn('flex-shrink-0 pt-3', collapsed ? 'px-2' : 'px-3')}>
-      {multi ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            disabled={pending}
-            aria-label={`작업 공간 전환 — 현재 ${current.name} (${role})`}
-            className={cn(
-              boxClass,
-              'transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none'
-            )}
-          >
-            {body}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side={collapsed ? 'right' : 'bottom'} className="w-64">
-            <SpaceMenuItems spaces={spaces} currentSpaceId={currentSpaceId} onSelect={switchTo} />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : (
-        <div className={boxClass} title={`${current.name} (${role})`}>
-          {collapsed && <span className="sr-only">{`작업 공간 ${current.name} (${role})`}</span>}
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          disabled={pending}
+          aria-label={`작업 공간 전환 — 현재 ${current.name} (${role})`}
+          className={cn(
+            boxClass,
+            'transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none'
+          )}
+        >
           {body}
-        </div>
-      )}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side={collapsed ? 'right' : 'bottom'} className="w-64">
+          <SpaceMenuItems spaces={spaces} currentSpaceId={currentSpaceId} onSelect={switchTo} />
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            // disabled 는 키보드 포커스에서 빠져 상한 안내를 못 읽는다 — aria-disabled 로 두고 선택만 막는다.
+            aria-disabled={limitReached || undefined}
+            onSelect={(e) => {
+              if (limitReached) return e.preventDefault()
+              setCreateOpen(true)
+            }}
+            className="items-start aria-disabled:opacity-50"
+          >
+            <Plus className="mt-0.5 size-4" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium">새 작업 공간 만들기</span>
+              {limitReached && (
+                <span className="block text-xs text-muted-foreground">
+                  소유한 작업 공간은 {MAX_OWNED_SPACES}개까지입니다. 더 필요하면 문의해 주세요.
+                </span>
+              )}
+            </span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <CreateSpaceDialog
+        key={createKey}
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open)
+          if (!open) setCreateKey((k) => k + 1)
+        }}
+        onCreated={async (id) => {
+          setCreateOpen(false)
+          setCreateKey((k) => k + 1)
+          // 공간은 만들어졌으니 전환만 실패한 경우 — 접힌 사이드바에서도 보이게 알리고 메뉴에서 고르게 한다.
+          if (!(await switchTo(id)))
+            toast.error(
+              '작업 공간을 만들었지만 전환하지 못했습니다. 새로고침한 뒤 메뉴에서 선택하세요.'
+            )
+        }}
+      />
       {error && !collapsed && (
         <p role="alert" className="mt-1 px-1 text-[11px] text-red-400">
           {error}
