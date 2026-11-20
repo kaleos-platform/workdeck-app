@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { track } from '@/lib/analytics'
 import { resolveRedirectPath } from '@/lib/auth-redirect'
 import { useAuth } from '@/hooks/use-auth'
 import {
@@ -59,6 +60,8 @@ export function WorkspaceSetupForm({ redirectTo }: { redirectTo: string | null }
         throw new Error(error.message || '워크스페이스 생성에 실패했습니다')
       }
 
+      // 201=새로 생성(가입 완료), 200=기존 작업 공간 재요청 — 신규만 집계
+      if (response.status === 201) track('sign_up')
       toast.success('워크스페이스가 생성되었습니다!')
       router.push(nextPath)
       router.refresh()
