@@ -12,7 +12,7 @@ import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { APPROVALS_PATH } from '@/lib/deck-routes'
 
 type Provider = 'meta-ads' | 'google-marketing' | 'naver-searchad'
-type Field = { key: string; label: string }
+type Field = { key: string; label: string; optional?: boolean }
 type Def = {
   secrets: Field[]
   /** 네이버처럼 브랜드와 무관한 공통 설정 칸 */
@@ -75,8 +75,8 @@ const DEFS: Record<Provider, Def> = {
     ],
     columns: [
       { key: 'ga4_property_id', label: 'GA4 속성 ID' },
-      { key: 'gtm_account_id', label: '태그 관리자 계정 ID' },
-      { key: 'gtm_container_id', label: '태그 관리자 컨테이너 ID' },
+      { key: 'gtm_account_id', label: '태그 관리자 계정 ID (선택)', optional: true },
+      { key: 'gtm_container_id', label: '태그 관리자 컨테이너 ID (선택)', optional: true },
     ],
     digits: /^\d+$/,
     digitsMessage: '숫자만 입력해 주세요',
@@ -94,8 +94,13 @@ const DEFS: Record<Provider, Def> = {
             r.brand,
             {
               ga4_property_id: r.cols.ga4_property_id,
-              gtm_account_id: r.cols.gtm_account_id,
-              gtm_container_id: r.cols.gtm_container_id,
+              // GTM은 둘 다 입력했을 때만 보낸다(한쪽만 있는 경우는 validate 가 막는다).
+              ...(r.cols.gtm_account_id && r.cols.gtm_container_id
+                ? {
+                    gtm_account_id: r.cols.gtm_account_id,
+                    gtm_container_id: r.cols.gtm_container_id,
+                  }
+                : {}),
             },
           ])
         ),
@@ -235,8 +240,15 @@ export function AdCredentialForm({
       names.add(name)
       for (const c of def.columns) {
         const v = r.cols[c.key]?.trim()
-        if (!v) out.push(`${i + 1}번째 ${c.label} 칸을 채워 주세요`)
-        else if (!def.digits.test(v)) out.push(`${i + 1}번째 ${c.label}: ${def.digitsMessage}`)
+        if (!v) {
+          if (!c.optional) out.push(`${i + 1}번째 ${c.label} 칸을 채워 주세요`)
+        } else if (!def.digits.test(v)) out.push(`${i + 1}번째 ${c.label}: ${def.digitsMessage}`)
+      }
+      // 선택 칸이 여럿이면 모두 채우거나 모두 비워야 한다(GTM 계정·컨테이너).
+      const opt = def.columns.filter((c) => c.optional)
+      const filled = opt.filter((c) => r.cols[c.key]?.trim()).length
+      if (filled > 0 && filled < opt.length) {
+        out.push(`${i + 1}번째 GTM 계정 ID와 컨테이너 ID는 함께 입력하거나 함께 비워 주세요`)
       }
     })
     return out

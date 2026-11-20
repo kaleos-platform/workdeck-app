@@ -280,6 +280,33 @@ describe('PUT health·graphVersion', () => {
     expect(res.status).toBe(200)
     expect(prisma.spaceCredential.update).not.toHaveBeenCalled()
   })
+
+  const googleBody = (brand: Record<string, string | undefined>) => ({
+    secret: {
+      clientId: 'c'.repeat(12),
+      clientSecret: 's'.repeat(12),
+      refreshToken: 'r'.repeat(12),
+    },
+    config: { brands: { a: brand } },
+  })
+  it('구글: GTM 생략 → 200, GTM 키 없이 저장', async () => {
+    const res = await call('google-marketing', googleBody({ ga4_property_id: '1' }))
+    expect(res.status).toBe(200)
+    expect((saveSpaceCredential as jest.Mock).mock.calls[0][3].brands.a).toEqual({
+      ga4_property_id: '1',
+    })
+  })
+  it.each([
+    { ga4_property_id: '1', gtm_account_id: '2' },
+    { ga4_property_id: '1', gtm_container_id: '3' },
+    { ga4_property_id: '1', gtm_account_id: '', gtm_container_id: '' },
+    { ga4_property_id: '1', gtm_account_id: '2|.*', gtm_container_id: '3' },
+  ])('구글: GTM 한쪽만·비숫자 → 400, 기존 자격증명 미변경 (%j)', async (brand) => {
+    const res = await call('google-marketing', googleBody(brand))
+    expect(res.status).toBe(400)
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+    expect(prisma.spaceCredential.update).not.toHaveBeenCalled()
+  })
 })
 
 describe('naver-commerce', () => {
