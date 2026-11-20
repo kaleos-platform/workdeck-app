@@ -1,0 +1,255 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "e1",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 560,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e2",
+   "x": 24,
+   "y": 16,
+   "text": "AI 설정",
+   "fontSize": 24,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e3",
+   "x": 24,
+   "y": 52,
+   "text": "아이디어·콘텐츠 초안 같은 AI 기능에 어떤 AI를 쓸지 정합니다.",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e4",
+   "x": 24,
+   "y": 90,
+   "width": 416,
+   "height": 80,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "◉ 워크덱 제공 AI\n따로 준비할 것 없이 바로 사용",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e5",
+   "x": 460,
+   "y": 90,
+   "width": 416,
+   "height": 80,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "○ 내 AI 키 사용\n보유한 키 연결, 사용량 제한 없음",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e6",
+   "x": 24,
+   "y": 186,
+   "width": 852,
+   "height": 70,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "⑮ 이번 달 무료 사용량 42% 사용   ▓▓▓▓░░░░░░   (12월 1일 초기화)\n자세히: 420,000 / 1,000,000 토큰",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e7",
+   "x": 24,
+   "y": 276,
+   "text": "'내 AI 키 사용'을 고르면:",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e8",
+   "x": 24,
+   "y": 300,
+   "width": 272,
+   "height": 60,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] OpenAI",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e9",
+   "x": 314,
+   "y": 300,
+   "width": 272,
+   "height": 60,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] Anthropic (Claude)",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e10",
+   "x": 604,
+   "y": 300,
+   "width": 272,
+   "height": 60,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] Google Gemini",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e11",
+   "x": 24,
+   "y": 370,
+   "text": "⑯ 공급자는 로고 타일로 선택",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e12",
+   "x": 24,
+   "y": 396,
+   "width": 852,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "API 키 — Input (password)        ⑰ 키는 어디서 받나요? ▾",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e13",
+   "x": 24,
+   "y": 446,
+   "width": 852,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "모델: 추천 모델 사용(claude-sonnet) · 직접 입력 ▾",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e14",
+   "x": 24,
+   "y": 496,
+   "width": 90,
+   "height": 36,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "저장",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e15",
+   "x": 124,
+   "y": 496,
+   "width": 110,
+   "height": 36,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "연결 테스트",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

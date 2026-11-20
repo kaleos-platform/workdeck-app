@@ -36,6 +36,12 @@ export function SidebarSection({
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
   )
   const [isOpen, setIsOpen] = useState(sectionIsActive)
+  // 다른 화면에서 이 그룹의 경로로 들어오면(비활성→활성) 펼친다. 같은 그룹 안 이동은 사용자 토글 유지.
+  const [wasActive, setWasActive] = useState(sectionIsActive)
+  if (sectionIsActive !== wasActive) {
+    setWasActive(sectionIsActive)
+    if (sectionIsActive) setIsOpen(true)
+  }
 
   // ── 접힘(아이콘 레일) 상태: 아이콘만 표시, 클릭 시 사이드바 재확장 ──
   if (collapsed) {

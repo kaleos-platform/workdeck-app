@@ -451,7 +451,7 @@ export function LocationManager() {
                     <Label htmlFor="location-sync-secret">로그인 비밀값</Label>
                     {loginSecrets === 'forbidden' ? (
                       <p className="text-xs text-muted-foreground">
-                        비밀값 목록을 볼 권한이 없습니다. 연동 설정 → 비밀값에서 위킵 로그인
+                        비밀값 목록을 볼 권한이 없습니다. 외부 서비스 연결 → 비밀값에서 위킵 로그인
                         비밀값을 등록한 뒤 관리자에게 연결을 요청하세요.
                         {syncSecretValue ? ` (현재 연결: ${syncSecretValue})` : ''}
                       </p>
@@ -477,7 +477,8 @@ export function LocationManager() {
                     )}
                     {Array.isArray(loginSecrets) && loginSecrets.length === 0 && (
                       <p className="text-xs text-muted-foreground">
-                        등록된 로그인 비밀값이 없습니다. 연동 설정 → 비밀값에서 먼저 등록하세요.
+                        등록된 로그인 비밀값이 없습니다. 외부 서비스 연결 → 비밀값에서 먼저
+                        등록하세요.
                       </p>
                     )}
                   </div>
