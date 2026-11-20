@@ -45,12 +45,12 @@ export async function enableDeckInTx(
     })
     for (const { userId } of owners) await lockOwnerSpaces(tx, userId)
   }
-  await ensureTrialStarted(spaceId, deckAppId, tx, opts)
+  const trialStarted = await ensureTrialStarted(spaceId, deckAppId, tx, opts)
   if (!(await canUseDeck(spaceId, deckAppId, tx)))
     throw new EnableDeckError('DECK_SUBSCRIPTION_REQUIRED')
   const select = { id: true, deckAppId: true, isActive: true } as const
   const instance = existing
     ? await tx.deckInstance.update({ where: { id: existing.id }, data: { isActive: true }, select })
     : await tx.deckInstance.create({ data: { spaceId, deckAppId, isActive: true }, select })
-  return { instance, reactivated: Boolean(existing) }
+  return { instance, reactivated: Boolean(existing), trialStarted }
 }

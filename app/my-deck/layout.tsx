@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { loadShellContext } from '@/lib/workspace-shell'
+import { GoogleTag } from '@/components/analytics/google-tag'
 import { DeckShell } from '@/components/layout/deck-shell'
 
 export default async function MyDeckLayout({ children }: { children: React.ReactNode }) {
@@ -22,6 +23,7 @@ export default async function MyDeckLayout({ children }: { children: React.React
       activeDecks={shell.activeDecks}
     >
       {children}
+      <GoogleTag />
     </DeckShell>
   )
 }

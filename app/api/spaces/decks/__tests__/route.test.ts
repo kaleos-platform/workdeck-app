@@ -77,6 +77,13 @@ describe('POST /api/spaces/decks — 준비중 가드', () => {
     const res = (await POST(req('finance')))!
     expect(res?.status).toBe(201)
   })
+
+  it.each([true, false])('응답에 trialStarted(%s)를 그대로 담는다', async (started) => {
+    jest.mocked(findClosedDecks).mockResolvedValue([])
+    jest.mocked(ensureTrialStarted).mockResolvedValueOnce(started)
+    const res = (await POST(req('finance')))!
+    expect((await res.json()).trialStarted).toBe(started)
+  })
   it('업무 추가 실패는 500으로 반환하고 체험 생성도 설치 transaction 안에서 수행한다', async () => {
     jest.mocked(findClosedDecks).mockResolvedValue([])
     p.deckInstance.create.mockRejectedValueOnce(new Error('write failed'))

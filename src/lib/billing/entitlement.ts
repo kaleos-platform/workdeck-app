@@ -175,7 +175,7 @@ export async function ensureTrialStarted(
   deckAppId: string,
   db: Prisma.TransactionClient = prisma,
   { trialOncePerOwner = true }: { trialOncePerOwner?: boolean } = {}
-): Promise<void> {
+): Promise<boolean> {
   const [subscription, product, policy] = await Promise.all([
     db.spaceSubscription.findUnique({
       where: { spaceId },
@@ -188,26 +188,28 @@ export async function ensureTrialStarted(
     db.billingDeckProduct.findUnique({ where: { id: deckAppId } }),
     db.spaceDeckAccess.findUnique({ where: { spaceId_deckAppId: { spaceId, deckAppId } } }),
   ])
-  if (!product?.isActive || product.pricingMode !== 'SUBSCRIPTION') return
-  if (subscription?.exemptFlag || policy?.exemptFlag || policy?.trialEndsAt) return
+  if (!product?.isActive || product.pricingMode !== 'SUBSCRIPTION') return false
+  if (subscription?.exemptFlag || policy?.exemptFlag || policy?.trialEndsAt) return false
   if (
     subscription &&
     ['ACTIVE', 'PAST_DUE'].includes(subscription.status) &&
     subscription.items.length > 0
   )
-    return
+    return false
   // 다른 OWNER Space 에서 이미 체험한 업무는 체험을 주지 않는다 → canUseDeck 가 LOCKED 로 막아 구독이 필요해진다.
   if (trialOncePerOwner && (await findTrialUsedElsewhere(spaceId, [deckAppId], db)).length > 0)
-    return
+    return false
   const trialEndsAt = addDays(new Date(), TRIAL_DAYS)
   // 빈 upsert는 Prisma의 SELECT+INSERT로 처리될 수 있어 동시 요청에 안전한 ON CONFLICT를 사용한다.
-  await db.spaceDeckAccess.createMany({
+  const created = await db.spaceDeckAccess.createMany({
     data: [{ spaceId, deckAppId, trialEndsAt }],
     skipDuplicates: true,
   })
   // 면제만 관리하던 레코드에서 최초 체험을 시작하는 경우도 원자적으로 한 번만 설정한다.
-  await db.spaceDeckAccess.updateMany({
+  const updated = await db.spaceDeckAccess.updateMany({
     where: { spaceId, deckAppId, trialEndsAt: null, exemptFlag: false },
     data: { trialEndsAt },
   })
+  // 실제로 쓴 행 수로 판정 — 동시 요청 중 정확히 하나만 true.
+  return created.count + updated.count > 0
 }

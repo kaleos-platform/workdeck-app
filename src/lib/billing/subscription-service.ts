@@ -633,7 +633,7 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     })
     if (resumed.count === 0)
       throw new BillingError('구독 상태가 변경되었습니다. 새로고침 후 다시 확인하세요', 409)
-    return { prorated: false, amount: 0, reserved: false }
+    return { prorated: false, amount: 0, reserved: false, resumed: true }
   }
 
   // 미납 중에는 지난 결제일 기준 일할(1일치)로 업무가 열리지 않게 막는다 — 결제수단 확인이 먼저다.
