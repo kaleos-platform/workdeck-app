@@ -25,6 +25,9 @@ jest.mock('../slack-connect-card', () => ({
     )
   },
 }))
+jest.mock('../ad-credential-form', () => ({
+  AdCredentialForm: ({ provider }: { provider: string }) => <p>{provider}-body</p>,
+}))
 jest.mock('../coupang-api-card', () => ({ CoupangApiCard: () => <p>coupang-body</p> }))
 jest.mock('../agent-toggle-card', () => ({ AgentToggleCard: () => <p>toggle-body</p> }))
 jest.mock('../agent-tokens-card', () => ({ AgentTokensCard: () => <p>tokens-body</p> }))
@@ -59,6 +62,7 @@ const setup = (
       attention={attention}
       slackStatus={null}
       initialOpen={null}
+      spaceId="sp1"
       {...over}
     />
   )
@@ -84,17 +88,24 @@ describe('IntegrationsGrid', () => {
     expect(screen.getByRole('heading', { name: 'Slack' })).toBeInTheDocument()
   })
 
-  it('Meta·검색광고는 연결 전이면 준비 중(비활성), 연결됨이면 상태만 보인다', () => {
+  it('광고 3종 타일은 ADMIN이 팝업으로 연다', () => {
+    for (const id of ['meta-ads', 'google-marketing', 'naver-searchad']) {
+      query = `open=${id}`
+      const { unmount } = setup()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+      expect(screen.getByText(`${id}-body`)).toBeInTheDocument()
+      unmount()
+    }
+    query = ''
     setup()
-    expect(screen.getAllByRole('button', { name: '준비 중' })).toHaveLength(2) // google, searchad
-    expect(screen.getAllByRole('button', { name: '준비 중' })[0]).toBeDisabled()
+    expect(screen.queryByRole('button', { name: '준비 중' })).toBeNull()
   })
 
   it('타일 버튼은 open만 바꾸고 다른 query를 보존한다', () => {
     query = 'foo=1'
     setup()
-    fireEvent.click(screen.getAllByRole('button', { name: '관리' })[0]) // slack
-    expect(replace).toHaveBeenCalledWith('/settings/integrations?foo=1&open=slack', {
+    fireEvent.click(screen.getAllByRole('button', { name: '관리' })[0]) // 목록 순서상 첫 연결됨 타일(meta-ads)
+    expect(replace).toHaveBeenCalledWith('/settings/integrations?foo=1&open=meta-ads', {
       scroll: false,
     })
   })
@@ -115,7 +126,7 @@ describe('IntegrationsGrid', () => {
       'noopener noreferrer'
     )
     unmount()
-    query = 'open=meta-ads'
+    query = 'open=nope'
     setup()
     expect(screen.queryByRole('dialog')).toBeNull()
   })
@@ -218,11 +229,7 @@ describe('IntegrationsGrid', () => {
 
   it('MEMBER는 my-ai-app만 열 수 있고 토큰·비밀값 타일이 없다', () => {
     setup({ role: 'MEMBER', attention: [] })
-    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
-      '준비 중',
-      '준비 중',
-      '연결 방법',
-    ])
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['연결 방법'])
     expect(screen.queryByRole('heading', { name: '에이전트 접속 토큰' })).toBeNull()
     expect(screen.queryByRole('heading', { name: '직접 등록한 API·로그인' })).toBeNull()
     expect(screen.getAllByText('관리자에게 요청').length).toBeGreaterThan(0)
@@ -234,5 +241,9 @@ describe('IntegrationsGrid', () => {
     setup({ role: 'MEMBER', attention: [] })
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(screen.queryByText('secrets-body')).toBeNull()
+    query = 'open=meta-ads'
+    setup({ role: 'MEMBER', attention: [] })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByText('meta-ads-body')).toBeNull()
   })
 })
