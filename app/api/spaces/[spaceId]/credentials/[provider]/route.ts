@@ -8,6 +8,7 @@
  *   계정도 이 Space 브랜드의 GA4 속성·GTM 컨테이너에만 권한이 있는 계정을 쓴다.
  * 네이버 검색광고: 조회 전용. 매핑된 각 CUSTOMER_ID 로 캠페인 목록을 1번씩 조회해 키를 확인한다(실패 시 저장하지 않음).
  * 카페24: 앱 정보(쇼핑몰 ID·client_id·secret)만 받는다. 토큰은 OAuth 콜백이 저장하고, 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
+ * GET — 등록 상태·설정값(허용 필드만) 조회. 비밀값·암호문·오류 원문은 돌려주지 않는다(MFA 불필요, ADMIN 이상).
  * 삭제(DELETE) 라우트는 두지 않는다. 만들 때도 같은 requireAal2 관문을 둔다.
  */
 import { NextRequest, NextResponse } from 'next/server'
@@ -122,6 +123,69 @@ const SCHEMAS = {
     }),
 } as const
 
+const READ_PROVIDERS = ['meta-ads', 'google-marketing', 'naver-searchad'] as const
+const READ_FIELDS: Record<(typeof READ_PROVIDERS)[number], string[]> = {
+  'meta-ads': ['defaultBrand', 'adAccounts', 'accountCurrencies', 'graphVersion'],
+  'google-marketing': ['defaultBrand', 'brands'],
+  'naver-searchad': ['defaultBrand', 'managerCustomerId', 'customers'],
+}
+const GOOGLE_BRAND_FIELDS = ['ga4_property_id', 'gtm_account_id', 'gtm_container_id']
+
+const pick = (src: Record<string, unknown>, keys: string[]) =>
+  Object.fromEntries(keys.filter((k) => src[k] !== undefined).map((k) => [k, src[k]]))
+
+export async function GET(_req: NextRequest, { params }: Ctx) {
+  const { spaceId, provider } = await params
+  const auth = await requireSpaceAdmin(spaceId)
+  if ('error' in auth) return auth.error
+  if (!(READ_PROVIDERS as readonly string[]).includes(provider))
+    return errorResponse('지원하지 않는 provider입니다', 404)
+  const p = provider as (typeof READ_PROVIDERS)[number]
+
+  const row = await prisma.spaceCredential.findUnique({
+    where: { spaceId_provider: { spaceId, provider } },
+    select: { config: true, lastVerifiedAt: true, lastError: true, healthError: true },
+  })
+  const noStore = { headers: { 'Cache-Control': 'no-store' } }
+  if (!row)
+    return NextResponse.json(
+      { registered: false, config: null, lastVerifiedAt: null, hasError: false, pendingActions: 0 },
+      noStore
+    )
+
+  const raw = (row.config ?? {}) as Record<string, unknown>
+  const config = pick(raw, READ_FIELDS[p])
+  if (p === 'google-marketing' && config.brands && typeof config.brands === 'object') {
+    config.brands = Object.fromEntries(
+      Object.entries(config.brands as Record<string, Record<string, unknown>>).map(([k, v]) => [
+        k,
+        pick(v ?? {}, GOOGLE_BRAND_FIELDS),
+      ])
+    )
+  }
+  // 네이버는 쓰기 액션이 없다.
+  const pendingActions =
+    p === 'naver-searchad'
+      ? 0
+      : await prisma.agentPendingAction.count({
+          where: {
+            spaceId,
+            actionType: { startsWith: `${provider}.` },
+            status: { in: ['PENDING', 'APPROVED'] },
+          },
+        })
+  return NextResponse.json(
+    {
+      registered: true,
+      config,
+      lastVerifiedAt: row.lastVerifiedAt?.toISOString() ?? null,
+      hasError: !!(row.lastError || row.healthError),
+      pendingActions,
+    },
+    noStore
+  )
+}
+
 export async function PUT(req: NextRequest, { params }: Ctx) {
   const { spaceId, provider } = await params
   const auth = await requireSpaceAdmin(spaceId)
@@ -148,11 +212,25 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   let secret: object = parsed.data.secret
   if (provider === 'meta-ads') {
     const meta = parsed.data as z.infer<(typeof SCHEMAS)['meta-ads']>
+    // graphVersion 은 폼이 편집하지 않으므로 생략되면 기존 값을 보존한다. 확인 호출도 같은 버전으로 한다.
+    const prevCfg =
+      meta.config.graphVersion === undefined
+        ? ((
+            await prisma.spaceCredential.findUnique({
+              where: { spaceId_provider: { spaceId, provider } },
+              select: { config: true },
+            })
+          )?.config as { graphVersion?: string } | null)
+        : null
+    const merged = {
+      ...meta.config,
+      ...(prevCfg?.graphVersion ? { graphVersion: prevCfg.graphVersion } : {}),
+    }
     try {
       // 예산 금액을 원으로 다루려면 계정 통화를 Meta에서 직접 확인해야 한다. 같은 호출이 토큰도 검증한다.
       config = {
-        ...meta.config,
-        accountCurrencies: await fetchAdAccountCurrencies(meta.secret, meta.config),
+        ...merged,
+        accountCurrencies: await fetchAdAccountCurrencies(meta.secret, merged),
       }
     } catch (err) {
       const reason = err instanceof Error ? maskSecrets(err.message) : '알 수 없는 오류'
@@ -260,6 +338,13 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   }
 
   const { id } = await saveSpaceCredential(spaceId, provider, secret, config)
+  // 확인 호출을 거친 저장은 점검 오류를 해제한다. healthAlertedAt 은 남겨 다음 점검에서 복구 알림이 나가게 한다.
+  if (provider === 'meta-ads' || provider === 'naver-searchad') {
+    await prisma.spaceCredential.update({
+      where: { spaceId_provider: { spaceId, provider } },
+      data: { healthError: null, lastVerifiedAt: new Date() },
+    })
+  }
   for (const st of ncStores) {
     await ensureNbaesongChannel({
       spaceId,

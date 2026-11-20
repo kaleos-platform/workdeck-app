@@ -19,6 +19,7 @@ import {
 } from '@/lib/integrations/catalog'
 import type { AttentionItem } from '@/lib/integrations/attention'
 import type { IntegrationStatuses } from '@/lib/integrations/load-status'
+import { AdCredentialForm } from './ad-credential-form'
 import { AgentToggleCard } from './agent-toggle-card'
 import { AgentTokensCard } from './agent-tokens-card'
 import { Cafe24ConnectCard } from './cafe24-connect-card'
@@ -51,6 +52,7 @@ export function IntegrationsGrid({
   attention,
   slackStatus,
   initialOpen,
+  spaceId,
 }: {
   role: Role
   activeDeckIds: string[]
@@ -59,6 +61,8 @@ export function IntegrationsGrid({
   slackStatus: string | null
   /** 옛 링크(?tab=·?slack=)를 서버가 변환한 값. 마운트 직후 한 번만 URL의 open으로 옮긴다. */
   initialOpen: IntegrationId | null
+  /** 광고 키 팝업이 설정 API 주소에 쓴다. */
+  spaceId?: string
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -152,6 +156,19 @@ export function IntegrationsGrid({
     ),
     'agent-tokens': <AgentTokensCard embedded onChanged={refresh} />,
     secrets: <SpaceSecretsCard embedded onChanged={refresh} />,
+    ...(spaceId
+      ? {
+          'meta-ads': (
+            <AdCredentialForm provider="meta-ads" spaceId={spaceId} onChanged={refresh} />
+          ),
+          'google-marketing': (
+            <AdCredentialForm provider="google-marketing" spaceId={spaceId} onChanged={refresh} />
+          ),
+          'naver-searchad': (
+            <AdCredentialForm provider="naver-searchad" spaceId={spaceId} onChanged={refresh} />
+          ),
+        }
+      : {}),
   }
 
   return (
@@ -257,16 +274,7 @@ function Tile({
 
   let action: ReactNode = null
   let note: string | null = null
-  if (service.kind === 'coming-soon') {
-    if (!connected) {
-      note = '곧 연결 화면이 열립니다.'
-      action = (
-        <Button size="sm" variant="outline" disabled>
-          준비 중
-        </Button>
-      )
-    }
-  } else if (canOpen) {
+  if (canOpen) {
     action = (
       <Button
         size="sm"

@@ -28,8 +28,8 @@ export type IntegrationId =
   | 'agent-tokens'
   | 'secrets'
 
-/** dialog=팝업에서 설정, deck-link=업무 설정 화면으로 이동, coming-soon=아직 입력 팝업 없음(연결됨이면 상태만) */
-export type IntegrationKind = 'dialog' | 'deck-link' | 'coming-soon'
+/** dialog=팝업에서 설정, deck-link=업무 설정 화면으로 이동 */
+export type IntegrationKind = 'dialog' | 'deck-link'
 
 export type IntegrationService = {
   id: IntegrationId
@@ -102,7 +102,17 @@ export const INTEGRATIONS: IntegrationService[] = [
     name: 'Meta 광고',
     description: '페이스북·인스타그램 광고 성과를 에이전트가 읽습니다.',
     logo: { src: '/brand/meta.svg' },
-    kind: 'coming-soon',
+    kind: 'dialog',
+    adminOnly: true,
+    keyGuide: {
+      steps: [
+        '비즈니스 설정 → 시스템 사용자 → 토큰 생성(ads_read·ads_management 권한)',
+        '앱 대시보드 → 설정 → 앱 시크릿 확인',
+        '광고 관리자에서 광고 계정 ID 확인',
+      ],
+      linkLabel: 'Meta 비즈니스 설정 열기',
+      linkHref: 'https://business.facebook.com/settings/system-users',
+    },
   },
   {
     id: 'google-marketing',
@@ -110,7 +120,17 @@ export const INTEGRATIONS: IntegrationService[] = [
     name: 'Google 마케팅',
     description: 'GA4·태그 관리자 데이터를 에이전트가 읽습니다.',
     logo: { src: '/brand/google.svg' },
-    kind: 'coming-soon',
+    kind: 'dialog',
+    adminOnly: true,
+    keyGuide: {
+      steps: [
+        'Google Cloud 콘솔 → OAuth 클라이언트 ID 만들기',
+        'OAuth Playground에서 Analytics·Tag Manager 범위로 refresh token 발급',
+        '개발 담당자 도움이 필요할 수 있습니다',
+      ],
+      linkLabel: 'Google Cloud 콘솔 열기',
+      linkHref: 'https://console.cloud.google.com/apis/credentials',
+    },
   },
   {
     id: 'naver-searchad',
@@ -118,7 +138,17 @@ export const INTEGRATIONS: IntegrationService[] = [
     name: '네이버 검색광고',
     description: '검색광고 캠페인 성과를 에이전트가 읽습니다.',
     logo: { src: '/brand/naver.svg' },
-    kind: 'coming-soon',
+    kind: 'dialog',
+    adminOnly: true,
+    keyGuide: {
+      steps: [
+        '검색광고 관리 → 도구 → API 사용 관리',
+        '액세스 라이선스·비밀 키 발급',
+        '관리 고객 ID와 광고주 고객 ID 확인',
+      ],
+      linkLabel: '네이버 검색광고 열기',
+      linkHref: 'https://manage.searchad.naver.com',
+    },
   },
   {
     id: 'slack',

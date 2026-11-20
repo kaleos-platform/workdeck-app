@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { SETTINGS_BILLING_PATH } from '@/lib/deck-routes'
+import { GoogleTag } from '@/components/analytics/google-tag'
 import { SubscriptionSettingsClient } from '@/components/billing/subscription-settings-client'
 import { loadShellContext } from '@/lib/workspace-shell'
 import { RoleRequired } from '@/components/settings/role-required'
@@ -25,6 +26,7 @@ export default async function SubscriptionSettingsPage() {
       <RoleRequired role={role} min="OWNER">
         <SubscriptionSettingsClient />
       </RoleRequired>
+      <GoogleTag />
     </div>
   )
 }

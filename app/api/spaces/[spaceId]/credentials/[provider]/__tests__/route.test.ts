@@ -5,7 +5,8 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     invStorageLocation: { count: jest.fn() },
     channel: { count: jest.fn() },
-    spaceCredential: { findUnique: jest.fn() },
+    spaceCredential: { findUnique: jest.fn(), update: jest.fn() },
+    agentPendingAction: { count: jest.fn() },
     delBatch: { findFirst: jest.fn() },
   },
 }))
@@ -14,6 +15,9 @@ jest.mock('@/lib/naver-commerce/nbaesong-channel', () => ({
 }))
 jest.mock('@/lib/agent/identity/space-admin', () => ({
   requireSpaceAdmin: jest.fn(async () => ({ userId: 'u1' })),
+}))
+jest.mock('@/lib/agent/integrations/naver-searchad', () => ({
+  verifyNaverCred: jest.fn(async () => undefined),
 }))
 jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
 jest.mock('@/lib/crypto/field-crypto', () => ({
@@ -34,7 +38,7 @@ import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { saveSpaceCredential } from '@/lib/agent/integrations/space-credential'
 import { prisma } from '@/lib/prisma'
 import { ensureNbaesongChannel } from '@/lib/naver-commerce/nbaesong-channel'
-import { PUT } from '../route'
+import { GET, PUT } from '../route'
 
 const META_BODY = {
   secret: { accessToken: 'EAAB-test-token', appSecret: 'app-secret-test' },
@@ -109,6 +113,173 @@ it('메타: 계정 확인 실패 → 400, 저장하지 않는다', async () => {
   const res = await call('meta-ads', META_BODY)
   expect(res.status).toBe(400)
   expect(saveSpaceCredential).not.toHaveBeenCalled()
+})
+
+const get = (provider: string, spaceId = 'sp1') =>
+  GET(new NextRequest(`http://t/api/spaces/${spaceId}/credentials/${provider}`), {
+    params: Promise.resolve({ spaceId, provider }),
+  })
+
+describe('GET', () => {
+  it('ADMIN 아님 → 403', async () => {
+    ;(requireSpaceAdmin as jest.Mock).mockResolvedValueOnce({
+      error: NextResponse.json({}, { status: 403 }),
+    })
+    expect((await get('meta-ads')).status).toBe(403)
+    expect(prisma.spaceCredential.findUnique).not.toHaveBeenCalled()
+  })
+
+  it('지원하지 않는 provider(naver-commerce 포함) → 404', async () => {
+    expect((await get('naver-commerce')).status).toBe(404)
+    expect((await get('constructor')).status).toBe(404)
+  })
+
+  it('미등록 → registered:false', async () => {
+    ;(prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValue(null)
+    const res = await get('meta-ads')
+    expect(res.headers.get('Cache-Control')).toBe('no-store')
+    await expect(res.json()).resolves.toEqual({
+      registered: false,
+      config: null,
+      lastVerifiedAt: null,
+      hasError: false,
+      pendingActions: 0,
+    })
+  })
+
+  it('등록 → 허용 필드만, 오류 원문·암호문 없음, pendingActions 조건', async () => {
+    ;(prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValue({
+      config: {
+        defaultBrand: 'a',
+        adAccounts: { a: 'act_1' },
+        accountCurrencies: { act_1: 'KRW' },
+        graphVersion: 'v21.0',
+        secretLeak: 'LEAK-VALUE',
+      },
+      lastVerifiedAt: new Date('2026-11-20T00:00:00Z'),
+      lastError: 'LASTERR-TEXT',
+      healthError: 'HEALTHERR-TEXT',
+      encryptedPayload: 'ENC-PAYLOAD',
+      iv: 'IV',
+    })
+    ;(prisma.agentPendingAction.count as jest.Mock).mockResolvedValue(2)
+    const res = await get('meta-ads')
+    const body = await res.json()
+    expect(body).toEqual({
+      registered: true,
+      config: {
+        defaultBrand: 'a',
+        adAccounts: { a: 'act_1' },
+        accountCurrencies: { act_1: 'KRW' },
+        graphVersion: 'v21.0',
+      },
+      lastVerifiedAt: '2026-11-20T00:00:00.000Z',
+      hasError: true,
+      pendingActions: 2,
+    })
+    const text = JSON.stringify(body)
+    expect(text).not.toMatch(/LASTERR|HEALTHERR|ENC-PAYLOAD|LEAK-VALUE/)
+    expect(prisma.agentPendingAction.count).toHaveBeenCalledWith({
+      where: {
+        spaceId: 'sp1',
+        actionType: { startsWith: 'meta-ads.' },
+        status: { in: ['PENDING', 'APPROVED'] },
+      },
+    })
+  })
+
+  it('google: 브랜드 허용 필드만', async () => {
+    ;(prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValue({
+      config: {
+        defaultBrand: 'a',
+        brands: {
+          a: { ga4_property_id: '1', gtm_account_id: '2', gtm_container_id: '3', x: 'no' },
+        },
+      },
+      lastVerifiedAt: null,
+      lastError: null,
+      healthError: null,
+    })
+    ;(prisma.agentPendingAction.count as jest.Mock).mockResolvedValue(0)
+    const body = await (await get('google-marketing')).json()
+    expect(body.config.brands.a).toEqual({
+      ga4_property_id: '1',
+      gtm_account_id: '2',
+      gtm_container_id: '3',
+    })
+    expect(body.hasError).toBe(false)
+  })
+
+  it('naver: pendingActions 0, 집계 호출 없음', async () => {
+    ;(prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValue({
+      config: { defaultBrand: 'a', managerCustomerId: '1', customers: { a: '2' } },
+      lastVerifiedAt: null,
+      lastError: null,
+      healthError: null,
+    })
+    const body = await (await get('naver-searchad')).json()
+    expect(body.pendingActions).toBe(0)
+    expect(prisma.agentPendingAction.count).not.toHaveBeenCalled()
+  })
+})
+
+describe('PUT health·graphVersion', () => {
+  it('메타: 확인 호출도 보존한 graphVersion으로 한다', async () => {
+    ;(prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValueOnce({
+      config: { graphVersion: 'v21.0' },
+    })
+    await call('meta-ads', META_BODY)
+    const urls = fetchMock.mock.calls.map((c) => String(c[0]))
+    expect(urls.length).toBeGreaterThan(0)
+    expect(urls.every((u) => u.includes('graph.facebook.com/v21.0/'))).toBe(true)
+  })
+  it('메타: graphVersion 생략 → 기존 값 보존', async () => {
+    ;(prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValue({
+      config: { graphVersion: 'v21.0' },
+    })
+    await call('meta-ads', META_BODY)
+    expect((saveSpaceCredential as jest.Mock).mock.calls[0][3].graphVersion).toBe('v21.0')
+  })
+
+  it('메타: graphVersion 제공 → 제공값 사용, 기존 조회 없음', async () => {
+    await call('meta-ads', { ...META_BODY, config: { ...META_BODY.config, graphVersion: 'v22.0' } })
+    expect((saveSpaceCredential as jest.Mock).mock.calls[0][3].graphVersion).toBe('v22.0')
+    expect(prisma.spaceCredential.findUnique).not.toHaveBeenCalled()
+  })
+
+  it('메타 저장 성공 → healthError 만 해제(healthAlertedAt 유지)', async () => {
+    await call('meta-ads', META_BODY)
+    expect(prisma.spaceCredential.update).toHaveBeenCalledWith({
+      where: { spaceId_provider: { spaceId: 'sp1', provider: 'meta-ads' } },
+      data: { healthError: null, lastVerifiedAt: expect.any(Date) },
+    })
+  })
+
+  it('네이버 저장 성공 → healthError 해제', async () => {
+    await call('naver-searchad', {
+      secret: { apiKey: 'k'.repeat(12), secretKey: 's'.repeat(12) },
+      config: { managerCustomerId: '1', customers: { a: '2' } },
+    })
+    expect(prisma.spaceCredential.update).toHaveBeenCalledWith({
+      where: { spaceId_provider: { spaceId: 'sp1', provider: 'naver-searchad' } },
+      data: { healthError: null, lastVerifiedAt: expect.any(Date) },
+    })
+  })
+
+  it('구글 저장 → 점검 상태 미변경', async () => {
+    const res = await call('google-marketing', {
+      secret: {
+        clientId: 'c'.repeat(12),
+        clientSecret: 's'.repeat(12),
+        refreshToken: 'r'.repeat(12),
+      },
+      config: {
+        brands: { a: { ga4_property_id: '1', gtm_account_id: '2', gtm_container_id: '3' } },
+      },
+    })
+    expect(res.status).toBe(200)
+    expect(prisma.spaceCredential.update).not.toHaveBeenCalled()
+  })
 })
 
 describe('naver-commerce', () => {
