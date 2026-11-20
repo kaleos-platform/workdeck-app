@@ -157,6 +157,17 @@ export async function loadStockInFacts(
   return result
 }
 
+/** 자체 위치: 입고일과 같은 KST 날짜에 대조가 반영됨 — 대조에 이 입고가 포함됐을 수 있어 등록 전 경고용 */
+export function isReconciledSameDay(
+  facts: StockInFacts,
+  locationId: string,
+  stockedInAt: Date | null
+): boolean {
+  const last = facts.lastReconAtByLocation.get(locationId)
+  if (!last || !stockedInAt || !facts.ownLocationIds.has(locationId)) return false
+  return ymd(new Date(last.getTime() + KST_OFFSET_MS)) === ymd(stockedInAt)
+}
+
 export function isReconciledAfter(
   facts: StockInFacts,
   locationId: string,

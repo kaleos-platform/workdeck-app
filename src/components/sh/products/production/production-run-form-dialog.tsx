@@ -89,6 +89,8 @@ type StockInAllocationResult = {
   state: 'registered' | 'reconciled' | 'pending'
   registeredQty?: number
   registeredAt?: string
+  /** 입고일 당일 재고 대조가 있음 — 대조에 이미 포함됐을 수 있음 */
+  sameDayRecon?: boolean
 }
 
 type StockInDetail = {
@@ -871,6 +873,21 @@ export function ProductionRunFormDialog({
     ) {
       return
     }
+    const sameDay = (stockInDetail?.allocations ?? []).filter(
+      (a) =>
+        a.sameDayRecon &&
+        entries.some((e) => e.optionId === a.optionId && e.locationId === a.locationId)
+    )
+    if (
+      sameDay.length > 0 &&
+      !window.confirm(
+        `입고일 당일 재고 대조가 있는 위치입니다.\n${sameDay
+          .map((a) => `${a.optionName} · ${a.locationName}`)
+          .join('\n')}\n대조 파일에 이 입고 물량이 이미 포함됐다면 등록하지 마세요. 계속할까요?`
+      )
+    ) {
+      return
+    }
     if (!ownDate) {
       toast.error('입고일을 입력하세요')
       return
@@ -942,7 +959,14 @@ export function ProductionRunFormDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          // 기본 정보만 저장되고 상태 전환이 실패한 채 닫으면 목록도 새로 고친다
+          if (!v && basicSaved) onSaved()
+          else onOpenChange(v)
+        }}
+      >
         <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>{isEdit ? '차수 수정' : '차수 추가'}</DialogTitle>
@@ -1158,7 +1182,13 @@ export function ProductionRunFormDialog({
                                           }
                                           className="h-7 w-24 text-right text-sm"
                                         />
-                                      ) : a.state === 'registered' ? (
+                                      ) : null}
+                                      {a.state === 'pending' && a.sameDayRecon ? (
+                                        <span className="text-xs text-amber-700 dark:text-amber-400">
+                                          당일 대조 있음
+                                        </span>
+                                      ) : null}
+                                      {a.state === 'pending' ? null : a.state === 'registered' ? (
                                         <span className="text-xs text-muted-foreground">
                                           등록됨 {a.registeredAt?.slice(5, 10)} ·{' '}
                                           {(a.registeredQty ?? a.quantity).toLocaleString('ko-KR')}
