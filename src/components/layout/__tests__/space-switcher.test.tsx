@@ -19,12 +19,52 @@ const postStatus = (status: number) => {
 }
 
 describe('SpaceSwitcher (사이드바)', () => {
-  it('하나면 이름·권한만 보이고 전환 버튼이 없다', () => {
+  it('하나여도 메뉴가 열리고 「새 작업 공간 만들기」가 있다', async () => {
     const { SpaceSwitcher } = mod
     render(<SpaceSwitcher spaces={[two[0]]} currentSpaceId="sp-a" navigate={assign} />)
     expect(screen.getByText('Space A')).toBeInTheDocument()
     expect(screen.getByText('소유자')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /작업 공간 전환/ })).toBeNull()
+    await userEvent.click(screen.getByRole('button', { name: /작업 공간 전환/ }))
+    const item = await screen.findByRole('menuitem', { name: /새 작업 공간 만들기/ })
+    expect(item).not.toHaveAttribute('aria-disabled', 'true')
+    await userEvent.click(item)
+    expect(await screen.findByRole('dialog', { name: '새 작업 공간 만들기' })).toBeInTheDocument()
+  })
+
+  it('소유 공간이 5개면 만들기 항목이 비활성이고 안내가 보인다', async () => {
+    const { SpaceSwitcher } = mod
+    const five = Array.from({ length: 5 }, (_, i) => ({
+      id: `sp-${i}`,
+      name: `Space ${i}`,
+      role: 'OWNER' as const,
+    }))
+    render(<SpaceSwitcher spaces={five} currentSpaceId="sp-0" navigate={assign} />)
+    await userEvent.click(screen.getByRole('button', { name: /작업 공간 전환/ }))
+    const item = await screen.findByRole('menuitem', { name: /새 작업 공간 만들기/ })
+    expect(item).toHaveAttribute('aria-disabled', 'true')
+    expect(
+      screen.getByText('소유한 작업 공간은 5개까지입니다. 더 필요하면 문의해 주세요.')
+    ).toBeInTheDocument()
+    // 키보드로 닿을 수 있지만 선택해도 Dialog 가 열리지 않는다
+    await userEvent.click(item)
+    expect(screen.queryByRole('dialog', { name: '새 작업 공간 만들기' })).not.toBeInTheDocument()
+  })
+
+  it('소유자가 아닌 공간은 5개 한도에 세지 않는다', async () => {
+    const { SpaceSwitcher } = mod
+    const mixed = [
+      ...Array.from({ length: 4 }, (_, i) => ({
+        id: `sp-${i}`,
+        name: `Space ${i}`,
+        role: 'OWNER' as const,
+      })),
+      { id: 'sp-m', name: 'Member', role: 'MEMBER' as const },
+    ]
+    render(<SpaceSwitcher spaces={mixed} currentSpaceId="sp-0" navigate={assign} />)
+    await userEvent.click(screen.getByRole('button', { name: /작업 공간 전환/ }))
+    expect(
+      await screen.findByRole('menuitem', { name: /새 작업 공간 만들기/ })
+    ).not.toHaveAttribute('aria-disabled', 'true')
   })
 
   it('목록이 없으면(레거시 계정) 아무것도 그리지 않는다', () => {

@@ -70,6 +70,8 @@ type MyDeckClientProps = {
     reason: DeckAccessReason | null
     trialEndsAt: string | null
     graceEndsAt?: string | null
+    /** 소유자가 다른 작업 공간에서 이 업무 체험을 이미 사용 — 체험 없이 구독부터 */
+    trialUsedElsewhere?: boolean
   }>
 }
 
@@ -79,6 +81,7 @@ function startsTrial(info?: DeckBilling) {
   return (
     info?.pricingMode === 'SUBSCRIPTION' &&
     !info.trialEndsAt &&
+    !info.trialUsedElsewhere &&
     (info.reason === 'LOCKED' || info.reason === 'PAUSED')
   )
 }
@@ -215,7 +218,7 @@ export function MyDeckClient({
   )
 
   const openSubscribe = useCallback(
-    (deck: DeckSummary) => {
+    (deck: DeckSummary, override?: { trialUsedElsewhere?: boolean }) => {
       const info = billingById.get(deck.id)
       setPending({
         decks: [
@@ -230,6 +233,7 @@ export function MyDeckClient({
         trialEndsAt: info?.reason === 'TRIAL' ? (info.trialEndsAt ?? null) : null,
         // 체험 예약만 있는 구독에 체험 아닌 업무를 더하면 일할이 아니라 한 달치로 시작한다
         chargesFullMonth: hasActiveSubscription && reservationOnly && info?.reason !== 'TRIAL',
+        trialUsedElsewhere: override?.trialUsedElsewhere ?? info?.trialUsedElsewhere ?? false,
       })
     },
     [billingById, hasActiveSubscription, reservationOnly]
@@ -265,7 +269,21 @@ export function MyDeckClient({
       })
 
       if (!response.ok) {
-        const error = (await response.json().catch(() => null)) as { message?: string } | null
+        const error = (await response.json().catch(() => null)) as {
+          message?: string
+          code?: string
+          trialUsedElsewhere?: boolean
+        } | null
+        // 화면을 연 뒤 다른 작업 공간에서 체험이 소진된 경우 — 새로고침하고 구독 모달로 넘긴다.
+        if (response.status === 402 && error?.code === 'DECK_SUBSCRIPTION_REQUIRED') {
+          const deck = selectedDeck
+          setSelectedDeck(null)
+          router.refresh()
+          if (isOwner) {
+            openSubscribe(deck, { trialUsedElsewhere: error.trialUsedElsewhere === true })
+            return
+          }
+        }
         throw new Error(error?.message ?? '추가에 실패했습니다')
       }
 

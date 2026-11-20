@@ -4,9 +4,8 @@ import { errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { EnableDeckError, enableDeckInTx } from '@/lib/spaces/enable-deck'
-import { lockOwnerSpaces } from '@/lib/spaces/owner-space-lock'
+import { createOwnedSpaceInTx } from '@/lib/spaces/create-owned-space'
 import { createSpaceSchema } from '@/lib/validations/admin-users'
-import { Prisma, type OpeningMigrationStatus } from '@/generated/prisma/client'
 
 // POST /api/admin/users/[id]/spaces — { name, enableRecruiting? } 기존 사용자를 OWNER 로 하는 새 Space 생성
 // 같은 OWNER 에게 같은 이름 Space 가 이미 있으면 409 + 기존 spaceId(재시도·동시 제출 중복 방지).
@@ -34,76 +33,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      await lockOwnerSpaces(tx, id)
-
-      const owned = await tx.spaceMember.findMany({
-        where: { userId: id, role: 'OWNER' },
-        select: { space: { select: { id: true, name: true } } },
-      })
-      const same = owned.find((m) => m.space.name.trim().normalize('NFC') === name)
-      if (same) return { duplicateSpaceId: same.space.id }
-
-      const space = await tx.space.create({
-        data: { name, type: 'PERSONAL', members: { create: { userId: id, role: 'OWNER' } } },
-        select: { id: true, name: true },
-      })
-      if (enableRecruiting) await enableDeckInTx(tx, space.id, 'recruiting')
-
-      // OWNER Space 가 2개 이상이 되면 적용 전 오프닝 이전 job 은 대상이 모호해지므로 무효화한다.
-      // NO_TARGET_SPACE 로만 막힌 BLOCKED 는 워커 재계획이 새 Space 를 고르지 못하게 사유를 갱신한다.
-      let blockedJobs = 0
-      if ((await tx.spaceMember.count({ where: { userId: id, role: 'OWNER' } })) > 1) {
-        const jobs = await tx.openingMigrationJob.findMany({
-          where: {
-            userId: id,
-            OR: [
-              { status: { in: ['MATCHED', 'PLANNED', 'APPROVED'] } },
-              { status: 'BLOCKED', blockReasons: { equals: ['NO_TARGET_SPACE'] } },
-            ],
-          },
-          select: { id: true, status: true, blockReasons: true },
-        })
-        // 조건부 update 가 0건이면(그 사이 워커가 상태·사유를 바꿈) 다시 읽어 최대 3번 재시도한다.
-        // ponytail: 3회 상한 — 워커는 한 주기에 1건만 바꾸므로 실무상 충분, 초과 시 운영자가 --close-job/보류로 정리
-        const invalidatable = (j: { status: OpeningMigrationStatus; blockReasons: string[] }) =>
-          ['MATCHED', 'PLANNED', 'APPROVED'].includes(j.status) ||
-          (j.status === 'BLOCKED' &&
-            j.blockReasons.length === 1 &&
-            j.blockReasons[0] === 'NO_TARGET_SPACE')
-        for (const found of jobs) {
-          let job: { id: string; status: OpeningMigrationStatus; blockReasons: string[] } | null =
-            found
-          for (let attempt = 0; attempt < 3 && job && invalidatable(job); attempt++) {
-            const { count } = await tx.openingMigrationJob.updateMany({
-              // 조회한 사유가 그대로일 때만 바꾼다(그 사이 워커가 MULTI_USER 등을 더했으면 덮어쓰지 않음).
-              where: {
-                id: job.id,
-                status: job.status as never,
-                blockReasons: { equals: job.blockReasons },
-              },
-              data: {
-                status: 'BLOCKED',
-                // NO_TARGET_SPACE 단독 사유는 교체한다(워커 재시도 조회는 단독 사유 배열만 본다).
-                blockReasons:
-                  job.status === 'BLOCKED'
-                    ? ['MULTIPLE_OWNER_SPACES']
-                    : [...new Set([...job.blockReasons, 'MULTIPLE_OWNER_SPACES'])],
-                approvedBy: null,
-                approvedAt: null,
-                approvedSnapshot: Prisma.DbNull,
-              },
-            })
-            if (count === 1) {
-              blockedJobs++
-              break
-            }
-            job = await tx.openingMigrationJob.findUnique({
-              where: { id: found.id },
-              select: { id: true, status: true, blockReasons: true },
-            })
-          }
-        }
-      }
+      const created = await createOwnedSpaceInTx(tx, { userId: id, name })
+      if ('duplicateSpaceId' in created || 'limitReached' in created) return created
+      const { space, blockedJobs } = created
+      // 어드민 생성은 체험 1회 규칙 미적용(운영자가 Space 를 대신 만들어 줄 때 체험 허용).
+      if (enableRecruiting)
+        await enableDeckInTx(tx, space.id, 'recruiting', { trialOncePerOwner: false })
 
       await writeAuditLog(
         auth.user.id,
@@ -116,6 +51,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return { space, blockedJobs }
     })
 
+    if ('limitReached' in result)
+      return errorResponse('소유 Space 상한에 도달했습니다', 409, { code: 'SPACE_LIMIT' })
     if ('duplicateSpaceId' in result) {
       return errorResponse('같은 이름의 Space 가 이미 있습니다', 409, {
         spaceId: result.duplicateSpaceId,
