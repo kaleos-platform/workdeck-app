@@ -25,7 +25,7 @@ describe('buildAttention', () => {
       coupangError: 'IP 미등록',
       envSecrets: [{ name: 'github-read', expiresAt: inDays(-1) }],
     })
-    expect(items.map((i) => i.tab)).toEqual(['services', 'secrets'])
+    expect(items.map((i) => i.id)).toEqual(['coupang-api', 'secrets'])
     expect(items[0].message).toBe('쿠팡 Open API — IP 미등록')
     expect(items[1].message).toBe('비밀값 만료 — github-read')
   })
@@ -35,9 +35,7 @@ describe('buildAttention', () => {
       ...empty,
       agents: [{ name: 'Claude 공용', tokens: [{ expiresAt: inDays(7) }] }],
     })
-    expect(items).toEqual([
-      { tab: 'agents', cardId: 'agent-tokens', message: '토큰 7일 뒤 만료 — Claude 공용' },
-    ])
+    expect(items).toEqual([{ id: 'agent-tokens', message: '토큰 7일 뒤 만료 — Claude 공용' }])
   })
 
   it('새 토큰으로 교체했으면 옛 토큰을 경고하지 않는다', () => {

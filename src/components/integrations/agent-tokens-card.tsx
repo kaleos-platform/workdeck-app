@@ -86,7 +86,13 @@ const tokenState = (t: Token) =>
 // 토큰을 명령에 직접 넣으면 셸 기록에 남는다 — 환경변수로 넘긴다.
 const CONFIG_SNIPPET = `export WORKDECK_AGENT_TOKEN='<위 토큰>'\n${CLAUDE_CODE_CMD} --header "Authorization: Bearer $WORKDECK_AGENT_TOKEN"`
 
-export function AgentTokensCard({ onChanged }: { onChanged?: () => void }) {
+export function AgentTokensCard({
+  onChanged,
+  embedded = false,
+}: {
+  onChanged?: () => void
+  embedded?: boolean
+}) {
   const [spaceId, setSpaceId] = useState<string | null>(null)
   const [agents, setAgents] = useState<Agent[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -197,17 +203,19 @@ export function AgentTokensCard({ onChanged }: { onChanged?: () => void }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <KeyRound className="h-5 w-5" />
-          에이전트·토큰 관리
-        </CardTitle>
-        <CardDescription>
-          외부 에이전트와 연동 계정을 등록하고, 권한(scope)과 MCP 접속 토큰을 관리합니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
+    <Card className={embedded ? 'border-0 bg-transparent py-0 shadow-none' : undefined}>
+      {!embedded && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <KeyRound className="h-5 w-5" />
+            에이전트·토큰 관리
+          </CardTitle>
+          <CardDescription>
+            외부 에이전트와 연동 계정을 등록하고, 권한(scope)과 MCP 접속 토큰을 관리합니다.
+          </CardDescription>
+        </CardHeader>
+      )}
+      <CardContent className={embedded ? 'space-y-4 px-0 text-sm' : 'space-y-4 text-sm'}>
         {error && <p className="text-destructive">{error}</p>}
         <div>
           <Button size="sm" onClick={() => setEdit({ mode: 'create' })} disabled={!spaceId}>

@@ -132,7 +132,7 @@ export function DeckSlackNotifyCard({ deckKey }: { deckKey: DeckKey }) {
           <p className="text-xs text-muted-foreground">
             알림 채널이 등록되지 않았습니다.{' '}
             <Link
-              href={`${SETTINGS_INTEGRATIONS_PATH}?tab=services`}
+              href={`${SETTINGS_INTEGRATIONS_PATH}?open=slack`}
               className="underline underline-offset-2"
             >
               외부 서비스 연결

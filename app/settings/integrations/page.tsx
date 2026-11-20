@@ -1,14 +1,15 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { SETTINGS_INTEGRATIONS_PATH } from '@/lib/deck-routes'
-import { IntegrationsTabs } from '@/components/integrations/integrations-tabs'
-import { McpGuideCard } from '@/components/integrations/mcp-guide-card'
+import { IntegrationsGrid } from '@/components/integrations/integrations-grid'
 import { loadShellContext } from '@/lib/workspace-shell'
-import { RoleRequired } from '@/components/settings/role-required'
-import { hasRole } from '@/lib/auth/roles'
-import { loadIntegrationAttention } from '@/lib/integrations/load-attention'
+import { loadIntegrationStatuses } from '@/lib/integrations/load-status'
+import type { IntegrationId } from '@/lib/integrations/catalog'
 
-// 에이전트 연동 설정 — Slack 연결, workdeck 에이전트 토글, 내 MCP 클라이언트 연결 가이드.
+// 옛 링크(?tab=·?slack=)를 그리드의 초기 팝업으로 바꾼다. services는 팝업 없음.
+const LEGACY_TAB: Record<string, IntegrationId> = { agents: 'agent-tokens', secrets: 'secrets' }
+
+// 외부 서비스 연결 — 서비스 타일 그리드. 상세·입력은 팝업에서 한다.
 export default async function IntegrationsSettingsPage({
   searchParams,
 }: {
@@ -22,31 +23,27 @@ export default async function IntegrationsSettingsPage({
   const { slack, tab } = await searchParams
   const shell = await loadShellContext(user.id)
   const role = shell?.role ?? 'MEMBER'
+  const { statuses, attention } = shell?.spaceId
+    ? await loadIntegrationStatuses(shell.spaceId, user.id, role)
+    : { statuses: {}, attention: [] }
+  const initialOpen: IntegrationId | null = slack ? 'slack' : (LEGACY_TAB[tab ?? ''] ?? null)
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">외부 서비스 연결</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Slack 연결과 워크덱 에이전트, 외부 MCP 클라이언트 연동을 관리하세요.
+          쓰는 서비스를 연결하고 연결 상태를 한눈에 확인하세요.
         </p>
       </div>
-
-      {/* Slack·쿠팡 API·에이전트는 ADMIN 이상, 내 MCP 연결 가이드는 누구나 */}
-      {hasRole(role, 'ADMIN') ? (
-        <IntegrationsTabs
-          attention={shell?.spaceId ? await loadIntegrationAttention(shell.spaceId, user.id) : []}
-          slackStatus={slack ?? null}
-          tab={tab}
-        />
-      ) : (
-        <div className="grid gap-6">
-          <RoleRequired role={role} min="ADMIN" what="Slack·쿠팡 API·에이전트 연동">
-            {null}
-          </RoleRequired>
-          <McpGuideCard />
-        </div>
-      )}
+      <IntegrationsGrid
+        role={role}
+        activeDeckIds={(shell?.activeDecks ?? []).map((d) => d.id)}
+        statuses={statuses}
+        attention={attention}
+        slackStatus={slack ?? null}
+        initialOpen={initialOpen}
+      />
     </div>
   )
 }

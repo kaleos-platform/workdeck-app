@@ -58,7 +58,13 @@ type ProbeResult = {
 const PROBE_POLL_INTERVAL_MS = 3000
 const PROBE_POLL_TIMEOUT_MS = 60000
 
-export function CoupangApiCard({ onChanged }: { onChanged?: () => void }) {
+export function CoupangApiCard({
+  onChanged,
+  embedded = false,
+}: {
+  onChanged?: () => void
+  embedded?: boolean
+}) {
   const [data, setData] = useState<ApiCredentialResponse>(null)
   const [loading, setLoading] = useState(true)
   const spaceName = useCurrentSpaceName()
@@ -295,38 +301,40 @@ export function CoupangApiCard({ onChanged }: { onChanged?: () => void }) {
   const isConnected = Boolean(data?.isActive)
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Cable className="h-5 w-5" />
-              쿠팡 Open API 연동
-            </CardTitle>
-            <CardDescription>
-              쿠팡 Open API 자격증명을 등록하면 재고·판매·정산·상품 데이터를 크롤링 대신 API로
-              수집할 수 있습니다.
-            </CardDescription>
+    <Card className={embedded ? 'border-0 bg-transparent py-0 shadow-none' : undefined}>
+      {!embedded && (
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Cable className="h-5 w-5" />
+                쿠팡 Open API 연동
+              </CardTitle>
+              <CardDescription>
+                쿠팡 Open API 자격증명을 등록하면 재고·판매·정산·상품 데이터를 크롤링 대신 API로
+                수집할 수 있습니다.
+              </CardDescription>
+            </div>
+            {data && (
+              <Badge
+                className={
+                  isConnected
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                }
+              >
+                {isConnected ? (
+                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                ) : (
+                  <XCircle className="mr-1 h-3 w-3" />
+                )}
+                {isConnected ? '등록됨' : '비활성'}
+              </Badge>
+            )}
           </div>
-          {data && (
-            <Badge
-              className={
-                isConnected
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-              }
-            >
-              {isConnected ? (
-                <CheckCircle2 className="mr-1 h-3 w-3" />
-              ) : (
-                <XCircle className="mr-1 h-3 w-3" />
-              )}
-              {isConnected ? '등록됨' : '비활성'}
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </CardHeader>
+      )}
+      <CardContent className={embedded ? 'space-y-4 px-0' : 'space-y-4'}>
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>IP 허용목록(allowlist) 등록 필요</AlertTitle>
@@ -476,7 +484,7 @@ export function CoupangApiCard({ onChanged }: { onChanged?: () => void }) {
           </div>
         )}
       </CardContent>
-      {!data && !loading && !isEditing && (
+      {!embedded && !data && !loading && !isEditing && (
         <CardFooter>
           <Button size="sm" onClick={() => setIsEditing(true)}>
             API 자격증명 등록

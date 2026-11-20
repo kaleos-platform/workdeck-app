@@ -1,36 +1,52 @@
 import { render, screen } from '@testing-library/react'
 import IntegrationsSettingsPage from '../page'
 import { loadShellContext } from '@/lib/workspace-shell'
-import { loadIntegrationAttention } from '@/lib/integrations/load-attention'
+import { loadIntegrationStatuses } from '@/lib/integrations/load-status'
 
 jest.mock('@/hooks/use-user', () => ({ getUser: jest.fn(async () => ({ id: 'u1' })) }))
 jest.mock('@/lib/workspace-shell', () => ({ loadShellContext: jest.fn() }))
-jest.mock('@/lib/integrations/load-attention', () => ({
-  loadIntegrationAttention: jest.fn(async () => []),
+jest.mock('@/lib/integrations/load-status', () => ({
+  loadIntegrationStatuses: jest.fn(async () => ({ statuses: {}, attention: [] })),
 }))
-jest.mock('@/components/integrations/integrations-tabs', () => ({
-  IntegrationsTabs: () => <p>tabs</p>,
+const grid = jest.fn((props: Record<string, unknown>) => <p>grid {String(props.role)}</p>)
+jest.mock('@/components/integrations/integrations-grid', () => ({
+  IntegrationsGrid: (props: Record<string, unknown>) => grid(props),
 }))
-jest.mock('@/components/integrations/mcp-guide-card', () => ({ McpGuideCard: () => <p>mcp</p> }))
 
-const renderPage = async () =>
-  render(await IntegrationsSettingsPage({ searchParams: Promise.resolve({}) }))
+const renderPage = async (searchParams: { slack?: string; tab?: string } = {}) =>
+  render(await IntegrationsSettingsPage({ searchParams: Promise.resolve(searchParams) }))
 
 describe('IntegrationsSettingsPage', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  it('MEMBER에게는 요약을 조회하지 않고 MCP 가이드만 보여 준다', async () => {
-    ;(loadShellContext as jest.Mock).mockResolvedValue({ role: 'MEMBER', spaceId: 's1' })
+  it('역할과 활성 업무로 상태를 읽어 그리드에 넘긴다', async () => {
+    ;(loadShellContext as jest.Mock).mockResolvedValue({
+      role: 'MEMBER',
+      spaceId: 's1',
+      activeDecks: [{ id: 'seller-hub' }],
+    })
     await renderPage()
-    expect(loadIntegrationAttention).not.toHaveBeenCalled()
-    expect(screen.getByText('mcp')).toBeInTheDocument()
-    expect(screen.queryByText('tabs')).toBeNull()
+    expect(loadIntegrationStatuses).toHaveBeenCalledWith('s1', 'u1', 'MEMBER')
+    expect(screen.getByText('grid MEMBER')).toBeInTheDocument()
+    expect(grid.mock.lastCall?.[0]).toMatchObject({
+      activeDeckIds: ['seller-hub'],
+      initialOpen: null,
+    })
   })
 
-  it('ADMIN에게는 요약을 조회해 탭을 보여 준다', async () => {
-    ;(loadShellContext as jest.Mock).mockResolvedValue({ role: 'ADMIN', spaceId: 's1' })
-    await renderPage()
-    expect(loadIntegrationAttention).toHaveBeenCalledWith('s1', 'u1')
-    expect(screen.getByText('tabs')).toBeInTheDocument()
+  it.each([
+    [{ tab: 'agents' }, 'agent-tokens'],
+    [{ tab: 'secrets' }, 'secrets'],
+    [{ tab: 'services' }, null],
+    [{ tab: 'nope' }, null],
+    [{ slack: 'success', tab: 'agents' }, 'slack'],
+  ])('옛 링크 %j를 초기 팝업 %s로 바꾼다', async (params, expected) => {
+    ;(loadShellContext as jest.Mock).mockResolvedValue({
+      role: 'ADMIN',
+      spaceId: 's1',
+      activeDecks: [],
+    })
+    await renderPage(params)
+    expect(grid.mock.lastCall?.[0].initialOpen).toBe(expected)
   })
 })
