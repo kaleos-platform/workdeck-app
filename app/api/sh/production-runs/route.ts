@@ -4,6 +4,7 @@ import { Prisma } from '@/generated/prisma/client'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productionRunSchema } from '@/lib/sh/schemas'
+import { loadStockInFacts, revertBlockedReason } from '@/lib/sh/production-stock-in'
 import {
   buildProductionStatusTabs,
   compareProductionRunRows,
@@ -188,7 +189,19 @@ export async function GET(req: NextRequest) {
   })
 
   const sortedData = data.sort(compareProductionRunRows(query.sortBy, query.sortOrder))
-  const pageData = sortedData.slice((query.page - 1) * query.pageSize, query.page * query.pageSize)
+  const pageRows = sortedData.slice((query.page - 1) * query.pageSize, query.page * query.pageSize)
+
+  // 입고 완료 행의 되돌리기 가능 여부 — 페이지 전체를 한 번에 조회(N+1 없음)
+  const runById = new Map(runs.map((r) => [r.id, r]))
+  const stockedInRuns = pageRows
+    .filter((r) => r.status === 'STOCKED_IN')
+    .map((r) => runById.get(r.id)!)
+  const factsByRun = await loadStockInFacts(prisma, resolved.space.id, stockedInRuns)
+  const pageData = pageRows.map((row) => {
+    const run = runById.get(row.id)!
+    const facts = factsByRun.get(row.id)
+    return { ...row, canRevert: facts ? revertBlockedReason(run, facts) == null : false }
+  })
   const counts = statusGroups.reduce<Partial<Record<ProductionRunStatus, number>>>((acc, group) => {
     acc[group.status as ProductionRunStatus] = group._count._all
     return acc

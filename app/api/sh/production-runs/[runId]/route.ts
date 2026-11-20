@@ -3,12 +3,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productionRunPatchSchema } from '@/lib/sh/schemas'
-
-// 입고 완료(STOCKED_IN)는 옵션×위치 분배로 INBOUND 를 만들어야 성립한다.
-// 이 라우트로 상태만 바꾸면 재고가 늘지 않은 채 "입고완료"로 보여, 장부가 조용히 어긋난다
-// (2026-07 이후 차수 9건 14,910개가 이 경로로 재고 없이 STOCKED_IN 이 됐다).
-const STOCK_IN_VIA_TRANSITION_MSG =
-  '입고 완료는 차수 목록에서 상태 배지를 눌러 [입고완료로 변경]을 선택하면 보관 위치와 수량을 지정해 처리할 수 있습니다'
+import { isExternalLogisticsLocation } from '@/lib/inv/location-kind'
+import {
+  isReconciledAfter,
+  loadStockInFacts,
+  lockLocationRows,
+  lockRunRow,
+  parseStockInAllocations,
+  revertBlockedReason,
+  stockInRefId,
+} from '@/lib/sh/production-stock-in'
+import { MovementError } from '@/lib/inv/movement-processor'
 
 type Params = { params: Promise<{ runId: string }> }
 
@@ -45,9 +50,71 @@ export async function GET(_req: NextRequest, { params }: Params) {
       costs: {
         orderBy: { sortOrder: 'asc' },
       },
+      // 세트 기반 차수 — 수정 창에서 세트 단위 입고 분배 입력용
+      sets: {
+        select: {
+          id: true,
+          listingId: true,
+          listingName: true,
+          plannedSetQty: true,
+          stockedInSetQty: true,
+        },
+      },
     },
   })
   if (!run) return errorResponse('생산 발주를 찾을 수 없습니다', 404)
+
+  // 입고 완료 차수 — 위치 분배 결과(등록·대조 상태)와 되돌리기 가능 여부
+  let stockIn: {
+    allocations: Array<{
+      optionId: string
+      optionName: string
+      locationId: string
+      locationName: string
+      isExternal: boolean
+      quantity: number
+      state: 'registered' | 'reconciled' | 'pending'
+      registeredQty?: number
+      registeredAt?: string
+    }>
+    canRevert: boolean
+    revertBlockedReason: string | null
+  } | null = null
+  if (run.status === 'STOCKED_IN') {
+    const allocations = parseStockInAllocations(run.externalStockIns)
+    const facts = (await loadStockInFacts(prisma, resolved.space.id, [run])).get(run.id)!
+    const locations = await prisma.invStorageLocation.findMany({
+      where: { spaceId: resolved.space.id, id: { in: allocations.map((a) => a.locationId) } },
+      select: { id: true, name: true, type: true, externalSource: true },
+    })
+    const locationById = new Map(locations.map((l) => [l.id, l]))
+    const optionNameById = new Map(run.items.map((it) => [it.optionId, it.option.name]))
+    const blocked = revertBlockedReason(run, facts)
+    stockIn = {
+      allocations: allocations.map((a) => {
+        const loc = locationById.get(a.locationId)
+        const reg = facts.registered.get(stockInRefId(run.id, a.optionId, a.locationId))
+        return {
+          optionId: a.optionId,
+          optionName: optionNameById.get(a.optionId) ?? a.optionId,
+          locationId: a.locationId,
+          locationName: loc?.name ?? a.locationId,
+          isExternal: loc ? isExternalLogisticsLocation(loc) : false,
+          quantity: a.quantity,
+          state: reg
+            ? 'registered'
+            : isReconciledAfter(facts, a.locationId, run.stockedInAt)
+              ? 'reconciled'
+              : 'pending',
+          ...(reg
+            ? { registeredQty: reg.quantity, registeredAt: reg.movementDate.toISOString() }
+            : {}),
+        }
+      }),
+      canRevert: blocked == null,
+      revertBlockedReason: blocked,
+    }
+  }
 
   return NextResponse.json({
     run: {
@@ -63,6 +130,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
       totalCost: run.totalCost != null ? Number(run.totalCost) : null,
       costMode: run.costMode,
       memo: run.memo,
+      stockIn,
+      sets: run.sets,
       items: run.items.map((it) => ({
         id: it.id,
         optionId: it.optionId,
@@ -103,7 +172,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const existing = await prisma.productionRun.findFirst({
     where: { id: runId, spaceId: resolved.space.id },
-    select: { id: true, costMode: true, status: true },
+    select: {
+      id: true,
+      costMode: true,
+      status: true,
+      stockedInAt: true,
+      completedAt: true,
+      externalStockIns: true,
+    },
   })
   if (!existing) return errorResponse('생산 발주를 찾을 수 없습니다', 404)
 
@@ -115,8 +191,29 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
   const input = parsed.data
 
-  if (input.status === 'STOCKED_IN' && existing.status !== 'STOCKED_IN') {
-    return errorResponse(STOCK_IN_VIA_TRANSITION_MSG, 400)
+  // 모든 상태 변경은 /transition 하나로만 — PATCH 로 우회하면 입고·되돌리기 가드를 건너뛴다.
+  if (input.status !== undefined && input.status !== existing.status) {
+    return errorResponse('상태 변경은 진행 단계에서 처리하세요', 400)
+  }
+
+  if (existing.status === 'STOCKED_IN') {
+    // 입고 완료 일자는 대조 이후 판정의 기준이라 직접 바꿀 수 없다 (되돌리기 후 다시 입고 완료)
+    const sameDay = (a: Date | null, v: string | null | undefined) =>
+      (a ? a.toISOString().slice(0, 10) : null) ===
+      (v ? new Date(v).toISOString().slice(0, 10) : null)
+    if (
+      ('stockedInAt' in body && !sameDay(existing.stockedInAt, input.stockedInAt)) ||
+      ('completedAt' in body && !sameDay(existing.completedAt, input.completedAt))
+    ) {
+      return errorResponse('입고 완료 일자는 되돌리기 후 다시 입고 완료로 바꾸세요', 400)
+    }
+    // 위치 분배가 기록된 옵션을 빼면 분배·등록 입고와 어긋난다
+    if (input.items) {
+      const kept = new Set(input.items.map((it) => it.optionId))
+      if (parseStockInAllocations(existing.externalStockIns).some((a) => !kept.has(a.optionId))) {
+        return errorResponse('위치 분배가 기록된 옵션은 제거할 수 없습니다', 400)
+      }
+    }
   }
 
   // items 변경 시 옵션 소속 검증
@@ -159,19 +256,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   // completedAt 처리:
-  //   - key 없음 + status → STOCKED_IN: 자동 today
-  //   - key 있고 null: 명시적 clear
-  //   - key 있고 날짜: 그대로 사용
-  // 주의: 재고 입고를 동반하는 STOCKED_IN 전환은 /transition 엔드포인트에서 처리.
-  //       PATCH 로 status='STOCKED_IN' 을 직접 보내는 경로는 일반적으로 사용하지 않음.
+  //   - key 있고 null: 명시적 clear / key 있고 날짜: 그대로 사용
+  //   - stockedInAt 명시 수정 시 completedAt 도 동기화 (레거시 호환)
   let resolvedCompletedAt: Date | null | undefined = undefined // undefined = 변경 없음
-  const statusChangingToStockedIn =
-    input.status === 'STOCKED_IN' && existing.status !== 'STOCKED_IN'
   if ('completedAt' in body) {
     resolvedCompletedAt = input.completedAt ? new Date(input.completedAt) : null
-  } else if (statusChangingToStockedIn) {
-    // 자동 today (UTC 자정)
-    resolvedCompletedAt = new Date(new Date().toISOString().slice(0, 10))
   } else if (resolvedStockedInAt !== undefined) {
     // stockedInAt 명시 수정 시 completedAt 도 동기화 (레거시 호환)
     resolvedCompletedAt = resolvedStockedInAt
@@ -233,7 +322,6 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           costMode: input.costMode,
           totalCost: computedTotalCost === undefined ? undefined : computedTotalCost,
           memo: input.memo === undefined ? undefined : (input.memo ?? null),
-          status: input.status,
           brandId: resolvedBrandId === undefined ? undefined : resolvedBrandId,
           dueAt: 'dueAt' in body ? (input.dueAt ? new Date(input.dueAt) : null) : undefined,
           completedAt: resolvedCompletedAt === undefined ? undefined : resolvedCompletedAt,
@@ -296,10 +384,32 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   })
   if (!run) return errorResponse('생산 발주를 찾을 수 없습니다', 404)
 
-  // STOCKED_IN 차수는 삭제 불가 — 입고 재고를 역산하면 그 사이 소비된 재고가 음수가 될 위험이 있음.
-  // transition 역행 차단(감사 High #8/#9)과 동일 정책: 재고 조정으로 정정.
+  // 입고 완료 차수는 되돌리기와 같은 조건(분배 기록 있음·등록된 입고 없음·확정 대조 없음)일 때만 삭제.
   if (run.status === 'STOCKED_IN') {
-    return errorResponse('입고 완료된 차수는 삭제할 수 없습니다. 재고 조정 후 진행하세요', 409)
+    try {
+      await prisma.$transaction(async (tx) => {
+        await lockRunRow(tx, runId)
+        const fresh = await tx.productionRun.findUnique({
+          where: { id: runId },
+          select: { id: true, status: true, stockedInAt: true, externalStockIns: true },
+        })
+        if (!fresh) return
+        if (fresh.status === 'STOCKED_IN') {
+          await lockLocationRows(
+            tx,
+            parseStockInAllocations(fresh.externalStockIns).map((a) => a.locationId)
+          )
+          const facts = (await loadStockInFacts(tx, resolved.space.id, [fresh])).get(runId)!
+          const reason = revertBlockedReason(fresh, facts)
+          if (reason) throw new MovementError(reason, 409)
+        }
+        await tx.productionRun.delete({ where: { id: runId } })
+      })
+    } catch (e) {
+      if (e instanceof MovementError) return errorResponse(e.message, e.status)
+      throw e
+    }
+    return NextResponse.json({ ok: true })
   }
 
   // items/costs는 onDelete: Cascade로 자동 삭제

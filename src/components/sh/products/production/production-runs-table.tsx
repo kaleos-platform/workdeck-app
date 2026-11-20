@@ -83,6 +83,8 @@ type RunRow = {
   completedAt: string | null
   orderedConfirmedAt: string | null
   stockedInAt: string | null
+  // 입고 완료 차수를 발주 완료로 되돌릴 수 있는지 (등록된 입고·확정 대조 없음)
+  canRevert?: boolean
   totalCost: number | null
   costMode: 'TOTAL' | 'BREAKDOWN'
   memo: string | null
@@ -168,15 +170,18 @@ const TRANSITION_TARGETS: ProductionRunStatus[] = ['PLANNED', 'ORDERED', 'STOCKE
 function StatusTransitionMenu({
   run,
   onSelect,
+  onRevert,
 }: {
   run: RunRow
   onSelect: (target: ProductionRunStatus) => void
+  onRevert: () => void
 }) {
-  // 입고 완료(STOCKED_IN)는 종료 상태 — 역행 전환 시 이미 반영된 재고가 역산되지 않아
-  // 재전환 시 이중 입고가 발생하므로 되돌리기 항목을 노출하지 않는다(서버도 409 로 차단).
+  // 입고 완료(STOCKED_IN)는 등록된 입고·확정 대조가 없을 때만 발주 완료로 되돌릴 수 있다
+  // (서버도 같은 조건으로 409 차단).
   const others =
     run.status === 'STOCKED_IN' ? [] : TRANSITION_TARGETS.filter((t) => t !== run.status)
-  if (others.length === 0) {
+  const showRevert = run.status === 'STOCKED_IN' && run.canRevert === true
+  if (others.length === 0 && !showRevert) {
     return <StatusBadge status={run.status} />
   }
   return (
@@ -197,6 +202,9 @@ function StatusTransitionMenu({
             {PRODUCTION_STATUS_LABEL[t]}로 변경
           </DropdownMenuItem>
         ))}
+        {showRevert && (
+          <DropdownMenuItem onSelect={onRevert}>발주 완료로 되돌리기</DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -396,6 +404,10 @@ export function ProductionRunsTable() {
   const [deleteTarget, setDeleteTarget] = useState<RunRow | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  // 입고 완료 → 발주 완료 되돌리기 confirm
+  const [revertTarget, setRevertTarget] = useState<RunRow | null>(null)
+  const [reverting, setReverting] = useState(false)
+
   // 상태 전환 다이얼로그
   const [transitionRun, setTransitionRun] = useState<RunRow | null>(null)
   const [transitionTarget, setTransitionTarget] = useState<TransitionTarget | null>(null)
@@ -495,6 +507,33 @@ export function ProductionRunsTable() {
       toast.error(err instanceof Error ? err.message : '삭제 실패')
     } finally {
       setDeleting(false)
+    }
+  }
+
+  // 입고 완료 되돌리기 — 서버가 등록된 입고·확정 대조를 다시 검사한다(409 사유를 그대로 표시)
+  async function handleRevert() {
+    if (!revertTarget) return
+    setReverting(true)
+    try {
+      const res = await fetch(`/api/sh/production-runs/${revertTarget.id}/transition`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'ORDERED',
+          transitionDate: new Date().toISOString().slice(0, 10),
+        }),
+      })
+      if (!res.ok) {
+        const err: { message?: string } = await res.json().catch(() => ({}))
+        throw new Error(err.message ?? '되돌리기 실패')
+      }
+      toast.success(`차수 ${revertTarget.runNo}를 발주 완료로 되돌렸습니다`)
+      setRevertTarget(null)
+      loadRuns()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '되돌리기 실패')
+    } finally {
+      setReverting(false)
     }
   }
 
@@ -751,6 +790,7 @@ export function ProductionRunsTable() {
                             setTransitionTarget(target)
                             setTransitionOpen(true)
                           }}
+                          onRevert={() => setRevertTarget(run)}
                         />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
@@ -918,6 +958,27 @@ export function ProductionRunsTable() {
         run={transferRun}
         onSaved={loadRuns}
       />
+
+      {/* 입고 완료 되돌리기 confirm */}
+      <Dialog open={!!revertTarget} onOpenChange={(v) => !v && setRevertTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>발주 완료로 되돌리기</DialogTitle>
+            <DialogDescription>
+              <strong>{revertTarget?.runNo}</strong> 차수의 입고 완료 기록(위치 분배·입고일·실입고
+              수량)이 지워지고 발주 완료 상태가 됩니다. 재고에는 영향이 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" disabled={reverting} onClick={() => setRevertTarget(null)}>
+              취소
+            </Button>
+            <Button onClick={handleRevert} disabled={reverting}>
+              {reverting ? '처리 중...' : '되돌리기'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 삭제 confirm 다이얼로그 */}
       <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
