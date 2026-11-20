@@ -18,9 +18,16 @@
 //                                                                  # 모집 관리 체험 종료일(KST) 연장. 토스 결제 공백기 이전 고객 전용 — 결제 가능일+7일로 맞춘다
 //   node scripts/billing-admin.mjs trial-all <종료일 YYYY-MM-DD> [--apply]
 //                                                                  # 면제 아닌 업무별 체험 일괄 연장(기본 미리보기). BILLING_CHECKOUT_PAUSED 해제 직전에 실행
+//   node scripts/billing-admin.mjs opening-trial <오프닝 brandId>|--all [--apply]
+//                                                                  # 오프닝 이전 고객 모집 체험 = 오프닝 이용 종료일(KST)+7일(연장만, 기본 미리보기)
+//                                                                  # OPENING_SOURCE_URL(+ 선택 OPENING_CA_FILE) 필요. KST 08:50~09:30(정기결제 cron)에는 --apply 거부
+//   migrate-grant 는 같은 연장을 같은 트랜잭션에서 수행한다(--no-opening-trial 로 생략: 테스트·비오프닝 용도)
 import 'dotenv/config'
+import { randomUUID } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { config } from 'dotenv'
 import pg from 'pg'
+import { openingTrialEnd } from './lib/opening-trial-date.mjs'
 
 config({ path: '.env.local', override: false })
 
@@ -58,6 +65,146 @@ const noPaidTarget = `NOT EXISTS (
     AND i.type = 'DECK' AND i."deckAppId" = a."deckAppId"
     AND i.status IN ('ACTIVE', 'CANCEL_AT_PERIOD_END')
 )`
+
+const OPENING_JOB_STATUSES = ['APPLIED', 'GRANTED', 'GRANT_MANUAL', 'HELD', 'DONE']
+
+class OpeningAbort extends Error {}
+
+const utcMs = (text) => new Date(`${text.replace(' ', 'T')}Z`).getTime()
+const utcText = (date) => date.toISOString().slice(0, 19).replace('T', ' ') // 목표는 항상 정각(초 단위)
+
+// 정기결제 cron(매일 00:00 UTC = 09:00 KST)은 Space 잠금 없이 예약을 바꾸므로 KST 08:50~09:30 은 피한다.
+function inCronWindow(now) {
+  const kst = new Date(now.getTime() + 9 * 3600_000)
+  const minutes = kst.getUTCHours() * 60 + kst.getUTCMinutes()
+  return minutes >= 8 * 60 + 50 && minutes <= 9 * 60 + 30
+}
+
+// 오프닝 DB 를 READ ONLY 트랜잭션으로 연결해 fn(oc) 를 실행한다.
+async function withOpening(fn) {
+  const url = process.env.OPENING_SOURCE_URL
+  if (!url) throw new Error('OPENING_SOURCE_URL 환경변수가 필요합니다')
+  const u = new URL(url)
+  let ssl
+  if (['localhost', '127.0.0.1', '[::1]'].includes(u.hostname)) ssl = false
+  else {
+    // 원격 오프닝 DB 는 CA 검증 TLS 필수(자격 증명·구독 정보를 다룬다) — opening-migrate.ts 와 같은 기준
+    if (!process.env.OPENING_CA_FILE)
+      throw new Error('원격 OPENING_SOURCE_URL 은 OPENING_CA_FILE(CA 검증)이 필요합니다')
+    u.searchParams.delete('sslmode')
+    ssl = { ca: readFileSync(process.env.OPENING_CA_FILE, 'utf8'), rejectUnauthorized: true }
+  }
+  const oc = new pg.Client({ connectionString: u.toString(), ssl })
+  await oc.connect()
+  try {
+    await oc.query('BEGIN READ ONLY')
+    return await fn(oc)
+  } finally {
+    await oc.query('ROLLBACK').catch(() => {})
+    await oc.end()
+  }
+}
+
+// 오프닝 브랜드의 가장 늦은 유한 구독 종료(UTC 문자열). 없으면 null. space_id 는 브랜드 번호.
+async function openingPeriodEnd(oc, brandId) {
+  if (!/^\d+$/.test(brandId)) throw new Error(`오프닝 brandId 는 숫자여야 합니다: ${brandId}`)
+  const r = await oc.query(
+    `SELECT current_period_end_at::text AS end_at FROM pay_subscription
+     WHERE space_id = $1 AND current_period_end_at < '9999-01-01'
+     ORDER BY current_period_end_at DESC LIMIT 1`,
+    [brandId]
+  )
+  return r.rows[0]?.end_at ?? null
+}
+
+// 호출자가 연 트랜잭션 안에서 실행한다(커밋·롤백은 호출자). 연장만 한다 — 새 종료가 더 늦을 때만 갱신.
+// 중단 사유는 OpeningAbort 로 던진다. 반환: { skip, before, after, periodBefore, periodAfter, periodChanged }
+async function extendOpeningTrial(db, { spaceId, brandId, openingEndUtc, runId }) {
+  const target = openingTrialEnd(openingEndUtc)
+  const locked = await db.query('SELECT id FROM "Space" WHERE id = $1 FOR UPDATE', [spaceId])
+  if (locked.rowCount !== 1) throw new OpeningAbort(`Space ${spaceId} 없음`)
+  const pending = await db.query(
+    `SELECT 1 FROM "BillingCharge" WHERE "spaceId" = $1 AND status = 'PENDING' LIMIT 1`,
+    [spaceId]
+  )
+  if (pending.rowCount) throw new OpeningAbort('PENDING 청구 있음')
+  const access = await db.query(
+    `SELECT id, "trialEndsAt"::text AS before FROM "SpaceDeckAccess"
+     WHERE "spaceId" = $1 AND "deckAppId" = 'recruiting'`,
+    [spaceId]
+  )
+  const sub = await db.query(
+    `SELECT id, status, "currentPeriodEnd"::text AS "periodEnd" FROM "SpaceSubscription" WHERE "spaceId" = $1`,
+    [spaceId]
+  )
+  const items = sub.rowCount
+    ? (
+        await db.query(
+          `SELECT "deckAppId", "awaitingTrialEnd", "addedAt"::text AS "addedAt" FROM "SubscriptionItem"
+           WHERE "subscriptionId" = $1 AND status <> 'ENDED'`,
+          [sub.rows[0].id]
+        )
+      ).rows
+    : []
+  if (items.some((i) => !i.awaitingTrialEnd))
+    throw new OpeningAbort('결제된 아이템 있음(유료 고객)')
+  if (sub.rows[0]?.status === 'PAST_DUE') throw new OpeningAbort('구독 PAST_DUE')
+
+  const before = access.rows[0]?.before ?? null
+  const periodBefore = sub.rows[0]?.periodEnd ?? null
+  const out = { skip: null, before, after: before, periodBefore, periodAfter: periodBefore }
+  if (!before) return { ...out, skip: '체험 이력 없음', periodChanged: false }
+  if (target.getTime() <= utcMs(before)) {
+    return { ...out, skip: '현재 체험이 더 늦거나 같음', periodChanged: false }
+  }
+  const after = utcText(target)
+  const upd = await db.query(
+    `UPDATE "SpaceDeckAccess" SET "trialEndsAt" = $3::timestamp, "updatedAt" = now()
+     WHERE id = $1 AND "trialEndsAt" = $2::timestamp`,
+    [access.rows[0].id, before, after]
+  )
+  if (upd.rowCount !== 1) throw new OpeningAbort('체험 종료일이 동시에 바뀜')
+  out.after = after
+
+  // 예약 전용 구독이면 결제일 = 비-ENDED 예약 아이템 전체의 체험 종료일 최솟값(realignReservationOnly 와 같은 규칙)
+  if (sub.rows[0]?.status === 'ACTIVE' && items.length > 0) {
+    const ends = await db.query(
+      `SELECT "deckAppId", "trialEndsAt"::text AS "trialEndsAt" FROM "SpaceDeckAccess"
+       WHERE "spaceId" = $1 AND "trialEndsAt" IS NOT NULL`,
+      [spaceId]
+    )
+    const byDeck = new Map(ends.rows.map((r) => [r.deckAppId, r.trialEndsAt]))
+    const starts = items.map((i) => byDeck.get(i.deckAppId) ?? i.addedAt)
+    const next = starts.reduce((a, b) => (utcMs(b) < utcMs(a) ? b : a))
+    if (periodBefore === null || utcMs(next) !== utcMs(periodBefore)) {
+      const r = await db.query(
+        `UPDATE "SpaceSubscription" SET status = 'ACTIVE', "currentPeriodEnd" = $2::timestamp, "retryCount" = 0, "updatedAt" = now()
+         WHERE id = $1 AND "currentPeriodEnd" IS NOT DISTINCT FROM $3::timestamp`,
+        [sub.rows[0].id, next, periodBefore]
+      )
+      if (r.rowCount !== 1) throw new OpeningAbort('결제일이 동시에 바뀜')
+      out.periodAfter = next
+    }
+  }
+  out.periodChanged = out.periodAfter !== periodBefore
+  await db.query(
+    `INSERT INTO "AdminAuditLog" (id, "actorUserId", action, "targetType", "targetId", meta)
+     VALUES (gen_random_uuid()::text, 'cli:billing-admin', 'billing.deck.trial.opening', 'spaceDeckAccess', $1, $2::jsonb)`,
+    [
+      `${spaceId}:recruiting`,
+      JSON.stringify({
+        runId,
+        brandId,
+        openingPeriodEndUtc: openingEndUtc,
+        beforeTrialEndsAt: before,
+        afterTrialEndsAt: out.after,
+        beforePeriodEnd: periodBefore,
+        afterPeriodEnd: out.periodAfter,
+      }),
+    ]
+  )
+  return out
+}
 
 async function main() {
   await client.connect()
@@ -177,11 +324,19 @@ async function main() {
     }
 
     case 'migrate-grant': {
-      const [spaceId, price = '12273'] = args
+      const flags = args.filter((a) => a.startsWith('--'))
+      const [spaceId, price = '12273'] = args.filter((a) => !a.startsWith('--'))
       const p = Number(price)
-      if (!spaceId || !Number.isInteger(p) || p <= 0) {
-        throw new Error('사용법: migrate-grant <spaceId> [보장공급가]')
+      if (
+        !spaceId ||
+        !Number.isInteger(p) ||
+        p <= 0 ||
+        flags.some((f) => f !== '--no-opening-trial')
+      ) {
+        throw new Error('사용법: migrate-grant <spaceId> [보장공급가] [--no-opening-trial]')
       }
+      const skipOpening = flags.includes('--no-opening-trial')
+      let opening = null
       await client.query('BEGIN')
       try {
         const sub = await client.query(
@@ -219,8 +374,44 @@ async function main() {
           // 이미 구독 중: 다음 정기청구는 priceSnapshot 기준이라 보장가만 심으면 반영 안 됨
           throw new Error(`모집 관리가 이미 ${item.rows[0].status} — 수동 처리 필요 (변경 없음)`)
         }
+        if (!skipOpening) {
+          const now = process.env.BILLING_ADMIN_NOW
+            ? new Date(process.env.BILLING_ADMIN_NOW)
+            : new Date()
+          if (Number.isNaN(now.getTime()) || inCronWindow(now))
+            throw new Error('KST 08:50~09:30 은 정기결제 cron 시간대라 migrate-grant 를 거부합니다')
+          // 같은 트랜잭션에서 체험을 오프닝 종료일+7일로 맞춘다. 오프닝 정보를 못 얻으면 전체 실패(조용히 7일로 남지 않음).
+          const jobs = await client.query(
+            `SELECT "openingBrandId" FROM "OpeningMigrationJob"
+             WHERE "targetSpaceId" = $1 AND status = ANY($2::"OpeningMigrationStatus"[])`,
+            [spaceId, OPENING_JOB_STATUSES]
+          )
+          if (jobs.rowCount !== 1) {
+            throw new Error(
+              `Space ${spaceId}: 대상 OpeningMigrationJob ${jobs.rowCount}건(1건 필요) — 변경 없음`
+            )
+          }
+          const brandId = jobs.rows[0].openingBrandId
+          opening = await withOpening(async (oc) => {
+            const openingEndUtc = await openingPeriodEnd(oc, brandId)
+            if (!openingEndUtc)
+              throw new Error(`오프닝 브랜드 ${brandId}: 종료일 조회 불가 — 변경 없음`)
+            return extendOpeningTrial(client, {
+              spaceId,
+              brandId,
+              openingEndUtc,
+              runId: randomUUID(),
+            })
+          })
+        }
         await client.query('COMMIT')
         console.log(`✔ Space ${spaceId} 이전 혜택 부여`)
+        if (skipOpening)
+          console.log('⚠ --no-opening-trial: 오프닝 종료일 기준 체험 연장 생략(7일 기본 체험)')
+        else
+          console.log(
+            `오프닝 종료일 기준 체험: ${opening.skip ? `SKIP(${opening.skip})` : `${opening.before} → ${opening.after}`}`
+          )
         console.table([{ ...sub.rows[0], ...access.rows[0], ...item.rows[0] }])
         const { trialEndsAtUtc } = access.rows[0] ?? {}
         const trialOver =
@@ -230,7 +421,7 @@ async function main() {
         }
       } catch (e) {
         await client.query('ROLLBACK')
-        throw e
+        throw e instanceof OpeningAbort ? new Error(`체험 연장 중단 — ${e.message}`) : e
       }
       break
     }
@@ -296,9 +487,79 @@ async function main() {
       break
     }
 
+    case 'opening-trial': {
+      const [target, ...rest] = args
+      if (
+        !target ||
+        rest.some((a) => a !== '--apply') ||
+        (target !== '--all' && !/^\d+$/.test(target))
+      ) {
+        throw new Error('사용법: opening-trial <오프닝 brandId>|--all [--apply]')
+      }
+      const apply = rest.includes('--apply')
+      const now = process.env.BILLING_ADMIN_NOW
+        ? new Date(process.env.BILLING_ADMIN_NOW)
+        : new Date()
+      if (Number.isNaN(now.getTime())) throw new Error('BILLING_ADMIN_NOW 형식 오류')
+      if (apply && inCronWindow(now)) {
+        throw new Error('KST 08:50~09:30 은 정기결제 cron 시간대라 --apply 를 거부합니다')
+      }
+      const runId = randomUUID()
+      const jobs = await client.query(
+        `SELECT "openingBrandId" AS brand, "targetSpaceId" AS "spaceId" FROM "OpeningMigrationJob"
+         WHERE "targetSpaceId" IS NOT NULL AND status = ANY($1::"OpeningMigrationStatus"[])
+           AND ($2::text IS NULL OR "openingBrandId" = $2)
+         ORDER BY "openingBrandId"`,
+        [OPENING_JOB_STATUSES, target === '--all' ? null : target]
+      )
+      const rows = []
+      if (target !== '--all' && jobs.rowCount === 0) {
+        rows.push({ brand: target, result: 'SKIP:매핑된 이전 job 없음' })
+      }
+      await withOpening(async (oc) => {
+        for (const { brand, spaceId } of jobs.rows) {
+          const row = { brand, spaceId }
+          rows.push(row)
+          try {
+            const openingEndUtc = await openingPeriodEnd(oc, brand)
+            row.openingEndUtc = openingEndUtc
+            if (!openingEndUtc) {
+              row.result = 'SKIP:오프닝 유한 종료일 없음'
+              continue
+            }
+            await client.query('BEGIN')
+            try {
+              const r = await extendOpeningTrial(client, {
+                spaceId,
+                brandId: brand,
+                openingEndUtc,
+                runId,
+              })
+              Object.assign(row, {
+                before: r.before,
+                after: r.after,
+                periodChanged: r.periodChanged,
+                result: r.skip ? `SKIP:${r.skip}` : apply ? 'UPDATED' : 'PREVIEW',
+              })
+              await client.query(apply ? 'COMMIT' : 'ROLLBACK')
+            } catch (e) {
+              await client.query('ROLLBACK')
+              throw e
+            }
+          } catch (e) {
+            row.result = `ABORT:${e.message}`
+            process.exitCode = 1
+          }
+        }
+      })
+      console.log(`opening-trial ${apply ? '적용' : '미리보기(변경 없음)'} runId=${runId}`)
+      console.table(rows)
+      break
+    }
+
     default:
       console.error(
-        '알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price|migrate-grant|set-trial|trial-all'
+        '알 수 없는 명령. status|exempt|unexempt|exempt-all-existing|pricing|price|migrate-grant|set-trial|trial-all|opening-trial'
       )
       process.exit(1)
   }
