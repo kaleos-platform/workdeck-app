@@ -103,10 +103,12 @@ export function SubscriptionSettingsClient() {
           })
           return
         }
+        const addResult = json as { reserved?: boolean; resumed?: boolean }
+        // 해제 예약 취소(재활성)는 신규 구독이 아니므로 kind 로 구분한다
         track('subscribe', {
           deck: deckAppId,
-          kind: 'add',
-          reserved: (json as { reserved?: boolean }).reserved === true,
+          kind: addResult.resumed === true ? 'resume' : 'add',
+          reserved: addResult.reserved === true,
         })
         const { prorated, amount, reserved } = json as {
           prorated: boolean

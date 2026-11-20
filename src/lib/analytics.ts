@@ -47,7 +47,8 @@ export function normalizeReferrer(referrer: string, currentOrigin: string): stri
       url.origin === currentOrigin ||
       url.hostname === 'workdeck.work' ||
       url.hostname.endsWith('.workdeck.work')
-    return sameSite ? `${url.origin}${url.pathname}` : url.origin
+    // 같은 사이트라도 /d·/admin·/settings 경로는 내부 ID 가 담기므로 오리진만 남긴다
+    return sameSite && isTrackablePath(url.pathname) ? `${url.origin}${url.pathname}` : url.origin
   } catch {
     return ''
   }
@@ -67,7 +68,11 @@ function pageContext() {
  */
 export function syncPageContext() {
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
-  if (!isTrackablePath(window.location.pathname)) return
+  // 측정 제외 경로(예: /d/[deckKey]/login 직접 진입)에서도 gtag 가 로드되면 자동 이벤트가 원본 URL 을 쓰지 않게 가린 값을 고정한다
+  if (!isTrackablePath(window.location.pathname)) {
+    window.gtag('set', { page_location: window.location.origin, page_referrer: '' })
+    return
+  }
   window.gtag('set', pageContext())
 }
 

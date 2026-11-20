@@ -319,12 +319,13 @@ export function MyDeckClient({
         message?: string
         error?: string
         reserved?: boolean
+        resumed?: boolean
       } | null
       if (!res.ok) throw new Error(json?.message ?? json?.error ?? '구독에 실패했습니다')
       // 구독 API 성공 직후 — 이후 업무 활성화 결과와 무관하게 구독 확정을 센다.
       track('subscribe', {
         deck: deck.id,
-        kind: pending.isAddition ? 'add' : 'start',
+        kind: json?.resumed === true ? 'resume' : pending.isAddition ? 'add' : 'start',
         reserved: json?.reserved === true,
       })
 

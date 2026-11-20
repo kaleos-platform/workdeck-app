@@ -42,6 +42,17 @@ describe('normalizeReferrer', () => {
       'https://app.workdeck.work/my-deck'
     )
   })
+  it('같은 사이트라도 측정 제외 경로(/d·/admin·/settings)는 오리진만', () => {
+    expect(normalizeReferrer('https://app.workdeck.work/d/recruiting/postings/x', cur)).toBe(
+      'https://app.workdeck.work'
+    )
+    expect(normalizeReferrer('https://app.workdeck.work/settings/members', cur)).toBe(
+      'https://app.workdeck.work'
+    )
+    expect(normalizeReferrer('https://app.workdeck.work/settings/billing', cur)).toBe(
+      'https://app.workdeck.work/settings/billing'
+    )
+  })
   it('외부는 오리진만', () => {
     expect(normalizeReferrer('https://www.google.com/search?q=a@b.com', cur)).toBe(
       'https://www.google.com'
