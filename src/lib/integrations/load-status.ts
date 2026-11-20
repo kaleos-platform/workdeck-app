@@ -30,6 +30,7 @@ const SPACE_CREDENTIALS: [IntegrationId, string][] = [
   ['google-marketing', 'google-marketing'],
   ['naver-searchad', 'naver-searchad'],
   ['naver-nbaesong', 'naver-commerce'],
+  ['cafe24', 'cafe24'],
 ]
 
 /**
@@ -50,7 +51,7 @@ export async function loadIntegrationStatuses(
     safe('space-credentials', () =>
       prisma.spaceCredential.findMany({
         where: { spaceId, provider: { in: SPACE_CREDENTIALS.map(([, p]) => p) } },
-        select: { provider: true, healthError: true },
+        select: { provider: true, healthError: true, config: true },
       })
     ),
     safe('notion', () =>
@@ -89,6 +90,18 @@ export async function loadIntegrationStatuses(
 
   for (const [id, provider] of SPACE_CREDENTIALS) {
     const row = creds?.find((c) => c.provider === provider)
+    if (id === 'cafe24') {
+      // 앱 정보만 저장한 상태(승인 전)는 '연결 필요', 승인이 끊기면 '확인 필요'.
+      const cfg = (row?.config ?? {}) as { status?: string; mallId?: string }
+      statuses[id] =
+        creds === undefined
+          ? UNKNOWN
+          : cfg.status === 'reauth_required' ||
+              (cfg.status === 'connected' && isAdmin && row?.healthError)
+            ? { state: 'attention', summary: '연결 확인 필요' }
+            : flag(cfg.status === 'connected', isAdmin ? cfg.mallId : undefined)
+      continue
+    }
     statuses[id] =
       creds === undefined ? UNKNOWN : withError(!!row, isAdmin ? row?.healthError : null, '')
   }
