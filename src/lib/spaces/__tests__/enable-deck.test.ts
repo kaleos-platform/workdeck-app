@@ -27,12 +27,19 @@ beforeEach(() => {
 })
 
 it('새 Space 에는 체험 시작 후 DeckInstance 를 만든다', async () => {
+  jest.mocked(ensureTrialStarted).mockResolvedValue(true)
   const result = await run()
+  expect(result.trialStarted).toBe(true)
   expect(ensureTrialStarted).toHaveBeenCalledWith('s1', 'recruiting', tx, {})
   expect(tx.deckInstance.create).toHaveBeenCalledWith(
     expect.objectContaining({ data: { spaceId: 's1', deckAppId: 'recruiting', isActive: true } })
   )
   expect(result.reactivated).toBe(false)
+})
+
+it('체험이 시작되지 않았으면 trialStarted false', async () => {
+  jest.mocked(ensureTrialStarted).mockResolvedValue(false)
+  expect((await run()).trialStarted).toBe(false)
 })
 
 it('비활성 인스턴스는 재활성한다', async () => {
@@ -65,7 +72,7 @@ it('준비중이면 체험을 시작하지 않는다', async () => {
 it('체험 판정 전에 OWNER 마다 id 순으로 lock 을 잡고 같은 tx 를 쓴다', async () => {
   const order: string[] = []
   jest.mocked(lockOwnerSpaces).mockImplementation(async (_tx, id) => void order.push(`lock:${id}`))
-  jest.mocked(ensureTrialStarted).mockImplementation(async () => void order.push('trial'))
+  jest.mocked(ensureTrialStarted).mockImplementation(async () => (order.push('trial'), true))
   await run()
   expect(tx.spaceMember.findMany).toHaveBeenCalledWith(
     expect.objectContaining({ where: { spaceId: 's1', role: 'OWNER' }, orderBy: { userId: 'asc' } })

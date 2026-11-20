@@ -25,6 +25,7 @@ import {
   SALES_CONTENT_BASE_PATH,
 } from '@/lib/deck-routes'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
+import { track } from '@/lib/analytics'
 import { buildMarketingUrl } from '@/lib/domain'
 import {
   REASON_BADGE,
@@ -287,6 +288,8 @@ export function MyDeckClient({
         throw new Error(error?.message ?? '추가에 실패했습니다')
       }
 
+      const added = (await response.json().catch(() => null)) as { trialStarted?: boolean } | null
+      if (added?.trialStarted === true) track('trial_start', { deck: selectedDeck.id })
       toast.success(`추가되었습니다: ${selectedDeck.name}`)
       setSelectedDeck(null)
       router.refresh()
@@ -318,6 +321,12 @@ export function MyDeckClient({
         reserved?: boolean
       } | null
       if (!res.ok) throw new Error(json?.message ?? json?.error ?? '구독에 실패했습니다')
+      // 구독 API 성공 직후 — 이후 업무 활성화 결과와 무관하게 구독 확정을 센다.
+      track('subscribe', {
+        deck: deck.id,
+        kind: pending.isAddition ? 'add' : 'start',
+        reserved: json?.reserved === true,
+      })
 
       // 구독이 끝나야 entitlement 게이트를 통과하므로 여기서 deck 을 활성화한다.
       // 이미 사용 중인 업무(체험 중 구독 등)는 활성화 요청이 필요 없다 — 왕복 1회를 줄인다.

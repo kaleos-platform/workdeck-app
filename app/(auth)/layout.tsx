@@ -1,4 +1,5 @@
 import { LayoutGrid } from 'lucide-react'
+import { GoogleTag } from '@/components/analytics/google-tag'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,6 +19,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {children}
       </div>
+      <GoogleTag />
     </div>
   )
 }

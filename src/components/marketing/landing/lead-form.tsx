@@ -6,6 +6,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 
+import { track } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -70,6 +71,7 @@ export function LeadForm({ deck, doneMessage }: { deck: string; doneMessage?: st
         }),
       })
       if (res.ok) {
+        track('generate_lead', { deck })
         setDone(true)
         return
       }

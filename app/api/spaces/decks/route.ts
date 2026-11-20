@@ -27,11 +27,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { instance, reactivated } = await prisma.$transaction((tx) =>
+    const { instance, reactivated, trialStarted } = await prisma.$transaction((tx) =>
       enableDeckInTx(tx, resolved.space.id, deckAppId)
     )
     if (deckAppId === 'finance') await seedFinanceCategories(resolved.space.id)
-    return NextResponse.json({ deck: deckApp, instance }, { status: reactivated ? 200 : 201 })
+    return NextResponse.json(
+      { deck: deckApp, instance, trialStarted },
+      { status: reactivated ? 200 : 201 }
+    )
   } catch (error) {
     if (error instanceof EnableDeckError) {
       if (error.code === 'DECK_CLOSED') return errorResponse('준비중인 업무입니다', 403)
