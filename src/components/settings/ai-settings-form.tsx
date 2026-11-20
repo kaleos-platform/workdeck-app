@@ -27,13 +27,14 @@ type Settings = {
   usage: { yearMonth: string; textTokensUsed: number; textTokenQuota: number }
 }
 
-// logo: 공식 브랜드 SVG를 public/brand/에 둔 공급자만 지정한다(없으면 이름 텍스트 타일).
+// logo: public/brand/ 의 각 사 로고 SVG(출처: Wikimedia Commons, 원 출처 각 사). 단색 검정 로고는 다크 모드에서 반전.
 const PROVIDERS: {
   value: Provider
   label: string
   defaultModel: string
   keyHint: string
   logo?: string
+  invertOnDark?: boolean
   keyUrl: string
   keySteps: string[]
 }[] = [
@@ -42,6 +43,8 @@ const PROVIDERS: {
     label: 'OpenAI',
     defaultModel: 'gpt-4.1-mini',
     keyHint: 'sk-...',
+    logo: '/brand/openai.svg',
+    invertOnDark: true,
     keyUrl: 'https://platform.openai.com/api-keys',
     keySteps: ['OpenAI 계정으로 로그인합니다.', '"Create new secret key"를 눌러 키를 만듭니다.'],
   },
@@ -50,6 +53,7 @@ const PROVIDERS: {
     label: 'Anthropic',
     defaultModel: 'claude-sonnet-4-5',
     keyHint: 'sk-ant-...',
+    logo: '/brand/anthropic.svg',
     keyUrl: 'https://console.anthropic.com/settings/keys',
     keySteps: ['Anthropic 콘솔에 로그인합니다.', '"Create Key"를 눌러 키를 만듭니다.'],
   },
@@ -58,6 +62,7 @@ const PROVIDERS: {
     label: 'Google Gemini',
     defaultModel: 'gemini-2.5-flash',
     keyHint: 'AIza...',
+    logo: '/brand/gemini.svg',
     keyUrl: 'https://aistudio.google.com/apikey',
     keySteps: ['Google 계정으로 로그인합니다.', '"Create API key"를 눌러 키를 만듭니다.'],
   },
@@ -261,8 +266,16 @@ export function AiSettingsForm() {
                         setProvider(p.value)
                       }}
                     />
-                    {/* eslint-disable-next-line @next/next/no-img-element -- 작은 정적 SVG 로고 */}
-                    {p.logo && <img src={p.logo} alt="" width={20} height={20} />}
+                    {p.logo && (
+                      // eslint-disable-next-line @next/next/no-img-element -- 작은 정적 SVG 로고
+                      <img
+                        src={p.logo}
+                        alt=""
+                        width={20}
+                        height={20}
+                        className={p.invertOnDark ? 'dark:invert' : undefined}
+                      />
+                    )}
                     {p.label}
                   </label>
                 ))}
