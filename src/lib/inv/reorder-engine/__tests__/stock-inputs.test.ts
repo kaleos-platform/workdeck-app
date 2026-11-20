@@ -10,6 +10,9 @@ jest.mock('@/lib/prisma', () => ({
     invStorageLocation: { findMany: jest.fn() },
     productionRun: { findMany: jest.fn() },
     invReconciliation: { findMany: jest.fn() },
+    invMovement: { findMany: jest.fn() },
+    // interactive 트랜잭션 — 테스트에선 같은 mock 클라이언트를 넘긴다
+    $transaction: jest.fn(),
   },
 }))
 jest.mock('@/lib/inv/coupang-return-stock', () => ({
@@ -24,6 +27,8 @@ const p = prisma as unknown as {
   invStorageLocation: { findMany: jest.Mock }
   productionRun: { findMany: jest.Mock }
   invReconciliation: { findMany: jest.Mock }
+  invMovement: { findMany: jest.Mock }
+  $transaction: jest.Mock
 }
 
 describe('isExternalLogisticsLocation', () => {
@@ -84,8 +89,19 @@ describe('pendingExternalQtyByOption', () => {
   })
 })
 
+let registered: unknown[] = []
+let adjustments: unknown[] = []
+
 describe('loadReorderStockInputs', () => {
-  beforeEach(() => jest.resetAllMocks())
+  beforeEach(() => {
+    jest.resetAllMocks()
+    p.$transaction.mockImplementation((cb: (t: unknown) => unknown) => cb(prisma))
+    registered = []
+    adjustments = []
+    p.invMovement.findMany.mockImplementation(async (a: { where: { type?: string } }) =>
+      a.where.type === 'ADJUSTMENT' ? adjustments : registered
+    )
+  })
 
   it('현재고·반품 차감·PLANNED 포함 incoming·외부 대기분', async () => {
     const now = new Date('2026-11-13T00:00:00Z')
@@ -135,6 +151,7 @@ describe('loadReorderStockInputs', () => {
   })
 
   const extRun = (locationId: string) => ({
+    id: 'run-1',
     status: 'STOCKED_IN',
     stockedInAt: new Date('2026-11-12T00:00:00Z'),
     externalStockIns: [{ optionId: 'o1', locationId, quantity: 40 }],
@@ -155,6 +172,8 @@ describe('loadReorderStockInputs', () => {
   it('입고 이후 확정 대조가 있으면 외부 대기분 제외', async () => {
     setup(extRun('R'), [
       {
+        id: 'rc1',
+        status: 'CONFIRMED',
         locationId: 'R',
         confirmedAt: new Date('2026-11-12T12:00:00Z'),
         createdAt: new Date('2026-11-12T11:00:00Z'),
@@ -164,10 +183,88 @@ describe('loadReorderStockInputs', () => {
     expect(r.get('o1')?.incomingQty).toBe(0)
   })
 
-  it('내부(OWN) 위치 입고는 대기분 제외', async () => {
+  it('자체(OWN) 위치 분배도 미등록이면 입고 예정', async () => {
     setup(extRun('H'), [])
     const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')?.incomingQty).toBe(40)
+    expect(r.get('o1')?.rocketIncomingQty).toBe(0)
+  })
+
+  it('그 키의 INBOUND 가 등록되면 수량이 달라도 전부 해소', async () => {
+    setup(extRun('H'), [])
+    registered = [{ referenceId: 'prodrun:run-1:o1:H' }]
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
     expect(r.get('o1')?.incomingQty).toBe(0)
+  })
+
+  it('다른 위치·옵션의 INBOUND 는 해소하지 않는다', async () => {
+    setup(extRun('H'), [])
+    registered = [{ referenceId: 'prodrun:run-1:o1:R' }, { referenceId: 'prodrun:run-2:o1:H' }]
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')?.incomingQty).toBe(40)
+  })
+
+  it('자체 위치도 입고 이후 확정 대조가 있으면 해소', async () => {
+    setup(extRun('H'), [
+      {
+        id: 'rc1',
+        status: 'CONFIRMED',
+        locationId: 'H',
+        confirmedAt: new Date('2026-11-13T00:00:00Z'),
+        createdAt: new Date('2026-11-12T11:00:00Z'),
+      },
+    ])
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')?.incomingQty).toBe(0)
+  })
+
+  it('자체 위치는 같은 날(KST) 대조면 해소하지 않는다', async () => {
+    setup(extRun('H'), [
+      {
+        id: 'rc1',
+        status: 'CONFIRMED',
+        locationId: 'H',
+        confirmedAt: new Date('2026-11-12T12:00:00Z'),
+        createdAt: new Date('2026-11-12T11:00:00Z'),
+      },
+    ])
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')?.incomingQty).toBe(40)
+  })
+
+  it('진행 중(PARTIAL) 대조의 ADJUSTMENT 가 입고 이후 적용됐으면 해소', async () => {
+    setup(extRun('H'), [
+      {
+        id: 'rc1',
+        status: 'PARTIAL',
+        locationId: 'H',
+        confirmedAt: null,
+        createdAt: new Date('2026-11-12T11:00:00Z'),
+      },
+    ])
+    adjustments = [
+      { locationId: 'H', referenceId: 'rc1', createdAt: new Date('2026-11-13T00:00:00Z') },
+    ]
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')?.incomingQty).toBe(0)
+  })
+
+  it('자체 위치 분배도 대기 한도(30일) 경과 시 해소', async () => {
+    const old = { ...extRun('H'), stockedInAt: new Date('2026-10-04T00:00:00Z') }
+    setup(old, [])
+    const r = await loadReorderStockInputs('s1', ['o1'], now)
+    expect(r.get('o1')?.incomingQty).toBe(0)
+  })
+
+  it('읽기는 RepeatableRead interactive 트랜잭션 하나로 묶고, INBOUND 는 정확한 키로 조회한다', async () => {
+    setup(extRun('H'), [])
+    await loadReorderStockInputs('s1', ['o1'], now)
+    expect(p.$transaction).toHaveBeenCalledTimes(1)
+    expect(p.$transaction.mock.calls[0][1]).toMatchObject({ isolationLevel: 'RepeatableRead' })
+    const inbound = p.invMovement.findMany.mock.calls.find(
+      ([a]) => (a as { where: { type?: string } }).where.type === 'INBOUND'
+    )![0]
+    expect(inbound.where.referenceId).toEqual({ in: ['prodrun:run-1:o1:H'] })
   })
 
   it('linkedLocationIds 지정 시 그 위치 재고·입고 예정(계획 차수 + 외부 대기분)이 rocket 값', async () => {

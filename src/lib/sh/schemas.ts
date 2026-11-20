@@ -549,6 +549,9 @@ export const productionRunStatusTransitionSchema = z
         })
       )
       .optional(),
+    // true 면 같은 트랜잭션에서 자체(비외부) 위치 분배분을 INBOUND 한다. 기본 false —
+    // 입고 완료는 상태·분배 기록만 하고 재고는 나중에 차수에서 [사무실 입고 등록]으로 올린다.
+    ownStockIn: z.boolean().optional(),
     // 세트 단위 입고 — 세트(listing)별 입고 세트수 + 입고 위치. 서버가 구성옵션으로 분해해
     // allocations 를 만든다. 세트 기반 차수 전용. 값이 있으면 allocations 대신 이 분해를 쓴다.
     setStockIns: z
@@ -562,6 +565,19 @@ export const productionRunStatusTransitionSchema = z
       .optional(),
   })
   .superRefine((v, ctx) => {
+    const seen = new Set<string>()
+    for (const a of v.allocations ?? []) {
+      const key = `${a.optionId}|${a.locationId}`
+      if (seen.has(key)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: '같은 옵션·위치 분배가 중복되었습니다',
+          path: ['allocations'],
+        })
+        break
+      }
+      seen.add(key)
+    }
     // 입고완료 시 allocations 또는 setStockIns 중 하나는 있어야 함(빈 배열 = 전 옵션 미입고, 허용)
     if (v.status === 'STOCKED_IN' && v.allocations === undefined && v.setStockIns === undefined) {
       ctx.addIssue({
@@ -572,6 +588,38 @@ export const productionRunStatusTransitionSchema = z
     }
   })
 export type ProductionRunStatusTransitionInput = z.infer<typeof productionRunStatusTransitionSchema>
+
+// 사무실(자체 위치) 입고 등록 — POST /api/sh/production-runs/[runId]/own-stock-in
+export const productionRunOwnStockInSchema = z
+  .object({
+    movementDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, '입고일 형식이 올바르지 않습니다'),
+    entries: z
+      .array(
+        z.object({
+          optionId: z.string().min(1),
+          locationId: z.string().min(1),
+          quantity: z.number().int().positive(),
+        })
+      )
+      .min(1)
+      .max(500),
+  })
+  .superRefine((v, ctx) => {
+    const seen = new Set<string>()
+    for (const e of v.entries) {
+      const key = `${e.optionId}|${e.locationId}`
+      if (seen.has(key)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: '같은 옵션·위치가 중복되었습니다',
+          path: ['entries'],
+        })
+        break
+      }
+      seen.add(key)
+    }
+  })
+export type ProductionRunOwnStockInInput = z.infer<typeof productionRunOwnStockInSchema>
 
 // ─── 가격 시뮬레이션 시나리오 ──────────────────────────────────────────────────
 

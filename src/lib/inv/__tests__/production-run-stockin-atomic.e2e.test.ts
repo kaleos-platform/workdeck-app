@@ -143,6 +143,8 @@ d('STOCKED_IN 전환 원자성 (dev DB)', () => {
       postReq({
         status: 'STOCKED_IN',
         transitionDate: '2026-07-07',
+        // 입고 완료는 기본적으로 재고를 늘리지 않는다 — 사무실 입고 등록을 같이 요청한 경로를 검증
+        ownStockIn: true,
         allocations: [
           { optionId: optAId, locationId, quantity: 10 },
           { optionId: optBId, locationId, quantity: 5 },

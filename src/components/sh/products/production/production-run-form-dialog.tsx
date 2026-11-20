@@ -26,6 +26,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
+  StockInAllocationFields,
+  type StockInAllocationValue,
+  type StockInRunSet,
+} from './stock-in-allocation-fields'
+import {
   OptionPickerDialog,
   type PickedOption,
 } from '@/components/sh/products/listings/option-picker-dialog'
@@ -73,6 +78,25 @@ const STATUS_LABEL: Record<RunStatus, string> = {
   STOCKED_IN: '입고완료',
 }
 
+// 입고 완료 차수의 위치 분배 결과 (detail API stockIn)
+type StockInAllocationResult = {
+  optionId: string
+  optionName: string
+  locationId: string
+  locationName: string
+  isExternal: boolean
+  quantity: number
+  state: 'registered' | 'reconciled' | 'pending'
+  registeredQty?: number
+  registeredAt?: string
+}
+
+type StockInDetail = {
+  allocations: StockInAllocationResult[]
+  canRevert: boolean
+  revertBlockedReason: string | null
+}
+
 // detail API 응답 형태
 type RunDetail = {
   run: {
@@ -85,6 +109,8 @@ type RunDetail = {
     totalCost: number | null
     costMode: CostMode
     memo: string | null
+    stockIn: StockInDetail | null
+    sets: StockInRunSet[]
     items: Array<{
       id: string
       optionId: string
@@ -309,12 +335,25 @@ export function ProductionRunFormDialog({
 
   // ── 단계별 상태/일자 (편집 모드 전용)
   const [status, setStatus] = useState<RunStatus>('PLANNED')
-  // 저장된 상태 — 입고 완료 전환을 이 폼에서 못 하게 막는 기준.
-  // 재고 INBOUND 는 /transition(위치·수량 분배)에서만 만들어진다.
+  // 저장된 상태 — 상태 변경은 PATCH 가 아니라 /transition 으로만 처리한다.
   const [savedStatus, setSavedStatus] = useState<RunStatus>('PLANNED')
   const [orderedConfirmedAt, setOrderedConfirmedAt] = useState('')
   const [stockedInAt, setStockedInAt] = useState('')
   const [createdAt, setCreatedAt] = useState('')
+
+  // ── 입고 완료 처리 (상태 입고완료 선택 시 위치 분배 입력 / 저장된 입고 완료 차수의 결과·사무실 입고 등록)
+  const [stockInSets, setStockInSets] = useState<StockInRunSet[]>([])
+  const [alloc, setAlloc] = useState<StockInAllocationValue | null>(null)
+  const [stockInDetail, setStockInDetail] = useState<StockInDetail | null>(null)
+  // 기본 정보 저장은 끝났고 상태 전환만 실패한 경우 — 재시도는 transition 만 다시 호출한다
+  const [basicSaved, setBasicSaved] = useState(false)
+  const [transitionError, setTransitionError] = useState<string | null>(null)
+  // 사무실 입고 등록 입력 — 옵션|위치 키 → 수량 문자열, 공통 입고일
+  const [ownQty, setOwnQty] = useState<Record<string, string>>({})
+  const [ownDate, setOwnDate] = useState('')
+  const [registering, setRegistering] = useState(false)
+  const [reverting, setReverting] = useState(false)
+  const [confirmRevert, setConfirmRevert] = useState(false)
 
   // ── 옵션 목록 (productId 기준 그룹핑)
   const [optionItems, setOptionItems] = useState<OptionItem[]>([])
@@ -342,11 +381,30 @@ export function ProductionRunFormDialog({
     setOrderedConfirmedAt('')
     setStockedInAt('')
     setCreatedAt('')
+    setStockInSets([])
+    setAlloc(null)
+    setStockInDetail(null)
+    setBasicSaved(false)
+    setTransitionError(null)
+    setOwnQty({})
+    setOwnDate('')
     setOptionItems([])
     setPlanSets([])
     setCostMode('TOTAL')
     setTotalCostItems([newTotalCostItem()])
     setCostRows([newCostRow()])
+  }
+
+  // 입고 완료 차수의 분배 결과 → 사무실 입고 등록 입력 기본값(분배 수량·입고완료 일자)
+  function applyStockInDetail(detail: StockInDetail | null, stockedInIso: string | null) {
+    setStockInDetail(detail)
+    const q: Record<string, string> = {}
+    for (const a of detail?.allocations ?? []) {
+      if (!a.isExternal && a.state === 'pending')
+        q[`${a.optionId}|${a.locationId}`] = String(a.quantity)
+    }
+    setOwnQty(q)
+    setOwnDate(stockedInIso ? toDateInput(stockedInIso) : new Date().toISOString().slice(0, 10))
   }
 
   // ── 다이얼로그 열릴 때 처리
@@ -372,6 +430,11 @@ export function ProductionRunFormDialog({
           setOrderedConfirmedAt(r.orderedConfirmedAt ? toDateInput(r.orderedConfirmedAt) : '')
           setStockedInAt(r.stockedInAt ? toDateInput(r.stockedInAt) : '')
           setCreatedAt(r.createdAt ? toDateInput(r.createdAt) : '')
+          setStockInSets(r.sets ?? [])
+          setAlloc(null)
+          setBasicSaved(false)
+          setTransitionError(null)
+          applyStockInDetail(r.stockIn, r.stockedInAt)
 
           // items → OptionItem[]
           setOptionItems(
@@ -574,7 +637,9 @@ export function ProductionRunFormDialog({
   const totalCostSum = totalCostItems.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0)
 
   // ── 입고완료 차수면 발주/입고/차이 컬럼 표시 (입고는 표시 전용)
-  const showStockCols = status === 'STOCKED_IN'
+  const showStockCols = savedStatus === 'STOCKED_IN'
+  // 입고 완료를 새로 선택한 상태 — 위치 분배 입력과 옵션 목록이 어긋나지 않게 옵션 편집을 잠근다
+  const selectingStockIn = isEdit && savedStatus !== 'STOCKED_IN' && status === 'STOCKED_IN'
 
   // ── 옵션 요약 (총 수량 표시)
   const positiveOptionCount = optionItems.filter((it) => it.quantity > 0).length
@@ -653,11 +718,14 @@ export function ProductionRunFormDialog({
         : {}),
     }
 
-    // 편집 모드: 단계별 상태/일자 (재고 입고는 트리거하지 않음 — 메타데이터만)
+    // 편집 모드: 단계별 일자 (상태는 PATCH 로 바꾸지 않는다 — 상태 변경은 저장 후 /transition)
     if (isEdit) {
-      body.status = status
       body.orderedConfirmedAt = orderedConfirmedAt || null
-      body.stockedInAt = stockedInAt || null
+      // 입고 완료 일자: 이미 입고 완료면 서버가 변경을 막고(되돌리기 후 재입고), 입고 완료로 바꾸는 중이면
+      // transition 이 정한다 — 둘 다 PATCH 로 보내지 않는다
+      if (savedStatus !== 'STOCKED_IN' && status !== 'STOCKED_IN') {
+        body.stockedInAt = stockedInAt || null
+      }
     }
 
     if (costMode === 'TOTAL') {
@@ -683,12 +751,49 @@ export function ProductionRunFormDialog({
       }))
     }
 
+    // 입고 완료로 바꾸려면 위치 분배가 유효해야 한다 (PATCH 를 보내기 전에 막는다)
+    const statusChanging = isEdit && status !== savedStatus
+    if (statusChanging && status === 'STOCKED_IN' && !alloc?.valid) {
+      toast.error('입고 행의 위치와 수량(1개 이상)을 확인하세요')
+      return
+    }
+
     setSaving(true)
     try {
-      const url = isEdit ? `/api/sh/production-runs/${runId}` : '/api/sh/production-runs'
-      const method = isEdit ? 'PATCH' : 'POST'
-      const res = await fetch(url, {
-        method,
+      if (isEdit) {
+        // 1) 기본 정보·옵션 저장 (이미 저장됐으면 건너뛰고 상태 전환만 재시도)
+        if (!basicSaved) {
+          const res = await fetch(`/api/sh/production-runs/${runId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+          if (!res.ok) {
+            const err: { message?: string } = await res.json().catch(() => ({}))
+            throw new Error(err.message ?? '저장 실패')
+          }
+          setBasicSaved(true)
+        }
+        // 2) 상태 전환 — 실패해도 기본 정보는 이미 저장된 상태
+        if (statusChanging) {
+          try {
+            await runTransition()
+          } catch (err) {
+            const reason = err instanceof Error ? err.message : '상태 변경 실패'
+            setTransitionError(
+              `기본 정보는 저장됐고 ${STATUS_LABEL[status]}는 처리되지 않았습니다: ${reason}`
+            )
+            return
+          }
+        }
+        setTransitionError(null)
+        toast.success(`차수 ${runNo} 수정 완료`)
+        onSaved()
+        return
+      }
+
+      const res = await fetch('/api/sh/production-runs', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
@@ -696,12 +801,124 @@ export function ProductionRunFormDialog({
         const err: { message?: string } = await res.json().catch(() => ({}))
         throw new Error(err.message ?? '저장 실패')
       }
-      toast.success(isEdit ? `차수 ${runNo} 수정 완료` : `차수 ${runNo} 추가 완료`)
+      toast.success(`차수 ${runNo} 추가 완료`)
       onSaved()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // 상태 전환 요청 — 입고완료면 위치 분배(+사무실 입고 등록 선택)를 함께 보낸다
+  async function runTransition() {
+    const today = new Date().toISOString().slice(0, 10)
+    const transitionDate =
+      status === 'STOCKED_IN'
+        ? stockedInAt || today
+        : status === 'ORDERED'
+          ? orderedConfirmedAt || today
+          : today
+    const res = await fetch(`/api/sh/production-runs/${runId}/transition`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status,
+        transitionDate,
+        ...(status === 'STOCKED_IN' ? alloc?.payload : {}),
+      }),
+    })
+    if (!res.ok) {
+      const err: { message?: string } = await res.json().catch(() => ({}))
+      throw new Error(err.message ?? '상태 변경 실패')
+    }
+  }
+
+  // 입고 완료 차수의 분배 결과만 다시 읽는다 (사무실 입고 등록 후 갱신)
+  async function reloadStockIn() {
+    const res = await fetch(`/api/sh/production-runs/${runId}`)
+    if (!res.ok) return
+    const data: RunDetail = await res.json()
+    applyStockInDetail(data.run.stockIn, data.run.stockedInAt)
+  }
+
+  // 사무실 입고 등록 — 미등록 자체 위치 분배 행만, 수량 0 은 건너뜀
+  async function handleRegisterOwn() {
+    const entries: { optionId: string; locationId: string; quantity: number }[] = []
+    const over: string[] = []
+    for (const a of stockInDetail?.allocations ?? []) {
+      if (a.isExternal || a.state !== 'pending') continue
+      const raw = ownQty[`${a.optionId}|${a.locationId}`] ?? ''
+      const qty = Number(raw)
+      if (raw === '' || qty === 0) continue
+      if (!Number.isInteger(qty) || qty < 0) {
+        toast.error(`${a.optionName} 입고 수량은 0 이상의 정수로 입력하세요`)
+        return
+      }
+      entries.push({ optionId: a.optionId, locationId: a.locationId, quantity: qty })
+      if (qty > a.quantity)
+        over.push(
+          `${a.optionName} ${qty.toLocaleString('ko-KR')} > 분배 ${a.quantity.toLocaleString('ko-KR')}`
+        )
+    }
+    if (entries.length === 0) {
+      toast.error('등록할 수량이 없습니다')
+      return
+    }
+    if (
+      over.length > 0 &&
+      !window.confirm(`분배 수량보다 많이 입고 등록합니다.\n${over.join('\n')}\n계속할까요?`)
+    ) {
+      return
+    }
+    if (!ownDate) {
+      toast.error('입고일을 입력하세요')
+      return
+    }
+    setRegistering(true)
+    try {
+      const res = await fetch(`/api/sh/production-runs/${runId}/own-stock-in`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ movementDate: ownDate, entries }),
+      })
+      if (!res.ok) {
+        const err: { message?: string } = await res.json().catch(() => ({}))
+        throw new Error(err.message ?? '입고 등록 실패')
+      }
+      toast.success(`사무실 재고에 ${entries.length}건 입고 등록했습니다`)
+      await reloadStockIn()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '입고 등록 실패')
+    } finally {
+      setRegistering(false)
+    }
+  }
+
+  // 입고 완료 → 발주 완료 되돌리기 (서버가 등록된 입고·확정 대조를 다시 검사)
+  async function handleRevert() {
+    setReverting(true)
+    try {
+      const res = await fetch(`/api/sh/production-runs/${runId}/transition`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'ORDERED',
+          transitionDate: new Date().toISOString().slice(0, 10),
+        }),
+      })
+      if (!res.ok) {
+        const err: { message?: string } = await res.json().catch(() => ({}))
+        throw new Error(err.message ?? '되돌리기 실패')
+      }
+      toast.success(`차수 ${runNo}를 발주 완료로 되돌렸습니다`)
+      setConfirmRevert(false)
+      onSaved()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '되돌리기 실패')
+      setConfirmRevert(false)
+    } finally {
+      setReverting(false)
     }
   }
 
@@ -766,12 +983,7 @@ export function ProductionRunFormDialog({
 
                 {isEdit && (
                   <div className="space-y-2 rounded-md border border-dashed p-3">
-                    <div className="flex items-baseline justify-between">
-                      <h4 className="text-xs font-semibold text-foreground">진행 단계</h4>
-                      <span className="text-xs text-muted-foreground">
-                        상태 변경만 — 재고 입고는 목록의 상태 메뉴에서 처리하세요
-                      </span>
-                    </div>
+                    <h4 className="text-xs font-semibold text-foreground">진행 단계</h4>
                     {createdAt && (
                       <p className="text-xs text-muted-foreground">
                         계획중 · 생성일{' '}
@@ -783,8 +995,13 @@ export function ProductionRunFormDialog({
                         <Label htmlFor="status">상태</Label>
                         <Select
                           value={status}
-                          onValueChange={(v) => setStatus(v as RunStatus)}
-                          disabled={savedStatus === 'STOCKED_IN'}
+                          onValueChange={(v) => {
+                            setStatus(v as RunStatus)
+                            if (v === 'STOCKED_IN' && !stockedInAt) {
+                              setStockedInAt(new Date().toISOString().slice(0, 10))
+                            }
+                          }}
+                          disabled={savedStatus === 'STOCKED_IN' || basicSaved}
                         >
                           <SelectTrigger id="status">
                             <SelectValue />
@@ -792,19 +1009,9 @@ export function ProductionRunFormDialog({
                           <SelectContent>
                             <SelectItem value="PLANNED">{STATUS_LABEL.PLANNED}</SelectItem>
                             <SelectItem value="ORDERED">{STATUS_LABEL.ORDERED}</SelectItem>
-                            {/* 입고 완료는 위치·수량 분배가 필요하므로 이 폼에서 고를 수 없다.
-                                이미 입고 완료된 차수를 열었을 때 값 표시용으로만 남긴다. */}
-                            {savedStatus === 'STOCKED_IN' && (
-                              <SelectItem value="STOCKED_IN">{STATUS_LABEL.STOCKED_IN}</SelectItem>
-                            )}
+                            <SelectItem value="STOCKED_IN">{STATUS_LABEL.STOCKED_IN}</SelectItem>
                           </SelectContent>
                         </Select>
-                        {savedStatus !== 'STOCKED_IN' && (
-                          <p className="text-xs text-muted-foreground">
-                            입고 완료는 차수 목록에서 상태 배지를 눌러 [입고완료로 변경]을 선택하면
-                            보관 위치와 수량을 지정해 처리할 수 있습니다.
-                          </p>
-                        )}
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="orderedConfirmedAt">발주일</Label>
@@ -821,10 +1028,194 @@ export function ProductionRunFormDialog({
                           id="stockedInAt"
                           type="date"
                           value={stockedInAt}
+                          disabled={savedStatus === 'STOCKED_IN'}
                           onChange={(e) => setStockedInAt(e.target.value)}
                         />
                       </div>
                     </div>
+
+                    {/* 입고완료 선택 — 위치 분배 입력을 창 안에 펼친다 (입고 완료 창과 같은 컴포넌트) */}
+                    {selectingStockIn && runId && (
+                      <StockInAllocationFields
+                        run={{
+                          id: runId,
+                          items: optionItems
+                            .filter((it) => it.quantity > 0)
+                            .map((it) => ({
+                              optionId: it.optionId,
+                              optionName: it.optionName,
+                              quantity: it.quantity,
+                            })),
+                          sets: stockInSets,
+                        }}
+                        active={selectingStockIn}
+                        onChange={setAlloc}
+                        disabled={saving}
+                      />
+                    )}
+
+                    {transitionError && (
+                      <p
+                        role="alert"
+                        className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive"
+                      >
+                        {transitionError}
+                      </p>
+                    )}
+
+                    {/* 입고 완료 차수 — 분배 결과 + 사무실 입고 등록 + 되돌리기 */}
+                    {savedStatus === 'STOCKED_IN' && stockInDetail && (
+                      <div className="space-y-3 border-t pt-3">
+                        <div className="space-y-1.5">
+                          <h4 className="text-xs font-semibold text-foreground">위치 분배 결과</h4>
+                          {stockInDetail.allocations.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">
+                              기록된 위치 분배가 없습니다
+                            </p>
+                          ) : (
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="border-b text-muted-foreground">
+                                  <th className="py-1 pr-2 text-left font-medium">옵션</th>
+                                  <th className="py-1 pr-2 text-left font-medium">위치</th>
+                                  <th className="py-1 pr-2 text-right font-medium">수량</th>
+                                  <th className="py-1 text-left font-medium">재고 반영</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y">
+                                {stockInDetail.allocations.map((a) => (
+                                  <tr key={`${a.optionId}|${a.locationId}`}>
+                                    <td className="py-1 pr-2">{a.optionName}</td>
+                                    <td className="py-1 pr-2">{a.locationName}</td>
+                                    <td className="py-1 pr-2 text-right tabular-nums">
+                                      {a.quantity.toLocaleString('ko-KR')}
+                                    </td>
+                                    <td className="py-1 text-muted-foreground">
+                                      {a.state === 'registered'
+                                        ? '입고 등록됨'
+                                        : a.state === 'reconciled'
+                                          ? '대조 완료'
+                                          : a.isExternal
+                                            ? '대조 대기'
+                                            : '미등록'}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+
+                        {stockInDetail.allocations.some((a) => !a.isExternal) && (
+                          <div className="space-y-2">
+                            <div className="flex items-end justify-between gap-2">
+                              <div>
+                                <h4 className="text-xs font-semibold text-foreground">
+                                  사무실 입고 등록
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                  등록하면 재고 위치에 [입고] 건이 생깁니다. 옵션·위치마다 한 번만
+                                  등록할 수 있습니다.
+                                </p>
+                              </div>
+                              <div className="space-y-1">
+                                <Label htmlFor="ownDate" className="text-xs">
+                                  입고일
+                                </Label>
+                                <Input
+                                  id="ownDate"
+                                  type="date"
+                                  value={ownDate}
+                                  onChange={(e) => setOwnDate(e.target.value)}
+                                  className="h-7 w-36 text-sm"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              {stockInDetail.allocations
+                                .filter((a) => !a.isExternal)
+                                .map((a) => {
+                                  const key = `${a.optionId}|${a.locationId}`
+                                  return (
+                                    <div key={key} className="flex items-center gap-2 text-sm">
+                                      <span className="min-w-0 flex-1 truncate">
+                                        {a.optionName}
+                                        <span className="ml-1.5 text-xs text-muted-foreground">
+                                          {a.locationName}
+                                        </span>
+                                      </span>
+                                      {a.state === 'pending' ? (
+                                        <Input
+                                          type="number"
+                                          min={0}
+                                          aria-label={`${a.optionName} 입고 수량`}
+                                          value={ownQty[key] ?? ''}
+                                          onChange={(e) =>
+                                            setOwnQty((prev) => ({
+                                              ...prev,
+                                              [key]: e.target.value,
+                                            }))
+                                          }
+                                          className="h-7 w-24 text-right text-sm"
+                                        />
+                                      ) : a.state === 'registered' ? (
+                                        <span className="text-xs text-muted-foreground">
+                                          등록됨 {a.registeredAt?.slice(5, 10)} ·{' '}
+                                          {(a.registeredQty ?? a.quantity).toLocaleString('ko-KR')}
+                                          개
+                                        </span>
+                                      ) : (
+                                        <span className="text-xs text-muted-foreground">
+                                          대조 반영
+                                        </span>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                            </div>
+                            <div className="flex justify-end">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={handleRegisterOwn}
+                                disabled={
+                                  registering ||
+                                  !stockInDetail.allocations.some(
+                                    (a) => !a.isExternal && a.state === 'pending'
+                                  )
+                                }
+                              >
+                                {registering ? '등록 중...' : '입고 등록'}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {stockInDetail.canRevert ? (
+                          <div className="flex items-center justify-between gap-2 border-t pt-3">
+                            <p className="text-xs text-muted-foreground">
+                              등록된 입고가 없어 발주 완료로 되돌릴 수 있습니다.
+                            </p>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setConfirmRevert(true)}
+                              disabled={reverting}
+                            >
+                              발주 완료로 되돌리기
+                            </Button>
+                          </div>
+                        ) : (
+                          stockInDetail.revertBlockedReason && (
+                            <p className="border-t pt-3 text-xs text-muted-foreground">
+                              {stockInDetail.revertBlockedReason}
+                            </p>
+                          )
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </section>
@@ -872,6 +1263,7 @@ export function ProductionRunFormDialog({
                     variant="outline"
                     size="sm"
                     onClick={() => setPickerOpen(true)}
+                    disabled={selectingStockIn}
                   >
                     <Plus className="mr-1 h-4 w-4" />
                     상품 추가
@@ -902,6 +1294,7 @@ export function ProductionRunFormDialog({
                             size="icon"
                             className="h-7 w-7 text-muted-foreground hover:text-destructive"
                             aria-label={`${g.productName} 전체 제거`}
+                            disabled={selectingStockIn}
                             onClick={() => removeProduct(g.productId)}
                           >
                             <X className="h-4 w-4" />
@@ -960,6 +1353,7 @@ export function ProductionRunFormDialog({
                                     min={0}
                                     value={String(opt.quantity)}
                                     onChange={(e) => updateQuantity(opt.optionId, e.target.value)}
+                                    disabled={selectingStockIn}
                                     className="h-7 w-20 text-right text-sm"
                                   />
                                 </div>
@@ -997,6 +1391,7 @@ export function ProductionRunFormDialog({
                                   size="icon"
                                   className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                                   aria-label={`${opt.optionName} 제거`}
+                                  disabled={selectingStockIn}
                                   onClick={() => removeOption(opt.optionId)}
                                 >
                                   <X className="h-3.5 w-3.5" />
@@ -1262,6 +1657,27 @@ export function ProductionRunFormDialog({
             </Button>
             <Button onClick={handleSave} disabled={saving || loadingDetail}>
               {saving ? '저장 중...' : isEdit ? '수정' : '추가'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 입고 완료 되돌리기 confirm */}
+      <Dialog open={confirmRevert} onOpenChange={(v) => !v && setConfirmRevert(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>발주 완료로 되돌리기</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            입고 완료 기록(위치 분배·입고일·실입고 수량)이 지워지고 발주 완료 상태가 됩니다.
+            재고에는 영향이 없습니다.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmRevert(false)} disabled={reverting}>
+              취소
+            </Button>
+            <Button onClick={handleRevert} disabled={reverting}>
+              {reverting ? '처리 중...' : '되돌리기'}
             </Button>
           </DialogFooter>
         </DialogContent>
