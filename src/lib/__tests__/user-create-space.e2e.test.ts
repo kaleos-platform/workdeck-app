@@ -59,6 +59,8 @@ const create = (userId: string, name: string) =>
 
 d('user-create-space 실 DB 경합', () => {
   beforeAll(async () => {
+    // 결제 일시 중지면 LOCKED 대신 PAUSED 로 허용돼 ①이 거짓 실패한다.
+    delete process.env.BILLING_CHECKOUT_PAUSED
     await cleanup()
     const product = await prisma.billingDeckProduct.findUnique({ where: { id: DECK } })
     originalMode = product?.pricingMode ?? null

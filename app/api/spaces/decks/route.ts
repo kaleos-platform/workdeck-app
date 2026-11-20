@@ -3,6 +3,7 @@ import { errorResponse, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { seedFinanceCategories, ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { EnableDeckError, enableDeckInTx } from '@/lib/spaces/enable-deck'
+import { findTrialUsedElsewhere } from '@/lib/billing/entitlement'
 
 type CreateDeckRequest = {
   deckAppId?: string
@@ -39,7 +40,13 @@ export async function POST(request: NextRequest) {
         if (deckAppId === 'finance') await ensureFinanceSeeded(resolved.space.id)
         return errorResponse('이미 사용 중인 업무입니다', 409)
       }
-      return errorResponse('구독이 필요한 업무입니다', 402, { code: 'DECK_SUBSCRIPTION_REQUIRED' })
+      // 체험을 다른 작업 공간에서 이미 썼는지 함께 알린다(유예 종료·결제 재개 등 다른 원인과 안내 문구 구분).
+      const trialUsedElsewhere =
+        (await findTrialUsedElsewhere(resolved.space.id, [deckAppId])).length > 0
+      return errorResponse('구독이 필요한 업무입니다', 402, {
+        code: 'DECK_SUBSCRIPTION_REQUIRED',
+        trialUsedElsewhere,
+      })
     }
     return errorResponse('업무를 활성화하지 못했습니다', 500)
   }

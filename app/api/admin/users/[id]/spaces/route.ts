@@ -51,7 +51,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return { space, blockedJobs }
     })
 
-    if ('limitReached' in result) return errorResponse('Space 를 만들지 못했습니다', 500)
+    if ('limitReached' in result)
+      return errorResponse('소유 Space 상한에 도달했습니다', 409, { code: 'SPACE_LIMIT' })
     if ('duplicateSpaceId' in result) {
       return errorResponse('같은 이름의 Space 가 이미 있습니다', 409, {
         spaceId: result.duplicateSpaceId,

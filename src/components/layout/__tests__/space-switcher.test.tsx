@@ -40,13 +40,14 @@ describe('SpaceSwitcher (사이드바)', () => {
     }))
     render(<SpaceSwitcher spaces={five} currentSpaceId="sp-0" navigate={assign} />)
     await userEvent.click(screen.getByRole('button', { name: /작업 공간 전환/ }))
-    expect(await screen.findByRole('menuitem', { name: /새 작업 공간 만들기/ })).toHaveAttribute(
-      'aria-disabled',
-      'true'
-    )
+    const item = await screen.findByRole('menuitem', { name: /새 작업 공간 만들기/ })
+    expect(item).toHaveAttribute('aria-disabled', 'true')
     expect(
       screen.getByText('소유한 작업 공간은 5개까지입니다. 더 필요하면 문의해 주세요.')
     ).toBeInTheDocument()
+    // 키보드로 닿을 수 있지만 선택해도 Dialog 가 열리지 않는다
+    await userEvent.click(item)
+    expect(screen.queryByRole('dialog', { name: '새 작업 공간 만들기' })).not.toBeInTheDocument()
   })
 
   it('소유자가 아닌 공간은 5개 한도에 세지 않는다', async () => {
