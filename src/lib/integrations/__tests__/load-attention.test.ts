@@ -39,7 +39,7 @@ describe('loadIntegrationAttention', () => {
     mock.spaceAgent.findMany.mockRejectedValue(new Error('timeout'))
     ;(listSecretMeta as jest.Mock).mockRejectedValue(new Error('timeout'))
     const items = await loadIntegrationAttention('s1', 'u1')
-    expect(items.map((i) => i.cardId)).toEqual(['coupang'])
+    expect(items.map((i) => i.id)).toEqual(['coupang-api'])
   })
 
   it('자격증명 저장 이후의 연결 테스트만 본다', async () => {

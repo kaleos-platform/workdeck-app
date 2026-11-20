@@ -140,7 +140,7 @@ export function CoupangSourceCard({ deckKey }: { deckKey: DeckKey }) {
           <p className="text-xs text-muted-foreground">
             쿠팡 Open API 자격증명이 등록되지 않았습니다.{' '}
             <Link
-              href={`${SETTINGS_INTEGRATIONS_PATH}?tab=services`}
+              href={`${SETTINGS_INTEGRATIONS_PATH}?open=coupang-api`}
               className="underline underline-offset-2"
             >
               외부 서비스 연결

@@ -1,8 +1,7 @@
 // 연동 설정의 "확인 필요" 판정 — 클라이언트도 쓰므로 DB 조회는 load-attention.ts에 둔다.
 
-export type IntegrationTab = 'services' | 'agents' | 'secrets'
-export type AttentionCardId = 'coupang' | 'agent-tokens' | 'space-secrets'
-export type AttentionItem = { tab: IntegrationTab; cardId: AttentionCardId; message: string }
+export type AttentionServiceId = 'coupang-api' | 'agent-tokens' | 'secrets'
+export type AttentionItem = { id: AttentionServiceId; message: string }
 
 const DAY_MS = 86_400_000
 const EXPIRY_WARNING_DAYS = 7
@@ -41,7 +40,7 @@ function expiryLabel(expiresAt: Date, now: Date) {
   return ms <= 0 ? '만료' : `${Math.ceil(ms / DAY_MS)}일 뒤 만료`
 }
 
-/** 쿠팡 오류 → 토큰 → 비밀값 순. 첫 항목의 탭이 처음 열리는 탭이다. */
+/** 쿠팡 오류 → 토큰 → 비밀값 순. */
 export function buildAttention(input: {
   coupangError: string | null
   // 켜진 에이전트의 폐기되지 않은 토큰만 넘긴다.
@@ -54,8 +53,7 @@ export function buildAttention(input: {
 
   if (input.coupangError) {
     items.push({
-      tab: 'services',
-      cardId: 'coupang',
+      id: 'coupang-api',
       message: `쿠팡 Open API — ${input.coupangError}`,
     })
   }
@@ -64,8 +62,7 @@ export function buildAttention(input: {
     const latest = flaggedTokenExpiry(agent.tokens, now)
     if (latest) {
       items.push({
-        tab: 'agents',
-        cardId: 'agent-tokens',
+        id: 'agent-tokens',
         message: `토큰 ${expiryLabel(latest, now)} — ${agent.name}`,
       })
     }
@@ -74,8 +71,7 @@ export function buildAttention(input: {
   for (const secret of input.envSecrets) {
     if (isExpiringSoon(secret.expiresAt, now)) {
       items.push({
-        tab: 'secrets',
-        cardId: 'space-secrets',
+        id: 'secrets',
         message: `비밀값 ${expiryLabel(secret.expiresAt, now)} — ${secret.name}`,
       })
     }

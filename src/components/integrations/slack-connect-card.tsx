@@ -240,7 +240,13 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
   return typeof body?.message === 'string' ? body.message : fallback
 }
 
-export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }) {
+export function SlackConnectCard({
+  slackStatus,
+  embedded = false,
+}: {
+  slackStatus: string | null
+  embedded?: boolean
+}) {
   const [data, setData] = useState<SlackChannelsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const spaceName = data?.space?.name ?? null
@@ -269,17 +275,19 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
   const notificationsChannel = data?.channels.find((c) => c.kind === 'notifications')
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Slack className="h-5 w-5" />
-          Slack 연결
-        </CardTitle>
-        <CardDescription>
-          워크덱 에이전트를 Slack에서 멘션으로 호출하고, 승인·알림을 채널로 받아보세요.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Card className={embedded ? 'border-0 bg-transparent py-0 shadow-none' : undefined}>
+      {!embedded && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Slack className="h-5 w-5" />
+            Slack 연결
+          </CardTitle>
+          <CardDescription>
+            워크덱 에이전트를 Slack에서 멘션으로 호출하고, 승인·알림을 채널로 받아보세요.
+          </CardDescription>
+        </CardHeader>
+      )}
+      <CardContent className={embedded ? 'space-y-4 px-0' : 'space-y-4'}>
         {toast && (
           <Alert variant={toast.variant}>
             {toast.variant === 'destructive' ? (
@@ -315,7 +323,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
         ) : (
           <div className="space-y-4">
             {data.space && (
-              <p className="text-xs text-muted-foreground">Space: {data.space.name}</p>
+              <p className="text-xs text-muted-foreground">작업 공간: {data.space.name}</p>
             )}
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
