@@ -143,11 +143,38 @@ export async function canWorkspaceCollect(workspaceId: string): Promise<boolean>
   return canUseDeck(workspace.spaceId, 'coupang-ads')
 }
 
+// 이 Space 의 OWNER 가 OWNER 인 다른 Space 에서 이미 체험을 시작한 업무 id 들(체험은 OWNER 사용자당 업무별 1회).
+export async function findTrialUsedElsewhere(
+  spaceId: string,
+  deckAppIds: string[],
+  db: Prisma.TransactionClient = prisma
+): Promise<string[]> {
+  if (deckAppIds.length === 0) return []
+  const rows = await db.spaceDeckAccess.findMany({
+    where: {
+      deckAppId: { in: deckAppIds },
+      trialEndsAt: { not: null },
+      space: {
+        id: { not: spaceId },
+        members: {
+          some: {
+            role: 'OWNER',
+            user: { spaceMemberships: { some: { spaceId, role: 'OWNER' } } },
+          },
+        },
+      },
+    },
+    select: { deckAppId: true },
+  })
+  return [...new Set(rows.map((r) => r.deckAppId))]
+}
+
 // 업무별 최초 활성화 시 7일. 비활성화·재추가·동시 요청도 기존 종료일을 덮어쓰지 않는다.
 export async function ensureTrialStarted(
   spaceId: string,
   deckAppId: string,
-  db: Prisma.TransactionClient = prisma
+  db: Prisma.TransactionClient = prisma,
+  { trialOncePerOwner = true }: { trialOncePerOwner?: boolean } = {}
 ): Promise<void> {
   const [subscription, product, policy] = await Promise.all([
     db.spaceSubscription.findUnique({
@@ -168,6 +195,9 @@ export async function ensureTrialStarted(
     ['ACTIVE', 'PAST_DUE'].includes(subscription.status) &&
     subscription.items.length > 0
   )
+    return
+  // 다른 OWNER Space 에서 이미 체험한 업무는 체험을 주지 않는다 → canUseDeck 가 LOCKED 로 막아 구독이 필요해진다.
+  if (trialOncePerOwner && (await findTrialUsedElsewhere(spaceId, [deckAppId], db)).length > 0)
     return
   const trialEndsAt = addDays(new Date(), TRIAL_DAYS)
   // 빈 upsert는 Prisma의 SELECT+INSERT로 처리될 수 있어 동시 요청에 안전한 ON CONFLICT를 사용한다.

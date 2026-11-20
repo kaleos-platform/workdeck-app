@@ -1,9 +1,10 @@
 'use client'
 import { useState, useSyncExternalStore } from 'react'
-import { ChevronsUpDown, Info, Loader2 } from 'lucide-react'
+import { ChevronsUpDown, Info, Loader2, Plus } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -11,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CreateSpaceDialog } from '@/components/layout/create-space-dialog'
+import { MAX_OWNED_SPACES } from '@/lib/spaces/owned-space-limit'
 import type { Role } from '@/lib/auth/roles'
 import { cn } from '@/lib/utils'
 
@@ -137,7 +140,7 @@ function SpaceMenuItems({
   )
 }
 
-/** 사이드바 상단 현재 작업 공간 카드. 2개 이상이면 눌러서 전환. */
+/** 사이드바 상단 현재 작업 공간 카드. 눌러서 전환하거나(1개여도) 새 작업 공간을 만든다. */
 export function SpaceSwitcher({
   spaces,
   currentSpaceId,
@@ -150,10 +153,12 @@ export function SpaceSwitcher({
   navigate?: Navigate
 }) {
   const { pending, error, switchTo } = useSwitchSpace(currentSpaceId, navigate)
+  const [createOpen, setCreateOpen] = useState(false)
   const current = spaces.find((s) => s.id === currentSpaceId)
   if (!current) return null
-  const multi = spaces.length > 1
   const role = ROLE_LABEL[current.role]
+  const ownedCount = spaces.filter((s) => s.role === 'OWNER').length
+  const limitReached = ownedCount >= MAX_OWNED_SPACES
 
   const body = collapsed ? (
     <Initial name={current.name} className="bg-white/10 text-white" />
@@ -167,12 +172,11 @@ export function SpaceSwitcher({
       <span className="flex-shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-medium text-zinc-200">
         {role}
       </span>
-      {multi &&
-        (pending ? (
-          <Loader2 className="size-4 flex-shrink-0 animate-spin text-zinc-400" />
-        ) : (
-          <ChevronsUpDown className="size-4 flex-shrink-0 text-zinc-400" />
-        ))}
+      {pending ? (
+        <Loader2 className="size-4 flex-shrink-0 animate-spin text-zinc-400" />
+      ) : (
+        <ChevronsUpDown className="size-4 flex-shrink-0 text-zinc-400" />
+      )}
     </>
   )
   const boxClass = cn(
@@ -182,28 +186,45 @@ export function SpaceSwitcher({
 
   return (
     <div className={cn('flex-shrink-0 pt-3', collapsed ? 'px-2' : 'px-3')}>
-      {multi ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            disabled={pending}
-            aria-label={`작업 공간 전환 — 현재 ${current.name} (${role})`}
-            className={cn(
-              boxClass,
-              'transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none'
-            )}
-          >
-            {body}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side={collapsed ? 'right' : 'bottom'} className="w-64">
-            <SpaceMenuItems spaces={spaces} currentSpaceId={currentSpaceId} onSelect={switchTo} />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : (
-        <div className={boxClass} title={`${current.name} (${role})`}>
-          {collapsed && <span className="sr-only">{`작업 공간 ${current.name} (${role})`}</span>}
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          disabled={pending}
+          aria-label={`작업 공간 전환 — 현재 ${current.name} (${role})`}
+          className={cn(
+            boxClass,
+            'transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none'
+          )}
+        >
           {body}
-        </div>
-      )}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side={collapsed ? 'right' : 'bottom'} className="w-64">
+          <SpaceMenuItems spaces={spaces} currentSpaceId={currentSpaceId} onSelect={switchTo} />
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            disabled={limitReached}
+            onSelect={() => setCreateOpen(true)}
+            className="items-start"
+          >
+            <Plus className="mt-0.5 size-4" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium">새 작업 공간 만들기</span>
+              {limitReached && (
+                <span className="block text-xs text-muted-foreground">
+                  소유한 작업 공간은 {MAX_OWNED_SPACES}개까지입니다. 더 필요하면 문의해 주세요.
+                </span>
+              )}
+            </span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <CreateSpaceDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(id) => {
+          setCreateOpen(false)
+          return switchTo(id)
+        }}
+      />
       {error && !collapsed && (
         <p role="alert" className="mt-1 px-1 text-[11px] text-red-400">
           {error}

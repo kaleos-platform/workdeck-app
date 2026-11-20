@@ -208,3 +208,40 @@ test('이미 사용 중인 업무를 구독하면 업무 활성화 요청을 보
   expect(fetchMock.mock.calls[0][0]).toBe('/api/billing/subscription/start')
   expect(fetchMock.mock.calls.some((c) => c[0] === '/api/spaces/decks')).toBe(false)
 })
+
+test('다른 작업 공간에서 체험한 업무는 체험 없이 구독 모달에 안내 한 줄을 보인다', () => {
+  render(
+    <MyDeckClient
+      {...base}
+      billing={[
+        { ...bill, allowed: false, reason: 'LOCKED', trialEndsAt: null, trialUsedElsewhere: true },
+      ]}
+    />
+  )
+  fireEvent.click(screen.getByRole('button', { name: '모집 관리 추가 확인 열기' }))
+  expect(screen.getByRole('dialog')).toHaveTextContent(
+    '다른 작업 공간에서 이 업무 체험을 이미 사용했습니다.'
+  )
+  expect(screen.queryByRole('button', { name: '무료 체험 시작' })).toBeNull()
+})
+
+test('추가 중 402(DECK_SUBSCRIPTION_REQUIRED)면 소유자는 구독 모달로 넘어간다', async () => {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: false,
+    status: 402,
+    json: async () => ({ code: 'DECK_SUBSCRIPTION_REQUIRED', message: '구독이 필요한 업무입니다' }),
+  })
+  render(
+    <MyDeckClient
+      {...base}
+      billing={[{ ...bill, allowed: false, reason: 'LOCKED', trialEndsAt: null }]}
+    />
+  )
+  fireEvent.click(screen.getByRole('button', { name: '모집 관리 추가 확인 열기' }))
+  fireEvent.click(screen.getByRole('button', { name: '무료 체험 시작' }))
+  await waitFor(() =>
+    expect(screen.getByRole('dialog')).toHaveTextContent(
+      '다른 작업 공간에서 이 업무 체험을 이미 사용했습니다.'
+    )
+  )
+})

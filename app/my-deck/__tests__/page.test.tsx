@@ -16,6 +16,7 @@ jest.mock('@/lib/spaces/current-space', () => ({
 jest.mock('@/lib/billing/entitlement', () => ({
   resolveEntitlement: jest.fn(),
   isCheckoutPausedFor: () => false,
+  findTrialUsedElsewhere: jest.fn(async () => []),
 }))
 jest.mock('@/lib/billing/deck-release', () => ({ findClosedDecks: jest.fn() }))
 jest.mock('@/components/my-deck/my-deck-client', () => ({ MyDeckClient: () => null }))

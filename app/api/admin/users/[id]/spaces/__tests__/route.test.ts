@@ -99,7 +99,9 @@ it('정상 생성은 201 — lock, OWNER 멤버십, 모집 관리 켜기, 감사
     },
     select: { id: true, name: true },
   })
-  expect(enableDeckInTx).toHaveBeenCalledWith(prisma, 'sp-new', 'recruiting')
+  expect(enableDeckInTx).toHaveBeenCalledWith(prisma, 'sp-new', 'recruiting', {
+    trialOncePerOwner: false,
+  })
   expect(writeAuditLog).toHaveBeenCalledWith(
     'op-1',
     'space.create',
