@@ -9,7 +9,7 @@ export default function AccountSettingsPage() {
         <h1 className="text-2xl font-bold tracking-tight">계정 설정</h1>
         <p className="text-sm text-muted-foreground">
           로그인 계정 정보, 비밀번호, 2단계 인증, 연결된 AI 앱을 관리합니다. 워크스페이스 결제는
-          [결제 관리]에서 확인하세요.
+          [결제 수단·내역]에서 확인하세요.
         </p>
       </header>
       <AccountSettingsForm />

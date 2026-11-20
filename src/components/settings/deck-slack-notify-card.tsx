@@ -135,7 +135,7 @@ export function DeckSlackNotifyCard({ deckKey }: { deckKey: DeckKey }) {
               href={`${SETTINGS_INTEGRATIONS_PATH}?tab=services`}
               className="underline underline-offset-2"
             >
-              연동 설정
+              외부 서비스 연결
             </Link>
             에서 Slack 알림 채널을 등록하세요.
           </p>

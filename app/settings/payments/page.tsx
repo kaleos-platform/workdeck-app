@@ -22,7 +22,7 @@ export default async function PaymentSettingsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">결제 관리</h1>
+        <h1 className="text-2xl font-bold tracking-tight">결제 수단·내역</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           정기 결제에 사용할 카드와 결제 내역을 관리하세요.
         </p>

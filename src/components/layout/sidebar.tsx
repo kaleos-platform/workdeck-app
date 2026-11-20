@@ -33,10 +33,6 @@ import {
   Briefcase,
   Users,
   ShieldCheck,
-  Plug,
-  Sparkles,
-  CreditCard,
-  PackageCheck,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -101,6 +97,7 @@ import {
   RECRUITING_SETTINGS_PATH,
   APPROVALS_PATH,
   SETTINGS_INTEGRATIONS_PATH,
+  SETTINGS_ACCOUNT_PATH,
   SETTINGS_AI_PATH,
   SETTINGS_BILLING_PATH,
   SETTINGS_PAYMENTS_PATH,
@@ -411,6 +408,23 @@ export function Sidebar({
     return `${basePath}?${query.toString()}`
   }
 
+  const workdeckSettingsItems: SidebarItem[] = [
+    { label: '외부 서비스 연결', href: SETTINGS_INTEGRATIONS_PATH },
+    { label: '계정 설정', href: SETTINGS_ACCOUNT_PATH },
+    ...(canAdmin
+      ? [
+          { label: 'AI 설정', href: SETTINGS_AI_PATH },
+          { label: '팀원 초대·관리', href: SETTINGS_MEMBERS_PATH },
+        ]
+      : []),
+    ...(isOwner
+      ? [
+          { label: '업무 구독', href: SETTINGS_BILLING_PATH },
+          { label: '결제 수단·내역', href: SETTINGS_PAYMENTS_PATH },
+        ]
+      : []),
+  ]
+
   const expandedWidth = isSalesContentSidebar ? 'w-56' : 'w-64'
 
   return (
@@ -488,75 +502,18 @@ export function Sidebar({
               <RailLink
                 href="/my-deck"
                 icon={Home}
-                label="내 워크덱 홈"
+                label="홈"
                 isActive={pathname === '/my-deck'}
                 collapsed={collapsed}
               />
               <RailLink
                 href={APPROVALS_PATH}
                 icon={ShieldCheck}
-                label="승인 대기"
+                label="AI 요청 승인"
                 isActive={pathname === APPROVALS_PATH || pathname.startsWith(`${APPROVALS_PATH}/`)}
                 collapsed={collapsed}
                 badgeCount={pendingApprovalCount}
               />
-              <RailLink
-                href={SETTINGS_INTEGRATIONS_PATH}
-                icon={Plug}
-                label="연동 설정"
-                isActive={
-                  pathname === SETTINGS_INTEGRATIONS_PATH ||
-                  pathname.startsWith(`${SETTINGS_INTEGRATIONS_PATH}/`)
-                }
-                collapsed={collapsed}
-              />
-              {canAdmin && (
-                <>
-                  <RailLink
-                    href={SETTINGS_AI_PATH}
-                    icon={Sparkles}
-                    label="AI 설정"
-                    isActive={
-                      pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)
-                    }
-                    collapsed={collapsed}
-                  />
-                  <RailLink
-                    href={SETTINGS_MEMBERS_PATH}
-                    icon={Users}
-                    label="구성원"
-                    isActive={
-                      pathname === SETTINGS_MEMBERS_PATH ||
-                      pathname.startsWith(`${SETTINGS_MEMBERS_PATH}/`)
-                    }
-                    collapsed={collapsed}
-                  />
-                </>
-              )}
-              {isOwner && (
-                <>
-                  <RailLink
-                    href={SETTINGS_BILLING_PATH}
-                    icon={PackageCheck}
-                    label="구독 업무 관리"
-                    isActive={
-                      pathname === SETTINGS_BILLING_PATH ||
-                      pathname.startsWith(`${SETTINGS_BILLING_PATH}/`)
-                    }
-                    collapsed={collapsed}
-                  />
-                  <RailLink
-                    href={SETTINGS_PAYMENTS_PATH}
-                    icon={CreditCard}
-                    label="결제 관리"
-                    isActive={
-                      pathname === SETTINGS_PAYMENTS_PATH ||
-                      pathname.startsWith(`${SETTINGS_PAYMENTS_PATH}/`)
-                    }
-                    collapsed={collapsed}
-                  />
-                </>
-              )}
             </div>
 
             {!collapsed && (
@@ -596,6 +553,16 @@ export function Sidebar({
                 </section>
               </>
             )}
+
+            <div className="mt-3">
+              <SidebarSection
+                label="설정"
+                icon={Settings}
+                items={workdeckSettingsItems}
+                collapsed={collapsed}
+                onExpand={expand}
+              />
+            </div>
           </>
         )}
 
