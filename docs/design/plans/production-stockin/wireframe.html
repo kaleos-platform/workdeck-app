@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>생산 차수 수정 — 입고 완료 분리</title>
+<style>
+body{font-family:-apple-system,"Apple SD Gothic Neo",sans-serif;background:#f5f5f5;margin:0;padding:24px;color:#222}
+.row{display:flex;gap:24px;align-items:flex-start}
+.dlg{width:640px;background:#fff;border:1px solid #bbb;border-radius:10px;padding:20px}
+h1{font-size:15px;margin:0 0 4px;color:#555}
+h2{font-size:18px;margin:0 0 14px}
+.box{border:1px dashed #aaa;border-radius:8px;padding:12px;margin-bottom:12px}
+.muted{color:#777;font-size:12px}
+.f{display:flex;gap:10px;margin:8px 0}
+.in{border:1px solid #bbb;border-radius:6px;padding:6px 8px;font-size:13px;flex:1;background:#fff}
+.sel{border:2px solid #444}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+th,td{border-bottom:1px solid #ddd;padding:5px 4px;text-align:left}
+td.n,th.n{text-align:right}
+.num{display:inline-block;width:18px;height:18px;border-radius:9px;background:#333;color:#fff;font-size:11px;text-align:center;line-height:18px;margin-right:4px}
+.btn{display:inline-block;border:1px solid #444;border-radius:6px;padding:5px 10px;font-size:12px;background:#fff}
+.btn.p{background:#222;color:#fff}
+.tag{font-size:11px;border:1px solid #999;border-radius:10px;padding:1px 6px;color:#555}
+.chk{font-size:13px;margin-top:8px}
+.note{font-size:12px;color:#555;margin-top:2px}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+</style></head><body>
+<div class="row">
+<div class="dlg">
+<h1>A. 발주완료 차수 → 상태를 「입고 완료」로 고를 때</h1>
+<h2>차수 수정 · 2026-026 모달 머드팬티</h2>
+<div class="box">
+  <b>진행 단계</b> <span class="muted">— (기존 「상태 변경만… 목록에서 처리」 안내 삭제)</span>
+  <div class="f"><div class="in sel"><span class="num">1</span>상태: 입고완료 ▾ <span class="muted">Select</span></div><div class="in">발주일 2026-11-12</div><div class="in">입고완료 일자 2026-11-17</div></div>
+  <div class="box" style="margin-top:8px">
+    <span class="num">2</span><b>보관 위치 분배</b> <span class="muted">StockInAllocationFields — 입고 완료 창과 같은 입력</span>
+    <table><tr><th>옵션</th><th>위치</th><th class="n">수량</th></tr>
+    <tr><td>블랙 / L(100)</td><td>쿠팡 로켓그로스 <span class="tag">연동</span></td><td class="n">300</td></tr>
+    <tr><td>블랙 / L(100)</td><td>사무실</td><td class="n">150</td></tr>
+    <tr><td>블랙 / M(95)</td><td>위킵 (에이엠엘) <span class="tag">연동</span></td><td class="n">250</td></tr>
+    <tr><td>누드 / M(95)</td><td>사무실</td><td class="n">150</td></tr></table>
+    <div class="note">연동 위치는 재고 대조로 반영되고, 그 전까지 「입고 예정」으로 계산됩니다.</div>
+    <div class="chk"><span class="num">3</span>☐ 사무실 재고에 입고 등록 <span class="muted">Checkbox · 기본 해제 · 자체 위치 분배가 있을 때만</span></div>
+    <div class="note">체크하면 재고 위치에 [입고] 건이 생깁니다(사무실 300개). 나중에 차수에서 등록할 수도 있습니다.</div>
+  </div>
+</div>
+<div class="box muted">발주 상품 · 옵션 (기존 그대로)</div>
+<div class="foot"><span class="btn">취소</span><span class="btn p">수정</span></div>
+</div>
+
+<div class="dlg">
+<h1>B. 입고 완료된 차수를 열 때</h1>
+<h2>차수 수정 · 2026-026 모달 머드팬티</h2>
+<div class="box">
+  <b>진행 단계</b>
+  <div class="f"><div class="in">상태: 입고완료</div><div class="in">발주일 2026-11-12</div><div class="in">입고완료 일자 2026-11-17</div></div>
+  <div class="box" style="margin-top:8px">
+    <span class="num">4</span><b>입고 분배 결과</b> <span class="muted">Table · 읽기 전용</span>
+    <table><tr><th>옵션</th><th>위치</th><th class="n">분배</th><th>재고 반영</th></tr>
+    <tr><td>블랙 / L(100)</td><td>쿠팡 로켓그로스</td><td class="n">300</td><td class="muted">대조 대기</td></tr>
+    <tr><td>블랙 / M(95)</td><td>위킵 (에이엠엘)</td><td class="n">250</td><td class="muted">대조 완료</td></tr></table>
+  </div>
+  <div class="box">
+    <span class="num">5</span><b>사무실 입고 등록</b> <span class="muted">자체 위치 분배 행만</span>
+    <table><tr><th>옵션</th><th>위치</th><th class="n">분배</th><th class="n">입고 수량</th><th></th></tr>
+    <tr><td>블랙 / L(100)</td><td>사무실</td><td class="n">150</td><td class="n"><span class="in" style="display:inline-block;width:60px;flex:none">140</span></td><td><span class="muted">미등록</span></td></tr>
+    <tr><td>누드 / M(95)</td><td>사무실</td><td class="n">150</td><td class="n">150</td><td><span class="tag">등록됨 11-18</span></td></tr></table>
+    <div class="f" style="align-items:center"><div class="in" style="flex:none;width:170px">입고일 2026-11-17</div><span class="btn p">입고 등록</span><span class="muted">재고 위치에 [입고] 건 생성 · 행마다 1회</span></div>
+  </div>
+  <div><span class="num">6</span><span class="btn">발주 완료로 되돌리기</span> <span class="muted">등록된 사무실 입고가 없을 때만 표시 (이 예시는 1건 등록돼 숨김)</span></div>
+</div>
+<div class="box muted">발주 상품 · 옵션 (기존 그대로)</div>
+<div class="foot"><span class="btn">취소</span><span class="btn p">수정</span></div>
+</div>
+</div>
+</body></html>
