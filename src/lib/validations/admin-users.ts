@@ -14,13 +14,15 @@ export const addMembershipSchema = z.object({
 })
 
 // 운영자 새 Space 생성 — 이름은 trim·NFC 로 정규화해 같은 이름 중복 판정에 쓴다.
+export const spaceNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(60)
+  .transform((value) => value.normalize('NFC'))
+
 export const createSpaceSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1)
-    .max(60)
-    .transform((value) => value.normalize('NFC')),
+  name: spaceNameSchema,
   enableRecruiting: z.boolean().default(true),
 })
 
