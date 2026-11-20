@@ -5,6 +5,13 @@ jest.mock('@/lib/mcp/context', () => ({
   requireDeck: jest.fn(async () => undefined),
   resolveMcpWorkspace: jest.fn(async () => ({ id: 'ws1' })),
 }))
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    invProduct: {
+      findFirst: jest.fn().mockResolvedValue({ name: '머드팬티', internalName: null }),
+    },
+  },
+}))
 jest.mock('@/lib/agent/actions/create', () => ({
   createPendingAction: jest.fn(async () => ({ status: 'pending_approval', actionId: 'a1' })),
 }))
