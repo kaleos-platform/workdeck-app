@@ -22,6 +22,7 @@ import type { IntegrationStatuses } from '@/lib/integrations/load-status'
 import { AdCredentialForm } from './ad-credential-form'
 import { AgentToggleCard } from './agent-toggle-card'
 import { AgentTokensCard } from './agent-tokens-card'
+import { Cafe24ConnectCard } from './cafe24-connect-card'
 import { CoupangApiCard } from './coupang-api-card'
 import { IntegrationDialog, ServiceLogo } from './integration-dialog'
 import { McpGuideCard } from './mcp-guide-card'
@@ -91,6 +92,7 @@ export function IntegrationsGrid({
   }, [openableKey])
   // OAuth 복귀 결과는 처음 값을 고정한다 — 옛 query를 지우면 서버가 null을 다시 내려 안내가 사라진다.
   const [initialSlackStatus] = useState(slackStatus)
+  const [initialCafe24Result] = useState(() => searchParams.get('cafe24'))
 
   const hasLegacy = searchParams.has('tab') || searchParams.has('slack')
   const urlOpen = searchParams.get('open')
@@ -132,6 +134,7 @@ export function IntegrationsGrid({
 
   const bodies: Partial<Record<IntegrationId, ReactNode>> = {
     slack: <SlackConnectCard embedded slackStatus={initialSlackStatus} />,
+    cafe24: <Cafe24ConnectCard embedded result={initialCafe24Result} onChanged={refresh} />,
     'coupang-api': <CoupangApiCard embedded onChanged={refresh} />,
     notion: <OsmuConnections only="notion" embedded />,
     'google-drive': <OsmuConnections only="drive" embedded />,

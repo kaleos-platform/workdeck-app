@@ -7,6 +7,7 @@
  *   tagmanager.edit.containerversions. tagmanager.publish는 GTM 게시(OWNER 승인 흐름)를 쓸 때만 넣는다.
  *   계정도 이 Space 브랜드의 GA4 속성·GTM 컨테이너에만 권한이 있는 계정을 쓴다.
  * 네이버 검색광고: 조회 전용. 매핑된 각 CUSTOMER_ID 로 캠페인 목록을 1번씩 조회해 키를 확인한다(실패 시 저장하지 않음).
+ * 카페24: 앱 정보(쇼핑몰 ID·client_id·secret)만 받는다. 토큰은 OAuth 콜백이 저장하고, 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
  * GET — 등록 상태·설정값(허용 필드만) 조회. 비밀값·암호문·오류 원문은 돌려주지 않는다(MFA 불필요, ADMIN 이상).
  * 삭제(DELETE) 라우트는 두지 않는다. 만들 때도 같은 requireAal2 관문을 둔다.
  */
@@ -20,6 +21,8 @@ import { saveSpaceCredential } from '@/lib/agent/integrations/space-credential'
 import { fetchAdAccountCurrencies } from '@/lib/agent/integrations/meta-ads'
 import { verifyNaverCred } from '@/lib/agent/integrations/naver-searchad'
 import { prisma } from '@/lib/prisma'
+import { MALL_ID_RE } from '@/lib/cafe24/client'
+import { registerCafe24 } from '@/lib/cafe24/store'
 import { ensureNbaesongChannel } from '@/lib/naver-commerce/nbaesong-channel'
 import { decryptField } from '@/lib/crypto/field-crypto'
 import {
@@ -75,6 +78,14 @@ const SCHEMAS = {
           .refine((o) => Object.keys(o).length >= 1 && Object.keys(o).length <= 20),
       })
       .refine((c) => !c.defaultBrand || Object.hasOwn(c.customers, c.defaultBrand)),
+  }),
+  // 카페24 — 앱 정보만 받는다(토큰은 OAuth 콜백이 저장). 쓰기는 registerCafe24 의 조건부 쓰기.
+  cafe24: z.object({
+    secret: z.object({
+      clientId: z.string().min(10).max(100),
+      clientSecret: z.string().min(10).max(200),
+    }),
+    config: z.object({ mallId: z.string().regex(MALL_ID_RE) }),
   }),
   // 스마트스토어 N배송 판매 수집 — Naver 호출은 워커가 한다(IP 등록). 여기선 저장·검증만.
   'naver-commerce': z
@@ -187,6 +198,15 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   const schema = SCHEMAS[provider as keyof typeof SCHEMAS]
   const parsed = schema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
+
+  if (provider === 'cafe24') {
+    const c = parsed.data as z.infer<(typeof SCHEMAS)['cafe24']>
+    const result = await registerCafe24(spaceId, { ...c.secret, mallId: c.config.mallId })
+    if (result === 'conflict') {
+      return errorResponse('다른 변경과 겹쳤습니다. 잠시 후 다시 시도해 주세요', 409)
+    }
+    return NextResponse.json({ provider }, { headers: { 'Cache-Control': 'no-store' } })
+  }
 
   let config: Record<string, unknown> = parsed.data.config
   let secret: object = parsed.data.secret
