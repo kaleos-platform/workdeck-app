@@ -12,6 +12,7 @@ import { queryProductMargin } from '@/lib/sh/margin-query'
 import { loadKeywordReview } from '@/lib/sh/keyword-review-query'
 import { runReorderPlanRequest } from '@/lib/inv/reorder-engine/run-plan-request'
 import { summarizeReorderPreview } from '@/lib/inv/reorder-engine/reorder-preview-summary'
+import { buildAppUrl } from '@/lib/domain'
 import { ToolUserError } from './errors'
 import type { ToolDefinition } from './types'
 
@@ -67,13 +68,22 @@ const sellerHubGetStockStatusTool: ToolDefinition = {
 const sellerHubGetReorderStatusTool: ToolDefinition = {
   name: 'sellerhub_get_reorder_status',
   description:
-    '발주 계획 현황을 반환합니다. 초안(DRAFT) 발주 계획 수와 샘플(최대 5건), 예측 검증 계획 수(ELIGIBLE=정산 대기, MEASURED=최근 결과)를 계획 단위로 집계해 포함합니다.',
+    '발주 계획 현황을 반환합니다. 초안(DRAFT) 발주 계획 수와 샘플(최대 5건, 각 계획 상세 링크 url 포함), 예측 검증 계획 수(ELIGIBLE=정산 대기, MEASURED=최근 결과)를 계획 단위로 집계해 포함합니다. 계획 링크를 안내할 때는 url 을 그대로 쓰세요.',
   inputSchema: {},
   mode: 'read',
   scope: 'sellerhub:read',
   async execute(ctx) {
     await requireDeck(ctx.spaceId, DECK)
-    return queryReorderStatus(ctx.spaceId)
+    const status = await queryReorderStatus(ctx.spaceId)
+    return {
+      ...status,
+      draftSamples: status.draftSamples.map((p) => ({
+        ...p,
+        url: buildAppUrl(
+          `/d/seller-ops/inventory/reorder/plans/${p.planId}?spaceId=${ctx.spaceId}`
+        ),
+      })),
+    }
   },
 }
 
