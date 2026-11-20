@@ -15,6 +15,8 @@ import {
   Home,
   Settings,
   Package,
+  Store,
+  Factory,
   Truck,
   Boxes,
   FileText,
@@ -130,12 +132,33 @@ const DECK_ENTRY: Record<string, string> = {
 }
 
 // ─── Seller Hub 메뉴 데이터 ───────────────────────────────────────────────────
-const SELLER_HUB_PRODUCTS_ITEMS: SidebarItem[] = [
-  { label: '상품 목록', href: SELLER_HUB_PRODUCTS_LIST_PATH },
-  { label: '가격 시뮬레이션', href: SELLER_HUB_PRICING_SIM_PATH },
+const SELLER_HUB_PRODUCTS_PREFIX = `${SELLER_HUB_BASE_PATH}/products/`
+// /products/ 아래지만 다른 메뉴가 담당하는 화면 — 「상품」 단독 메뉴 강조에서 제외
+const SELLER_HUB_PRODUCTS_OTHER_MENUS = new Set([
+  'brands',
+  'keyword-ranks',
+  'keywords',
+  'listings',
+  'pricing-sim',
+  'production',
+])
+
+/** 「상품」 단독 메뉴 강조 — 상품 목록·등록·상세(/products/[id]) */
+function isSellerHubProductsActive(pathname: string): boolean {
+  if (!pathname.startsWith(SELLER_HUB_PRODUCTS_PREFIX)) return false
+  const segment = pathname.slice(SELLER_HUB_PRODUCTS_PREFIX.length).split('/')[0]
+  return segment !== '' && !SELLER_HUB_PRODUCTS_OTHER_MENUS.has(segment)
+}
+
+const SELLER_HUB_SALES_ITEMS: SidebarItem[] = [
   { label: '판매채널 상품', href: SELLER_HUB_LISTINGS_PATH },
+  { label: '가격 시뮬레이션', href: SELLER_HUB_PRICING_SIM_PATH },
   { label: '키워드 관리', href: SELLER_HUB_KEYWORDS_PATH },
   ...(RANK_TRACKING_ENABLED ? [{ label: '키워드 순위', href: SELLER_HUB_KEYWORD_RANKS_PATH }] : []),
+]
+
+const SELLER_HUB_PRODUCTION_ITEMS: SidebarItem[] = [
+  { label: '발주 계획', href: SELLER_HUB_REORDER_PATH },
   { label: '생산 관리', href: SELLER_HUB_PRODUCTION_PATH },
 ]
 
@@ -144,7 +167,6 @@ const SELLER_HUB_INVENTORY_ITEMS: SidebarItem[] = [
   { label: '입출고 관리', href: SELLER_HUB_MOVEMENTS_PATH },
   { label: '위치 관리', href: SELLER_HUB_LOCATIONS_PATH },
   { label: '재고 조정', href: SELLER_HUB_RECONCILIATION_PATH },
-  { label: '발주 계획', href: SELLER_HUB_REORDER_PATH },
 ]
 
 const SELLER_HUB_SHIPPING_ITEMS: SidebarItem[] = [
@@ -585,10 +607,24 @@ export function Sidebar({
               collapsed={collapsed}
             />
             {/* 섹션 그룹 */}
-            <SidebarSection
-              label="상품"
+            <RailLink
+              href={SELLER_HUB_PRODUCTS_LIST_PATH}
               icon={Package}
-              items={SELLER_HUB_PRODUCTS_ITEMS}
+              label="상품"
+              isActive={isSellerHubProductsActive(pathname)}
+              collapsed={collapsed}
+            />
+            <SidebarSection
+              label="판매"
+              icon={Store}
+              items={SELLER_HUB_SALES_ITEMS}
+              collapsed={collapsed}
+              onExpand={expand}
+            />
+            <SidebarSection
+              label="생산"
+              icon={Factory}
+              items={SELLER_HUB_PRODUCTION_ITEMS}
               collapsed={collapsed}
               onExpand={expand}
             />
