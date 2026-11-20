@@ -5,6 +5,8 @@ import { requireDeck, resolveMcpWorkspace } from '@/lib/mcp/context'
 import { readTargetKeywords } from '@/lib/sh/keyword-apply'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { getTodayStrKst } from '@/lib/date-range'
+import { prisma } from '@/lib/prisma'
+import { productDisplayName } from '@/lib/sh/product-display'
 import type { ToolDefinition } from './types'
 
 /**
@@ -124,7 +126,11 @@ const sellerhubCreateReorderPlanTool: ToolDefinition = {
       optionIds: params.optionIds as string[] | undefined,
       memo: params.memo as string | undefined,
     }
-    const summary = `발주 계획 생성: 상품 ${actionParams.productId}`
+    const product = await prisma.invProduct.findFirst({
+      where: { id: actionParams.productId, spaceId: ctx.spaceId },
+      select: { name: true, internalName: true },
+    })
+    const summary = `발주 계획 생성: ${product ? productDisplayName(product) : `상품 ${actionParams.productId}`}`
     const r = await createPendingAction({
       spaceId: ctx.spaceId,
       actionType: 'seller-hub.reorder.plan.create',
