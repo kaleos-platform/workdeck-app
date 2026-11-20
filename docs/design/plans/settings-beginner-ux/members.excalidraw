@@ -1,0 +1,227 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "e1",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 600,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e2",
+   "x": 24,
+   "y": 16,
+   "text": "팀원 초대·관리",
+   "fontSize": 24,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e3",
+   "x": 24,
+   "y": 52,
+   "text": "함께 일할 사람을 초대하고 역할을 정합니다.",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e4",
+   "x": 756,
+   "y": 20,
+   "width": 120,
+   "height": 36,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "⑫ + 팀원 초대",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e5",
+   "x": 24,
+   "y": 90,
+   "width": 330,
+   "height": 36,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "⑬ [팀원·권한 4] [초대 1] [승인 규칙]  — Tabs ?tab=",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e6",
+   "x": 24,
+   "y": 140,
+   "width": 852,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "이름 · 이메일                         역할                              ",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e7",
+   "x": 24,
+   "y": 184,
+   "width": 852,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "김에디 · eddy@example.com                                  소유자",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e8",
+   "x": 24,
+   "y": 228,
+   "width": 852,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "박관리 · admin@example.com                                  관리자 ▾   [내보내기]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e9",
+   "x": 24,
+   "y": 272,
+   "width": 852,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "이팀원 · member@example.com                                  팀원 ▾      [내보내기]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e10",
+   "x": 24,
+   "y": 316,
+   "width": 852,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "최팀원 · staff@example.com                                  팀원 ▾      [내보내기]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e11",
+   "x": 24,
+   "y": 370,
+   "width": 852,
+   "height": 90,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "⑭ 역할 안내 — 소유자: 결제·구독·모든 설정 / 관리자: 연결·AI·팀원 관리, 한도 이하 지출 승인 / 팀원: 업무 화면 사용, 설정은 보기만",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e12",
+   "x": 24,
+   "y": 480,
+   "text": "초대 탭: 초대 내역(대기·수락·만료) + 다시 보내기·취소·다시 초대",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e13",
+   "x": 24,
+   "y": 502,
+   "text": "승인 규칙 탭: 지출 승인 한도(이 금액 이하는 관리자도 승인)",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e14",
+   "x": 24,
+   "y": 524,
+   "text": "⑫ 팝업: 이메일 · 역할(설명 포함 RadioGroup) · [초대 보내기] → 링크 복사",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}
