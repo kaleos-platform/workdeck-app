@@ -11,6 +11,7 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     $transaction: jest.fn(),
     deckApp: { findUnique: jest.fn() },
+    spaceMember: { findMany: jest.fn().mockResolvedValue([]) },
     billingDeckProduct: { findUnique: jest.fn() },
     deckInstance: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
   },
@@ -80,13 +81,14 @@ describe('POST /api/spaces/decks — 준비중 가드', () => {
     p.deckInstance.create.mockRejectedValueOnce(new Error('write failed'))
     const res = await POST(req('finance'))
     expect(res?.status).toBe(500)
-    expect(ensureTrialStarted).toHaveBeenCalledWith('s1', 'finance', prisma)
+    expect(ensureTrialStarted).toHaveBeenCalledWith('s1', 'finance', prisma, {})
   })
   it('체험이 만료된 업무는 402이고 설치하지 않는다', async () => {
     jest.mocked(findClosedDecks).mockResolvedValue([])
     jest.mocked(canUseDeck).mockResolvedValueOnce(false)
     const res = await POST(req('finance'))
     expect(res?.status).toBe(402)
+    expect((await res?.json()).code).toBe('DECK_SUBSCRIPTION_REQUIRED')
     expect(p.deckInstance.create).not.toHaveBeenCalled()
   })
 })

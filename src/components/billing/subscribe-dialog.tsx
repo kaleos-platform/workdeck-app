@@ -33,6 +33,8 @@ export type SubscribeTarget = {
   trialEndsAt?: string | null
   /** 업무 추가 경로지만 결제된 업무가 없는(체험 예약만 있는) 구독 — 일할이 아니라 한 달치로 새 주기를 시작한다 */
   chargesFullMonth?: boolean
+  /** 소유자가 다른 작업 공간에서 이 업무 체험을 이미 사용 */
+  trialUsedElsewhere?: boolean
 }
 
 type SubscribeDialogProps = {
@@ -150,6 +152,12 @@ export function SubscribeDialog({
               </>
             )}
           </div>
+
+          {target.trialUsedElsewhere && (
+            <p className="text-xs break-keep text-muted-foreground">
+              다른 작업 공간에서 이 업무 체험을 이미 사용했습니다.
+            </p>
+          )}
 
           <ul className="space-y-1 text-xs break-keep text-muted-foreground">
             {payNotes.map((line) => (

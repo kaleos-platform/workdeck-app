@@ -1,0 +1,57 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>사용자 새 작업 공간 만들기 — 와이어프레임</title>
+<style>
+body{font-family:-apple-system,"Apple SD Gothic Neo",sans-serif;background:#f4f4f5;margin:0;padding:24px;color:#18181b}
+h1{font-size:18px;margin:0 0 4px}.sub{color:#71717a;font-size:13px;margin:0 0 20px}
+.row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.frame{background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:14px;width:330px}
+.frame h2{font-size:13px;margin:0 0 10px}.n{display:inline-block;background:#18181b;color:#fff;border-radius:99px;width:20px;height:20px;text-align:center;line-height:20px;font-size:11px;margin-right:6px}
+.side{background:#18181b;border-radius:10px;padding:12px;height:300px;position:relative}
+.card{display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);border-radius:8px;padding:8px;color:#fff}
+.ini{width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.lbl{font-size:11px;color:#a1a1aa}.nm{font-size:13px;font-weight:600}.badge{margin-left:auto;font-size:11px;background:rgba(255,255,255,.1);border-radius:99px;padding:2px 8px;color:#e4e4e7}
+.menu{position:absolute;left:12px;top:64px;width:250px;background:#fff;border:1px solid #e4e4e7;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;font-size:13px}
+.mh{font-size:11px;color:#71717a;padding:6px 8px}.sep{height:1px;background:#e4e4e7;margin:4px 0}
+.it{padding:6px 8px;border-radius:4px}.it.sel{background:#f4f4f5}.it small{display:block;color:#71717a;font-size:11px}
+.add{padding:8px;border-radius:4px;font-weight:500}.add.dis{color:#a1a1aa}.add small{display:block;font-weight:400;font-size:11px}
+.dlg{border:1px solid #e4e4e7;border-radius:10px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);font-size:13px}
+.dlg h3{margin:0 0 4px;font-size:15px}.muted{color:#71717a;font-size:12px}
+.inp{border:1px solid #d4d4d8;border-radius:6px;padding:8px;margin:10px 0 4px;color:#a1a1aa}
+.btns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.b{border:1px solid #d4d4d8;border-radius:6px;padding:6px 12px}.b.p{background:#18181b;color:#fff;border-color:#18181b}
+.note{background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;padding:8px;margin-top:10px;font-size:12px}
+.notes{max-width:1060px;margin-top:20px;background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.6}
+</style>
+<h1>사용자가 새 작업 공간 만들기 — 와이어프레임</h1>
+<p class="sub">사이드바 작업 공간 카드 → 메뉴 → 이름 입력 → 새 공간으로 이동. 체험은 사용자당 업무별 1회.</p>
+<div class="row">
+ <div class="frame"><h2><span class="n">1</span>공간 1개여도 카드가 열림</h2>
+  <div class="side"><div class="card"><div class="ini">디</div><div><div class="lbl">작업 공간</div><div class="nm">(주)디에스인</div></div><span class="badge">소유자</span><span style="color:#a1a1aa">⇕</span></div>
+   <div class="menu"><div class="mh">작업 공간 전환</div><div class="sep"></div>
+    <div class="it sel">● (주)디에스인<small>소유자 · 결제·구독과 모든 설정을 관리합니다</small></div>
+    <div class="sep"></div><div class="add">＋ 새 작업 공간 만들기</div></div></div></div>
+ <div class="frame"><h2><span class="n">2</span>이름 입력 팝업</h2>
+  <div class="dlg"><h3>새 작업 공간 만들기</h3><div class="muted">회사·브랜드별로 업무와 구독을 따로 관리합니다.</div>
+   <div class="inp">예: 대성산업</div><div class="muted">60자 이내</div>
+   <div class="note">· 만든 사람이 소유자가 됩니다.<br>· 구독·결제는 작업 공간마다 따로입니다.<br>· 이미 체험한 업무는 새 공간에서 체험 없이 구독으로 시작합니다.</div>
+   <div class="btns"><span class="b">취소</span><span class="b p">만들기</span></div></div>
+  <p class="muted" style="margin-top:10px">만들기 → 새 공간으로 전환 → 내 워크덱 홈(업무 추가는 기존 화면).<br>같은 이름이 있으면 입력란 아래 「이미 같은 이름의 작업 공간이 있습니다」.</p></div>
+ <div class="frame"><h2><span class="n">3</span>상한(소유 5개) 도달</h2>
+  <div class="side"><div class="card"><div class="ini">디</div><div><div class="lbl">작업 공간</div><div class="nm">(주)디에스인</div></div><span class="badge">소유자</span><span style="color:#a1a1aa">⇕</span></div>
+   <div class="menu"><div class="mh">작업 공간 전환</div><div class="sep"></div>
+    <div class="it sel">● (주)디에스인<small>소유자</small></div><div class="it">○ 대성산업<small>소유자</small></div><div class="it">○ … (5개)</div>
+    <div class="sep"></div><div class="add dis">＋ 새 작업 공간 만들기<small>소유한 작업 공간은 5개까지입니다. 더 필요하면 문의해 주세요.</small></div></div></div></div>
+</div>
+<div class="row" style="margin-top:24px">
+ <div class="frame" style="width:420px"><h2><span class="n">4</span>새 공간에서 이미 체험한 업무 열기 → 구독 모달</h2>
+  <div class="dlg"><h3>모집 관리 구독</h3><div class="muted">다른 작업 공간에서 이 업무 체험을 이미 사용했습니다. 이 공간에서는 구독 후 바로 쓸 수 있습니다.</div>
+   <div class="note">월 ○○원(VAT 포함) · 결제일: 오늘</div>
+   <div class="btns"><span class="b">취소</span><span class="b p">구독 시작</span></div></div>
+  <p class="muted" style="margin-top:10px">체험을 안 쓴 업무는 지금처럼 「추가」 → 체험 7일 시작. 구성원(소유자 아님)은 기존 토스트 「소유자에게 요청하세요」.</p></div>
+</div>
+<div class="notes"><b>결정 항목</b><ol>
+<li>사이드바 작업 공간 카드는 공간이 1개여도 열린다(맨 아래 「＋ 새 작업 공간 만들기」). 홈 맥락 줄(SpaceContext)은 바꾸지 않는다.</li>
+<li>이름 입력 팝업(Dialog) 하나. 만들면 새 공간으로 전환해 내 워크덱 홈으로 이동. 업무는 만든 뒤 기존 화면에서 추가.</li>
+<li>소유 공간 5개면 메뉴 항목 비활성 + 문의 안내.</li>
+<li>체험은 소유자(사용자) 기준 업무별 1회. 이미 체험한 업무는 새 공간에서 바로 구독 모달(안내 한 줄 추가).</li>
+<li>오프닝 이전 대기 job 은 어드민 생성과 같이 MULTIPLE_OWNER_SPACES 로 BLOCKED(화면 노출 없음, 운영 큐에서 처리).</li>
+<li>어드민 「새 Space 만들기」는 지금처럼 체험 허용.</li></ol></div>
+</html>

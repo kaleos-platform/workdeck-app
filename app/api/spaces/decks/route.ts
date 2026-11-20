@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         if (deckAppId === 'finance') await ensureFinanceSeeded(resolved.space.id)
         return errorResponse('이미 사용 중인 업무입니다', 409)
       }
-      return errorResponse('구독이 필요한 업무입니다', 402)
+      return errorResponse('구독이 필요한 업무입니다', 402, { code: 'DECK_SUBSCRIPTION_REQUIRED' })
     }
     return errorResponse('업무를 활성화하지 못했습니다', 500)
   }
