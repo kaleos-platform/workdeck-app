@@ -6,6 +6,7 @@ import { productionRunPatchSchema } from '@/lib/sh/schemas'
 import { isExternalLogisticsLocation } from '@/lib/inv/location-kind'
 import {
   isReconciledAfter,
+  isReconciledSameDay,
   loadStockInFacts,
   lockLocationRows,
   lockRunRow,
@@ -76,6 +77,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       state: 'registered' | 'reconciled' | 'pending'
       registeredQty?: number
       registeredAt?: string
+      sameDayRecon?: boolean
     }>
     canRevert: boolean
     revertBlockedReason: string | null
@@ -108,6 +110,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
               : 'pending',
           ...(reg
             ? { registeredQty: reg.quantity, registeredAt: reg.movementDate.toISOString() }
+            : {}),
+          ...(!reg && isReconciledSameDay(facts, a.locationId, run.stockedInAt)
+            ? { sameDayRecon: true }
             : {}),
         }
       }),
