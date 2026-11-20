@@ -9,10 +9,16 @@ jest.mock('@/lib/crypto/field-crypto', () => ({
 jest.mock('@/lib/slack/send-notification', () => ({
   sendSpaceNotification: jest.fn(async () => true),
 }))
-jest.mock('@/lib/agent/audit', () => ({ maskSecrets: (s: string) => s }))
 
 import { sendSpaceNotification } from '@/lib/slack/send-notification'
-import { Cafe24Error, cafe24Get, getAccessToken, refreshTokens } from '../client'
+import { checkCredentialHealth } from '@/lib/agent/integrations/credential-health'
+import {
+  CAFE24_REAUTH_MESSAGE,
+  Cafe24Error,
+  cafe24Get,
+  getAccessToken,
+  refreshTokens,
+} from '../client'
 import { readCafe24, registerCafe24, writeCafe24If } from '../store'
 
 jest.setTimeout(20_000)
@@ -175,14 +181,45 @@ describe('getAccessToken', () => {
     expect(fakeDb.row.config.status).toBe('connected')
   })
 
-  it('실제 invalid_grant 면 reauth_required 로 표시하고 알린다', async () => {
+  it('실제 invalid_grant 면 reauth_required 로 표시한다(알림은 health 경로 하나뿐)', async () => {
     seed({ accessHours: 0.05 })
     fetchMock.mockResolvedValue(json({ error: 'invalid_grant' }, 400))
     await expect(getAccessToken(SP)).rejects.toMatchObject({ code: 'reauth_required' })
     expect(fakeDb.row.config.status).toBe('reauth_required')
-    expect(sendSpaceNotification).toHaveBeenCalledTimes(1)
+    expect(fakeDb.row.lastError).toBe(CAFE24_REAUTH_MESSAGE)
+    expect(sendSpaceNotification).not.toHaveBeenCalled()
     await expect(getAccessToken(SP)).rejects.toMatchObject({ code: 'reauth_required' })
     expect(tokenCalls()).toHaveLength(1)
+  })
+
+  it('lease 만료 뒤 늦게 도착한 정상 갱신이 reauth_required 를 connected 로 되돌린다', async () => {
+    seed({ accessHours: 0.05 })
+    // 시계 주입: A 의 저장 직전에 20초 넘게 흘려 lease 를 만료시키고, B 가 R0 로 invalid_grant 를 받을 때까지 기다린다.
+    let offset = 0
+    const realNow = Date.now.bind(Date)
+    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => realNow() + offset)
+    let tokenCall = 0
+    fetchMock.mockImplementation(async () =>
+      ++tokenCall === 1 ? json(tokenBody(1)) : json({ error: 'invalid_grant' }, 400)
+    )
+    fakeDb.beforeUpdateMany = async (data) => {
+      if (!String(data.encryptedPayload).includes('AT1')) return
+      offset += 25_000
+      for (let i = 0; i < 100 && fakeDb.row.config.status !== 'reauth_required'; i++) {
+        await new Promise((r) => setTimeout(r, 50))
+      }
+      fakeDb.beforeUpdateMany = null
+    }
+    try {
+      const results = await Promise.allSettled([getAccessToken(SP), getAccessToken(SP)])
+      expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1)
+      expect(fakeDb.row.config.status).toBe('connected')
+      expect(fakeDb.row.lastError).toBeNull()
+      expect(fakeDb.secret).toMatchObject({ accessToken: 'AT1', refreshToken: 'RT1' })
+      expect((await getAccessToken(SP)).accessToken).toBe('AT1')
+    } finally {
+      nowSpy.mockRestore()
+    }
   })
 })
 
@@ -249,6 +286,58 @@ describe('비밀값 미노출', () => {
       expect(seen).not.toContain(leak)
     }
     expect(err.message).toContain('invalid_request')
+  })
+
+  it('invalid_grant(재승인 경로)·health 점검 경로도 본문·토큰·Basic 을 lastError·healthError·console 에 남기지 않는다', async () => {
+    const basic = Buffer.from('cid-1234567:CSECRET-xyz').toString('base64')
+    const leaky = json(
+      {
+        error: 'invalid_grant',
+        error_description: `LEAK-BODY AT0 RT0 CSECRET-xyz Authorization: Basic ${basic}`,
+      },
+      400
+    )
+    const check = (seen: string) => {
+      for (const leak of ['LEAK-BODY', 'AT0', 'RT0', 'CSECRET-xyz', basic, 'Basic ', 'Bearer ']) {
+        expect(seen).not.toContain(leak)
+      }
+    }
+    seed({ accessHours: 0.05 })
+    fetchMock.mockResolvedValue(leaky)
+    const err = await getAccessToken(SP).catch((e) => e)
+    expect(err.code).toBe('reauth_required')
+    check(
+      [
+        err.message,
+        String(fakeDb.row.lastError),
+        ...consoleSpies.flatMap((s) => s.mock.calls.flat().map(String)),
+      ].join('\n')
+    )
+
+    // health: 실제 maskSecrets·실제 client 로 invalid_request 본문을 주입
+    fakeDb.reset()
+    seed({ accessHours: 0.05 })
+    fetchMock.mockResolvedValue(
+      json(
+        {
+          error: 'invalid_request',
+          error_description: `LEAK-BODY AT0 RT0 CSECRET-xyz Basic ${basic}`,
+        },
+        400
+      )
+    )
+    const r = await checkCredentialHealth()
+    expect(r.failed).toBe(1)
+    const row = fakeDb.row as unknown as { lastError: string; healthError: string }
+    expect(row.healthError).toContain('invalid_request')
+    check(
+      [
+        row.lastError,
+        row.healthError,
+        ...(sendSpaceNotification as jest.Mock).mock.calls.map((c) => c[0].text),
+        ...consoleSpies.flatMap((s) => s.mock.calls.flat().map(String)),
+      ].join('\n')
+    )
   })
 
   it('응답 본문이 비정상이거나 네트워크 오류여도 원문을 싣지 않는다', async () => {

@@ -154,23 +154,64 @@ const resultOf = (res: Response) => new URL(res.headers.get('location')!).search
 describe('callback', () => {
   beforeEach(seedRow)
 
-  it('state 위조·nonce 없음·nonce 불일치는 거부하고 교환하지 않는다', async () => {
-    expect((await callback(cbReq({ state: 'forged.state' }))).status).toBe(400)
-    expect((await callback(cbReq({ nonce: null }))).status).toBe(400)
-    expect((await callback(cbReq({ nonce: 'other' }))).status).toBe(400)
+  const cookieCleared = (res: Response) =>
+    expect(res.headers.get('set-cookie')).toMatch(new RegExp(`${CAFE24_NONCE_COOKIE}=;`))
+
+  it('state 위조는 spaceId 없이 expired 로 돌려보내고 교환하지 않는다', async () => {
+    const res = await callback(cbReq({ state: 'forged.state' }))
+    expect(resultOf(res)).toBe('expired')
+    expect(new URL(res.headers.get('location')!).searchParams.has('spaceId')).toBe(false)
     expect(mockedExchange).not.toHaveBeenCalled()
   })
 
-  it('다른 사용자·MEMBER·aal1 은 거부한다', async () => {
+  it('nonce 없음·불일치는 expired 로 거부하고 쿠키를 지운다', async () => {
+    for (const nonce of [null, 'other']) {
+      const res = await callback(cbReq({ nonce }))
+      expect(resultOf(res)).toBe('expired')
+      cookieCleared(res)
+    }
+    expect(mockedExchange).not.toHaveBeenCalled()
+  })
+
+  it('다른 사용자·MEMBER 는 forbidden, aal1 은 mfa_required 로 돌려보내고 쿠키를 지운다', async () => {
     mockedUser.mockResolvedValue({ id: 'someone-else' })
-    expect((await callback(cbReq())).status).toBe(403)
+    let res = await callback(cbReq())
+    expect(resultOf(res)).toBe('forbidden')
+    cookieCleared(res)
     mockedUser.mockResolvedValue({ id: U })
     mockedAdmin.mockResolvedValue(forbidden())
-    expect((await callback(cbReq())).status).toBe(403)
+    res = await callback(cbReq())
+    expect(resultOf(res)).toBe('forbidden')
+    cookieCleared(res)
     mockedAdmin.mockResolvedValue({ userId: U, role: 'ADMIN' })
     mockedAal2.mockResolvedValue(NextResponse.json({ code: 'MFA_REQUIRED' }, { status: 403 }))
-    expect((await callback(cbReq())).status).toBe(403)
+    res = await callback(cbReq())
+    expect(resultOf(res)).toBe('mfa_required')
+    expect(new URL(res.headers.get('location')!).searchParams.get('spaceId')).toBe(SP)
+    cookieCleared(res)
     expect(mockedExchange).not.toHaveBeenCalled()
+  })
+
+  it('code 가 없으면 error 로 돌려보내고 쿠키를 지운다', async () => {
+    const req = cbReq()
+    const noCode = new URL(req.url)
+    noCode.searchParams.delete('code')
+    const res = await callback(new NextRequest(noCode, { headers: req.headers }))
+    expect(resultOf(res)).toBe('error')
+    cookieCleared(res)
+    expect(mockedExchange).not.toHaveBeenCalled()
+  })
+
+  it('성공 뒤 쿠키가 삭제되면 같은 state+code 재사용은 거부된다', async () => {
+    const req = cbReq()
+    const first = await callback(req)
+    expect(resultOf(first)).toBe('connected')
+    cookieCleared(first)
+    // 브라우저는 삭제된 쿠키를 더 보내지 않는다 — 같은 state+code 를 쿠키 없이 재전송
+    const state = new URL(req.url).searchParams.get('state')!
+    const replay = await callback(cbReq({ state, nonce: null }))
+    expect(resultOf(replay)).toBe('expired')
+    expect(mockedExchange).toHaveBeenCalledTimes(1)
   })
 
   it('사용자가 거부하면 denied', async () => {

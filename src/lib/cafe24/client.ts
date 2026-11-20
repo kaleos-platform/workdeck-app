@@ -8,10 +8,11 @@
  */
 import crypto from 'node:crypto'
 import { recordCredentialError } from '@/lib/agent/integrations/space-credential'
-import { sendSpaceNotification } from '@/lib/slack/send-notification'
 import { readCafe24, writeCafe24If, type Cafe24Row } from './store'
 
 export const CAFE24_SCOPE = 'mall.read_order mall.write_order' // 공백 구분
+export const CAFE24_REAUTH_MESSAGE =
+  '카페24 연결이 만료되었습니다. 설정 > 연동 > 카페24에서 「다시 승인」을 눌러 주세요'
 export const CAFE24_API_VERSION = '2026-09-01'
 export const MALL_ID_RE = /^[a-z0-9][a-z0-9-]{1,49}$/
 
@@ -181,23 +182,14 @@ export function hasOrderScopes(scopes: string[]): boolean {
   return n.has('read_order') && n.has('write_order')
 }
 
-async function markReauthRequired(cur: Cafe24Row, spaceId: string): Promise<void> {
-  const changed = cur.config.status !== 'reauth_required'
+/** 상태만 표시한다. 알림은 credential-health 경로 하나로 보낸다(이중 발송 방지). */
+async function markReauthRequired(cur: Cafe24Row): Promise<void> {
   await writeCafe24If(cur, cur.secret, {
     ...cur.config,
     status: 'reauth_required',
     refreshLease: undefined,
   }).catch(() => false)
-  await recordCredentialError(
-    cur.id,
-    '카페24 승인이 만료되었습니다. 연결 팝업에서 다시 승인해 주세요'
-  )
-  if (changed) {
-    await sendSpaceNotification({
-      spaceId,
-      text: ':warning: 카페24 연결이 끊어졌습니다. 설정 > 외부 서비스 연결 > 카페24에서 다시 승인해 주세요.',
-    }).catch(() => false)
-  }
+  await recordCredentialError(cur.id, CAFE24_REAUTH_MESSAGE)
 }
 
 async function releaseLease(spaceId: string, owner: string): Promise<void> {
@@ -241,7 +233,7 @@ async function refreshHoldingLease(
         cur.config.mallId !== mallId
       // lease 밖에서 회전됐거나 유효한 다른 lease 가 있으면 실패로 확정하지 않는다.
       if (changed || (lease && lease.owner !== owner && lease.until > Date.now())) return null
-      await markReauthRequired(cur, spaceId)
+      await markReauthRequired(cur)
       throw new Cafe24Error('token', 'reauth_required')
     }
     await releaseLease(spaceId, owner)
@@ -260,21 +252,25 @@ async function refreshHoldingLease(
       return null
     }
     const lease = cur.config.refreshLease
+    // 늦게 도착한 정상 갱신이 reauth_required 를 되돌린다(그 상태에서 남긴 안내 문구도 지운다).
+    const recovered = cur.config.status === 'reauth_required'
     const ok = await writeCafe24If(
       cur,
       { ...cur.secret, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken },
       {
         ...cur.config,
+        status: recovered ? 'connected' : cur.config.status,
         accessExpiresAt: tokens.accessExpiresAt,
         refreshExpiresAt: tokens.refreshExpiresAt,
         refreshLease: lease?.owner === owner ? undefined : lease,
-      }
+      },
+      recovered
     )
     // (c) 토큰과 무관한 변경으로 0행 → 최신 버전에 다시 병합
     if (ok) return { accessToken: tokens.accessToken, mallId, credentialId: cur.id }
   }
   const last = await readCafe24(spaceId)
-  if (last) await markReauthRequired(last, spaceId)
+  if (last) await markReauthRequired(last)
   throw new Cafe24Error('token', 'reauth_required')
 }
 
