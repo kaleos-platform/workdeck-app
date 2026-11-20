@@ -17,7 +17,11 @@ import {
   verifyNaverCred,
 } from '@/lib/agent/integrations/naver-searchad'
 
+import { Cafe24Error, getAccessToken, probeOrders } from '@/lib/cafe24/client'
+
+const CAFE24 = 'cafe24'
 const LABEL: Record<string, string> = {
+  [CAFE24]: '카페24',
   [META]: 'Meta 광고',
   [GOOGLE]: 'Google 마케팅',
   [NAVER]: '네이버 검색광고',
@@ -36,6 +40,16 @@ const PROBES: Record<string, (spaceId: string, audit: string[]) => Promise<void>
   [NAVER]: async (spaceId, audit) => {
     const cred = await loadNaverCred(spaceId, audit)
     await verifyNaverCred(cred.secret, cred.config)
+  },
+  // 필요하면 갱신하고 주문 1건을 조회한다. 매일 돌아야 갱신 토큰(2주)이 끊기지 않는다. 승인 전(not_authorized)은 점검할 게 없다.
+  [CAFE24]: async (spaceId, audit) => {
+    try {
+      audit.push((await getAccessToken(spaceId)).credentialId)
+      await probeOrders(spaceId)
+    } catch (err) {
+      if (err instanceof Cafe24Error && err.code === 'not_authorized') return
+      throw err
+    }
   },
 }
 
@@ -61,7 +75,7 @@ export type HealthResult = {
 }
 
 /**
- * 매일 cron — 모든 Space 의 Meta·Google·네이버 자격증명을 점검한다.
+ * 매일 cron — 모든 Space 의 Meta·Google·네이버·카페24 자격증명을 점검한다.
  * 알림 전이는 점검 전용 상태(healthError·healthAlertedAt)로만 판단한다. lastError 는 다른 경로(실행·조회 오류)도 쓰는 진단용이라 쓰지 않는다.
  * - 실패: 아직 알리지 않았으면(healthAlertedAt 없음) 알리고, 보냈을 때만 healthAlertedAt 을 남긴다(채널이 생기면 다음 날 다시 시도).
  * - 성공: 장애를 알렸던 상태면 '복구'를 알린다. 이 점검이 남긴 lastError 만 지운다.

@@ -14,7 +14,14 @@ jest.mock('@/lib/agent/integrations/google-marketing', () => ({
   verifyGoogleCred: jest.fn(),
 }))
 
+jest.mock('@/lib/cafe24/client', () => ({
+  ...jest.requireActual('@/lib/cafe24/client'),
+  getAccessToken: jest.fn(),
+  probeOrders: jest.fn(),
+}))
+
 import { prisma } from '@/lib/prisma'
+import { Cafe24Error, getAccessToken, probeOrders } from '@/lib/cafe24/client'
 import { sendSpaceNotification } from '@/lib/slack/send-notification'
 import { fetchAdAccountCurrencies, loadMetaCred } from '@/lib/agent/integrations/meta-ads'
 import { loadGoogleCred, verifyGoogleCred } from '@/lib/agent/integrations/google-marketing'
@@ -118,4 +125,38 @@ it('한 행의 DB 실패가 다른 Space 점검을 막지 않는다', async () =
   const r = await checkCredentialHealth()
   expect(r.errors).toBe(1)
   expect(verifyGoogleCred).toHaveBeenCalled()
+})
+
+describe('카페24', () => {
+  const cafe24 = (o = {}) => ({ id: 'c4', spaceId: 'sp4', provider: 'cafe24', ...base, ...o })
+
+  it('정상이면 갱신·주문 조회 1건 후 복호화 id 를 남긴다', async () => {
+    findMany.mockResolvedValue([cafe24()])
+    ;(getAccessToken as jest.Mock).mockResolvedValue({
+      credentialId: 'c4',
+      accessToken: 'x',
+      mallId: 'm',
+    })
+    ;(probeOrders as jest.Mock).mockResolvedValue(undefined)
+    const r = await checkCredentialHealth()
+    expect(r).toMatchObject({ checked: 1, failed: 0 })
+    expect(r.decryptedCredentialIds).toEqual(['c4'])
+    expect(probeOrders).toHaveBeenCalledWith('sp4')
+  })
+
+  it('승인 전(not_authorized)은 점검 대상이 아니라 실패·알림이 없다', async () => {
+    findMany.mockResolvedValue([cafe24()])
+    ;(getAccessToken as jest.Mock).mockRejectedValue(new Cafe24Error('token', 'not_authorized'))
+    const r = await checkCredentialHealth()
+    expect(r).toMatchObject({ failed: 0, notified: 0 })
+  })
+
+  it('갱신 토큰이 죽으면(reauth_required) 실패로 알린다', async () => {
+    findMany.mockResolvedValue([cafe24()])
+    ;(getAccessToken as jest.Mock).mockRejectedValue(new Cafe24Error('token', 'reauth_required'))
+    const r = await checkCredentialHealth()
+    expect(r).toMatchObject({ failed: 1, notified: 1 })
+    expect(notify.mock.calls[0][0].text).toContain('카페24')
+    expect(dataOf('c4').healthError).toContain('reauth_required')
+  })
 })

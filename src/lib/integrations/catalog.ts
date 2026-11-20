@@ -1,5 +1,5 @@
 // 외부 서비스 연결 화면의 정적 목록 — 서버(상태 조회)와 클라이언트(그리드)가 같이 쓴다.
-import { Bot, KeyRound, LockKeyhole, Plug, type LucideIcon } from 'lucide-react'
+import { Bot, KeyRound, LockKeyhole, Plug, ShoppingBag, type LucideIcon } from 'lucide-react'
 import { COUPANG_ADS_SETTINGS_PATH, SELLER_HUB_SETTINGS_PATH } from '@/lib/deck-routes'
 
 export type IntegrationGroup = '판매 채널' | '광고·마케팅' | '협업 도구' | 'AI·에이전트' | '기타'
@@ -16,6 +16,7 @@ export type IntegrationId =
   | 'coupang-api'
   | 'coupang-login'
   | 'naver-nbaesong'
+  | 'cafe24'
   | 'meta-ads'
   | 'google-marketing'
   | 'naver-searchad'
@@ -84,6 +85,16 @@ export const INTEGRATIONS: IntegrationService[] = [
     kind: 'deck-link',
     requiredDeck: 'seller-hub',
     href: SELLER_HUB_SETTINGS_PATH,
+  },
+  {
+    id: 'cafe24',
+    group: '판매 채널',
+    name: '카페24',
+    description: '카페24 쇼핑몰의 주문을 읽고 배송 처리합니다.',
+    logo: { icon: ShoppingBag },
+    kind: 'dialog',
+    requiredDeck: 'seller-hub',
+    adminOnly: true,
   },
   {
     id: 'meta-ads',
