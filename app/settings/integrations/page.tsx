@@ -43,6 +43,7 @@ export default async function IntegrationsSettingsPage({
         attention={attention}
         slackStatus={slack ?? null}
         initialOpen={initialOpen}
+        spaceId={shell?.spaceId ?? undefined}
       />
     </div>
   )
