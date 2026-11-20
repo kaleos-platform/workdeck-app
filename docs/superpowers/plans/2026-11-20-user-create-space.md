@@ -67,3 +67,19 @@
 2. [high] revert 로 생성 Space·무효화 job 복구 불가 → **반영**: 위험·롤백에 절차(Space 유지, BLOCKED job 은 큐 수동 처리)와 식별용 로그 추가(큐 차단 탭으로 식별).
 3. [medium] 화면 연 뒤 체험 소진 시 402 를 구독 흐름으로 못 넘김 → **반영**: `confirmAddDeck` 402 처리.
 4. [medium] 실 DB·pool=1 경합 검증 부재 → **반영**: e2e 3건(단계 5).
+
+## 코드 리뷰 (2026-11-20, 791ba53f)
+
+Codex review: 지적 2건 — 반영 1, 보류 1
+
+- [P1] 새 Space 에 쿠팡 Workspace 연결 불가 → **보류**: 계획 범위 밖(아래). 쿠팡 업무는 운영에서 「준비중」이라 새 Space 에서 켤 수 없고, 어드민 생성 Space 도 같은 상태.
+- [P2] 생성 후 전환 실패 시 재시도 경로 없음 → **반영**: `switchTo` 가 결과를 돌려주고 실패하면 toast(접힌 사이드바 포함), Dialog 는 다시 마운트해 입력 초기화.
+
+opus code-reviewer: 9건(CRITICAL·HIGH 0) — 반영 5, 문서화 3, 보류 1
+
+- 402 문구가 원인과 무관하게 「다른 공간에서 체험 사용」 → 반영: 402 본문에 서버 판정 `trialUsedElsewhere` 를 싣고 그대로 표시.
+- 접힘 상태 전환 실패 무표시·Dialog 입력 잔존 → 반영(위 P2와 동일 수정).
+- 상한 안내가 키보드로 닿지 않음 → 반영: `disabled` 대신 `aria-disabled` + 선택 차단.
+- 어드민 route 의 `limitReached` 분기 500 → 반영: 409 `SPACE_LIMIT`.
+- e2e 가 `BILLING_CHECKOUT_PAUSED` 에 흔들림 → 반영: beforeAll 에서 해제. 공유 dev 행 일시 변경은 수동 실행 전용 테스트라 유지(afterAll 복원, 기본 jest·pre-push 제외).
+- 문서화(의도된 정책): ① 어드민이 준 체험도 "그 사용자의 체험 1회"로 센다 — 같은 OWNER 의 기존 Space 에서 같은 업무를 나중에 켜면 체험 없이 구독(필요 시 `billing-admin set-trial`). ② 체험 없이 바로 유료 구독한 업무는 이력이 없어 다른 Space 에서 체험 가능 — 남용 이득 없음. ③ Prisma `User` 행 없는 세션의 직접 API 호출은 500 — UI 경로로는 도달 불가.

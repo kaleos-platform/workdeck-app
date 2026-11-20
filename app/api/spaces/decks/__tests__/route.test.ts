@@ -23,6 +23,7 @@ jest.mock('@/lib/api-helpers', () => ({
 jest.mock('@/lib/billing/entitlement', () => ({
   canUseDeck: jest.fn(),
   ensureTrialStarted: jest.fn(),
+  findTrialUsedElsewhere: jest.fn().mockResolvedValue(['recruiting']),
 }))
 jest.mock('@/lib/billing/deck-release', () => ({ findClosedDecks: jest.fn() }))
 jest.mock('@/lib/finance/kifrs-seed', () => ({
@@ -88,7 +89,10 @@ describe('POST /api/spaces/decks — 준비중 가드', () => {
     jest.mocked(canUseDeck).mockResolvedValueOnce(false)
     const res = await POST(req('finance'))
     expect(res?.status).toBe(402)
-    expect((await res?.json()).code).toBe('DECK_SUBSCRIPTION_REQUIRED')
+    expect(await res?.json()).toMatchObject({
+      code: 'DECK_SUBSCRIPTION_REQUIRED',
+      trialUsedElsewhere: true,
+    })
     expect(p.deckInstance.create).not.toHaveBeenCalled()
   })
 })

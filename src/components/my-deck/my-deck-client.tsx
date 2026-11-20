@@ -272,6 +272,7 @@ export function MyDeckClient({
         const error = (await response.json().catch(() => null)) as {
           message?: string
           code?: string
+          trialUsedElsewhere?: boolean
         } | null
         // 화면을 연 뒤 다른 작업 공간에서 체험이 소진된 경우 — 새로고침하고 구독 모달로 넘긴다.
         if (response.status === 402 && error?.code === 'DECK_SUBSCRIPTION_REQUIRED') {
@@ -279,7 +280,7 @@ export function MyDeckClient({
           setSelectedDeck(null)
           router.refresh()
           if (isOwner) {
-            openSubscribe(deck, { trialUsedElsewhere: true })
+            openSubscribe(deck, { trialUsedElsewhere: error.trialUsedElsewhere === true })
             return
           }
         }

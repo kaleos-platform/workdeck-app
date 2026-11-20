@@ -229,7 +229,11 @@ test('추가 중 402(DECK_SUBSCRIPTION_REQUIRED)면 소유자는 구독 모달�
   global.fetch = jest.fn().mockResolvedValue({
     ok: false,
     status: 402,
-    json: async () => ({ code: 'DECK_SUBSCRIPTION_REQUIRED', message: '구독이 필요한 업무입니다' }),
+    json: async () => ({
+      code: 'DECK_SUBSCRIPTION_REQUIRED',
+      trialUsedElsewhere: true,
+      message: '구독이 필요한 업무입니다',
+    }),
   })
   render(
     <MyDeckClient
