@@ -26,6 +26,8 @@ beforeEach(() => {
   })
   db.spaceDeckAccess.findUnique.mockResolvedValue(null)
   db.spaceDeckAccess.findMany.mockResolvedValue([])
+  db.spaceDeckAccess.createMany.mockResolvedValue({ count: 1 })
+  db.spaceDeckAccess.updateMany.mockResolvedValue({ count: 0 })
 })
 
 describe('findTrialUsedElsewhere', () => {
@@ -85,5 +87,47 @@ describe('ensureTrialStarted 소유자당 1회', () => {
     db.spaceDeckAccess.findUnique.mockResolvedValue({ trialEndsAt: new Date() })
     await run()
     expect(db.spaceDeckAccess.createMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('ensureTrialStarted 반환값(trialStarted)', () => {
+  it('최초 시작이면 true', async () => {
+    expect(await run()).toBe(true)
+  })
+
+  it('이미 trialEndsAt 이 있으면 false', async () => {
+    db.spaceDeckAccess.findUnique.mockResolvedValue({ trialEndsAt: new Date() })
+    expect(await run()).toBe(false)
+  })
+
+  it('면제면 false', async () => {
+    db.spaceDeckAccess.findUnique.mockResolvedValue({ exemptFlag: true, trialEndsAt: null })
+    expect(await run()).toBe(false)
+  })
+
+  it('유료 구독 중이면 false', async () => {
+    db.spaceSubscription.findUnique.mockResolvedValue({
+      status: 'ACTIVE',
+      exemptFlag: false,
+      items: [{ deckAppId: 'recruiting' }],
+    })
+    expect(await run()).toBe(false)
+  })
+
+  it('동시 요청에 져서 createMany·updateMany 가 모두 0행이면 false', async () => {
+    db.spaceDeckAccess.createMany.mockResolvedValue({ count: 0 })
+    db.spaceDeckAccess.updateMany.mockResolvedValue({ count: 0 })
+    expect(await run()).toBe(false)
+  })
+
+  it('면제만 관리하던 레코드를 updateMany 가 갱신하면 true', async () => {
+    db.spaceDeckAccess.createMany.mockResolvedValue({ count: 0 })
+    db.spaceDeckAccess.updateMany.mockResolvedValue({ count: 1 })
+    expect(await run()).toBe(true)
+  })
+
+  it('다른 Space 에서 체험한 업무면 false', async () => {
+    db.spaceDeckAccess.findMany.mockResolvedValue([{ deckAppId: 'recruiting' }])
+    expect(await run()).toBe(false)
   })
 })

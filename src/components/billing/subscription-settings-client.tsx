@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { AlertTriangle, CheckCircle2, Info, Loader2, ShieldAlert, XCircle } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import { track } from '@/lib/analytics'
 import { SETTINGS_BILLING_PATH } from '@/lib/deck-routes'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { cn } from '@/lib/utils'
@@ -65,6 +66,9 @@ export function SubscriptionSettingsClient() {
           })
           return
         }
+        const startReserved = (json as { reserved?: boolean }).reserved === true
+        for (const deck of deckIds)
+          track('subscribe', { deck, kind: 'start', reserved: startReserved })
         setBanner({
           type: 'success',
           message: (json as { reserved?: boolean }).reserved
@@ -99,6 +103,13 @@ export function SubscriptionSettingsClient() {
           })
           return
         }
+        const addResult = json as { reserved?: boolean; resumed?: boolean }
+        // 해제 예약 취소(재활성)는 신규 구독이 아니므로 kind 로 구분한다
+        track('subscribe', {
+          deck: deckAppId,
+          kind: addResult.resumed === true ? 'resume' : 'add',
+          reserved: addResult.reserved === true,
+        })
         const { prorated, amount, reserved } = json as {
           prorated: boolean
           amount: number
