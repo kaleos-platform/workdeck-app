@@ -12,9 +12,9 @@ export default async function MembersSettingsPage() {
   return (
     <div className="space-y-6 p-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">구성원</h1>
+        <h1 className="text-2xl font-bold tracking-tight">팀원 초대·관리</h1>
         <p className="text-sm text-muted-foreground">
-          작업 공간 구성원을 보고, 소유자는 이메일로 초대할 수 있습니다.
+          함께 일하는 사람을 보고, 소유자는 이메일로 초대하고 역할을 정할 수 있습니다.
         </p>
       </header>
       <RoleRequired role={role} min="ADMIN">

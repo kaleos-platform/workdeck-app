@@ -26,7 +26,7 @@ export default async function IntegrationsSettingsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">연동 설정</h1>
+        <h1 className="text-2xl font-bold tracking-tight">외부 서비스 연결</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Slack 연결과 워크덱 에이전트, 외부 MCP 클라이언트 연동을 관리하세요.
         </p>

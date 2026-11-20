@@ -16,7 +16,7 @@ export default async function SubscriptionSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">구독 업무 관리</h1>
+        <h1 className="text-2xl font-bold tracking-tight">업무 구독</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           워크스페이스에서 이용할 업무를 구독하고 관리하세요.
         </p>

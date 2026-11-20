@@ -1,0 +1,221 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "e1",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 640,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "rectangle",
+   "id": "e2",
+   "x": 190,
+   "y": 30,
+   "width": 520,
+   "height": 580,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e3",
+   "x": 214,
+   "y": 50,
+   "text": "[로고] 쿠팡 Open API 연결  — Dialog",
+   "fontSize": 18,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e4",
+   "x": 214,
+   "y": 84,
+   "text": "⑧ 연결하면 재고·판매·정산 데이터를 쿠팡 Wing에서 자동으로 가져옵니다.",
+   "fontSize": 12,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e5",
+   "x": 214,
+   "y": 116,
+   "width": 472,
+   "height": 120,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "⑨ 키는 어디서 받나요? ▾  — Collapsible\n1. 쿠팡 Wing 로그인 → 판매자 정보 → 추가판매정보\n2. 'OPEN API 키 발급' → 용도 '자체 개발'\n3. 업체코드·Access Key·Secret Key 복사\n[쿠팡 Wing 열기 ↗]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e6",
+   "x": 214,
+   "y": 254,
+   "width": 472,
+   "height": 52,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "업체코드 — Input  (예: A00012345)",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e7",
+   "x": 214,
+   "y": 316,
+   "width": 472,
+   "height": 52,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "Access Key — Input",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e8",
+   "x": 214,
+   "y": 378,
+   "width": 472,
+   "height": 52,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "Secret Key — Input (password)",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e9",
+   "x": 214,
+   "y": 446,
+   "width": 472,
+   "height": 44,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "⑩ ⚠ 마지막 연결 테스트 실패: 워커 IP가 Wing 허용목록에 없음",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e10",
+   "x": 214,
+   "y": 510,
+   "width": 150,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "연결 해제",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e11",
+   "x": 420,
+   "y": 510,
+   "width": 120,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "취소",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e12",
+   "x": 552,
+   "y": 510,
+   "width": 134,
+   "height": 40,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "⑪ 저장 후 연결 확인",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e13",
+   "x": 214,
+   "y": 566,
+   "text": "연결된 뒤: 상태 · 마지막 수집 시각 · [연결 해제]. 입력란은 '키 바꾸기'를 눌러야 열림",
+   "fontSize": 12,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

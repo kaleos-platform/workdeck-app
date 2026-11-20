@@ -1,0 +1,505 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "e1",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 640,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e2",
+   "x": 24,
+   "y": 16,
+   "text": "사이드바 — 지금 / 바꾼 뒤",
+   "fontSize": 20,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e3",
+   "x": 24,
+   "y": 56,
+   "width": 260,
+   "height": 560,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e4",
+   "x": 36,
+   "y": 66,
+   "text": "지금",
+   "fontSize": 14,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e5",
+   "x": 36,
+   "y": 96,
+   "width": 236,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "내 워크덱 홈",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e6",
+   "x": 36,
+   "y": 136,
+   "width": 236,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "승인 대기",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e7",
+   "x": 36,
+   "y": 176,
+   "width": 236,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "연동 설정",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e8",
+   "x": 36,
+   "y": 216,
+   "width": 236,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "AI 설정",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e9",
+   "x": 36,
+   "y": 256,
+   "width": 236,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "구성원",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e10",
+   "x": 36,
+   "y": 296,
+   "width": 236,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "구독 업무 관리",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e11",
+   "x": 36,
+   "y": 336,
+   "width": 236,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "결제 관리",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e12",
+   "x": 36,
+   "y": 390,
+   "width": 236,
+   "height": 120,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "사용 중인 업무\n· 셀러 허브 · 재무 관리 · 모집 관리",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e13",
+   "x": 320,
+   "y": 56,
+   "width": 280,
+   "height": 560,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e14",
+   "x": 332,
+   "y": 66,
+   "text": "바꾼 뒤",
+   "fontSize": 14,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e15",
+   "x": 332,
+   "y": 96,
+   "width": 256,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "① 홈",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e16",
+   "x": 332,
+   "y": 136,
+   "width": 256,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "① AI 요청 승인  (3)",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e17",
+   "x": 332,
+   "y": 180,
+   "width": 256,
+   "height": 130,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "② 사용 중인 업무\n· 셀러 허브\n· 재무 관리\n· 모집 관리",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e18",
+   "x": 332,
+   "y": 330,
+   "width": 256,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "③ 설정 ▾  — SidebarSection",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e19",
+   "x": 352,
+   "y": 370,
+   "width": 236,
+   "height": 30,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "외부 서비스 연결",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e20",
+   "x": 352,
+   "y": 406,
+   "width": 236,
+   "height": 30,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "AI 설정",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e21",
+   "x": 352,
+   "y": 442,
+   "width": 236,
+   "height": 30,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "팀원 초대·관리",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e22",
+   "x": 352,
+   "y": 478,
+   "width": 236,
+   "height": 30,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "업무 구독",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e23",
+   "x": 352,
+   "y": 514,
+   "width": 236,
+   "height": 30,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "결제 수단·내역",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e24",
+   "x": 352,
+   "y": 550,
+   "width": 236,
+   "height": 30,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "계정 설정",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e25",
+   "x": 620,
+   "y": 96,
+   "text": "① 매일 쓰는 메뉴만 위에",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e26",
+   "x": 620,
+   "y": 136,
+   "text": "   이름: 홈 / AI 요청 승인",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e27",
+   "x": 620,
+   "y": 180,
+   "text": "② 업무 바로가기를 위로",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e28",
+   "x": 620,
+   "y": 330,
+   "text": "③ 설정은 맨 아래 접힘 그룹",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e29",
+   "x": 620,
+   "y": 352,
+   "text": "   설정 화면에 있을 때만 펼침",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e30",
+   "x": 620,
+   "y": 374,
+   "text": "   팀원(MEMBER)은 권한 없는",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e31",
+   "x": 620,
+   "y": 396,
+   "text": "   메뉴가 지금처럼 숨겨짐",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e32",
+   "x": 620,
+   "y": 430,
+   "text": "   계정 설정을 헤더에서 추가",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

@@ -10,13 +10,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
@@ -34,15 +27,40 @@ type Settings = {
   usage: { yearMonth: string; textTokensUsed: number; textTokenQuota: number }
 }
 
-const PROVIDERS: { value: Provider; label: string; defaultModel: string; keyHint: string }[] = [
-  { value: 'OPENAI', label: 'OpenAI', defaultModel: 'gpt-4.1-mini', keyHint: 'sk-...' },
+// logo: 공식 브랜드 SVG를 public/brand/에 둔 공급자만 지정한다(없으면 이름 텍스트 타일).
+const PROVIDERS: {
+  value: Provider
+  label: string
+  defaultModel: string
+  keyHint: string
+  logo?: string
+  keyUrl: string
+  keySteps: string[]
+}[] = [
+  {
+    value: 'OPENAI',
+    label: 'OpenAI',
+    defaultModel: 'gpt-4.1-mini',
+    keyHint: 'sk-...',
+    keyUrl: 'https://platform.openai.com/api-keys',
+    keySteps: ['OpenAI 계정으로 로그인합니다.', '"Create new secret key"를 눌러 키를 만듭니다.'],
+  },
   {
     value: 'ANTHROPIC',
     label: 'Anthropic',
     defaultModel: 'claude-sonnet-4-5',
     keyHint: 'sk-ant-...',
+    keyUrl: 'https://console.anthropic.com/settings/keys',
+    keySteps: ['Anthropic 콘솔에 로그인합니다.', '"Create Key"를 눌러 키를 만듭니다.'],
   },
-  { value: 'GEMINI', label: 'Google Gemini', defaultModel: 'gemini-2.5-flash', keyHint: 'AIza...' },
+  {
+    value: 'GEMINI',
+    label: 'Google Gemini',
+    defaultModel: 'gemini-2.5-flash',
+    keyHint: 'AIza...',
+    keyUrl: 'https://aistudio.google.com/apikey',
+    keySteps: ['Google 계정으로 로그인합니다.', '"Create API key"를 눌러 키를 만듭니다.'],
+  },
 ]
 
 export function AiSettingsForm() {
@@ -78,6 +96,11 @@ export function AiSettingsForm() {
   }, [load])
 
   const selected = PROVIDERS.find((p) => p.value === provider)!
+  // 표시는 입력 중인 값 기준, 직접 입력 펼침의 초기값만 저장값 기준.
+  const savedModel = settings?.model?.trim() ?? ''
+  const typedModel = model.trim()
+  const customModel = typedModel !== '' && typedModel !== selected.defaultModel
+  const savedCustom = savedModel !== '' && savedModel !== selected.defaultModel
 
   async function save() {
     setSaving(true)
@@ -179,12 +202,12 @@ export function AiSettingsForm() {
       {mode === 'WORKDECK' && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">이번 달 사용량</CardTitle>
+            <CardTitle className="text-base">이번 달 무료 사용량 {percent}% 사용</CardTitle>
             <CardDescription>{usage?.yearMonth} 기준 · 매월 1일 초기화</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Progress value={percent} className="h-2" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {usage?.textTokensUsed.toLocaleString()} / {usage?.textTokenQuota.toLocaleString()}{' '}
               토큰 사용
             </p>
@@ -213,31 +236,77 @@ export function AiSettingsForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>공급자</Label>
-                <Select value={provider} onValueChange={(v) => setProvider(v as Provider)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PROVIDERS.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <fieldset className="space-y-1.5">
+              <legend className="text-sm font-medium">AI 회사</legend>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {PROVIDERS.map((p) => (
+                  <label
+                    key={p.value}
+                    className={cn(
+                      'flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring',
+                      provider === p.value
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'hover:border-muted-foreground/40'
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="ai-provider"
+                      className="sr-only"
+                      value={p.value}
+                      checked={provider === p.value}
+                      onChange={() => {
+                        // 추천값·빈 값은 새 공급자의 추천값으로, 직접 입력한 값은 유지
+                        if (typedModel === '' || typedModel === selected.defaultModel) setModel('')
+                        setProvider(p.value)
+                      }}
+                    />
+                    {/* eslint-disable-next-line @next/next/no-img-element -- 작은 정적 SVG 로고 */}
+                    {p.logo && <img src={p.logo} alt="" width={20} height={20} />}
+                    {p.label}
+                  </label>
+                ))}
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="ai-model">모델</Label>
+            </fieldset>
+
+            <details className="rounded-md border px-3 py-2 text-sm">
+              <summary className="cursor-pointer font-medium">키는 어디서 받나요?</summary>
+              <ol className="mt-2 list-decimal space-y-1 pl-5 text-muted-foreground">
+                {selected.keySteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+                <li>
+                  만든 키를 복사해 아래 칸에 붙여넣습니다.{' '}
+                  <a
+                    href={selected.keyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline underline-offset-2"
+                  >
+                    {selected.label} 키 발급 페이지 열기
+                  </a>
+                </li>
+              </ol>
+            </details>
+
+            <div className="space-y-1.5">
+              <Label>모델</Label>
+              {customModel ? (
+                <p className="text-sm">사용 중인 모델: {typedModel}(직접 입력)</p>
+              ) : (
+                <p className="text-sm">추천 모델 사용({selected.defaultModel})</p>
+              )}
+              <details key={savedModel} open={savedCustom} className="text-sm">
+                <summary className="cursor-pointer text-muted-foreground">직접 입력</summary>
                 <Input
                   id="ai-model"
+                  aria-label="모델 이름"
+                  className="mt-2"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   placeholder={selected.defaultModel}
                 />
-              </div>
+              </details>
             </div>
 
             <div className="space-y-1.5">

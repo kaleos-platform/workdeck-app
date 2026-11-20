@@ -123,7 +123,7 @@ export function PaymentSettingsClient({
         if (res.status === 409) {
           setConfirmRemove(false)
           toast.error(message, {
-            description: '구독 업무 관리에서 먼저 해지한 뒤 다시 시도하세요.',
+            description: '업무 구독에서 먼저 해지한 뒤 다시 시도하세요.',
           })
           router.push(SETTINGS_BILLING_PATH)
           return
@@ -179,7 +179,7 @@ export function PaymentSettingsClient({
         {!isOwner && (
           <Alert>
             <ShieldAlert className="h-4 w-4" />
-            <AlertTitle>결제 관리는 소유자만 가능합니다</AlertTitle>
+            <AlertTitle>결제는 소유자만 관리할 수 있습니다</AlertTitle>
             <AlertDescription>
               구독 현황은 열람할 수 있지만 변경은 소유자에게 요청하세요.
             </AlertDescription>
