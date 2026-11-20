@@ -121,7 +121,7 @@ async function checkOne(row: Row, out: HealthResult): Promise<void> {
     if (!alertedAt) {
       const sent = await sendSpaceNotification({
         spaceId: row.spaceId,
-        text: `:warning: ${label} 연동 점검 실패: ${escapeMrkdwn(error)}\n연동 설정에서 토큰을 확인하세요. 조회·제안·일일 보고가 멈출 수 있습니다.`,
+        text: `:warning: ${label} 연동 점검 실패: ${escapeMrkdwn(error)}\n외부 서비스 연결에서 토큰을 확인하세요. 조회·제안·일일 보고가 멈출 수 있습니다.`,
       })
       if (sent) {
         out.notified++

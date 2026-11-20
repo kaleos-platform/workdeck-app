@@ -84,7 +84,7 @@ export function McpGuideCard() {
 
         <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
           조회(읽기)는 즉시 응답하지만, 데이터를 변경하는 작업은 안전을 위해 승인 큐를 거칩니다.
-          연결한 에이전트가 변경을 요청하면 워크덱 승인 대기 화면이나 Slack 승인 채널에서 확인 후
+          연결한 에이전트가 변경을 요청하면 워크덱 AI 요청 승인 화면이나 Slack 승인 채널에서 확인 후
           승인해야 실제로 실행됩니다.
         </div>
       </CardContent>

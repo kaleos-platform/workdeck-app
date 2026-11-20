@@ -1,6 +1,42 @@
-import { render, screen, waitFor, fireEvent, within } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, within, act } from '@testing-library/react'
 import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { MembersCard } from '../members-card'
+
+// next/navigation 모킹 — replace 가 주소를 바꾸면 useSearchParams 를 쓰는 컴포넌트가 다시 그려진다.
+jest.mock('next/navigation', () => {
+  const React = jest.requireActual('react')
+  const listeners = new Set<() => void>()
+  const store = { search: '' }
+  const subscribe = (l: () => void) => {
+    listeners.add(l)
+    return () => listeners.delete(l)
+  }
+  return {
+    __store: store,
+    __setSearch: (q: string) => {
+      store.search = q
+      listeners.forEach((l) => l())
+    },
+    usePathname: () => '/settings/members',
+    useRouter: () => ({
+      replace: (url: string) => {
+        mockReplace(url)
+        store.search = url.split('?')[1] ?? ''
+        listeners.forEach((l) => l())
+      },
+    }),
+    useSearchParams: () => {
+      const search = React.useSyncExternalStore(
+        subscribe,
+        () => store.search,
+        () => store.search
+      )
+      return new URLSearchParams(search)
+    },
+  }
+})
+const mockReplace = jest.fn()
+const nav = jest.requireMock('next/navigation') as { __setSearch: (q: string) => void }
 
 jest.mock('@/lib/auth/mfa-client', () => ({
   fetchWithMfa: (...a: Parameters<typeof fetch>) => fetch(...a),
@@ -41,6 +77,8 @@ const pendingInv = {
 }
 
 beforeEach(() => {
+  nav.__setSearch('')
+  mockReplace.mockClear()
   mfaRedirect.mockReset().mockResolvedValue(false)
   postResponse = () =>
     json(
@@ -64,19 +102,23 @@ beforeEach(() => {
 async function invite() {
   render(<MembersCard />)
   await screen.findByText(/owner@example.com/)
-  fireEvent.change(screen.getByPlaceholderText('초대할 이메일'), {
+  fireEvent.click(screen.getByRole('button', { name: '팀원 초대' }))
+  fireEvent.change(await screen.findByPlaceholderText('초대할 이메일'), {
     target: { value: 'invitee@example.com' },
   })
   fireEvent.click(screen.getByRole('button', { name: '초대 보내기' }))
 }
 
-it('OWNER는 구성원 목록과 초대 폼을 보고, 초대하면 링크가 나온다', async () => {
+it('OWNER는 팝업으로 초대하면 팝업이 닫히고 초대 탭에 링크가 나온다', async () => {
   await invite()
   await waitFor(() =>
     expect(screen.getByDisplayValue('https://app.example.com/invite/TOK')).toBeInTheDocument()
   )
   const post = fetchMock.mock.calls.find(([, i]) => i?.method === 'POST')
   expect(JSON.parse(post![1].body)).toEqual({ email: 'invitee@example.com', role: 'ADMIN' })
+  expect(mockReplace).toHaveBeenCalledWith('/settings/members?tab=invites')
+  expect(screen.queryByPlaceholderText('초대할 이메일')).not.toBeInTheDocument()
+  expect(screen.getByRole('tab', { name: '초대', selected: true })).toBeInTheDocument()
 })
 
 it('메일 발송 성공 안내(링크는 보조)', async () => {
@@ -120,7 +162,8 @@ it('메일 발송 실패면 실패 안내를 보여준다', async () => {
 it('403이면 API 메시지를 그대로 보여준다', async () => {
   postResponse = () => json({ message: '2단계 인증이 필요합니다' }, 403)
   await invite()
-  expect(await screen.findByText('2단계 인증이 필요합니다')).toBeInTheDocument()
+  const msg = await screen.findByText('2단계 인증이 필요합니다')
+  expect(within(screen.getByRole('dialog')).getByText('2단계 인증이 필요합니다')).toBe(msg)
 })
 
 it('초대 목록 로드 실패는 메시지만, 인증 링크는 없다', async () => {
@@ -142,15 +185,84 @@ it('링크 복사 버튼은 클립보드에 쓴다', async () => {
   await waitFor(() => expect(writeText).toHaveBeenCalledWith('https://app.example.com/invite/TOK'))
 })
 
-it('ADMIN은 초대 폼을 보지 않는다', async () => {
+it('ADMIN은 탭 2개만 보고 초대 버튼·역할 Select 가 없다', async () => {
   fetchMock.mockImplementation((url: string) =>
     url.startsWith('/api/spaces/members')
-      ? json({ spaceId: 'sp-1', myRole: 'ADMIN', members: [] })
+      ? json({
+          ...owner,
+          myRole: 'ADMIN',
+          members: [
+            ...owner.members,
+            {
+              id: 'm2',
+              role: 'MEMBER',
+              slackUserId: null,
+              user: { email: 'mem@example.com', name: null },
+            },
+          ],
+        })
       : json({}, 404)
   )
   render(<MembersCard />)
-  await waitFor(() => expect(fetchMock).toHaveBeenCalled())
-  expect(screen.queryByPlaceholderText('초대할 이메일')).not.toBeInTheDocument()
+  await screen.findByText(/mem@example.com/)
+  expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['팀원·권한', '승인 규칙'])
+  expect(screen.queryByRole('button', { name: '팀원 초대' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  expect(fetchMock).not.toHaveBeenCalledWith('/api/spaces/sp-1/invitations')
+})
+
+it('ADMIN 이 ?tab=invites 로 들어오면 팀원·권한 탭', async () => {
+  nav.__setSearch('tab=invites')
+  fetchMock.mockImplementation(() => json({ ...owner, myRole: 'ADMIN' }))
+  render(<MembersCard />)
+  expect(await screen.findByRole('tab', { name: '팀원·권한', selected: true })).toBeInTheDocument()
+})
+
+describe('탭 URL', () => {
+  it('OWNER 는 탭 3개와 초대 버튼을 본다(기본 팀원·권한, 역할 안내 포함)', async () => {
+    render(<MembersCard />)
+    await screen.findByText(/owner@example.com/)
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual([
+      '팀원·권한',
+      '초대',
+      '승인 규칙',
+    ])
+    expect(screen.getByRole('tab', { name: '팀원·권한', selected: true })).toBeInTheDocument()
+    expect(screen.getByText('결제·구독과 모든 설정을 관리합니다')).toBeInTheDocument()
+  })
+
+  it('?tab=invites 로 시작하면 초대 탭, 대기 건수가 라벨에 붙는다', async () => {
+    nav.__setSearch('tab=invites')
+    fetchMock.mockImplementation((url: string) =>
+      url.startsWith('/api/spaces/members') ? json(owner) : json({ invitations: [pendingInv] })
+    )
+    render(<MembersCard />)
+    expect(await screen.findByRole('tab', { name: '초대 (1)', selected: true })).toBeInTheDocument()
+    expect(await screen.findByText(/^p@example.com/)).toBeInTheDocument()
+  })
+
+  it('같은 화면에서 주소가 바뀌면 선택 탭이 따라간다', async () => {
+    render(<MembersCard />)
+    await screen.findByText(/owner@example.com/)
+    act(() => nav.__setSearch('tab=rules'))
+    expect(screen.getByRole('tab', { name: '승인 규칙', selected: true })).toBeInTheDocument()
+  })
+
+  it('허용하지 않는 tab 값은 팀원·권한', async () => {
+    nav.__setSearch('tab=zzz')
+    render(<MembersCard />)
+    expect(
+      await screen.findByRole('tab', { name: '팀원·권한', selected: true })
+    ).toBeInTheDocument()
+  })
+
+  it('탭을 바꾸면 다른 query 를 보존해 replace 한다', async () => {
+    nav.__setSearch('foo=1&tab=members')
+    render(<MembersCard />)
+    await screen.findByText(/owner@example.com/)
+    fireEvent.mouseDown(screen.getByRole('tab', { name: '승인 규칙' }), { button: 0 })
+    expect(mockReplace).toHaveBeenCalledWith('/settings/members?foo=1&tab=rules')
+  })
 })
 
 it('대기 초대를 취소하면 DELETE 후 목록을 다시 불러온다', async () => {
@@ -165,6 +277,7 @@ it('대기 초대를 취소하면 DELETE 후 목록을 다시 불러온다', asy
     if (url === '/api/spaces/sp-1/invitations') return json({ invitations: pending })
     return json({}, 404)
   })
+  nav.__setSearch('tab=invites')
   render(<MembersCard />)
   fireEvent.click(await screen.findByRole('button', { name: '취소' }))
   await waitFor(() =>
@@ -185,6 +298,7 @@ it('취소가 2단계 인증을 요구하면 단계 인증으로 보낸다(목�
       return json({ invitations: [{ ...pendingInv, id: 'inv-9', email: 'p@example.com' }] })
     return json({}, 404)
   })
+  nav.__setSearch('tab=invites')
   render(<MembersCard />)
   fireEvent.click(await screen.findByRole('button', { name: '취소' }))
   await waitFor(() => expect(mfaRedirect).toHaveBeenCalled())
@@ -238,7 +352,7 @@ describe('OWNER 구성원 관리·승인 한도', () => {
   })
 
   // 회귀: 다른 탭에서 전환해 현재 Space(쿠키)가 바뀌어도 이름은 쓰기 대상(members 응답)의 것.
-  it('내보내기 확인 문구와 초대 버튼에 쓰기 대상 Space 이름이 들어간다', async () => {
+  it('내보내기 확인 문구와 초대 팝업에 쓰기 대상 Space 이름이 들어간다', async () => {
     const base = fetchMock.getMockImplementation()!
     fetchMock.mockImplementation((url: string, init?: RequestInit) =>
       url === '/api/spaces/current'
@@ -252,15 +366,17 @@ describe('OWNER 구성원 관리·승인 한도', () => {
     )
     render(<MembersCard />)
     await screen.findByText(/admin@example.com/)
-    expect(await screen.findByRole('button', { name: '「Space A」에 초대' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '「Space B」에 초대' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: '내보내기' }))
     expect(window.confirm).toHaveBeenCalledWith(
       '「Space A」에서 admin@example.com 님을 내보낼까요?'
     )
+    fireEvent.click(screen.getByRole('button', { name: '팀원 초대' }))
+    expect(await screen.findByText(/「Space A」에 초대할 사람/)).toBeInTheDocument()
+    expect(screen.queryByText(/Space B/)).toBeNull()
   })
 
   it('승인 한도를 저장하면 PUT 으로 보낸다', async () => {
+    nav.__setSearch('tab=rules')
     render(<MembersCard />)
     const input = await screen.findByLabelText('ADMIN 승인 한도(원)')
     expect(input).toHaveValue('100000')
@@ -289,7 +405,9 @@ describe('OWNER 구성원 관리·승인 한도', () => {
 
   it('ADMIN 은 한도를 읽기만 하고 구성원 동작이 없다', async () => {
     fetchMock.mockImplementation(() => json({ ...team, myRole: 'ADMIN' }))
+    nav.__setSearch('tab=rules')
     render(<MembersCard />)
+    fireEvent.mouseDown(await screen.findByRole('tab', { name: '승인 규칙' }), { button: 0 })
     expect(await screen.findByText('100,000원')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '내보내기' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('ADMIN 승인 한도(원)')).not.toBeInTheDocument()
@@ -317,6 +435,7 @@ describe('초대 상태 목록·다시 보내기', () => {
     },
   ]
   beforeEach(() => {
+    nav.__setSearch('tab=invites')
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (url.startsWith('/api/spaces/members')) return json(owner)
       if (url === '/api/spaces/sp-1/invitations/p/resend' && init?.method === 'POST')
@@ -364,6 +483,23 @@ describe('초대 상태 목록·다시 보내기', () => {
       await screen.findByText('초대 메일을 보냈습니다. 메일이 오지 않으면 아래 링크를 전달하세요.')
     ).toBeInTheDocument()
     expect(screen.getByDisplayValue('https://app.example.com/invite/NEW')).toBeInTheDocument()
+  })
+
+  it('다시 보내기 메일 실패도 초대 탭 Alert 에 실패 안내와 링크로 나온다', async () => {
+    const base = fetchMock.getMockImplementation()!
+    fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+      url.endsWith('/p/resend')
+        ? json({ link: 'https://app.example.com/invite/FAIL', emailSent: false })
+        : base(url, init)
+    )
+    render(<MembersCard />)
+    await screen.findByText(/p@example.com/)
+    fireEvent.click(within(row('p@example.com')).getByRole('button', { name: '다시 보내기' }))
+    const alert = await screen.findByRole('alert')
+    expect(within(alert).getByText(/메일을 보내지 못했습니다/)).toBeInTheDocument()
+    expect(
+      within(alert).getByDisplayValue('https://app.example.com/invite/FAIL')
+    ).toBeInTheDocument()
   })
 
   it('다시 보내기 쿨다운 오류는 서버 메시지 그대로', async () => {

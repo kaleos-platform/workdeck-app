@@ -1,0 +1,391 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "e1",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 820,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e2",
+   "x": 24,
+   "y": 16,
+   "text": "외부 서비스 연결",
+   "fontSize": 24,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e3",
+   "x": 24,
+   "y": 52,
+   "text": "쓰는 서비스를 연결하면 워크덱이 데이터를 자동으로 가져옵니다.",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e4",
+   "x": 24,
+   "y": 84,
+   "width": 852,
+   "height": 44,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "④ 연결됨 5 · 연결 필요 6 · 확인 필요 1 (쿠팡 Open API — 연결 테스트 실패)  — Alert",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e5",
+   "x": 24,
+   "y": 146,
+   "text": "⑤ 판매 채널",
+   "fontSize": 15,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e6",
+   "x": 24,
+   "y": 172,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 쿠팡 Open API\n재고·판매·정산 자동 수집\n⚠ 확인 필요                [다시 연결]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e7",
+   "x": 314,
+   "y": 172,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 쿠팡 로그인\n쿠팡 광고 업무에서 사용\n● 연결됨                [업무 설정 →]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e8",
+   "x": 604,
+   "y": 172,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 네이버 N배송\n셀러 허브에서 사용\n○ 연결 안 됨                [업무 설정 →]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e9",
+   "x": 24,
+   "y": 280,
+   "text": "광고·마케팅",
+   "fontSize": 15,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e10",
+   "x": 24,
+   "y": 306,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] Meta 광고\n광고 성과 조회·제안\n○ 연결 안 됨                [연결하기]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e11",
+   "x": 314,
+   "y": 306,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] Google 마케팅\nGA4·태그 관리자\n○ 연결 안 됨                [연결하기]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e12",
+   "x": 604,
+   "y": 306,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 네이버 검색광고\n키워드 광고 성과\n● 연결됨                [관리]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e13",
+   "x": 24,
+   "y": 414,
+   "text": "협업 도구",
+   "fontSize": 15,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e14",
+   "x": 24,
+   "y": 440,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] Slack\n승인·알림을 채널로\n● 연결됨                [관리]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e15",
+   "x": 314,
+   "y": 440,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 노션\n콘텐츠 원고 가져오기\n● 연결됨                [관리]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e16",
+   "x": 604,
+   "y": 440,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 구글 드라이브\n이미지·파일 가져오기\n○ 연결 안 됨                [연결하기]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e17",
+   "x": 24,
+   "y": 548,
+   "text": "AI·에이전트",
+   "fontSize": 15,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e18",
+   "x": 24,
+   "y": 574,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 워크덱 에이전트\n@workdeck 로 질문·작업\n● 켜짐                [관리]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e19",
+   "x": 314,
+   "y": 574,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 내 AI 앱 (Claude·ChatGPT)\nMCP로 직접 연결\n연결 2개                [연결 방법]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e20",
+   "x": 604,
+   "y": 574,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 에이전트 접속 토큰\n외부 에이전트 계정\n토큰 3개                [관리]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e21",
+   "x": 24,
+   "y": 682,
+   "text": "기타",
+   "fontSize": 15,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e22",
+   "x": 24,
+   "y": 708,
+   "width": 272,
+   "height": 92,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "[로고] 직접 등록한 API·로그인\n위킵·Vercel 등 비밀값\n4개 등록                [관리]",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e23",
+   "x": 330,
+   "y": 718,
+   "text": "⑥ 타일 = Card. 버튼 → Dialog(팝업)",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e24",
+   "x": 330,
+   "y": 740,
+   "text": "   '업무 설정 →'은 해당 업무 설정 화면으로 이동",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e25",
+   "x": 330,
+   "y": 762,
+   "text": "⑦ 팀원(MEMBER): 상태만 보이고 버튼 자리에 '관리자에게 요청'",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

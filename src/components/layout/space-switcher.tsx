@@ -28,7 +28,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 // 업무별 쓰기 권한은 따로 판정된다(canWriteDeck) — 구성원 설명을 넓게 쓰지 않는다.
 export const ROLE_HINT: Record<Role, string> = {
   OWNER: '결제·구독과 모든 설정을 관리합니다',
-  ADMIN: '연동·AI 설정과 구성원을 관리합니다',
+  ADMIN: '외부 서비스 연결·AI 설정과 구성원을 관리합니다',
   MEMBER: '사용 중인 업무를 이용합니다(일부 업무는 조회만 가능)',
 }
 

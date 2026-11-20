@@ -312,7 +312,7 @@ export function SubscriptionSettingsClient() {
         {!isOwner && (
           <Alert>
             <ShieldAlert className="h-4 w-4" />
-            <AlertTitle>결제 관리는 소유자만 가능합니다</AlertTitle>
+            <AlertTitle>결제는 소유자만 관리할 수 있습니다</AlertTitle>
             <AlertDescription>
               구독 현황은 열람할 수 있지만 변경은 소유자에게 요청하세요.
             </AlertDescription>
