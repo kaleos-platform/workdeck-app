@@ -34,6 +34,20 @@ const RESULT_MESSAGE: Record<string, { title: string; variant: 'default' | 'dest
     title: '주문 읽기·쓰기 권한이 승인되지 않았습니다. 카페24 앱의 권한 설정을 확인해 주세요',
     variant: 'destructive',
   },
+  mfa_required: {
+    title: '2단계 인증이 필요합니다. 「다시 승인」을 눌러 인증한 뒤 진행해 주세요',
+    variant: 'destructive',
+  },
+  forbidden: {
+    title:
+      '이 작업 공간의 관리자 권한이 없거나 승인을 시작한 계정과 다릅니다. 같은 계정으로 다시 시도해 주세요',
+    variant: 'destructive',
+  },
+  expired: {
+    title:
+      '승인 요청이 만료되었거나 유효하지 않습니다. 「다시 승인」을 눌러 처음부터 진행해 주세요',
+    variant: 'destructive',
+  },
 }
 
 async function errorMessage(res: Response, fallback: string): Promise<string> {

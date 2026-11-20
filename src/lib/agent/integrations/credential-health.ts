@@ -17,7 +17,13 @@ import {
   verifyNaverCred,
 } from '@/lib/agent/integrations/naver-searchad'
 
-import { Cafe24Error, getAccessToken, probeOrders } from '@/lib/cafe24/client'
+import {
+  CAFE24_REAUTH_MESSAGE,
+  Cafe24Error,
+  getAccessToken,
+  probeOrders,
+} from '@/lib/cafe24/client'
+import { readCafe24, writeCafe24If } from '@/lib/cafe24/store'
 
 const CAFE24 = 'cafe24'
 const LABEL: Record<string, string> = {
@@ -48,7 +54,29 @@ const PROBES: Record<string, (spaceId: string, audit: string[]) => Promise<void>
       await probeOrders(spaceId)
     } catch (err) {
       if (err instanceof Cafe24Error && err.code === 'not_authorized') return
+      // 이미 재승인 대기인 행은 갱신을 다시 시도하지 않고(getAccessToken 이 즉시 던진다) 같은 문구로 처리한다.
+      if (err instanceof Cafe24Error && err.code === 'reauth_required') {
+        throw new Error(CAFE24_REAUTH_MESSAGE)
+      }
       throw err
+    }
+    // 콜백의 확인 조회만 실패해 needs_auth 로 남은 행: 토큰·조회가 살아 있으면 연결됨으로 올린다(실패해도 무시).
+    try {
+      const cur = await readCafe24(spaceId)
+      if (cur?.config.status === 'needs_auth' && cur.secret.refreshToken) {
+        await writeCafe24If(
+          cur,
+          cur.secret,
+          {
+            ...cur.config,
+            status: 'connected',
+            connectedAt: cur.config.connectedAt ?? new Date().toISOString(),
+          },
+          true
+        )
+      }
+    } catch {
+      // 다음 점검에서 다시 시도한다.
     }
   },
 }

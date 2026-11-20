@@ -2,12 +2,12 @@
  * GET /api/integrations/cafe24/callback
  * 카페24 승인 후 돌아오는 콜백. state 서명·만료 + nonce 쿠키(일회용) + 현재 사용자 = state.userId +
  * ADMIN + aal2 를 확인하고, code 를 토큰으로 교환해 조건부 쓰기로 저장한 뒤 주문 조회 1회로 동작을 확인한다.
- * 결과: /settings/integrations?open=cafe24&cafe24=<connected|denied|error|mall_mismatch|scope_missing>&spaceId=…
+ * 결과: /settings/integrations?open=cafe24&cafe24=<connected|denied|error|mall_mismatch|scope_missing|mfa_required|forbidden|expired>&spaceId=…
+ * state 서명이 무효면 spaceId 를 믿을 수 없어 spaceId 없이 돌려보낸다.
  * 토큰·응답 본문은 어디에도 기록하지 않는다(오류는 단계명+상태+허용된 코드만).
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
-import { errorResponse } from '@/lib/api-helpers'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { recordCredentialError } from '@/lib/agent/integrations/space-credential'
@@ -24,7 +24,15 @@ import { buildAppUrl } from '@/lib/domain'
 
 export const runtime = 'nodejs'
 
-type Outcome = 'connected' | 'denied' | 'error' | 'mall_mismatch' | 'scope_missing'
+type Outcome =
+  | 'connected'
+  | 'denied'
+  | 'error'
+  | 'mall_mismatch'
+  | 'scope_missing'
+  | 'mfa_required'
+  | 'forbidden'
+  | 'expired'
 
 /** nonce 쿠키는 결과와 상관없이 지운다(재사용 차단). */
 function done(status: Outcome, spaceId?: string): NextResponse {
@@ -42,22 +50,21 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const stateParam = url.searchParams.get('state')
   const state = stateParam ? verifyCafe24State(stateParam) : null
-  if (!state) return errorResponse('유효하지 않은 요청입니다', 400)
+  if (!state) return done('expired') // 서명이 무효라 spaceId 를 믿을 수 없다
 
   const user = await getUser()
-  if (!user || user.id !== state.userId) return errorResponse('요청한 사용자와 다릅니다', 403)
+  if (!user || user.id !== state.userId) return done('forbidden', state.spaceId)
   // 쿠키 대조 — 다른 브라우저 세션·재사용 차단
   if (!nonceMatches(state, req.cookies.get(CAFE24_NONCE_COOKIE)?.value)) {
-    return errorResponse('유효하지 않은 요청입니다', 400)
+    return done('expired', state.spaceId)
   }
   const auth = await requireSpaceAdmin(state.spaceId)
-  if ('error' in auth) return auth.error
-  const mfaError = await requireAal2()
-  if (mfaError) return mfaError
+  if ('error' in auth) return done('forbidden', state.spaceId)
+  if (await requireAal2()) return done('mfa_required', state.spaceId)
 
   if (url.searchParams.get('error')) return done('denied', state.spaceId)
   const code = url.searchParams.get('code')
-  if (!code) return errorResponse('잘못된 요청입니다', 400)
+  if (!code) return done('error', state.spaceId)
 
   const row = await readCafe24(state.spaceId)
   if (!row || !sameApp(row, state)) return done('error', state.spaceId) // 승인 도중 설정이 바뀜

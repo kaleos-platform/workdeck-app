@@ -53,6 +53,9 @@ export const fakePrisma = {
         return r ? clone(r) : null
       }
     ),
+    findMany: jest.fn(async () =>
+      fakeDb.rows.map((r) => ({ ...clone(r), healthError: null, healthAlertedAt: null }))
+    ),
     updateMany: jest.fn(
       async ({
         where,
