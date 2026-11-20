@@ -58,7 +58,13 @@ type ProbeResult = {
 const PROBE_POLL_INTERVAL_MS = 3000
 const PROBE_POLL_TIMEOUT_MS = 60000
 
-export function CoupangApiCard() {
+export function CoupangApiCard({
+  onChanged,
+  embedded = false,
+}: {
+  onChanged?: () => void
+  embedded?: boolean
+}) {
   const [data, setData] = useState<ApiCredentialResponse>(null)
   const [loading, setLoading] = useState(true)
   const spaceName = useCurrentSpaceName()
@@ -166,6 +172,7 @@ export function CoupangApiCard() {
       setProbeStatus('idle')
       setProbeResult(null)
       await load()
+      onChanged?.()
     } catch {
       setSaveError('저장 중 오류가 발생했습니다 (네트워크 또는 서버 응답 이상)')
       toast.error('저장 중 오류가 발생했습니다')
@@ -201,6 +208,7 @@ export function CoupangApiCard() {
       setProbeStatus('idle')
       setProbeResult(null)
       setDeleteOpen(false)
+      onChanged?.()
     } catch {
       toast.error('삭제 중 오류가 발생했습니다')
     } finally {
@@ -208,41 +216,46 @@ export function CoupangApiCard() {
     }
   }
 
-  const pollProbeResult = useCallback((runId: string) => {
-    pollDeadlineRef.current = Date.now() + PROBE_POLL_TIMEOUT_MS
-    stopPolling()
-    pollTimerRef.current = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/collection/runs/${runId}`)
-        if (res.ok) {
-          // 라우트는 { run } 래퍼로 응답한다 — 본문을 그대로 run 으로 취급하면
-          // probeResult 가 영원히 undefined 라 폴링이 타임아웃까지 돌고 실패로 끝난다.
-          const body = await res.json()
-          const run = body?.run ?? body
-          if (run?.probeResult) {
-            stopPolling()
-            const result: NonNullable<ProbeResult> = run.probeResult
-            setProbeResult(result)
-            setProbeStatus(result.ok ? 'success' : result.ipBlocked ? 'ip_blocked' : 'failed')
-            return
+  const pollProbeResult = useCallback(
+    (runId: string) => {
+      pollDeadlineRef.current = Date.now() + PROBE_POLL_TIMEOUT_MS
+      stopPolling()
+      pollTimerRef.current = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/collection/runs/${runId}`)
+          if (res.ok) {
+            // 라우트는 { run } 래퍼로 응답한다 — 본문을 그대로 run 으로 취급하면
+            // probeResult 가 영원히 undefined 라 폴링이 타임아웃까지 돌고 실패로 끝난다.
+            const body = await res.json()
+            const run = body?.run ?? body
+            if (run?.probeResult) {
+              stopPolling()
+              const result: NonNullable<ProbeResult> = run.probeResult
+              setProbeResult(result)
+              setProbeStatus(result.ok ? 'success' : result.ipBlocked ? 'ip_blocked' : 'failed')
+              onChanged?.()
+              return
+            }
+            if (run?.status === 'FAILED') {
+              stopPolling()
+              setProbeStatus('failed')
+              setProbeResult({ ok: false, message: run.error ?? '연결 테스트에 실패했습니다' })
+              onChanged?.()
+              return
+            }
           }
-          if (run?.status === 'FAILED') {
-            stopPolling()
-            setProbeStatus('failed')
-            setProbeResult({ ok: false, message: run.error ?? '연결 테스트에 실패했습니다' })
-            return
-          }
+        } catch {
+          // 폴링 중 일시적 오류 — 다음 tick에서 재시도
         }
-      } catch {
-        // 폴링 중 일시적 오류 — 다음 tick에서 재시도
-      }
-      if (Date.now() > pollDeadlineRef.current) {
-        stopPolling()
-        setProbeStatus('failed')
-        setProbeResult({ ok: false, message: '연결 테스트 응답 시간이 초과되었습니다' })
-      }
-    }, PROBE_POLL_INTERVAL_MS)
-  }, [])
+        if (Date.now() > pollDeadlineRef.current) {
+          stopPolling()
+          setProbeStatus('failed')
+          setProbeResult({ ok: false, message: '연결 테스트 응답 시간이 초과되었습니다' })
+        }
+      }, PROBE_POLL_INTERVAL_MS)
+    },
+    [onChanged]
+  )
 
   async function handleProbe() {
     setProbeStatus('running')
@@ -288,38 +301,40 @@ export function CoupangApiCard() {
   const isConnected = Boolean(data?.isActive)
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Cable className="h-5 w-5" />
-              쿠팡 Open API 연동
-            </CardTitle>
-            <CardDescription>
-              쿠팡 Open API 자격증명을 등록하면 재고·판매·정산·상품 데이터를 크롤링 대신 API로
-              수집할 수 있습니다.
-            </CardDescription>
+    <Card className={embedded ? 'border-0 bg-transparent py-0 shadow-none' : undefined}>
+      {!embedded && (
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Cable className="h-5 w-5" />
+                쿠팡 Open API 연동
+              </CardTitle>
+              <CardDescription>
+                쿠팡 Open API 자격증명을 등록하면 재고·판매·정산·상품 데이터를 크롤링 대신 API로
+                수집할 수 있습니다.
+              </CardDescription>
+            </div>
+            {data && (
+              <Badge
+                className={
+                  isConnected
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                }
+              >
+                {isConnected ? (
+                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                ) : (
+                  <XCircle className="mr-1 h-3 w-3" />
+                )}
+                {isConnected ? '등록됨' : '비활성'}
+              </Badge>
+            )}
           </div>
-          {data && (
-            <Badge
-              className={
-                isConnected
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-              }
-            >
-              {isConnected ? (
-                <CheckCircle2 className="mr-1 h-3 w-3" />
-              ) : (
-                <XCircle className="mr-1 h-3 w-3" />
-              )}
-              {isConnected ? '등록됨' : '비활성'}
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </CardHeader>
+      )}
+      <CardContent className={embedded ? 'space-y-4 px-0' : 'space-y-4'}>
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>IP 허용목록(allowlist) 등록 필요</AlertTitle>
@@ -469,7 +484,7 @@ export function CoupangApiCard() {
           </div>
         )}
       </CardContent>
-      {!data && !loading && !isEditing && (
+      {!embedded && !data && !loading && !isEditing && (
         <CardFooter>
           <Button size="sm" onClick={() => setIsEditing(true)}>
             API 자격증명 등록

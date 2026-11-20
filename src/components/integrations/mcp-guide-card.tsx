@@ -13,18 +13,20 @@ args = ["-y", "mcp-remote", "${MCP_URL}"]`
 const HERMES_ADD_CMD = `hermes mcp add workdeck --url ${MCP_URL} --auth oauth`
 const HERMES_LOGIN_CMD = `hermes mcp login workdeck`
 
-export function McpGuideCard() {
+export function McpGuideCard({ embedded = false }: { embedded?: boolean }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plug className="h-5 w-5" />내 에이전트 연결(MCP)
-        </CardTitle>
-        <CardDescription>
-          Claude Code, claude.ai 등 MCP를 지원하는 클라이언트를 워크덱에 직접 연결합니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5 text-sm">
+    <Card className={embedded ? 'border-0 bg-transparent py-0 shadow-none' : undefined}>
+      {!embedded && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plug className="h-5 w-5" />내 에이전트 연결(MCP)
+          </CardTitle>
+          <CardDescription>
+            Claude Code, claude.ai 등 MCP를 지원하는 클라이언트를 워크덱에 직접 연결합니다.
+          </CardDescription>
+        </CardHeader>
+      )}
+      <CardContent className={embedded ? 'space-y-5 px-0 text-sm' : 'space-y-5 text-sm'}>
         <div className="space-y-1.5">
           <p className="font-medium">MCP 서버 URL</p>
           <CopyCodeBlock code={MCP_URL} />

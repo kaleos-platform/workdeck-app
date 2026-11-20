@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Bot } from 'lucide-react'
 import type { AgentSettingsResponse } from './types'
 
-export function AgentToggleCard() {
+export function AgentToggleCard({ embedded = false }: { embedded?: boolean }) {
   const url = '/api/agent/settings'
   const [data, setData] = useState<AgentSettingsResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -46,18 +46,20 @@ export function AgentToggleCard() {
   const usage = data?.usage
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5" />
-          workdeck 에이전트
-        </CardTitle>
-        <CardDescription>
-          Slack이나 채팅에서 워크덱 에이전트를 멘션(@workdeck)하면 재무·판매 데이터를 조회하고, 변경
-          작업은 승인 큐를 거쳐 실행됩니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Card className={embedded ? 'border-0 bg-transparent py-0 shadow-none' : undefined}>
+      {!embedded && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bot className="h-5 w-5" />
+            workdeck 에이전트
+          </CardTitle>
+          <CardDescription>
+            Slack이나 채팅에서 워크덱 에이전트를 멘션(@workdeck)하면 재무·판매 데이터를 조회하고,
+            변경 작업은 승인 큐를 거쳐 실행됩니다.
+          </CardDescription>
+        </CardHeader>
+      )}
+      <CardContent className={embedded ? 'space-y-4 px-0' : 'space-y-4'}>
         <>
           <div className="flex items-center justify-between rounded-md border p-3">
             <div className="space-y-0.5">

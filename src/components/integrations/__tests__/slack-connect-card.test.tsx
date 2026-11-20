@@ -27,7 +27,7 @@ it('채널 저장이 409면 서버 메시지를 보여주고, 보이는 Space �
     )
   render(<SlackConnectCard slackStatus={null} />)
 
-  expect(await screen.findByText('Space: Space A')).toBeTruthy()
+  expect(await screen.findByText('작업 공간: Space A')).toBeTruthy()
   fireEvent.change(screen.getByLabelText('승인 채널'), { target: { value: 'C1' } })
   fireEvent.click(screen.getAllByRole('button', { name: '등록' })[0])
 
@@ -105,7 +105,7 @@ it('승인 채널 해제도 보이는 Space 로 보낸다', async () => {
     init?.method === 'DELETE' ? res(200, { ok: true }) : loaded
   )
   render(<SlackConnectCard slackStatus={null} />)
-  await screen.findByText('Space: Space B')
+  await screen.findByText('작업 공간: Space B')
   fireEvent.click(screen.getAllByRole('button', { name: '해제' })[0])
   await waitFor(() =>
     expect(fetchMock.mock.calls[1]).toEqual([

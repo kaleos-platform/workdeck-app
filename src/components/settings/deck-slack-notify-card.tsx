@@ -131,7 +131,10 @@ export function DeckSlackNotifyCard({ deckKey }: { deckKey: DeckKey }) {
         {data?.channelRegistered === false && (
           <p className="text-xs text-muted-foreground">
             알림 채널이 등록되지 않았습니다.{' '}
-            <Link href={SETTINGS_INTEGRATIONS_PATH} className="underline underline-offset-2">
+            <Link
+              href={`${SETTINGS_INTEGRATIONS_PATH}?open=slack`}
+              className="underline underline-offset-2"
+            >
               외부 서비스 연결
             </Link>
             에서 Slack 알림 채널을 등록하세요.

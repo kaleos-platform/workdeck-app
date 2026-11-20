@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select'
 import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { SCOPES } from '@/lib/agent/identity/principal'
+import { flaggedTokenExpiry } from '@/lib/integrations/attention'
 import { CopyCodeBlock } from './copy-code-block'
 import { CLAUDE_CODE_CMD, MCP_URL } from './mcp-guide-card'
 
@@ -85,7 +86,13 @@ const tokenState = (t: Token) =>
 // 토큰을 명령에 직접 넣으면 셸 기록에 남는다 — 환경변수로 넘긴다.
 const CONFIG_SNIPPET = `export WORKDECK_AGENT_TOKEN='<위 토큰>'\n${CLAUDE_CODE_CMD} --header "Authorization: Bearer $WORKDECK_AGENT_TOKEN"`
 
-export function AgentTokensCard() {
+export function AgentTokensCard({
+  onChanged,
+  embedded = false,
+}: {
+  onChanged?: () => void
+  embedded?: boolean
+}) {
   const [spaceId, setSpaceId] = useState<string | null>(null)
   const [agents, setAgents] = useState<Agent[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -115,6 +122,12 @@ export function AgentTokensCard() {
   useEffect(() => {
     void load()
   }, [load])
+
+  // 변경 뒤에는 탭의 확인 필요 건수도 다시 계산한다.
+  async function refresh() {
+    await load()
+    onChanged?.()
+  }
 
   // 변경 요청 공통 — MFA 필요하면 단계 인증으로, 실패하면 메시지, 성공하면 응답 본문.
   async function mutate(path: string, init: RequestInit, failMessage: string) {
@@ -149,13 +162,13 @@ export function AgentTokensCard() {
         '상태를 바꾸지 못했습니다'
       )
     )
-      await load()
+      await refresh()
   }
 
   async function revoke(a: Agent, t: Token) {
     if (!confirm(`${a.name}의 토큰을 폐기할까요? 이 토큰을 쓰는 연결은 즉시 끊깁니다.`)) return
     if (await mutate(`/${a.id}/tokens/${t.id}`, { method: 'DELETE' }, '토큰을 폐기하지 못했습니다'))
-      await load()
+      await refresh()
   }
 
   async function saveAgent(name: string, kind: Agent['kind'], scopes: string[]) {
@@ -173,7 +186,7 @@ export function AgentTokensCard() {
           )
     if (!ok) return
     setEdit(null)
-    await load()
+    await refresh()
   }
 
   async function issueToken(days: number) {
@@ -185,21 +198,24 @@ export function AgentTokensCard() {
     )
     if (!body) return
     setIssue({ agentId: issue.agentId, token: body.token })
+    // 1회용 토큰이 보이는 동안 서버 새로고침을 하지 않는다 — 대화상자를 닫을 때 건수를 갱신한다.
     await load()
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <KeyRound className="h-5 w-5" />
-          에이전트·토큰 관리
-        </CardTitle>
-        <CardDescription>
-          외부 에이전트와 연동 계정을 등록하고, 권한(scope)과 MCP 접속 토큰을 관리합니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
+    <Card className={embedded ? 'border-0 bg-transparent py-0 shadow-none' : undefined}>
+      {!embedded && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <KeyRound className="h-5 w-5" />
+            에이전트·토큰 관리
+          </CardTitle>
+          <CardDescription>
+            외부 에이전트와 연동 계정을 등록하고, 권한(scope)과 MCP 접속 토큰을 관리합니다.
+          </CardDescription>
+        </CardHeader>
+      )}
+      <CardContent className={embedded ? 'space-y-4 px-0 text-sm' : 'space-y-4 text-sm'}>
         {error && <p className="text-destructive">{error}</p>}
         <div>
           <Button size="sm" onClick={() => setEdit({ mode: 'create' })} disabled={!spaceId}>
@@ -279,8 +295,21 @@ export function AgentTokensCard() {
                 <tbody className="divide-y">
                   {a.tokens.map((t) => {
                     const state = tokenState(t)
+                    const flagged =
+                      a.status === 'ACTIVE'
+                        ? flaggedTokenExpiry(a.tokens.filter((x) => !x.revokedAt))
+                        : null
                     return (
-                      <tr key={t.id}>
+                      <tr
+                        key={t.id}
+                        className={
+                          flagged &&
+                          t.expiresAt &&
+                          new Date(t.expiresAt).getTime() === flagged.getTime()
+                            ? 'bg-muted font-medium'
+                            : undefined
+                        }
+                      >
                         <td className="py-1">{fmt(t.createdAt)}</td>
                         <td className="py-1">{fmt(t.lastUsedAt)}</td>
                         <td className="py-1">{fmt(t.expiresAt)}</td>
@@ -321,7 +350,10 @@ export function AgentTokensCard() {
           spaceName={spaceName}
           token={issue.token}
           pending={pending}
-          onClose={() => setIssue(null)}
+          onClose={() => {
+            setIssue(null)
+            onChanged?.()
+          }}
           onIssue={issueToken}
         />
       )}
