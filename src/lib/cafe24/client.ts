@@ -231,6 +231,7 @@ async function refreshHoldingLease(
       const changed =
         cur.secret.refreshToken !== r0 ||
         cur.secret.clientId !== clientId ||
+        cur.secret.clientSecret !== clientSecret || // 갱신 중 앱 정보가 바뀌었으면 옛 시크릿의 실패로 판정하지 않는다
         cur.config.mallId !== mallId
       // lease 밖에서 회전됐거나 유효한 다른 lease 가 있으면 실패로 확정하지 않는다.
       if (changed || (lease && lease.owner !== owner && lease.until > Date.now())) return null

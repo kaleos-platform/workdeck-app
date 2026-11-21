@@ -182,6 +182,22 @@ describe('getAccessToken', () => {
     expect(fakeDb.row.config.status).toBe('connected')
   })
 
+  it('갱신 중 앱 시크릿이 바뀌어 옛 시크릿이 invalid_grant 를 받으면 재승인으로 확정하지 않고 새 시크릿으로 다시 갱신한다', async () => {
+    seed({ accessHours: 0.05 })
+    let n = 0
+    fetchMock.mockImplementation(async () => {
+      if (++n === 1) {
+        const cur = (await readCafe24(SP, MALL))!
+        await writeCafe24If(cur, { ...cur.secret, clientSecret: 'ROTATED-secret' }, cur.config)
+        return json({ error: 'invalid_grant' }, 400)
+      }
+      return json(tokenBody(2))
+    })
+    expect((await getAccessToken(SP, MALL)).accessToken).toBe('AT2')
+    expect(fakeDb.row.config.status).not.toBe('reauth_required')
+    expect(fakeDb.secret.clientSecret).toBe('ROTATED-secret')
+  })
+
   it('실제 invalid_grant 면 reauth_required 로 표시한다(알림은 health 경로 하나뿐)', async () => {
     seed({ accessHours: 0.05 })
     fetchMock.mockResolvedValue(json({ error: 'invalid_grant' }, 400))
