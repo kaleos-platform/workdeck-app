@@ -54,6 +54,17 @@ const ENHANCED_LABEL: Record<string, string> = {
   fileDownloadsEnabled: '파일 다운로드',
 }
 
+/** 오류 코드별 조치 안내 — 코드는 서버가 허용 목록으로만 남긴다. */
+function errorHint(lastError: string): string | null {
+  if (lastError.includes('service_disabled') || lastError.includes('api_disabled'))
+    return 'OAuth 클라이언트가 속한 Google Cloud 프로젝트에서 Google Analytics Admin API·Data API를 사용 설정해 주세요.'
+  if (lastError.includes('permission_denied') || lastError.includes('forbidden'))
+    return '승인한 구글 계정에 이 GA4 속성의 뷰어 이상 권한이 있는지, 속성 ID·스트림 ID가 맞는지 확인해 주세요.'
+  if (lastError.includes('access_token_scope_insufficient'))
+    return '권한 범위가 부족합니다. 「다시 연결」로 승인해 주세요.'
+  return null
+}
+
 export function PlatformGoogleCard({
   view,
   result,
@@ -135,7 +146,12 @@ export function PlatformGoogleCard({
       )}
       {view.lastError && (
         <Alert variant="destructive">
-          <AlertDescription>최근 오류: {view.lastError}</AlertDescription>
+          <AlertDescription>
+            최근 오류: {view.lastError}
+            {errorHint(view.lastError) && (
+              <span className="block">{errorHint(view.lastError)}</span>
+            )}
+          </AlertDescription>
         </Alert>
       )}
 
