@@ -89,3 +89,13 @@ test('300자 절단, breadcrumb data 제거·message 스크럽', () => {
   expect(scrubText('a'.repeat(500))).toHaveLength(300)
   expect(scrubBreadcrumb({ message: 'a@b.com', data: { x: 1 } })).toEqual({ message: '[redacted]' })
 })
+
+test('console 브레드크럼은 첫 인자(라벨)만 남긴다', () => {
+  const detail = JSON.stringify({ name: '홍길동', address: '서울시 강남구 테헤란로 1' })
+  const out = scrubBreadcrumb({
+    category: 'console',
+    message: `업로드 오류: ${detail}`,
+    data: { arguments: ['업로드 오류:', detail], logger: 'console' },
+  })
+  expect(out).toEqual({ category: 'console', message: '업로드 오류:' })
+})

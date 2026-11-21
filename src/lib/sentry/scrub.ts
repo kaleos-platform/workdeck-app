@@ -37,7 +37,13 @@ function pick<T extends object>(obj: T | undefined, keys: string[]): Partial<T> 
 }
 
 export function scrubBreadcrumb(b: Breadcrumb): Breadcrumb {
-  const rest = { ...b, message: b.message ? scrubText(b.message) : b.message }
+  // console 브레드크럼 message 는 모든 인자를 이어붙인 값 → 첫 인자(라벨)만 남긴다
+  let message = b.message
+  if (b.category === 'console') {
+    const first = (b.data as { arguments?: unknown[] } | undefined)?.arguments?.[0]
+    message = typeof first === 'string' ? first : (message ?? '').split(/[\n{]/)[0]
+  }
+  const rest = { ...b, message: message ? scrubText(message) : message }
   delete rest.data
   return rest
 }
