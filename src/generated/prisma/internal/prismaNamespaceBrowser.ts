@@ -224,7 +224,11 @@ export const ModelName = {
   ScMedia: 'ScMedia',
   ScPublishRequest: 'ScPublishRequest',
   ScMediaCopy: 'ScMediaCopy',
-  OpeningMigrationJob: 'OpeningMigrationJob'
+  OpeningMigrationJob: 'OpeningMigrationJob',
+  ChannelFulfillmentSetting: 'ChannelFulfillmentSetting',
+  ChannelOrderLine: 'ChannelOrderLine',
+  ChannelOrderScanLine: 'ChannelOrderScanLine',
+  PipelineOperation: 'PipelineOperation'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3226,6 +3230,84 @@ export const OpeningMigrationJobScalarFieldEnum = {
 } as const
 
 export type OpeningMigrationJobScalarFieldEnum = (typeof OpeningMigrationJobScalarFieldEnum)[keyof typeof OpeningMigrationJobScalarFieldEnum]
+
+
+export const ChannelFulfillmentSettingScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  spaceId: 'spaceId',
+  adapter: 'adapter',
+  storeKey: 'storeKey',
+  observeEnabled: 'observeEnabled',
+  observeCursor: 'observeCursor',
+  observeLease: 'observeLease',
+  reconcileMode: 'reconcileMode',
+  matchKeyRule: 'matchKeyRule',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelFulfillmentSettingScalarFieldEnum = (typeof ChannelFulfillmentSettingScalarFieldEnum)[keyof typeof ChannelFulfillmentSettingScalarFieldEnum]
+
+
+export const ChannelOrderLineScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  externalLineKey: 'externalLineKey',
+  externalOrderId: 'externalOrderId',
+  paidAt: 'paidAt',
+  productName: 'productName',
+  optionText: 'optionText',
+  quantity: 'quantity',
+  channelStatus: 'channelStatus',
+  claimStatus: 'claimStatus',
+  deliveryKind: 'deliveryKind',
+  shippingDueAt: 'shippingDueAt',
+  carrierCode: 'carrierCode',
+  trackingNumber: 'trackingNumber',
+  dispatchedAt: 'dispatchedAt',
+  sourceChangedAt: 'sourceChangedAt',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt',
+  rawHash: 'rawHash'
+} as const
+
+export type ChannelOrderLineScalarFieldEnum = (typeof ChannelOrderLineScalarFieldEnum)[keyof typeof ChannelOrderLineScalarFieldEnum]
+
+
+export const ChannelOrderScanLineScalarFieldEnum = {
+  id: 'id',
+  operationId: 'operationId',
+  channelId: 'channelId',
+  externalLineKey: 'externalLineKey',
+  externalOrderId: 'externalOrderId',
+  quantity: 'quantity',
+  channelStatus: 'channelStatus',
+  paidAt: 'paidAt'
+} as const
+
+export type ChannelOrderScanLineScalarFieldEnum = (typeof ChannelOrderScanLineScalarFieldEnum)[keyof typeof ChannelOrderScanLineScalarFieldEnum]
+
+
+export const PipelineOperationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  kind: 'kind',
+  status: 'status',
+  counts: 'counts',
+  error: 'error',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  plannedFrom: 'plannedFrom',
+  plannedThrough: 'plannedThrough',
+  minCalls: 'minCalls',
+  ingestCalls: 'ingestCalls',
+  ingestRows: 'ingestRows'
+} as const
+
+export type PipelineOperationScalarFieldEnum = (typeof PipelineOperationScalarFieldEnum)[keyof typeof PipelineOperationScalarFieldEnum]
 
 
 export const SortOrder = {

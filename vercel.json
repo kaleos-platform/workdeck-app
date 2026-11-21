@@ -50,6 +50,15 @@
     },
     "app/api/collection/naver-nbaesong/ingest/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/cron/channel-orders-cafe24/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/cron/channel-orders-reconcile/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/collection/channel-orders/ingest/route.ts": {
+      "maxDuration": 60
     }
   },
   "crons": [
@@ -100,6 +109,8 @@
     },
     { "path": "/api/cron/db-health", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/hiring-daily-digest", "schedule": "0 0 * * *" },
+    { "path": "/api/cron/channel-orders-cafe24", "schedule": "*/30 * * * *" },
+    { "path": "/api/cron/channel-orders-reconcile", "schedule": "0 0,9 * * *" },
     { "path": "/api/cron/platform-funnel-report", "schedule": "0 0 * * 1" }
   ]
 }
