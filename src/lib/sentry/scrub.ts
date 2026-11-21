@@ -20,10 +20,16 @@ const PATTERNS: RegExp[] = [
   /\b\d(?:[ -]?\d){12,18}\b/g,
   /(?:\+82[\s-]?)?0?1[016789][\s-]?\d{3,4}[\s-]?\d{4}\b/g,
   /\d{10,}/g,
+  // 따옴표 안 한글 — 이름·주소가 주로 이 형태로 섞인다
+  /(["'`])[^"'`\n]*[가-힣][^"'`\n]*\1/g,
+  // 주소: "서울시 강남구", "테헤란로 1", "역삼동 12-3"
+  /[가-힣]+(?:시|도)\s+[가-힣]+(?:구|군|시)/g,
+  /[가-힣0-9]+(?:로|길|동|읍|면|리)\s*\d+(?:-\d+)?/g,
 ]
 
 export function scrubText(s: string): string {
-  let out = s
+  // JSON 문자열 값은 키만 남긴다(구형 Safari 때문에 lookbehind 대신 캡처 그룹)
+  let out = s.replace(/("[\w-]+"\s*:\s*)"(?:[^"\\]|\\.)*"/g, `$1${R}`)
   for (const p of PATTERNS) out = out.replace(p, R)
   return out.slice(0, 300)
 }

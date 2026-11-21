@@ -99,3 +99,14 @@ test('console 브레드크럼은 첫 인자(라벨)만 남긴다', () => {
   })
   expect(out).toEqual({ category: 'console', message: '업로드 오류:' })
 })
+
+test('JSON 값·따옴표 안 한글·주소형 한글 가림, 코드 문구는 유지', () => {
+  expect(scrubText('저장 실패: {"name":"홍길동","count":3}')).toBe(
+    '저장 실패: {"name":[redacted],"count":3}'
+  )
+  expect(scrubText("지원자 '김철수' 처리 중 오류")).toBe('지원자 [redacted] 처리 중 오류')
+  expect(scrubText('주소 서울시 강남구 테헤란로 1 조회 실패')).toBe(
+    '주소 [redacted] [redacted] 조회 실패'
+  )
+  expect(scrubText('업로드 처리 중 오류가 발생했습니다')).toBe('업로드 처리 중 오류가 발생했습니다')
+})
