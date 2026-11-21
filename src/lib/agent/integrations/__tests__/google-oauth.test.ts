@@ -15,6 +15,7 @@ import {
   googleAuthorizeUrl,
   googleRequest,
   hasGoogleScopes,
+  oauthErrorCode,
   requiredGoogleScopes,
   targetUrl,
   verifyGoogleBrands,
@@ -197,7 +198,7 @@ describe('verifyGoogleBrands', () => {
     )
     const err = await verifyGoogleBrands(cred(), 'AT-secret-token').catch((e) => e)
     expect(err).toBeInstanceOf(GoogleOAuthError)
-    expect(err.message).toBe('Google 속성 확인 실패 (HTTP 403): forbidden')
+    expect(err.message).toBe('Google 속성 확인 실패 (HTTP 403): permission_denied')
     expect(JSON.stringify(err) + err.message + err.stack).not.toMatch(/LEAK|AT-secret-token/)
   })
 
@@ -206,5 +207,32 @@ describe('verifyGoogleBrands', () => {
       'Google 연결(승인)이 필요합니다'
     )
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('oauthErrorCode — Google API 오류 형식', () => {
+  const apiError = (body: unknown, status = 403) => new Response(JSON.stringify(body), { status })
+  it('ErrorInfo reason(SERVICE_DISABLED)을 소문자 코드로 남기고 메시지는 버린다', async () => {
+    const code = await oauthErrorCode(
+      apiError({
+        error: {
+          code: 403,
+          status: 'PERMISSION_DENIED',
+          message: 'secret-ish message AT-token',
+          details: [
+            { '@type': 'type.googleapis.com/google.rpc.ErrorInfo', reason: 'SERVICE_DISABLED' },
+          ],
+        },
+      })
+    )
+    expect(code).toBe('service_disabled')
+  })
+  it('reason 이 없으면 허용된 status, 그 외 값은 상태 코드 기본값', async () => {
+    expect(await oauthErrorCode(apiError({ error: { status: 'PERMISSION_DENIED' } }))).toBe(
+      'permission_denied'
+    )
+    expect(
+      await oauthErrorCode(apiError({ error: { status: 'WEIRD', details: [{ reason: 'X' }] } }))
+    ).toBe('forbidden')
   })
 })
