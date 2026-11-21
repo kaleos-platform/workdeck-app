@@ -27,6 +27,11 @@ const SECTIONS = [
     title: '업무 관리',
     description: '덱별 운영 기능과 관리 도구',
   },
+  {
+    href: '/admin/errors',
+    title: '오류',
+    description: 'Sentry 운영 오류와 자동 수정 상태',
+  },
 ]
 
 export default async function AdminHomePage() {
