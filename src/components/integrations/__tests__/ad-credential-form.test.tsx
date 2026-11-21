@@ -129,6 +129,31 @@ describe('AdCredentialForm', () => {
     expect(puts()).toHaveLength(0)
   })
 
+  it('비밀 입력값은 보기 아이콘으로 보였다 숨겼다 한다', async () => {
+    setup('google-marketing')
+    await screen.findByText('미등록')
+    const input = screen.getByLabelText('클라이언트 시크릿')
+    expect(input).toHaveAttribute('type', 'password')
+    fireEvent.click(screen.getByRole('button', { name: '클라이언트 시크릿 보기' }))
+    expect(input).toHaveAttribute('type', 'text')
+    fireEvent.click(screen.getByRole('button', { name: '클라이언트 시크릿 숨기기' }))
+    expect(input).toHaveAttribute('type', 'password')
+  })
+
+  it('Google 칸에 입력 예시가 있고, 측정 ID(G-)를 넣으면 속성 ID 안내를 한다', async () => {
+    setup('google-marketing')
+    await screen.findByText('미등록')
+    expect(screen.getByLabelText('GA4 속성 ID 1')).toHaveAttribute('placeholder', '예: 412345678')
+    expect(screen.getByLabelText('브랜드 이름 1')).toHaveAttribute('placeholder', '예: 우리 쇼핑몰')
+    type('클라이언트 ID', 'cid-0123456789')
+    type('클라이언트 시크릿', 'sec-0123456789')
+    type('브랜드 이름 1', '홈페이지')
+    type('GA4 속성 ID 1', 'G-5F8G9Y4VHW')
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+    expect(screen.getByText(/측정 ID\(G-…\)가 아니라/)).toBeInTheDocument()
+    expect(puts()).toHaveLength(0)
+  })
+
   it('Meta 저장 payload에는 graphVersion이 없고 성공하면 비밀값을 비운다', async () => {
     setup('meta-ads', metaLoaded())
     await screen.findByText('등록됨')
