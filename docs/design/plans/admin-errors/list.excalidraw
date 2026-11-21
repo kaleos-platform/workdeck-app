@@ -1,0 +1,572 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "frame",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 640,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "rectangle",
+   "id": "nav",
+   "x": 12,
+   "y": 12,
+   "width": 876,
+   "height": 34,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "navt",
+   "x": 22,
+   "y": 22,
+   "text": "상단 네비 … 플랫폼 연동 · 복구 관리 · ① 오류",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "title",
+   "x": 24,
+   "y": 60,
+   "text": "오류",
+   "fontSize": 22,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "sub",
+   "x": 24,
+   "y": 92,
+   "text": "운영 미해결 오류 · 최근 14일 · 영향 사용자 많은 순 25건",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "runner",
+   "x": 24,
+   "y": 116,
+   "width": 852,
+   "height": 30,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "runnert",
+   "x": 34,
+   "y": 124,
+   "text": "② 자동 수정 마지막 활동: 11-21 04:32 · APP-1A PR 생성",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "tabs",
+   "x": 24,
+   "y": 156,
+   "width": 380,
+   "height": 34,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "tabst",
+   "x": 34,
+   "y": 166,
+   "text": "③ Tabs  전체 18 · 웹 11 · 워커 7",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "stab",
+   "x": 576,
+   "y": 156,
+   "width": 300,
+   "height": 34,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "stabt",
+   "x": 586,
+   "y": 166,
+   "text": "④ Select  자동 수정: 전체 ▾",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "thead",
+   "x": 24,
+   "y": 200,
+   "width": 852,
+   "height": 30,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "h오류",
+   "x": 34,
+   "y": 208,
+   "text": "오류",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "h서비스",
+   "x": 440,
+   "y": 208,
+   "text": "서비스",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "h발생",
+   "x": 500,
+   "y": 208,
+   "text": "발생",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "h사용자",
+   "x": 550,
+   "y": 208,
+   "text": "사용자",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "h마지막",
+   "x": 605,
+   "y": 208,
+   "text": "마지막",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "h⑤ 자동 수정",
+   "x": 680,
+   "y": 208,
+   "text": "⑤ 자동 수정",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "h⑥ 동작",
+   "x": 790,
+   "y": 208,
+   "text": "⑥ 동작",
+   "fontSize": 12,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "r0",
+   "x": 24,
+   "y": 234,
+   "width": 852,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "r0a",
+   "x": 34,
+   "y": 242,
+   "text": "TypeError: Cannot read … 'options'\n/seller-ops/products/[id] · APP-1A",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r0x440",
+   "x": 440,
+   "y": 250,
+   "text": "웹",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r0x505",
+   "x": 505,
+   "y": 250,
+   "text": "42",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r0x560",
+   "x": 560,
+   "y": 250,
+   "text": "9",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r0x605",
+   "x": 605,
+   "y": 250,
+   "text": "2시간 전",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r0x680",
+   "x": 680,
+   "y": 250,
+   "text": "PR #1601 ↗",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r0x790",
+   "x": 790,
+   "y": 250,
+   "text": "",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "r1",
+   "x": 24,
+   "y": 288,
+   "width": 852,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "r1a",
+   "x": 34,
+   "y": 296,
+   "text": "[heartbeat] 발송 실패: timeout\nworker · APP-2C",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r1x440",
+   "x": 440,
+   "y": 304,
+   "text": "워커",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r1x505",
+   "x": 505,
+   "y": 304,
+   "text": "31",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r1x560",
+   "x": 560,
+   "y": 304,
+   "text": "0",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r1x605",
+   "x": 605,
+   "y": 304,
+   "text": "15분 전",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r1x680",
+   "x": 680,
+   "y": 304,
+   "text": "제외",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r1x790",
+   "x": 790,
+   "y": 304,
+   "text": "수정 요청",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "r2",
+   "x": 24,
+   "y": 342,
+   "width": 852,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "r2a",
+   "x": 34,
+   "y": 350,
+   "text": "PrismaClientKnownRequestError P2002\n/api/del/shipments · APP-19",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r2x440",
+   "x": 440,
+   "y": 358,
+   "text": "웹",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r2x505",
+   "x": 505,
+   "y": 358,
+   "text": "8",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r2x560",
+   "x": 560,
+   "y": 358,
+   "text": "3",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r2x605",
+   "x": 605,
+   "y": 358,
+   "text": "어제",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r2x680",
+   "x": 680,
+   "y": 358,
+   "text": "진행 중",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r2x790",
+   "x": 790,
+   "y": 358,
+   "text": "",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "r3",
+   "x": 24,
+   "y": 396,
+   "width": 852,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "r3a",
+   "x": 34,
+   "y": 404,
+   "text": "Error: 카페24 토큰 갱신 실패\n/api/cafe24/callback · APP-1F",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r3x440",
+   "x": 440,
+   "y": 412,
+   "text": "웹",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r3x505",
+   "x": 505,
+   "y": 412,
+   "text": "5",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r3x560",
+   "x": 560,
+   "y": 412,
+   "text": "2",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r3x605",
+   "x": 605,
+   "y": 412,
+   "text": "3일 전",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r3x680",
+   "x": 680,
+   "y": 412,
+   "text": "분석만",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r3x790",
+   "x": 790,
+   "y": 412,
+   "text": "수정 요청",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "r4",
+   "x": 24,
+   "y": 450,
+   "width": 852,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "r4a",
+   "x": 34,
+   "y": 458,
+   "text": "ZodError: invalid_type\n/api/finance/import · APP-21",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r4x440",
+   "x": 440,
+   "y": 466,
+   "text": "웹",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r4x505",
+   "x": 505,
+   "y": 466,
+   "text": "3",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r4x560",
+   "x": 560,
+   "y": 466,
+   "text": "1",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r4x605",
+   "x": 605,
+   "y": 466,
+   "text": "5일 전",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r4x680",
+   "x": 680,
+   "y": 466,
+   "text": "—",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "r4x790",
+   "x": 790,
+   "y": 466,
+   "text": "수정 요청 · 제외",
+   "fontSize": 11,
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "note",
+   "x": 24,
+   "y": 512,
+   "width": 852,
+   "height": 32,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "notet",
+   "x": 34,
+   "y": 521,
+   "text": "⑦ 행 클릭 = Sentry 이슈 새 탭 · 상세 화면 없음",
+   "fontSize": 12,
+   "fontFamily": 2
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}
