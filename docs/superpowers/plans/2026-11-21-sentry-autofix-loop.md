@@ -54,7 +54,7 @@
 ### Phase 1 — 워커 수집
 
 - `worker/package.json`: `@sentry/node` 추가.
-- `worker/src/sentry.ts`(신규): `Sentry.init({ dsn: process.env.SENTRY_DSN, environment:'production', initialScope:{tags:{runtime:'worker'}}, beforeSend: 같은 마스킹 로직 })`. DSN 없으면 비활성.
+- `worker/src/sentry.ts`(신규): `Sentry.init({ dsn: process.env.SENTRY_DSN, environment:'production', initialScope:{tags:{service:'worker'}}, beforeSend: 같은 마스킹 로직 })`. DSN 없으면 비활성. (구현 시 변경: `runtime` 태그는 Sentry 가 contexts.runtime 값 `node vXX` 로 덮어써 `service` 키 사용 — 로컬 테스트 이벤트로 확인)
 - `worker/src/index.ts`: 첫 import 로 연결. `captureConsoleIntegration(error)` 동일 적용.
 - 노이즈: 쿠팡 로그인 실패(Akamai)·외부 사이트 타임아웃은 기존 Slack 알림 경로가 있으므로 `ignoreErrors`/fingerprint 로 그룹 1개에 묶는다.
 - 운영 체크아웃 `workdeck-runner/worker/.env`에 `SENTRY_DSN` 추가는 배포 단계에서 에디 승인 후.
