@@ -22,6 +22,7 @@ import {
   AGENT_GTM_VARIABLE_TYPES,
   GOOGLE_ACTIONS,
   GTM_BASE,
+  actionUrl,
   assertPathInTarget,
   resolveBrand,
   sanitizeGoogleResponse,
@@ -107,11 +108,28 @@ describe('google-marketing (포팅)', () => {
       )
     ).toThrow('gtm_account_id')
     expect(() =>
+      resolveBrand({ brands: { b: { ga4_property_id: '1', gtm_account_id: '2' } } }, 'b')
+    ).toThrow('gtm_container_id')
+    expect(() =>
+      resolveBrand(
+        { brands: { b: { ga4_property_id: '1', gtm_account_id: '2|.*', gtm_container_id: '3' } } },
+        'b'
+      )
+    ).toThrow('gtm_account_id')
+    expect(() =>
       resolveBrand(
         { brands: { b: { ga4_property_id: '1|.*', gtm_account_id: '2', gtm_container_id: '3' } } },
         'b'
       )
     ).toThrow('ga4_property_id')
+  })
+  it('GTM 없이 resolve → gtm id 는 빈 문자열', () => {
+    expect(resolveBrand({ brands: { b: { ga4_property_id: '1' } } }, 'b')).toEqual({
+      brand: 'b',
+      ga4_property_id: '1',
+      gtm_account_id: '',
+      gtm_container_id: '',
+    })
   })
   it('validateGoogleAction rejects unsupported write actions', () => {
     expect(() => validateGoogleAction({ action: 'ga4.property.delete', params: {} })).toThrow(
@@ -546,5 +564,81 @@ describe('google-marketing (포팅)', () => {
       action('gtm.workspace.create').execute(execCtx(), { target: TARGET, params: {} })
     ).rejects.toThrow('구글 마케팅 대상 매핑이 바뀌었거나')
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('GTM 미설정 브랜드', () => {
+  const NO_GTM = {
+    brand: 'brand-b',
+    ga4_property_id: '111',
+    gtm_account_id: '',
+    gtm_container_id: '',
+  }
+  const GTM_ERR = '이 브랜드에는 GTM 컨테이너가 설정되지 않았습니다'
+  const noGtmConfig = { defaultBrand: 'brand-b', brands: { 'brand-b': { ga4_property_id: '111' } } }
+  const mockCred = () =>
+    (prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValue(credRow(noGtmConfig))
+
+  it('GTM 경로·액션 URL 은 정규식 구성 전에 거부, GA4 경로는 통과', () => {
+    expect(() => assertPathInTarget('/accounts//containers//workspaces', NO_GTM, 'gtm')).toThrow(
+      GTM_ERR
+    )
+    expect(() =>
+      assertPathInTarget('/accounts/222/containers/333/workspaces', NO_GTM, 'gtm')
+    ).toThrow(GTM_ERR)
+    expect(assertPathInTarget('/properties/111/keyEvents', NO_GTM, 'ga4-admin')).toBe(
+      'properties/111/keyEvents'
+    )
+    expect(() => actionUrl('gtm.workspace.create', {}, NO_GTM)).toThrow(GTM_ERR)
+    expect(() =>
+      actionUrl('gtm.tag.update', { path: 'accounts//containers//workspaces/1/tags/1' }, NO_GTM)
+    ).toThrow(GTM_ERR)
+    expect(actionUrl('ga4.key_event.create', { eventName: 'e' }, NO_GTM).pathname).toContain(
+      '/properties/111/keyEvents'
+    )
+  })
+  it('GTM 조회 도구 거부, GA4 조회는 동작', async () => {
+    mockCred()
+    await expect(
+      tool('google_marketing_gtm_get').execute(ctx(), {
+        brand: 'brand-b',
+        path: 'accounts/222/containers/333/workspaces',
+      })
+    ).rejects.toThrow(GTM_ERR)
+    await expect(
+      tool('google_marketing_ga4_run_report').execute(ctx(), { brand: 'brand-b', request: {} })
+    ).resolves.toBeDefined()
+  })
+  it('GTM 액션 검증·실행 거부(pathKey 없는 workspace.create 포함), GA4 액션은 통과, 위조 target 거부', async () => {
+    mockCred()
+    await expect(
+      action('gtm.workspace.create').validateCreate!(execCtx(), { target: NO_GTM, params: {} })
+    ).rejects.toThrow(GTM_ERR)
+    await expect(
+      action('gtm.workspace.create').execute(execCtx(), { target: NO_GTM, params: {} })
+    ).rejects.toThrow(GTM_ERR)
+    await expect(
+      action('gtm.tag.update').validateCreate!(execCtx(), {
+        target: NO_GTM,
+        params: { path: 'accounts/222/containers/333/workspaces/1/tags/1' },
+      })
+    ).rejects.toThrow(GTM_ERR)
+    await expect(
+      action('ga4.key_event.create').validateCreate!(execCtx(), {
+        target: NO_GTM,
+        params: { eventName: 'e' },
+      })
+    ).resolves.toBeUndefined()
+    // 위조: 설정에 없는 GTM id 를 끼워 넣은 target
+    await expect(
+      action('gtm.workspace.create').validateCreate!(execCtx(), {
+        target: { ...NO_GTM, gtm_account_id: '222', gtm_container_id: '333' },
+        params: {},
+      })
+    ).rejects.toThrow('구글 마케팅 대상 매핑이 바뀌었거나')
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringContaining('tagmanager'),
+      expect.anything()
+    )
   })
 })

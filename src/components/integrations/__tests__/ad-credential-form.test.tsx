@@ -74,7 +74,7 @@ describe('AdCredentialForm', () => {
     await screen.findByText('미등록')
     expect(screen.getByText(/저장할 때 연결을 확인하지 않습니다/)).toBeInTheDocument()
     expect(screen.getByLabelText('GA4 속성 ID 1')).toBeInTheDocument()
-    expect(screen.getByLabelText('태그 관리자 컨테이너 ID 1')).toBeInTheDocument()
+    expect(screen.getByLabelText('태그 관리자 컨테이너 ID (선택) 1')).toBeInTheDocument()
   })
 
   it('GET 값을 채우고 상태·통화·그래프 버전을 보인다', async () => {
@@ -144,8 +144,8 @@ describe('AdCredentialForm', () => {
     type('리프레시 토큰', 'rt-0123456789')
     type('브랜드 이름 1', 'A')
     type('GA4 속성 ID 1', '1')
-    type('태그 관리자 계정 ID 1', '2')
-    type('태그 관리자 컨테이너 ID 1', '3')
+    type('태그 관리자 계정 ID (선택) 1', '2')
+    type('태그 관리자 컨테이너 ID (선택) 1', '3')
     fireEvent.click(screen.getByRole('button', { name: '저장' }))
     await waitFor(() => expect(puts()).toHaveLength(1))
     expect(putBody()).toEqual({
@@ -173,6 +173,47 @@ describe('AdCredentialForm', () => {
       secret: { apiKey: 'k-0123456789', secretKey: 's-0123456789' },
       config: { defaultBrand: 'A', managerCustomerId: '9', customers: { A: '5' } },
     })
+  })
+
+  it('구글: GTM 을 비우면 저장되고 payload 에 GTM 키가 없다', async () => {
+    setup('google-marketing')
+    await screen.findByText('미등록')
+    type('클라이언트 ID', 'ci-0123456789')
+    type('클라이언트 시크릿', 'cs-0123456789')
+    type('리프레시 토큰', 'rt-0123456789')
+    type('브랜드 이름 1', 'A')
+    type('GA4 속성 ID 1', '1')
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+    await waitFor(() => expect(puts()).toHaveLength(1))
+    expect(putBody().config.brands).toEqual({ A: { ga4_property_id: '1' } })
+  })
+
+  it('구글: GTM 한쪽만 입력하면 안내 문구를 보이고 저장하지 않는다', async () => {
+    setup('google-marketing')
+    await screen.findByText('미등록')
+    type('클라이언트 ID', 'ci-0123456789')
+    type('클라이언트 시크릿', 'cs-0123456789')
+    type('리프레시 토큰', 'rt-0123456789')
+    type('브랜드 이름 1', 'A')
+    type('GA4 속성 ID 1', '1')
+    type('태그 관리자 계정 ID (선택) 1', '2')
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+    expect(
+      await screen.findByText('1번째 GTM 계정 ID와 컨테이너 ID는 함께 입력하거나 함께 비워 주세요')
+    ).toBeInTheDocument()
+    expect(puts()).toHaveLength(0)
+  })
+
+  it('구글: GTM 없는 기존 설정은 빈 칸으로 불러온다', async () => {
+    setup('google-marketing', {
+      ...empty,
+      registered: true,
+      config: { defaultBrand: 'A', brands: { A: { ga4_property_id: '1' } } },
+    })
+    await screen.findByText('등록됨')
+    expect(screen.getByLabelText('GA4 속성 ID 1')).toHaveValue('1')
+    expect(screen.getByLabelText('태그 관리자 계정 ID (선택) 1')).toHaveValue('')
+    expect(screen.getByLabelText('태그 관리자 컨테이너 ID (선택) 1')).toHaveValue('')
   })
 
   it('매핑을 바꾸고 대기 제안이 있으면 확인 뒤에만 저장한다', async () => {
