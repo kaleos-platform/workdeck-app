@@ -4,6 +4,7 @@
  * 매 정시에 분석 스케줄을 확인하고 조건 충족 시 자동 분석을 트리거한다.
  */
 import 'dotenv/config'
+import './sentry.js' // dotenv 다음, 다른 모듈보다 먼저 — SENTRY_DSN 을 읽고 console.error 를 감싼다
 import cron from 'node-cron'
 import { runCollection } from './orchestrator.js'
 import { checkAndRunCollection } from './collection-scheduler.js'
