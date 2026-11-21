@@ -884,3 +884,23 @@ export type ScMediaCopy = Prisma.ScMediaCopyModel
  * 
  */
 export type OpeningMigrationJob = Prisma.OpeningMigrationJobModel
+/**
+ * Model ChannelFulfillmentSetting
+ * 
+ */
+export type ChannelFulfillmentSetting = Prisma.ChannelFulfillmentSettingModel
+/**
+ * Model ChannelOrderLine
+ * 
+ */
+export type ChannelOrderLine = Prisma.ChannelOrderLineModel
+/**
+ * Model ChannelOrderScanLine
+ * 
+ */
+export type ChannelOrderScanLine = Prisma.ChannelOrderScanLineModel
+/**
+ * Model PipelineOperation
+ * 
+ */
+export type PipelineOperation = Prisma.PipelineOperationModel

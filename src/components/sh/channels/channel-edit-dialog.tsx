@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ChannelOrderObserveSection } from './channel-order-observe-section'
 import { Switch } from '@/components/ui/switch'
 import {
   Dialog,
@@ -919,6 +920,7 @@ export function ChannelEditDialog({
             value="advanced"
             className="mt-4 max-h-[55vh] space-y-4 overflow-y-auto pr-1"
           >
+            {channel && <ChannelOrderObserveSection channelId={channel.id} />}
             <div className="space-y-3 rounded-md border p-3">
               <p className="text-xs font-medium text-muted-foreground">주문 요구사항</p>
               <div className="flex items-center justify-between">

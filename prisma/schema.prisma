@@ -428,9 +428,10 @@ model Space {
   name String
   type SpaceType @default(PERSONAL)
 
-  members       SpaceMember[]
-  invitations   SpaceInvitation[]
-  deckInstances DeckInstance[]
+  members            SpaceMember[]
+  invitations        SpaceInvitation[]
+  deckInstances      DeckInstance[]
+  pipelineOperations PipelineOperation[]
 
   // 연결된 레거시 쿠팡 Workspace (Workspace.spaceId 역방향)
   workspace Workspace?
@@ -737,11 +738,11 @@ model SpaceAgent {
   autoExecuteEnabledById String?
   autoExecuteEnabledAt   DateTime?
   // 권한 정리 전 scopes 원본(롤백용). 2026-11-20 마이그레이션이 한 번 복사한다.
-  scopesBackup String[] @default([])
+  scopesBackup           String[]  @default([])
   // 쓰기 scope 별 부여자 기록: { "<xxx:write>": { userId, at(ISO) } }. 바로 실행 게이트가 읽는다.
-  writeGrants  Json     @default("{}")
+  writeGrants            Json      @default("{}")
   // 권한 저장 횟수 — 0 이면 배포 후 한 번도 저장 안 된 행(ROLLBACK.sql 이 구분).
-  scopesVersion Int     @default(0)
+  scopesVersion          Int       @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2216,20 +2217,23 @@ model Channel {
   requireProducts         Boolean                @default(true)
   sortOrder               Int                    @default(0) // 사용자 정의 정렬 순서 (오름차순, 동률은 name asc)
 
-  space                   Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  channelTypeDef          ChannelTypeDef?          @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)
-  representativeChannel   Channel?                 @relation("ChannelRep", fields: [representativeChannelId], references: [id], onDelete: SetNull)
-  fulfillmentChannels     Channel[]                @relation("ChannelRep")
+  space                   Space                      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channelTypeDef          ChannelTypeDef?            @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)
+  representativeChannel   Channel?                   @relation("ChannelRep", fields: [representativeChannelId], references: [id], onDelete: SetNull)
+  fulfillmentChannels     Channel[]                  @relation("ChannelRep")
   feeRates                ChannelFeeRate[]
   invMovements            InvMovement[]
   delOrders               DelOrder[]
-  columnMappingPresets    DelColumnMappingPreset[] @relation("PresetChannel")
+  columnMappingPresets    DelColumnMappingPreset[]   @relation("PresetChannel")
   productAliases          ChannelProductAlias[]
   productListings         ProductListing[]
   channelProducts         ChannelProduct[]
   pricingScenarios        PricingScenario[]
   pricingScenarioChannels PricingScenarioChannel[]
   keywordRule             ChannelKeywordRule? // 키워드 규칙 오버라이드 (없으면 코드 기본값)
+  fulfillmentSetting      ChannelFulfillmentSetting?
+  orderLines              ChannelOrderLine[]
+  orderScanLines          ChannelOrderScanLine[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4714,19 +4718,19 @@ model SpaceSubscription {
 
 // 구독 라인아이템. type=DECK(현재) / ADDON(추후 확장).
 model SubscriptionItem {
-  id             String                 @id @default(cuid())
-  subscriptionId String
-  type           SubscriptionItemType   @default(DECK)
-  deckAppId      String
-  priceSnapshot  Int // 구독 시점 공급가 스냅샷
-  lockedPrice    Int? // 보장 공급가(Opening 이전 고객). 있으면 정가 대신 청구, 실제 해지 시 null
-  status         SubscriptionItemStatus @default(ACTIVE)
-  addedAt        DateTime               @default(now())
-  endedAt        DateTime?
+  id                String                 @id @default(cuid())
+  subscriptionId    String
+  type              SubscriptionItemType   @default(DECK)
+  deckAppId         String
+  priceSnapshot     Int // 구독 시점 공급가 스냅샷
+  lockedPrice       Int? // 보장 공급가(Opening 이전 고객). 있으면 정가 대신 청구, 실제 해지 시 null
+  status            SubscriptionItemStatus @default(ACTIVE)
+  addedAt           DateTime               @default(now())
+  endedAt           DateTime?
   // 체험 중 예약된 아이템. 결제 시작일은 저장하지 않고 SpaceDeckAccess.trialEndsAt 에서 파생한다
-  awaitingTrialEnd  Boolean @default(false)
+  awaitingTrialEnd  Boolean                @default(false)
   // 체험 종료일 일할 결제 실패 횟수 (구독 단위 retryCount 와 별개)
-  billingRetryCount Int     @default(0)
+  billingRetryCount Int                    @default(0)
 
   subscription SpaceSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
@@ -5114,4 +5118,94 @@ model OpeningMigrationJob {
 
   @@index([status])
   @@index([userId])
+}
+
+// ─── 채널 주문 관측(그림자 수집) — 읽기 전용. DelOrder·재고 이동을 만들지 않는다 ───
+
+// 채널별 주문 자동화 설정(1:1). 이후 단계 스위치는 그 단계에서 추가한다.
+model ChannelFulfillmentSetting {
+  id             String  @id @default(cuid())
+  channelId      String  @unique
+  spaceId        String
+  adapter        String // naver | coupang | cafe24
+  storeKey       String? // 네이버 스토어 키
+  observeEnabled Boolean @default(false)
+  observeCursor  Json? // { at: ISO, catchingUp: boolean } — finish 에서만 전진
+  observeLease   Json? // { operationId, until: epoch ms } — 조건부 쓰기로만 획득
+  reconcileMode  String  @default("diagnose") // diagnose | judge
+  matchKeyRule   Json? // { field: 'externalOrderId' | 'externalLineKey' | 'lineKeyOrderPart' }
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// 채널 주문 행 단위 최신 상태(관측). 수령인·연락처·주소는 저장하지 않는다.
+model ChannelOrderLine {
+  id              String    @id @default(cuid())
+  spaceId         String
+  channelId       String
+  externalLineKey String // 네이버 productOrderId, 쿠팡 shipmentBoxId:vendorItemId, 카페24 order_item_code
+  externalOrderId String
+  paidAt          DateTime
+  productName     String
+  optionText      String?
+  quantity        Int
+  channelStatus   String
+  claimStatus     String?
+  deliveryKind    String
+  shippingDueAt   DateTime?
+  carrierCode     String?
+  trackingNumber  String?
+  dispatchedAt    DateTime?
+  sourceChangedAt DateTime? // 채널 원본 변경 시각 — 이보다 오래된 쓰기는 거부
+  firstSeenAt     DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
+  rawHash         String
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, externalLineKey])
+  @@index([spaceId, paidAt])
+  @@index([channelId, externalOrderId])
+}
+
+// 일일 전수 조회 결과(대사 입력 전용, 14일 보관)
+model ChannelOrderScanLine {
+  id              String   @id @default(cuid())
+  operationId     String
+  channelId       String
+  externalLineKey String
+  externalOrderId String
+  quantity        Int
+  channelStatus   String
+  paidAt          DateTime
+
+  channel   Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  operation PipelineOperation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+
+  @@index([operationId])
+  @@index([channelId, paidAt])
+}
+
+// 주문 파이프라인 실행 기록. kind: OBSERVE | FULL_SCAN | RECONCILE, status: STARTED | SUCCEEDED | PARTIAL | FAILED
+model PipelineOperation {
+  id         String    @id @default(cuid())
+  spaceId    String
+  channelId  String?
+  kind       String
+  status     String    @default("STARTED")
+  counts     Json      @default("{}")
+  error      String? // 허용 목록 코드만
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  space     Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  scanLines ChannelOrderScanLine[]
+
+  @@index([spaceId, kind, startedAt])
+  @@index([channelId, kind, startedAt])
 }
