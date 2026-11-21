@@ -125,8 +125,8 @@ export const INTEGRATIONS: IntegrationService[] = [
     adminOnly: true,
     keyGuide: {
       steps: [
-        'Google Cloud 콘솔 → OAuth 클라이언트 ID 만들기',
-        'OAuth Playground에서 Analytics·Tag Manager 범위로 refresh token 발급',
+        'Google Cloud 콘솔 → OAuth 클라이언트 ID 만들기(웹 애플리케이션, 리디렉션 URI 등록)',
+        '클라이언트 ID·시크릿과 브랜드를 저장한 뒤 「Google로 연결」로 승인',
         '개발 담당자 도움이 필요할 수 있습니다',
       ],
       linkLabel: 'Google Cloud 콘솔 열기',

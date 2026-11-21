@@ -69,6 +69,23 @@ describe('loadIntegrationStatuses', () => {
     expect(JSON.stringify(statuses)).not.toContain('token expired')
   })
 
+  it('구글: 승인 전(needs_auth)은 「승인 필요」, status 없는 기존 행·연결됨은 연결됨', async () => {
+    const run = async (config: unknown, healthError: string | null = null) => {
+      db.spaceCredential.findMany.mockResolvedValue([
+        { provider: 'google-marketing', healthError, config },
+      ])
+      return (await loadIntegrationStatuses('s1', 'u1', 'ADMIN')).statuses['google-marketing']
+    }
+    expect(await run({ status: 'needs_auth' })).toEqual({
+      state: 'not_connected',
+      summary: '승인 필요',
+    })
+    expect((await run({ status: 'connected' }))?.state).toBe('connected')
+    expect((await run({ status: 'needs_check' }))?.state).toBe('connected')
+    expect((await run({}))?.state).toBe('connected') // 수동 토큰 시절의 기존 행
+    expect((await run({ status: 'connected' }, 'invalid_grant'))?.state).toBe('attention')
+  })
+
   it('MEMBER는 관리자 전용 출처를 조회하지 않고 오류 상태도 받지 않는다', async () => {
     const { statuses, attention } = await loadIntegrationStatuses('s1', 'u1', 'MEMBER')
     adminOnlyCalls().forEach((fn) => expect(fn).not.toHaveBeenCalled())

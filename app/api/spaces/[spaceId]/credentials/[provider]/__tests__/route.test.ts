@@ -5,7 +5,12 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     invStorageLocation: { count: jest.fn() },
     channel: { count: jest.fn() },
-    spaceCredential: { findUnique: jest.fn(), update: jest.fn() },
+    spaceCredential: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      create: jest.fn(),
+      updateMany: jest.fn(),
+    },
     agentPendingAction: { count: jest.fn() },
     delBatch: { findFirst: jest.fn() },
   },
@@ -21,6 +26,7 @@ jest.mock('@/lib/agent/integrations/naver-searchad', () => ({
 }))
 jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
 jest.mock('@/lib/crypto/field-crypto', () => ({
+  encryptField: jest.fn((_p: string, v: string) => ({ encrypted: v, iv: 'v1' })),
   decryptField: jest.fn(() =>
     JSON.stringify({
       stores: { aml: { clientId: 'old-cid-0123456', clientSecret: 'o'.repeat(24) } },
@@ -267,6 +273,7 @@ describe('PUT health·graphVersion', () => {
   })
 
   it('구글 저장 → 점검 상태 미변경', async () => {
+    ;(prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValue(null)
     const res = await call('google-marketing', {
       secret: {
         clientId: 'c'.repeat(12),
@@ -290,11 +297,13 @@ describe('PUT health·graphVersion', () => {
     config: { brands: { a: brand } },
   })
   it('구글: GTM 생략 → 200, GTM 키 없이 저장', async () => {
+    ;(prisma.spaceCredential.findUnique as jest.Mock).mockResolvedValue(null)
     const res = await call('google-marketing', googleBody({ ga4_property_id: '1' }))
     expect(res.status).toBe(200)
-    expect((saveSpaceCredential as jest.Mock).mock.calls[0][3].brands.a).toEqual({
-      ga4_property_id: '1',
-    })
+    // 구글은 무조건 upsert(saveSpaceCredential)가 아니라 조건부 쓰기 경로(최초 = create)로 저장한다.
+    expect(saveSpaceCredential).not.toHaveBeenCalled()
+    const created = (prisma.spaceCredential.create as jest.Mock).mock.calls[0][0].data
+    expect(created.config.brands.a).toEqual({ ga4_property_id: '1' })
   })
   it.each([
     { ga4_property_id: '1', gtm_account_id: '2' },

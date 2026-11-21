@@ -9,7 +9,7 @@ import {
 import {
   PROVIDER as GOOGLE,
   loadGoogleCred,
-  verifyGoogleCred,
+  verifyGoogleBrands,
 } from '@/lib/agent/integrations/google-marketing'
 import {
   PROVIDER as NAVER,
@@ -24,6 +24,7 @@ import {
   probeOrders,
 } from '@/lib/cafe24/client'
 import { readCafe24, writeCafe24If } from '@/lib/cafe24/store'
+import { readGoogle, writeGoogleIf } from '@/lib/integrations/google-marketing-store'
 
 const CAFE24 = 'cafe24'
 const LABEL: Record<string, string> = {
@@ -40,8 +41,35 @@ const PROBES: Record<string, (spaceId: string, audit: string[]) => Promise<void>
     const cred = await loadMetaCred(spaceId, audit)
     await fetchAdAccountCurrencies(cred.secret, cred.config) // 매핑된 광고 계정 조회(통화)
   },
+  // 승인 전(needs_auth)은 점검할 게 없어 건너뛴다 — 승인 전 상태가 매일 알림이 되지 않게.
+  // 토큰이 있으면 access token 과 브랜드 GA4 속성 조회까지 확인하고, 확인 대기(needs_check)였으면 연결됨으로 올린다.
   [GOOGLE]: async (spaceId, audit) => {
-    await verifyGoogleCred(await loadGoogleCred(spaceId, audit))
+    const cred = await loadGoogleCred(spaceId, audit)
+    if (cred.config.status === 'needs_auth' || !cred.secret.refreshToken) return
+    await verifyGoogleBrands(cred)
+    if (cred.config.status !== 'needs_check') return
+    try {
+      const cur = await readGoogle(spaceId)
+      // 확인한 뒤 토큰·브랜드가 바뀌었으면 승격하지 않는다(다음 점검에서 다시 확인).
+      if (
+        cur?.config.status === 'needs_check' &&
+        cur.secret.refreshToken === cred.secret.refreshToken &&
+        JSON.stringify(cur.config.brands) === JSON.stringify(cred.config.brands)
+      ) {
+        await writeGoogleIf(
+          cur,
+          cur.secret,
+          {
+            ...cur.config,
+            status: 'connected',
+            connectedAt: cur.config.connectedAt ?? new Date().toISOString(),
+          },
+          true
+        )
+      }
+    } catch {
+      // 다음 점검에서 다시 시도한다.
+    }
   },
   [NAVER]: async (spaceId, audit) => {
     const cred = await loadNaverCred(spaceId, audit)
