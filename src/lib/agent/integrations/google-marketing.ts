@@ -767,9 +767,34 @@ export async function oauthHttp(
   }
 }
 
+// Google API(JSON) 오류의 원인 코드 — 메시지·본문은 버리고 이 목록의 값만 남긴다.
+const API_REASONS = new Set([
+  'SERVICE_DISABLED', // GCP 프로젝트에서 해당 API 미사용 설정
+  'ACCESS_TOKEN_SCOPE_INSUFFICIENT',
+  'API_DISABLED',
+  'USER_PROJECT_DENIED',
+])
+const API_STATUSES = new Set([
+  'PERMISSION_DENIED',
+  'NOT_FOUND',
+  'INVALID_ARGUMENT',
+  'UNAUTHENTICATED',
+])
+
 export async function oauthErrorCode(res: Response): Promise<string> {
   const body = (await res.json().catch(() => null)) as { error?: unknown } | null
   if (typeof body?.error === 'string' && KNOWN_CODES.has(body.error)) return body.error
+  // { error: { status, details: [{ reason }] } } — Admin·Data API 형식
+  if (body?.error && typeof body.error === 'object') {
+    const e = body.error as { status?: unknown; details?: unknown }
+    const reason = Array.isArray(e.details)
+      ? e.details
+          .map((d) => (d && typeof d === 'object' ? (d as { reason?: unknown }).reason : undefined))
+          .find((r): r is string => typeof r === 'string' && API_REASONS.has(r))
+      : undefined
+    if (reason) return reason.toLowerCase()
+    if (typeof e.status === 'string' && API_STATUSES.has(e.status)) return e.status.toLowerCase()
+  }
   if (res.status === 401) return 'unauthorized'
   if (res.status === 403) return 'forbidden'
   if (res.status === 404) return 'not_found'
