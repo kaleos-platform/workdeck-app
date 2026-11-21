@@ -15,7 +15,11 @@ export function ServiceLogo({ logo }: { logo: IntegrationService['logo'] }) {
     <span className="flex h-6 w-10 shrink-0 items-center justify-center text-muted-foreground">
       {'src' in logo ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img alt="" src={logo.src} className="max-h-6 max-w-10 object-contain" />
+        <img
+          alt=""
+          src={logo.src}
+          className={`max-h-6 max-w-10 object-contain${logo.invertOnDark ? 'dark:invert' : ''}`}
+        />
       ) : (
         <logo.icon className="h-5 w-5" aria-hidden />
       )}
