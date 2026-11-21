@@ -9,7 +9,9 @@ import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
 
-const INIT_SCRIPT = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config',${JSON.stringify(
+// send_page_view:false 를 config 에만 두면 Google 태그가 무시하고 원본 URL 로 자동 page_view 를 보낸다(2026-11-21 실측).
+// 전역 set 으로 먼저 꺼야 자동 page_view 가 0건 — page_view 는 정규화한 URL 로 우리가 직접 보낸다.
+const INIT_SCRIPT = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('set',{send_page_view:false});gtag('js',new Date());gtag('config',${JSON.stringify(
   GA_ID
 )},{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false});`
 
