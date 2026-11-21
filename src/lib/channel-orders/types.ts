@@ -39,6 +39,7 @@ export const ERROR_CODES = [
   'ingest_missing',
   'invalid',
   'busy',
+  'setting_changed',
   'not_found',
   'unknown',
 ] as const
@@ -121,5 +122,9 @@ export const ObserveSettingBodySchema = z
   })
   .refine((v) => v.adapter !== 'naver' || !v.observeEnabled || !!v.storeKey, {
     message: '네이버는 스토어 키가 필요합니다',
+    path: ['storeKey'],
+  })
+  .refine((v) => v.adapter !== 'cafe24' || !v.observeEnabled || !!v.storeKey, {
+    message: '카페24는 쇼핑몰을 선택해야 합니다',
     path: ['storeKey'],
   })

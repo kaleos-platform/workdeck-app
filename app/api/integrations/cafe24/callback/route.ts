@@ -35,9 +35,10 @@ type Outcome =
   | 'expired'
 
 /** nonce 쿠키는 결과와 상관없이 지운다(재사용 차단). */
-function done(status: Outcome, spaceId?: string): NextResponse {
+function done(status: Outcome, spaceId?: string, mallId?: string): NextResponse {
   const q = new URLSearchParams({ open: 'cafe24', cafe24: status })
   if (spaceId) q.set('spaceId', spaceId) // 서명 검증된 state 값만 넣는다
+  if (mallId) q.set('mall', mallId)
   const res = NextResponse.redirect(buildAppUrl(`/settings/integrations?${q.toString()}`))
   res.cookies.set(CAFE24_NONCE_COOKIE, '', { path: CAFE24_COOKIE_PATH, maxAge: 0 })
   return res
@@ -53,21 +54,21 @@ export async function GET(req: NextRequest) {
   if (!state) return done('expired') // 서명이 무효라 spaceId 를 믿을 수 없다
 
   const user = await getUser()
-  if (!user || user.id !== state.userId) return done('forbidden', state.spaceId)
+  if (!user || user.id !== state.userId) return done('forbidden', state.spaceId, state.mallId)
   // 쿠키 대조 — 다른 브라우저 세션·재사용 차단
   if (!nonceMatches(state, req.cookies.get(CAFE24_NONCE_COOKIE)?.value)) {
-    return done('expired', state.spaceId)
+    return done('expired', state.spaceId, state.mallId)
   }
   const auth = await requireSpaceAdmin(state.spaceId)
-  if ('error' in auth) return done('forbidden', state.spaceId)
-  if (await requireAal2()) return done('mfa_required', state.spaceId)
+  if ('error' in auth) return done('forbidden', state.spaceId, state.mallId)
+  if (await requireAal2()) return done('mfa_required', state.spaceId, state.mallId)
 
-  if (url.searchParams.get('error')) return done('denied', state.spaceId)
+  if (url.searchParams.get('error')) return done('denied', state.spaceId, state.mallId)
   const code = url.searchParams.get('code')
-  if (!code) return done('error', state.spaceId)
+  if (!code) return done('error', state.spaceId, state.mallId)
 
-  const row = await readCafe24(state.spaceId)
-  if (!row || !sameApp(row, state)) return done('error', state.spaceId) // 승인 도중 설정이 바뀜
+  const row = await readCafe24(state.spaceId, state.mallId)
+  if (!row || !sameApp(row, state)) return done('error', state.spaceId, state.mallId) // 승인 도중 설정이 바뀜
 
   let tokens
   try {
@@ -81,16 +82,16 @@ export async function GET(req: NextRequest) {
     )
   } catch (err) {
     await recordCredentialError(row.id, err instanceof Error ? err.message : '카페24 승인 실패')
-    return done('error', state.spaceId)
+    return done('error', state.spaceId, state.mallId)
   }
-  if (tokens.mallId !== row.config.mallId) return done('mall_mismatch', state.spaceId)
-  if (!hasOrderScopes(tokens.scopes)) return done('scope_missing', state.spaceId)
+  if (tokens.mallId !== row.config.mallId) return done('mall_mismatch', state.spaceId, state.mallId)
+  if (!hasOrderScopes(tokens.scopes)) return done('scope_missing', state.spaceId, state.mallId)
 
   // 토큰 저장(조건부 쓰기). 버전만 바뀌었으면 1회 재시도, 설정이 바뀌었으면 저장하지 않는다.
   let saved = false
   for (let attempt = 0; attempt < 2 && !saved; attempt++) {
-    const cur = attempt === 0 ? row : await readCafe24(state.spaceId)
-    if (!cur || !sameApp(cur, state)) return done('error', state.spaceId)
+    const cur = attempt === 0 ? row : await readCafe24(state.spaceId, state.mallId)
+    if (!cur || !sameApp(cur, state)) return done('error', state.spaceId, state.mallId)
     saved = await writeCafe24If(
       cur,
       { ...cur.secret, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken },
@@ -104,21 +105,21 @@ export async function GET(req: NextRequest) {
       true
     )
   }
-  if (!saved) return done('error', state.spaceId)
+  if (!saved) return done('error', state.spaceId, state.mallId)
 
   try {
-    await probeOrders(state.spaceId)
+    await probeOrders(state.spaceId, state.mallId)
   } catch (err) {
     await recordCredentialError(
       row.id,
       err instanceof Error ? err.message : '카페24 주문 조회 실패'
     )
-    return done('error', state.spaceId)
+    return done('error', state.spaceId, state.mallId)
   }
 
   for (let attempt = 0; attempt < 3; attempt++) {
-    const cur = await readCafe24(state.spaceId)
-    if (!cur || !sameApp(cur, state)) return done('error', state.spaceId)
+    const cur = await readCafe24(state.spaceId, state.mallId)
+    if (!cur || !sameApp(cur, state)) return done('error', state.spaceId, state.mallId)
     const ok = await writeCafe24If(
       cur,
       cur.secret,
@@ -130,7 +131,7 @@ export async function GET(req: NextRequest) {
       },
       true
     )
-    if (ok) return done('connected', state.spaceId)
+    if (ok) return done('connected', state.spaceId, state.mallId)
   }
-  return done('error', state.spaceId)
+  return done('error', state.spaceId, state.mallId)
 }

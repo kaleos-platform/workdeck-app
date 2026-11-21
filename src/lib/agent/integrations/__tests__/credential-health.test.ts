@@ -228,7 +228,34 @@ describe('카페24', () => {
     const r = await checkCredentialHealth()
     expect(r).toMatchObject({ checked: 1, failed: 0 })
     expect(r.decryptedCredentialIds).toEqual(['c4'])
-    expect(probeOrders).toHaveBeenCalledWith('sp4')
+    expect(probeOrders).toHaveBeenCalledWith('sp4', null) // config.mallId 없는 레거시 행
+  })
+
+  it('레거시 행(provider cafe24)도 config.mallId 로 점검하고 라벨에 몰 ID 를 넣는다', async () => {
+    findMany.mockResolvedValue([cafe24({ config: { mallId: 'legacy-shop' } })])
+    ;(getAccessToken as jest.Mock).mockRejectedValue(new Cafe24Error('token', 'reauth_required'))
+    await checkCredentialHealth()
+    expect(getAccessToken).toHaveBeenCalledWith('sp4', 'legacy-shop')
+    expect(notify.mock.calls[0][0].text).toContain('카페24(legacy-shop)')
+  })
+
+  it('cafe24:<mallId> 행은 prefix 로 조회·디스패치하고 그 mallId 로 probe 한다', async () => {
+    findMany.mockResolvedValue([
+      cafe24({ id: 'c5', provider: 'cafe24:shop-a', config: { mallId: 'shop-a' } }),
+      cafe24({ id: 'c6', provider: 'cafe24:shop-b', config: { mallId: 'shop-b' } }),
+    ])
+    ;(getAccessToken as jest.Mock).mockImplementation(async (_sp: string, mall: string) => ({
+      credentialId: `cred-${mall}`,
+      accessToken: 'x',
+      mallId: mall,
+    }))
+    ;(probeOrders as jest.Mock).mockResolvedValue(undefined)
+    const r = await checkCredentialHealth()
+    expect(r).toMatchObject({ checked: 2, failed: 0 })
+    expect(probeOrders).toHaveBeenCalledWith('sp4', 'shop-a')
+    expect(probeOrders).toHaveBeenCalledWith('sp4', 'shop-b')
+    const where = findMany.mock.calls[0][0].where
+    expect(where.OR).toContainEqual({ provider: { startsWith: 'cafe24:' } })
   })
 
   it('승인 전(not_authorized)은 점검 대상이 아니라 실패·알림이 없다', async () => {

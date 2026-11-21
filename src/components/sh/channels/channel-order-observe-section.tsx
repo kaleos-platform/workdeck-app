@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { useCurrentSpace } from '@/hooks/use-current-space'
 import {
   Select,
   SelectContent,
@@ -24,6 +25,7 @@ const MATCH_LABELS = {
   lineKeyOrderPart: '행 번호의 주문번호 부분',
 } as const
 type MatchKey = keyof typeof MATCH_LABELS
+type Cafe24Mall = { mallId: string; status: 'needs_auth' | 'connected' | 'reauth_required' }
 
 /** 채널 편집 팝업 고급 탭 — 주문 관측(그림자 수집). ADMIN 이상만 보이고, 이 영역은 자체 저장 버튼으로 저장한다. */
 export function ChannelOrderObserveSection({ channelId }: { channelId: string }) {
@@ -34,6 +36,28 @@ export function ChannelOrderObserveSection({ channelId }: { channelId: string })
   const [mode, setMode] = useState<ModeKey>('diagnose')
   const [matchField, setMatchField] = useState<MatchKey | ''>('')
   const [saving, setSaving] = useState(false)
+  const spaceId = useCurrentSpace()?.id
+  const [malls, setMalls] = useState<Cafe24Mall[] | null>(null)
+  const [mallsFailed, setMallsFailed] = useState(false)
+
+  // 카페24 쇼핑몰 목록은 카페24를 고른 때만 조회한다.
+  useEffect(() => {
+    if (adapter !== 'cafe24' || !spaceId) return
+    let alive = true
+    setMallsFailed(false)
+    // 조회 실패(권한·네트워크)는 「연결된 몰 없음」과 구분한다.
+    fetch(`/api/integrations/cafe24/status?spaceId=${encodeURIComponent(spaceId)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!alive) return
+        if (Array.isArray(d?.malls)) setMalls(d.malls)
+        else setMallsFailed(true)
+      })
+      .catch(() => alive && setMallsFailed(true))
+    return () => {
+      alive = false
+    }
+  }, [adapter, spaceId])
 
   useEffect(() => {
     let alive = true
@@ -56,7 +80,8 @@ export function ChannelOrderObserveSection({ channelId }: { channelId: string })
 
   if (!canEdit) return null
 
-  const invalid = enabled && (!adapter || (adapter === 'naver' && !storeKey.trim()))
+  const invalid =
+    enabled && (!adapter || ((adapter === 'naver' || adapter === 'cafe24') && !storeKey.trim()))
 
   async function save() {
     setSaving(true)
@@ -99,7 +124,13 @@ export function ChannelOrderObserveSection({ channelId }: { channelId: string })
       </div>
       <div className="space-y-2">
         <Label>가져올 곳</Label>
-        <Select value={adapter} onValueChange={(v) => setAdapter(v as AdapterKey)}>
+        <Select
+          value={adapter}
+          onValueChange={(v) => {
+            setAdapter(v as AdapterKey)
+            setStoreKey('')
+          }}
+        >
           <SelectTrigger>
             <SelectValue placeholder="판매 채널 선택" />
           </SelectTrigger>
@@ -121,6 +152,32 @@ export function ChannelOrderObserveSection({ channelId }: { channelId: string })
             onChange={(e) => setStoreKey(e.target.value)}
             placeholder="설정 > 연동에 등록한 스마트스토어 키"
           />
+        </div>
+      )}
+      {adapter === 'cafe24' && (
+        <div className="space-y-2">
+          <Label>쇼핑몰</Label>
+          {mallsFailed ? (
+            <p className="text-xs text-destructive">쇼핑몰 목록을 불러오지 못했습니다</p>
+          ) : malls && malls.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              설정 &gt; 연동 &gt; 카페24에서 먼저 쇼핑몰을 연결하세요
+            </p>
+          ) : (
+            <Select value={storeKey} onValueChange={setStoreKey}>
+              <SelectTrigger>
+                <SelectValue placeholder="연결된 쇼핑몰 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {(malls ?? []).map((m) => (
+                  <SelectItem key={m.mallId} value={m.mallId}>
+                    {m.mallId}
+                    {m.status !== 'connected' && ' (승인 필요)'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       )}
       <div className="space-y-2">

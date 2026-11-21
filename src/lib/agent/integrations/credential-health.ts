@@ -27,8 +27,9 @@ import { readCafe24, writeCafe24If } from '@/lib/cafe24/store'
 import { readGoogle, writeGoogleIf } from '@/lib/integrations/google-marketing-store'
 
 const CAFE24 = 'cafe24'
+// 쇼핑몰 행: 레거시 `cafe24` + 새 `cafe24:<mallId>`. 점검은 행의 config.mallId 로 같은 probe 에 보낸다.
+const isCafe24 = (provider: string) => provider === CAFE24 || provider.startsWith(`${CAFE24}:`)
 const LABEL: Record<string, string> = {
-  [CAFE24]: '카페24',
   [META]: 'Meta 광고',
   [GOOGLE]: 'Google 마케팅',
   [NAVER]: '네이버 검색광고',
@@ -36,7 +37,10 @@ const LABEL: Record<string, string> = {
 const CONCURRENCY = 4
 
 // 공급자별 가벼운 점검 — 데이터는 읽지 않고 토큰이 살아 있는지만 본다. 복호화한 id는 audit 에 남긴다.
-const PROBES: Record<string, (spaceId: string, audit: string[]) => Promise<void>> = {
+const PROBES: Record<
+  string,
+  (spaceId: string, audit: string[], mallId: string | null) => Promise<void>
+> = {
   [META]: async (spaceId, audit) => {
     const cred = await loadMetaCred(spaceId, audit)
     await fetchAdAccountCurrencies(cred.secret, cred.config) // 매핑된 광고 계정 조회(통화)
@@ -76,10 +80,10 @@ const PROBES: Record<string, (spaceId: string, audit: string[]) => Promise<void>
     await verifyNaverCred(cred.secret, cred.config)
   },
   // 필요하면 갱신하고 주문 1건을 조회한다. 매일 돌아야 갱신 토큰(2주)이 끊기지 않는다. 승인 전(not_authorized)은 점검할 게 없다.
-  [CAFE24]: async (spaceId, audit) => {
+  [CAFE24]: async (spaceId, audit, mallId) => {
     try {
-      audit.push((await getAccessToken(spaceId)).credentialId)
-      await probeOrders(spaceId)
+      audit.push((await getAccessToken(spaceId, mallId)).credentialId)
+      await probeOrders(spaceId, mallId)
     } catch (err) {
       if (err instanceof Cafe24Error && err.code === 'not_authorized') return
       // 이미 재승인 대기인 행은 갱신을 다시 시도하지 않고(getAccessToken 이 즉시 던진다) 같은 문구로 처리한다.
@@ -90,7 +94,7 @@ const PROBES: Record<string, (spaceId: string, audit: string[]) => Promise<void>
     }
     // 콜백의 확인 조회만 실패해 needs_auth 로 남은 행: 토큰·조회가 살아 있으면 연결됨으로 올린다(실패해도 무시).
     try {
-      const cur = await readCafe24(spaceId)
+      const cur = await readCafe24(spaceId, mallId)
       if (cur?.config.status === 'needs_auth' && cur.secret.refreshToken) {
         await writeCafe24If(
           cur,
@@ -117,6 +121,7 @@ type Row = {
   id: string
   spaceId: string
   provider: string
+  config: unknown
   lastError: string | null
   healthError: string | null
   healthAlertedAt: Date | null
@@ -138,11 +143,17 @@ export type HealthResult = {
  */
 export async function checkCredentialHealth(): Promise<HealthResult> {
   const rows: Row[] = await prisma.spaceCredential.findMany({
-    where: { provider: { in: Object.keys(PROBES) } },
+    where: {
+      OR: [
+        { provider: { in: Object.keys(PROBES) } },
+        { provider: { startsWith: `${CAFE24}:` } }, // 쇼핑몰 행
+      ],
+    },
     select: {
       id: true,
       spaceId: true,
       provider: true,
+      config: true,
       lastError: true,
       healthError: true,
       healthAlertedAt: true,
@@ -177,10 +188,15 @@ export async function checkCredentialHealth(): Promise<HealthResult> {
 
 async function checkOne(row: Row, out: HealthResult): Promise<void> {
   out.checked++
-  const label = LABEL[row.provider] ?? row.provider
+  const cafe24 = isCafe24(row.provider)
+  // 레거시 행도 config.mallId 로 읽는다(없으면 null = 레거시 행 그대로).
+  const mallId = cafe24 ? ((row.config as { mallId?: string } | null)?.mallId ?? null) : null
+  const label = cafe24
+    ? `카페24${mallId ? `(${mallId})` : ''}`
+    : (LABEL[row.provider] ?? row.provider)
   let error: string | null = null
   try {
-    await PROBES[row.provider](row.spaceId, out.decryptedCredentialIds)
+    await PROBES[cafe24 ? CAFE24 : row.provider](row.spaceId, out.decryptedCredentialIds, mallId)
   } catch (err) {
     error = maskSecrets(err instanceof Error ? err.message : String(err)).slice(0, 500)
   }

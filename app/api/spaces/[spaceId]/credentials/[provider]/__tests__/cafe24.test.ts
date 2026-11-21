@@ -19,7 +19,7 @@ jest.mock('@/lib/naver-commerce/client', () => ({ nbaesongStoreLocationId: jest.
 
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { requireAal2 } from '@/lib/auth/mfa'
-import { PUT } from '../route'
+import { DELETE, PUT } from '../route'
 
 const SP = 'sp1'
 const mockedAdmin = requireSpaceAdmin as jest.Mock
@@ -108,11 +108,19 @@ describe('재등록', () => {
     expect(fakeDb.row.config).toEqual({ mallId: 'myshop24', credVersion: 6, status: 'needs_auth' })
   })
 
-  it('mallId 가 바뀌어도 토큰을 폐기한다', async () => {
+  it('다른 mallId 는 새 쇼핑몰로 추가되고 기존 몰(레거시 행)·토큰은 그대로다', async () => {
     connected()
-    await put(body({ mallId: 'another-shop' }))
-    expect(fakeDb.secret.refreshToken).toBeUndefined()
-    expect(fakeDb.row.config.mallId).toBe('another-shop')
+    expect((await put(body({ mallId: 'another-shop' }))).status).toBe(200)
+    expect(fakeDb.rows).toHaveLength(2)
+    expect(fakeDb.rows[0]).toMatchObject({ provider: 'cafe24' })
+    expect(fakeDb.secret.refreshToken).toBe('RT')
+    expect(fakeDb.rows[1]).toMatchObject({ provider: 'cafe24:another-shop' })
+  })
+
+  it('같은 mallId 를 레거시 행이 이미 갖고 있으면 새 행을 만들지 않는다', async () => {
+    connected()
+    await put(body())
+    expect(fakeDb.rows).toHaveLength(1)
   })
 
   it('읽은 뒤 다른 쓰기와 겹치면 409 이고 덮어쓰지 않는다', async () => {
@@ -131,5 +139,167 @@ describe('재등록', () => {
       throw Object.assign(new Error('unique'), { code: 'P2002' })
     })
     expect((await put(body())).status).toBe(409)
+  })
+})
+
+describe('쇼핑몰 추가·앱 정보 수정·삭제', () => {
+  const seedMall = (mallId: string, over: Record<string, unknown> = {}) =>
+    fakeDb.seed(
+      SP,
+      {
+        clientId: 'cid-1234567',
+        clientSecret: 'CSECRET-xyz',
+        accessToken: 'AT',
+        refreshToken: 'RT',
+      },
+      { mallId, credVersion: 1, status: 'connected', ...over },
+      `cafe24:${mallId}`
+    )
+  const del = (mallId?: string) =>
+    DELETE(
+      new NextRequest(`https://app.test/x${mallId ? `?mallId=${mallId}` : ''}`, {
+        method: 'DELETE',
+      }),
+      { params: Promise.resolve({ spaceId: SP, provider: 'cafe24' }) }
+    )
+
+  it('첫 쇼핑몰은 앱 정보가 필수(400), 둘째 몰은 비워도 기존 앱 정보를 복사한다', async () => {
+    const res = await put({ config: { mallId: 'first-shop' } })
+    expect(res.status).toBe(400)
+    expect((await res.json()).message).toContain('첫 쇼핑몰은 앱 정보')
+    expect(fakeDb.rows).toHaveLength(0)
+    seedMall('first-shop')
+    expect((await put({ config: { mallId: 'second-shop' } })).status).toBe(200)
+    expect(fakeDb.rows).toHaveLength(2)
+    expect(JSON.parse(fakeDb.rows[1].encryptedPayload)).toEqual({
+      clientId: 'cid-1234567',
+      clientSecret: 'CSECRET-xyz',
+    })
+  })
+
+  it('이미 있는 몰에 secret 없이 추가하면 그대로 200', async () => {
+    seedMall('first-shop')
+    expect((await put({ config: { mallId: 'first-shop' } })).status).toBe(200)
+    expect(fakeDb.rows).toHaveLength(1)
+    expect(fakeDb.rows[0].config.credVersion).toBe(1)
+  })
+
+  it('한도 5(레거시 행 포함)를 넘기면 400', async () => {
+    fakeDb.seed(
+      SP,
+      { clientId: 'cid-1234567', clientSecret: 'CSECRET-xyz' },
+      { mallId: 'legacy-shop', credVersion: 1, status: 'connected' }
+    )
+    for (const m of ['shop-a', 'shop-b', 'shop-c', 'shop-d']) seedMall(m)
+    const res = await put({ config: { mallId: 'shop-f' } })
+    expect(res.status).toBe(400)
+    expect((await res.json()).message).toContain('최대 5개')
+    expect(fakeDb.rows).toHaveLength(5)
+  })
+
+  it('앱 정보 수정은 모든 몰에 전파되고 clientId 가 바뀌면 각 몰 토큰을 폐기한다', async () => {
+    fakeDb.seed(
+      SP,
+      {
+        clientId: 'cid-1234567',
+        clientSecret: 'CSECRET-xyz',
+        accessToken: 'AT',
+        refreshToken: 'RT',
+      },
+      { mallId: 'legacy-shop', credVersion: 3, status: 'connected' }
+    )
+    seedMall('shop-a')
+    expect(
+      (await put({ secret: { clientId: 'brand-new-client', clientSecret: 'NEW-secret-123' } }))
+        .status
+    ).toBe(200)
+    for (const r of fakeDb.rows) {
+      expect(JSON.parse(r.encryptedPayload)).toEqual({
+        clientId: 'brand-new-client',
+        clientSecret: 'NEW-secret-123',
+      })
+      expect(r.config.status).toBe('needs_auth')
+    }
+    expect(fakeDb.rows.map((r) => r.provider)).toEqual(['cafe24', 'cafe24:shop-a'])
+  })
+
+  it('secret 만 바뀌면(같은 clientId) 모든 몰의 토큰을 유지한다', async () => {
+    seedMall('shop-a')
+    seedMall('shop-b')
+    await put({ secret: { clientId: 'cid-1234567', clientSecret: 'NEW-secret-123' } })
+    for (const r of fakeDb.rows) {
+      expect(JSON.parse(r.encryptedPayload)).toMatchObject({
+        clientSecret: 'NEW-secret-123',
+        refreshToken: 'RT',
+      })
+    }
+  })
+
+  it('앱 정보 전파 중 한 행이 충돌하면 409 이고 앞서 쓴 행도 되돌린다(전체 롤백)', async () => {
+    seedMall('shop-a')
+    seedMall('shop-b')
+    let n = 0
+    fakeDb.beforeUpdateMany = () => {
+      if (++n === 2) fakeDb.rows[1].config = { ...fakeDb.rows[1].config, credVersion: 9 }
+    }
+    const res = await put({
+      secret: { clientId: 'brand-new-client', clientSecret: 'NEW-secret-123' },
+    })
+    expect(res.status).toBe(409)
+    expect(JSON.parse(fakeDb.rows[0].encryptedPayload).clientId).toBe('cid-1234567')
+    expect(fakeDb.rows[0].config.credVersion).toBe(1)
+  })
+
+  it('몰이 없는데 앱 정보만 보내면 400', async () => {
+    expect(
+      (await put({ secret: { clientId: 'cid-1234567', clientSecret: 'CSECRET-xyz' } })).status
+    ).toBe(400)
+  })
+
+  it('config·secret 둘 다 없으면 400', async () => {
+    expect((await put({})).status).toBe(400)
+  })
+
+  it('DELETE: 삭제 성공 · 없으면 404 · 형식 오류 400 · MFA/권한 차단 · 다른 provider 405', async () => {
+    seedMall('shop-a')
+    seedMall('shop-b')
+    expect((await del()).status).toBe(400)
+    expect((await del('nope-shop')).status).toBe(404)
+    mockedAal2.mockResolvedValue(NextResponse.json({ code: 'MFA_REQUIRED' }, { status: 403 }))
+    expect((await del('shop-a')).status).toBe(403)
+    mockedAal2.mockResolvedValue(null)
+    mockedAdmin.mockResolvedValue({ error: NextResponse.json({}, { status: 403 }) })
+    expect((await del('shop-a')).status).toBe(403)
+    mockedAdmin.mockResolvedValue({ userId: 'u1', role: 'ADMIN' })
+    expect(fakeDb.rows).toHaveLength(2)
+    expect((await del('shop-a')).status).toBe(200)
+    expect(fakeDb.rows.map((r) => r.provider)).toEqual(['cafe24:shop-b'])
+    const other = await DELETE(
+      new NextRequest('https://app.test/x?mallId=shop-b', { method: 'DELETE' }),
+      {
+        params: Promise.resolve({ spaceId: SP, provider: 'meta-ads' }),
+      }
+    )
+    expect(other.status).toBe(405)
+  })
+
+  it('DELETE 가드: 관측 켜진 채널이 그 몰을 쓰면 409(storeKey null 은 레거시 몰로 해석)', async () => {
+    fakeDb.seed(
+      SP,
+      { clientId: 'cid-1234567', clientSecret: 'CSECRET-xyz' },
+      { mallId: 'legacy-shop', credVersion: 1, status: 'connected' }
+    )
+    seedMall('shop-a')
+    fakeDb.settings.push(
+      { spaceId: SP, adapter: 'cafe24', observeEnabled: true, storeKey: 'shop-a' },
+      { spaceId: SP, adapter: 'cafe24', observeEnabled: true, storeKey: null }
+    )
+    const a = await del('shop-a')
+    expect(a.status).toBe(409)
+    expect((await a.json()).message).toContain('주문 관측 중인 판매채널')
+    expect((await del('legacy-shop')).status).toBe(409)
+    fakeDb.settings = []
+    expect((await del('legacy-shop')).status).toBe(200)
+    expect(fakeDb.rows.map((r) => r.provider)).toEqual(['cafe24:shop-a'])
   })
 })

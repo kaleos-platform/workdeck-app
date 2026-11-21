@@ -108,6 +108,7 @@ function chunks<T>(rows: T[]): T[][] {
 /** 한 창(KST 일자 범위)의 모든 페이지를 차례로 읽는다. onPage 는 페이지마다 호출. */
 export async function fetchWindow(
   spaceId: string,
+  mallId: string | null, // null = 레거시 `cafe24` 행(storeKey 없는 옛 설정)
   from: Date,
   to: Date,
   onPage: (rows: Cafe24Row[]) => Promise<void>,
@@ -115,7 +116,7 @@ export async function fetchWindow(
 ) {
   for (let offset = 0; offset <= MAX_OFFSET; offset += PAGE) {
     stats.requested++
-    const body = await cafe24Get(spaceId, '/admin/orders', {
+    const body = await cafe24Get(spaceId, mallId, '/admin/orders', {
       // 결제일 기준(apidocs get-orders date_type=pay_date). 기본값(주문일)이면 입금 전 주문이 섞인다.
       date_type: 'pay_date',
       start_date: kstDay(from),
@@ -167,6 +168,7 @@ export async function runCafe24Observe(channelId: string, now = new Date()) {
     for (const w of windows) {
       await fetchWindow(
         started.spaceId,
+        started.storeKey,
         w.from,
         w.to,
         async (page) => {
@@ -228,6 +230,7 @@ export async function runCafe24FullScan(channelId: string, now = new Date()) {
     for (const w of started.windows) {
       await fetchWindow(
         started.spaceId,
+        started.storeKey,
         w.from,
         w.to,
         async (page) => {

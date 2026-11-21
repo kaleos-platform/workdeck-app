@@ -50,7 +50,14 @@ export async function loadIntegrationStatuses(
     ),
     safe('space-credentials', () =>
       prisma.spaceCredential.findMany({
-        where: { spaceId, provider: { in: SPACE_CREDENTIALS.map(([, p]) => p) } },
+        where: {
+          spaceId,
+          // 카페24 는 쇼핑몰마다 `cafe24:<mallId>` 행(+레거시 `cafe24` 행)이라 prefix 로도 조회한다.
+          OR: [
+            { provider: { in: SPACE_CREDENTIALS.map(([, p]) => p) } },
+            { provider: { startsWith: 'cafe24:' } },
+          ],
+        },
         select: { provider: true, healthError: true, config: true },
       })
     ),
@@ -91,15 +98,32 @@ export async function loadIntegrationStatuses(
   for (const [id, provider] of SPACE_CREDENTIALS) {
     const row = creds?.find((c) => c.provider === provider)
     if (id === 'cafe24') {
-      // 앱 정보만 저장한 상태(승인 전)는 '연결 필요', 승인이 끊기면 '확인 필요'.
-      const cfg = (row?.config ?? {}) as { status?: string; mallId?: string }
+      // 쇼핑몰 행(레거시 `cafe24` + `cafe24:<mallId>`) 집계. 승인 전만 있으면 '연결 필요',
+      // 하나라도 승인이 끊기면 '확인 필요', 하나라도 연결돼 있으면 연결됨.
+      const malls = (creds ?? [])
+        .filter((c) => c.provider === 'cafe24' || c.provider.startsWith('cafe24:'))
+        .map((c) => ({
+          cfg: (c.config ?? {}) as { status?: string; mallId?: string },
+          healthError: c.healthError,
+        }))
+      const connected = malls.filter((m) => m.cfg.status === 'connected')
       statuses[id] =
         creds === undefined
           ? UNKNOWN
-          : cfg.status === 'reauth_required' ||
-              (cfg.status === 'connected' && isAdmin && row?.healthError)
+          : malls.some(
+                (m) =>
+                  m.cfg.status === 'reauth_required' ||
+                  (m.cfg.status === 'connected' && isAdmin && m.healthError)
+              )
             ? { state: 'attention', summary: '연결 확인 필요' }
-            : flag(cfg.status === 'connected', isAdmin ? cfg.mallId : undefined)
+            : flag(
+                connected.length > 0,
+                isAdmin
+                  ? connected.length === 1
+                    ? connected[0].cfg.mallId
+                    : `쇼핑몰 ${connected.length}개`
+                  : undefined
+              )
       continue
     }
     if (id === 'google-marketing') {
