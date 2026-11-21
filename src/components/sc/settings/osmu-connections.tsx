@@ -1,7 +1,7 @@
 'use client'
 
 // 콘텐츠 소재 연결 — 노션(소재·발행 DB) + 구글 드라이브(Space 전용 서비스 계정).
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useId, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,6 +32,8 @@ function fmt(iso: string | null) {
   return iso ? new Date(iso).toLocaleString('ko-KR') : '아직 없음'
 }
 
+const CHANGED_EVENT = 'osmu:connections-changed'
+
 export function OsmuConnections({
   only,
   embedded = false,
@@ -61,6 +63,16 @@ export function OsmuConnections({
     load().catch(() => toast.error('연결 상태를 불러오지 못했습니다'))
   }, [load])
 
+  // 외부 서비스 연결 화면은 노션·드라이브 팝업을 따로 띄운다 — 한쪽이 저장하면 다른 쪽도 다시 읽는다.
+  const instanceId = useId()
+  useEffect(() => {
+    const onChanged = (e: Event) => {
+      if ((e as CustomEvent<string>).detail !== instanceId) load().catch(() => {})
+    }
+    window.addEventListener(CHANGED_EVENT, onChanged)
+    return () => window.removeEventListener(CHANGED_EVENT, onChanged)
+  }, [instanceId, load])
+
   async function send(method: 'PUT' | 'DELETE', body?: object, done?: string) {
     setBusy(true)
     try {
@@ -81,6 +93,7 @@ export function OsmuConnections({
       setError(null)
       setStatus(json)
       setToken('')
+      window.dispatchEvent(new CustomEvent(CHANGED_EVENT, { detail: instanceId }))
       if (done) toast.success(done)
     } catch {
       setError('요청에 실패했습니다')
