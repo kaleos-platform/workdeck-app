@@ -402,6 +402,7 @@ export const ModelName = {
   SpaceAgent: 'SpaceAgent',
   ToolAuditLog: 'ToolAuditLog',
   UsageEvent: 'UsageEvent',
+  PlatformCredential: 'PlatformCredential',
   SpaceCredential: 'SpaceCredential',
   SpaceSecret: 'SpaceSecret',
   AgentToken: 'AgentToken',
@@ -572,7 +573,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "browserWriteJob" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringUploadCleanup" | "hiringCleanupCursor" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "hiringMessageSeed" | "billingDeckProduct" | "spaceDeckAccess" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy" | "openingMigrationJob"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "browserWriteJob" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "platformCredential" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringUploadCleanup" | "hiringCleanupCursor" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "hiringMessageSeed" | "billingDeckProduct" | "spaceDeckAccess" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy" | "openingMigrationJob"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1905,6 +1906,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UsageEventCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UsageEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    PlatformCredential: {
+      payload: Prisma.$PlatformCredentialPayload<ExtArgs>
+      fields: Prisma.PlatformCredentialFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PlatformCredentialFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PlatformCredentialFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>
+        }
+        findFirst: {
+          args: Prisma.PlatformCredentialFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PlatformCredentialFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>
+        }
+        findMany: {
+          args: Prisma.PlatformCredentialFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>[]
+        }
+        create: {
+          args: Prisma.PlatformCredentialCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>
+        }
+        createMany: {
+          args: Prisma.PlatformCredentialCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PlatformCredentialCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>[]
+        }
+        delete: {
+          args: Prisma.PlatformCredentialDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>
+        }
+        update: {
+          args: Prisma.PlatformCredentialUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>
+        }
+        deleteMany: {
+          args: Prisma.PlatformCredentialDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PlatformCredentialUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PlatformCredentialUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>[]
+        }
+        upsert: {
+          args: Prisma.PlatformCredentialUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformCredentialPayload>
+        }
+        aggregate: {
+          args: Prisma.PlatformCredentialAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePlatformCredential>
+        }
+        groupBy: {
+          args: Prisma.PlatformCredentialGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlatformCredentialGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PlatformCredentialCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlatformCredentialCountAggregateOutputType> | number
         }
       }
     }
@@ -13737,6 +13812,21 @@ export const UsageEventScalarFieldEnum = {
 export type UsageEventScalarFieldEnum = (typeof UsageEventScalarFieldEnum)[keyof typeof UsageEventScalarFieldEnum]
 
 
+export const PlatformCredentialScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  config: 'config',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlatformCredentialScalarFieldEnum = (typeof PlatformCredentialScalarFieldEnum)[keyof typeof PlatformCredentialScalarFieldEnum]
+
+
 export const SpaceCredentialScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -17918,6 +18008,7 @@ export type GlobalOmitConfig = {
   spaceAgent?: Prisma.SpaceAgentOmit
   toolAuditLog?: Prisma.ToolAuditLogOmit
   usageEvent?: Prisma.UsageEventOmit
+  platformCredential?: Prisma.PlatformCredentialOmit
   spaceCredential?: Prisma.SpaceCredentialOmit
   spaceSecret?: Prisma.SpaceSecretOmit
   agentToken?: Prisma.AgentTokenOmit

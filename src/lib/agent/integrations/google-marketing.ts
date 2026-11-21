@@ -739,7 +739,9 @@ export function googleAuthorizeUrl(
   clientId: string,
   scopes: string[],
   state: string,
-  redirectUri: string
+  redirectUri: string,
+  // 운영사 연동은 이미 승인한 다른 범위를 합치지 않는다(include_granted_scopes 생략). 고객용 기본값은 true.
+  opts: { includeGrantedScopes?: boolean } = {}
 ): string {
   const url = new URL(AUTHORIZE_URL)
   url.searchParams.set('client_id', clientId)
@@ -749,11 +751,15 @@ export function googleAuthorizeUrl(
   url.searchParams.set('state', state)
   url.searchParams.set('access_type', 'offline')
   url.searchParams.set('prompt', 'consent')
-  url.searchParams.set('include_granted_scopes', 'true')
+  if (opts.includeGrantedScopes !== false) url.searchParams.set('include_granted_scopes', 'true')
   return url.toString()
 }
 
-async function oauthHttp(stage: string, url: string | URL, init: RequestInit): Promise<Response> {
+export async function oauthHttp(
+  stage: string,
+  url: string | URL,
+  init: RequestInit
+): Promise<Response> {
   try {
     return await fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) })
   } catch {
@@ -761,7 +767,7 @@ async function oauthHttp(stage: string, url: string | URL, init: RequestInit): P
   }
 }
 
-async function oauthErrorCode(res: Response): Promise<string> {
+export async function oauthErrorCode(res: Response): Promise<string> {
   const body = (await res.json().catch(() => null)) as { error?: unknown } | null
   if (typeof body?.error === 'string' && KNOWN_CODES.has(body.error)) return body.error
   if (res.status === 401) return 'unauthorized'
@@ -769,6 +775,25 @@ async function oauthErrorCode(res: Response): Promise<string> {
   if (res.status === 404) return 'not_found'
   if (res.status === 429) return 'rate_limited'
   return res.status >= 500 ? 'server_error' : 'unknown'
+}
+
+/** refresh token 으로 access token 을 받는다. 오류는 GoogleOAuthError(단계·상태·허용 코드)만 던진다. */
+export async function refreshGoogleAccessToken(secret: GoogleSecret): Promise<string> {
+  if (!secret.refreshToken) throw new GoogleOAuthError('토큰 갱신', 'unauthorized')
+  const res = await oauthHttp('토큰 갱신', TOKEN_URL, {
+    method: 'POST',
+    body: new URLSearchParams({
+      client_id: secret.clientId,
+      client_secret: secret.clientSecret,
+      refresh_token: secret.refreshToken,
+      grant_type: 'refresh_token',
+    }),
+  })
+  if (!res.ok) throw new GoogleOAuthError('토큰 갱신', await oauthErrorCode(res), res.status)
+  const b = (await res.json().catch(() => null)) as Record<string, unknown> | null
+  if (typeof b?.access_token !== 'string')
+    throw new GoogleOAuthError('토큰 갱신', 'invalid_response')
+  return b.access_token
 }
 
 /** 승인 코드를 토큰으로 교환한다. redirectUri 는 install 과 바이트 동일해야 한다. */

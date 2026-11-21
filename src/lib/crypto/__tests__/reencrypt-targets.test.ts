@@ -39,6 +39,7 @@ test('모델별 purpose 고정', () => {
     HiringBlacklist: 'pii',
     SpaceCredential: 'space-credential',
     SpaceSecret: 'space-secret',
+    PlatformCredential: 'platform-credential',
   })
 })
 

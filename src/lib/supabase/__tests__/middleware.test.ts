@@ -219,3 +219,27 @@ describe('?spaceId 전환', () => {
     expect(response.cookies.get('wd_space')).toBeUndefined()
   })
 })
+
+describe('admin 플랫폼 연동 callback 호스트 분리', () => {
+  const path = '/api/admin/platform/google/callback?code=c&state=s'
+
+  test('admin 호스트에서는 그대로 통과한다(리다이렉트·rewrite 없음)', async () => {
+    const response = await proxy(
+      new NextRequest(`https://admin.workdeck.work${path}`, {
+        headers: { host: 'admin.workdeck.work' },
+      })
+    )
+    expect(response.status).toBe(200)
+    expect(response.headers.get('location')).toBeNull()
+    expect(response.headers.get('x-middleware-rewrite')).toBeNull()
+  })
+
+  test('app 호스트에서는 404 로 은닉한다', async () => {
+    const response = await proxy(
+      new NextRequest(`https://app.workdeck.work${path}`, {
+        headers: { host: 'app.workdeck.work' },
+      })
+    )
+    expect(response.status).toBe(404)
+  })
+})
