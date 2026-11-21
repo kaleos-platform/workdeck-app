@@ -58,11 +58,16 @@ const SCHEMAS = {
       defaultBrand: z.string().optional(),
       brands: z.record(
         z.string(),
-        z.object({
-          ga4_property_id: z.string().regex(/^\d+$/),
-          gtm_account_id: z.string().regex(/^\d+$/),
-          gtm_container_id: z.string().regex(/^\d+$/),
-        })
+        z
+          .object({
+            ga4_property_id: z.string().regex(/^\d+$/),
+            // GTM은 선택 — 쓰면 계정·컨테이너 둘 다 있어야 한다.
+            gtm_account_id: z.string().regex(/^\d+$/).optional(),
+            gtm_container_id: z.string().regex(/^\d+$/).optional(),
+          })
+          .refine((b) => (b.gtm_account_id === undefined) === (b.gtm_container_id === undefined), {
+            message: 'GTM 계정 ID와 컨테이너 ID는 둘 다 입력하거나 둘 다 비워야 합니다',
+          })
       ),
     }),
   }),

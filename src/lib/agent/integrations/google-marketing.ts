@@ -27,7 +27,12 @@ export interface GoogleTarget {
 }
 export interface GoogleConfig {
   defaultBrand?: string
-  brands: Record<string, Omit<GoogleTarget, 'brand'>>
+  // GTM 두 id 는 선택 — 쓰지 않는 브랜드는 둘 다 생략한다.
+  brands: Record<
+    string,
+    Pick<GoogleTarget, 'ga4_property_id'> &
+      Partial<Pick<GoogleTarget, 'gtm_account_id' | 'gtm_container_id'>>
+  >
 }
 export interface GoogleCred {
   id: string
@@ -250,17 +255,28 @@ export function resolveBrand(config: GoogleConfig, brand?: string): GoogleTarget
   if (!selected) throw new ToolUserError('brand가 필요합니다(기본 브랜드 미설정)')
   const t = Object.hasOwn(config.brands ?? {}, selected) ? config.brands[selected] : undefined
   if (!t) throw new ToolUserError(`알 수 없는 구글 마케팅 브랜드: ${selected}`)
-  for (const k of ['ga4_property_id', 'gtm_account_id', 'gtm_container_id'] as const) {
-    // 숫자 id만 — 경로 검사 정규식에 그대로 들어간다.
-    if (!NUMERIC_ID.test(String(t[k] ?? ''))) {
-      throw new ToolUserError(`브랜드 ${selected}에 ${k}가 없거나 숫자가 아닙니다`)
+  // 숫자 id만 — 경로 검사 정규식에 그대로 들어간다.
+  if (!NUMERIC_ID.test(String(t.ga4_property_id ?? ''))) {
+    throw new ToolUserError(`브랜드 ${selected}에 ga4_property_id가 없거나 숫자가 아닙니다`)
+  }
+  // GTM 두 id는 선택: 둘 다 없거나(''), 둘 다 숫자여야 한다.
+  const gtmAccount = String(t.gtm_account_id ?? '')
+  const gtmContainer = String(t.gtm_container_id ?? '')
+  if (gtmAccount || gtmContainer) {
+    for (const [k, v] of [
+      ['gtm_account_id', gtmAccount],
+      ['gtm_container_id', gtmContainer],
+    ] as const) {
+      if (!NUMERIC_ID.test(v)) {
+        throw new ToolUserError(`브랜드 ${selected}에 ${k}가 없거나 숫자가 아닙니다`)
+      }
     }
   }
   return {
     brand: selected,
     ga4_property_id: String(t.ga4_property_id),
-    gtm_account_id: String(t.gtm_account_id),
-    gtm_container_id: String(t.gtm_container_id),
+    gtm_account_id: gtmAccount,
+    gtm_container_id: gtmContainer,
   }
 }
 
@@ -269,21 +285,25 @@ const SAFE_PATH_RE = /^[A-Za-z0-9_:/-]+$/
 
 // 경로 정규식에 id를 escape 없이 넣는다 — resolveBrand가 숫자 id(^\d+$)만 통과시키는 것에 의존한다
 // (actions의 target도 paramsSchema가 숫자만 받고 assertGoogleTarget이 resolveBrand 결과와 비교한다).
-const targetPrefix = (t: GoogleTarget, api: Api) =>
-  api === 'ga4-admin'
-    ? `properties/${t.ga4_property_id}`
-    : `accounts/${t.gtm_account_id}/containers/${t.gtm_container_id}`
+// GTM 미설정 브랜드(id '')는 여기서 막는다 — 빈 id가 정규식에 들어가 다른 경로를 통과시키지 않게(GTM 도구·액션 공통 관문).
+const targetPrefix = (t: GoogleTarget, api: Api) => {
+  if (api === 'ga4-admin') return `properties/${t.ga4_property_id}`
+  if (!t.gtm_account_id || !t.gtm_container_id) {
+    throw new ToolUserError('이 브랜드에는 GTM 컨테이너가 설정되지 않았습니다')
+  }
+  return `accounts/${t.gtm_account_id}/containers/${t.gtm_container_id}`
+}
 
 /**
  * 경로가 브랜드의 GA4 속성 또는 GTM 컨테이너 아래인지 확인하고, 앞의 '/'를 뗀 경로를 돌려준다
  * (같은 OAuth 토큰으로 볼 수 있는 다른 속성·컨테이너 차단). 요청에는 targetUrl의 결과만 쓴다.
  */
 export function assertPathInTarget(path: string, t: GoogleTarget, api: Api): string {
+  const prefix = targetPrefix(t, api) // GTM 미설정이면 경로 검사보다 먼저 명확한 오류로 거부
   const p = strip(path)
   if (!SAFE_PATH_RE.test(p) || p.includes('//')) {
     throw new ToolUserError('경로에 허용되지 않는 문자(%, ., ?, #, \\, //)가 있습니다')
   }
-  const prefix = targetPrefix(t, api)
   if (api === 'ga4-admin') {
     if (!new RegExp(`^(v1(beta|alpha)/)?${prefix}(/|:|$)`).test(p)) {
       throw new ToolUserError('이 브랜드의 GA4 속성 경로가 아닙니다')

@@ -15,13 +15,14 @@ import {
 import type { ActionDefinition } from './types'
 
 const id = z.string().regex(/^\d+$/)
+const optionalId = z.string().regex(/^\d*$/) // GTM 미설정 브랜드는 ''
 const baseSchema = z.object({
   // 대상은 brand → 현재 config로 다시 해석한다. 숫자 id는 비교용(assertGoogleTarget).
   target: z.object({
     brand: z.string().min(1),
     ga4_property_id: id,
-    gtm_account_id: id,
-    gtm_container_id: id,
+    gtm_account_id: optionalId,
+    gtm_container_id: optionalId,
   }),
   params: z.record(z.string(), z.unknown()),
 })
