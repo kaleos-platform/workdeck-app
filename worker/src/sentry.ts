@@ -2,12 +2,11 @@
  * 워커 Sentry 연동 — index.ts 의 첫 import 로 불러온다. SENTRY_DSN 이 없으면 아무것도 안 한다.
  * 마스킹 로직은 웹 `src/lib/sentry/scrub.ts` 복사본(워커는 별도 패키지). 한쪽을 고치면 다른 쪽도 맞춘다.
  */
-import * as Sentry from '@sentry/node'
 import type { Breadcrumb, ErrorEvent } from '@sentry/node'
 
 export const IGNORE_ERRORS = ['ExperimentalWarning', 'DeprecationWarning']
 
-// 기존 Slack 알림 경로가 있는 반복 실패 — 이슈 1개로 묶어 쿼터·노이즈를 줄인다
+// 기존 Slack 알림 경로가 있는 반복 실패 — 이슈 1개로 묶어 노이즈를 줄인다(이벤트 수·쿼터는 그대로)
 const GROUPS: [RegExp, string][] = [
   [/LoginError|로그인 실패/, 'worker-login-failure'],
   [/TimeoutError|Timeout \d+ms exceeded|ETIMEDOUT|ECONNRESET|net::ERR_/, 'worker-external-timeout'],
@@ -96,24 +95,36 @@ export function scrubEvent<T extends ErrorEvent>(event: T): T {
   return event
 }
 
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.SENTRY_ENVIRONMENT ?? 'production',
-    // 'runtime' 태그는 Sentry 가 contexts.runtime(node vXX)으로 덮어쓴다 → 별도 키
-    initialScope: { tags: { service: 'worker' } },
-    tracesSampleRate: 0,
-    sendDefaultPii: false,
-    beforeSend: scrubEvent,
-    beforeBreadcrumb: scrubBreadcrumb,
-    ignoreErrors: IGNORE_ERRORS,
-    integrations: [Sentry.captureConsoleIntegration({ levels: ['error'] })],
-  })
+// index.ts 의 unhandledRejection 핸들러가 남기는 console.error — SDK 가 같은 rejection 을 스택과 함께 이미 보낸다
+function beforeSend(event: ErrorEvent): ErrorEvent | null {
+  if (event.logger === 'console' && event.message?.startsWith('[worker] unhandledRejection'))
+    return null
+  return scrubEvent(event)
+}
 
-  // launchd/pm2 종료 시 전송 대기 이벤트를 비운 뒤 같은 신호로 다시 죽는다(기본 종료 동작 유지)
-  for (const sig of ['SIGTERM', 'SIGINT'] as const) {
-    process.once(sig, () => {
-      void Sentry.close(2000).finally(() => process.kill(process.pid, sig))
+if (process.env.SENTRY_DSN) {
+  // 지연 import — 운영 체크아웃에서 npm install 을 빠뜨려도 DSN 을 넣기 전까진 부팅이 깨지지 않는다
+  void import('@sentry/node')
+    .then((Sentry) => {
+      Sentry.init({
+        dsn: process.env.SENTRY_DSN,
+        environment: process.env.SENTRY_ENVIRONMENT ?? 'production',
+        // 'runtime' 태그는 Sentry 가 contexts.runtime(node vXX)으로 덮어쓴다 → 별도 키
+        initialScope: { tags: { service: 'worker' } },
+        tracesSampleRate: 0,
+        sendDefaultPii: false,
+        beforeSend,
+        beforeBreadcrumb: scrubBreadcrumb,
+        ignoreErrors: IGNORE_ERRORS,
+        integrations: [Sentry.captureConsoleIntegration({ levels: ['error'] })],
+      })
+
+      // launchd/pm2 종료 시 전송 대기 이벤트를 비운 뒤 같은 신호로 다시 죽는다(기본 종료 동작 유지)
+      for (const sig of ['SIGTERM', 'SIGINT'] as const) {
+        process.once(sig, () => {
+          void Sentry.close(2000).finally(() => process.kill(process.pid, sig))
+        })
+      }
     })
-  }
+    .catch((e: unknown) => console.warn('[sentry] 비활성 — @sentry/node 로드 실패:', e))
 }
