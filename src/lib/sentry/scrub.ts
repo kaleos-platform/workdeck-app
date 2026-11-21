@@ -6,6 +6,9 @@ export const IGNORE_ERRORS = [
   'NetworkError when attempting to fetch resource',
   'ResizeObserver loop',
   'AbortError',
+  // Node 런타임 경고가 console.error 로 찍혀 cold start 마다 들어온다
+  'ExperimentalWarning',
+  'DeprecationWarning',
 ]
 
 const R = '[redacted]'
