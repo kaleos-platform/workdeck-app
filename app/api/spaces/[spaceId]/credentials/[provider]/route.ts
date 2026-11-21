@@ -2,10 +2,9 @@
  * PUT — Space 자격증명 등록·교체(ADMIN 이상 + MFA aal2). 평문은 요청 본문으로만 받고 응답에 돌려주지 않는다.
  * 비밀값이 서버 밖으로 나가지 않도록 암호화는 서버에서 한다.
  * 메타: 매핑된 광고 계정의 통화를 Graph API로 확인해 config.accountCurrencies에 저장한다(확인 실패 시 저장하지 않음).
- * 구글 마케팅: refresh token은 필요한 최소 scope로 발급한다(코드가 scope를 줄일 수 없다 — 발급 scope가 그대로 쓰인다).
- *   권장: analytics.readonly, analytics.edit, tagmanager.readonly, tagmanager.edit.containers,
- *   tagmanager.edit.containerversions. tagmanager.publish는 GTM 게시(OWNER 승인 흐름)를 쓸 때만 넣는다.
- *   계정도 이 Space 브랜드의 GA4 속성·GTM 컨테이너에만 권한이 있는 계정을 쓴다.
+ * 구글 마케팅: 클라이언트 ID·시크릿·브랜드를 받는다. refresh token 은 「Google로 연결」 OAuth 콜백이 저장한다(손으로 넣어도 되지만 선택).
+ *   status·connectedAt·scopes·credVersion 은 입력으로 받지 않고 서버가 계산한다. 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
+ *   승인 범위는 필수 범위(GA4 + GTM 브랜드가 있으면 tagmanager)이고, 계정도 이 Space 브랜드의 GA4 속성·GTM 컨테이너에만 권한이 있는 계정을 쓴다.
  * 네이버 검색광고: 조회 전용. 매핑된 각 CUSTOMER_ID 로 캠페인 목록을 1번씩 조회해 키를 확인한다(실패 시 저장하지 않음).
  * 카페24: 앱 정보(쇼핑몰 ID·client_id·secret)만 받는다. 토큰은 OAuth 콜백이 저장하고, 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
  * GET — 등록 상태·설정값(허용 필드만) 조회. 비밀값·암호문·오류 원문은 돌려주지 않는다(MFA 불필요, ADMIN 이상).
@@ -19,6 +18,7 @@ import { requireAal2 } from '@/lib/auth/mfa'
 import { maskSecrets } from '@/lib/agent/audit'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
 import { saveSpaceCredential } from '@/lib/agent/integrations/space-credential'
+import { registerGoogle } from '@/lib/integrations/google-marketing-store'
 import { fetchAdAccountCurrencies } from '@/lib/agent/integrations/meta-ads'
 import { verifyNaverCred } from '@/lib/agent/integrations/naver-searchad'
 import { prisma } from '@/lib/prisma'
@@ -53,7 +53,8 @@ const SCHEMAS = {
     secret: z.object({
       clientId: z.string().min(10),
       clientSecret: z.string().min(10),
-      refreshToken: z.string().min(10),
+      // 선택 — 「Google로 연결」 승인이 저장한다. 생략하면 같은 clientId 일 때만 기존 토큰을 유지한다(수동 입력은 호환).
+      refreshToken: z.string().min(10).optional(),
     }),
     config: z.object({
       defaultBrand: z.string().optional(),
@@ -132,7 +133,7 @@ const SCHEMAS = {
 const READ_PROVIDERS = ['meta-ads', 'google-marketing', 'naver-searchad'] as const
 const READ_FIELDS: Record<(typeof READ_PROVIDERS)[number], string[]> = {
   'meta-ads': ['defaultBrand', 'adAccounts', 'accountCurrencies', 'graphVersion'],
-  'google-marketing': ['defaultBrand', 'brands'],
+  'google-marketing': ['defaultBrand', 'brands', 'status', 'connectedAt', 'scopes'],
   'naver-searchad': ['defaultBrand', 'managerCustomerId', 'customers'],
 }
 const GOOGLE_BRAND_FIELDS = ['ga4_property_id', 'gtm_account_id', 'gtm_container_id']
@@ -150,7 +151,13 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 
   const row = await prisma.spaceCredential.findUnique({
     where: { spaceId_provider: { spaceId, provider } },
-    select: { config: true, lastVerifiedAt: true, lastError: true, healthError: true },
+    select: {
+      config: true,
+      lastVerifiedAt: true,
+      lastError: true,
+      healthError: true,
+      ...(p === 'google-marketing' ? { encryptedPayload: true, iv: true } : {}),
+    },
   })
   const noStore = { headers: { 'Cache-Control': 'no-store' } }
   if (!row)
@@ -168,6 +175,19 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
         pick(v ?? {}, GOOGLE_BRAND_FIELDS),
       ])
     )
+  }
+  // 비밀값은 내보내지 않고 refresh token 이 있는지만 서버에서 계산해 준다.
+  let hasRefreshToken: boolean | undefined
+  if (p === 'google-marketing') {
+    const enc = row as typeof row & { encryptedPayload: string; iv: string }
+    try {
+      const secret = JSON.parse(decryptField('space-credential', enc.encryptedPayload, enc.iv)) as {
+        refreshToken?: unknown
+      }
+      hasRefreshToken = typeof secret.refreshToken === 'string' && secret.refreshToken.length > 0
+    } catch {
+      hasRefreshToken = false
+    }
   }
   // 네이버는 쓰기 액션이 없다.
   const pendingActions =
@@ -187,6 +207,7 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
       lastVerifiedAt: row.lastVerifiedAt?.toISOString() ?? null,
       hasError: !!(row.lastError || row.healthError),
       pendingActions,
+      ...(hasRefreshToken === undefined ? {} : { hasRefreshToken }),
     },
     noStore
   )
@@ -208,6 +229,15 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   if (provider === 'cafe24') {
     const c = parsed.data as z.infer<(typeof SCHEMAS)['cafe24']>
     const result = await registerCafe24(spaceId, { ...c.secret, mallId: c.config.mallId })
+    if (result === 'conflict') {
+      return errorResponse('다른 변경과 겹쳤습니다. 잠시 후 다시 시도해 주세요', 409)
+    }
+    return NextResponse.json({ provider }, { headers: { 'Cache-Control': 'no-store' } })
+  }
+
+  if (provider === 'google-marketing') {
+    const g = parsed.data as z.infer<(typeof SCHEMAS)['google-marketing']>
+    const result = await registerGoogle(spaceId, { ...g.secret, config: g.config })
     if (result === 'conflict') {
       return errorResponse('다른 변경과 겹쳤습니다. 잠시 후 다시 시도해 주세요', 409)
     }
