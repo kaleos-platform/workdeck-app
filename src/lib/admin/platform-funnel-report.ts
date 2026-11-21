@@ -7,17 +7,21 @@ import {
   loadGa4Bundle,
   type Ga4Bundle,
 } from '@/lib/admin/platform-ga4'
+import { escapeMrkdwn } from '@/lib/slack/mrkdwn'
 import { sendSystemNotification } from '@/lib/slack/send-notification'
 
 export function buildReportText(b: Ga4Bundle): string {
   const lines: string[] = ['*워크덱 홈페이지 GA4 — 최근 7일 퍼널*']
-  if (b.measurementId) lines.push(`측정 ID: ${b.measurementId}`)
+  if (b.measurementId) lines.push(`측정 ID: ${escapeMrkdwn(b.measurementId)}`)
   if (b.funnel) {
     lines.push(
       FUNNEL_EVENTS.map((e) => `${e} ${b.funnel!.events[e].toLocaleString('ko-KR')}`).join(' · ')
     )
     for (const s of b.funnel.sources.slice(0, 5)) {
-      lines.push(`• ${s.source} / ${s.medium}: 가입 ${s.signUp} · 구독 ${s.subscribe}`)
+      // source·medium 은 방문자가 정하는 값(utm·referrer) — Slack 멘션·링크 주입 차단
+      lines.push(
+        `• ${escapeMrkdwn(s.source)} / ${escapeMrkdwn(s.medium)}: 가입 ${s.signUp} · 구독 ${s.subscribe}`
+      )
     }
   }
   const on = b.enhanced ? ENHANCED_KEYS.filter((k) => b.enhanced![k] === true) : []
@@ -26,7 +30,7 @@ export function buildReportText(b: Ga4Bundle): string {
       `:warning: 향상된 측정이 켜져 있습니다(퍼널 운영 게이트: 모두 꺼져야 함): ${on.join(', ')}`
     )
   }
-  for (const e of b.errors) lines.push(`:warning: ${e}`)
+  for (const e of b.errors) lines.push(`:warning: ${escapeMrkdwn(e)}`)
   return lines.join('\n')
 }
 

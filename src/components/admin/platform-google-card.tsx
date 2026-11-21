@@ -68,7 +68,7 @@ export function PlatformGoogleCard({
   const [streamId, setStreamId] = useState(view.streamId)
   const [showSecret, setShowSecret] = useState(false)
   const [busy, setBusy] = useState(false)
-  const banner = result ? RESULT[result] : undefined
+  const banner = result && Object.hasOwn(RESULT, result) ? RESULT[result] : undefined
   const ga4 = view.ga4
 
   async function save(e: React.FormEvent) {
