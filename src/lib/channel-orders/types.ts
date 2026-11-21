@@ -7,12 +7,21 @@ export const LEASE_MS = 15 * 60 * 1000
 const DAY = 86_400_000
 export const BACKFILL_DAYS = 14
 export const SCAN_DAYS = 7
+/** 한 번의 증분 관측이 처리하는 최대 창 수(서버가 start 에서 계획한다). */
+export const OBSERVE_MAX_WINDOWS = 20
+/** ingest 한 번에 받는 최대 행 수 — 넘으면 400. */
+export const MAX_INGEST_LINES = 300
+const KST = 9 * 3_600_000
+/** t(ms) 가 속한 KST 날짜의 00:00(ms). */
+export const kstMidnight = (t: Date | number): number =>
+  Math.floor((new Date(t).getTime() + KST) / DAY) * DAY - KST
 
 /** 채널별 조회 창 한도·겹침(plan 2-2). */
 export const ADAPTER_WINDOW: Record<Adapter, { windowMs: number; overlapMs: number }> = {
   naver: { windowMs: DAY, overlapMs: 60 * 60 * 1000 },
   coupang: { windowMs: DAY, overlapMs: 3 * DAY },
-  cafe24: { windowMs: DAY, overlapMs: 3 * DAY },
+  // 전수 창(7일)+1일: 증분이 미종결 행을 매번 다시 읽어 관측 상태가 전수 조회보다 낡지 않게 한다(plan 2-2 미종결 재조회).
+  cafe24: { windowMs: DAY, overlapMs: 8 * DAY },
 }
 
 export type OperationKind = 'OBSERVE' | 'FULL_SCAN' | 'RECONCILE'
@@ -26,6 +35,11 @@ export const ERROR_CODES = [
   'api_error',
   'auth_error',
   'lease_lost',
+  'plan_mismatch',
+  'ingest_missing',
+  'invalid',
+  'busy',
+  'not_found',
   'unknown',
 ] as const
 export type ErrorCode = (typeof ERROR_CODES)[number]
@@ -81,3 +95,31 @@ export class ChannelOrderError extends Error {
     this.name = 'ChannelOrderError'
   }
 }
+
+// ─── 설정(대사 방식·매칭 키) ───────────────────────────────────────────────────
+
+export const MATCH_FIELDS = ['externalOrderId', 'externalLineKey', 'lineKeyOrderPart'] as const
+export type MatchField = (typeof MATCH_FIELDS)[number]
+export type MatchRule = { field: MatchField } | null
+
+export const MatchRuleSchema = z.object({ field: z.enum(MATCH_FIELDS) }).strict()
+
+/** 저장된 matchKeyRule(Json) 을 검증해 읽는다. 형식이 깨졌으면 null(= 대사에서 C). */
+export const parseMatchRule = (raw: unknown): MatchRule => {
+  const r = MatchRuleSchema.safeParse(raw)
+  return r.success ? r.data : null
+}
+
+/** 설정 PUT 본문. 라우트가 ADMIN 만 통과시킨다. reconcileMode·matchKeyRule 은 생략하면 기존 값을 유지한다. */
+export const ObserveSettingBodySchema = z
+  .object({
+    observeEnabled: z.boolean(),
+    adapter: z.enum(ADAPTERS),
+    storeKey: z.string().trim().max(100).nullish(),
+    reconcileMode: z.enum(['diagnose', 'judge']).optional(),
+    matchKeyRule: MatchRuleSchema.nullish(),
+  })
+  .refine((v) => v.adapter !== 'naver' || !v.observeEnabled || !!v.storeKey, {
+    message: '네이버는 스토어 키가 필요합니다',
+    path: ['storeKey'],
+  })

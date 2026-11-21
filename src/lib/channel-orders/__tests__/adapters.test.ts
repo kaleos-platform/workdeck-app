@@ -1,6 +1,6 @@
-import { parseOrdersPage, Cafe24StructureError } from '../adapters/cafe24'
-import { planWindows } from '../operations'
-import { OrderLineInputSchema } from '../types'
+import { parseOrdersPage, Cafe24StructureError, errorCodeOf } from '../adapters/cafe24'
+import { planWindows, scanWindows } from '../operations'
+import { ChannelOrderError, OrderLineInputSchema, kstMidnight } from '../types'
 import { keyPattern, normalizeOrderNumber, rawHashOf } from '../normalize'
 
 const NOW = new Date('2026-11-23T03:00:00.000Z')
@@ -63,6 +63,55 @@ describe('카페24 응답 → 행 변환', () => {
       })
     ).toThrow(Cafe24StructureError)
   })
+  it('구매자 입력 텍스트(additional_option_value)는 저장하지 않고 option_value 만 저장한다', () => {
+    const p = {
+      orders: [
+        {
+          order_id: 'x',
+          payment_date: '2026-11-23T10:00:00+09:00',
+          items: [
+            {
+              order_item_code: 'x-1',
+              product_name: 'A',
+              option_value: '빨강',
+              additional_option_value: '받는분 010-1234-5678 서울시 어딘가',
+              quantity: 1,
+              order_status: 'N10',
+            },
+          ],
+        },
+      ],
+    }
+    const { rows } = parseOrdersPage(p)
+    expect(rows[0].line.optionText).toBe('빨강')
+    expect(JSON.stringify(rows)).not.toContain('010-1234')
+    expect(JSON.stringify(rows)).not.toContain('additional')
+  })
+  it('긴 문자열은 스키마 한도에 맞춰 잘라 저장해 ingest 검증을 통과한다', () => {
+    const long = (n: number) => 'ㄱ'.repeat(n)
+    const { rows } = parseOrdersPage({
+      orders: [
+        {
+          order_id: 'x',
+          payment_date: '2026-11-23T10:00:00+09:00',
+          items: [
+            {
+              order_item_code: 'x-1',
+              product_name: long(900),
+              option_value: long(900),
+              quantity: 1,
+              order_status: 'N10',
+              tracking_no: long(300),
+              shipping_company_code: long(300),
+            },
+          ],
+        },
+      ],
+    })
+    const r = OrderLineInputSchema.safeParse(rows[0].line)
+    expect(r.success).toBe(true)
+    expect(rows[0].line.productName).toHaveLength(500)
+  })
   it('빈 orders 배열은 정상 빈 페이지', () => {
     expect(parseOrdersPage({ orders: [] })).toEqual({ rows: [], orderCount: 0 })
   })
@@ -86,6 +135,36 @@ describe('조회 창 계산', () => {
     const w = planWindows('naver', cursor, NOW)
     expect(w).toHaveLength(1)
     expect(w[0].from.getTime()).toBe(NOW.getTime() - 90 * 60_000)
+  })
+})
+
+describe('카페24 증분 겹침 8일·전수 창', () => {
+  it('정상 주기에도 커서−8일부터 다시 읽어 5일 전 결제 행의 상태 변화를 따라잡는다', () => {
+    const cursor = { at: new Date(NOW.getTime() - 30 * 60_000).toISOString(), catchingUp: false }
+    const w = planWindows('cafe24', cursor, NOW)
+    expect(w[0].from.getTime()).toBeLessThanOrEqual(NOW.getTime() - 8 * DAY)
+    // 5일 전 시각이 어느 한 창에 들어간다
+    const five = NOW.getTime() - 5 * DAY
+    expect(w.some((x) => x.from.getTime() <= five && five < x.to.getTime())).toBe(true)
+  })
+  it('전수 창: KST 자정 정렬 일자 창, 겹침 없음, W 시작은 자정 기준 7일 전', () => {
+    const w = scanWindows(NOW) // NOW = 월 12:00 KST
+    const from = kstMidnight(NOW) - 7 * DAY
+    expect(w).toHaveLength(8)
+    expect(w[0].from.getTime()).toBe(from)
+    expect(w.at(-1)?.to.getTime()).toBe(NOW.getTime())
+    for (let i = 1; i < w.length; i++) {
+      expect(w[i].from.getTime()).toBe(from + i * DAY)
+      expect(w[i].from.getTime()).toBeGreaterThan(w[i - 1].to.getTime())
+    }
+  })
+})
+
+describe('오류 코드', () => {
+  it('ChannelOrderError 의 code 를 lease_lost 로 뭉개지 않고 그대로 낸다', () => {
+    expect(errorCodeOf(new ChannelOrderError('invalid', 'x'))).toBe('invalid')
+    expect(errorCodeOf(new ChannelOrderError('lease_lost', 'x'))).toBe('lease_lost')
+    expect(errorCodeOf(new ChannelOrderError('busy', 'x'))).toBe('busy')
   })
 })
 

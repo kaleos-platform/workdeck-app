@@ -10,7 +10,12 @@ import { z } from 'zod'
 import { errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { planWindows, startFullScan, startObserve } from '@/lib/channel-orders/operations'
-import { SCAN_DAYS, type Adapter, type ObserveCursor } from '@/lib/channel-orders/types'
+import {
+  OBSERVE_MAX_WINDOWS,
+  SCAN_DAYS,
+  type Adapter,
+  type ObserveCursor,
+} from '@/lib/channel-orders/types'
 import { channelOrderErrorResponse, resolveWorkerSpace } from '@/lib/channel-orders/worker-route'
 
 const WORKER_ADAPTERS = ['naver', 'coupang']
@@ -34,7 +39,7 @@ export async function GET(request: NextRequest) {
       adapter: r.adapter,
       storeKey: r.storeKey,
       cursor,
-      windows: planWindows(r.adapter as Adapter, cursor, now).map((w) => ({
+      windows: planWindows(r.adapter as Adapter, cursor, now, OBSERVE_MAX_WINDOWS).map((w) => ({
         from: w.from.toISOString(),
         to: w.to.toISOString(),
       })),
@@ -74,6 +79,8 @@ export async function POST(request: NextRequest) {
         operationId: s.operationId,
         storeKey: s.storeKey,
         scanDays: SCAN_DAYS,
+        // 서버가 계획한 KST 일자 창 — 이 창만 조회하고 창마다 ingest 한다.
+        windows: s.windows.map((w) => ({ from: w.from.toISOString(), to: w.to.toISOString() })),
       })
     }
     const s = await startObserve(channelId, now)
@@ -81,10 +88,7 @@ export async function POST(request: NextRequest) {
       operationId: s.operationId,
       storeKey: s.storeKey,
       cursor: s.cursor,
-      windows: planWindows(s.adapter, s.cursor, now).map((w) => ({
-        from: w.from.toISOString(),
-        to: w.to.toISOString(),
-      })),
+      windows: s.windows.map((w) => ({ from: w.from.toISOString(), to: w.to.toISOString() })),
     })
   } catch (err) {
     return channelOrderErrorResponse(err)

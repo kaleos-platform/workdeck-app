@@ -11,6 +11,9 @@ import {
   BACKFILL_DAYS,
   ChannelOrderError,
   LEASE_MS,
+  OBSERVE_MAX_WINDOWS,
+  SCAN_DAYS,
+  kstMidnight,
   toErrorCode,
   type Adapter,
   type ObserveCursor,
@@ -34,6 +37,20 @@ export function planWindows(
   const out: Window[] = []
   for (let t = start; t < now.getTime() && out.length < maxWindows; t += windowMs) {
     out.push({ from: new Date(t), to: new Date(Math.min(t + windowMs, now.getTime())) })
+  }
+  return out
+}
+
+const DAY = 86_400_000
+
+/**
+ * 전수 조회 창 — KST 자정에 맞춘 일자 단위, 겹침 없음. 첫 창은 KST 자정 기준 7일 전 00:00, 마지막 창은 now 까지.
+ * 창의 to 는 그 날 마지막 ms 라 kstDay(from)==kstDay(to) 이다(일자 단위 API 의 end_date 가 다음 날로 넘어가지 않는다).
+ */
+export function scanWindows(now: Date): Window[] {
+  const out: Window[] = []
+  for (let t = kstMidnight(now) - SCAN_DAYS * DAY; t <= now.getTime(); t += DAY) {
+    out.push({ from: new Date(t), to: new Date(Math.min(t + DAY - 1, now.getTime())) })
   }
   return out
 }
@@ -63,6 +80,8 @@ export type StartedObserve = {
   adapter: Adapter
   storeKey: string | null
   cursor: ObserveCursor | null
+  /** 서버가 계획한 조회 창 — 워커·어댑터는 이것만 읽는다. */
+  windows: Window[]
 }
 
 /** observeEnabled 채널의 lease 를 조건부로 잡고 OBSERVE operation 을 만든다. 이미 실행 중이면 busy. */
@@ -80,6 +99,8 @@ export async function startObserve(channelId: string, now: Date): Promise<Starte
     WHERE "channelId" = ${channelId} AND "observeEnabled" = true
       AND ("observeLease" IS NULL OR ("observeLease"->>'until')::bigint <= ${now.getTime()})`
   if (got !== 1) throw new ChannelOrderError('busy', '이미 실행 중입니다')
+  const cursor = asCursor(setting.observeCursor)
+  const windows = planWindows(setting.adapter as Adapter, cursor, now, OBSERVE_MAX_WINDOWS)
   try {
     await prisma.pipelineOperation.create({
       data: {
@@ -88,6 +109,9 @@ export async function startObserve(channelId: string, now: Date): Promise<Starte
         channelId,
         kind: 'OBSERVE',
         startedAt: now,
+        plannedFrom: windows[0]?.from ?? null,
+        plannedThrough: windows.at(-1)?.to ?? null,
+        minCalls: 1,
       },
     })
   } catch (err) {
@@ -100,7 +124,8 @@ export async function startObserve(channelId: string, now: Date): Promise<Starte
     channelId,
     adapter: setting.adapter as Adapter,
     storeKey: setting.storeKey,
-    cursor: asCursor(setting.observeCursor),
+    cursor,
+    windows,
   }
 }
 
@@ -127,7 +152,7 @@ export async function lockLease(tx: Tx, channelId: string, operationId: string, 
 export type FinishObserveInput = {
   operationId: string
   success: boolean
-  /** 조회 끝 시각 — 요청한 전체 기간의 끝. */
+  /** 워커가 신고한 조회 끝 시각 — 서버가 start 에서 계획한 끝(plannedThrough)과 같아야 인정한다. */
   through?: string
   pagesRequested?: number
   pagesIngested?: number
@@ -136,74 +161,89 @@ export type FinishObserveInput = {
 }
 
 /**
- * 커서는 여기서만 전진한다: 전체 성공 + 현재 lease 소유자 + 커서 역행 아님.
+ * 커서는 여기서만 전진한다: 전체 성공 + 현재 lease 소유자 + 서버 계획과 일치 + 서버가 받은 ingest 호출 충분.
  * 아니면 커서는 그대로이고 operation 은 FAILED. accepted=false 는 오래된/중복 finish 거부.
+ * op 상태 확인은 설정 행 잠금(lockLease) 뒤에 하고, 상태 변경은 status='STARTED' 조건부 —
+ * 동시 finish 두 번이어도 하나만 성공하고 SUCCEEDED 는 덮어쓰이지 않는다.
  */
 export async function finishObserve(
   input: FinishObserveInput,
   now: Date
 ): Promise<{ accepted: boolean; status: 'SUCCEEDED' | 'FAILED'; cursor?: ObserveCursor }> {
-  return prisma.$transaction(async (tx) => {
-    const op = await tx.pipelineOperation.findUnique({ where: { id: input.operationId } })
-    if (!op || op.kind !== 'OBSERVE' || !op.channelId) {
-      throw new ChannelOrderError('not_found', 'operation 을 찾을 수 없습니다')
-    }
-    if (op.status !== 'STARTED') return { accepted: false, status: 'FAILED' as const }
-    const { owned, cursor } = await lockLease(tx, op.channelId, op.id, now)
-    const setting = await tx.channelFulfillmentSetting.findUniqueOrThrow({
-      where: { channelId: op.channelId },
-    })
-    const through = input.through ? Date.parse(input.through) : NaN
-    const complete =
-      input.success &&
-      input.pagesRequested !== undefined &&
-      input.pagesRequested === input.pagesIngested &&
-      Number.isFinite(through) &&
-      through <= now.getTime() + 60_000 &&
-      (!cursor || through >= Date.parse(cursor.at))
-    const counts = {
-      pagesRequested: input.pagesRequested ?? null,
-      pagesIngested: input.pagesIngested ?? null,
-      rows: input.rows ?? null,
-    }
-    if (!owned) {
-      await tx.pipelineOperation.update({
-        where: { id: op.id },
-        data: { status: 'FAILED', error: 'lease_lost', counts, finishedAt: now },
-      })
-      return { accepted: false, status: 'FAILED' as const }
-    }
-    if (!complete) {
+  return prisma.$transaction(
+    async (tx) => {
+      const found = await tx.pipelineOperation.findUnique({ where: { id: input.operationId } })
+      if (!found || found.kind !== 'OBSERVE' || !found.channelId) {
+        throw new ChannelOrderError('not_found', 'operation 을 찾을 수 없습니다')
+      }
+      const channelId = found.channelId
+      const { owned, cursor } = await lockLease(tx, channelId, found.id, now)
+      // 잠금을 얻은 뒤의 최신 상태 — 먼저 끝난 finish 가 있으면 거부.
+      const op = await tx.pipelineOperation.findUniqueOrThrow({ where: { id: found.id } })
+      if (op.status !== 'STARTED') return { accepted: false, status: 'FAILED' as const }
+      const setting = await tx.channelFulfillmentSetting.findUniqueOrThrow({ where: { channelId } })
+      const through = input.through ? Date.parse(input.through) : NaN
+      const planned = op.plannedThrough?.getTime()
+      const planOk = planned !== undefined && through === planned
+      const callsOk = op.ingestCalls >= Math.max(op.minCalls, input.pagesIngested ?? 0)
+      const complete =
+        input.success &&
+        input.pagesRequested !== undefined &&
+        input.pagesRequested === input.pagesIngested &&
+        planOk &&
+        callsOk &&
+        (!cursor || through >= Date.parse(cursor.at))
+      const counts = {
+        pagesRequested: input.pagesRequested ?? null,
+        pagesIngested: input.pagesIngested ?? null,
+        rows: input.rows ?? null,
+        ingestCalls: op.ingestCalls,
+        ingestRows: op.ingestRows,
+      }
+      const close = async (data: Prisma.PipelineOperationUpdateManyMutationInput) =>
+        (
+          await tx.pipelineOperation.updateMany({
+            where: { id: op.id, status: 'STARTED' },
+            data: { ...data, counts, finishedAt: now },
+          })
+        ).count === 1
+      if (!owned) {
+        await close({ status: 'FAILED', error: 'lease_lost' })
+        return { accepted: false, status: 'FAILED' as const }
+      }
+      if (!complete) {
+        const error = !input.success
+          ? toErrorCode(input.errorCode)
+          : !planOk
+            ? 'plan_mismatch'
+            : !callsOk
+              ? 'ingest_missing'
+              : 'structure_invalid'
+        if (!(await close({ status: 'FAILED', error }))) {
+          return { accepted: false, status: 'FAILED' as const }
+        }
+        await tx.channelFulfillmentSetting.update({
+          where: { channelId },
+          data: { observeLease: Prisma.DbNull },
+        })
+        return { accepted: true, status: 'FAILED' as const }
+      }
+      if (!(await close({ status: 'SUCCEEDED' }))) {
+        return { accepted: false, status: 'FAILED' as const }
+      }
+      const { windowMs } = ADAPTER_WINDOW[setting.adapter as Adapter]
+      const next: ObserveCursor = {
+        at: new Date(through).toISOString(),
+        catchingUp: through < now.getTime() - windowMs,
+      }
       await tx.channelFulfillmentSetting.update({
-        where: { channelId: op.channelId },
-        data: { observeLease: Prisma.DbNull },
+        where: { channelId },
+        data: { observeCursor: next, observeLease: Prisma.DbNull },
       })
-      await tx.pipelineOperation.update({
-        where: { id: op.id },
-        data: {
-          status: 'FAILED',
-          error: input.success ? 'structure_invalid' : toErrorCode(input.errorCode),
-          counts,
-          finishedAt: now,
-        },
-      })
-      return { accepted: true, status: 'FAILED' as const }
-    }
-    const { windowMs } = ADAPTER_WINDOW[setting.adapter as Adapter]
-    const next: ObserveCursor = {
-      at: new Date(through).toISOString(),
-      catchingUp: through < now.getTime() - windowMs,
-    }
-    await tx.channelFulfillmentSetting.update({
-      where: { channelId: op.channelId },
-      data: { observeCursor: next, observeLease: Prisma.DbNull },
-    })
-    await tx.pipelineOperation.update({
-      where: { id: op.id },
-      data: { status: 'SUCCEEDED', counts, finishedAt: now },
-    })
-    return { accepted: true, status: 'SUCCEEDED' as const, cursor: next }
-  })
+      return { accepted: true, status: 'SUCCEEDED' as const, cursor: next }
+    },
+    { timeout: 20_000 }
+  )
 }
 
 // ─── 일일 전수 조회 ───────────────────────────────────────────────────────────
@@ -220,20 +260,31 @@ export async function startFullScan(channelId: string, now: Date) {
     select: { id: true },
   })
   if (running) throw new ChannelOrderError('busy', '이미 전수 조회 중입니다')
+  const windows = scanWindows(now)
   const op = await prisma.pipelineOperation.create({
-    data: { spaceId: setting.spaceId, channelId, kind: 'FULL_SCAN', startedAt: now },
+    data: {
+      spaceId: setting.spaceId,
+      channelId,
+      kind: 'FULL_SCAN',
+      startedAt: now,
+      plannedFrom: windows[0].from,
+      plannedThrough: now,
+      minCalls: windows.length, // 일자 창마다 적어도 1번은 ingest 해야 한다
+    },
   })
   return {
     operationId: op.id,
     spaceId: setting.spaceId,
     adapter: setting.adapter as Adapter,
     storeKey: setting.storeKey,
+    windows,
   }
 }
 
 export type FinishScanInput = {
   operationId: string
   success: boolean
+  /** 워커 신고값 — periodTo 는 서버 계획 끝과 같아야 한다. periodFrom 은 기록에 쓰지 않는다(서버 저장값 사용). */
   periodFrom: string
   periodTo: string
   pagesRequested: number
@@ -255,30 +306,47 @@ export async function finishFullScan(
     return { accepted: false, status: 'FAILED' }
   }
   const rows = await prisma.channelOrderScanLine.count({ where: { operationId: op.id } })
+  const planOk =
+    op.plannedThrough !== null && Date.parse(input.periodTo) === op.plannedThrough.getTime()
+  const callsOk = op.ingestCalls >= Math.max(op.minCalls, input.pagesReceived)
   const complete =
-    input.success && input.structureOk && input.pagesRequested === input.pagesReceived
+    input.success &&
+    input.structureOk &&
+    input.pagesRequested === input.pagesReceived &&
+    planOk &&
+    callsOk
   const status = complete ? 'SUCCEEDED' : input.pagesReceived > 0 ? 'PARTIAL' : 'FAILED'
-  await prisma.pipelineOperation.update({
-    where: { id: op.id },
+  const error = complete
+    ? null
+    : !input.structureOk
+      ? 'structure_invalid'
+      : !input.success
+        ? toErrorCode(input.errorCode)
+        : !planOk
+          ? 'plan_mismatch'
+          : !callsOk
+            ? 'ingest_missing'
+            : toErrorCode(input.errorCode)
+  const r = await prisma.pipelineOperation.updateMany({
+    where: { id: op.id, status: 'STARTED' },
     data: {
       status,
-      error: complete
-        ? null
-        : input.structureOk
-          ? toErrorCode(input.errorCode)
-          : 'structure_invalid',
+      error,
       counts: {
-        periodFrom: input.periodFrom,
-        periodTo: input.periodTo,
+        // 기간은 워커 신고값이 아니라 서버가 start 에서 저장한 계획값
+        periodFrom: op.plannedFrom?.toISOString() ?? null,
+        periodTo: op.plannedThrough?.toISOString() ?? null,
         pagesRequested: input.pagesRequested,
         pagesReceived: input.pagesReceived,
         structureOk: input.structureOk,
         rows,
+        ingestCalls: op.ingestCalls,
+        ingestRows: op.ingestRows,
       },
       finishedAt: now,
     },
   })
-  return { accepted: true, status }
+  return r.count === 1 ? { accepted: true, status } : { accepted: false, status: 'FAILED' }
 }
 
 /** 14일 지난 전수 조회 행 삭제. */

@@ -20,8 +20,22 @@ export type PipelineOperationModel = runtime.Types.Result.DefaultSelection<Prism
 
 export type AggregatePipelineOperation = {
   _count: PipelineOperationCountAggregateOutputType | null
+  _avg: PipelineOperationAvgAggregateOutputType | null
+  _sum: PipelineOperationSumAggregateOutputType | null
   _min: PipelineOperationMinAggregateOutputType | null
   _max: PipelineOperationMaxAggregateOutputType | null
+}
+
+export type PipelineOperationAvgAggregateOutputType = {
+  minCalls: number | null
+  ingestCalls: number | null
+  ingestRows: number | null
+}
+
+export type PipelineOperationSumAggregateOutputType = {
+  minCalls: number | null
+  ingestCalls: number | null
+  ingestRows: number | null
 }
 
 export type PipelineOperationMinAggregateOutputType = {
@@ -33,6 +47,11 @@ export type PipelineOperationMinAggregateOutputType = {
   error: string | null
   startedAt: Date | null
   finishedAt: Date | null
+  plannedFrom: Date | null
+  plannedThrough: Date | null
+  minCalls: number | null
+  ingestCalls: number | null
+  ingestRows: number | null
 }
 
 export type PipelineOperationMaxAggregateOutputType = {
@@ -44,6 +63,11 @@ export type PipelineOperationMaxAggregateOutputType = {
   error: string | null
   startedAt: Date | null
   finishedAt: Date | null
+  plannedFrom: Date | null
+  plannedThrough: Date | null
+  minCalls: number | null
+  ingestCalls: number | null
+  ingestRows: number | null
 }
 
 export type PipelineOperationCountAggregateOutputType = {
@@ -56,9 +80,26 @@ export type PipelineOperationCountAggregateOutputType = {
   error: number
   startedAt: number
   finishedAt: number
+  plannedFrom: number
+  plannedThrough: number
+  minCalls: number
+  ingestCalls: number
+  ingestRows: number
   _all: number
 }
 
+
+export type PipelineOperationAvgAggregateInputType = {
+  minCalls?: true
+  ingestCalls?: true
+  ingestRows?: true
+}
+
+export type PipelineOperationSumAggregateInputType = {
+  minCalls?: true
+  ingestCalls?: true
+  ingestRows?: true
+}
 
 export type PipelineOperationMinAggregateInputType = {
   id?: true
@@ -69,6 +110,11 @@ export type PipelineOperationMinAggregateInputType = {
   error?: true
   startedAt?: true
   finishedAt?: true
+  plannedFrom?: true
+  plannedThrough?: true
+  minCalls?: true
+  ingestCalls?: true
+  ingestRows?: true
 }
 
 export type PipelineOperationMaxAggregateInputType = {
@@ -80,6 +126,11 @@ export type PipelineOperationMaxAggregateInputType = {
   error?: true
   startedAt?: true
   finishedAt?: true
+  plannedFrom?: true
+  plannedThrough?: true
+  minCalls?: true
+  ingestCalls?: true
+  ingestRows?: true
 }
 
 export type PipelineOperationCountAggregateInputType = {
@@ -92,6 +143,11 @@ export type PipelineOperationCountAggregateInputType = {
   error?: true
   startedAt?: true
   finishedAt?: true
+  plannedFrom?: true
+  plannedThrough?: true
+  minCalls?: true
+  ingestCalls?: true
+  ingestRows?: true
   _all?: true
 }
 
@@ -133,6 +189,18 @@ export type PipelineOperationAggregateArgs<ExtArgs extends runtime.Types.Extensi
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: PipelineOperationAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: PipelineOperationSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: PipelineOperationMinAggregateInputType
@@ -163,6 +231,8 @@ export type PipelineOperationGroupByArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   _count?: PipelineOperationCountAggregateInputType | true
+  _avg?: PipelineOperationAvgAggregateInputType
+  _sum?: PipelineOperationSumAggregateInputType
   _min?: PipelineOperationMinAggregateInputType
   _max?: PipelineOperationMaxAggregateInputType
 }
@@ -177,7 +247,14 @@ export type PipelineOperationGroupByOutputType = {
   error: string | null
   startedAt: Date
   finishedAt: Date | null
+  plannedFrom: Date | null
+  plannedThrough: Date | null
+  minCalls: number
+  ingestCalls: number
+  ingestRows: number
   _count: PipelineOperationCountAggregateOutputType | null
+  _avg: PipelineOperationAvgAggregateOutputType | null
+  _sum: PipelineOperationSumAggregateOutputType | null
   _min: PipelineOperationMinAggregateOutputType | null
   _max: PipelineOperationMaxAggregateOutputType | null
 }
@@ -210,6 +287,11 @@ export type PipelineOperationWhereInput = {
   error?: Prisma.StringNullableFilter<"PipelineOperation"> | string | null
   startedAt?: Prisma.DateTimeFilter<"PipelineOperation"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  plannedFrom?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  plannedThrough?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  minCalls?: Prisma.IntFilter<"PipelineOperation"> | number
+  ingestCalls?: Prisma.IntFilter<"PipelineOperation"> | number
+  ingestRows?: Prisma.IntFilter<"PipelineOperation"> | number
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   scanLines?: Prisma.ChannelOrderScanLineListRelationFilter
 }
@@ -224,6 +306,11 @@ export type PipelineOperationOrderByWithRelationInput = {
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  plannedFrom?: Prisma.SortOrderInput | Prisma.SortOrder
+  plannedThrough?: Prisma.SortOrderInput | Prisma.SortOrder
+  minCalls?: Prisma.SortOrder
+  ingestCalls?: Prisma.SortOrder
+  ingestRows?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   scanLines?: Prisma.ChannelOrderScanLineOrderByRelationAggregateInput
 }
@@ -241,6 +328,11 @@ export type PipelineOperationWhereUniqueInput = Prisma.AtLeast<{
   error?: Prisma.StringNullableFilter<"PipelineOperation"> | string | null
   startedAt?: Prisma.DateTimeFilter<"PipelineOperation"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  plannedFrom?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  plannedThrough?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  minCalls?: Prisma.IntFilter<"PipelineOperation"> | number
+  ingestCalls?: Prisma.IntFilter<"PipelineOperation"> | number
+  ingestRows?: Prisma.IntFilter<"PipelineOperation"> | number
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   scanLines?: Prisma.ChannelOrderScanLineListRelationFilter
 }, "id">
@@ -255,9 +347,16 @@ export type PipelineOperationOrderByWithAggregationInput = {
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  plannedFrom?: Prisma.SortOrderInput | Prisma.SortOrder
+  plannedThrough?: Prisma.SortOrderInput | Prisma.SortOrder
+  minCalls?: Prisma.SortOrder
+  ingestCalls?: Prisma.SortOrder
+  ingestRows?: Prisma.SortOrder
   _count?: Prisma.PipelineOperationCountOrderByAggregateInput
+  _avg?: Prisma.PipelineOperationAvgOrderByAggregateInput
   _max?: Prisma.PipelineOperationMaxOrderByAggregateInput
   _min?: Prisma.PipelineOperationMinOrderByAggregateInput
+  _sum?: Prisma.PipelineOperationSumOrderByAggregateInput
 }
 
 export type PipelineOperationScalarWhereWithAggregatesInput = {
@@ -273,6 +372,11 @@ export type PipelineOperationScalarWhereWithAggregatesInput = {
   error?: Prisma.StringNullableWithAggregatesFilter<"PipelineOperation"> | string | null
   startedAt?: Prisma.DateTimeWithAggregatesFilter<"PipelineOperation"> | Date | string
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PipelineOperation"> | Date | string | null
+  plannedFrom?: Prisma.DateTimeNullableWithAggregatesFilter<"PipelineOperation"> | Date | string | null
+  plannedThrough?: Prisma.DateTimeNullableWithAggregatesFilter<"PipelineOperation"> | Date | string | null
+  minCalls?: Prisma.IntWithAggregatesFilter<"PipelineOperation"> | number
+  ingestCalls?: Prisma.IntWithAggregatesFilter<"PipelineOperation"> | number
+  ingestRows?: Prisma.IntWithAggregatesFilter<"PipelineOperation"> | number
 }
 
 export type PipelineOperationCreateInput = {
@@ -284,6 +388,11 @@ export type PipelineOperationCreateInput = {
   error?: string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
+  plannedFrom?: Date | string | null
+  plannedThrough?: Date | string | null
+  minCalls?: number
+  ingestCalls?: number
+  ingestRows?: number
   space: Prisma.SpaceCreateNestedOneWithoutPipelineOperationsInput
   scanLines?: Prisma.ChannelOrderScanLineCreateNestedManyWithoutOperationInput
 }
@@ -298,6 +407,11 @@ export type PipelineOperationUncheckedCreateInput = {
   error?: string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
+  plannedFrom?: Date | string | null
+  plannedThrough?: Date | string | null
+  minCalls?: number
+  ingestCalls?: number
+  ingestRows?: number
   scanLines?: Prisma.ChannelOrderScanLineUncheckedCreateNestedManyWithoutOperationInput
 }
 
@@ -310,6 +424,11 @@ export type PipelineOperationUpdateInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
   space?: Prisma.SpaceUpdateOneRequiredWithoutPipelineOperationsNestedInput
   scanLines?: Prisma.ChannelOrderScanLineUpdateManyWithoutOperationNestedInput
 }
@@ -324,6 +443,11 @@ export type PipelineOperationUncheckedUpdateInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
   scanLines?: Prisma.ChannelOrderScanLineUncheckedUpdateManyWithoutOperationNestedInput
 }
 
@@ -337,6 +461,11 @@ export type PipelineOperationCreateManyInput = {
   error?: string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
+  plannedFrom?: Date | string | null
+  plannedThrough?: Date | string | null
+  minCalls?: number
+  ingestCalls?: number
+  ingestRows?: number
 }
 
 export type PipelineOperationUpdateManyMutationInput = {
@@ -348,6 +477,11 @@ export type PipelineOperationUpdateManyMutationInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type PipelineOperationUncheckedUpdateManyInput = {
@@ -360,6 +494,11 @@ export type PipelineOperationUncheckedUpdateManyInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type PipelineOperationListRelationFilter = {
@@ -387,6 +526,17 @@ export type PipelineOperationCountOrderByAggregateInput = {
   error?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  plannedFrom?: Prisma.SortOrder
+  plannedThrough?: Prisma.SortOrder
+  minCalls?: Prisma.SortOrder
+  ingestCalls?: Prisma.SortOrder
+  ingestRows?: Prisma.SortOrder
+}
+
+export type PipelineOperationAvgOrderByAggregateInput = {
+  minCalls?: Prisma.SortOrder
+  ingestCalls?: Prisma.SortOrder
+  ingestRows?: Prisma.SortOrder
 }
 
 export type PipelineOperationMaxOrderByAggregateInput = {
@@ -398,6 +548,11 @@ export type PipelineOperationMaxOrderByAggregateInput = {
   error?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  plannedFrom?: Prisma.SortOrder
+  plannedThrough?: Prisma.SortOrder
+  minCalls?: Prisma.SortOrder
+  ingestCalls?: Prisma.SortOrder
+  ingestRows?: Prisma.SortOrder
 }
 
 export type PipelineOperationMinOrderByAggregateInput = {
@@ -409,6 +564,17 @@ export type PipelineOperationMinOrderByAggregateInput = {
   error?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  plannedFrom?: Prisma.SortOrder
+  plannedThrough?: Prisma.SortOrder
+  minCalls?: Prisma.SortOrder
+  ingestCalls?: Prisma.SortOrder
+  ingestRows?: Prisma.SortOrder
+}
+
+export type PipelineOperationSumOrderByAggregateInput = {
+  minCalls?: Prisma.SortOrder
+  ingestCalls?: Prisma.SortOrder
+  ingestRows?: Prisma.SortOrder
 }
 
 export type PipelineOperationCreateNestedManyWithoutSpaceInput = {
@@ -476,6 +642,11 @@ export type PipelineOperationCreateWithoutSpaceInput = {
   error?: string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
+  plannedFrom?: Date | string | null
+  plannedThrough?: Date | string | null
+  minCalls?: number
+  ingestCalls?: number
+  ingestRows?: number
   scanLines?: Prisma.ChannelOrderScanLineCreateNestedManyWithoutOperationInput
 }
 
@@ -488,6 +659,11 @@ export type PipelineOperationUncheckedCreateWithoutSpaceInput = {
   error?: string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
+  plannedFrom?: Date | string | null
+  plannedThrough?: Date | string | null
+  minCalls?: number
+  ingestCalls?: number
+  ingestRows?: number
   scanLines?: Prisma.ChannelOrderScanLineUncheckedCreateNestedManyWithoutOperationInput
 }
 
@@ -530,6 +706,11 @@ export type PipelineOperationScalarWhereInput = {
   error?: Prisma.StringNullableFilter<"PipelineOperation"> | string | null
   startedAt?: Prisma.DateTimeFilter<"PipelineOperation"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  plannedFrom?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  plannedThrough?: Prisma.DateTimeNullableFilter<"PipelineOperation"> | Date | string | null
+  minCalls?: Prisma.IntFilter<"PipelineOperation"> | number
+  ingestCalls?: Prisma.IntFilter<"PipelineOperation"> | number
+  ingestRows?: Prisma.IntFilter<"PipelineOperation"> | number
 }
 
 export type PipelineOperationCreateWithoutScanLinesInput = {
@@ -541,6 +722,11 @@ export type PipelineOperationCreateWithoutScanLinesInput = {
   error?: string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
+  plannedFrom?: Date | string | null
+  plannedThrough?: Date | string | null
+  minCalls?: number
+  ingestCalls?: number
+  ingestRows?: number
   space: Prisma.SpaceCreateNestedOneWithoutPipelineOperationsInput
 }
 
@@ -554,6 +740,11 @@ export type PipelineOperationUncheckedCreateWithoutScanLinesInput = {
   error?: string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
+  plannedFrom?: Date | string | null
+  plannedThrough?: Date | string | null
+  minCalls?: number
+  ingestCalls?: number
+  ingestRows?: number
 }
 
 export type PipelineOperationCreateOrConnectWithoutScanLinesInput = {
@@ -581,6 +772,11 @@ export type PipelineOperationUpdateWithoutScanLinesInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
   space?: Prisma.SpaceUpdateOneRequiredWithoutPipelineOperationsNestedInput
 }
 
@@ -594,6 +790,11 @@ export type PipelineOperationUncheckedUpdateWithoutScanLinesInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type PipelineOperationCreateManySpaceInput = {
@@ -605,6 +806,11 @@ export type PipelineOperationCreateManySpaceInput = {
   error?: string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
+  plannedFrom?: Date | string | null
+  plannedThrough?: Date | string | null
+  minCalls?: number
+  ingestCalls?: number
+  ingestRows?: number
 }
 
 export type PipelineOperationUpdateWithoutSpaceInput = {
@@ -616,6 +822,11 @@ export type PipelineOperationUpdateWithoutSpaceInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
   scanLines?: Prisma.ChannelOrderScanLineUpdateManyWithoutOperationNestedInput
 }
 
@@ -628,6 +839,11 @@ export type PipelineOperationUncheckedUpdateWithoutSpaceInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
   scanLines?: Prisma.ChannelOrderScanLineUncheckedUpdateManyWithoutOperationNestedInput
 }
 
@@ -640,6 +856,11 @@ export type PipelineOperationUncheckedUpdateManyWithoutSpaceInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plannedThrough?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  minCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestCalls?: Prisma.IntFieldUpdateOperationsInput | number
+  ingestRows?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 
@@ -683,6 +904,11 @@ export type PipelineOperationSelect<ExtArgs extends runtime.Types.Extensions.Int
   error?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  plannedFrom?: boolean
+  plannedThrough?: boolean
+  minCalls?: boolean
+  ingestCalls?: boolean
+  ingestRows?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   scanLines?: boolean | Prisma.PipelineOperation$scanLinesArgs<ExtArgs>
   _count?: boolean | Prisma.PipelineOperationCountOutputTypeDefaultArgs<ExtArgs>
@@ -698,6 +924,11 @@ export type PipelineOperationSelectCreateManyAndReturn<ExtArgs extends runtime.T
   error?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  plannedFrom?: boolean
+  plannedThrough?: boolean
+  minCalls?: boolean
+  ingestCalls?: boolean
+  ingestRows?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pipelineOperation"]>
 
@@ -711,6 +942,11 @@ export type PipelineOperationSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   error?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  plannedFrom?: boolean
+  plannedThrough?: boolean
+  minCalls?: boolean
+  ingestCalls?: boolean
+  ingestRows?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pipelineOperation"]>
 
@@ -724,9 +960,14 @@ export type PipelineOperationSelectScalar = {
   error?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  plannedFrom?: boolean
+  plannedThrough?: boolean
+  minCalls?: boolean
+  ingestCalls?: boolean
+  ingestRows?: boolean
 }
 
-export type PipelineOperationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "kind" | "status" | "counts" | "error" | "startedAt" | "finishedAt", ExtArgs["result"]["pipelineOperation"]>
+export type PipelineOperationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "kind" | "status" | "counts" | "error" | "startedAt" | "finishedAt" | "plannedFrom" | "plannedThrough" | "minCalls" | "ingestCalls" | "ingestRows", ExtArgs["result"]["pipelineOperation"]>
 export type PipelineOperationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   scanLines?: boolean | Prisma.PipelineOperation$scanLinesArgs<ExtArgs>
@@ -755,6 +996,11 @@ export type $PipelineOperationPayload<ExtArgs extends runtime.Types.Extensions.I
     error: string | null
     startedAt: Date
     finishedAt: Date | null
+    plannedFrom: Date | null
+    plannedThrough: Date | null
+    minCalls: number
+    ingestCalls: number
+    ingestRows: number
   }, ExtArgs["result"]["pipelineOperation"]>
   composites: {}
 }
@@ -1189,6 +1435,11 @@ export interface PipelineOperationFieldRefs {
   readonly error: Prisma.FieldRef<"PipelineOperation", 'String'>
   readonly startedAt: Prisma.FieldRef<"PipelineOperation", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"PipelineOperation", 'DateTime'>
+  readonly plannedFrom: Prisma.FieldRef<"PipelineOperation", 'DateTime'>
+  readonly plannedThrough: Prisma.FieldRef<"PipelineOperation", 'DateTime'>
+  readonly minCalls: Prisma.FieldRef<"PipelineOperation", 'Int'>
+  readonly ingestCalls: Prisma.FieldRef<"PipelineOperation", 'Int'>
+  readonly ingestRows: Prisma.FieldRef<"PipelineOperation", 'Int'>
 }
     
 

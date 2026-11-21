@@ -3,9 +3,9 @@
  * 원본 3개: (가) 관측 행 (나) 일일 전수 조회 (다) 엑셀 DelOrder. 판정 A~E 와 수집 상태 게이트, 키 진단 리포트.
  */
 import { isCancelled, keyPattern, normalizeOrderNumber } from './normalize'
+import { kstMidnight, type MatchField, type MatchRule } from './types'
 
-export type MatchField = 'externalOrderId' | 'externalLineKey' | 'lineKeyOrderPart'
-export type MatchRule = { field: MatchField } | null
+export type { MatchField, MatchRule }
 
 export type ObsLine = {
   key: string
@@ -21,8 +21,16 @@ export type ObsLine = {
   productName: string
   /** 별칭 사전으로 대응된 상품 대상('L:id'|'O:id'). 없으면 null */
   target: string | null
+  /** 관측이 이 행을 마지막으로 본 시각 */
+  lastSeenAt: Date
 }
-export type ScanLine = { key: string; orderId: string; quantity: number; status: string }
+export type ScanLine = {
+  key: string
+  orderId: string
+  quantity: number
+  status: string
+  paidAt: Date
+}
 export type ExcelOrder = {
   orderNumber: string
   quantity: number
@@ -31,10 +39,12 @@ export type ExcelOrder = {
   targets: Array<string | null>
   /** 이 채널로 연결된 주문인지(channelId) */
   channelLinked: boolean
+  orderDate: Date
 }
 
 const DAY = 86_400_000
 const KST = 9 * 3_600_000
+const kstDate = (d: Date) => new Date(d.getTime() + KST).toISOString().slice(0, 10)
 export const ARRIVAL_GUARANTEE = 'ARRIVAL_GUARANTEE'
 
 export const keyOf = (l: Pick<ObsLine, 'key' | 'orderId'>, f: MatchField): string =>
@@ -101,38 +111,81 @@ export function evaluateGate(g: GateInput): string[] {
   return r
 }
 
-// ─── 판정 A~E ─────────────────────────────────────────────────────────────────
+/** 판정 창 W = [KST 자정 기준 7일 전 00:00, 전수 조회 시작 시각). 대사 한 번의 모든 비교가 이 창 하나만 쓴다. */
+export type JudgeWindow = { from: Date; to: Date }
+export const judgeWindowFor = (scanStartedAt: Date, days = 7): JudgeWindow => ({
+  from: new Date(kstMidnight(scanStartedAt) - days * DAY),
+  to: scanStartedAt,
+})
+
+export type StatusCategory = 'CANCELLED' | 'SHIPPED' | 'OTHER'
+/** 채널별 원문 상태를 취소 / 출고됨 / 그 외로만 나눈다 — 원문 상태 문자열 비교 금지. */
+export function statusCategory(status: string, claimStatus?: string | null): StatusCategory {
+  if (isCancelled({ channelStatus: status, claimStatus }) || /^C\d/i.test(status))
+    return 'CANCELLED'
+  if (/^N(30|40)$/i.test(status) || /DELIVER|DEPARTURE|DISPATCH|SHIPPED/i.test(status))
+    return 'SHIPPED'
+  return 'OTHER'
+}
+
+// ─── 판정 A~F ─────────────────────────────────────────────────────────────────
 
 export type Finding = { ref: string; note: string }
-export type Verdict = { A: Finding[]; B: Finding[]; C: Finding[]; D: Finding[]; E: Finding[] }
+/** F 는 정보(상태 시차) — 이상으로 세지 않는다. */
+export type Verdict = {
+  A: Finding[]
+  B: Finding[]
+  C: Finding[]
+  D: Finding[]
+  E: Finding[]
+  F: Finding[]
+}
 
 export function judge(input: {
   now: Date
+  window: JudgeWindow
   obs: ObsLine[]
   scan: ScanLine[]
   excel: ExcelOrder[]
   rule: MatchRule
 }): Verdict {
-  const { now, obs, scan, excel, rule } = input
-  const v: Verdict = { A: [], B: [], C: [], D: [], E: [] }
+  const { now, window: W, rule } = input
+  const inW = (d: Date) => d.getTime() >= W.from.getTime() && d.getTime() < W.to.getTime()
+  // 관측: 결제일이 W 안이거나 미종결(결제일 무관). scan: 결제일이 W 안. 엑셀: 주문일이 W 의 KST 날짜 범위 안.
+  const obs = input.obs.filter(
+    (l) =>
+      inW(l.paidAt) ||
+      (!l.dispatchedAt && !isCancelled({ channelStatus: l.status, claimStatus: l.claimStatus }))
+  )
+  const scan = input.scan.filter((s) => inW(s.paidAt))
+  const [d0, d1] = [kstDate(W.from), kstDate(W.to)]
+  const excel = input.excel.filter((e) => {
+    const d = kstDate(e.orderDate)
+    return d >= d0 && d <= d1
+  })
+  const v: Verdict = { A: [], B: [], C: [], D: [], E: [], F: [] }
   const hours = (d: Date) => Math.max(0, Math.floor((now.getTime() - d.getTime()) / 3_600_000))
 
-  // A (나)↔(가): 행 키 단위 + 행별 수량·상태
+  // A (나)↔(가): 행 키 단위 + 행별 수량·상태 범주. 범주 차이는 관측이 scan 시작 전에 본 행이면 시차(F).
   const obsByKey = new Map(obs.map((l) => [l.key, l]))
   for (const s of scan) {
     const o = obsByKey.get(s.key)
     if (!o) v.A.push({ ref: s.orderId, note: '전수 조회에는 있으나 관측에 없음' })
     else if (o.quantity !== s.quantity)
       v.A.push({ ref: s.orderId, note: `수량 차이 관측 ${o.quantity} / 전수 ${s.quantity}` })
-    else if (o.status !== s.status)
-      v.A.push({ ref: s.orderId, note: `상태 차이 ${o.status} / ${s.status}` })
+    else if (statusCategory(o.status, o.claimStatus) !== statusCategory(s.status)) {
+      const note = `상태 범주 차이 ${statusCategory(o.status, o.claimStatus)} / ${statusCategory(s.status)}`
+      if (o.lastSeenAt.getTime() < W.to.getTime())
+        v.F.push({ ref: s.orderId, note: `${note} (관측이 전수 조회보다 먼저 본 시차)` })
+      else v.A.push({ ref: s.orderId, note })
+    }
   }
 
   // E 출고 지연
   const eligible = obs.filter(
     (l) =>
       l.deliveryKind !== ARRIVAL_GUARANTEE &&
-      (l.paidAt.getTime() >= now.getTime() - 7 * DAY ||
+      (inW(l.paidAt) ||
         (!l.dispatchedAt && !isCancelled({ channelStatus: l.status, claimStatus: l.claimStatus })))
   )
   for (const l of eligible) {
@@ -227,6 +280,7 @@ export const counts = (v: Verdict) => ({
   C: v.C.length,
   D: v.D.length,
   E: v.E.length,
+  F: v.F.length,
 })
 
 // ─── 키 진단 리포트 ───────────────────────────────────────────────────────────

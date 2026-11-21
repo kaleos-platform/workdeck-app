@@ -3283,7 +3283,12 @@ export const PipelineOperationScalarFieldEnum = {
   counts: 'counts',
   error: 'error',
   startedAt: 'startedAt',
-  finishedAt: 'finishedAt'
+  finishedAt: 'finishedAt',
+  plannedFrom: 'plannedFrom',
+  plannedThrough: 'plannedThrough',
+  minCalls: 'minCalls',
+  ingestCalls: 'ingestCalls',
+  ingestRows: 'ingestRows'
 } as const
 
 export type PipelineOperationScalarFieldEnum = (typeof PipelineOperationScalarFieldEnum)[keyof typeof PipelineOperationScalarFieldEnum]
