@@ -2,7 +2,9 @@ import * as Sentry from '@sentry/nextjs'
 import { createClient } from '@/lib/supabase/client'
 import { IGNORE_ERRORS, scrubBreadcrumb, scrubEvent } from '@/lib/sentry/scrub'
 
-const sentryEnvironment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'development'
+// 브라우저엔 VERCEL_ENV 가 없다 — next.config 가 노출하는 NEXT_PUBLIC_VERCEL_ENV 사용
+const sentryEnvironment =
+  process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV || 'development'
 const isProduction = sentryEnvironment === 'production'
 
 Sentry.init({
