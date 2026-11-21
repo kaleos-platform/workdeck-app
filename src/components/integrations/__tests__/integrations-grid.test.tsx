@@ -29,6 +29,7 @@ jest.mock('../ad-credential-form', () => ({
   AdCredentialForm: ({ provider }: { provider: string }) => <p>{provider}-body</p>,
 }))
 jest.mock('../coupang-api-card', () => ({ CoupangApiCard: () => <p>coupang-body</p> }))
+jest.mock('../cafe24-connect-card', () => ({ Cafe24ConnectCard: () => <p>cafe24-body</p> }))
 jest.mock('../agent-toggle-card', () => ({ AgentToggleCard: () => <p>toggle-body</p> }))
 jest.mock('../agent-tokens-card', () => ({ AgentTokensCard: () => <p>tokens-body</p> }))
 jest.mock('../space-secrets-card', () => ({ SpaceSecretsCard: () => <p>secrets-body</p> }))
