@@ -804,6 +804,19 @@ model UsageEvent {
 
 // Space 단위 외부 서비스 자격증명(메타·구글 등). encryptedPayload·iv는 공통 암호화 모듈 `encryptField('space-credential', …)`의 `StoredField`(encrypted, iv)에 그대로 대응한다.
 // config는 비밀이 아닌 설정(브랜드 → 광고 계정·속성 매핑 등).
+// 운영사(워크덱) 자산의 외부 연동 자격증명 — 고객 공간과 분리(공간 없음). 어드민(OPERATOR + aal2)만 읽고 쓴다.
+model PlatformCredential {
+  id               String    @id @default(cuid())
+  provider         String    @unique // "google-analytics-platform"
+  encryptedPayload String // field-crypto 'platform-credential' (v1 강제)
+  iv               String
+  config           Json?
+  lastVerifiedAt   DateTime?
+  lastError        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
 model SpaceCredential {
   id               String    @id @default(cuid())
   spaceId          String

@@ -69,6 +69,7 @@ export const ModelName = {
   SpaceAgent: 'SpaceAgent',
   ToolAuditLog: 'ToolAuditLog',
   UsageEvent: 'UsageEvent',
+  PlatformCredential: 'PlatformCredential',
   SpaceCredential: 'SpaceCredential',
   SpaceSecret: 'SpaceSecret',
   AgentToken: 'AgentToken',
@@ -560,6 +561,21 @@ export const UsageEventScalarFieldEnum = {
 } as const
 
 export type UsageEventScalarFieldEnum = (typeof UsageEventScalarFieldEnum)[keyof typeof UsageEventScalarFieldEnum]
+
+
+export const PlatformCredentialScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  config: 'config',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlatformCredentialScalarFieldEnum = (typeof PlatformCredentialScalarFieldEnum)[keyof typeof PlatformCredentialScalarFieldEnum]
 
 
 export const SpaceCredentialScalarFieldEnum = {
