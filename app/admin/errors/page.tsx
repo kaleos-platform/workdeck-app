@@ -53,7 +53,12 @@ export default async function AdminErrorsPage({
               .slice(0, 25)
     const states: AutofixState[] = await Promise.all(
       merged.map(async (i) =>
-        i.numComments > 0 ? parseAutofixState(await listComments(i.id)) : { kind: 'none' as const }
+        i.numComments > 0
+          ? listComments(i.id)
+              .then(parseAutofixState)
+              // 노트 한 건 조회 실패가 목록 전체를 막지 않게 한다
+              .catch((): AutofixState => ({ kind: 'none' }))
+          : { kind: 'none' as const }
       )
     )
     rows = merged.map((i, idx) => ({ ...i, autofix: states[idx] }))

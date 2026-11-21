@@ -9,11 +9,12 @@ export type AutofixState = {
   reason?: string
 }
 
-const PR_URL = /^https:\/\/github\.com\/kaleos-platform\//
+const PR_URL = /^https:\/\/github\.com\/kaleos-platform\/[\w.-]+\/pull\/\d+$/
+const KNOWN = /^autofix:(request|running|pr|analysis|failed|skip)(\s|$)/
 
 export function parseAutofixState(comments: { text: string; dateCreated: string }[]): AutofixState {
   const latest = comments
-    .filter((c) => c.text.trim().startsWith('autofix:'))
+    .filter((c) => KNOWN.test(c.text.trim()))
     .sort((a, b) => Date.parse(b.dateCreated) - Date.parse(a.dateCreated))[0]
   if (!latest) return { kind: 'none' }
 
@@ -30,7 +31,7 @@ export function parseAutofixState(comments: { text: string; dateCreated: string 
       return { kind: 'running', at, until }
     }
     case 'pr':
-      return { kind: 'pr', at, prUrl: PR_URL.test(arg) ? arg : undefined }
+      return { kind: 'pr', at, prUrl: PR_URL.test(rest[0] ?? '') ? rest[0] : undefined }
     case 'failed':
       return { kind: 'failed', at, reason: arg || undefined }
     default:

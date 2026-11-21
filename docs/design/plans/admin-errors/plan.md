@@ -16,3 +16,5 @@
 - 탭 숫자: 웹(`!service:worker`)·워커 2회 조회 결과 길이(25면 `25+`), 전체 = 합. `statsPeriod`는 필터가 아니라 쿼리에 `lastSeen:-14d` 추가.
 - 노트 조회는 `numComments > 0`인 이슈만. 캐시 없음(`no-store`) — 버튼 후 즉시 반영.
 - 러너 마지막 활동은 현재 탭에 보이는 이슈들의 노트 기준.
+- 계획의 `ignoreIssue`(Sentry ignore) 미구현 — 「제외」는 `autofix:skip` 노트로 충분하고 Sentry 알림·집계를 바꾸지 않으려고.
+- 리뷰 반영: 노트 조회 실패는 그 행만 상태 없음, `until` 지난 running은 「진행 중(만료)」+버튼 노출, 모르는 `autofix:` 노트는 무시.

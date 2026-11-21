@@ -44,3 +44,29 @@ test('shouldWriteNote 는 같은 상태면 false', () => {
   expect(shouldWriteNote({ kind: 'none' }, 'request')).toBe(true)
   expect(shouldWriteNote({ kind: 'failed' }, 'skip')).toBe(true)
 })
+
+describe('parseAutofixState — 리뷰 보강', () => {
+  it('모르는 autofix: 노트는 이전 상태를 가리지 않는다', () => {
+    expect(
+      parseAutofixState([
+        { text: 'autofix:skip', dateCreated: '2026-11-20T00:00:00Z' },
+        { text: 'autofix:requst', dateCreated: '2026-11-21T00:00:00Z' },
+      ]).kind
+    ).toBe('skip')
+  })
+  it('PR 주소는 PR 경로 전체만, 첫 토큰만 받는다', () => {
+    const ok = 'https://github.com/kaleos-platform/workdeck-app/pull/1601'
+    expect(
+      parseAutofixState([{ text: `autofix:pr ${ok} 추가`, dateCreated: '2026-11-21T00:00:00Z' }])
+        .prUrl
+    ).toBe(ok)
+    expect(
+      parseAutofixState([
+        {
+          text: 'autofix:pr https://github.com/kaleos-platform/x',
+          dateCreated: '2026-11-21T00:00:00Z',
+        },
+      ]).prUrl
+    ).toBeUndefined()
+  })
+})

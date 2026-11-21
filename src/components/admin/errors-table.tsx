@@ -64,7 +64,8 @@ function relativeTime(iso: string) {
   return `${Math.floor(sec / 86400)}일 전`
 }
 
-const countLabel = (n: number) => (n >= 25 ? '25+' : String(n))
+// 조회 상한(25)에 걸린 목록이 있으면 + 를 붙인다
+const countLabel = (n: number, capped: boolean) => `${n}${capped ? '+' : ''}`
 
 export function ErrorsTable({ rows, service, status, counts, lastActivity }: Props) {
   const router = useRouter()
@@ -104,7 +105,7 @@ export function ErrorsTable({ rows, service, status, counts, lastActivity }: Pro
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground" suppressHydrationWarning>
         {lastActivity
           ? `러너 마지막 활동 ${relativeTime(lastActivity.at)} · ${lastActivity.shortId} · ${KIND_LABELS[lastActivity.kind]}`
           : '러너 활동 기록 없음'}
@@ -112,9 +113,13 @@ export function ErrorsTable({ rows, service, status, counts, lastActivity }: Pro
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs value={service} onValueChange={(v) => go({ service: v })}>
           <TabsList>
-            <TabsTrigger value="all">전체 {countLabel(counts.web + counts.worker)}</TabsTrigger>
-            <TabsTrigger value="web">웹 {countLabel(counts.web)}</TabsTrigger>
-            <TabsTrigger value="worker">워커 {countLabel(counts.worker)}</TabsTrigger>
+            <TabsTrigger value="all">
+              전체 {countLabel(counts.web + counts.worker, counts.web >= 25 || counts.worker >= 25)}
+            </TabsTrigger>
+            <TabsTrigger value="web">웹 {countLabel(counts.web, counts.web >= 25)}</TabsTrigger>
+            <TabsTrigger value="worker">
+              워커 {countLabel(counts.worker, counts.worker >= 25)}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
         <Select value={status} onValueChange={(v) => go({ status: v })}>
@@ -154,6 +159,9 @@ export function ErrorsTable({ rows, service, status, counts, lastActivity }: Pro
           ) : (
             rows.map((r) => {
               const kind = r.autofix.kind
+              // 러너가 멈춰 until 이 지난 running 은 다시 조작할 수 있게 한다
+              const stale =
+                kind === 'running' && !!r.autofix.until && Date.parse(r.autofix.until) < Date.now()
               const busy = pendingId === r.id
               return (
                 <TableRow
@@ -178,7 +186,9 @@ export function ErrorsTable({ rows, service, status, counts, lastActivity }: Pro
                   <TableCell>{r.service === 'web' ? '웹' : '워커'}</TableCell>
                   <TableCell className="text-right tabular-nums">{r.count}</TableCell>
                   <TableCell className="text-right tabular-nums">{r.userCount}</TableCell>
-                  <TableCell className="whitespace-nowrap">{relativeTime(r.lastSeen)}</TableCell>
+                  <TableCell className="whitespace-nowrap" suppressHydrationWarning>
+                    {relativeTime(r.lastSeen)}
+                  </TableCell>
                   <TableCell>
                     {kind === 'none' ? (
                       '—'
@@ -193,12 +203,12 @@ export function ErrorsTable({ rows, service, status, counts, lastActivity }: Pro
                       </a>
                     ) : (
                       <Badge variant={kind === 'failed' ? 'destructive' : 'secondary'}>
-                        {KIND_LABELS[kind]}
+                        {stale ? '진행 중(만료)' : KIND_LABELS[kind]}
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    {kind !== 'running' && kind !== 'pr' && (
+                    {(kind !== 'running' || stale) && kind !== 'pr' && (
                       <div className="flex gap-2">
                         {kind !== 'request' && (
                           <Button
