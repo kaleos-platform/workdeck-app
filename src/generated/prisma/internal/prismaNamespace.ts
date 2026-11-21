@@ -557,7 +557,11 @@ export const ModelName = {
   ScMedia: 'ScMedia',
   ScPublishRequest: 'ScPublishRequest',
   ScMediaCopy: 'ScMediaCopy',
-  OpeningMigrationJob: 'OpeningMigrationJob'
+  OpeningMigrationJob: 'OpeningMigrationJob',
+  ChannelFulfillmentSetting: 'ChannelFulfillmentSetting',
+  ChannelOrderLine: 'ChannelOrderLine',
+  ChannelOrderScanLine: 'ChannelOrderScanLine',
+  PipelineOperation: 'PipelineOperation'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -573,7 +577,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "browserWriteJob" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "platformCredential" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringUploadCleanup" | "hiringCleanupCursor" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "hiringMessageSeed" | "billingDeckProduct" | "spaceDeckAccess" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy" | "openingMigrationJob"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "browserWriteJob" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "platformCredential" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringUploadCleanup" | "hiringCleanupCursor" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "hiringMessageSeed" | "billingDeckProduct" | "spaceDeckAccess" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy" | "openingMigrationJob" | "channelFulfillmentSetting" | "channelOrderLine" | "channelOrderScanLine" | "pipelineOperation"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -13453,6 +13457,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ChannelFulfillmentSetting: {
+      payload: Prisma.$ChannelFulfillmentSettingPayload<ExtArgs>
+      fields: Prisma.ChannelFulfillmentSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChannelFulfillmentSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChannelFulfillmentSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.ChannelFulfillmentSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChannelFulfillmentSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>
+        }
+        findMany: {
+          args: Prisma.ChannelFulfillmentSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>[]
+        }
+        create: {
+          args: Prisma.ChannelFulfillmentSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>
+        }
+        createMany: {
+          args: Prisma.ChannelFulfillmentSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChannelFulfillmentSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.ChannelFulfillmentSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>
+        }
+        update: {
+          args: Prisma.ChannelFulfillmentSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChannelFulfillmentSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChannelFulfillmentSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChannelFulfillmentSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChannelFulfillmentSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelFulfillmentSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.ChannelFulfillmentSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelFulfillmentSetting>
+        }
+        groupBy: {
+          args: Prisma.ChannelFulfillmentSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelFulfillmentSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChannelFulfillmentSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelFulfillmentSettingCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChannelOrderLine: {
+      payload: Prisma.$ChannelOrderLinePayload<ExtArgs>
+      fields: Prisma.ChannelOrderLineFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChannelOrderLineFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChannelOrderLineFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>
+        }
+        findFirst: {
+          args: Prisma.ChannelOrderLineFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChannelOrderLineFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>
+        }
+        findMany: {
+          args: Prisma.ChannelOrderLineFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>[]
+        }
+        create: {
+          args: Prisma.ChannelOrderLineCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>
+        }
+        createMany: {
+          args: Prisma.ChannelOrderLineCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChannelOrderLineCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>[]
+        }
+        delete: {
+          args: Prisma.ChannelOrderLineDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>
+        }
+        update: {
+          args: Prisma.ChannelOrderLineUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>
+        }
+        deleteMany: {
+          args: Prisma.ChannelOrderLineDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChannelOrderLineUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChannelOrderLineUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>[]
+        }
+        upsert: {
+          args: Prisma.ChannelOrderLineUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderLinePayload>
+        }
+        aggregate: {
+          args: Prisma.ChannelOrderLineAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelOrderLine>
+        }
+        groupBy: {
+          args: Prisma.ChannelOrderLineGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelOrderLineGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChannelOrderLineCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelOrderLineCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChannelOrderScanLine: {
+      payload: Prisma.$ChannelOrderScanLinePayload<ExtArgs>
+      fields: Prisma.ChannelOrderScanLineFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChannelOrderScanLineFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChannelOrderScanLineFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>
+        }
+        findFirst: {
+          args: Prisma.ChannelOrderScanLineFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChannelOrderScanLineFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>
+        }
+        findMany: {
+          args: Prisma.ChannelOrderScanLineFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>[]
+        }
+        create: {
+          args: Prisma.ChannelOrderScanLineCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>
+        }
+        createMany: {
+          args: Prisma.ChannelOrderScanLineCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChannelOrderScanLineCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>[]
+        }
+        delete: {
+          args: Prisma.ChannelOrderScanLineDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>
+        }
+        update: {
+          args: Prisma.ChannelOrderScanLineUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>
+        }
+        deleteMany: {
+          args: Prisma.ChannelOrderScanLineDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChannelOrderScanLineUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChannelOrderScanLineUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>[]
+        }
+        upsert: {
+          args: Prisma.ChannelOrderScanLineUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelOrderScanLinePayload>
+        }
+        aggregate: {
+          args: Prisma.ChannelOrderScanLineAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelOrderScanLine>
+        }
+        groupBy: {
+          args: Prisma.ChannelOrderScanLineGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelOrderScanLineGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChannelOrderScanLineCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelOrderScanLineCountAggregateOutputType> | number
+        }
+      }
+    }
+    PipelineOperation: {
+      payload: Prisma.$PipelineOperationPayload<ExtArgs>
+      fields: Prisma.PipelineOperationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PipelineOperationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PipelineOperationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>
+        }
+        findFirst: {
+          args: Prisma.PipelineOperationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PipelineOperationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>
+        }
+        findMany: {
+          args: Prisma.PipelineOperationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>[]
+        }
+        create: {
+          args: Prisma.PipelineOperationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>
+        }
+        createMany: {
+          args: Prisma.PipelineOperationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PipelineOperationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>[]
+        }
+        delete: {
+          args: Prisma.PipelineOperationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>
+        }
+        update: {
+          args: Prisma.PipelineOperationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>
+        }
+        deleteMany: {
+          args: Prisma.PipelineOperationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PipelineOperationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PipelineOperationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>[]
+        }
+        upsert: {
+          args: Prisma.PipelineOperationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineOperationPayload>
+        }
+        aggregate: {
+          args: Prisma.PipelineOperationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePipelineOperation>
+        }
+        groupBy: {
+          args: Prisma.PipelineOperationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PipelineOperationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PipelineOperationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PipelineOperationCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -16477,6 +16777,79 @@ export const OpeningMigrationJobScalarFieldEnum = {
 export type OpeningMigrationJobScalarFieldEnum = (typeof OpeningMigrationJobScalarFieldEnum)[keyof typeof OpeningMigrationJobScalarFieldEnum]
 
 
+export const ChannelFulfillmentSettingScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  spaceId: 'spaceId',
+  adapter: 'adapter',
+  storeKey: 'storeKey',
+  observeEnabled: 'observeEnabled',
+  observeCursor: 'observeCursor',
+  observeLease: 'observeLease',
+  reconcileMode: 'reconcileMode',
+  matchKeyRule: 'matchKeyRule',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelFulfillmentSettingScalarFieldEnum = (typeof ChannelFulfillmentSettingScalarFieldEnum)[keyof typeof ChannelFulfillmentSettingScalarFieldEnum]
+
+
+export const ChannelOrderLineScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  externalLineKey: 'externalLineKey',
+  externalOrderId: 'externalOrderId',
+  paidAt: 'paidAt',
+  productName: 'productName',
+  optionText: 'optionText',
+  quantity: 'quantity',
+  channelStatus: 'channelStatus',
+  claimStatus: 'claimStatus',
+  deliveryKind: 'deliveryKind',
+  shippingDueAt: 'shippingDueAt',
+  carrierCode: 'carrierCode',
+  trackingNumber: 'trackingNumber',
+  dispatchedAt: 'dispatchedAt',
+  sourceChangedAt: 'sourceChangedAt',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt',
+  rawHash: 'rawHash'
+} as const
+
+export type ChannelOrderLineScalarFieldEnum = (typeof ChannelOrderLineScalarFieldEnum)[keyof typeof ChannelOrderLineScalarFieldEnum]
+
+
+export const ChannelOrderScanLineScalarFieldEnum = {
+  id: 'id',
+  operationId: 'operationId',
+  channelId: 'channelId',
+  externalLineKey: 'externalLineKey',
+  externalOrderId: 'externalOrderId',
+  quantity: 'quantity',
+  channelStatus: 'channelStatus',
+  paidAt: 'paidAt'
+} as const
+
+export type ChannelOrderScanLineScalarFieldEnum = (typeof ChannelOrderScanLineScalarFieldEnum)[keyof typeof ChannelOrderScanLineScalarFieldEnum]
+
+
+export const PipelineOperationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  kind: 'kind',
+  status: 'status',
+  counts: 'counts',
+  error: 'error',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type PipelineOperationScalarFieldEnum = (typeof PipelineOperationScalarFieldEnum)[keyof typeof PipelineOperationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -18164,6 +18537,10 @@ export type GlobalOmitConfig = {
   scPublishRequest?: Prisma.ScPublishRequestOmit
   scMediaCopy?: Prisma.ScMediaCopyOmit
   openingMigrationJob?: Prisma.OpeningMigrationJobOmit
+  channelFulfillmentSetting?: Prisma.ChannelFulfillmentSettingOmit
+  channelOrderLine?: Prisma.ChannelOrderLineOmit
+  channelOrderScanLine?: Prisma.ChannelOrderScanLineOmit
+  pipelineOperation?: Prisma.PipelineOperationOmit
 }
 
 /* Types for Logging */
