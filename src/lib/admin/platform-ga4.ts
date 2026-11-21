@@ -26,7 +26,7 @@ export const ENHANCED_KEYS = [
   'fileDownloadsEnabled',
 ] as const
 export type EnhancedKey = (typeof ENHANCED_KEYS)[number]
-export type EnhancedSettings = Record<EnhancedKey, boolean | null>
+export type EnhancedSettings = Record<EnhancedKey, boolean>
 
 export const FUNNEL_EVENTS = [
   'page_view',
@@ -97,9 +97,17 @@ export async function fetchEnhancedMeasurement(
     token,
     `${ADMIN_BASE}/v1alpha/properties/${propertyId}/dataStreams/${streamId}/enhancedMeasurementSettings`
   )
-  return Object.fromEntries(
-    ENHANCED_KEYS.map((k) => [k, typeof body[k] === 'boolean' ? body[k] : null])
-  ) as EnhancedSettings
+  // proto3 JSON 은 false 필드를 생략한다 — 없음 = 꺼짐.
+  return Object.fromEntries(ENHANCED_KEYS.map((k) => [k, body[k] === true])) as EnhancedSettings
+}
+
+/**
+ * 실제로 동작 중인 향상된 측정 항목. 전체 스위치(streamEnabled)가 꺼져 있으면 하위 값이 켜짐으로 남아 있어도
+ * 동작하지 않으므로 빈 목록이다. 전체가 켜져 있으면 streamEnabled 와 켜진 하위 항목을 돌려준다.
+ */
+export function activeEnhancedKeys(e: EnhancedSettings): EnhancedKey[] {
+  if (e.streamEnabled !== true) return []
+  return ENHANCED_KEYS.filter((k) => e[k] === true)
 }
 
 type ReportRow = { dimensionValues?: { value?: string }[]; metricValues?: { value?: string }[] }

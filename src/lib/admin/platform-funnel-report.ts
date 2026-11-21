@@ -2,7 +2,7 @@
 import 'server-only'
 import { readPlatformGoogle } from '@/lib/admin/platform-google'
 import {
-  ENHANCED_KEYS,
+  activeEnhancedKeys,
   FUNNEL_EVENTS,
   loadGa4Bundle,
   type Ga4Bundle,
@@ -24,7 +24,7 @@ export function buildReportText(b: Ga4Bundle): string {
       )
     }
   }
-  const on = b.enhanced ? ENHANCED_KEYS.filter((k) => b.enhanced![k] === true) : []
+  const on = b.enhanced ? activeEnhancedKeys(b.enhanced) : []
   if (on.length > 0) {
     lines.push(
       `:warning: 향상된 측정이 켜져 있습니다(퍼널 운영 게이트: 모두 꺼져야 함): ${on.join(', ')}`
