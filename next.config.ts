@@ -110,7 +110,7 @@ const nextConfig: NextConfig = {
 }
 
 export default withSentryConfig(nextConfig, {
-  silent: false, // TEMP: preview 업로드 로그 확인
+  silent: true,
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   tunnelRoute: '/monitoring',

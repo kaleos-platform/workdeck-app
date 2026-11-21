@@ -10,7 +10,7 @@ Sentry.init({
   environment: sentryEnvironment,
 
   tracesSampleRate: isProduction ? 0.05 : 0,
-  debug: true, // TEMP
+  debug: false,
   sendDefaultPii: false,
   beforeSend: scrubEvent,
   beforeBreadcrumb: scrubBreadcrumb,
