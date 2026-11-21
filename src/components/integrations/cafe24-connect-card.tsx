@@ -55,7 +55,8 @@ const RESULT_MESSAGE: Record<string, { title: string; variant: 'default' | 'dest
     variant: 'destructive',
   },
   error: {
-    title: '카페24 연결에 실패했습니다. 앱 정보를 확인하고 다시 시도해 주세요',
+    title:
+      '카페24 연결에 실패했습니다. 앱 정보를 확인하고 다시 시도해 주세요(쇼핑몰마다 그 쇼핑몰 계정에서 만든 앱 정보가 필요합니다)',
     variant: 'destructive',
   },
   mall_mismatch: {
@@ -105,7 +106,7 @@ export function Cafe24ConnectCard({
   const [data, setData] = useState<Cafe24StatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
-  const [editingApp, setEditingApp] = useState(false)
+  const [editingApp, setEditingApp] = useState<string | null>(null) // 앱 정보를 고치는 쇼핑몰
   const [mallId, setMallId] = useState('')
   const [clientId, setClientId] = useState('')
   const [clientSecret, setClientSecret] = useState('')
@@ -166,17 +167,17 @@ export function Cafe24ConnectCard({
     }
   }
 
-  // mode=add: 쇼핑몰 추가(첫 몰이면 앱 정보 포함), mode=app: 앱 정보만 수정
+  // mode=add: 쇼핑몰 추가, mode=app: 그 쇼핑몰의 앱 정보 수정. 둘 다 그 몰 행만 바뀐다.
+  // 심사 전 카페24 앱은 만든 계정 소유 몰에서만 토큰이 나와서 몰마다 그 계정의 앱 정보를 받는다.
   async function handleSave(mode: 'add' | 'app') {
     if (!spaceId) return
     setSaving(true)
     setError(null)
     try {
-      const needSecret = mode === 'app' || !data?.appConfigured
-      const payload: Record<string, unknown> = {}
-      if (mode === 'add') payload.config = { mallId: mallId.trim().toLowerCase() }
-      if (needSecret) {
-        payload.secret = { clientId: clientId.trim(), clientSecret: clientSecret.trim() }
+      const target = mode === 'add' ? mallId.trim().toLowerCase() : editingApp
+      const payload = {
+        config: { mallId: target },
+        secret: { clientId: clientId.trim(), clientSecret: clientSecret.trim() },
       }
       const res = await fetchWithMfa(credentialsUrl, {
         method: 'PUT',
@@ -192,7 +193,7 @@ export function Cafe24ConnectCard({
       setClientId('')
       setClientSecret('')
       setAdding(false)
-      setEditingApp(false)
+      setEditingApp(null)
       await load()
       onChanged?.()
     } catch {
@@ -229,8 +230,6 @@ export function Cafe24ConnectCard({
   const toast = result ? RESULT_MESSAGE[result] : null
   const malls = data?.malls ?? []
   const limit = data?.limit ?? 5
-  const appConfigured = Boolean(data?.appConfigured)
-  const needSecret = !appConfigured
   const secretFields = (
     <>
       <div className="space-y-2">
@@ -293,26 +292,13 @@ export function Cafe24ConnectCard({
                 </span>
               </p>
               <div className="flex items-center gap-2">
-                {appConfigured && !editingApp && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setEditingApp(true)
-                      setAdding(false)
-                      setError(null)
-                    }}
-                  >
-                    앱 정보 수정
-                  </Button>
-                )}
                 <Button
                   size="sm"
                   variant="outline"
                   disabled={malls.length >= limit || adding}
                   onClick={() => {
                     setAdding(true)
-                    setEditingApp(false)
+                    setEditingApp(null)
                     setError(null)
                   }}
                 >
@@ -367,6 +353,19 @@ export function Cafe24ConnectCard({
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => {
+                                setEditingApp(m.mallId)
+                                setAdding(false)
+                                setError(null)
+                                setClientId('')
+                                setClientSecret('')
+                              }}
+                            >
+                              앱 정보
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => setDeleteTarget(m.mallId)}
                             >
                               삭제
@@ -392,8 +391,9 @@ export function Cafe24ConnectCard({
             {adding && (
               <div className="space-y-4 rounded-lg border p-4">
                 <p className="text-sm text-muted-foreground">
-                  추가한 뒤 「카페24에서 승인」을 누르면 그 쇼핑몰 관리자 로그인·동의 화면으로
-                  이동합니다. 쇼핑몰 대표 운영자 계정으로 승인해 주세요.
+                  쇼핑몰을 소유한 카페24 계정의 개발자센터에서 앱을 만들고 그 앱 정보를
+                  입력하세요(심사 전 앱은 만든 계정의 쇼핑몰에서만 승인됩니다). 추가한 뒤
+                  「카페24에서 승인」을 누르고 쇼핑몰 대표 운영자 계정으로 승인해 주세요.
                 </p>
                 <div className="space-y-2">
                   <Label htmlFor="cafe24-mall-id">쇼핑몰 ID</Label>
@@ -404,12 +404,12 @@ export function Cafe24ConnectCard({
                     onChange={(e) => setMallId(e.target.value.toLowerCase())}
                   />
                 </div>
-                {needSecret && secretFields}
+                {secretFields}
                 {formError}
                 <div className="flex gap-2">
                   <Button
                     onClick={() => handleSave('add')}
-                    disabled={saving || !mallId.trim() || (needSecret && !secretReady)}
+                    disabled={saving || !mallId.trim() || !secretReady}
                   >
                     {saving ? (
                       <>
@@ -430,7 +430,8 @@ export function Cafe24ConnectCard({
             {editingApp && (
               <div className="space-y-4 rounded-lg border p-4">
                 <p className="text-sm text-muted-foreground">
-                  클라이언트 ID를 바꾸면 모든 쇼핑몰을 다시 승인해야 합니다.
+                  「{editingApp}」 쇼핑몰의 앱 정보를 바꿉니다. 클라이언트 ID를 바꾸면 이 쇼핑몰을
+                  다시 승인해야 합니다.
                 </p>
                 {secretFields}
                 {formError}
@@ -445,7 +446,7 @@ export function Cafe24ConnectCard({
                       '저장'
                     )}
                   </Button>
-                  <Button variant="ghost" onClick={() => setEditingApp(false)} disabled={saving}>
+                  <Button variant="ghost" onClick={() => setEditingApp(null)} disabled={saving}>
                     취소
                   </Button>
                 </div>

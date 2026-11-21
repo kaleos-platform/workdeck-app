@@ -87,7 +87,7 @@ const SCHEMAS = {
       .refine((c) => !c.defaultBrand || Object.hasOwn(c.customers, c.defaultBrand)),
   }),
   // 카페24 — 앱 정보만 받는다(토큰은 OAuth 콜백이 저장). 쓰기는 registerCafe24 의 조건부 쓰기.
-  // 쇼핑몰 추가 { config, secret? } · 앱 정보 수정(전체 몰) { secret } — 둘 다 아니면 400.
+  // 쇼핑몰 추가·앱 정보 수정 { config: { mallId }, secret? } — 그 몰 행만 바뀐다. 새 몰은 secret 필수.
   cafe24: z
     .object({
       secret: z
@@ -233,16 +233,19 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 
   if (provider === 'cafe24') {
     const c = parsed.data as z.infer<(typeof SCHEMAS)['cafe24']>
-    const result = await registerCafe24(spaceId, { ...c.secret, mallId: c.config?.mallId })
+    if (!c.config) return errorResponse('쇼핑몰 ID가 필요합니다', 400)
+    const result = await registerCafe24(spaceId, { ...c.secret, mallId: c.config.mallId })
     if (result === 'conflict') {
       return errorResponse('다른 변경과 겹쳤습니다. 잠시 후 다시 시도해 주세요', 409)
     }
     if (result === 'limit')
       return errorResponse('카페24 쇼핑몰은 최대 5개까지 연결할 수 있습니다', 400)
     if (result === 'app_required') {
-      return errorResponse('첫 쇼핑몰은 앱 정보(client_id·secret)를 함께 입력해 주세요', 400)
+      return errorResponse(
+        '쇼핑몰마다 그 카페24 계정의 개발자센터에서 만든 앱 정보(client_id·secret)를 입력해 주세요',
+        400
+      )
     }
-    if (result === 'no_malls') return errorResponse('등록된 쇼핑몰이 없습니다', 400)
     return NextResponse.json({ provider }, { headers: { 'Cache-Control': 'no-store' } })
   }
 

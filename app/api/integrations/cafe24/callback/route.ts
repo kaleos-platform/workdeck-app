@@ -47,6 +47,22 @@ function done(status: Outcome, spaceId?: string, mallId?: string): NextResponse 
 const sameApp = (row: NonNullable<Awaited<ReturnType<typeof readCafe24>>>, s: Cafe24StatePayload) =>
   row.secret.clientId === s.clientId && row.config.mallId === s.mallId
 
+/** 승인 도중 앱 정보가 바뀌었으면(교체 직후) 옛 앱의 실패를 새 설정에 남기지 않는다. */
+async function recordIfUnchanged(
+  row: NonNullable<Awaited<ReturnType<typeof readCafe24>>>,
+  state: Cafe24StatePayload,
+  message: string
+) {
+  const cur = await readCafe24(state.spaceId, state.mallId)
+  if (
+    cur?.id === row.id &&
+    sameApp(cur, state) &&
+    cur.secret.clientSecret === row.secret.clientSecret
+  ) {
+    await recordCredentialError(row.id, message)
+  }
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const stateParam = url.searchParams.get('state')
@@ -81,7 +97,7 @@ export async function GET(req: NextRequest) {
       buildAppUrl('/api/integrations/cafe24/callback')
     )
   } catch (err) {
-    await recordCredentialError(row.id, err instanceof Error ? err.message : '카페24 승인 실패')
+    await recordIfUnchanged(row, state, err instanceof Error ? err.message : '카페24 승인 실패')
     return done('error', state.spaceId, state.mallId)
   }
   if (tokens.mallId !== row.config.mallId) return done('mall_mismatch', state.spaceId, state.mallId)
@@ -110,8 +126,9 @@ export async function GET(req: NextRequest) {
   try {
     await probeOrders(state.spaceId, state.mallId)
   } catch (err) {
-    await recordCredentialError(
-      row.id,
+    await recordIfUnchanged(
+      row,
+      state,
       err instanceof Error ? err.message : '카페24 주문 조회 실패'
     )
     return done('error', state.spaceId, state.mallId)
