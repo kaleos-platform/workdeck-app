@@ -113,3 +113,9 @@ ALTER TABLE "ChannelOrderScanLine" ADD CONSTRAINT "ChannelOrderScanLine_operatio
 -- AddForeignKey
 ALTER TABLE "PipelineOperation" ADD CONSTRAINT "PipelineOperation_spaceId_fkey" FOREIGN KEY ("spaceId") REFERENCES "Space"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+
+-- RLS: 앱은 service role(Prisma)로만 접근한다. anon/authenticated 정책 없음 = 차단.
+ALTER TABLE "ChannelFulfillmentSetting" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ChannelOrderLine" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ChannelOrderScanLine" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "PipelineOperation" ENABLE ROW LEVEL SECURITY;
