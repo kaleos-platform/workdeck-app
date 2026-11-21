@@ -67,8 +67,11 @@ beforeEach(() => {
   })
 })
 
-function installReq(init: { origin?: string | null; spaceId?: string } = {}) {
-  const body = new URLSearchParams({ spaceId: init.spaceId ?? SP })
+function installReq(init: { origin?: string | null; spaceId?: string; mallId?: string } = {}) {
+  const body = new URLSearchParams({
+    spaceId: init.spaceId ?? SP,
+    mallId: init.mallId ?? APP.mallId,
+  })
   const headers: Record<string, string> = { 'content-type': 'application/x-www-form-urlencoded' }
   if (init.origin !== null) headers.origin = init.origin ?? getAppOrigin()
   return new NextRequest(buildAppUrl('/api/integrations/cafe24/install'), {
@@ -97,8 +100,27 @@ describe('install', () => {
     expect(res.headers.get('location')).toBeNull()
   })
 
-  it('앱 정보가 없으면 400', async () => {
+  it('그 쇼핑몰 행이 없거나 mallId 형식이 틀리면 400', async () => {
     expect((await install(installReq())).status).toBe(400)
+    seedRow()
+    expect((await install(installReq({ mallId: 'othershop' }))).status).toBe(400)
+    expect((await install(installReq({ mallId: 'evil.com/x' }))).status).toBe(400)
+  })
+
+  it('두 번째 쇼핑몰은 그 몰 호스트·행으로 state 를 만든다(레거시 행과 공존)', async () => {
+    seedRow()
+    fakeDb.seed(
+      SP,
+      { clientId: APP.clientId, clientSecret: APP.clientSecret },
+      { mallId: 'second-shop', credVersion: 1, status: 'needs_auth' },
+      'cafe24:second-shop'
+    )
+    const res = await install(installReq({ mallId: 'second-shop' }))
+    const loc = new URL(((await res.json()) as { url: string }).url)
+    expect(loc.host).toBe('second-shop.cafe24api.com')
+    expect(verifyCafe24State(loc.searchParams.get('state')!)).toMatchObject({
+      mallId: 'second-shop',
+    })
   })
 
   it('성공하면 authorize 주소(JSON url) + nonce 쿠키 + 서명 state', async () => {
@@ -227,6 +249,7 @@ describe('callback', () => {
     expect(loc.pathname).toBe('/settings/integrations')
     expect(loc.searchParams.get('open')).toBe('cafe24')
     expect(loc.searchParams.get('spaceId')).toBe(SP)
+    expect(loc.searchParams.get('mall')).toBe(APP.mallId)
     expect(res.headers.get('set-cookie')).toMatch(new RegExp(`${CAFE24_NONCE_COOKIE}=;`))
     expect(mockedExchange).toHaveBeenCalledWith(
       APP.mallId,
@@ -311,5 +334,19 @@ describe('callback', () => {
     const res = await callback(cbReq())
     expect(resultOf(res)).toBe('error')
     expect(fakeDb.row.config.status).toBe('needs_auth')
+  })
+
+  it('state.mallId 의 행만 읽고 쓴다(다른 쇼핑몰 행은 건드리지 않는다)', async () => {
+    fakeDb.seed(
+      SP,
+      { clientId: APP.clientId, clientSecret: APP.clientSecret },
+      { mallId: 'second-shop', credVersion: 1, status: 'needs_auth' },
+      'cafe24:second-shop'
+    )
+    expect(resultOf(await callback(cbReq()))).toBe('connected')
+    expect(mockedProbe).toHaveBeenCalledWith(SP, APP.mallId)
+    expect(fakeDb.rows[0].config.status).toBe('connected') // 레거시 행(provider 유지)
+    expect(fakeDb.rows[0].provider).toBe('cafe24')
+    expect(fakeDb.rows[1].config.status).toBe('needs_auth')
   })
 })

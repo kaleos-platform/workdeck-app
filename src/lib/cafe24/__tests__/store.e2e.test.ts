@@ -36,44 +36,45 @@ d('카페24 조건부 쓰기(dev DB)', () => {
       [1, 2, 3].map((n) =>
         createCafe24(
           SP,
+          'myshop24',
           { clientId: `cid-${n}-1234567`, clientSecret: 'secret-1234567' },
-          { mallId: 'myshop24', status: 'needs_auth' }
+          { status: 'needs_auth' }
         )
       )
     )
     expect(results.filter(Boolean)).toHaveLength(1)
-    const row = await readCafe24(SP)
+    const row = await readCafe24(SP, 'myshop24')
     expect(row?.config).toMatchObject({ credVersion: 1, status: 'needs_auth' })
     expect(row?.secret.clientSecret).toBe('secret-1234567') // 암호화 왕복
   })
 
   it('같은 버전으로 두 번 쓰면 두 번째는 0행, 버전은 1씩 오른다', async () => {
-    const cur = (await readCafe24(SP))!
+    const cur = (await readCafe24(SP, 'myshop24'))!
     expect(await writeCafe24If(cur, { ...cur.secret, accessToken: 'A1' }, cur.config)).toBe(true)
     expect(await writeCafe24If(cur, { ...cur.secret, accessToken: 'A2' }, cur.config)).toBe(false)
-    const after = (await readCafe24(SP))!
+    const after = (await readCafe24(SP, 'myshop24'))!
     expect(after.secret.accessToken).toBe('A1')
     expect(after.config.credVersion).toBe(cur.config.credVersion + 1)
   })
 
   it('동시 쓰기 다섯 개 중 정확히 하나만 성공한다', async () => {
-    const cur = (await readCafe24(SP))!
+    const cur = (await readCafe24(SP, 'myshop24'))!
     const results = await Promise.all(
       [1, 2, 3, 4, 5].map((n) =>
         writeCafe24If(cur, { ...cur.secret, accessToken: `P${n}` }, cur.config)
       )
     )
     expect(results.filter(Boolean)).toHaveLength(1)
-    expect((await readCafe24(SP))!.config.credVersion).toBe(cur.config.credVersion + 1)
+    expect((await readCafe24(SP, 'myshop24'))!.config.credVersion).toBe(cur.config.credVersion + 1)
   })
 
   it('다른 컬럼(healthError) 갱신은 버전을 건드리지 않는다', async () => {
-    const cur = (await readCafe24(SP))!
+    const cur = (await readCafe24(SP, 'myshop24'))!
     await prisma.spaceCredential.update({
       where: { id: cur.id },
       data: { healthError: 'x', lastError: 'y' },
     })
-    expect((await readCafe24(SP))!.config.credVersion).toBe(cur.config.credVersion)
+    expect((await readCafe24(SP, 'myshop24'))!.config.credVersion).toBe(cur.config.credVersion)
     expect(await writeCafe24If(cur, cur.secret, cur.config, true)).toBe(true)
   })
 
@@ -85,7 +86,7 @@ d('카페24 조건부 쓰기(dev DB)', () => {
         mallId: 'myshop24',
       })
     ).toBe('ok')
-    const row = (await readCafe24(SP))!
+    const row = (await readCafe24(SP, 'myshop24'))!
     expect(row.secret).toEqual({ clientId: 'brand-new-client', clientSecret: 'secret-7654321' })
     expect(row.config.status).toBe('needs_auth')
   })

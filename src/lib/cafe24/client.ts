@@ -192,9 +192,9 @@ async function markReauthRequired(cur: Cafe24Row): Promise<void> {
   await recordCredentialError(cur.id, CAFE24_REAUTH_MESSAGE)
 }
 
-async function releaseLease(spaceId: string, owner: string): Promise<void> {
+async function releaseLease(spaceId: string, mallId: string | null, owner: string): Promise<void> {
   try {
-    const cur = await readCafe24(spaceId)
+    const cur = await readCafe24(spaceId, mallId)
     if (cur?.config.refreshLease?.owner === owner) {
       await writeCafe24If(cur, cur.secret, { ...cur.config, refreshLease: undefined })
     }
@@ -212,6 +212,7 @@ export interface Cafe24Access {
 /** lease 를 잡은 채 갱신한다. null = 다시 읽어서 판단(다른 실행이 회전했거나 설정이 바뀜). */
 async function refreshHoldingLease(
   spaceId: string,
+  reqMallId: string | null,
   owner: string,
   base: Cafe24Row
 ): Promise<Cafe24Access | null> {
@@ -224,7 +225,7 @@ async function refreshHoldingLease(
     tokens = await refreshTokens(mallId, clientId, clientSecret, r0)
   } catch (err) {
     if (err instanceof Cafe24Error && err.code === 'invalid_grant') {
-      const cur = await readCafe24(spaceId)
+      const cur = await readCafe24(spaceId, reqMallId)
       if (!cur) throw err
       const lease = cur.config.refreshLease
       const changed =
@@ -236,12 +237,12 @@ async function refreshHoldingLease(
       await markReauthRequired(cur)
       throw new Cafe24Error('token', 'reauth_required')
     }
-    await releaseLease(spaceId, owner)
+    await releaseLease(spaceId, reqMallId, owner)
     throw err
   }
 
   for (let attempt = 0; attempt < 3; attempt++) {
-    const cur = await readCafe24(spaceId)
+    const cur = await readCafe24(spaceId, reqMallId)
     // (a) 재설정 (b) 다른 실행이 회전 → 내 토큰을 버리고 저장된 상태를 따른다.
     if (
       !cur ||
@@ -269,7 +270,7 @@ async function refreshHoldingLease(
     // (c) 토큰과 무관한 변경으로 0행 → 최신 버전에 다시 병합
     if (ok) return { accessToken: tokens.accessToken, mallId, credentialId: cur.id }
   }
-  const last = await readCafe24(spaceId)
+  const last = await readCafe24(spaceId, reqMallId)
   if (last) await markReauthRequired(last)
   throw new Cafe24Error('token', 'reauth_required')
 }
@@ -277,16 +278,18 @@ async function refreshHoldingLease(
 /**
  * 유효한 액세스 토큰을 돌려준다. 만료 5분 전이면 갱신한다.
  * rejectedToken: 401 을 받은 토큰 — 저장된 값이 이것이면 만료 전이어도 갱신한다.
+ * reqMallId: 쇼핑몰 ID(null = 레거시 `cafe24` 행 — storeKey 없는 옛 관측 채널 호환).
  * 던지는 code: not_configured·not_authorized(승인 전)·reauth_required(갱신 토큰 사망)·lease_timeout.
  */
 export async function getAccessToken(
   spaceId: string,
+  reqMallId: string | null,
   opts: { rejectedToken?: string } = {}
 ): Promise<Cafe24Access> {
   const owner = crypto.randomUUID()
   let waitedSince: number | null = null
   for (let i = 0; i < 60; i++) {
-    const row = await readCafe24(spaceId)
+    const row = await readCafe24(spaceId, reqMallId)
     if (!row) throw new Cafe24Error('token', 'not_configured')
     const { secret, config } = row
     if (!secret.refreshToken) throw new Cafe24Error('token', 'not_authorized')
@@ -310,7 +313,7 @@ export async function getAccessToken(
       refreshLease: { owner, until: Date.now() + LEASE_MS },
     })
     if (!leased) continue
-    const result = await refreshHoldingLease(spaceId, owner, row)
+    const result = await refreshHoldingLease(spaceId, reqMallId, owner, row)
     if (result) return result
   }
   throw new Cafe24Error('token', 'lease_timeout')
@@ -319,6 +322,7 @@ export async function getAccessToken(
 /** 조회 전용 GET(/api/v2 아래). 응답 JSON 을 돌려주며, 실패는 Cafe24Error 만 던진다. */
 export async function cafe24Get(
   spaceId: string,
+  reqMallId: string | null,
   path: string,
   query: Record<string, string | number> = {}
 ): Promise<unknown> {
@@ -326,7 +330,9 @@ export async function cafe24Get(
   let retried401 = false
   let rateTries = 0
   for (;;) {
-    const { accessToken, mallId } = await getAccessToken(spaceId, { rejectedToken: rejected })
+    const { accessToken, mallId } = await getAccessToken(spaceId, reqMallId, {
+      rejectedToken: rejected,
+    })
     const url = new URL(`${hostOf(mallId)}/api/v2${path}`)
     for (const [k, v] of Object.entries(query)) url.searchParams.set(k, String(v))
     const res = await http(
@@ -360,8 +366,12 @@ export async function cafe24Get(
 }
 
 /** 최근 1일 주문 목록 1건 조회 — 연결·권한이 실제로 동작하는지 확인한다. */
-export async function probeOrders(spaceId: string): Promise<void> {
+export async function probeOrders(spaceId: string, mallId: string | null): Promise<void> {
   const day = (offsetDays: number) =>
     new Date(Date.now() - offsetDays * 86_400_000).toISOString().slice(0, 10)
-  await cafe24Get(spaceId, '/admin/orders', { start_date: day(1), end_date: day(0), limit: 1 })
+  await cafe24Get(spaceId, mallId, '/admin/orders', {
+    start_date: day(1),
+    end_date: day(0),
+    limit: 1,
+  })
 }

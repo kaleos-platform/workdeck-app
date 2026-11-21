@@ -117,15 +117,17 @@ const c24Order = (
   ],
 })
 const serveCafe24 = (orders: ReturnType<typeof c24Order>[]) =>
-  mockGet.mockImplementation(async (_sp: string, _path: string, q: Record<string, unknown>) => {
-    const day = (iso: string) =>
-      new Date(Date.parse(iso) + 9 * 3_600_000).toISOString().slice(0, 10)
-    const hit = orders.filter(
-      (o) =>
-        day(o.payment_date) >= String(q.start_date) && day(o.payment_date) <= String(q.end_date)
-    )
-    return { orders: hit.slice(Number(q.offset), Number(q.offset) + Number(q.limit)) }
-  })
+  mockGet.mockImplementation(
+    async (_sp: string, _mall: string | null, _path: string, q: Record<string, unknown>) => {
+      const day = (iso: string) =>
+        new Date(Date.parse(iso) + 9 * 3_600_000).toISOString().slice(0, 10)
+      const hit = orders.filter(
+        (o) =>
+          day(o.payment_date) >= String(q.start_date) && day(o.payment_date) <= String(q.end_date)
+      )
+      return { orders: hit.slice(Number(q.offset), Number(q.offset) + Number(q.limit)) }
+    }
+  )
 
 const putSetting = async (channelId: string, body: unknown) =>
   (await putObserveSetting(
@@ -167,6 +169,23 @@ d('채널 주문 관측 lease·커서(dev DB)', () => {
       update: {},
       create: { id: CH2, spaceId: SP, name: 'E2E 채널2' },
     })
+    // 쇼핑몰 행(복호화하지 않으므로 암호문은 더미) — 레거시 cafe24 + 새 cafe24:<mallId>
+    for (const [provider, mallId] of [
+      ['cafe24', 'myshop24'],
+      ['cafe24:shop-b', 'shop-b'],
+    ]) {
+      await prisma.spaceCredential.upsert({
+        where: { spaceId_provider: { spaceId: SP, provider } },
+        update: {},
+        create: {
+          spaceId: SP,
+          provider,
+          encryptedPayload: 'x',
+          iv: 'x',
+          config: { mallId, credVersion: 1, status: 'connected' },
+        },
+      })
+    }
     await prisma.channelFulfillmentSetting.upsert({
       where: { channelId: CH },
       update: {
@@ -724,6 +743,7 @@ d('채널 주문 관측 lease·커서(dev DB)', () => {
       const res = await putSetting(CH, {
         observeEnabled: true,
         adapter: 'cafe24',
+        storeKey: 'myshop24',
         reconcileMode: 'judge',
       })
       expect(res.status).toBe(403)
@@ -732,18 +752,21 @@ d('채널 주문 관측 lease·커서(dev DB)', () => {
       const bad = await putSetting(CH, {
         observeEnabled: true,
         adapter: 'cafe24',
+        storeKey: 'myshop24',
         reconcileMode: 'x',
       })
       expect(bad.status).toBe(400)
       const badRule = await putSetting(CH, {
         observeEnabled: true,
         adapter: 'cafe24',
+        storeKey: 'myshop24',
         matchKeyRule: { field: 'recipientName' },
       })
       expect(badRule.status).toBe(400)
       const ok = await putSetting(CH, {
         observeEnabled: true,
         adapter: 'cafe24',
+        storeKey: 'myshop24',
         reconcileMode: 'judge',
         matchKeyRule: { field: 'lineKeyOrderPart' },
       })
@@ -756,14 +779,79 @@ d('채널 주문 관측 lease·커서(dev DB)', () => {
         matchKeyRule: { field: 'lineKeyOrderPart' },
       })
     })
-    it('같은 Space 에서 카페24 관측 채널은 1개만 — 두 번째는 409', async () => {
-      const second = await putSetting(CH2, { observeEnabled: true, adapter: 'cafe24' })
+    it('카페24 는 켤 때 쇼핑몰 필수·연결된 몰만 — 없으면 400', async () => {
+      expect((await putSetting(CH, { observeEnabled: true, adapter: 'cafe24' })).status).toBe(400)
+      const ghost = await putSetting(CH, {
+        observeEnabled: true,
+        adapter: 'cafe24',
+        storeKey: 'ghost-shop',
+      })
+      expect(ghost.status).toBe(400)
+    })
+    it('같은 쇼핑몰의 관측 채널은 1개만(null storeKey 는 레거시 몰) — 다른 몰이면 허용', async () => {
+      // CH 는 storeKey null(레거시 myshop24 로 해석)
+      const second = await putSetting(CH2, {
+        observeEnabled: true,
+        adapter: 'cafe24',
+        storeKey: 'myshop24',
+      })
       expect(second.status).toBe(409)
       expect((await second.json()).message).toContain('카페24')
-      const same = await putSetting(CH, { observeEnabled: true, adapter: 'cafe24' })
-      expect(same.status).toBe(200)
+      const other = await putSetting(CH2, {
+        observeEnabled: true,
+        adapter: 'cafe24',
+        storeKey: 'shop-b',
+      })
+      expect(other.status).toBe(200)
       const naver = await putSetting(CH2, { observeEnabled: true, adapter: 'naver', storeKey: 's' })
       expect(naver.status).toBe(200)
+    })
+    it('레거시 채널(storeKey null)을 레거시 몰로 다시 저장하면 커서를 유지한다', async () => {
+      const cursor = { at: new Date().toISOString(), catchingUp: false }
+      await prisma.channelFulfillmentSetting.update({
+        where: { channelId: CH },
+        data: { adapter: 'cafe24', storeKey: null, observeEnabled: true, observeCursor: cursor },
+      })
+      const res = await putSetting(CH, {
+        observeEnabled: true,
+        adapter: 'cafe24',
+        storeKey: 'myshop24',
+      })
+      expect(res.status).toBe(200)
+      const row = await prisma.channelFulfillmentSetting.findUniqueOrThrow({
+        where: { channelId: CH },
+      })
+      expect(row.storeKey).toBe('myshop24')
+      expect(row.observeCursor).toEqual(cursor)
+    })
+    it('몰을 바꾸면 커서·lease 를 비우고 진행 중 operation 을 setting_changed 로 닫는다', async () => {
+      await prisma.channelFulfillmentSetting.update({
+        where: { channelId: CH },
+        data: { adapter: 'cafe24', storeKey: 'shop-b', observeEnabled: true },
+      })
+      const started = await startObserve(CH, new Date())
+      await prisma.channelFulfillmentSetting.update({
+        where: { channelId: CH },
+        data: { observeCursor: { at: new Date().toISOString(), catchingUp: false } },
+      })
+      const res = await putSetting(CH, {
+        observeEnabled: true,
+        adapter: 'cafe24',
+        storeKey: 'myshop24',
+      })
+      expect(res.status).toBe(200)
+      const row = await prisma.channelFulfillmentSetting.findUniqueOrThrow({
+        where: { channelId: CH },
+      })
+      expect(row.observeLease).toBeNull()
+      expect(row.observeCursor).toBeNull()
+      const op = await prisma.pipelineOperation.findUniqueOrThrow({
+        where: { id: started.operationId },
+      })
+      expect(op).toMatchObject({ status: 'FAILED', error: 'setting_changed' })
+      await expect(ingestLines(started.operationId, [line('Z1')])).rejects.toBeInstanceOf(
+        ChannelOrderError
+      )
     })
   })
 })
