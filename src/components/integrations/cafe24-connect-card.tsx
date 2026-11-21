@@ -327,7 +327,7 @@ export function Cafe24ConnectCard({
                   <TableRow>
                     <TableHead>쇼핑몰 ID</TableHead>
                     <TableHead>상태</TableHead>
-                    <TableHead>승인일</TableHead>
+                    <TableHead className="hidden sm:table-cell">승인일</TableHead>
                     <TableHead className="text-right">작업</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -335,7 +335,9 @@ export function Cafe24ConnectCard({
                   {malls.map((m) => (
                     <Fragment key={m.mallId}>
                       <TableRow>
-                        <TableCell className="font-medium">{m.mallId}</TableCell>
+                        <TableCell className="font-medium break-all whitespace-normal">
+                          {m.mallId}
+                        </TableCell>
                         <TableCell>
                           <Badge
                             variant="outline"
@@ -344,13 +346,13 @@ export function Cafe24ConnectCard({
                             {STATUS_LABEL[m.status]}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           {m.connectedAt
                             ? new Date(m.connectedAt).toLocaleDateString('ko-KR')
                             : '-'}
                         </TableCell>
                         <TableCell>
-                          <div className="flex justify-end gap-2">
+                          <div className="flex flex-col items-end gap-1 sm:flex-row sm:justify-end sm:gap-2">
                             <Button
                               size="sm"
                               variant={m.status === 'connected' ? 'outline' : 'default'}
