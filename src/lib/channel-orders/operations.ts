@@ -97,6 +97,7 @@ export async function startObserve(channelId: string, now: Date): Promise<Starte
     UPDATE "ChannelFulfillmentSetting"
     SET "observeLease" = ${JSON.stringify(lease)}::jsonb
     WHERE "channelId" = ${channelId} AND "observeEnabled" = true
+      AND "adapter" = ${setting.adapter} AND "storeKey" IS NOT DISTINCT FROM ${setting.storeKey}
       AND ("observeLease" IS NULL OR ("observeLease"->>'until')::bigint <= ${now.getTime()})`
   if (got !== 1) throw new ChannelOrderError('busy', '이미 실행 중입니다')
   const cursor = asCursor(setting.observeCursor)
@@ -272,6 +273,19 @@ export async function startFullScan(channelId: string, now: Date) {
       minCalls: windows.length, // 일자 창마다 적어도 1번은 ingest 해야 한다
     },
   })
+  // 읽은 뒤 설정(몰)이 바뀌었으면 PUT 의 STARTED 종료를 놓쳤을 수 있다 — 여기서 닫는다.
+  const now2 = await prisma.channelFulfillmentSetting.findUnique({ where: { channelId } })
+  if (
+    !now2?.observeEnabled ||
+    now2.adapter !== setting.adapter ||
+    now2.storeKey !== setting.storeKey
+  ) {
+    await prisma.pipelineOperation.update({
+      where: { id: op.id },
+      data: { status: 'FAILED', error: 'setting_changed', finishedAt: new Date() },
+    })
+    throw new ChannelOrderError('busy', '설정이 바뀌어 전수 조회를 다시 시작합니다')
+  }
   return {
     operationId: op.id,
     spaceId: setting.spaceId,

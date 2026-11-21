@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { errorResponse } from '@/lib/api-helpers'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { requireSpaceAdmin } from '@/lib/agent/identity/space-admin'
-import { authorizeUrl } from '@/lib/cafe24/client'
+import { MALL_ID_RE, authorizeUrl } from '@/lib/cafe24/client'
 import {
   CAFE24_COOKIE_PATH,
   CAFE24_NONCE_COOKIE,
@@ -26,15 +26,19 @@ export async function POST(req: NextRequest) {
   }
   const form = await req.formData().catch(() => null)
   const spaceId = form?.get('spaceId')
+  const mallId = form?.get('mallId')
   if (typeof spaceId !== 'string' || !spaceId) return errorResponse('잘못된 요청입니다', 400)
+  if (typeof mallId !== 'string' || !MALL_ID_RE.test(mallId)) {
+    return errorResponse('잘못된 요청입니다', 400)
+  }
 
   const auth = await requireSpaceAdmin(spaceId)
   if ('error' in auth) return auth.error
   const mfaError = await requireAal2()
   if (mfaError) return mfaError
 
-  const row = await readCafe24(spaceId)
-  if (!row) return errorResponse('먼저 앱 정보를 저장해 주세요', 400)
+  const row = await readCafe24(spaceId, mallId)
+  if (!row) return errorResponse('먼저 쇼핑몰을 추가해 주세요', 400)
 
   const created = createCafe24State({
     spaceId,
