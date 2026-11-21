@@ -99,4 +99,24 @@ describe('OsmuConnections', () => {
     expect(screen.queryByLabelText(/통합 토큰/)).toBeNull()
     expect(screen.queryByText(/구글 드라이브 — 사진/)).toBeNull()
   })
+
+  it('한 팝업(노션)이 저장하면 다른 팝업(드라이브)도 상태를 다시 읽는다', async () => {
+    const ok = { notion: null, drive: null, mfaReady: true }
+    global.fetch = jest.fn().mockResolvedValue(reply(200, ok)) as never
+    render(
+      <>
+        <OsmuConnections only="notion" />
+        <OsmuConnections only="drive" />
+      </>
+    )
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2))
+    fireEvent.change(screen.getByLabelText(/통합 토큰/), { target: { value: 'ntn_xxxxxxxxxxxx' } })
+    fireEvent.change(screen.getByLabelText(/콘텐츠 소재/), { target: { value: 'a' } })
+    fireEvent.change(screen.getByLabelText(/콘텐츠 발행/), { target: { value: 'b' } })
+    fireEvent.click(screen.getByRole('button', { name: '연결하기' }))
+    // 초기 조회 2 + 노션 저장(PUT) 1 + 드라이브 재조회 1. 저장한 노션은 다시 읽지 않는다.
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(4))
+    const gets = (global.fetch as jest.Mock).mock.calls.filter((c) => !c[1] || !c[1].method)
+    expect(gets).toHaveLength(3)
+  })
 })
