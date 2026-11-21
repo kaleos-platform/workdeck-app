@@ -803,8 +803,11 @@ export async function exchangeGoogleCode(
 
 /** 브랜드마다 GA4 속성 1건을 조회한다(접근 권한 확인). 실패하면 GoogleOAuthError(상태·코드만). */
 export async function verifyGoogleBrands(cred: GoogleCred, token?: string): Promise<void> {
+  const brands = Object.keys(cred.config.brands ?? {})
+  // 브랜드 0개면 확인할 속성이 없다 — 연결됨으로 올리지 않는다.
+  if (brands.length === 0) throw new GoogleOAuthError('속성 확인', 'not_found')
   const bearer = token ?? (await accessToken(cred))
-  for (const brand of Object.keys(cred.config.brands ?? {})) {
+  for (const brand of brands) {
     const t = resolveBrand(cred.config, brand)
     const url = targetUrl(GA4_ADMIN_BASE, `v1beta/properties/${t.ga4_property_id}`, t, 'ga4-admin')
     const res = await oauthHttp('속성 확인', url, {

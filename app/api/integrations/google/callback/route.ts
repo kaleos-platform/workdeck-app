@@ -69,7 +69,16 @@ const brandKey = (row: GoogleRow) =>
 const safeMessage = (err: unknown, fallback: string) =>
   err instanceof Error && err.name === 'GoogleOAuthError' ? err.message : fallback
 
+// DB·복호화 등 예상 밖 예외에도 nonce 쿠키를 지우고 결과 화면으로 돌려보낸다(원문 500 노출 금지).
 export async function GET(req: NextRequest) {
+  try {
+    return await handle(req)
+  } catch {
+    return done('error')
+  }
+}
+
+async function handle(req: NextRequest): Promise<NextResponse> {
   const url = new URL(req.url)
   const stateParam = url.searchParams.get('state')
   const state = stateParam ? verifyOAuthState(GOOGLE_STATE_PURPOSE, stateParam) : null

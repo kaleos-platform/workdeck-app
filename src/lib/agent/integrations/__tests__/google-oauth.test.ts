@@ -171,6 +171,15 @@ describe('verifyGoogleBrands', () => {
     })
   })
 
+  it('브랜드가 0개면 조회 없이 실패한다(연결됨 승격 금지)', async () => {
+    const c = cred()
+    const err = await verifyGoogleBrands({ ...c, config: { ...c.config, brands: {} } }, 'AT').catch(
+      (e) => e
+    )
+    expect(err.message).toBe('Google 속성 확인 실패: not_found')
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('토큰을 안 주면 refresh token 으로 access token 을 받아 쓴다', async () => {
     fetchMock
       .mockResolvedValueOnce(json({ access_token: 'AT-refreshed' }))
