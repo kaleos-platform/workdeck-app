@@ -198,18 +198,17 @@ class Conflict extends Error {}
 const lockSpace = (tx: Prisma.TransactionClient, spaceId: string) =>
   tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`cafe24:${spaceId}`}))`
 
-export type RegisterResult = 'ok' | 'conflict' | 'limit' | 'app_required' | 'no_malls'
+export type RegisterResult = 'ok' | 'conflict' | 'limit' | 'app_required'
 
 /**
- * 쇼핑몰 추가·앱 정보 갱신. 한 트랜잭션(Space 잠금)에서 처리한다.
- * - mallId 있음: 새 몰이면 행 생성(한도 5, 레거시 포함). 앱 정보가 없으면 기존 몰 행에서 복사(첫 몰은 필수 → 'app_required').
- * - mallId 없음: 앱 정보만 수정(몰이 없으면 'no_malls').
- * 앱 정보가 있으면 모든 행을 credVersion 조건부 updateMany 로 갱신하고, 하나라도 0행이면 전체 롤백 → 'conflict'.
- * clientId 가 바뀐 행은 토큰·lease 를 버리고 승인 필요로 돌린다. secret 만 바뀌면 토큰을 유지한다.
+ * 쇼핑몰 추가·앱 정보 수정 — **그 쇼핑몰 행만** 바꾼다(한 트랜잭션, Space 잠금).
+ * 심사 전 카페24 앱은 앱을 만든 개발자 계정 소유 몰에서만 토큰이 나온다 → 몰마다 그 계정의 앱 정보를 받는다(다른 몰에서 복사하지 않는다).
+ * - 새 몰: 앱 정보 필수('app_required'), 한도 5(레거시 포함).
+ * - 기존 몰: 앱 정보가 있으면 조건부 갱신. clientId 가 바뀌면 토큰·lease·오류를 비우고 승인 필요로, secret 만 바뀌면 토큰 유지. 0행이면 'conflict'.
  */
 export async function registerCafe24(
   spaceId: string,
-  input: { mallId?: string; clientId?: string; clientSecret?: string }
+  input: { mallId: string; clientId?: string; clientSecret?: string }
 ): Promise<RegisterResult> {
   const { mallId, clientId, clientSecret } = input
   const app = clientId && clientSecret ? { clientId, clientSecret } : null
@@ -219,46 +218,11 @@ export async function registerCafe24(
       const rows = (
         await tx.spaceCredential.findMany({ where: CAFE24_WHERE(spaceId), select: RAW_SELECT })
       ).map(toRow)
-      if (mallId === undefined && rows.length === 0) return 'no_malls'
-      const exists = mallId !== undefined && rows.some((r) => r.config.mallId === mallId)
-      if (mallId !== undefined && !exists && rows.length >= MAX_MALLS) return 'limit'
-      const useApp =
-        app ??
-        (rows[0] && {
-          clientId: rows[0].secret.clientId,
-          clientSecret: rows[0].secret.clientSecret,
-        })
-      if (!useApp) return 'app_required'
-
-      if (app) {
-        for (const r of rows) {
-          const same = r.secret.clientId === app.clientId
-          const { encrypted: encryptedPayload, iv } = enc(
-            same ? { ...r.secret, clientSecret: app.clientSecret } : app
-          )
-          const next = {
-            ...(same ? r.config : { mallId: r.config.mallId, status: 'needs_auth' }),
-            credVersion: r.config.credVersion + 1,
-          }
-          const { count } = await tx.spaceCredential.updateMany({
-            where: {
-              id: r.id,
-              provider: r.provider,
-              config: { path: ['credVersion'], equals: r.config.credVersion },
-            },
-            data: {
-              encryptedPayload,
-              iv,
-              config: JSON.parse(JSON.stringify(next)) as Prisma.InputJsonValue,
-              // 앱이 바뀐 행은 예전 오류·점검 상태를 비운다(승인 필요로 새 출발). 같은 앱이면 오류 안내를 유지.
-              ...(same ? {} : { lastError: null, healthError: null, healthAlertedAt: null }),
-            },
-          })
-          if (count !== 1) throw new Conflict()
-        }
-      }
-      if (mallId !== undefined && !exists) {
-        const { encrypted: encryptedPayload, iv } = enc(useApp)
+      const r = rows.find((x) => x.config.mallId === mallId)
+      if (!r) {
+        if (rows.length >= MAX_MALLS) return 'limit'
+        if (!app) return 'app_required'
+        const { encrypted: encryptedPayload, iv } = enc(app)
         await tx.spaceCredential.create({
           data: {
             spaceId,
@@ -268,7 +232,32 @@ export async function registerCafe24(
             config: { mallId, status: 'needs_auth', credVersion: 1 },
           },
         })
+        return 'ok'
       }
+      if (!app) return 'ok'
+      const same = r.secret.clientId === app.clientId
+      const { encrypted: encryptedPayload, iv } = enc(
+        same ? { ...r.secret, clientSecret: app.clientSecret } : app
+      )
+      const next = {
+        ...(same ? r.config : { mallId: r.config.mallId, status: 'needs_auth' }),
+        credVersion: r.config.credVersion + 1,
+      }
+      const { count } = await tx.spaceCredential.updateMany({
+        where: {
+          id: r.id,
+          provider: r.provider,
+          config: { path: ['credVersion'], equals: r.config.credVersion },
+        },
+        data: {
+          encryptedPayload,
+          iv,
+          config: JSON.parse(JSON.stringify(next)) as Prisma.InputJsonValue,
+          // 앱이 바뀐 행은 예전 오류·점검 상태를 비운다(승인 필요로 새 출발). 같은 앱이면 오류 안내를 유지.
+          ...(same ? {} : { lastError: null, healthError: null, healthAlertedAt: null }),
+        },
+      })
+      if (count !== 1) throw new Conflict()
       return 'ok'
     })
   } catch (err) {

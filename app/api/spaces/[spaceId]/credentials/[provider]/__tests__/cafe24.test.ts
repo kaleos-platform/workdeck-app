@@ -163,18 +163,27 @@ describe('쇼핑몰 추가·앱 정보 수정·삭제', () => {
       { params: Promise.resolve({ spaceId: SP, provider: 'cafe24' }) }
     )
 
-  it('첫 쇼핑몰은 앱 정보가 필수(400), 둘째 몰은 비워도 기존 앱 정보를 복사한다', async () => {
+  it('새 쇼핑몰은 앱 정보가 필수(400) — 다른 몰의 앱 정보를 복사하지 않는다', async () => {
     const res = await put({ config: { mallId: 'first-shop' } })
     expect(res.status).toBe(400)
-    expect((await res.json()).message).toContain('첫 쇼핑몰은 앱 정보')
+    expect((await res.json()).message).toContain('앱 정보')
     expect(fakeDb.rows).toHaveLength(0)
     seedMall('first-shop')
-    expect((await put({ config: { mallId: 'second-shop' } })).status).toBe(200)
-    expect(fakeDb.rows).toHaveLength(2)
+    expect((await put({ config: { mallId: 'second-shop' } })).status).toBe(400)
+    expect(fakeDb.rows).toHaveLength(1)
+    expect(
+      (
+        await put({
+          config: { mallId: 'second-shop' },
+          secret: { clientId: 'other-account-cid', clientSecret: 'OTHER-secret-1' },
+        })
+      ).status
+    ).toBe(200)
     expect(JSON.parse(fakeDb.rows[1].encryptedPayload)).toEqual({
-      clientId: 'cid-1234567',
-      clientSecret: 'CSECRET-xyz',
+      clientId: 'other-account-cid',
+      clientSecret: 'OTHER-secret-1',
     })
+    expect(JSON.parse(fakeDb.rows[0].encryptedPayload).clientId).toBe('cid-1234567')
   })
 
   it('이미 있는 몰에 secret 없이 추가하면 그대로 200', async () => {
@@ -197,7 +206,7 @@ describe('쇼핑몰 추가·앱 정보 수정·삭제', () => {
     expect(fakeDb.rows).toHaveLength(5)
   })
 
-  it('앱 정보 수정은 모든 몰에 전파되고 clientId 가 바뀌면 각 몰 토큰을 폐기한다', async () => {
+  it('앱 정보 수정은 그 몰만 바꾼다 — clientId 가 바뀌면 그 몰 토큰만 폐기', async () => {
     fakeDb.seed(
       SP,
       {
@@ -210,44 +219,47 @@ describe('쇼핑몰 추가·앱 정보 수정·삭제', () => {
     )
     seedMall('shop-a')
     expect(
-      (await put({ secret: { clientId: 'brand-new-client', clientSecret: 'NEW-secret-123' } }))
-        .status
+      (
+        await put({
+          config: { mallId: 'shop-a' },
+          secret: { clientId: 'brand-new-client', clientSecret: 'NEW-secret-123' },
+        })
+      ).status
     ).toBe(200)
-    for (const r of fakeDb.rows) {
-      expect(JSON.parse(r.encryptedPayload)).toEqual({
-        clientId: 'brand-new-client',
-        clientSecret: 'NEW-secret-123',
-      })
-      expect(r.config.status).toBe('needs_auth')
-    }
-    expect(fakeDb.rows.map((r) => r.provider)).toEqual(['cafe24', 'cafe24:shop-a'])
+    const [legacy, a] = fakeDb.rows
+    expect(JSON.parse(a.encryptedPayload)).toEqual({
+      clientId: 'brand-new-client',
+      clientSecret: 'NEW-secret-123',
+    })
+    expect(a.config.status).toBe('needs_auth')
+    expect(JSON.parse(legacy.encryptedPayload)).toMatchObject({
+      clientId: 'cid-1234567',
+      refreshToken: 'RT',
+    })
+    expect(legacy.config).toMatchObject({ credVersion: 3, status: 'connected' })
   })
 
-  it('secret 만 바뀌면(같은 clientId) 모든 몰의 토큰을 유지한다', async () => {
+  it('secret 만 바뀌면(같은 clientId) 그 몰 토큰을 유지하고 다른 몰은 그대로', async () => {
     seedMall('shop-a')
     seedMall('shop-b')
-    await put({ secret: { clientId: 'cid-1234567', clientSecret: 'NEW-secret-123' } })
-    for (const r of fakeDb.rows) {
-      expect(JSON.parse(r.encryptedPayload)).toMatchObject({
-        clientSecret: 'NEW-secret-123',
-        refreshToken: 'RT',
-      })
-    }
+    await put({
+      config: { mallId: 'shop-a' },
+      secret: { clientId: 'cid-1234567', clientSecret: 'NEW-secret-123' },
+    })
+    expect(JSON.parse(fakeDb.rows[0].encryptedPayload)).toMatchObject({
+      clientSecret: 'NEW-secret-123',
+      refreshToken: 'RT',
+    })
+    expect(JSON.parse(fakeDb.rows[1].encryptedPayload).clientSecret).toBe('CSECRET-xyz')
   })
 
-  it('앱 정보 전파 중 한 행이 충돌하면 409 이고 앞서 쓴 행도 되돌린다(전체 롤백)', async () => {
+  it('쇼핑몰 ID 없이 앱 정보만 보내면(전체 수정) 400 — 아무 행도 바뀌지 않는다', async () => {
     seedMall('shop-a')
-    seedMall('shop-b')
-    let n = 0
-    fakeDb.beforeUpdateMany = () => {
-      if (++n === 2) fakeDb.rows[1].config = { ...fakeDb.rows[1].config, credVersion: 9 }
-    }
     const res = await put({
       secret: { clientId: 'brand-new-client', clientSecret: 'NEW-secret-123' },
     })
-    expect(res.status).toBe(409)
+    expect(res.status).toBe(400)
     expect(JSON.parse(fakeDb.rows[0].encryptedPayload).clientId).toBe('cid-1234567')
-    expect(fakeDb.rows[0].config.credVersion).toBe(1)
   })
 
   it('몰이 없는데 앱 정보만 보내면 400', async () => {
