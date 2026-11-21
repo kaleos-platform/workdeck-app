@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Plus, Trash2 } from 'lucide-react'
 import { CopyCodeBlock } from '@/components/integrations/copy-code-block'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -14,8 +14,13 @@ import { APPROVALS_PATH } from '@/lib/deck-routes'
 import { buildAppUrl } from '@/lib/domain'
 
 type Provider = 'meta-ads' | 'google-marketing' | 'naver-searchad'
-type Field = { key: string; label: string; optional?: boolean }
+/** placeholder = 입력 예시, hint = 어디서 찾는 값인지 안내 */
+type Field = { key: string; label: string; optional?: boolean; placeholder?: string; hint?: string }
 type Def = {
+  /** 브랜드별 행 묶음 제목·설명·브랜드 이름 예시 */
+  rowsTitle?: string
+  rowsHint?: string
+  brandPlaceholder?: string
   secrets: Field[]
   /** 네이버처럼 브랜드와 무관한 공통 설정 칸 */
   shared?: Field
@@ -86,10 +91,22 @@ const str = (v: unknown) => (typeof v === 'string' ? v : '')
 const DEFS: Record<Provider, Def> = {
   'meta-ads': {
     secrets: [
-      { key: 'accessToken', label: '액세스 토큰' },
-      { key: 'appSecret', label: '앱 시크릿' },
+      {
+        key: 'accessToken',
+        label: '액세스 토큰',
+        placeholder: '예: EAAG… 로 시작하는 시스템 사용자 토큰',
+      },
+      { key: 'appSecret', label: '앱 시크릿', placeholder: 'Meta 앱 설정 → 기본 설정의 앱 시크릿' },
     ],
-    columns: [{ key: 'adAccount', label: '광고 계정 ID' }],
+    brandPlaceholder: '예: 에이엠엘',
+    columns: [
+      {
+        key: 'adAccount',
+        label: '광고 계정 ID',
+        placeholder: '예: act_1234567890',
+        hint: '광고 관리자 주소의 act= 뒤 숫자',
+      },
+    ],
     digits: /^(act_)?\d+$/,
     digitsMessage: '숫자만 입력해 주세요(act_ 로 시작해도 됩니다)',
     max: 20,
@@ -107,13 +124,39 @@ const DEFS: Record<Provider, Def> = {
   },
   'google-marketing': {
     secrets: [
-      { key: 'clientId', label: '클라이언트 ID' },
-      { key: 'clientSecret', label: '클라이언트 시크릿' },
+      {
+        key: 'clientId',
+        label: '클라이언트 ID',
+        placeholder: '예: 1234567890-abcd….apps.googleusercontent.com',
+        hint: 'Google Cloud 콘솔 → API 및 서비스 → 사용자 인증 정보의 OAuth 클라이언트',
+      },
+      { key: 'clientSecret', label: '클라이언트 시크릿', placeholder: '예: GOCSPX-…' },
     ],
+    rowsTitle: '연결할 GA4 속성',
+    rowsHint:
+      '이 연결로 조회할 GA4 속성을 적습니다. 브랜드 이름은 에이전트가 어느 속성을 쓸지 고를 때 부르는 별칭입니다.',
+    brandPlaceholder: '예: 우리 쇼핑몰',
     columns: [
-      { key: 'ga4_property_id', label: 'GA4 속성 ID' },
-      { key: 'gtm_account_id', label: '태그 관리자 계정 ID (선택)', optional: true },
-      { key: 'gtm_container_id', label: '태그 관리자 컨테이너 ID (선택)', optional: true },
+      {
+        key: 'ga4_property_id',
+        label: 'GA4 속성 ID',
+        placeholder: '예: 412345678',
+        hint: 'GA4 관리 → 속성 세부정보의 숫자. 측정 ID(G-로 시작)가 아닙니다.',
+      },
+      {
+        key: 'gtm_account_id',
+        label: '태그 관리자 계정 ID (선택)',
+        optional: true,
+        placeholder: '예: 6012345678',
+        hint: '태그 관리자 → 관리 → 계정 설정의 숫자. 이메일이 아닙니다.',
+      },
+      {
+        key: 'gtm_container_id',
+        label: '태그 관리자 컨테이너 ID (선택)',
+        optional: true,
+        placeholder: '예: 198765432',
+        hint: '컨테이너 설정의 숫자. GTM-로 시작하는 공개 ID가 아닙니다.',
+      },
     ],
     digits: /^\d+$/,
     digitsMessage: '숫자만 입력해 주세요',
@@ -156,11 +199,12 @@ const DEFS: Record<Provider, Def> = {
   },
   'naver-searchad': {
     secrets: [
-      { key: 'apiKey', label: '액세스 라이선스' },
-      { key: 'secretKey', label: '비밀 키' },
+      { key: 'apiKey', label: '액세스 라이선스', placeholder: '검색광고 → 도구 → API 사용 관리' },
+      { key: 'secretKey', label: '비밀 키', placeholder: '같은 화면의 비밀 키' },
     ],
-    shared: { key: 'managerCustomerId', label: '관리 고객 ID' },
-    columns: [{ key: 'customerId', label: '광고주 고객 ID' }],
+    shared: { key: 'managerCustomerId', label: '관리 고객 ID', placeholder: '예: 1234567' },
+    brandPlaceholder: '예: 에이엠엘',
+    columns: [{ key: 'customerId', label: '광고주 고객 ID', placeholder: '예: 2345678' }],
     digits: /^\d+$/,
     digitsMessage: '숫자만 입력해 주세요',
     max: 20,
@@ -213,6 +257,7 @@ export function AdCredentialForm({
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [secrets, setSecrets] = useState<Record<string, string>>({})
+  const [shown, setShown] = useState<Record<string, boolean>>({})
   const [shared, setShared] = useState('')
   const [rows, setRows] = useState<Row[]>(() => [emptyRow(def)])
   const [defaultId, setDefaultId] = useState<number | null>(null)
@@ -286,7 +331,15 @@ export function AdCredentialForm({
         const v = r.cols[c.key]?.trim()
         if (!v) {
           if (!c.optional) out.push(`${i + 1}번째 ${c.label} 칸을 채워 주세요`)
-        } else if (!def.digits.test(v)) out.push(`${i + 1}번째 ${c.label}: ${def.digitsMessage}`)
+        } else if (!def.digits.test(v)) {
+          out.push(
+            `${i + 1}번째 ${c.label}: ${
+              c.key === 'ga4_property_id' && /^G-/i.test(v)
+                ? '측정 ID(G-…)가 아니라 GA4 관리 → 속성 세부정보의 숫자 속성 ID를 입력해 주세요'
+                : def.digitsMessage
+            }`
+          )
+        }
       }
       // 선택 칸이 여럿이면 모두 채우거나 모두 비워야 한다(GTM 계정·컨테이너).
       const opt = def.columns.filter((c) => c.optional)
@@ -423,13 +476,27 @@ export function AdCredentialForm({
         {def.secrets.map((f) => (
           <div key={f.key} className="space-y-1.5">
             <Label htmlFor={`${provider}-${f.key}`}>{f.label}</Label>
-            <Input
-              id={`${provider}-${f.key}`}
-              type="password"
-              autoComplete="off"
-              value={secrets[f.key] ?? ''}
-              onChange={(e) => setSecrets((s) => ({ ...s, [f.key]: e.target.value }))}
-            />
+            <div className="relative">
+              <Input
+                id={`${provider}-${f.key}`}
+                type={shown[f.key] ? 'text' : 'password'}
+                autoComplete="off"
+                placeholder={f.placeholder}
+                className="pr-10"
+                value={secrets[f.key] ?? ''}
+                onChange={(e) => setSecrets((s) => ({ ...s, [f.key]: e.target.value }))}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+                aria-label={shown[f.key] ? `${f.label} 숨기기` : `${f.label} 보기`}
+                aria-pressed={!!shown[f.key]}
+                onClick={() => setShown((x) => ({ ...x, [f.key]: !x[f.key] }))}
+              >
+                {shown[f.key] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {f.hint && <p className="text-xs text-muted-foreground">{f.hint}</p>}
           </div>
         ))}
         <p className="text-xs text-muted-foreground">
@@ -441,6 +508,7 @@ export function AdCredentialForm({
             <Input
               id={`${provider}-${def.shared.key}`}
               inputMode="numeric"
+              placeholder={def.shared.placeholder}
               value={shared}
               onChange={(e) => setShared(e.target.value)}
             />
@@ -449,9 +517,9 @@ export function AdCredentialForm({
       </div>
 
       <fieldset className="space-y-3">
-        <legend className="text-sm font-medium">브랜드별 계정</legend>
+        <legend className="text-sm font-medium">{def.rowsTitle ?? '브랜드별 계정'}</legend>
         <p className="text-xs text-muted-foreground">
-          브랜드 이름은 에이전트가 어느 계정을 쓸지 고를 때 사용하는 이름입니다.
+          {def.rowsHint ?? '브랜드 이름은 에이전트가 어느 계정을 쓸지 고를 때 사용하는 이름입니다.'}
         </p>
         {rows.map((r, i) => (
           <div key={r.id} className="space-y-2 rounded-lg border p-3">
@@ -460,6 +528,7 @@ export function AdCredentialForm({
                 <Label htmlFor={`${provider}-brand-${r.id}`}>브랜드 이름 {i + 1}</Label>
                 <Input
                   id={`${provider}-brand-${r.id}`}
+                  placeholder={def.brandPlaceholder}
                   value={r.brand}
                   onChange={(e) => setRow(r.id, (x) => ({ ...x, brand: e.target.value }))}
                 />
@@ -472,11 +541,13 @@ export function AdCredentialForm({
                   <Input
                     id={`${provider}-${c.key}-${r.id}`}
                     inputMode="numeric"
+                    placeholder={c.placeholder}
                     value={r.cols[c.key] ?? ''}
                     onChange={(e) =>
                       setRow(r.id, (x) => ({ ...x, cols: { ...x.cols, [c.key]: e.target.value } }))
                     }
                   />
+                  {c.hint && <p className="text-xs text-muted-foreground">{c.hint}</p>}
                   {provider === 'meta-ads' &&
                     (() => {
                       const id = r.cols[c.key]?.trim()
