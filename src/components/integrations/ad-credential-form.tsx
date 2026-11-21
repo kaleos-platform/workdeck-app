@@ -4,12 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { CopyCodeBlock } from '@/components/integrations/copy-code-block'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import { APPROVALS_PATH } from '@/lib/deck-routes'
+import { buildAppUrl } from '@/lib/domain'
 
 type Provider = 'meta-ads' | 'google-marketing' | 'naver-searchad'
 type Field = { key: string; label: string; optional?: boolean }
@@ -40,6 +42,42 @@ type Loaded = {
   lastVerifiedAt: string | null
   hasError: boolean
   pendingActions: number
+  /** 구글: 서버가 계산한 refresh token 보유 여부(값은 내려오지 않는다) */
+  hasRefreshToken?: boolean
+}
+
+// 「Google로 연결」 OAuth 복귀 결과(?google=)
+const GOOGLE_RESULT: Record<string, { title: string; ok: boolean }> = {
+  connected: { title: 'Google 연결이 완료되었습니다', ok: true },
+  denied: { title: 'Google 승인을 취소했습니다', ok: false },
+  error: {
+    title: 'Google 연결에 실패했습니다. 클라이언트 정보를 확인하고 다시 시도해 주세요',
+    ok: false,
+  },
+  scope_missing: {
+    title:
+      '필요한 권한이 모두 승인되지 않았습니다. 「다시 연결」을 눌러 모든 권한 항목을 허용해 주세요',
+    ok: false,
+  },
+  property_denied: {
+    title:
+      '연결은 됐지만 GA4 속성에 접근하지 못했습니다. 승인한 구글 계정에 속성 권한이 있는지 확인해 주세요',
+    ok: false,
+  },
+  mfa_required: {
+    title: '2단계 인증이 필요합니다. 「다시 연결」을 눌러 인증한 뒤 진행해 주세요',
+    ok: false,
+  },
+  forbidden: {
+    title:
+      '이 작업 공간의 관리자 권한이 없거나 승인을 시작한 계정과 다릅니다. 같은 계정으로 다시 시도해 주세요',
+    ok: false,
+  },
+  expired: {
+    title:
+      '승인 요청이 만료되었거나 유효하지 않습니다. 「다시 연결」을 눌러 처음부터 진행해 주세요',
+    ok: false,
+  },
 }
 
 const rec = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {})
@@ -71,7 +109,6 @@ const DEFS: Record<Provider, Def> = {
     secrets: [
       { key: 'clientId', label: '클라이언트 ID' },
       { key: 'clientSecret', label: '클라이언트 시크릿' },
-      { key: 'refreshToken', label: '리프레시 토큰' },
     ],
     columns: [
       { key: 'ga4_property_id', label: 'GA4 속성 ID' },
@@ -85,7 +122,6 @@ const DEFS: Record<Provider, Def> = {
       secret: {
         clientId: secrets.clientId,
         clientSecret: secrets.clientSecret,
-        refreshToken: secrets.refreshToken,
       },
       config: {
         defaultBrand,
@@ -161,10 +197,16 @@ export function AdCredentialForm({
   provider,
   spaceId,
   onChanged,
+  googleResult = null,
+  navigate = (url: string) => window.location.assign(url),
 }: {
   provider: Provider
   spaceId: string
   onChanged?: () => void
+  /** 구글 OAuth 복귀 결과(?google=) */
+  googleResult?: string | null
+  /** Google 동의 화면으로 이동(테스트에서 바꿔 끼운다) */
+  navigate?: (url: string) => void
 }) {
   const def = DEFS[provider]
   const url = `/api/spaces/${spaceId}/credentials/${provider}`
@@ -178,6 +220,8 @@ export function AdCredentialForm({
   const [saveError, setSaveError] = useState<string | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [connecting, setConnecting] = useState(false)
+  const [connectError, setConnectError] = useState<string | null>(null)
   // 저장 직후 재조회 때 입력 중인 비밀값은 건드리지 않는다 — 행·공통 설정만 서버 값으로 덮는다.
   const baseline = useRef('')
 
@@ -291,6 +335,28 @@ export function AdCredentialForm({
       setSaveError('저장 중 오류가 발생했습니다')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // 서버가 Origin·권한·2단계 인증을 확인하고 Google 동의 주소를 준다. 인증이 만료됐으면 제자리에서 다시 인증한다.
+  async function connectGoogle() {
+    setConnectError(null)
+    setConnecting(true)
+    try {
+      const body = new FormData()
+      body.set('spaceId', spaceId)
+      const r = await fetchWithMfa('/api/integrations/google/install', { method: 'POST', body })
+      if (await redirectIfMfaRequired(r)) return
+      const json = (await r.json().catch(() => null)) as { url?: string; message?: string } | null
+      if (!r.ok || !json?.url) {
+        setConnectError(json?.message ?? 'Google 승인을 시작하지 못했습니다')
+        return
+      }
+      navigate(json.url)
+    } catch {
+      setConnectError('Google 승인을 시작하지 못했습니다')
+    } finally {
+      setConnecting(false)
     }
   }
 
@@ -463,9 +529,13 @@ export function AdCredentialForm({
       </fieldset>
 
       {provider === 'google-marketing' && (
-        <p className="text-xs text-muted-foreground">
-          저장할 때 연결을 확인하지 않습니다. 에이전트가 처음 조회할 때 확인됩니다.
-        </p>
+        <GoogleConnect
+          loaded={loaded}
+          result={googleResult}
+          connecting={connecting}
+          error={connectError}
+          onConnect={connectGoogle}
+        />
       )}
 
       {errors.length > 0 && (
@@ -512,5 +582,94 @@ export function AdCredentialForm({
         </Button>
       )}
     </form>
+  )
+}
+
+const GOOGLE_STATUS_LABEL = {
+  connected: '연결됨',
+  needs_check: '연결 확인 중',
+  needs_auth: '승인 필요',
+} as const
+
+/** 구글 연결 상태 줄 + 「Google로 연결」 버튼 + 등록할 리디렉션 주소. 저장한 뒤에만 연결할 수 있다. */
+function GoogleConnect({
+  loaded,
+  result,
+  connecting,
+  error,
+  onConnect,
+}: {
+  loaded: Loaded | null
+  result: string | null
+  connecting: boolean
+  error: string | null
+  onConnect: () => void
+}) {
+  const cfg = rec(loaded?.config)
+  const status = str(cfg.status) as keyof typeof GOOGLE_STATUS_LABEL | ''
+  const hasToken = loaded?.hasRefreshToken === true
+  // status 가 없는 기존 행(수동 토큰)은 토큰이 있으면 연결됨.
+  const shown = status || (hasToken ? 'connected' : 'needs_auth')
+  const connectedAt = str(cfg.connectedAt)
+  const scopes = Array.isArray(cfg.scopes) ? (cfg.scopes as string[]) : []
+  const msg = result ? GOOGLE_RESULT[result] : null
+  return (
+    <div className="space-y-3 rounded-lg border p-3">
+      {msg && (
+        <Alert variant={msg.ok ? 'default' : 'destructive'}>
+          <AlertDescription>{msg.title}</AlertDescription>
+        </Alert>
+      )}
+      <p className="text-sm font-medium">Google 연결</p>
+      {loaded?.registered ? (
+        <div className="space-y-1 text-sm">
+          <p>
+            <span className="font-medium">{GOOGLE_STATUS_LABEL[shown]}</span>
+            {connectedAt && (
+              <span className="text-muted-foreground">
+                {' '}
+                · 연결일 {new Date(connectedAt).toLocaleDateString('ko-KR')}
+              </span>
+            )}
+          </p>
+          {scopes.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              승인된 권한:{' '}
+              {scopes.map((x) => x.replace('https://www.googleapis.com/auth/', '')).join(', ')}
+            </p>
+          )}
+          <Button
+            type="button"
+            size="sm"
+            variant={shown === 'connected' ? 'outline' : 'default'}
+            disabled={connecting}
+            onClick={onConnect}
+          >
+            {connecting && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
+            {hasToken ? '다시 연결' : 'Google로 연결'}
+          </Button>
+          {error && (
+            <p role="alert" className="text-xs text-destructive">
+              {error}
+            </p>
+          )}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          클라이언트 ID·시크릿과 브랜드를 저장하면 「Google로 연결」 버튼이 나타납니다.
+        </p>
+      )}
+      <div className="space-y-1.5">
+        <p className="text-xs text-muted-foreground">
+          Google Cloud 콘솔의 OAuth 클라이언트(웹 애플리케이션)에 아래 주소를 「승인된 리디렉션
+          URI」로 등록해 주세요.
+        </p>
+        <CopyCodeBlock code={buildAppUrl('/api/integrations/google/callback')} />
+        <p className="text-xs text-muted-foreground">
+          OAuth 동의 화면이 「테스트」 상태이면 승인이 7일 뒤 만료됩니다. 게시 상태를
+          「프로덕션」으로 두는 것을 권장합니다.
+        </p>
+      </div>
+    </div>
   )
 }
