@@ -2,23 +2,39 @@ name: UI smoke
 
 # 로그인 없는 화면의 스크린샷 비교 + axe(serious·critical).
 # 차단: 2026-11 비차단 운영 100회 연속 성공 후 continue-on-error 제거.
-# paths 필터가 있어 branch protection 필수 체크로 걸면 해당 경로를 안 건드리는 PR은 체크가 생기지 않아 대기한다.
+# 모든 PR에서 돈다. changes job이 UI 경로 변경을 판정하고, 경로 밖 PR이면 visual-smoke가 skipped(=필수 체크 통과)된다.
+# changes가 실패하면 visual-smoke는 그대로 실행된다(안전 쪽).
+# 필수 체크 등록 후 이 파일을 paths 필터로 되돌리려면 ruleset에서 visual-smoke를 먼저 뺀다.
 # 실제 백엔드 없이 더미 공개 환경변수로 빌드·실행한다(QA 계정·비밀값을 쓰지 않는다).
 
 on:
   pull_request:
     branches: [develop, main]
-    paths:
-      - 'app/**'
-      - 'src/components/**'
-      - 'components/**'
-      - 'e2e/visual-smoke.spec.ts'
-      - 'e2e/visual-smoke.spec.ts-snapshots/**'
-      - 'package-lock.json'
-      - '.github/workflows/ui-smoke.yml'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      ui: ${{ steps.diff.outputs.ui }}
+    steps:
+      # 기본 체크아웃은 PR merge 커밋(refs/pull/N/merge) → HEAD^1 = 현재 base
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: diff
+        run: |
+          exit 1 # TEMP: 실패 안전 경로 확인용, 다음 커밋에서 제거
+          # --no-renames: UI 경로 밖으로 옮긴 파일도 삭제로 잡는다
+          files=$(git diff --no-renames --name-only HEAD^1 HEAD)
+          if grep -qE '^(app/|src/components/|components/|e2e/visual-smoke\.spec\.ts|package-lock\.json$|\.github/workflows/ui-smoke\.yml$)' <<< "$files"; then
+            echo ui=true >> "$GITHUB_OUTPUT"
+          else
+            echo ui=false >> "$GITHUB_OUTPUT"
+          fi
+
   visual-smoke:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.ui != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
