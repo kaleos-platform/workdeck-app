@@ -23,7 +23,6 @@ jobs:
           fetch-depth: 2
       - id: diff
         run: |
-          exit 1 # TEMP: 실패 안전 경로 확인용, 다음 커밋에서 제거
           # --no-renames: UI 경로 밖으로 옮긴 파일도 삭제로 잡는다
           files=$(git diff --no-renames --name-only HEAD^1 HEAD)
           if grep -qE '^(app/|src/components/|components/|e2e/visual-smoke\.spec\.ts|package-lock\.json$|\.github/workflows/ui-smoke\.yml$)' <<< "$files"; then
