@@ -25,6 +25,7 @@ const PURPOSES: CryptoPurpose[] = [
   'ai-key',
   'space-credential',
   'space-secret',
+  'platform-credential',
 ]
 
 // 기존 CBC 구현(src/lib/del/encryption.ts)과 동일한 방식으로 v0 픽스처를 만든다.
@@ -324,5 +325,21 @@ describe('space-secret 용도', () => {
     const { encrypted, iv } = encryptField('space-secret', 'SK_TEST_0123456789abcdef')
     expect(iv).toBe(V1_IV_MARKER)
     expect(decryptField('space-secret', encrypted, iv)).toBe('SK_TEST_0123456789abcdef')
+  })
+})
+
+describe('platform-credential 용도', () => {
+  it('ENCRYPTION_WRITE_VERSION=v0 이어도 v1 로 쓴다', () => {
+    process.env.ENCRYPTION_WRITE_VERSION = 'v0'
+    expect(fieldWriteVersion('platform-credential')).toBe('v1')
+    const { encrypted, iv } = encryptField('platform-credential', 'secret')
+    expect(iv).toBe(V1_IV_MARKER)
+    expect(isV1(encrypted)).toBe(true)
+    expect(decryptField('platform-credential', encrypted, iv)).toBe('secret')
+  })
+
+  it('다른 용도(space-credential)로는 복호화되지 않는다', () => {
+    const { encrypted, iv } = encryptField('platform-credential', 'secret')
+    expect(() => decryptField('space-credential', encrypted, iv)).toThrow()
   })
 })
