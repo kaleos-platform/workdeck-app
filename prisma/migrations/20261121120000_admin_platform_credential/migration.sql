@@ -15,3 +15,6 @@ CREATE TABLE "PlatformCredential" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PlatformCredential_provider_key" ON "PlatformCredential"("provider");
+
+-- 운영 Supabase 노출 차단(anon/authenticated 정책 없음 = 접근 불가). Prisma 는 소유자 권한이라 영향 없음.
+ALTER TABLE "PlatformCredential" ENABLE ROW LEVEL SECURITY;
