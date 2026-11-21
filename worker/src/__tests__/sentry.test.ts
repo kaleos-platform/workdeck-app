@@ -44,4 +44,13 @@ describe('worker sentry scrubEvent', () => {
     expect(e.server_name).toBeUndefined()
     expect(e.tags).toEqual({ service: 'worker' })
   })
+
+  it('예외가 둘째 인자인 console.error 는 첫 인자 라벨을 message 로 남긴다', () => {
+    const e = ev({
+      logger: 'console',
+      exception: { values: [{ type: 'TypeError', value: 'x is undefined' }] },
+      extra: { arguments: ['[manual-poller] 수집 실패 a@b.com', new Error('x')] },
+    })
+    expect(e.message).toBe('[manual-poller] 수집 실패 [redacted]')
+  })
 })

@@ -61,12 +61,17 @@ export function scrubBreadcrumb(b: Breadcrumb): Breadcrumb {
 export function scrubEvent<T extends ErrorEvent>(event: T): T {
   const hasException = Boolean(event.exception?.values?.length)
 
-  if (event.logger === 'console' && !hasException) {
-    // captureConsole 은 모든 인자를 이어붙여 message 로 보낸다 → 첫 인자(라벨)만 남긴다
+  if (event.logger === 'console') {
     const first = (event.extra as { arguments?: unknown[] } | undefined)?.arguments?.[0]
-    const label = typeof first === 'string' ? first : (event.message ?? '').split(/[\n{]/)[0]
-    event.message = label
-    if (event.logentry) event.logentry = { message: label }
+    if (!hasException) {
+      // captureConsole 은 모든 인자를 이어붙여 message 로 보낸다 → 첫 인자(라벨)만 남긴다
+      const label = typeof first === 'string' ? first : (event.message ?? '').split(/[\n{]/)[0]
+      event.message = label
+      if (event.logentry) event.logentry = { message: label }
+    } else if (typeof first === 'string') {
+      // console.error('[x] 실패:', err) 면 SDK 는 예외만 보낸다 → 어느 작업인지 첫 인자 라벨을 남긴다
+      event.message = first
+    }
   }
 
   // 그룹 판정은 마스킹 전 원문으로(숫자 마스킹이 'Timeout 30000ms' 를 지운다)
@@ -102,29 +107,30 @@ function beforeSend(event: ErrorEvent): ErrorEvent | null {
   return scrubEvent(event)
 }
 
-if (process.env.SENTRY_DSN) {
-  // 지연 import — 운영 체크아웃에서 npm install 을 빠뜨려도 DSN 을 넣기 전까진 부팅이 깨지지 않는다
-  void import('@sentry/node')
-    .then((Sentry) => {
-      Sentry.init({
-        dsn: process.env.SENTRY_DSN,
-        environment: process.env.SENTRY_ENVIRONMENT ?? 'production',
-        // 'runtime' 태그는 Sentry 가 contexts.runtime(node vXX)으로 덮어쓴다 → 별도 키
-        initialScope: { tags: { service: 'worker' } },
-        tracesSampleRate: 0,
-        sendDefaultPii: false,
-        beforeSend,
-        beforeBreadcrumb: scrubBreadcrumb,
-        ignoreErrors: IGNORE_ERRORS,
-        integrations: [Sentry.captureConsoleIntegration({ levels: ['error'] })],
-      })
-
-      // launchd/pm2 종료 시 전송 대기 이벤트를 비운 뒤 같은 신호로 다시 죽는다(기본 종료 동작 유지)
-      for (const sig of ['SIGTERM', 'SIGINT'] as const) {
-        process.once(sig, () => {
-          void Sentry.close(2000).finally(() => process.kill(process.pid, sig))
+// 지연 import — 운영 체크아웃에서 npm install 을 빠뜨려도 DSN 을 넣기 전까진 부팅이 깨지지 않는다.
+// index.ts 는 이걸 기다린 뒤 poller 를 시작한다(초기화 전 오류 누락 방지).
+export const sentryReady: Promise<void> = !process.env.SENTRY_DSN
+  ? Promise.resolve()
+  : import('@sentry/node')
+      .then((Sentry) => {
+        Sentry.init({
+          dsn: process.env.SENTRY_DSN,
+          environment: process.env.SENTRY_ENVIRONMENT ?? 'production',
+          // 'runtime' 태그는 Sentry 가 contexts.runtime(node vXX)으로 덮어쓴다 → 별도 키
+          initialScope: { tags: { service: 'worker' } },
+          tracesSampleRate: 0,
+          sendDefaultPii: false,
+          beforeSend,
+          beforeBreadcrumb: scrubBreadcrumb,
+          ignoreErrors: IGNORE_ERRORS,
+          integrations: [Sentry.captureConsoleIntegration({ levels: ['error'] })],
         })
-      }
-    })
-    .catch((e: unknown) => console.warn('[sentry] 비활성 — @sentry/node 로드 실패:', e))
-}
+
+        // launchd/pm2 종료 시 전송 대기 이벤트를 비운 뒤 같은 신호로 다시 죽는다(기본 종료 동작 유지)
+        for (const sig of ['SIGTERM', 'SIGINT'] as const) {
+          process.once(sig, () => {
+            void Sentry.close(2000).finally(() => process.kill(process.pid, sig))
+          })
+        }
+      })
+      .catch((e: unknown) => console.warn('[sentry] 비활성 — @sentry/node 로드 실패:', e))

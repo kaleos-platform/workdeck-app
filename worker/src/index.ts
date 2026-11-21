@@ -4,7 +4,7 @@
  * 매 정시에 분석 스케줄을 확인하고 조건 충족 시 자동 분석을 트리거한다.
  */
 import 'dotenv/config'
-import './sentry.js' // dotenv 다음, 다른 모듈보다 먼저 — SENTRY_DSN 을 읽고 console.error 를 감싼다
+import { sentryReady } from './sentry.js' // dotenv 다음, 다른 모듈보다 먼저
 import cron from 'node-cron'
 import { runCollection } from './orchestrator.js'
 import { checkAndRunCollection } from './collection-scheduler.js'
@@ -29,6 +29,8 @@ process.on('unhandledRejection', (reason) => {
   const msg = reason instanceof Error ? `${reason.message}\n${reason.stack}` : String(reason)
   console.error(`[worker] unhandledRejection — 프로세스 유지: ${msg}`)
 })
+
+await sentryReady
 
 console.log('=== Workdeck Worker 시작 ===')
 console.log(`API URL: ${process.env.WORKDECK_API_URL}`)
