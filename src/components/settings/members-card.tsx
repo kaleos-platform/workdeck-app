@@ -460,7 +460,7 @@ export function MembersCard() {
             </TabsContent>
           )}
 
-          <TabsContent value="rules" className="space-y-2 text-sm">
+          <TabsContent value="rules" className="space-y-2 pt-2 text-sm">
             <p className="font-medium">지출 승인 한도</p>
             <p className="text-muted-foreground">
               이 금액 이하의 지출 제안은 관리자도 Slack이나 AI 요청 승인 화면에서 승인할 수
