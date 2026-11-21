@@ -8,8 +8,8 @@
  * 네이버 검색광고: 조회 전용. 매핑된 각 CUSTOMER_ID 로 캠페인 목록을 1번씩 조회해 키를 확인한다(실패 시 저장하지 않음).
  * 카페24: 앱 정보(쇼핑몰 ID·client_id·secret)만 받는다. 토큰은 OAuth 콜백이 저장하고, 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
  * GET — 등록 상태·설정값(허용 필드만) 조회. 비밀값·암호문·오류 원문은 돌려주지 않는다(MFA 불필요, ADMIN 이상).
- * 카페24: 앱 정보(쇼핑몰 ID·client_id·secret)만 받는다. 토큰은 OAuth 콜백이 저장하고, 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
- * 삭제(DELETE) 라우트는 두지 않는다. 만들 때도 같은 requireAal2 관문을 둔다.
+ * 카페24: 쇼핑몰 추가·앱 정보 수정만 받는다(토큰은 OAuth 콜백이 저장). 쓰기는 Space 잠금 트랜잭션의 조건부 쓰기(409 가능).
+ * DELETE — 카페24 쇼핑몰 하나 삭제(?mallId=, ADMIN + aal2). 다른 provider 는 삭제 라우트를 두지 않는다(405).
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -23,7 +23,7 @@ import { fetchAdAccountCurrencies } from '@/lib/agent/integrations/meta-ads'
 import { verifyNaverCred } from '@/lib/agent/integrations/naver-searchad'
 import { prisma } from '@/lib/prisma'
 import { MALL_ID_RE } from '@/lib/cafe24/client'
-import { registerCafe24 } from '@/lib/cafe24/store'
+import { deleteCafe24, registerCafe24 } from '@/lib/cafe24/store'
 import { ensureNbaesongChannel } from '@/lib/naver-commerce/nbaesong-channel'
 import { decryptField } from '@/lib/crypto/field-crypto'
 import {
@@ -87,13 +87,18 @@ const SCHEMAS = {
       .refine((c) => !c.defaultBrand || Object.hasOwn(c.customers, c.defaultBrand)),
   }),
   // 카페24 — 앱 정보만 받는다(토큰은 OAuth 콜백이 저장). 쓰기는 registerCafe24 의 조건부 쓰기.
-  cafe24: z.object({
-    secret: z.object({
-      clientId: z.string().min(10).max(100),
-      clientSecret: z.string().min(10).max(200),
-    }),
-    config: z.object({ mallId: z.string().regex(MALL_ID_RE) }),
-  }),
+  // 쇼핑몰 추가 { config, secret? } · 앱 정보 수정(전체 몰) { secret } — 둘 다 아니면 400.
+  cafe24: z
+    .object({
+      secret: z
+        .object({
+          clientId: z.string().min(10).max(100),
+          clientSecret: z.string().min(10).max(200),
+        })
+        .optional(),
+      config: z.object({ mallId: z.string().regex(MALL_ID_RE) }).optional(),
+    })
+    .refine((v) => v.secret || v.config),
   // 스마트스토어 N배송 판매 수집 — Naver 호출은 워커가 한다(IP 등록). 여기선 저장·검증만.
   'naver-commerce': z
     .object({
@@ -228,10 +233,16 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 
   if (provider === 'cafe24') {
     const c = parsed.data as z.infer<(typeof SCHEMAS)['cafe24']>
-    const result = await registerCafe24(spaceId, { ...c.secret, mallId: c.config.mallId })
+    const result = await registerCafe24(spaceId, { ...c.secret, mallId: c.config?.mallId })
     if (result === 'conflict') {
       return errorResponse('다른 변경과 겹쳤습니다. 잠시 후 다시 시도해 주세요', 409)
     }
+    if (result === 'limit')
+      return errorResponse('카페24 쇼핑몰은 최대 5개까지 연결할 수 있습니다', 400)
+    if (result === 'app_required') {
+      return errorResponse('첫 쇼핑몰은 앱 정보(client_id·secret)를 함께 입력해 주세요', 400)
+    }
+    if (result === 'no_malls') return errorResponse('등록된 쇼핑몰이 없습니다', 400)
     return NextResponse.json({ provider }, { headers: { 'Cache-Control': 'no-store' } })
   }
 
@@ -244,8 +255,9 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ provider }, { headers: { 'Cache-Control': 'no-store' } })
   }
 
-  let config: Record<string, unknown> = parsed.data.config
-  let secret: object = parsed.data.secret
+  // cafe24 는 위에서 반환했다 — 아래는 config·secret 이 필수인 provider 들.
+  let config = parsed.data.config as Record<string, unknown>
+  let secret = parsed.data.secret as object
   if (provider === 'meta-ads') {
     const meta = parsed.data as z.infer<(typeof SCHEMAS)['meta-ads']>
     // graphVersion 은 폼이 편집하지 않으므로 생략되면 기존 값을 보존한다. 확인 호출도 같은 버전으로 한다.
@@ -397,4 +409,25 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     },
     { headers: { 'Cache-Control': 'no-store' } }
   )
+}
+
+export async function DELETE(req: NextRequest, { params }: Ctx) {
+  const { spaceId, provider } = await params
+  const auth = await requireSpaceAdmin(spaceId)
+  if ('error' in auth) return auth.error
+  const mfaError = await requireAal2()
+  if (mfaError) return mfaError
+  if (provider !== 'cafe24') return errorResponse('지원하지 않는 요청입니다', 405)
+
+  const mallId = req.nextUrl.searchParams.get('mallId')
+  if (!mallId || !MALL_ID_RE.test(mallId)) return errorResponse('입력값이 올바르지 않습니다', 400)
+  const result = await deleteCafe24(spaceId, mallId)
+  if (result === 'not_found') return errorResponse('쇼핑몰을 찾을 수 없습니다', 404)
+  if (result === 'in_use') {
+    return errorResponse(
+      '이 쇼핑몰로 주문 관측 중인 판매채널이 있습니다. 관측을 끈 뒤 삭제하세요',
+      409
+    )
+  }
+  return NextResponse.json({ provider }, { headers: { 'Cache-Control': 'no-store' } })
 }

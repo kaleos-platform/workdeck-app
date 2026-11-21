@@ -111,4 +111,65 @@ describe('loadIntegrationStatuses', () => {
     expect(statuses.secrets?.state).toBe('unknown')
     expect(statuses['meta-ads']?.state).toBe('connected')
   })
+
+  describe('카페24 타일(레거시 cafe24 행 + cafe24:<mallId> 행 집계)', () => {
+    const run = async (rows: unknown[], role: 'ADMIN' | 'MEMBER' = 'ADMIN') => {
+      db.spaceCredential.findMany.mockResolvedValue(rows)
+      return (await loadIntegrationStatuses('s1', 'u1', role)).statuses.cafe24
+    }
+    const mall = (
+      provider: string,
+      mallId: string,
+      status: string,
+      healthError: string | null = null
+    ) => ({
+      provider,
+      healthError,
+      config: { mallId, status },
+    })
+
+    it('조회 where 가 cafe24: prefix 를 포함한다', async () => {
+      await run([])
+      expect(db.spaceCredential.findMany.mock.calls[0][0].where.OR).toContainEqual({
+        provider: { startsWith: 'cafe24:' },
+      })
+    })
+
+    it('레거시 행만 있어도 연결됨 + 몰 ID(ADMIN), MEMBER 에게는 몰 ID 비공개', async () => {
+      const rows = [mall('cafe24', 'legacy-shop', 'connected')]
+      expect(await run(rows)).toEqual({ state: 'connected', summary: 'legacy-shop' })
+      expect(await run(rows, 'MEMBER')).toEqual({ state: 'connected' })
+    })
+
+    it('여러 몰이 연결되면 「쇼핑몰 N개」, 승인 전 몰은 세지 않는다', async () => {
+      expect(
+        await run([
+          mall('cafe24', 'legacy-shop', 'connected'),
+          mall('cafe24:shop-a', 'shop-a', 'connected'),
+          mall('cafe24:shop-b', 'shop-b', 'needs_auth'),
+        ])
+      ).toEqual({ state: 'connected', summary: '쇼핑몰 2개' })
+    })
+
+    it('하나라도 reauth_required 면 연결 확인 필요(다른 몰이 연결돼도)', async () => {
+      expect(
+        await run([
+          mall('cafe24', 'legacy-shop', 'connected'),
+          mall('cafe24:shop-a', 'shop-a', 'reauth_required'),
+        ])
+      ).toEqual({ state: 'attention', summary: '연결 확인 필요' })
+    })
+
+    it('connected + healthError 는 ADMIN 에게만 확인 필요', async () => {
+      const rows = [mall('cafe24:shop-a', 'shop-a', 'connected', 'x')]
+      expect((await run(rows))?.state).toBe('attention')
+      expect((await run(rows, 'MEMBER'))?.state).toBe('connected')
+    })
+
+    it('승인 전 행만 있으면 연결 안 됨', async () => {
+      expect((await run([mall('cafe24:shop-a', 'shop-a', 'needs_auth')]))?.state).toBe(
+        'not_connected'
+      )
+    })
+  })
 })

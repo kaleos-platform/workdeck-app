@@ -24,6 +24,7 @@ import { readCafe24, registerCafe24, writeCafe24If } from '../store'
 jest.setTimeout(20_000)
 
 const SP = 'sp1'
+const MALL = 'myshop24'
 const hours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString()
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
@@ -77,14 +78,14 @@ afterEach(() => consoleSpies.forEach((s) => s.mockRestore()))
 describe('getAccessToken', () => {
   it('만료 5분보다 여유가 있으면 갱신하지 않는다', async () => {
     seed({ accessHours: 1 })
-    expect((await getAccessToken(SP)).accessToken).toBe('AT0')
+    expect((await getAccessToken(SP, MALL)).accessToken).toBe('AT0')
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('만료 임박(5분 이내)만 갱신하고 새 토큰·버전을 저장한다', async () => {
     seed({ accessHours: 0.05 })
     fetchMock.mockResolvedValue(json(tokenBody(1)))
-    const r = await getAccessToken(SP)
+    const r = await getAccessToken(SP, MALL)
     expect(r.accessToken).toBe('AT1')
     expect(tokenCalls()).toHaveLength(1)
     const [url, init] = tokenCalls()[0]
@@ -105,7 +106,7 @@ describe('getAccessToken', () => {
       await new Promise((r) => setTimeout(r, 200))
       return json(tokenBody(1))
     })
-    const [a, b] = await Promise.all([getAccessToken(SP), getAccessToken(SP)])
+    const [a, b] = await Promise.all([getAccessToken(SP, MALL), getAccessToken(SP, MALL)])
     expect([a.accessToken, b.accessToken]).toEqual(['AT1', 'AT1'])
     expect(tokenCalls()).toHaveLength(1)
   })
@@ -120,7 +121,7 @@ describe('getAccessToken', () => {
       if (String(data.encryptedPayload).includes('AT1'))
         await new Promise((r) => setTimeout(r, 1600))
     }
-    const [a, b] = await Promise.all([getAccessToken(SP), getAccessToken(SP)])
+    const [a, b] = await Promise.all([getAccessToken(SP, MALL), getAccessToken(SP, MALL)])
     expect([a.accessToken, b.accessToken]).toEqual(['AT1', 'AT1'])
     expect(tokenCalls()).toHaveLength(1)
     expect(fakeDb.row.config.status).toBe('connected')
@@ -132,7 +133,7 @@ describe('getAccessToken', () => {
       config: { refreshLease: { owner: 'dead', until: Date.now() - 1000 } },
     })
     fetchMock.mockResolvedValue(json(tokenBody(1)))
-    expect((await getAccessToken(SP)).accessToken).toBe('AT1')
+    expect((await getAccessToken(SP, MALL)).accessToken).toBe('AT1')
   })
 
   it('갱신 중 clientId 가 바뀌면 옛 토큰을 다시 저장하지 않는다', async () => {
@@ -145,7 +146,7 @@ describe('getAccessToken', () => {
       })
       return json(tokenBody(1))
     })
-    await expect(getAccessToken(SP)).rejects.toMatchObject({ code: 'not_authorized' })
+    await expect(getAccessToken(SP, MALL)).rejects.toMatchObject({ code: 'not_authorized' })
     expect(fakeDb.secret).toMatchObject({ clientId: 'new-client-id' })
     expect(fakeDb.secret.refreshToken).toBeUndefined()
     expect(fakeDb.secret.accessToken).toBeUndefined()
@@ -154,11 +155,11 @@ describe('getAccessToken', () => {
   it('토큰과 무관한 변경으로 0행이면 새 토큰을 최신 버전에 다시 병합한다', async () => {
     seed({ accessHours: 0.05 })
     fetchMock.mockImplementation(async () => {
-      const cur = (await readCafe24(SP))!
+      const cur = (await readCafe24(SP, MALL))!
       await writeCafe24If(cur, cur.secret, { ...cur.config, scopes: ['x'] })
       return json(tokenBody(1))
     })
-    expect((await getAccessToken(SP)).accessToken).toBe('AT1')
+    expect((await getAccessToken(SP, MALL)).accessToken).toBe('AT1')
     expect(fakeDb.secret.refreshToken).toBe('RT1')
     expect(fakeDb.row.config.scopes).toEqual(['x'])
   })
@@ -166,7 +167,7 @@ describe('getAccessToken', () => {
   it('lease 밖에서 회전돼 invalid_grant 를 받으면 저장된 새 토큰을 쓴다(재승인 아님)', async () => {
     seed({ accessHours: 0.05 })
     fetchMock.mockImplementation(async () => {
-      const cur = (await readCafe24(SP))!
+      const cur = (await readCafe24(SP, MALL))!
       await writeCafe24If(
         cur,
         { ...cur.secret, accessToken: 'ATX', refreshToken: 'RTX' },
@@ -177,18 +178,18 @@ describe('getAccessToken', () => {
       )
       return json({ error: 'invalid_grant' }, 400)
     })
-    expect((await getAccessToken(SP)).accessToken).toBe('ATX')
+    expect((await getAccessToken(SP, MALL)).accessToken).toBe('ATX')
     expect(fakeDb.row.config.status).toBe('connected')
   })
 
   it('실제 invalid_grant 면 reauth_required 로 표시한다(알림은 health 경로 하나뿐)', async () => {
     seed({ accessHours: 0.05 })
     fetchMock.mockResolvedValue(json({ error: 'invalid_grant' }, 400))
-    await expect(getAccessToken(SP)).rejects.toMatchObject({ code: 'reauth_required' })
+    await expect(getAccessToken(SP, MALL)).rejects.toMatchObject({ code: 'reauth_required' })
     expect(fakeDb.row.config.status).toBe('reauth_required')
     expect(fakeDb.row.lastError).toBe(CAFE24_REAUTH_MESSAGE)
     expect(sendSpaceNotification).not.toHaveBeenCalled()
-    await expect(getAccessToken(SP)).rejects.toMatchObject({ code: 'reauth_required' })
+    await expect(getAccessToken(SP, MALL)).rejects.toMatchObject({ code: 'reauth_required' })
     expect(tokenCalls()).toHaveLength(1)
   })
 
@@ -211,12 +212,12 @@ describe('getAccessToken', () => {
       fakeDb.beforeUpdateMany = null
     }
     try {
-      const results = await Promise.allSettled([getAccessToken(SP), getAccessToken(SP)])
+      const results = await Promise.allSettled([getAccessToken(SP, MALL), getAccessToken(SP, MALL)])
       expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1)
       expect(fakeDb.row.config.status).toBe('connected')
       expect(fakeDb.row.lastError).toBeNull()
       expect(fakeDb.secret).toMatchObject({ accessToken: 'AT1', refreshToken: 'RT1' })
-      expect((await getAccessToken(SP)).accessToken).toBe('AT1')
+      expect((await getAccessToken(SP, MALL)).accessToken).toBe('AT1')
     } finally {
       nowSpy.mockRestore()
     }
@@ -229,7 +230,7 @@ describe('cafe24Get', () => {
   it('조회 헤더·버전 헤더를 보낸다', async () => {
     seed()
     fetchMock.mockResolvedValue(ok())
-    await cafe24Get(SP, '/admin/orders', { limit: 1 })
+    await cafe24Get(SP, MALL, '/admin/orders', { limit: 1 })
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe('https://myshop24.cafe24api.com/api/v2/admin/orders?limit=1')
     expect(init.headers).toMatchObject({
@@ -248,7 +249,7 @@ describe('cafe24Get', () => {
           ? json({}, 401)
           : ok()
     )
-    await cafe24Get(SP, '/admin/orders')
+    await cafe24Get(SP, MALL, '/admin/orders')
     expect(fetchMock).toHaveBeenCalledTimes(3) // api(401) → token → api
     expect(fetchMock.mock.calls[2][1].headers.Authorization).toBe('Bearer AT1')
   })
@@ -260,7 +261,7 @@ describe('cafe24Get', () => {
         ? json(tokenBody(1))
         : json({ error: { message: 'LEAK-BODY' } }, 401)
     )
-    await expect(cafe24Get(SP, '/admin/orders')).rejects.toMatchObject({
+    await expect(cafe24Get(SP, MALL, '/admin/orders')).rejects.toMatchObject({
       status: 401,
       code: 'unauthorized',
     })
@@ -275,7 +276,7 @@ describe('비밀값 미노출', () => {
     fetchMock.mockResolvedValue(
       json({ error: 'invalid_request', error_description: 'LEAK-BODY AT0 RT0 CSECRET-xyz' }, 400)
     )
-    const err = await getAccessToken(SP).catch((e) => e)
+    const err = await getAccessToken(SP, MALL).catch((e) => e)
     expect(err).toBeInstanceOf(Cafe24Error)
     const seen = [
       err.message,
@@ -304,7 +305,7 @@ describe('비밀값 미노출', () => {
     }
     seed({ accessHours: 0.05 })
     fetchMock.mockResolvedValue(leaky)
-    const err = await getAccessToken(SP).catch((e) => e)
+    const err = await getAccessToken(SP, MALL).catch((e) => e)
     expect(err.code).toBe('reauth_required')
     check(
       [
