@@ -19,6 +19,13 @@
 - userCount 전부 0 → `Sentry.setUser` 없음.
 - 워커(`worker/`)는 Sentry 미연동.
 
+## Phase 0 구현 중 확정한 원인 (2026-11-21 preview 실측)
+
+- `src/instrumentation.ts` 는 Turbopack 이 컴파일하지만 `app/` 이 루트라 Next 가 서버 훅으로 인식하지 않아 `required-server-files.json` 에서 빠짐 → Vercel 함수에서 `register()`·`onRequestError` 미실행(운영 서버 이벤트 0 의 원인). 루트 `instrumentation.ts` 로 이동. 같은 파일의 `assertFieldCryptoBootConfig` 도 이번에 처음 운영에서 실행됨.
+- SDK 의 응답 후 flush(`waitUntil`)는 edge 전용 → Node 함수에서 console·route 이벤트 유실. `preprocessEvent` 훅에서 Vercel 요청 컨텍스트 `waitUntil(Sentry.flush(2000))`.
+- console 브레드크럼이 인자 전체(이름·주소)를 담음 → 첫 인자만.
+- 빌드용 `SENTRY_AUTH_TOKEN` 401(무효) → 소스맵 업로드 실패. 에디가 Organization 토큰 재발급 필요.
+
 ## 범위 밖
 
 - DB 테이블·마이그레이션 추가(상태는 Sentry 코멘트 + 브랜치명으로 관리).
