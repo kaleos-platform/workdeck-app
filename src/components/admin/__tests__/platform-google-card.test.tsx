@@ -33,7 +33,7 @@ const connected = {
   status: 'connected' as const,
   ga4: {
     measurementId: 'G-5F8G9Y4VHW',
-    enhanced: { streamEnabled: true, scrollsEnabled: false, siteSearchEnabled: null },
+    enhanced: { streamEnabled: true, scrollsEnabled: false, siteSearchEnabled: false },
     funnel: {
       days: 7,
       events: {
@@ -77,8 +77,8 @@ test('연결됨: 측정 ID·향상된 측정 경고 표시·퍼널 표', () => {
   const on = screen.getByText(/향상된 측정 전체: 켜짐/)
   expect(on.className).toMatch(/amber/)
   expect(screen.getByText(/스크롤: 꺼짐/).className).not.toMatch(/amber/)
-  expect(screen.getByText(/사이트 검색: 알 수 없음/)).toBeInTheDocument()
-  expect(screen.getByText(/모두 꺼져야 측정 ID 등록 가능/)).toBeInTheDocument()
+  expect(screen.getByText(/사이트 검색: 꺼짐/)).toBeInTheDocument()
+  expect(screen.getByText(/게이트: 미통과/)).toBeInTheDocument()
   expect(screen.getByText('1,200')).toBeInTheDocument()
   expect(screen.getByText('Google 연결이 완료되었습니다')).toBeInTheDocument()
 })
@@ -107,4 +107,18 @@ test('googleAuthorizeUrl: 고객용 기본값은 include_granted_scopes 유지, 
       googleAuthorizeUrl('c', base, 'st', 'https://x/cb', { includeGrantedScopes: false })
     ).searchParams.has('include_granted_scopes')
   ).toBe(false)
+})
+
+test('전체 스위치가 꺼지면 게이트 통과, 켜진 하위 항목은 「동작 안 함」으로 표시', () => {
+  const view = {
+    ...connected,
+    ga4: {
+      ...connected.ga4,
+      enhanced: { streamEnabled: false, pageChangesEnabled: true, scrollsEnabled: true },
+    },
+  }
+  render(<PlatformGoogleCard view={view as never} result={null} />)
+  expect(screen.getByText(/게이트: 통과/)).toBeInTheDocument()
+  const page = screen.getByText(/페이지 변경.*켜짐 \(전체 꺼짐 — 동작 안 함\)/)
+  expect(page.className).not.toMatch(/amber/)
 })
