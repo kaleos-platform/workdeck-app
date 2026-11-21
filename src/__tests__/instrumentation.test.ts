@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { register } from '../instrumentation'
+import { register } from '../../instrumentation'
 
 jest.mock('../../sentry.server.config', () => ({}))
 
