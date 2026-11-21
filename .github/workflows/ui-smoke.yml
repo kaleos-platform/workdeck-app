@@ -1,7 +1,8 @@
-name: UI smoke (non-blocking)
+name: UI smoke
 
 # 로그인 없는 화면의 스크린샷 비교 + axe(serious·critical).
-# 비차단: continue-on-error. 필수 체크로 바꾸는 것은 2주 운영 뒤 판단한다.
+# 차단: 2026-11 비차단 운영 100회 연속 성공 후 continue-on-error 제거.
+# paths 필터가 있어 branch protection 필수 체크로 걸면 해당 경로를 안 건드리는 PR은 체크가 생기지 않아 대기한다.
 # 실제 백엔드 없이 더미 공개 환경변수로 빌드·실행한다(QA 계정·비밀값을 쓰지 않는다).
 
 on:
@@ -19,7 +20,6 @@ on:
 jobs:
   visual-smoke:
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 30
     container:
       # @playwright/test 버전(package-lock.json)과 맞춘다. 기준 스크린샷도 이 이미지로 만든다.
