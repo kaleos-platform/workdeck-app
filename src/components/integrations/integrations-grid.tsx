@@ -93,6 +93,7 @@ export function IntegrationsGrid({
   // OAuth 복귀 결과는 처음 값을 고정한다 — 옛 query를 지우면 서버가 null을 다시 내려 안내가 사라진다.
   const [initialSlackStatus] = useState(slackStatus)
   const [initialCafe24Result] = useState(() => searchParams.get('cafe24'))
+  const [initialGoogleResult] = useState(() => searchParams.get('google'))
 
   const hasLegacy = searchParams.has('tab') || searchParams.has('slack')
   const urlOpen = searchParams.get('open')
@@ -162,7 +163,12 @@ export function IntegrationsGrid({
             <AdCredentialForm provider="meta-ads" spaceId={spaceId} onChanged={refresh} />
           ),
           'google-marketing': (
-            <AdCredentialForm provider="google-marketing" spaceId={spaceId} onChanged={refresh} />
+            <AdCredentialForm
+              provider="google-marketing"
+              spaceId={spaceId}
+              onChanged={refresh}
+              googleResult={initialGoogleResult}
+            />
           ),
           'naver-searchad': (
             <AdCredentialForm provider="naver-searchad" spaceId={spaceId} onChanged={refresh} />

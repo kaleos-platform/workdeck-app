@@ -102,6 +102,17 @@ export async function loadIntegrationStatuses(
             : flag(cfg.status === 'connected', isAdmin ? cfg.mallId : undefined)
       continue
     }
+    if (id === 'google-marketing') {
+      // 클라이언트·브랜드만 저장하고 「Google로 연결」 승인 전이면 '승인 필요'. status 가 없는 기존 행은 연결됨.
+      const cfg = (row?.config ?? {}) as { status?: string }
+      statuses[id] =
+        creds === undefined
+          ? UNKNOWN
+          : row && cfg.status === 'needs_auth'
+            ? { state: 'not_connected', summary: '승인 필요' }
+            : withError(!!row, isAdmin ? row?.healthError : null, '')
+      continue
+    }
     statuses[id] =
       creds === undefined ? UNKNOWN : withError(!!row, isAdmin ? row?.healthError : null, '')
   }

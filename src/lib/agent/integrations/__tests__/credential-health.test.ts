@@ -11,10 +11,14 @@ jest.mock('@/lib/agent/integrations/meta-ads', () => ({
 jest.mock('@/lib/agent/integrations/google-marketing', () => ({
   PROVIDER: 'google-marketing',
   loadGoogleCred: jest.fn(),
-  verifyGoogleCred: jest.fn(),
+  verifyGoogleBrands: jest.fn(),
 }))
 
 jest.mock('@/lib/cafe24/store', () => ({ readCafe24: jest.fn(), writeCafe24If: jest.fn() }))
+jest.mock('@/lib/integrations/google-marketing-store', () => ({
+  readGoogle: jest.fn(),
+  writeGoogleIf: jest.fn(),
+}))
 jest.mock('@/lib/cafe24/client', () => ({
   ...jest.requireActual('@/lib/cafe24/client'),
   getAccessToken: jest.fn(),
@@ -29,9 +33,10 @@ import {
   probeOrders,
 } from '@/lib/cafe24/client'
 import { readCafe24, writeCafe24If } from '@/lib/cafe24/store'
+import { readGoogle, writeGoogleIf } from '@/lib/integrations/google-marketing-store'
 import { sendSpaceNotification } from '@/lib/slack/send-notification'
 import { fetchAdAccountCurrencies, loadMetaCred } from '@/lib/agent/integrations/meta-ads'
-import { loadGoogleCred, verifyGoogleCred } from '@/lib/agent/integrations/google-marketing'
+import { loadGoogleCred, verifyGoogleBrands } from '@/lib/agent/integrations/google-marketing'
 import { checkCredentialHealth } from '../credential-health'
 
 const findMany = prisma.spaceCredential.findMany as jest.Mock
@@ -46,6 +51,11 @@ const google = (o = {}) => ({
   ...base,
   ...o,
 })
+const googleCred = (config = {}, secret = {}) => ({
+  id: 'c2',
+  secret: { clientId: 'cid', clientSecret: 'cs', refreshToken: 'RT', ...secret },
+  config: { brands: { a: { ga4_property_id: '1' } }, status: 'connected', ...config },
+})
 const dataOf = (id: string) => update.mock.calls.find((c) => c[0].where.id === id)![0].data
 
 beforeEach(() => {
@@ -55,8 +65,8 @@ beforeEach(() => {
     return { secret: {}, config: {} }
   })
   ;(fetchAdAccountCurrencies as jest.Mock).mockResolvedValue({ act_1: 'KRW' })
-  ;(loadGoogleCred as jest.Mock).mockResolvedValue({})
-  ;(verifyGoogleCred as jest.Mock).mockResolvedValue(undefined)
+  ;(loadGoogleCred as jest.Mock).mockResolvedValue(googleCred())
+  ;(verifyGoogleBrands as jest.Mock).mockResolvedValue(undefined)
   notify.mockResolvedValue(true)
   update.mockResolvedValue({})
 })
@@ -89,13 +99,13 @@ it('처음 실패하면 알리고 healthAlertedAt 을 남긴다(토큰은 가린
 
 it('다른 경로가 lastError 를 이미 남겼어도 점검 첫 실패는 알린다(알림 누락 방지)', async () => {
   findMany.mockResolvedValue([google({ lastError: 'invalid_grant (MCP 조회)' })])
-  ;(verifyGoogleCred as jest.Mock).mockRejectedValue(new Error('invalid_grant'))
+  ;(verifyGoogleBrands as jest.Mock).mockRejectedValue(new Error('invalid_grant'))
   expect((await checkCredentialHealth()).notified).toBe(1)
 })
 
 it('이미 알렸으면 다시 알리지 않는다', async () => {
   findMany.mockResolvedValue([google({ healthError: 'x', healthAlertedAt: new Date() })])
-  ;(verifyGoogleCred as jest.Mock).mockRejectedValue(new Error('invalid_grant'))
+  ;(verifyGoogleBrands as jest.Mock).mockRejectedValue(new Error('invalid_grant'))
   expect(await checkCredentialHealth()).toMatchObject({ failed: 1, notified: 0 })
   expect(notify).not.toHaveBeenCalled()
 })
@@ -131,7 +141,77 @@ it('한 행의 DB 실패가 다른 Space 점검을 막지 않는다', async () =
   })
   const r = await checkCredentialHealth()
   expect(r.errors).toBe(1)
-  expect(verifyGoogleCred).toHaveBeenCalled()
+  expect(verifyGoogleBrands).toHaveBeenCalled()
+})
+
+describe('구글 마케팅', () => {
+  it('승인 전(needs_auth) 행은 건너뛴다 — 점검 오류·알림 없음', async () => {
+    findMany.mockResolvedValue([google()])
+    ;(loadGoogleCred as jest.Mock).mockResolvedValue(
+      googleCred({ status: 'needs_auth' }, { refreshToken: undefined })
+    )
+    const r = await checkCredentialHealth()
+    expect(r).toMatchObject({ checked: 1, failed: 0, notified: 0 })
+    expect(verifyGoogleBrands).not.toHaveBeenCalled()
+    expect(notify).not.toHaveBeenCalled()
+    expect(dataOf('c2').healthError).toBeNull()
+  })
+
+  it('범위 부족으로 needs_auth 인 행(토큰은 있음)도 건너뛴다', async () => {
+    findMany.mockResolvedValue([google()])
+    ;(loadGoogleCred as jest.Mock).mockResolvedValue(googleCred({ status: 'needs_auth' }))
+    expect(await checkCredentialHealth()).toMatchObject({ failed: 0, notified: 0 })
+    expect(verifyGoogleBrands).not.toHaveBeenCalled()
+  })
+
+  it('속성 접근 실패는 health 성공으로 숨기지 않고 오류로 알린다', async () => {
+    findMany.mockResolvedValue([google()])
+    ;(verifyGoogleBrands as jest.Mock).mockRejectedValue(
+      new Error('Google 속성 확인 실패 (HTTP 403): forbidden')
+    )
+    const r = await checkCredentialHealth()
+    expect(r).toMatchObject({ failed: 1, notified: 1 })
+    expect(dataOf('c2').healthError).toMatch(/속성 확인 실패 \(HTTP 403\)/)
+  })
+
+  it('status 가 없는 기존 행은 점검만 하고 상태를 만들지 않는다', async () => {
+    findMany.mockResolvedValue([google()])
+    ;(loadGoogleCred as jest.Mock).mockResolvedValue(googleCred({ status: undefined }))
+    await checkCredentialHealth()
+    expect(verifyGoogleBrands).toHaveBeenCalled()
+    expect(writeGoogleIf).not.toHaveBeenCalled()
+  })
+
+  it('needs_check + 속성 확인 성공이면 조건부 쓰기로 connected 로 올린다', async () => {
+    findMany.mockResolvedValue([google()])
+    ;(loadGoogleCred as jest.Mock).mockResolvedValue(googleCred({ status: 'needs_check' }))
+    const cur = { ...googleCred({ status: 'needs_check', credVersion: 2 }) }
+    ;(readGoogle as jest.Mock).mockResolvedValue(cur)
+    await checkCredentialHealth()
+    expect(writeGoogleIf).toHaveBeenCalledWith(
+      cur,
+      cur.secret,
+      expect.objectContaining({ status: 'connected', connectedAt: expect.any(String) }),
+      true
+    )
+  })
+
+  it('확인 사이에 토큰·브랜드가 바뀌었으면 승격하지 않는다', async () => {
+    findMany.mockResolvedValue([google()])
+    ;(loadGoogleCred as jest.Mock).mockResolvedValue(googleCred({ status: 'needs_check' }))
+    ;(readGoogle as jest.Mock).mockResolvedValue(
+      googleCred({ status: 'needs_check', brands: { a: { ga4_property_id: '9' } } })
+    )
+    await checkCredentialHealth()
+    expect(writeGoogleIf).not.toHaveBeenCalled()
+  })
+
+  it('승격 쓰기가 실패해도 점검은 성공으로 끝난다', async () => {
+    findMany.mockResolvedValue([google()])
+    ;(loadGoogleCred as jest.Mock).mockResolvedValue(googleCred({ status: 'needs_check' }))
+    ;(readGoogle as jest.Mock).mockRejectedValue(new Error('db'))
+    expect(await checkCredentialHealth()).toMatchObject({ failed: 0, errors: 0 })
+  })
 })
 
 describe('카페24', () => {

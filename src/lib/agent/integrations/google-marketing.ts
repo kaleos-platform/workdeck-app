@@ -17,7 +17,8 @@ const TIMEOUT_MS = 15_000
 export interface GoogleSecret {
   clientId: string
   clientSecret: string
-  refreshToken: string
+  // 「Google로 연결」 승인 전에는 없다 — accessToken() 이 승인 필요 오류를 던진다.
+  refreshToken?: string
 }
 export interface GoogleTarget {
   brand: string
@@ -25,8 +26,15 @@ export interface GoogleTarget {
   gtm_account_id: string
   gtm_container_id: string
 }
+export type GoogleStatus = 'needs_auth' | 'needs_check' | 'connected'
+
 export interface GoogleConfig {
   defaultBrand?: string
+  // 서버가 관리하는 연결 상태(입력으로 받지 않는다). 없으면 수동 토큰 시절의 기존 행 — 연결됨으로 본다.
+  status?: GoogleStatus
+  connectedAt?: string
+  scopes?: string[]
+  credVersion?: number
   // GTM 두 id 는 선택 — 쓰지 않는 브랜드는 둘 다 생략한다.
   brands: Record<
     string,
@@ -605,6 +613,9 @@ async function send(url: string | URL, init: RequestInit): Promise<Response> {
 }
 
 async function accessToken(cred: GoogleCred): Promise<string> {
+  if (!cred.secret.refreshToken) {
+    throw new GoogleApiError('Google 연결(승인)이 필요합니다', false)
+  }
   const body = new URLSearchParams({
     client_id: cred.secret.clientId,
     client_secret: cred.secret.clientSecret,
@@ -666,5 +677,143 @@ export async function googleRequest(
     if (err instanceof GoogleApiError && err.record)
       await recordCredentialError(cred.id, err.message)
     throw err
+  }
+}
+
+// ---- 「Google로 연결」 OAuth(승인 코드 흐름) ----
+// 비밀값 규칙: 토큰·응답 본문·요청 헤더는 오류·로그·DB 어디에도 넣지 않는다.
+// 오류는 GoogleOAuthError(단계명 + HTTP 상태 + 허용 목록의 error 코드)만 던진다.
+export const GOOGLE_STATE_PURPOSE = 'google-marketing'
+export const GOOGLE_NONCE_COOKIE = 'google_oauth_nonce'
+export const GOOGLE_COOKIE_PATH = '/api/integrations/google'
+export const GOOGLE_CALLBACK_PATH = '/api/integrations/google/callback'
+const AUTHORIZE_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
+const SCOPE_BASE = 'https://www.googleapis.com/auth/'
+const GA4_SCOPES = ['analytics.readonly', 'analytics.edit'].map((s) => SCOPE_BASE + s)
+const GTM_SCOPES = [
+  'tagmanager.readonly',
+  'tagmanager.edit.containers',
+  'tagmanager.edit.containerversions',
+  'tagmanager.publish',
+].map((s) => SCOPE_BASE + s)
+
+const KNOWN_CODES = new Set([
+  'invalid_grant',
+  'invalid_client',
+  'invalid_request',
+  'unauthorized_client',
+  'invalid_scope',
+  'redirect_uri_mismatch',
+  'rate_limited',
+  'unauthorized',
+  'forbidden',
+  'not_found',
+  'server_error',
+  'network',
+  'invalid_response',
+])
+
+export class GoogleOAuthError extends Error {
+  constructor(
+    readonly stage: string,
+    readonly code: string,
+    readonly status?: number
+  ) {
+    super(`Google ${stage} 실패${status ? ` (HTTP ${status})` : ''}: ${code}`)
+    this.name = 'GoogleOAuthError'
+  }
+}
+
+/** 필수 승인 범위 — GA4 는 항상, GTM 범위는 GTM 이 설정된 브랜드가 하나라도 있을 때만. */
+export function requiredGoogleScopes(config: Pick<GoogleConfig, 'brands'>): string[] {
+  const hasGtm = Object.values(config.brands ?? {}).some(
+    (b) => !!b?.gtm_account_id && !!b?.gtm_container_id
+  )
+  return hasGtm ? [...GA4_SCOPES, ...GTM_SCOPES] : [...GA4_SCOPES]
+}
+
+export const hasGoogleScopes = (granted: string[] | undefined, required: string[]) =>
+  required.every((s) => granted?.includes(s))
+
+export function googleAuthorizeUrl(
+  clientId: string,
+  scopes: string[],
+  state: string,
+  redirectUri: string
+): string {
+  const url = new URL(AUTHORIZE_URL)
+  url.searchParams.set('client_id', clientId)
+  url.searchParams.set('redirect_uri', redirectUri)
+  url.searchParams.set('response_type', 'code')
+  url.searchParams.set('scope', scopes.join(' '))
+  url.searchParams.set('state', state)
+  url.searchParams.set('access_type', 'offline')
+  url.searchParams.set('prompt', 'consent')
+  url.searchParams.set('include_granted_scopes', 'true')
+  return url.toString()
+}
+
+async function oauthHttp(stage: string, url: string | URL, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) })
+  } catch {
+    throw new GoogleOAuthError(stage, 'network') // 원 오류 메시지는 버린다
+  }
+}
+
+async function oauthErrorCode(res: Response): Promise<string> {
+  const body = (await res.json().catch(() => null)) as { error?: unknown } | null
+  if (typeof body?.error === 'string' && KNOWN_CODES.has(body.error)) return body.error
+  if (res.status === 401) return 'unauthorized'
+  if (res.status === 403) return 'forbidden'
+  if (res.status === 404) return 'not_found'
+  if (res.status === 429) return 'rate_limited'
+  return res.status >= 500 ? 'server_error' : 'unknown'
+}
+
+/** 승인 코드를 토큰으로 교환한다. redirectUri 는 install 과 바이트 동일해야 한다. */
+export async function exchangeGoogleCode(
+  clientId: string,
+  clientSecret: string,
+  code: string,
+  redirectUri: string
+): Promise<{ refreshToken?: string; accessToken: string; scopes: string[] }> {
+  const res = await oauthHttp('토큰 교환', TOKEN_URL, {
+    method: 'POST',
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
+    }),
+  })
+  if (!res.ok) throw new GoogleOAuthError('토큰 교환', await oauthErrorCode(res), res.status)
+  const b = (await res.json().catch(() => null)) as Record<string, unknown> | null
+  if (typeof b?.access_token !== 'string') {
+    throw new GoogleOAuthError('토큰 교환', 'invalid_response')
+  }
+  return {
+    accessToken: b.access_token,
+    refreshToken:
+      typeof b.refresh_token === 'string' && b.refresh_token ? b.refresh_token : undefined,
+    scopes: typeof b.scope === 'string' ? b.scope.split(/\s+/).filter(Boolean) : [],
+  }
+}
+
+/** 브랜드마다 GA4 속성 1건을 조회한다(접근 권한 확인). 실패하면 GoogleOAuthError(상태·코드만). */
+export async function verifyGoogleBrands(cred: GoogleCred, token?: string): Promise<void> {
+  const brands = Object.keys(cred.config.brands ?? {})
+  // 브랜드 0개면 확인할 속성이 없다 — 연결됨으로 올리지 않는다.
+  if (brands.length === 0) throw new GoogleOAuthError('속성 확인', 'not_found')
+  const bearer = token ?? (await accessToken(cred))
+  for (const brand of brands) {
+    const t = resolveBrand(cred.config, brand)
+    const url = targetUrl(GA4_ADMIN_BASE, `v1beta/properties/${t.ga4_property_id}`, t, 'ga4-admin')
+    const res = await oauthHttp('속성 확인', url, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${bearer}` },
+    })
+    if (!res.ok) throw new GoogleOAuthError('속성 확인', await oauthErrorCode(res), res.status)
   }
 }
