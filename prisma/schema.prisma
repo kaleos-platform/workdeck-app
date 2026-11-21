@@ -5200,6 +5200,7 @@ model ChannelOrderScanLine {
   channel   Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
   operation PipelineOperation @relation(fields: [operationId], references: [id], onDelete: Cascade)
 
+  @@unique([operationId, externalLineKey])
   @@index([operationId])
   @@index([channelId, paidAt])
 }
@@ -5215,6 +5216,13 @@ model PipelineOperation {
   error      String? // 허용 목록 코드만
   startedAt  DateTime  @default(now())
   finishedAt DateTime?
+  // 서버가 start 시 계산한 조회 계획 — finish 는 워커 신고값이 아니라 이 값으로 검증·기록한다.
+  plannedFrom    DateTime?
+  plannedThrough DateTime?
+  minCalls       Int       @default(0) // 성공 마감에 필요한 최소 ingest 호출 수
+  // 서버가 실제로 받은 ingest 호출·행 수(워커 신고값과 무관)
+  ingestCalls Int @default(0)
+  ingestRows  Int @default(0)
 
   space     Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   scanLines ChannelOrderScanLine[]

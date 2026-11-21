@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { errorResponse } from '@/lib/api-helpers'
 import { ingestLines, ingestScanLines } from '@/lib/channel-orders/ingest'
+import { MAX_INGEST_LINES } from '@/lib/channel-orders/types'
 import {
   channelOrderErrorResponse,
   loadOwnedOperation,
@@ -11,7 +12,7 @@ import {
 
 const BodySchema = z.object({
   operationId: z.string().min(1),
-  lines: z.array(z.unknown()).max(2000),
+  lines: z.array(z.unknown()).max(MAX_INGEST_LINES),
 })
 
 export async function POST(request: NextRequest) {

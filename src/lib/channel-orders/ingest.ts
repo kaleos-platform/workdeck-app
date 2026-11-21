@@ -5,6 +5,7 @@ import { rawHashOf } from './normalize'
 import {
   ChannelOrderError,
   LEASE_MS,
+  MAX_INGEST_LINES,
   OrderLineInputSchema,
   ScanLineInputSchema,
   type OrderLineInput,
@@ -13,6 +14,8 @@ import {
 import { z } from 'zod'
 
 const d = (v?: string | null) => (v ? new Date(v) : null)
+/** interactive 트랜잭션 한도 — 기본 5초는 원격 DB 왕복 300행 처리에 빠듯하다. */
+const TX_OPTIONS = { timeout: 20_000, maxWait: 10_000 }
 
 export type IngestResult = {
   created: number
@@ -30,7 +33,7 @@ export async function ingestLines(
   rawLines: unknown,
   now = new Date()
 ): Promise<IngestResult> {
-  const parsed = z.array(OrderLineInputSchema).max(2000).safeParse(rawLines)
+  const parsed = z.array(OrderLineInputSchema).max(MAX_INGEST_LINES).safeParse(rawLines)
   if (!parsed.success) throw new ChannelOrderError('invalid', '행 형식이 올바르지 않습니다')
   const lines: OrderLineInput[] = [
     ...new Map(parsed.data.map((l) => [l.externalLineKey, l])).values(),
@@ -43,6 +46,11 @@ export async function ingestLines(
     }
     const { owned } = await lockLease(tx, op.channelId, operationId, now)
     if (!owned) throw new ChannelOrderError('lease_lost', 'lease 가 없거나 만료되었습니다')
+    // 서버가 실제로 받은 호출·행 수(워커 신고값과 무관) — finish 검증에 쓴다. 설정 행 잠금 안이라 경합 없음.
+    await tx.pipelineOperation.update({
+      where: { id: operationId },
+      data: { ingestCalls: { increment: 1 }, ingestRows: { increment: lines.length } },
+    })
 
     const existing = await tx.channelOrderLine.findMany({
       where: {
@@ -106,38 +114,48 @@ export async function ingestLines(
       })
     }
     return res
-  })
+  }, TX_OPTIONS)
 }
 
-/** 전수 조회 행 적재 — FULL_SCAN operation 이 진행 중(15분 이내)일 때만. */
+/** 전수 조회 행 적재 — FULL_SCAN operation 이 진행 중(15분 이내)일 때만. (operationId, externalLineKey) 로 중복 제거. */
 export async function ingestScanLines(
   operationId: string,
   rawLines: unknown,
   now = new Date()
 ): Promise<{ inserted: number }> {
-  const parsed = z.array(ScanLineInputSchema).max(2000).safeParse(rawLines)
+  const parsed = z.array(ScanLineInputSchema).max(MAX_INGEST_LINES).safeParse(rawLines)
   if (!parsed.success) throw new ChannelOrderError('invalid', '행 형식이 올바르지 않습니다')
   const lines: ScanLineInput[] = parsed.data
-  const op = await prisma.pipelineOperation.findUnique({ where: { id: operationId } })
-  if (
-    !op ||
-    op.kind !== 'FULL_SCAN' ||
-    op.status !== 'STARTED' ||
-    !op.channelId ||
-    op.startedAt.getTime() < now.getTime() - LEASE_MS
-  ) {
-    throw new ChannelOrderError('lease_lost', '유효하지 않은 operation 입니다')
-  }
-  const r = await prisma.channelOrderScanLine.createMany({
-    data: lines.map((l) => ({
-      operationId,
-      channelId: op.channelId as string,
-      externalLineKey: l.externalLineKey,
-      externalOrderId: l.externalOrderId,
-      quantity: l.quantity,
-      channelStatus: l.channelStatus,
-      paidAt: new Date(l.paidAt),
-    })),
-  })
-  return { inserted: r.count }
+  return prisma.$transaction(async (tx) => {
+    const op = await tx.pipelineOperation.findUnique({ where: { id: operationId } })
+    if (
+      !op ||
+      op.kind !== 'FULL_SCAN' ||
+      op.status !== 'STARTED' ||
+      !op.channelId ||
+      op.startedAt.getTime() < now.getTime() - LEASE_MS
+    ) {
+      throw new ChannelOrderError('lease_lost', '유효하지 않은 operation 입니다')
+    }
+    // 상태 조건부 갱신이 곧 행 잠금 — 마감과 경합해도 마감 뒤에는 쓰지 않는다.
+    const claimed = await tx.pipelineOperation.updateMany({
+      where: { id: operationId, status: 'STARTED' },
+      data: { ingestCalls: { increment: 1 }, ingestRows: { increment: lines.length } },
+    })
+    if (claimed.count !== 1)
+      throw new ChannelOrderError('lease_lost', '유효하지 않은 operation 입니다')
+    const r = await tx.channelOrderScanLine.createMany({
+      data: lines.map((l) => ({
+        operationId,
+        channelId: op.channelId as string,
+        externalLineKey: l.externalLineKey,
+        externalOrderId: l.externalOrderId,
+        quantity: l.quantity,
+        channelStatus: l.channelStatus,
+        paidAt: new Date(l.paidAt),
+      })),
+      skipDuplicates: true,
+    })
+    return { inserted: r.count }
+  }, TX_OPTIONS)
 }

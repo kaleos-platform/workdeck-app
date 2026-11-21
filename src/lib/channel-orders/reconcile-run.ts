@@ -8,15 +8,16 @@ import {
   diagnose,
   evaluateGate,
   judge,
+  judgeWindowFor,
   type DiagnoseReport,
   type ExcelOrder,
-  type MatchRule,
+  type JudgeWindow,
   type ObsLine,
   type ScanLine,
   type Verdict,
 } from './reconcile'
 import { cleanupStaleOperations, purgeOldScanLines } from './operations'
-import { SCAN_DAYS, type ObserveCursor } from './types'
+import { parseMatchRule, type ObserveCursor } from './types'
 
 const DAY = 86_400_000
 
@@ -35,15 +36,19 @@ const loadSettings = (spaceId: string) =>
 
 async function loadChannelInputs(s: SettingRow, now: Date) {
   const channelId = s.channelId
-  const [lines, aliases, delOrders, lastScan, recentObserve] = await Promise.all([
+  // 대사 한 번의 판정 창 W 는 가장 최근 전수 조회의 시작 시각으로 정해진다(없으면 지금 기준 — 어차피 게이트에서 판정 불가).
+  const lastScan = await prisma.pipelineOperation.findFirst({
+    where: { channelId, kind: 'FULL_SCAN' },
+    orderBy: { startedAt: 'desc' },
+  })
+  const window: JudgeWindow = judgeWindowFor(lastScan?.startedAt ?? now)
+  const [lines, aliases, delOrders, recentObserve] = await Promise.all([
     prisma.channelOrderLine.findMany({
       where: {
         channelId,
         paidAt: { gte: new Date(now.getTime() - 30 * DAY) },
-        OR: [
-          { paidAt: { gte: new Date(now.getTime() - SCAN_DAYS * DAY) } },
-          { dispatchedAt: null },
-        ],
+        // 판정은 paidAt∈W 또는 미종결(결제일 무관)만 본다 — 정확한 필터는 judge() 가 한다.
+        OR: [{ paidAt: { gte: window.from } }, { dispatchedAt: null }],
       },
     }),
     prisma.channelProductAlias.findMany({
@@ -54,20 +59,18 @@ async function loadChannelInputs(s: SettingRow, now: Date) {
       where: {
         spaceId: s.spaceId,
         orderNumber: { not: null },
-        orderDate: { gte: new Date(now.getTime() - (SCAN_DAYS + 2) * DAY) },
+        // 주문일이 W 의 KST 날짜 범위 — 정확한 필터는 judge() 가 한다(여유 1일).
+        orderDate: { gte: new Date(window.from.getTime() - DAY) },
         batch: { source: 'MANUAL' },
         OR: [{ channelId }, { channelId: null }],
       },
       select: {
         orderNumber: true,
+        orderDate: true,
         channelId: true,
         batch: { select: { status: true } },
         items: { select: { quantity: true, optionId: true, listingId: true } },
       },
-    }),
-    prisma.pipelineOperation.findFirst({
-      where: { channelId, kind: 'FULL_SCAN' },
-      orderBy: { startedAt: 'desc' },
     }),
     prisma.pipelineOperation.findMany({
       where: { channelId, kind: 'OBSERVE', startedAt: { gte: new Date(now.getTime() - DAY) } },
@@ -93,9 +96,11 @@ async function loadChannelInputs(s: SettingRow, now: Date) {
       aliasMap.get(normalizeAlias(`${l.productName} ${l.optionText ?? ''}`)) ??
       aliasMap.get(normalizeAlias(l.productName)) ??
       null,
+    lastSeenAt: l.lastSeenAt,
   }))
   const excel: ExcelOrder[] = delOrders.map((o) => ({
     orderNumber: o.orderNumber as string,
+    orderDate: o.orderDate,
     quantity: o.items.reduce((n, i) => n + i.quantity, 0),
     completed: o.batch.status === 'COMPLETED',
     targets: o.items.map((i) =>
@@ -105,16 +110,19 @@ async function loadChannelInputs(s: SettingRow, now: Date) {
   }))
   const scanLines: ScanLine[] =
     lastScan?.status === 'SUCCEEDED'
-      ? (await prisma.channelOrderScanLine.findMany({ where: { operationId: lastScan.id } })).map(
-          (r) => ({
-            key: r.externalLineKey,
-            orderId: r.externalOrderId,
-            quantity: r.quantity,
-            status: r.channelStatus,
+      ? (
+          await prisma.channelOrderScanLine.findMany({
+            where: { operationId: lastScan.id, paidAt: { gte: window.from, lt: window.to } },
           })
-        )
+        ).map((r) => ({
+          key: r.externalLineKey,
+          orderId: r.externalOrderId,
+          quantity: r.quantity,
+          status: r.channelStatus,
+          paidAt: r.paidAt,
+        }))
       : []
-  return { obs, excel, scanLines, lastScan, recentObserve }
+  return { obs, excel, scanLines, lastScan, recentObserve, window }
 }
 
 export async function reconcileChannel(s: SettingRow, now: Date): Promise<ChannelOutcome> {
@@ -139,10 +147,11 @@ export async function reconcileChannel(s: SettingRow, now: Date): Promise<Channe
     mode: 'judge',
     verdict: judge({
       now,
+      window: inp.window,
       obs: inp.obs,
       scan: inp.scanLines,
       excel: inp.excel,
-      rule: (s.matchKeyRule as MatchRule) ?? null,
+      rule: parseMatchRule(s.matchKeyRule),
     }),
   }
 }
@@ -166,7 +175,9 @@ export function formatReport(outcomes: ChannelOutcome[]): string {
       out.push(`\n*${name}* — 판정 불가(성공 아님): ${o.reasons.join(', ')}`)
     } else {
       const c = verdictCounts(o.verdict)
-      out.push(`\n*${name}* — A ${c.A} · B ${c.B} · C ${c.C} · D ${c.D} · E ${c.E}`)
+      out.push(
+        `\n*${name}* — A ${c.A} · B ${c.B} · C ${c.C} · D ${c.D} · E ${c.E} · F(상태 시차, 정보) ${c.F}`
+      )
       for (const k of ['A', 'C', 'D', 'E', 'B'] as const) {
         for (const f of o.verdict[k].slice(0, 10)) {
           out.push(

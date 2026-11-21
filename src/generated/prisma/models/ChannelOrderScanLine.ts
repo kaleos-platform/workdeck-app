@@ -259,6 +259,7 @@ export type ChannelOrderScanLineOrderByWithRelationInput = {
 
 export type ChannelOrderScanLineWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  operationId_externalLineKey?: Prisma.ChannelOrderScanLineOperationIdExternalLineKeyCompoundUniqueInput
   AND?: Prisma.ChannelOrderScanLineWhereInput | Prisma.ChannelOrderScanLineWhereInput[]
   OR?: Prisma.ChannelOrderScanLineWhereInput[]
   NOT?: Prisma.ChannelOrderScanLineWhereInput | Prisma.ChannelOrderScanLineWhereInput[]
@@ -271,7 +272,7 @@ export type ChannelOrderScanLineWhereUniqueInput = Prisma.AtLeast<{
   paidAt?: Prisma.DateTimeFilter<"ChannelOrderScanLine"> | Date | string
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
   operation?: Prisma.XOR<Prisma.PipelineOperationScalarRelationFilter, Prisma.PipelineOperationWhereInput>
-}, "id">
+}, "id" | "operationId_externalLineKey">
 
 export type ChannelOrderScanLineOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -386,6 +387,11 @@ export type ChannelOrderScanLineListRelationFilter = {
 
 export type ChannelOrderScanLineOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type ChannelOrderScanLineOperationIdExternalLineKeyCompoundUniqueInput = {
+  operationId: string
+  externalLineKey: string
 }
 
 export type ChannelOrderScanLineCountOrderByAggregateInput = {
