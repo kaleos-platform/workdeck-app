@@ -1,0 +1,309 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "e1",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 690,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e2",
+   "x": 24,
+   "y": 20,
+   "text": "연동 설정",
+   "fontSize": 24,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e3",
+   "x": 24,
+   "y": 56,
+   "text": "Slack 연결과 워크덱 에이전트, 외부 MCP 클라이언트 연동을 관리하세요.",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e4",
+   "x": 24,
+   "y": 92,
+   "width": 130,
+   "height": 36,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "외부 서비스 1",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e5",
+   "x": 162,
+   "y": 92,
+   "width": 110,
+   "height": 36,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "에이전트 1",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e6",
+   "x": 280,
+   "y": 92,
+   "width": 100,
+   "height": 36,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "개발자 1",
+    "fontSize": 13,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e7",
+   "x": 380,
+   "y": 97,
+   "width": 26,
+   "height": 26,
+   "strokeColor": "#111827",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#111827",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "①",
+    "fontSize": 13,
+    "strokeColor": "#ffffff"
+   }
+  },
+  {
+   "type": "text",
+   "id": "e8",
+   "x": 414,
+   "y": 101,
+   "text": "탭에 확인 필요 건수. 처음엔 건수 있는 첫 탭이 열림",
+   "fontSize": 13,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e9",
+   "x": 24,
+   "y": 146,
+   "width": 852,
+   "height": 76,
+   "strokeColor": "#374151",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e10",
+   "x": 42,
+   "y": 155,
+   "text": "확인 필요 1건",
+   "fontSize": 14,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e11",
+   "x": 42,
+   "y": 189,
+   "text": "쿠팡 Open API — 워커 IP가 Wing 허용목록에 없음",
+   "fontSize": 13,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e12",
+   "x": 766,
+   "y": 180,
+   "width": 92,
+   "height": 32,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "해결하기",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e13",
+   "x": 840,
+   "y": 152,
+   "width": 26,
+   "height": 26,
+   "strokeColor": "#111827",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#111827",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "②",
+    "fontSize": 13,
+    "strokeColor": "#ffffff"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e14",
+   "x": 24,
+   "y": 236,
+   "width": 852,
+   "height": 190,
+   "strokeColor": "#374151",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e15",
+   "x": 44,
+   "y": 250,
+   "text": "쿠팡 Open API 연동",
+   "fontSize": 16,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e16",
+   "x": 44,
+   "y": 278,
+   "text": "문제 있는 카드를 위로. 기존 기능 그대로",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  },
+  {
+   "type": "rectangle",
+   "id": "e17",
+   "x": 792,
+   "y": 250,
+   "width": 64,
+   "height": 24,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "오류",
+    "fontSize": 12,
+    "strokeColor": "#374151"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e18",
+   "x": 740,
+   "y": 252,
+   "width": 26,
+   "height": 26,
+   "strokeColor": "#111827",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#111827",
+   "fillStyle": "solid",
+   "strokeStyle": "solid",
+   "label": {
+    "text": "③",
+    "fontSize": 13,
+    "strokeColor": "#ffffff"
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "e19",
+   "x": 24,
+   "y": 438,
+   "width": 852,
+   "height": 110,
+   "strokeColor": "#9ca3af",
+   "roughness": 0,
+   "strokeWidth": 1,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "strokeStyle": "solid"
+  },
+  {
+   "type": "text",
+   "id": "e20",
+   "x": 44,
+   "y": 452,
+   "text": "Slack 연결",
+   "fontSize": 16,
+   "strokeColor": "#374151",
+   "fontFamily": 2
+  },
+  {
+   "type": "text",
+   "id": "e21",
+   "x": 44,
+   "y": 480,
+   "text": "기존 카드 그대로",
+   "fontSize": 13,
+   "strokeColor": "#9ca3af",
+   "fontFamily": 2
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

@@ -108,6 +108,11 @@ export type ToolAuditLog = Prisma.ToolAuditLogModel
  */
 export type UsageEvent = Prisma.UsageEventModel
 /**
+ * Model PlatformCredential
+ * 
+ */
+export type PlatformCredential = Prisma.PlatformCredentialModel
+/**
  * Model SpaceCredential
  * 
  */

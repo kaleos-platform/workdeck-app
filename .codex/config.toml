@@ -15,7 +15,7 @@ args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
 [mcp_servers.shadcn]
 type = "stdio"
 command = "npx"
-args = ["shadcn@latest", "mcp"]
+args = ["shadcn@3.8.5", "mcp"]
 
 [mcp_servers.supabase]
 type = "http"

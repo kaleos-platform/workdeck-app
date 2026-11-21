@@ -6,6 +6,7 @@
  *   status·connectedAt·scopes·credVersion 은 입력으로 받지 않고 서버가 계산한다. 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
  *   승인 범위는 필수 범위(GA4 + GTM 브랜드가 있으면 tagmanager)이고, 계정도 이 Space 브랜드의 GA4 속성·GTM 컨테이너에만 권한이 있는 계정을 쓴다.
  * 네이버 검색광고: 조회 전용. 매핑된 각 CUSTOMER_ID 로 캠페인 목록을 1번씩 조회해 키를 확인한다(실패 시 저장하지 않음).
+ * 카페24: 앱 정보(쇼핑몰 ID·client_id·secret)만 받는다. 토큰은 OAuth 콜백이 저장하고, 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
  * GET — 등록 상태·설정값(허용 필드만) 조회. 비밀값·암호문·오류 원문은 돌려주지 않는다(MFA 불필요, ADMIN 이상).
  * 카페24: 앱 정보(쇼핑몰 ID·client_id·secret)만 받는다. 토큰은 OAuth 콜백이 저장하고, 쓰기는 무조건 upsert 가 아니라 조건부 쓰기(409 가능).
  * 삭제(DELETE) 라우트는 두지 않는다. 만들 때도 같은 requireAal2 관문을 둔다.
