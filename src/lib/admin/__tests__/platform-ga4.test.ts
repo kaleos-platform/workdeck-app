@@ -1,6 +1,7 @@
 /** @jest-environment node */
 import { GoogleOAuthError } from '@/lib/agent/integrations/google-marketing'
 import {
+  activeEnhancedKeys,
   fetchEnhancedMeasurement,
   fetchFunnelSummary,
   fetchMeasurementId,
@@ -24,7 +25,7 @@ test('향상된 측정: v1alpha 경로·필드 파싱, 없는 필드는 null(알
       name: 'x',
       streamEnabled: true,
       scrollsEnabled: false,
-      pageChangesEnabled: 'yes', // boolean 이 아니면 null
+      pageChangesEnabled: 'yes', // true 가 아니면 꺼짐
       searchQueryParameter: 'q',
     })
   )
@@ -34,8 +35,24 @@ test('향상된 측정: v1alpha 경로·필드 파싱, 없는 필드는 null(알
   )
   expect(r.streamEnabled).toBe(true)
   expect(r.scrollsEnabled).toBe(false)
-  expect(r.pageChangesEnabled).toBeNull()
-  expect(r.fileDownloadsEnabled).toBeNull()
+  expect(r.pageChangesEnabled).toBe(false)
+  expect(r.fileDownloadsEnabled).toBe(false) // proto3 JSON 은 false 를 생략 → 없음 = 꺼짐
+})
+
+test('activeEnhancedKeys: 전체 스위치가 꺼지면 하위 값이 켜져 있어도 빈 목록', () => {
+  const sub = {
+    pageChangesEnabled: true,
+    scrollsEnabled: true,
+    outboundClicksEnabled: true,
+    siteSearchEnabled: false,
+    formInteractionsEnabled: false,
+    videoEngagementEnabled: true,
+    fileDownloadsEnabled: true,
+  }
+  expect(activeEnhancedKeys({ streamEnabled: false, ...sub })).toEqual([])
+  expect(activeEnhancedKeys({ streamEnabled: true, ...sub })).toEqual(
+    expect.arrayContaining(['streamEnabled', 'pageChangesEnabled', 'scrollsEnabled'])
+  )
 })
 
 test('측정 ID: v1beta webStreamData.measurementId', async () => {

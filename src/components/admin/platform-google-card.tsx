@@ -255,23 +255,37 @@ export function PlatformGoogleCard({
           {ga4.enhanced && (
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium">향상된 측정</p>
-              <p className="text-xs text-muted-foreground">
-                GA4 퍼널 운영 게이트: 모두 꺼져야 측정 ID 등록 가능
+              <p
+                className={
+                  ga4.enhanced.streamEnabled
+                    ? 'text-xs font-medium text-amber-600 dark:text-amber-400'
+                    : 'text-xs text-emerald-600 dark:text-emerald-400'
+                }
+              >
+                {ga4.enhanced.streamEnabled
+                  ? 'GA4 퍼널 운영 게이트: 미통과 — 향상된 측정 전체 스위치를 꺼야 측정 ID를 등록할 수 있습니다'
+                  : 'GA4 퍼널 운영 게이트: 통과 — 향상된 측정 전체가 꺼져 있습니다'}
               </p>
               <ul className="text-sm">
-                {Object.entries(ga4.enhanced).map(([k, v]) => (
-                  <li
-                    key={k}
-                    className={
-                      v === true
-                        ? 'font-medium text-amber-600 dark:text-amber-400'
-                        : 'text-muted-foreground'
-                    }
-                  >
-                    {ENHANCED_LABEL[k] ?? k}:{' '}
-                    {v === true ? '켜짐' : v === false ? '꺼짐' : '알 수 없음'}
-                  </li>
-                ))}
+                {Object.entries(ga4.enhanced).map(([k, v]) => {
+                  // 전체가 꺼져 있으면 하위 값은 저장만 돼 있고 동작하지 않는다
+                  const active = k === 'streamEnabled' ? v : ga4.enhanced!.streamEnabled && v
+                  return (
+                    <li
+                      key={k}
+                      className={
+                        active
+                          ? 'font-medium text-amber-600 dark:text-amber-400'
+                          : 'text-muted-foreground'
+                      }
+                    >
+                      {ENHANCED_LABEL[k] ?? k}: {v ? '켜짐' : '꺼짐'}
+                      {k !== 'streamEnabled' && v && !ga4.enhanced!.streamEnabled
+                        ? ' (전체 꺼짐 — 동작 안 함)'
+                        : ''}
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           )}
