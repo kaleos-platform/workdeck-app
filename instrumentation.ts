@@ -3,7 +3,6 @@ import * as Sentry from '@sentry/nextjs'
 export const onRequestError = Sentry.captureRequestError
 
 export async function register() {
-  console.log(process.env.NEXT_RUNTIME, 'dsn', Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN))
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     await import('./sentry.server.config')
     // v0 쓰기인데 K0 가 없으면 서버 부팅이 실패한다 — K0 폐기 뒤 복구는 롤포워드만(키 보존 규칙).
