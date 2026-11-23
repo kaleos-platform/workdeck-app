@@ -158,9 +158,11 @@ export function gitleaksScan(dir) {
 }
 
 // base export 의 텍스트 파일을 한 번 메모리에 읽는다(원문 조각 검사용: includes 정확 일치)
-function loadCorpus(baseDir) {
+export function loadCorpus(baseDir) {
   const parts = []
   for (const rel of fs.readdirSync(baseDir, { recursive: true })) {
+    // 수정 허용 경로의 소스만 — 픽스처·문서·테스트 데이터에 있는 문자열을 "원래 있던 것"으로 보지 않는다
+    if (!lib.isAllowedPath(String(rel))) continue
     const f = path.join(baseDir, String(rel))
     try {
       const st = fs.lstatSync(f)

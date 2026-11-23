@@ -54,7 +54,7 @@ node scripts/sentry-autofix/run.mjs --issue WORKDECK-APP-1A            # 수동 
 node scripts/sentry-autofix/run.mjs --fixture scripts/sentry-autofix/fixtures/inject-host-files.json --no-slack
 ```
 
-`--no-slack` 이면 Slack 대신 stdout. 종료 코드: 0 정상, 1 사전 점검·실행 오류, 2 인자 오류. 전체 45분 deadline, 동시 실행은 lock(`~/.local/state/workdeck-autofix/lock`)으로 막는다.
+`--no-slack` 이면 Slack 대신 stdout. 종료 코드: 0 정상, 1 사전 점검·실행 오류, 2 인자 오류. 이슈당 45분 deadline, 동시 실행은 lock(`~/.local/state/workdeck-autofix/lock`)으로 막는다.
 컨테이너는 이름 + 라벨 `workdeck.autofix=<runId>` 로만 식별해 `docker kill` 한다. `docker prune` 등 이름 없는 삭제는 쓰지 않는다(공용 호스트).
 
 ## 주의·한계
@@ -64,7 +64,7 @@ node scripts/sentry-autofix/run.mjs --fixture scripts/sentry-autofix/fixtures/in
 - **공용 장애 구분**: 업스트림 401/403/429/5xx·upstream 오류·프록시 소멸은 그 이슈 탓이 아니라 run 을 중단하되 이슈별 실패 횟수에는 센다(3회면 일일 선정에서 제외, 마지막 실패보다 뒤의 `autofix:request` 가 있으면 초기화, Slack 에 shortId 표시). 프록시 자체의 request-cap 은 이슈 실패로 기록한다.
 - **디스크 감시**: 3초마다 확인해 이슈 시작 대비 15GB 감소 또는 여유 15GB 미만이면 이 run 컨테이너를 이름으로 kill 하고 run 을 중단한다. 정리 컨테이너 실패는 Slack 경고로 알린다.
 - **컨텍스트 선정의 한계**: Sentry 조회가 25건(`limit=25`)이라 `autofix:request` 노트가 사용자 수 정렬 25위 밖인 이슈는 일일 선정에서 보이지 않는다. 그 이슈는 `--issue <shortId>` 로 수동 실행한다.
-- **디스크**: bind mount 라 쓰기 크기를 docker 가 제한하지 못한다. 대신 사전 점검(여유 20GB 이상)과 실행 중 감시(여유 3GB 미만이면 이 run 컨테이너를 이름으로 kill 하고 run 중단)로 막는다.
+- **디스크**: bind mount 라 쓰기 크기를 docker 가 제한하지 못한다. 대신 사전 점검(여유 20GB 이상)과 실행 중 감시(위 '디스크 감시' 기준)로 막는다.
 - **worker/ 변경은 차단**한다(검증의 tsc 가 worker 를 보지 않음). 허용 경로는 `src|app|components` 아래 `.ts/.tsx/.css` 뿐이다.
 - 검증하지 않은 단계는 PR 본문·Slack 에 "미실행"으로 표시한다.
 
