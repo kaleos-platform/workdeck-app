@@ -21,6 +21,9 @@ import {
 import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
 import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { buttonBlockStyle } from '@/lib/hiring/button-color'
+import { buildJobPostingJsonLd } from '@/lib/hiring/job-posting-jsonld'
+import { JsonLd } from '@/components/marketing/json-ld'
+import { buildAppUrl, buildMarketingUrl } from '@/lib/domain'
 
 type Params = { params: Promise<{ uuid: string }>; searchParams: Promise<{ preview?: string }> }
 
@@ -28,6 +31,7 @@ async function loadPosting(uuid: string) {
   return prisma.hiringPosting.findUnique({
     where: { uuid },
     include: {
+      space: { select: { name: true } },
       positions: { orderBy: { createdAt: 'asc' } },
       stores: { include: { store: { select: { name: true, roadAddress: true, spaceId: true } } } },
       contents: {
@@ -57,14 +61,37 @@ async function isSpaceMemberPreview(preview: string | undefined, spaceId: string
   return !!membership
 }
 
+type LoadedPosting = NonNullable<Awaited<ReturnType<typeof loadPosting>>>
+
+// 본문·JSON-LD·메타가 같은 필터(spaceId 일치)를 쓰도록 한 곳에서 거른다.
+function filterPosting(posting: LoadedPosting) {
+  return {
+    positions: posting.positions.filter((position) => position.spaceId === posting.spaceId),
+    stores: posting.stores.filter(({ store }) => store.spaceId === posting.spaceId),
+    contents: posting.contents.filter((content) => content.spaceId === posting.spaceId),
+  }
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { uuid } = await params
-  const posting = await prisma.hiringPosting.findUnique({
-    where: { uuid },
-    select: { title: true, status: true },
-  })
+  const posting = await loadPosting(uuid)
   if (!posting || !['ACTIVE', 'CLOSED'].includes(posting.status)) return { title: '채용 공고' }
-  return { title: `${posting.title} · 채용 공고` }
+  const { positions, stores } = filterPosting(posting)
+  const title = `${posting.title} · 채용 공고`
+  const region = stores.map((s) => s.store.roadAddress).find(Boolean)
+  const description = [posting.space.name, positions.map((p) => p.name).join(', '), region]
+    .filter(Boolean)
+    .join(' · ')
+    .slice(0, 120)
+  const url = buildAppUrl(`/p/${uuid}`)
+  const expired = posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate)
+  return {
+    title,
+    ...(description ? { description } : {}),
+    alternates: { canonical: url },
+    openGraph: { title, ...(description ? { description } : {}), url, type: 'website' },
+    ...(expired ? { robots: { index: false } } : {}),
+  }
 }
 
 export default async function PublicPostingPage({ params, searchParams }: Params) {
@@ -78,12 +105,39 @@ export default async function PublicPostingPage({ params, searchParams }: Params
     posting.status === 'DRAFT' && (await isSpaceMemberPreview(preview, posting.spaceId))
   if (posting.status === 'DRAFT' && !isPreview) notFound()
 
-  const positions = posting.positions.filter((position) => position.spaceId === posting.spaceId)
-  const stores = posting.stores.filter(({ store }) => store.spaceId === posting.spaceId)
-  const contents = posting.contents.filter((content) => content.spaceId === posting.spaceId)
+  const { positions, stores, contents } = filterPosting(posting)
   const isClosed =
     !isPreview && (posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate))
   const applyHref = `${getHiringPublicApplyPath(uuid)}${isPreview ? '?preview=1' : ''}`
+
+  // JSON-LD 입력 — 화면에 실제 렌더되는 블록만 반영한다.
+  const positionsBlockRendered =
+    positions.length > 0 && contents.some((c) => c.contentType === 'positions')
+  const hasInternalApplyLink =
+    !isClosed &&
+    contents.some((c) => {
+      const data = c.data as { title?: string; linkType?: string; link?: { linkType?: string } }
+      if (c.contentType === 'button') return !!data?.title && data.linkType === 'form'
+      if (c.contentType === 'image' || c.contentType === 'design')
+        return !!c.imagePath && data?.link?.linkType === 'form'
+      return false
+    })
+  const jobPostingJsonLd = buildJobPostingJsonLd({
+    title: posting.title,
+    status: posting.status,
+    isPreview,
+    closingDate: posting.closingDate,
+    publishedAt: posting.publishedAt,
+    createdAt: posting.createdAt,
+    companyName: posting.space.name,
+    positions,
+    positionsBlockRendered,
+    hasInternalApplyLink,
+    stores: stores.map((s) => s.store),
+    textBlocksHtml: contents
+      .filter((c) => c.contentType === 'text' && c.data)
+      .map((c) => renderTiptapHtml(c.data)),
+  })
 
   // 마감일 D-day (KST 기준 날짜 비교 — closingDate는 UTC 자정으로 저장된 날짜값)
   const closingLabel = (() => {
@@ -101,6 +155,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
 
   return (
     <article className="space-y-6">
+      {jobPostingJsonLd && <JsonLd data={jobPostingJsonLd} />}
       {isPreview && (
         <div className="sticky top-0 z-50 -mx-4 -mt-4 bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-900 shadow-sm sm:-mx-6 sm:-mt-6 dark:bg-amber-950 dark:text-amber-200">
           미리보기 — 발행 전 화면입니다
@@ -140,7 +195,11 @@ export default async function PublicPostingPage({ params, searchParams }: Params
         </div>
         {stores.length > 0 && (
           <p className="text-sm text-muted-foreground">
-            {stores.map((s) => s.store.name).join(', ')}
+            {stores
+              .map((s) =>
+                s.store.roadAddress ? `${s.store.name} (${s.store.roadAddress})` : s.store.name
+              )
+              .join(', ')}
           </p>
         )}
       </header>
@@ -247,6 +306,21 @@ export default async function PublicPostingPage({ params, searchParams }: Params
             ) : null
           )}
         </section>
+      )}
+
+      {process.env.HIRING_PUBLIC_POWERED_BY !== 'off' && (
+        <footer className="pb-2 text-center text-xs text-muted-foreground">
+          <a
+            href={buildMarketingUrl(
+              '/recruiting?utm_source=job_page&utm_medium=referral&utm_campaign=public_posting'
+            )}
+            target="_blank"
+            rel="noopener"
+            className="hover:underline"
+          >
+            워크덱으로 만든 채용 페이지
+          </a>
+        </footer>
       )}
     </article>
   )

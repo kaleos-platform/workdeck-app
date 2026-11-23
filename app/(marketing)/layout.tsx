@@ -4,9 +4,11 @@ import { MarketingHeader } from '@/components/marketing/marketing-header'
 import { MarketingFooter } from '@/components/marketing/marketing-footer'
 import { GoogleTag } from '@/components/analytics/google-tag'
 import { getMarketingOrigin } from '@/lib/domain'
+import { siteVerification } from '@/lib/marketing/seo'
 
 export const metadata: Metadata = {
   metadataBase: new URL(getMarketingOrigin()),
+  verification: siteVerification(),
   title: {
     template: '%s | Workdeck',
     default: 'Workdeck — 여러 비즈니스 업무를 하나의 워크스페이스로',
