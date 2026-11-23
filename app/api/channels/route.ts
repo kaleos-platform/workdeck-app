@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
         select: { categoryName: true, ratePercent: true },
         orderBy: { categoryName: 'asc' },
       },
+      fulfillmentSetting: { select: { observeEnabled: true, adapter: true, storeKey: true } },
     },
   })
 
