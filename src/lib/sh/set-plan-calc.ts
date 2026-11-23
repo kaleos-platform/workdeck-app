@@ -7,6 +7,7 @@
 //   - 옵션 재고 → 세트 가용수량: computeSetAvailable (= computeListingAvailableStock 재사용)
 
 import { computeListingAvailableStock } from './listing-calc'
+import { roundToOrderUnit } from '@/lib/inv/reorder-engine/order-qty'
 
 /** 세트 구성 1행 — perSet = ProductListingItem.quantity (세트 1개당 옵션 수량, ≥1). */
 export type SetItem = { optionId: string; perSet: number }
@@ -81,11 +82,6 @@ export function computeLayeredFinalQty(p: {
   )
 }
 
-function roundUpQty(qty: number, roundUnit: number): number {
-  const unit = Number.isFinite(roundUnit) && roundUnit > 0 ? Math.floor(roundUnit) : 1
-  return qty > 0 ? Math.ceil(qty / unit) * unit : 0
-}
-
 /**
  * 레이어드 발주 최종 분배.
  * 1) 연동 위치와 나머지 위치의 부족분을 각각 계산한다.
@@ -124,7 +120,7 @@ export function computeLayeredRoundedSplit(p: {
     Math.ceil(p.directGross + remainingSafetyStockQty - remainingPlannedStock)
   )
   const rawFinalQty = linkedLocationNeedQty + remainingNeedQty
-  const finalQty = roundUpQty(rawFinalQty, p.roundUnit)
+  const finalQty = roundToOrderUnit(rawFinalQty, p.roundUnit)
   const linkedLocationQty = linkedLocationNeedQty
   return {
     linkedLocationNeedQty,
