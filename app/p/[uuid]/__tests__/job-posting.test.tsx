@@ -65,46 +65,20 @@ beforeEach(() => {
   delete process.env.HIRING_PUBLIC_POWERED_BY
 })
 
-describe('공개 공고 JobPosting', () => {
-  it('ACTIVE 공고는 JSON-LD 와 매장 도로명 주소를 낸다', async () => {
+describe('공개 공고 본문', () => {
+  // JobPosting 은 공개 회사명 출처가 정해질 때까지 내지 않는다(에디 결정 2026-11-23)
+  it('JSON-LD 를 내지 않고 매장 도로명 주소를 표시한다', async () => {
     const c = await load(posting())
-    expect(ld(c)).toHaveLength(1)
-    expect(JSON.parse(ld(c)[0].textContent as string)['@type']).toBe('JobPosting')
+    expect(ld(c)).toHaveLength(0)
     expect(c.textContent).toContain('본점 (서울 강남구 테헤란로 1)')
   })
 
-  it('다른 공간에 연결된 포지션·매장은 JSON-LD 에 반영되지 않는다', async () => {
+  it('다른 공간에 연결된 매장은 표시하지 않는다', async () => {
     const p = posting()
-    p.positions.push({ ...p.positions[0], id: 'x', spaceId: 'other', name: '타공간' })
     p.stores.push({ store: { name: '타매장', roadAddress: '부산 1', spaceId: 'other' } })
     const c = await load(p)
-    const text = ld(c)[0].textContent as string
-    expect(text).not.toContain('타공간')
-    expect(text).not.toContain('부산')
     expect(c.textContent).not.toContain('타매장')
-  })
-
-  it('다른 공간 매장만 있으면(주소 없음) 내지 않는다', async () => {
-    const c = await load(
-      posting({ stores: [{ store: { name: '타', roadAddress: '부산 1', spaceId: 'other' } }] })
-    )
-    expect(ld(c)).toHaveLength(0)
-  })
-
-  it('외부 링크 버튼만 있으면 내지 않는다', async () => {
-    const ext = { ...formButton, data: { title: '외부', linkType: 'url', url: 'https://x.test' } }
-    expect(ld(await load(posting({ contents: [positionsBlock, ext] })))).toHaveLength(0)
-  })
-
-  it('positions 블록이 없으면 내지 않는다', async () => {
-    expect(ld(await load(posting({ contents: [formButton] })))).toHaveLength(0)
-  })
-
-  it('CLOSED·마감 경과는 내지 않는다', async () => {
-    expect(ld(await load(posting({ status: 'CLOSED' })))).toHaveLength(0)
-    expect(ld(await load(posting({ closingDate: new Date('2020-01-01T00:00:00Z') })))).toHaveLength(
-      0
-    )
+    expect(c.textContent).not.toContain('부산')
   })
 })
 

@@ -33,7 +33,7 @@ describe('공개 공고 메타데이터', () => {
     findUnique.mockResolvedValue({ ...base, status: 'ACTIVE' } as never)
     const meta = await generateMetadata(params)
     expect(meta.title).toBe('공개 공고 · 채용 공고')
-    expect(meta.description).toBe('카페 · 바리스타 · 서울 강남구 테헤란로 1')
+    expect(meta.description).toBe('바리스타 · 서울 강남구 테헤란로 1') // 공간 이름은 넣지 않는다
     expect(meta.alternates?.canonical).toMatch(/\/p\/abc$/)
     expect(meta.openGraph).toMatchObject({ title: '공개 공고 · 채용 공고', type: 'website' })
     expect(meta.robots).toBeUndefined()

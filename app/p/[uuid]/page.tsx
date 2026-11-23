@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 // 공개 채용 공고 페이지(server component, 무인증).
 // ACTIVE 만 공개. CLOSED → 마감 안내. 그 외 → 404.
@@ -21,17 +22,15 @@ import {
 import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
 import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { buttonBlockStyle } from '@/lib/hiring/button-color'
-import { buildJobPostingJsonLd } from '@/lib/hiring/job-posting-jsonld'
-import { JsonLd } from '@/components/marketing/json-ld'
 import { buildAppUrl, buildMarketingUrl } from '@/lib/domain'
 
 type Params = { params: Promise<{ uuid: string }>; searchParams: Promise<{ preview?: string }> }
 
-async function loadPosting(uuid: string) {
-  return prisma.hiringPosting.findUnique({
+// generateMetadata 와 본문이 같은 요청에서 한 번만 조회하도록 캐시한다
+const loadPosting = cache(async (uuid: string) =>
+  prisma.hiringPosting.findUnique({
     where: { uuid },
     include: {
-      space: { select: { name: true } },
       positions: { orderBy: { createdAt: 'asc' } },
       stores: { include: { store: { select: { name: true, roadAddress: true, spaceId: true } } } },
       contents: {
@@ -47,7 +46,7 @@ async function loadPosting(uuid: string) {
       },
     },
   })
-}
+)
 
 // preview=1 요청 시 스페이스 멤버 여부 확인(DRAFT 열람 허용 조건)
 async function isSpaceMemberPreview(preview: string | undefined, spaceId: string) {
@@ -79,7 +78,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { positions, stores } = filterPosting(posting)
   const title = `${posting.title} · 채용 공고`
   const region = stores.map((s) => s.store.roadAddress).find(Boolean)
-  const description = [posting.space.name, positions.map((p) => p.name).join(', '), region]
+  // 공간 이름은 고객 내부용일 수 있어 검색 설명에 넣지 않는다
+  const description = [positions.map((p) => p.name).join(', '), region]
     .filter(Boolean)
     .join(' · ')
     .slice(0, 120)
@@ -110,35 +110,6 @@ export default async function PublicPostingPage({ params, searchParams }: Params
     !isPreview && (posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate))
   const applyHref = `${getHiringPublicApplyPath(uuid)}${isPreview ? '?preview=1' : ''}`
 
-  // JSON-LD 입력 — 화면에 실제 렌더되는 블록만 반영한다.
-  const positionsBlockRendered =
-    positions.length > 0 && contents.some((c) => c.contentType === 'positions')
-  const hasInternalApplyLink =
-    !isClosed &&
-    contents.some((c) => {
-      const data = c.data as { title?: string; linkType?: string; link?: { linkType?: string } }
-      if (c.contentType === 'button') return !!data?.title && data.linkType === 'form'
-      if (c.contentType === 'image' || c.contentType === 'design')
-        return !!c.imagePath && data?.link?.linkType === 'form'
-      return false
-    })
-  const jobPostingJsonLd = buildJobPostingJsonLd({
-    title: posting.title,
-    status: posting.status,
-    isPreview,
-    closingDate: posting.closingDate,
-    publishedAt: posting.publishedAt,
-    createdAt: posting.createdAt,
-    companyName: posting.space.name,
-    positions,
-    positionsBlockRendered,
-    hasInternalApplyLink,
-    stores: stores.map((s) => s.store),
-    textBlocksHtml: contents
-      .filter((c) => c.contentType === 'text' && c.data)
-      .map((c) => renderTiptapHtml(c.data)),
-  })
-
   // 마감일 D-day (KST 기준 날짜 비교 — closingDate는 UTC 자정으로 저장된 날짜값)
   const closingLabel = (() => {
     if (!posting.closingDate) return null
@@ -155,7 +126,6 @@ export default async function PublicPostingPage({ params, searchParams }: Params
 
   return (
     <article className="space-y-6">
-      {jobPostingJsonLd && <JsonLd data={jobPostingJsonLd} />}
       {isPreview && (
         <div className="sticky top-0 z-50 -mx-4 -mt-4 bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-900 shadow-sm sm:-mx-6 sm:-mt-6 dark:bg-amber-950 dark:text-amber-200">
           미리보기 — 발행 전 화면입니다
