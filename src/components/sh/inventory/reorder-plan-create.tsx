@@ -600,13 +600,18 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
   const horizonDays = leadDays + (appliedCover ?? 0)
 
   // 외부 연동 / 자체 출고 소계 — 비연동 계획이면 전체 수요를 자체 출고로 본다.
-  const externalBySku = new Map(options.map((o) => [o.optionId, o.rocketBaselineQty ?? 0]))
+  // 연동 몫은 엔진 최종수량 이하로 — 발주 단위 절반 미만이라 최종 0인 옵션은 연동 소계에도 0
+  const externalBySku = new Map(
+    options.map((o) => [o.optionId, Math.min(o.finalQty, o.rocketBaselineQty ?? 0)])
+  )
   const ownBySku = new Map(
     options.map((o) => [o.optionId, o.directGrossQty ?? (showBaseline ? 0 : o.roundedSuggestedQty)])
   )
   const externalTotal = options.reduce((s, o) => s + (externalBySku.get(o.optionId) ?? 0), 0)
   const ownTotal = options.reduce((s, o) => s + (ownBySku.get(o.optionId) ?? 0), 0)
   const linkedNeedTotal = options.reduce((s, o) => s + (o.linkedLocationNeedQty ?? 0), 0)
+  // SKU 미배분 안내는 최종 0 으로 빠진 몫을 빼고 센다(그 몫은 자체·3PL 로 가지 않는다)
+  const linkedBaselineTotal = options.reduce((s, o) => s + (o.rocketBaselineQty ?? 0), 0)
   // 입고 위치 선택지는 활성 위치만(재고가 남은 비활성 위치는 ③ 재고 칩에만 보인다)
   const ownLocationList = (preview?.ownLocations ?? []).filter((l) => l.isActive !== false)
   const effectiveOwnLocation =
@@ -907,8 +912,8 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                       size="md"
                       className="text-right"
                       sub={
-                        linkedNeedTotal > externalTotal
-                          ? `SKU 미배분 ${fmtQty(linkedNeedTotal - externalTotal)}개는 자체·3PL로`
+                        linkedNeedTotal > linkedBaselineTotal
+                          ? `SKU 미배분 ${fmtQty(linkedNeedTotal - linkedBaselineTotal)}개는 자체·3PL로`
                           : undefined
                       }
                     />
