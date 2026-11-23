@@ -162,6 +162,22 @@ describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)'
     expect(split.linkedLocationQty).toBe(50)
     expect(split.remainingQty).toBe(0)
   })
+  test('작은 로켓 몫(발주 단위 절반 미만)은 생산하지 않되 연동 몫은 유지한다', () => {
+    // 수납박스 M 초코브라운: 로켓 판매 비중 2.6% → 로켓 필요 2, 위킵 94 가 나머지 수요를 덮음
+    const split = computeLayeredRoundedSplit({
+      rocketGross: 1.4,
+      directGross: 52.6,
+      safetyStockQty: 0,
+      totalPlannedStock: 94,
+      rocketPlannedStock: 0,
+      roundUnit: 10,
+    })
+    expect(split.rawFinalQty).toBe(2)
+    expect(split.finalQty).toBe(0)
+    // 연동 몫은 자르지 않는다 — 위저드에서 수동 증량하면 소비처가 min(최종, 연동 몫)으로 되살린다
+    expect(split.linkedLocationQty).toBe(2)
+    expect(split.remainingQty).toBe(0)
+  })
 })
 
 describe('computeLayeredFinalQty (레이어드 단일차감)', () => {

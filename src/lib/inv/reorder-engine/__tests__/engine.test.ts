@@ -96,6 +96,15 @@ describe('computeOrderQty', () => {
   it('rate 0 → coverDays null', () => {
     expect(computeOrderQty({ ...base, dailyRate: 0 }).coverDays).toBeNull()
   })
+  it('필요량이 발주 단위 절반 미만이면 올리지 않음 — 저판매 옵션 과발주 방지', () => {
+    // 수납박스 S 베이지: 0.03/일 × 50일 = 1.5, 재고 0 → 필요 2 → 10 이 아니라 0
+    const low = computeOrderQty({ ...base, dailyRate: 0.03, safetyStockQty: 0, onHandQty: 0 })
+    expect([low.suggestedQty, low.roundedQty]).toEqual([2, 0])
+    const mid = computeOrderQty({ ...base, dailyRate: 0.1, safetyStockQty: 0, onHandQty: 0 })
+    expect([mid.suggestedQty, mid.roundedQty]).toEqual([5, 10])
+    const big = computeOrderQty({ ...base, dailyRate: 0.24, safetyStockQty: 0, onHandQty: 0 })
+    expect([big.suggestedQty, big.roundedQty]).toEqual([12, 20])
+  })
 })
 
 describe('optionDailyRate', () => {
