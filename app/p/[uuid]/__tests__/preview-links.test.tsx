@@ -16,6 +16,9 @@ jest.mock('next/navigation', () => ({
 const posting = {
   status: 'DRAFT',
   spaceId: 's',
+  space: { name: '회사' },
+  publishedAt: null,
+  createdAt: new Date('2026-11-01T00:00:00Z'),
   closingDate: null,
   positions: [],
   stores: [],
