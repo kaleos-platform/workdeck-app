@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 // 공개 채용 공고 페이지(server component, 무인증).
 // ACTIVE 만 공개. CLOSED → 마감 안내. 그 외 → 404.
@@ -21,11 +22,13 @@ import {
 import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
 import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { buttonBlockStyle } from '@/lib/hiring/button-color'
+import { buildAppUrl, buildMarketingUrl } from '@/lib/domain'
 
 type Params = { params: Promise<{ uuid: string }>; searchParams: Promise<{ preview?: string }> }
 
-async function loadPosting(uuid: string) {
-  return prisma.hiringPosting.findUnique({
+// generateMetadata 와 본문이 같은 요청에서 한 번만 조회하도록 캐시한다
+const loadPosting = cache(async (uuid: string) =>
+  prisma.hiringPosting.findUnique({
     where: { uuid },
     include: {
       positions: { orderBy: { createdAt: 'asc' } },
@@ -43,7 +46,7 @@ async function loadPosting(uuid: string) {
       },
     },
   })
-}
+)
 
 // preview=1 요청 시 스페이스 멤버 여부 확인(DRAFT 열람 허용 조건)
 async function isSpaceMemberPreview(preview: string | undefined, spaceId: string) {
@@ -57,14 +60,38 @@ async function isSpaceMemberPreview(preview: string | undefined, spaceId: string
   return !!membership
 }
 
+type LoadedPosting = NonNullable<Awaited<ReturnType<typeof loadPosting>>>
+
+// 본문·JSON-LD·메타가 같은 필터(spaceId 일치)를 쓰도록 한 곳에서 거른다.
+function filterPosting(posting: LoadedPosting) {
+  return {
+    positions: posting.positions.filter((position) => position.spaceId === posting.spaceId),
+    stores: posting.stores.filter(({ store }) => store.spaceId === posting.spaceId),
+    contents: posting.contents.filter((content) => content.spaceId === posting.spaceId),
+  }
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { uuid } = await params
-  const posting = await prisma.hiringPosting.findUnique({
-    where: { uuid },
-    select: { title: true, status: true },
-  })
+  const posting = await loadPosting(uuid)
   if (!posting || !['ACTIVE', 'CLOSED'].includes(posting.status)) return { title: '채용 공고' }
-  return { title: `${posting.title} · 채용 공고` }
+  const { positions, stores } = filterPosting(posting)
+  const title = `${posting.title} · 채용 공고`
+  const region = stores.map((s) => s.store.roadAddress).find(Boolean)
+  // 공간 이름은 고객 내부용일 수 있어 검색 설명에 넣지 않는다
+  const description = [positions.map((p) => p.name).join(', '), region]
+    .filter(Boolean)
+    .join(' · ')
+    .slice(0, 120)
+  const url = buildAppUrl(`/p/${uuid}`)
+  const expired = posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate)
+  return {
+    title,
+    ...(description ? { description } : {}),
+    alternates: { canonical: url },
+    openGraph: { title, ...(description ? { description } : {}), url, type: 'website' },
+    ...(expired ? { robots: { index: false } } : {}),
+  }
 }
 
 export default async function PublicPostingPage({ params, searchParams }: Params) {
@@ -78,9 +105,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
     posting.status === 'DRAFT' && (await isSpaceMemberPreview(preview, posting.spaceId))
   if (posting.status === 'DRAFT' && !isPreview) notFound()
 
-  const positions = posting.positions.filter((position) => position.spaceId === posting.spaceId)
-  const stores = posting.stores.filter(({ store }) => store.spaceId === posting.spaceId)
-  const contents = posting.contents.filter((content) => content.spaceId === posting.spaceId)
+  const { positions, stores, contents } = filterPosting(posting)
   const isClosed =
     !isPreview && (posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate))
   const applyHref = `${getHiringPublicApplyPath(uuid)}${isPreview ? '?preview=1' : ''}`
@@ -140,7 +165,11 @@ export default async function PublicPostingPage({ params, searchParams }: Params
         </div>
         {stores.length > 0 && (
           <p className="text-sm text-muted-foreground">
-            {stores.map((s) => s.store.name).join(', ')}
+            {stores
+              .map((s) =>
+                s.store.roadAddress ? `${s.store.name} (${s.store.roadAddress})` : s.store.name
+              )
+              .join(', ')}
           </p>
         )}
       </header>
@@ -247,6 +276,21 @@ export default async function PublicPostingPage({ params, searchParams }: Params
             ) : null
           )}
         </section>
+      )}
+
+      {process.env.HIRING_PUBLIC_POWERED_BY !== 'off' && (
+        <footer className="pb-2 text-center text-xs text-muted-foreground">
+          <a
+            href={buildMarketingUrl(
+              '/recruiting?utm_source=job_page&utm_medium=referral&utm_campaign=public_posting'
+            )}
+            target="_blank"
+            rel="noopener"
+            className="hover:underline"
+          >
+            워크덱으로 만든 채용 페이지
+          </a>
+        </footer>
       )}
     </article>
   )

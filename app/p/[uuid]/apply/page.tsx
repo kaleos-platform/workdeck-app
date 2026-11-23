@@ -34,7 +34,9 @@ export default async function ApplyPage({ params, searchParams }: Params) {
       closingDate: true,
       applicationEntries: true,
       positions: { orderBy: { createdAt: 'asc' }, select: { id: true, name: true, spaceId: true } },
-      stores: { include: { store: { select: { id: true, name: true, spaceId: true } } } },
+      stores: {
+        include: { store: { select: { id: true, name: true, roadAddress: true, spaceId: true } } },
+      },
     },
   })
 
@@ -62,7 +64,7 @@ export default async function ApplyPage({ params, searchParams }: Params) {
     .map((p) => ({ id: p.id, name: p.name }))
   const stores = posting.stores
     .filter(({ store }) => store.spaceId === posting.spaceId)
-    .map((s) => ({ id: s.store.id, name: s.store.name }))
+    .map((s) => ({ id: s.store.id, name: s.store.name, roadAddress: s.store.roadAddress }))
 
   return (
     <div className="space-y-6">
@@ -88,7 +90,11 @@ export default async function ApplyPage({ params, searchParams }: Params) {
           {stores.length > 0 && (
             <div className="flex gap-2">
               <dt>모집 장소</dt>
-              <dd className="text-foreground">{stores.map((s) => s.name).join(', ')}</dd>
+              <dd className="text-foreground">
+                {stores
+                  .map((s) => (s.roadAddress ? `${s.name} (${s.roadAddress})` : s.name))
+                  .join(', ')}
+              </dd>
             </div>
           )}
           <div className="flex gap-2">

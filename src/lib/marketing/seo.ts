@@ -47,6 +47,25 @@ export function buildMarketingMetadata({
   }
 }
 
+/**
+ * 검색엔진 소유 확인 메타 — 환경 변수에 값이 있는 것만 출력한다(빈 값·공백 무시).
+ * GOOGLE_SITE_VERIFICATION / NAVER_SITE_VERIFICATION / BING_SITE_VERIFICATION
+ */
+export function siteVerification(): Metadata['verification'] {
+  const read = (name: string) => process.env[name]?.trim() || undefined
+  const google = read('GOOGLE_SITE_VERIFICATION')
+  const naver = read('NAVER_SITE_VERIFICATION')
+  const bing = read('BING_SITE_VERIFICATION')
+  const other: Record<string, string> = {}
+  if (naver) other['naver-site-verification'] = naver
+  if (bing) other['msvalidate.01'] = bing
+  if (!google && !naver && !bing) return undefined
+  return {
+    ...(google ? { google } : {}),
+    ...(Object.keys(other).length ? { other } : {}),
+  }
+}
+
 /** Organization JSON-LD — 브랜드 홈/공용 페이지에 사용 */
 export function orgJsonLd() {
   return {
