@@ -10,7 +10,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { defaultConfig, gitleaksScan, realDeps, runDaily } from './run.mjs'
+import { defaultConfig, gitleaksScan, loadCorpus, realDeps, runDaily } from './run.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const ENABLED = process.env.AUTOFIX_DOCKER_TEST === '1'
@@ -163,10 +163,9 @@ function setup(scenario) {
         cp(cache.repo, repoDir)
         cp(cache.base, baseDir)
       }
-      return {
-        baseCommit: cache.commit,
-        grep: (w) => spawnSync('git', ['-C', repoDir, 'grep', '-qF', '-e', w]).status === 0,
-      }
+      // 운영과 같은 코퍼스(수정 허용 경로의 소스만)로 대조한다
+      const corpus = loadCorpus(baseDir)
+      return { baseCommit: cache.commit, grep: (w) => corpus.includes(w) }
     },
     docker: async (args, opts) => {
       const name = args[0] === 'run' ? args[args.indexOf('--name') + 1] : ''
