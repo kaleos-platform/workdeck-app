@@ -191,6 +191,7 @@ function routeRequest(
       '/space',
       '/invite',
       '/d',
+      '/p',
       '/api',
       '/auth',
       '/oauth',
@@ -199,7 +200,11 @@ function routeRequest(
     const shouldMoveToApp =
       pathname !== '/api/public/leads' && appOnlyPaths.some((base) => isPathOrChild(pathname, base))
     if (shouldMoveToApp) {
-      return NextResponse.redirect(buildAppUrl(getRequestPathWithQuery(request)))
+      // 공개 공고(/p)는 검색 색인 호스트를 app 하나로 모으는 영구 이동(308)
+      return NextResponse.redirect(
+        buildAppUrl(getRequestPathWithQuery(request)),
+        isPathOrChild(pathname, '/p') ? 308 : 307
+      )
     }
   }
 
