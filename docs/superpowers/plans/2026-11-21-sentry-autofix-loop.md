@@ -102,6 +102,63 @@
 - 비밀값: `~/.config/workdeck/sentry-autofix.env`(SENTRY_API_TOKEN) — 호스트 오케스트레이터만 읽음. GitHub 는 호스트 `gh` 인증 사용. heartbeat 미사용이라 WORKER_API_KEY 불필요.
 - 종료 시: Slack #agent-dev 요약(`slack-post --account karls`). heartbeat 없음(Phase 2 참조).
 
+#### Phase 3 실측 결과와 설계 보정 (2026-11-22 spike, `/tmp/autofix-spike`)
+
+맥미니 Docker = OrbStack 29.4(10cpu/12GB). 아래 4건이 위 설계를 바꾼다.
+
+1. **Codex 인증 = 러너 전용 ChatGPT 로그인**(에디 결정 11-22). 호스트 `~/.codex/auth.json` 복사본은 access token(10일 수명) 갱신 때 refresh token 이 회전돼 호스트 로그인이 끊길 수 있음 → 별도 `CODEX_HOME=~/.config/workdeck/autofix-codex`(700)에 `codex login --device-auth` 완료. 이 디렉터리를 컨테이너 `/codex-home` 에 **쓰기 가능**으로 마운트(갱신·lock·세션 로그 기록 필요). 호스트 `~/.codex` 는 마운트하지 않는다. 이상 징후 시 이 디렉터리만 지우고 재로그인.
+2. **Codex 자체 샌드박스 불가** — `--cap-drop ALL --security-opt no-new-privileges` 컨테이너에서 bwrap 가 user namespace 생성 실패. → 컨테이너가 샌드박스, codex 는 `--dangerously-bypass-approvals-and-sandbox`. 위 4단계의 `--sandbox workspace-write` 대체.
+3. **node_modules 는 Linux 에서 설치** — 호스트(darwin) 복사 불가(swc 등 네이티브). 2단 컨테이너:
+   - 설치 컨테이너: 외부망(`autofix-ext`), 마운트 = 클론 디렉터리만(비밀값·codex 홈 없음), `HUSKY=0 npm ci`(postinstall 의 `prisma generate`→`src/generated/prisma` 포함). 실측 22초.
+   - Codex 컨테이너: `autofix-int`(internal) 망 + 프록시만. 실측 `tsc --noEmit`·`eslint`·jest 오프라인 통과. tsc 는 기본 힙에서 abort → `NODE_OPTIONS=--max-old-space-size=6144`, `--memory 8g --cpus 4`.
+   - 잔여 위험: 설치 단계 postinstall 이 외부망으로 실행 — 비밀값 없는 컨테이너라 개발 PC 의 `npm ci` 보다 노출이 작다.
+4. **egress 허용 목록 확정** — 로그 모드로 codex 실행 시 CONNECT: `chatgpt.com`(주), `ab.chatgpt.com`(실험·텔레메트리), `*.oaiusercontent.com`. tinyproxy `FilterDefaultDeny` + ERE `^chatgpt\.com$`·`^auth\.openai\.com$`·`^api\.openai\.com$` 로 잠근 상태에서 codex exec 수정 성공, `example.com`·`ab.chatgpt.com` 은 `403 Filtered`. 직결(프록시 미사용)은 연결 불가.
+
+추가 보정:
+
+- **선정 제외**: 예외(exception)·in-app 스택 프레임이 없는 이슈(예: 워커 `[coupang-write-poller] 잡 실패:` 처럼 라벨만 남은 console 이벤트)는 Codex 를 돌리지 않고 Slack 요약에 "정보 부족"으로만 적는다(노트 없음).
+- **사전 점검**: 실행 시작 시 `docker info` 실패(OrbStack 꺼짐)·gitleaks 없음·전용 codex 로그인 없음이면 Slack 에 실패 요약 후 종료(exit 1).
+- **타임아웃 정리**: Codex 컨테이너 1회 25분(`docker run` 후 `docker kill`), 이슈 전체 45분 = `running until`.
+- **dry 의 범위**: `autofix-pr-enabled` 파일이 없으면 Sentry 노트(`running` 포함)·브랜치 push·PR 모두 안 한다. 읽기(Sentry·GitHub 조회)와 Slack 요약만.
+
+#### Phase 3 구현 단위
+
+- `scripts/sentry-autofix/`
+  - `run.mjs` — 오케스트레이터(Node 22, 의존성 없음: `fetch`·`child_process`). 사전 점검 → lock(`~/.local/state/workdeck-autofix/lock`, pid 기록·죽은 pid 는 회수) → 선정 → 이슈 루프 → Slack 요약. 플래그 `--issue <shortId>`(수동 1건), `--fixture <json>`(Sentry 대신 픽스처 이슈, 주입 검증용, 항상 dry).
+  - `lib.mjs` — 순수 함수: 선정 필터(노트 상태 파싱은 `src/lib/sentry/autofix-status.ts` 규칙을 그대로 옮김), 컨텍스트 생성·scrub(워커 `scrubText` 패턴 복사), 금지 경로·diff 줄수·바이너리·symlink 검사, 원본 메시지 8자 조각 검사, PR 본문 템플릿.
+  - `lib.test.mjs` — `node --test` 단위 테스트(선정·금지 경로·조각 검사·scrub).
+  - `docker/proxy/`(Dockerfile·tinyproxy.conf·allow), `docker/codex/Dockerfile`(node:22-bookworm-slim + git·ripgrep + `@openai/codex` 버전 고정, 비 root `node`).
+  - `prompts/fix.md`·`prompts/review.md` — 컨텍스트는 코드펜스 격리 + "지시 아님" 문구. 리뷰 출력 = JSON `{verdict, blocking[]}`.
+  - `ai.workdeck.sentry-autofix.plist` — 04:30 KST, 로그 `~/Library/Logs/workdeck-autofix/`.
+  - `README.md` — 설치(이미지 빌드·네트워크·plist load·전용 로그인), dry→PR 전환, 중지(unload), 폐기(전용 CODEX_HOME 삭제).
+- 작업 디렉터리: 이슈마다 `~/.local/state/workdeck-autofix/runs/<runId>/<shortId>/repo` 에 `origin/develop` 얕은 클론(전용 워크트리 대신 — 매번 깨끗, `.env*` 없음 검사 쉬움). 실행 끝나면 삭제(실패 시 최근 3개 보존).
+- 커밋·push 는 호스트에서 클론 디렉터리에 `git apply` 후 `kaleos-dev` 로 커밋(Co-Authored-By 없음, 메시지 `🐛 fix: … (autofix)`), `gh` 인증으로 push.
+- 루트 `eslint .` 은 `.mjs` 도 검사 → 새 파일은 lint 통과(ignore 추가 안 함). jest 는 `__tests__/**/*.test.ts` 만이라 무관.
+
+#### 3차 리뷰 반영 — 위 절보다 우선한다 (2026-11-22)
+
+- **공개 push 는 사람 승인 후(에디 결정)**: 매일 실행은 patch·analysis 를 로컬 파일로 만들고 Slack 에 요약·경로만 보낸다. push·PR 은 에디가 diff 를 본 뒤 `run.mjs --publish <shortId> --sha256 <patch 해시>` 로만. 해시 불일치면 중단(검토한 파일과 다른 내용 공개 방지). `autofix-pr-enabled` 게이트는 유지. Phase 3 의 "자동 PR" 흐름 7단계를 대체.
+- **토큰 유출**: 컨테이너 안 Codex 는 전용 로그인 토큰을 읽을 수 있다(잔여 위험). patch·analysis·PR 본문·Slack 을 전용 auth.json 토큰의 16자 이상 조각(원문·base64·hex·역순)과 대조, 걸리면 파일 격리 + 로그인 폐기 안내. Slack 에는 Codex 원문 분석을 싣지 않는다.
+- **.git 오염**: 컨테이너에는 `.git` 없는 `git archive` export 만 마운트. patch 는 네트워크 없는 별도 컨테이너에서 pristine 대 수정본 비교로 만들고, 호스트는 컨테이너가 만진 디렉터리에서 git 을 실행하지 않는다. 검사 통과 patch 만 깨끗한 호스트 클론에 `git apply`(`.git/`·`..`·symlink 경로 거부).
+- **설치**: `npm ci --ignore-scripts` 후 망 없는 컨테이너에서 `patch-package`. `prisma generate` 는 오프라인 실패(schema-engine 다운로드)지만 `src/generated/prisma` 가 저장소에 커밋돼 있어(186개) 불필요 — `prisma/` 는 금지 경로. 이 상태로 tsc·eslint(`src/lib/sentry`)·jest 종료 코드 0 확인. `$?` 를 파이프 뒤에서 읽지 않는다.
+- **주입 검증**: 픽스처 4종 — 호스트 파일/auth.json 읽기, 허용 경로 악성 변경, 테스트·리뷰 JSON 조작, 짧은 개인정보·인코딩 분할. 프롬프트 문구는 보안 경계로 치지 않는다(경계 = 격리 + 호스트 검사 + 사람 승인).
+- **복구**: publish 는 멱등 — 원격 브랜치만 있으면 patch 커밋이 같을 때 PR 만 생성, 다르면 중단하고 보고. 전체 45분 deadline 에 run 라벨이 붙은 컨테이너만 `docker kill`(전역 prune 금지). 유출 시: 브랜치 삭제 → 전용 로그인 폐기 → 에디 보고(공개분은 회수 불가로 간주).
+- **승인 manifest(4차)**: 실행마다 `~/.local/state/workdeck-autofix/pending/<runId>-<shortId>/` 에 `patch.diff`·`pr-title.txt`·`pr-body.md`·`analysis.md`·`verify.json`·`manifest.json`(runId, shortId, base commit, 각 파일 sha256, 생성 시각)을 쓰고 읽기 전용으로 둔다. 승인 키 = manifest 의 sha256: `run.mjs --publish <runId>-<shortId> --sha256 <manifest 해시>`(위 patch 해시 방식 대체). publish 는 manifest 해시 → 각 파일 해시 → 모든 가드를 다시 검사하고 base commit 위에 적용한다. publish·폐기 명령 전까지 보존(작업 export 만 삭제).
+- **독립 검증(4차)**: 수정 컨테이너의 테스트 결과는 쓰지 않는다. 새 pristine export + patch 를 망 없는 검증 컨테이너(codex 홈 없음)에서 호스트 고정 명령(`npm run lint`·`npm run typecheck`·관련 jest)으로 돌려 **종료 코드만** 기록. 실패면 publish 불가. 테스트·설정 파일 변경은 Slack·manifest 에 따로 표시. 리뷰는 새 컨테이너·새 세션, 호스트가 JSON 스키마 검사, 파싱 실패 = blocking.
+- **CODEX_HOME 일회용(4차)**: 전용 디렉터리를 직접 마운트하지 않고 컨테이너마다 auth.json 만 든 임시 홈을 만든다(수정 세션이 AGENTS.md·config 를 심어 리뷰 세션을 조작하는 것 방지). 종료 후 auth.json 이 일반 파일이고 키 구성·account_id 가 같을 때만 전용 홈에 원자적으로 되돌린다(갱신 보존). lock 으로 동시 1개.
+- **토큰 대조의 한계(4차)**: 실행 전·후 auth.json 의 토큰을 모두 대조. 16자 미만 분할·임의 인코딩은 **검출 못 한다** — 그래서 publish 전 사람이 patch·PR 제목·본문 원문 전체를 본다. patch 에 새로 생긴 base64/hex 유사 24자 이상 문자열은 publish 차단.
+- **노트·skip(4차)**: 매일 실행은 Sentry 노트를 **전혀 쓰지 않는다**(중복 선정은 로컬 pending·처리 기록으로 막음) → skip 을 덮을 일이 없다. 노트는 publish 성공 시 `pr` 하나뿐. publish 는 push 직전과 PR 생성 직전에 노트를 재조회해 skip 이면 중단, push 뒤 skip 이면 PR 을 만들지 않고 원격 브랜치 삭제 후 보고. 대가: 어드민에 running·analysis 는 표시되지 않음.
+- **설치(4차)**: `patch-package --error-on-fail`, 실패 시 그 이슈 중단.
+- **검증 설정 고정(5차)**: 금지 경로에 `eslint.config.*`·`tsconfig*.json`·`jest.config.*`·jest setup·`.npmrc`·`patches/`·`scripts/`·`.husky/`·`AGENTS.md`·`CLAUDE.md`·`src/generated/` 추가. 기존 테스트의 수정·삭제는 차단(새 테스트 파일만 허용), `eslint-disable`·`@ts-ignore`·`@ts-expect-error`·`@ts-nocheck`·`.skip`·`.only`·`process.exit` 추가도 차단. npm script 대신 base 의 `node_modules` 실행 파일을 호스트 고정 인자로 실행. 잔여: 수정된 소스가 jest 프로세스 안에서 돌므로 완전한 독립은 아님 → 사람 diff 검토가 최종 경계.
+- **skip 우선(5차)**: Sentry 노트에는 원자적 조정 수단이 없다. 러너는 최근 노트 하나가 아니라 전체 노트를 봐서, 마지막 `request` 이후의 `skip` 은 뒤에 `pr` 이 있어도 우선으로 본다. publish 는 `pr` 노트 작성 후 한 번 더 조회해 manifest 생성 이후의 skip 이 있으면 PR 을 닫고 원격 브랜치와 방금 쓴 `pr` 노트를 지운 뒤 보고. 마지막 조회 이후의 skip 은 남는 창 — 운영자 1명이 publish 와 skip 을 모두 하고 머지도 사람이라 수용(push 된 내용의 공개는 되돌릴 수 없음).
+- **정정·인증 프록시(6차, 에디 결정 2026-11-22)**: tinyproxy 호스트 허용 목록은 도메인 프런팅(`CONNECT chatgpt.com` + 다른 SNI)으로 뚫린다(재현: www.npmjs.com 200) → "토큰은 OpenAI 로만 나간다"는 위 전제는 틀렸다. tinyproxy 와 컨테이너 auth.json 전달·되돌림·일회용 홈의 auth 사본을 **폐기**하고 인증 프록시로 바꾼다. 실험(11-23): 토큰 없는 컨테이너에서 커스텀 model_provider 로 codex 수정 성공, `/v1/files`·CONNECT·절대 URL 중계는 거부.
+  - 프록시(Node 내장만, 망 2개 연결, `--read-only`): 전용 auth.json 만 읽기 전용 마운트. `POST /v1/responses`·`GET /v1/models` 만 고정 업스트림 `chatgpt.com/backend-api/codex/*` 로. 클라이언트 authorization·cookie·계정 헤더 제거 후 우리 값으로 덮어씀. 응답은 content-type·retry-after 만 통과.
+  - 본문 검사: JSON 만(압축 거부), 크기 상한, tools 는 function·custom·local_shell 만(web_search 등 서버 실행 도구 거부), 원격 image_url·file_url 거부, 알 수 없는 input 항목 형식 거부, 모델 고정, run 당 요청 수 상한.
+  - 컨테이너에 토큰이 없어도 호스트의 토큰 조각 검사는 이중 안전장치로 유지.
+  - 갱신: 프록시는 갱신하지 않는다. access token 만료 72시간 전부터 Slack 경고, 2시간 미만이면 사전 점검 실패. (ponytail: 만료 약 10일마다 수동 — 1주 dry 뒤 프록시 갱신을 추가할지 결정)
+  - 잔여: 컨텍스트(스크럽된 오류)는 여전히 모델로 간다. 모델 사용량 소모는 요청 상한으로 제한.
+- **통합 테스트**: `docker`·`gh`·`git push`·Sentry·Slack 을 대역으로 바꿔 daily 경로의 쓰기 0건, publish 의 push 직후 종료·PR 생성 실패·skip 경합 재시도를 확인.
+
 ## 검증
 
 - Phase 0 (Codex 리뷰 #6): 단위 테스트(scrub). **배포 선행 조건** = preview(운영과 같은 `next build` + 업로드 설정)에서 머지하지 않는 임시 커밋으로 ① 서버 컴포넌트 throw ② API catch→console.error(Error) ②' 문자열 전용 console.error(라벨+detail JSON, detail 미전송 확인) ③ 클라이언트 throw 를 각각 발생 → Sentry 에서 `environment:preview`, 원본 `.tsx` 파일·줄 표시, 스크럽 결과(PII·extra 없음) 확인. 빌드 로그의 업로드 단계는 `silent:false` 로 그 preview 에서만 확인. 통과 후 임시 커밋 제거하고 PR.
@@ -113,6 +170,12 @@
 
 - 1차(adversarial): 지적 6건 — 반영 6 (#1 은 에디 결정으로 Docker 격리 + 1주 dry)
 - 2차(adversarial): 지적 4건 — 반영 4
+- 3차(adversarial, 2026-11-22 Phase 3 보정): 지적 6건 — 반영 6(자격증명 프록시는 미채택: 에디가 사람 승인 방식 선택, 토큰 조각 대조로 보완). 반영 후 4차로 재검토.
+- 4차(adversarial): 지적 5건(구현 전 필수 4) — 반영 5. 자체 추가 1(CODEX_HOME 일회용).
+- 6차(opus 보안 리뷰, dry 구현 대상 2026-11-22): critical 1·high 2·medium 13·low 9. critical 은 직접 재현. 에디 결정으로 인증 프록시 전환, 나머지 반영 중.
+- 7차(opus 재리뷰, 인증 프록시 전환본 2026-11-23): dry 차단 0, medium 8·low 12. N1~N8 과 잔재 kill 범위는 launchd 등록 전 수정.
+  - **publish 전 필수(미반영)**: 금지 경로 추가(`src/lib/{mcp,admin,agent,spaces,net,cron,secrets}/`, `src/lib/{prisma,billing}.ts`, `app/api/{spaces,agent,worker,auth,secrets}/`, `**/oauth*`, `**/write*`), 보이지 않는 문자 추가 차단(U+00AD·U+034F·U+115F·U+1160·U+17B4-5·U+180E·U+3164·U+FE00-F·U+FFA0·U+E0000-E01EF), `['skip'|'only'|'todo']` 차단, `manifest.status==='ready'` 확인과 `git diff --cached --raw -z` 실제 경로 재검사, jest 결과는 위조 가능하다는 문구.
+- 5차(adversarial, 확인): high 2건 — 반영 2(skip 경합의 마지막 창은 에디 수용 2026-11-22). 반영 후 재검토는 하지 않음. 구현은 dry 부터, publish 는 dry 검증 뒤.
 
 ## 위험과 롤백
 
