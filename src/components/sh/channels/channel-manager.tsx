@@ -65,6 +65,13 @@ type Channel = {
   requireProducts: boolean
   externalSource?: string | null
   representativeChannelId?: string | null
+  fulfillmentSetting?: { observeEnabled: boolean; adapter: string; storeKey: string | null } | null
+}
+
+const OBSERVE_ADAPTER_LABELS: Record<string, string> = {
+  naver: '스마트스토어',
+  coupang: '쿠팡',
+  cafe24: '카페24',
 }
 
 type SidebarFilterKey =
@@ -417,6 +424,7 @@ export function ShChannelManager() {
                   <TableHead>유형</TableHead>
                   <TableHead className="text-right">수수료</TableHead>
                   <TableHead>시뮬</TableHead>
+                  <TableHead>주문 관측</TableHead>
                   <TableHead>상태</TableHead>
                   <TableHead className="text-right">수정</TableHead>
                 </TableRow>
@@ -499,6 +507,26 @@ export function ShChannelManager() {
                           )}
                         </TableCell>
 
+                        {/* 주문 관측 — 카페24는 쇼핑몰 ID 를 함께 보인다 */}
+                        <TableCell>
+                          {ch.fulfillmentSetting?.observeEnabled ? (
+                            <div className="flex flex-col">
+                              <Badge variant="outline" className="w-fit text-xs">
+                                관측 중
+                              </Badge>
+                              <span className="text-[10px] text-muted-foreground">
+                                {OBSERVE_ADAPTER_LABELS[ch.fulfillmentSetting.adapter] ??
+                                  ch.fulfillmentSetting.adapter}
+                                {ch.fulfillmentSetting.adapter === 'cafe24' &&
+                                  ch.fulfillmentSetting.storeKey &&
+                                  ` · ${ch.fulfillmentSetting.storeKey}`}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">OFF</span>
+                          )}
+                        </TableCell>
+
                         {/* 상태 Switch */}
                         <TableCell>
                           <div onClick={(e) => e.stopPropagation()}>
@@ -523,7 +551,7 @@ export function ShChannelManager() {
                       {/* 확장 행 — 카테고리별 수수료 read-only */}
                       {isExpanded && (
                         <TableRow className="hover:bg-transparent">
-                          <TableCell colSpan={7} className="bg-muted/30 px-6 py-3">
+                          <TableCell colSpan={8} className="bg-muted/30 px-6 py-3">
                             <p className="mb-2 text-xs font-medium text-muted-foreground">
                               카테고리별 수수료
                             </p>

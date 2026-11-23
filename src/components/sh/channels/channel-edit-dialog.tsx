@@ -920,7 +920,7 @@ export function ChannelEditDialog({
             value="advanced"
             className="mt-4 max-h-[55vh] space-y-4 overflow-y-auto pr-1"
           >
-            {channel && <ChannelOrderObserveSection channelId={channel.id} />}
+            {channel && <ChannelOrderObserveSection channelId={channel.id} onSaved={onSaved} />}
             <div className="space-y-3 rounded-md border p-3">
               <p className="text-xs font-medium text-muted-foreground">주문 요구사항</p>
               <div className="flex items-center justify-between">

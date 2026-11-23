@@ -28,7 +28,13 @@ type MatchKey = keyof typeof MATCH_LABELS
 type Cafe24Mall = { mallId: string; status: 'needs_auth' | 'connected' | 'reauth_required' }
 
 /** 채널 편집 팝업 고급 탭 — 주문 관측(그림자 수집). ADMIN 이상만 보이고, 이 영역은 자체 저장 버튼으로 저장한다. */
-export function ChannelOrderObserveSection({ channelId }: { channelId: string }) {
+export function ChannelOrderObserveSection({
+  channelId,
+  onSaved,
+}: {
+  channelId: string
+  onSaved?: () => void
+}) {
   const [canEdit, setCanEdit] = useState(false)
   const [enabled, setEnabled] = useState(false)
   const [adapter, setAdapter] = useState<AdapterKey | ''>('')
@@ -102,6 +108,7 @@ export function ChannelOrderObserveSection({ channelId }: { channelId: string })
         throw new Error(d?.message ?? '저장하지 못했습니다')
       }
       toast.success('주문 관측 설정을 저장했습니다')
+      onSaved?.()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장하지 못했습니다')
     } finally {
