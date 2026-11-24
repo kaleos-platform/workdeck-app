@@ -2,14 +2,15 @@ import * as Sentry from '@sentry/nextjs'
 import { IGNORE_ERRORS, scrubBreadcrumb, scrubEvent } from '@/lib/sentry/scrub'
 
 const sentryEnvironment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'development'
-const isProduction = sentryEnvironment === 'production'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   enabled: Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN),
   environment: sentryEnvironment,
 
-  tracesSampleRate: isProduction ? 0.05 : 0,
+  // 서버 tracing 끔(옵션 자체를 뺌 — 0 이어도 tracing 초기화는 된다). 켰을 때 스팬 내보내기 재귀가
+  // 'RangeError: Maximum call stack size exceeded'(Sentry WORKDECK-APP-1C)로 proxy 프로세스를 죽여
+  // 전 경로 간헐 500 을 냈다(2026-11-24 Vercel 로그·Sentry 대조). 다시 켜려면 원인 확인이 먼저.
   debug: false,
   sendDefaultPii: false,
   beforeSend: scrubEvent,
