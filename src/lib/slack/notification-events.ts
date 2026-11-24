@@ -56,6 +56,12 @@ export const DECK_NOTIFICATION_EVENTS: Record<string, DeckNotificationEvent[]> =
       description: '재고 데이터가 오래되어 분석을 건너뛰면 알립니다',
       togglable: false,
     },
+    {
+      key: 'analysis_failed',
+      label: '광고 분석 실패',
+      description: 'AI 광고 분석이 실패하거나 Gemini 키·크레딧 문제로 예비 모델을 쓰면 알립니다',
+      togglable: false,
+    },
   ],
   'seller-hub': [
     {

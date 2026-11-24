@@ -5,7 +5,7 @@
  * 3차 fallback은 로컬 Ollama(워커 호스트). 완료 후 Slack 알림을 발송한다.
  */
 
-import { notifyAnalysisDone } from './slack-notifier.js'
+import { notifyAnalysisDone, notifyAnalysisFailed } from './slack-notifier.js'
 
 const POLL_INTERVAL = 30_000 // 30초
 let isProcessing = false
@@ -176,32 +176,93 @@ async function callOllama(
   return parseAnalysisResponse(content, model)
 }
 
-/** AI 분석 호출 — 3단계: Gemini flash → Gemini pro → 로컬 Ollama */
-async function callAnalysisAI(systemPrompt: string, userPrompt: string): Promise<AnalysisResult> {
-  // 1차: Gemini Primary (flash)
+/**
+ * Gemini 키·결제 오류(401·402·403, 무효 키 400, 키 미설정) 여부 — 같은 키를 쓰는 다른 Gemini 모델도 실패하므로
+ * pro 단계를 건너뛴다. 상태 코드는 callGemini 오류 메시지 `Gemini [NNN]` 에서 읽는다.
+ */
+export function isGeminiKeyError(message: string): boolean {
+  // 무효·만료 키는 401/403 이 아니라 400 + "API key not valid"(reason API_KEY_INVALID)로 온다(2026-11-24 실측).
+  if (
+    message.includes('GEMINI_API_KEY') ||
+    /API key (not valid|expired)|API_KEY_INVALID/.test(message)
+  )
+    return true
+  // 합친 오류("flash: Gemini [503] / pro: Gemini [402] / ...")에서도 잡히게 모든 상태 코드를 본다.
+  return [...message.matchAll(/Gemini \[(\d{3})\]/g)].some((m) =>
+    ['401', '402', '403'].includes(m[1])
+  )
+}
+
+const errMsg = (err: unknown) => (err instanceof Error ? err.message : String(err))
+
+/**
+ * AI 분석 호출 — Gemini flash → (키 오류가 아니면) Gemini pro → 로컬 Ollama.
+ * 전부 실패하면 단계별 오류를 합쳐 throw — 마지막 Ollama 오류에 Gemini 402 가 가려지지 않게.
+ * 예비 모델로 성공해도 Gemini 키 오류였다면 geminiError 로 돌려줘 호출자가 알린다.
+ */
+export async function callAnalysisAI(
+  systemPrompt: string,
+  userPrompt: string
+): Promise<AnalysisResult & { geminiError?: string }> {
+  const errors: string[] = []
+
   try {
     return await callGemini(GEMINI_PRIMARY_MODEL, systemPrompt, userPrompt)
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.warn(`[analysis-poller] Primary 실패 (${GEMINI_PRIMARY_MODEL}): ${msg}`)
+    errors.push(`${GEMINI_PRIMARY_MODEL}: ${errMsg(err)}`)
+    console.warn(`[analysis-poller] Primary 실패 (${GEMINI_PRIMARY_MODEL}): ${errMsg(err)}`)
+  }
+  const keyError = isGeminiKeyError(errors[0])
 
-    if (!msg.includes('429') && !msg.includes('5')) throw err
+  if (!keyError) {
+    try {
+      console.log(`[analysis-poller] Fallback 1 재시도: ${GEMINI_FALLBACK_MODEL}`)
+      return await callGemini(GEMINI_FALLBACK_MODEL, systemPrompt, userPrompt)
+    } catch (err) {
+      errors.push(`${GEMINI_FALLBACK_MODEL}: ${errMsg(err)}`)
+      console.warn(`[analysis-poller] Fallback 1 실패 (${GEMINI_FALLBACK_MODEL}): ${errMsg(err)}`)
+    }
+  } else {
+    console.warn('[analysis-poller] Gemini 키·결제 오류 — pro 건너뛰고 로컬 모델로 전환')
   }
 
-  // 2차: Gemini Fallback (pro)
   try {
-    console.log(`[analysis-poller] Fallback 1 재시도: ${GEMINI_FALLBACK_MODEL}`)
-    return await callGemini(GEMINI_FALLBACK_MODEL, systemPrompt, userPrompt)
+    console.log(`[analysis-poller] Fallback 2 재시도 (local): ${OLLAMA_FALLBACK_MODEL}`)
+    const result = await callOllama(OLLAMA_FALLBACK_MODEL, systemPrompt, userPrompt)
+    // flash 가 5xx 였고 pro 가 402 인 경우도 키 문제다 — 어느 Gemini 단계든 키 오류면 알린다.
+    const geminiKeyErr = errors.find(isGeminiKeyError)
+    return geminiKeyErr ? { ...result, geminiError: geminiKeyErr } : result
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.warn(`[analysis-poller] Fallback 1 실패 (${GEMINI_FALLBACK_MODEL}): ${msg}`)
-
-    if (!msg.includes('429') && !msg.includes('5')) throw err
+    errors.push(`${OLLAMA_FALLBACK_MODEL}: ${errMsg(err)}`)
+    throw new Error(errors.join(' / '))
   }
+}
 
-  // 3차: 로컬 Ollama
-  console.log(`[analysis-poller] Fallback 2 재시도 (local): ${OLLAMA_FALLBACK_MODEL}`)
-  return await callOllama(OLLAMA_FALLBACK_MODEL, systemPrompt, userPrompt)
+// 같은 workspace·같은 종류 알림은 KST 하루 1회. analysisHour 미지정이면 실패 후 매 정시 재시도되기 때문.
+// ponytail: 메모리 Map 이라 워커 재시작 시 초기화 — 재시작은 드물어 허용, 필요해지면 서버 측 기록으로.
+const lastFailureAlert = new Map<string, string>()
+
+/** 분석 실패/주의 알림 — 하루 1회 억제, 발송 실패는 로그만. 테스트용으로 export. */
+export async function alertAnalysisProblem(params: {
+  error: string
+  workspaceId?: string
+  recoveredBy?: string
+}): Promise<void> {
+  const geminiKeyError = isGeminiKeyError(params.error)
+  const kind = params.recoveredBy ? 'recovered' : geminiKeyError ? 'key' : 'failed'
+  const key = `${params.workspaceId ?? '-'}:${kind}`
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
+  if (lastFailureAlert.get(key) === today) {
+    console.log(`[analysis-poller] 같은 실패 알림 오늘 이미 발송 — 생략 (${kind})`)
+    return
+  }
+  try {
+    const sent = await notifyAnalysisFailed({ ...params, geminiKeyError })
+    if (sent) lastFailureAlert.set(key, today)
+    else console.error('[analysis-poller] 분석 실패 알림 미발송(채널·토글·대상 조회 확인 필요)')
+  } catch (err) {
+    console.error('[analysis-poller] 분석 실패 알림 발송 에러:', err)
+  }
 }
 
 /** 분석 컨텍스트에서 사용자 프롬프트 빌드 */
@@ -337,6 +398,28 @@ async function maybeNotifyAnalysisDone(
   }
 }
 
+/** 분석 최종 실패 — FAILED 저장과 Slack 알림을 서로 독립적으로 시도한다. 테스트용으로 export. */
+export async function handleAnalysisFailure(
+  reportId: string,
+  workspaceId: string | undefined,
+  err: unknown
+): Promise<void> {
+  const error = err instanceof Error ? err.message : '알 수 없는 오류'
+  try {
+    const res = await workerFetch(`/api/analysis/reports/${reportId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify({ status: 'FAILED', summary: '', error }),
+    })
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      console.error(`[analysis-poller] FAILED 저장 실패 [${res.status}]: ${body.slice(0, 200)}`)
+    }
+  } catch (saveErr) {
+    console.error('[analysis-poller] FAILED 저장 요청 에러:', saveErr)
+  }
+  await alertAnalysisProblem({ error, workspaceId })
+}
+
 export function startAnalysisPoller(): void {
   setInterval(async () => {
     if (isProcessing) return
@@ -363,18 +446,35 @@ export function startAnalysisPoller(): void {
           console.error(
             `[analysis-poller] 컨텍스트 빌드 실패 [${runRes.status}]: ${body.slice(0, 200)}`
           )
+          // 404 = claim 실패(다른 워커가 이미 가져감) — 알리지 않는다.
+          // 그 밖(빌드 실패 500·게이트웨이 타임아웃 등)은 claim 뒤라 PROCESSING 에 묶일 수 있어 FAILED 저장+알림.
+          // 서버가 이미 FAILED 로 저장했으면 /complete 는 404 로 끝나 무해하다.
+          if (runRes.status !== 404) {
+            await handleAnalysisFailure(
+              reportId,
+              workspaceId,
+              new Error(`컨텍스트 빌드 실패 [${runRes.status}]: ${body.slice(0, 200)}`)
+            )
+          }
           return
         }
 
         const { context } = (await runRes.json()) as { context: Record<string, unknown> }
 
-        // 3. Worker에서 직접 AI 호출 (3단계 fallback: Gemini flash → pro → OpenRouter free)
+        // 3. Worker에서 직접 AI 호출 (3단계 fallback: Gemini flash → pro → 로컬 Ollama)
         console.log('[analysis-poller] AI 분석 호출 중...')
         const userPrompt = buildUserPrompt(context)
         const result = await callAnalysisAI(context.systemPrompt as string, userPrompt)
         console.log(
           `[analysis-poller] AI 분석 완료: ${result.suggestions.length}개 제안 (${result.modelUsed})`
         )
+        if (result.geminiError) {
+          await alertAnalysisProblem({
+            error: result.geminiError,
+            workspaceId,
+            recoveredBy: result.modelUsed,
+          })
+        }
 
         const campaigns = (context.campaigns as Array<Record<string, unknown>>) ?? []
         const inefficientKeywords = (context.inefficientKeywords as Array<unknown>) ?? []
@@ -412,7 +512,7 @@ export function startAnalysisPoller(): void {
             suggestionCount: result.suggestions.length,
             campaignCount: campaigns.length,
             workspaceId,
-            topSuggestions: result.suggestions.map((s) => ({
+            topSuggestions: (result.suggestions as Array<Record<string, unknown>>).map((s) => ({
               type: String(s.type),
               priority: String(s.priority),
               target: String(s.target),
@@ -424,19 +524,15 @@ export function startAnalysisPoller(): void {
           console.error(
             `[analysis-poller] 결과 저장 실패 [${completeRes.status}]: ${body.slice(0, 200)}`
           )
+          await alertAnalysisProblem({
+            error: `분석은 끝났지만 결과 저장 실패 [${completeRes.status}]: ${body.slice(0, 150)}`,
+            workspaceId,
+          })
         }
       } catch (err) {
         console.error(`[analysis-poller] 분석 실행 에러: ${reportId}`, err)
 
-        // 실패 상태 저장
-        await workerFetch(`/api/analysis/reports/${reportId}/complete`, {
-          method: 'POST',
-          body: JSON.stringify({
-            status: 'FAILED',
-            summary: '',
-            error: err instanceof Error ? err.message : '알 수 없는 오류',
-          }),
-        }).catch(() => {})
+        await handleAnalysisFailure(reportId, workspaceId, err)
       } finally {
         isProcessing = false
       }

@@ -262,6 +262,42 @@ export async function notifyAnalysisDone(params: {
   )
 }
 
+/**
+ * 광고 분석 실패 알림 — 최종 실패, 또는 Gemini 키·크레딧 오류로 예비 모델(Ollama)이 대신 분석한 경우.
+ * togglable=false 이벤트(analysis_failed)라 마스터 토글로만 제어된다. 반환값: 실제 발송 여부.
+ */
+export async function notifyAnalysisFailed(params: {
+  error: string
+  workspaceId?: string
+  /** 예비 모델로 분석은 성공한 경우 그 모델명 — 이때는 "실패" 대신 "주의"로 보낸다. */
+  recoveredBy?: string
+  geminiKeyError?: boolean
+}): Promise<boolean> {
+  const analysisUrl = process.env.WORKDECK_APP_URL
+    ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/analysis`
+    : 'https://app.workdeck.work/d/coupang-ads/analysis'
+  const title = params.recoveredBy
+    ? `:warning: [${DECK_COUPANG_ADS}] 광고 분석 주의 — 예비 모델로 분석됨`
+    : `:x: [${DECK_COUPANG_ADS}] 쿠팡 광고 분석 실패`
+  const blocks: Block[] = [header(title), divider()]
+  if (params.geminiKeyError) {
+    blocks.push(section('*조치 필요*\nGemini 크레딧/키 확인 필요 (결제·API 키 오류)'))
+  }
+  if (params.recoveredBy) blocks.push(section(`*사용 모델*\n${params.recoveredBy}`))
+  blocks.push(section(`*사유*\n${params.error.slice(0, 300)}`))
+  blocks.push(section(`<${analysisUrl}|:mag: 광고 분석 보기>`))
+
+  return await postMessage(
+    blocks,
+    params.recoveredBy
+      ? `쿠팡 광고 분석 주의: Gemini 오류로 ${params.recoveredBy} 사용`
+      : `쿠팡 광고 분석 실패: ${params.error.slice(0, 100)}`,
+    params.workspaceId,
+    DECK_KEY_COUPANG_ADS,
+    'analysis_failed'
+  )
+}
+
 /** 재고 수집 완료 알림 */
 export async function notifyInventoryDone(params: {
   healthRows?: number
