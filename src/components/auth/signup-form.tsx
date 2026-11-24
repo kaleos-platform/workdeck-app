@@ -62,8 +62,9 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
           emailRedirectTo: emailConfirmRedirect(window.location.origin, nextPath),
           data: {
             name: data.name || '',
-            // 인증 메일 템플릿이 {{ .Data.signup_next }} 로 쓴다 — 메일 템플릿이 주소용으로 인코딩하므로 원래 값 그대로(invite_path 와 같음)
-            signup_next: sanitizeRedirectPath(redirectTo) ?? '',
+            // 인증 메일 템플릿이 next={{ .Data.signup_next }} 로 쓴다. GoTrue 는 값을 인코딩하지 않아(2026-11-24 실메일 확인)
+            // 경로의 ?·& 가 링크 파라미터를 깨뜨리므로 여기서 인코딩해 싣는다.
+            signup_next: encodeURIComponent(sanitizeRedirectPath(redirectTo) ?? ''),
             // 다른 기기에서 메일 인증해도 유입 경로가 남도록 user_metadata 에 싣는다
             signup_source: signupSourceFromSearch(new URLSearchParams(window.location.search)),
           },
