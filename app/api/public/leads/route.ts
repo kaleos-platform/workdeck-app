@@ -9,6 +9,7 @@ import { encryptPii } from '@/lib/del/encryption'
 import { DECK_META } from '@/lib/deck-meta'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 import { notifyApplicant, notifyEmail, notifySlack } from '@/lib/marketing/lead-notify'
+import { leadSignupUrl } from '@/lib/marketing/lead-signup'
 import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 import { employeeCountLabel, marketingLeadRequestSchema } from '@/lib/validations/marketing-lead'
 
@@ -16,6 +17,15 @@ export const runtime = 'nodejs'
 
 const DUPLICATE_WINDOW_MS = 10 * 60 * 1000
 const NOTIFY_HOURLY_LIMIT = 30
+
+function signupUrlForLead(id: string) {
+  try {
+    return leadSignupUrl(id)
+  } catch {
+    console.error('[leads] 가입 링크 생성 실패')
+    return undefined
+  }
+}
 
 export async function POST(req: NextRequest) {
   if (!checkRateLimit(`lead:${publicRequestKey(req)}`)) {
@@ -51,14 +61,19 @@ export async function POST(req: NextRequest) {
     where: {
       email: fields.email,
       deck,
+      status: { not: 'DROPPED' },
       createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) },
     },
     select: { id: true },
   })
-  if (duplicate) return NextResponse.json({ ok: true }, { status: 201 })
+  if (duplicate)
+    return NextResponse.json(
+      { ok: true, signupUrl: signupUrlForLead(duplicate.id) },
+      { status: 201 }
+    )
 
   const enc = encryptPii(phone)
-  await prisma.marketingLead.create({
+  const lead = await prisma.marketingLead.create({
     data: {
       ...fields,
       deck,
@@ -66,9 +81,23 @@ export async function POST(req: NextRequest) {
       phoneIv: enc.iv,
       consentAt: new Date(),
       utm: utm as Prisma.InputJsonValue | undefined,
-      referrer,
+      referrer: (() => {
+        if (!referrer) return null
+        try {
+          const host = new URL(referrer).hostname
+          return host === 'workdeck.work' ||
+            host.endsWith('.workdeck.work') ||
+            host === req.nextUrl.hostname
+            ? null
+            : referrer
+        } catch {
+          return referrer
+        }
+      })(),
     },
   })
+
+  const signupUrl = signupUrlForLead(lead.id)
 
   // 스팸 폭주 시 알림 채널을 보호한다 — 저장은 유지하고 알림만 건너뛴다
   const recentCount = await prisma.marketingLead.count({
@@ -76,7 +105,7 @@ export async function POST(req: NextRequest) {
   })
   if (recentCount > NOTIFY_HOURLY_LIMIT) {
     console.warn('[leads] 최근 1시간 접수 과다 — 알림 생략:', recentCount)
-    return NextResponse.json({ ok: true }, { status: 201 })
+    return NextResponse.json({ ok: true, signupUrl }, { status: 201 })
   }
 
   const notify = {
@@ -91,12 +120,14 @@ export async function POST(req: NextRequest) {
   const results = await Promise.allSettled([
     notifySlack(notify),
     notifyEmail(notify),
-    getReleasedDeckIds().then((ids) => notifyApplicant(notify, { released: ids.includes(deck) })),
+    getReleasedDeckIds().then((ids) =>
+      notifyApplicant(notify, { released: ids.includes(deck), signupUrl })
+    ),
   ])
   for (const r of results) {
     // 개인정보가 섞이지 않도록 메시지만 남긴다
     if (r.status === 'rejected') console.error('[leads] 알림 실패:', (r.reason as Error)?.message)
   }
 
-  return NextResponse.json({ ok: true }, { status: 201 })
+  return NextResponse.json({ ok: true, signupUrl }, { status: 201 })
 }

@@ -7,6 +7,9 @@ import { notifyApplicant, notifyEmail, notifySlack } from '@/lib/marketing/lead-
 jest.mock('@/lib/prisma', () => ({
   prisma: { marketingLead: { findFirst: jest.fn(), create: jest.fn(), count: jest.fn() } },
 }))
+jest.mock('@/lib/marketing/lead-signup', () => ({
+  leadSignupUrl: (id: string) => `https://app.test/signup?lead=${id}.signed`,
+}))
 jest.mock('@/lib/hiring/applications', () => ({ checkRateLimit: () => true }))
 jest.mock('@/lib/hiring/public-request', () => ({ publicRequestKey: () => 'k' }))
 jest.mock('@/lib/del/encryption', () => ({
@@ -45,6 +48,7 @@ const findFirst = prisma.marketingLead.findFirst as jest.Mock
 beforeEach(() => {
   jest.clearAllMocks()
   findFirst.mockResolvedValue(null)
+  create.mockResolvedValue({ id: 'new-lead' })
   ;(prisma.marketingLead.count as jest.Mock).mockResolvedValue(0)
 })
 
@@ -118,7 +122,10 @@ it('정상 접수: 운영 알림과 함께 신청자 확인 메일(공개 여부
   expect(notifyApplicant).toHaveBeenCalledTimes(1)
   const [arg, opts] = (notifyApplicant as jest.Mock).mock.calls[0]
   expect(arg.email).toBe('lead-test@example.com')
-  expect(opts).toEqual({ released: true })
+  expect(opts).toEqual({
+    released: true,
+    signupUrl: 'https://app.test/signup?lead=new-lead.signed',
+  })
 })
 
 it('신청자 메일이 실패해도 접수는 201', async () => {
@@ -138,4 +145,36 @@ it('중복·시간당 초과면 신청자 메일도 보내지 않는다', async 
   jest.spyOn(console, 'warn').mockImplementation(() => undefined)
   await post(valid)
   expect(notifyApplicant).not.toHaveBeenCalled()
+})
+
+it('저장한 행과 10분 중복 행 모두 서명 가입 링크를 반환한다', async () => {
+  expect(await (await post(valid)).json()).toMatchObject({
+    signupUrl: 'https://app.test/signup?lead=new-lead.signed',
+  })
+  findFirst.mockResolvedValue({ id: 'existing-lead' })
+  expect(await (await post(valid)).json()).toMatchObject({
+    signupUrl: 'https://app.test/signup?lead=existing-lead.signed',
+  })
+})
+it.each(['https://workdeck.work/a', 'https://app.workdeck.work/signup'])(
+  '자기 도메인 referrer %s는 null로 저장한다',
+  async (referrer) => {
+    await post({ ...valid, referrer })
+    expect(create.mock.calls[0][0].data.referrer).toBeNull()
+  }
+)
+it('외부 referrer는 보존한다', async () => {
+  await post({ ...valid, referrer: 'https://google.com/search' })
+  expect(create.mock.calls[0][0].data.referrer).toBe('https://google.com/search')
+})
+
+it('10분 안에 다시 문의해도 종료 리드는 중복으로 쓰지 않고 새 문의를 만든다', async () => {
+  findFirst.mockImplementation(async ({ where }: { where: { status?: { not?: string } } }) =>
+    where.status?.not === 'DROPPED' ? null : { id: 'dropped-lead' }
+  )
+  const res = await post(valid)
+  expect(create).toHaveBeenCalledTimes(1)
+  expect(await res.json()).toMatchObject({
+    signupUrl: 'https://app.test/signup?lead=new-lead.signed',
+  })
 })

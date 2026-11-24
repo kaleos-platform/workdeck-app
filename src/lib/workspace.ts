@@ -6,6 +6,7 @@
 
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { ensureSignupUser } from '@/lib/marketing/lead-signup'
 import {
   SIGNUP_SOURCE_COOKIE,
   parseSignupSourceCookie,
@@ -44,24 +45,12 @@ export async function ensureWorkspaceForUser(
   user: EnsureWorkspaceUser,
   name?: string
 ): Promise<EnsureWorkspaceResult> {
-  // Supabase Auth UUID ↔ Prisma User 동기화
-  await prisma.user.upsert({
-    where: { id: user.id },
-    create: {
-      id: user.id,
-      email: user.email ?? '',
-      name: user.name ?? null,
-      signupSource: (await resolveSignupSource(user.signupSource)) ?? undefined,
-    },
-    update: { email: user.email ?? '' },
-  })
+  const fallbackSource = await resolveSignupSource(user.signupSource)
 
   const fallbackName = name?.trim() || user.email?.split('@')[0]?.trim() || '내 워크스페이스'
 
   return prisma.$transaction(async (tx) => {
-    // 동시 최초 가입 / 레거시 계정 동시 접근 레이스 방지.
-    // $queryRaw는 void 반환 컬럼을 역직렬화하지 못하므로 $executeRaw 사용.
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${user.id}))`
+    await ensureSignupUser(tx, user, { fallbackSource })
 
     const existing = await tx.workspace.findUnique({
       where: { ownerId: user.id },

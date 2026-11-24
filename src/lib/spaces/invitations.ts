@@ -1,6 +1,7 @@
 import 'server-only'
 import { createHash, randomBytes } from 'crypto'
 import { prisma } from '@/lib/prisma'
+import { ensureSignupUser } from '@/lib/marketing/lead-signup'
 
 export const INVITE_TTL_DAYS = 7
 export const MAX_PENDING_INVITES = 20
@@ -293,16 +294,7 @@ export async function acceptInvitation(input: {
       if (cur && curState !== 'pending') throw new InvitationError(410, curState)
       throw new InvitationError(404, 'not_found')
     }
-    await tx.user.upsert({
-      where: { id: input.user.id },
-      create: {
-        id: input.user.id,
-        email: inv.email,
-        name: input.user.name,
-        signupSource: { utm_source: 'invite' },
-      },
-      update: {},
-    })
+    await ensureSignupUser(tx, { ...input.user, email: inv.email }, { invitation: true })
     const existing = await tx.spaceMember.findUnique({
       where: { spaceId_userId: { spaceId: inv.spaceId, userId: input.user.id } },
       select: { id: true },

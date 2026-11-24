@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { buildAppUrl } from '@/lib/domain'
+import { buildMarketingUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { DECK_PRICING_ROWS, withLivePrices } from '@/lib/marketing/pricing-data'
 import { getMarketingDeckStatus } from '@/lib/billing/deck-release'
@@ -150,7 +150,7 @@ export default async function PricingPage() {
           <p className="text-lg break-keep text-white/90">
             워크스페이스를 만들고 원하는 업무 모듈을 구독하면 바로 이용할 수 있습니다.
           </p>
-          <Link href={buildAppUrl('/signup')}>
+          <Link href={buildMarketingUrl('/recruiting#lead-form')}>
             <Button size="lg" variant="secondary" className="gap-2">
               시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />

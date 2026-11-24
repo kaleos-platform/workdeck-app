@@ -21,7 +21,7 @@ export const coupangAdsLanding: DeckLandingContent = {
     highlight: 'ROAS 대시보드로',
     subcopy:
       '쿠팡에서 다운로드한 광고 리포트 Excel을 그대로 업로드하면 캠페인별 ROAS·광고비·클릭 시계열이 자동으로 정리됩니다. 비효율 키워드를 바로 찾아 운영 액션으로 옮기세요.',
-    primaryCta: { label: '시작하기', href: '/signup' },
+    primaryCta: { label: '도입 문의하기', href: '#lead-form' },
     secondaryCta: { label: '로그인', href: '/d/coupang-ads/login' },
   },
   painPoints: [

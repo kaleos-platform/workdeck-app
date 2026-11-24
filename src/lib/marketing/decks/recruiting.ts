@@ -79,7 +79,7 @@ export const recruitingLanding: DeckLandingContent = {
     highlight: '지원자는 더 많이.',
     subcopy:
       '생산직·인력파견처럼 반복되는 대규모 채용을, 공고 제작부터 지원자 관리까지 한 곳에서 간편하게 관리하세요.',
-    primaryCta: { label: '시작하기', href: '/signup' },
+    primaryCta: { label: '도입 문의하기', href: '#lead-form' },
     secondaryCta: { label: '로그인', href: '/d/recruiting/login' },
     note: '7일 무료 체험 · 이후 월 22,000원(부가세 포함)',
   },

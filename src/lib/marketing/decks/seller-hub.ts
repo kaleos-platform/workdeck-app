@@ -22,7 +22,7 @@ export const sellerHubLanding: DeckLandingContent = {
     highlight: '브랜드 운영 전체를 한 곳에서',
     subcopy:
       '여러 판매 채널의 재고와 발주를 따로 관리하다 생기는 누락과 오차를 줄이고, 가격 시뮬레이션으로 채널별 마진까지 미리 계산하세요.',
-    primaryCta: { label: '시작하기', href: '/signup' },
+    primaryCta: { label: '도입 문의하기', href: '#lead-form' },
     secondaryCta: { label: '로그인', href: '/d/seller-ops/login' },
   },
   painPoints: [

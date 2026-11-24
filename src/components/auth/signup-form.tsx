@@ -31,9 +31,20 @@ import {
 interface SignupFormProps {
   redirectTo?: string | null
   email?: string
+  leadToken?: string
+  emailLocked?: boolean
+  showEmailForm?: boolean
+  googleLabel?: string
 }
 
-export function SignupForm({ redirectTo, email }: SignupFormProps) {
+export function SignupForm({
+  redirectTo,
+  email,
+  leadToken,
+  emailLocked = false,
+  showEmailForm = true,
+  googleLabel = 'Google로 계속하기',
+}: SignupFormProps) {
   const hydrated = useHydrated()
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
@@ -62,6 +73,7 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
           emailRedirectTo: emailConfirmRedirect(window.location.origin, nextPath),
           data: {
             name: data.name || '',
+            ...(leadToken && { lead_token: leadToken }),
             // 인증 메일 템플릿이 next={{ .Data.signup_next }} 로 쓴다. GoTrue 는 값을 인코딩하지 않아(2026-11-24 실메일 확인)
             // 경로의 ?·& 가 링크 파라미터를 깨뜨리므로 여기서 인코딩해 싣는다.
             signup_next: encodeURIComponent(sanitizeRedirectPath(redirectTo) ?? ''),
@@ -101,6 +113,7 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        queryParams: { prompt: 'select_account' },
       },
     })
 
@@ -148,97 +161,127 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
           />
           <path fill="none" d="M0 0h48v48H0z" />
         </svg>
-        {isGoogleLoading ? '연결 중...' : 'Google로 계속하기'}
+        {isGoogleLoading ? '연결 중...' : googleLabel}
       </Button>
 
-      {/* 구분선 */}
-      <div className="relative flex items-center">
-        <Separator className="flex-1" />
-        <span className="mx-3 text-xs text-muted-foreground">또는</span>
-        <Separator className="flex-1" />
-      </div>
+      {emailLocked ? (
+        <p className="text-xs text-muted-foreground">이 이메일의 Google 계정으로 계속해 주세요.</p>
+      ) : null}
+      {showEmailForm ? (
+        <>
+          {/* 구분선 */}
+          <div className="relative flex items-center">
+            <Separator className="flex-1" />
+            <span className="mx-3 text-xs text-muted-foreground">또는</span>
+            <Separator className="flex-1" />
+          </div>
 
-      {/* 이메일/비밀번호 폼 */}
-      <Form {...form}>
-        <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <fieldset disabled={!hydrated} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem id="signup-name-field">
-                  <FormLabel>이름 (선택)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="홍길동" disabled={isAnyLoading} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          {/* 이메일/비밀번호 폼 */}
+          <Form {...form}>
+            <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <fieldset disabled={!hydrated} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem id="signup-name-field">
+                      <FormLabel>이름 (선택)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="홍길동" disabled={isAnyLoading} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem id="signup-email-field">
-                  <FormLabel>이메일</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="name@example.com"
-                      type="email"
-                      disabled={isAnyLoading}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem id="signup-email-field">
+                      <FormLabel>이메일</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="name@example.com"
+                          type="email"
+                          readOnly={emailLocked}
+                          disabled={isAnyLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem id="signup-password-field">
-                  <FormLabel>비밀번호</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="••••••••"
-                      type="password"
-                      disabled={isAnyLoading}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem id="signup-password-field">
+                      <FormLabel>비밀번호</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="••••••••"
+                          type="password"
+                          disabled={isAnyLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem id="signup-confirm-password-field">
-                  <FormLabel>비밀번호 확인</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="••••••••"
-                      type="password"
-                      disabled={isAnyLoading}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem id="signup-confirm-password-field">
+                      <FormLabel>비밀번호 확인</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="••••••••"
+                          type="password"
+                          disabled={isAnyLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Button type="submit" className="w-full" disabled={isAnyLoading} size="lg">
-              {isLoading ? '회원가입 중...' : '회원가입'}
-            </Button>
-          </fieldset>
-        </form>
-      </Form>
+                <Button type="submit" className="w-full" disabled={isAnyLoading} size="lg">
+                  {isLoading ? '회원가입 중...' : '회원가입'}
+                </Button>
+              </fieldset>
+            </form>
+          </Form>
+        </>
+      ) : null}
     </div>
+  )
+}
+
+/** 차단 안내에서 기존 세션을 지운 뒤 이메일 로그인도 다시 고를 수 있게 한다. */
+export function SignupAccountSwitch({ loginHref }: { loginHref: string }) {
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  async function switchAccount() {
+    setLoading(true)
+    const result = await withAuthTimeout(createClient().auth.signOut())
+    if (!result || result.error) {
+      toast.error('로그아웃에 실패했습니다. 다시 시도해 주세요.')
+      setLoading(false)
+      return
+    }
+    router.push(loginHref)
+    router.refresh()
+  }
+  return (
+    <Button type="button" variant="link" disabled={loading} onClick={switchAccount}>
+      {loading ? '로그아웃 중...' : '다른 계정으로 로그인'}
+    </Button>
   )
 }

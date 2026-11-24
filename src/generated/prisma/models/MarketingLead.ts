@@ -38,6 +38,8 @@ export type MarketingLeadMinAggregateOutputType = {
   referrer: string | null
   status: $Enums.MarketingLeadStatus | null
   memo: string | null
+  invitedAt: Date | null
+  invitedBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +58,8 @@ export type MarketingLeadMaxAggregateOutputType = {
   referrer: string | null
   status: $Enums.MarketingLeadStatus | null
   memo: string | null
+  invitedAt: Date | null
+  invitedBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -75,6 +79,8 @@ export type MarketingLeadCountAggregateOutputType = {
   referrer: number
   status: number
   memo: number
+  invitedAt: number
+  invitedBy: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -95,6 +101,8 @@ export type MarketingLeadMinAggregateInputType = {
   referrer?: true
   status?: true
   memo?: true
+  invitedAt?: true
+  invitedBy?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -113,6 +121,8 @@ export type MarketingLeadMaxAggregateInputType = {
   referrer?: true
   status?: true
   memo?: true
+  invitedAt?: true
+  invitedBy?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -132,6 +142,8 @@ export type MarketingLeadCountAggregateInputType = {
   referrer?: true
   status?: true
   memo?: true
+  invitedAt?: true
+  invitedBy?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -224,6 +236,8 @@ export type MarketingLeadGroupByOutputType = {
   referrer: string | null
   status: $Enums.MarketingLeadStatus
   memo: string | null
+  invitedAt: Date | null
+  invitedBy: string | null
   createdAt: Date
   updatedAt: Date
   _count: MarketingLeadCountAggregateOutputType | null
@@ -264,6 +278,8 @@ export type MarketingLeadWhereInput = {
   referrer?: Prisma.StringNullableFilter<"MarketingLead"> | string | null
   status?: Prisma.EnumMarketingLeadStatusFilter<"MarketingLead"> | $Enums.MarketingLeadStatus
   memo?: Prisma.StringNullableFilter<"MarketingLead"> | string | null
+  invitedAt?: Prisma.DateTimeNullableFilter<"MarketingLead"> | Date | string | null
+  invitedBy?: Prisma.StringNullableFilter<"MarketingLead"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MarketingLead"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MarketingLead"> | Date | string
 }
@@ -283,6 +299,8 @@ export type MarketingLeadOrderByWithRelationInput = {
   referrer?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
+  invitedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  invitedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -305,6 +323,8 @@ export type MarketingLeadWhereUniqueInput = Prisma.AtLeast<{
   referrer?: Prisma.StringNullableFilter<"MarketingLead"> | string | null
   status?: Prisma.EnumMarketingLeadStatusFilter<"MarketingLead"> | $Enums.MarketingLeadStatus
   memo?: Prisma.StringNullableFilter<"MarketingLead"> | string | null
+  invitedAt?: Prisma.DateTimeNullableFilter<"MarketingLead"> | Date | string | null
+  invitedBy?: Prisma.StringNullableFilter<"MarketingLead"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MarketingLead"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MarketingLead"> | Date | string
 }, "id">
@@ -324,6 +344,8 @@ export type MarketingLeadOrderByWithAggregationInput = {
   referrer?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
+  invitedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  invitedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MarketingLeadCountOrderByAggregateInput
@@ -349,6 +371,8 @@ export type MarketingLeadScalarWhereWithAggregatesInput = {
   referrer?: Prisma.StringNullableWithAggregatesFilter<"MarketingLead"> | string | null
   status?: Prisma.EnumMarketingLeadStatusWithAggregatesFilter<"MarketingLead"> | $Enums.MarketingLeadStatus
   memo?: Prisma.StringNullableWithAggregatesFilter<"MarketingLead"> | string | null
+  invitedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MarketingLead"> | Date | string | null
+  invitedBy?: Prisma.StringNullableWithAggregatesFilter<"MarketingLead"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MarketingLead"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MarketingLead"> | Date | string
 }
@@ -368,6 +392,8 @@ export type MarketingLeadCreateInput = {
   referrer?: string | null
   status?: $Enums.MarketingLeadStatus
   memo?: string | null
+  invitedAt?: Date | string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -387,6 +413,8 @@ export type MarketingLeadUncheckedCreateInput = {
   referrer?: string | null
   status?: $Enums.MarketingLeadStatus
   memo?: string | null
+  invitedAt?: Date | string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -406,6 +434,8 @@ export type MarketingLeadUpdateInput = {
   referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMarketingLeadStatusFieldUpdateOperationsInput | $Enums.MarketingLeadStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -425,6 +455,8 @@ export type MarketingLeadUncheckedUpdateInput = {
   referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMarketingLeadStatusFieldUpdateOperationsInput | $Enums.MarketingLeadStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -444,6 +476,8 @@ export type MarketingLeadCreateManyInput = {
   referrer?: string | null
   status?: $Enums.MarketingLeadStatus
   memo?: string | null
+  invitedAt?: Date | string | null
+  invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -463,6 +497,8 @@ export type MarketingLeadUpdateManyMutationInput = {
   referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMarketingLeadStatusFieldUpdateOperationsInput | $Enums.MarketingLeadStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -482,6 +518,8 @@ export type MarketingLeadUncheckedUpdateManyInput = {
   referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMarketingLeadStatusFieldUpdateOperationsInput | $Enums.MarketingLeadStatus
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -501,6 +539,8 @@ export type MarketingLeadCountOrderByAggregateInput = {
   referrer?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  invitedAt?: Prisma.SortOrder
+  invitedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -519,6 +559,8 @@ export type MarketingLeadMaxOrderByAggregateInput = {
   referrer?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  invitedAt?: Prisma.SortOrder
+  invitedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -537,6 +579,8 @@ export type MarketingLeadMinOrderByAggregateInput = {
   referrer?: Prisma.SortOrder
   status?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  invitedAt?: Prisma.SortOrder
+  invitedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -562,6 +606,8 @@ export type MarketingLeadSelect<ExtArgs extends runtime.Types.Extensions.Interna
   referrer?: boolean
   status?: boolean
   memo?: boolean
+  invitedAt?: boolean
+  invitedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["marketingLead"]>
@@ -581,6 +627,8 @@ export type MarketingLeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   referrer?: boolean
   status?: boolean
   memo?: boolean
+  invitedAt?: boolean
+  invitedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["marketingLead"]>
@@ -600,6 +648,8 @@ export type MarketingLeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   referrer?: boolean
   status?: boolean
   memo?: boolean
+  invitedAt?: boolean
+  invitedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["marketingLead"]>
@@ -619,11 +669,13 @@ export type MarketingLeadSelectScalar = {
   referrer?: boolean
   status?: boolean
   memo?: boolean
+  invitedAt?: boolean
+  invitedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MarketingLeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "deck" | "name" | "phoneEnc" | "phoneIv" | "email" | "companyName" | "position" | "employeeCount" | "consentAt" | "utm" | "referrer" | "status" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["marketingLead"]>
+export type MarketingLeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "deck" | "name" | "phoneEnc" | "phoneIv" | "email" | "companyName" | "position" | "employeeCount" | "consentAt" | "utm" | "referrer" | "status" | "memo" | "invitedAt" | "invitedBy" | "createdAt" | "updatedAt", ExtArgs["result"]["marketingLead"]>
 
 export type $MarketingLeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "MarketingLead"
@@ -643,6 +695,8 @@ export type $MarketingLeadPayload<ExtArgs extends runtime.Types.Extensions.Inter
     referrer: string | null
     status: $Enums.MarketingLeadStatus
     memo: string | null
+    invitedAt: Date | null
+    invitedBy: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["marketingLead"]>
@@ -1082,6 +1136,8 @@ export interface MarketingLeadFieldRefs {
   readonly referrer: Prisma.FieldRef<"MarketingLead", 'String'>
   readonly status: Prisma.FieldRef<"MarketingLead", 'MarketingLeadStatus'>
   readonly memo: Prisma.FieldRef<"MarketingLead", 'String'>
+  readonly invitedAt: Prisma.FieldRef<"MarketingLead", 'DateTime'>
+  readonly invitedBy: Prisma.FieldRef<"MarketingLead", 'String'>
   readonly createdAt: Prisma.FieldRef<"MarketingLead", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MarketingLead", 'DateTime'>
 }

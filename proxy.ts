@@ -244,7 +244,9 @@ function routeRequest(
   }
 
   // 이미 로그인했는데 비로그인 전용 페이지 접근하면 목적지로 이동
-  if (isAuthOnlyRoute && authenticated) {
+  // 인증만 있고 가입 기록이 없는 사용자가 안내 화면과 초기 설정 사이를 반복하지 않게 한다.
+  const isLeadBlockedSignup = pathname === '/signup' && searchParams.get('blocked') === 'lead'
+  if (isAuthOnlyRoute && authenticated && !isLeadBlockedSignup) {
     if (isDeckLoginRoute) {
       const deckPath = getDeckLoginPath(pathname)
       if (deckPath) {
