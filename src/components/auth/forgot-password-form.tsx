@@ -58,7 +58,8 @@ export function ForgotPasswordForm() {
       <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
         <MailCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
         <AlertDescription>
-          비밀번호 재설정 링크를 이메일로 발송했습니다. 이메일을 확인해주세요.
+          비밀번호 재설정 링크를 이메일로 발송했습니다. 이메일을 확인해주세요. 메일이 오지 않으면
+          스팸함과 회사 메일 격리함을 확인하고, noreply@workdeck.work 를 수신 허용해주세요.
         </AlertDescription>
       </Alert>
     )
