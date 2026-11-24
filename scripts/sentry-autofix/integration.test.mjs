@@ -31,6 +31,9 @@ const FAKE_AUTH = {
   },
 }
 
+// 리뷰 컨테이너 기본 대역(승인)
+const REVIEW_APPROVE = ['sh', '-c', `echo '{"verdict":"approve","blocking":[]}' > /out/review.json`]
+
 // 시나리오: fix 컨테이너에서 실행할 명령과 기대 결과
 // 컨테이너에는 토큰이 없으므로 새는 일은 없지만, 호스트 이중 안전장치(토큰 조각 대조)를 확인하려고
 // 스크립트가 (테스트가 아는) 가짜 토큰 조각을 직접 써 넣는다
@@ -190,9 +193,13 @@ function setup(scenario) {
         const i = args.indexOf(cfg.codexImage)
         return base.docker([...args.slice(0, i + 1), ...scenario.cmd], opts)
       }
-      if (/-review\d$/.test(name) && scenario.reviewCmd) {
+      if (/-review\d$/.test(name)) {
+        // 리뷰는 항상 대역 — 실제 Codex 를 띄우면 가짜 토큰으로 chatgpt.com 을 호출한다(401)
         const i = args.indexOf(cfg.codexImage)
-        return base.docker([...args.slice(0, i + 1), ...scenario.reviewCmd], opts)
+        return base.docker(
+          [...args.slice(0, i + 1), ...(scenario.reviewCmd ?? REVIEW_APPROVE)],
+          opts
+        )
       }
       return base.docker(args, opts)
     },
@@ -279,7 +286,6 @@ mkdir -p src/lib/sentry/__tests__
 printf "import { probeNew } from '../probe-new'\\n\\ntest('probeNew', () => {\\n  expect(probeNew(1)).toBe(2)\\n})\\n" > src/lib/sentry/__tests__/probe-new.test.ts
 `,
       ],
-      reviewCmd: ['sh', '-c', `echo '{"verdict":"approve","blocking":[]}' > /out/review.json`],
     }
     const h = setup(sc)
     const r = await runDaily({
