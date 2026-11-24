@@ -8,8 +8,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
-import { resolveRedirectPath, sanitizeRedirectPath } from '@/lib/auth-redirect'
+import {
+  emailConfirmRedirect,
+  resolveRedirectPath,
+  sanitizeRedirectPath,
+} from '@/lib/auth-redirect'
 import { signupSourceFromSearch } from '@/lib/marketing/signup-source'
+import { PENDING_EMAIL_KEY } from '@/components/auth/login-form'
 import { signupSchema, type SignupInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -54,9 +59,11 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
         email: data.email,
         password: data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?type=email&next=${encodeURIComponent(nextPath)}`,
+          emailRedirectTo: emailConfirmRedirect(window.location.origin, nextPath),
           data: {
             name: data.name || '',
+            // 인증 메일 템플릿이 {{ .Data.signup_next }} 로 쓴다 — 메일 템플릿이 주소용으로 인코딩하므로 원래 값 그대로(invite_path 와 같음)
+            signup_next: sanitizeRedirectPath(redirectTo) ?? '',
             // 다른 기기에서 메일 인증해도 유입 경로가 남도록 user_metadata 에 싣는다
             signup_source: signupSourceFromSearch(new URLSearchParams(window.location.search)),
           },
@@ -77,6 +84,7 @@ export function SignupForm({ redirectTo, email }: SignupFormProps) {
       return
     }
 
+    sessionStorage.setItem(PENDING_EMAIL_KEY, data.email)
     const params = new URLSearchParams({ verified: 'pending' })
     const safeRedirect = sanitizeRedirectPath(redirectTo)
     if (safeRedirect) {
