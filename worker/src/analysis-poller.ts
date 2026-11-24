@@ -15,6 +15,13 @@ const GEMINI_PRIMARY_MODEL = process.env.AI_PRIMARY_MODEL || 'gemini-2.5-flash'
 const GEMINI_FALLBACK_MODEL = process.env.AI_FALLBACK_MODEL || 'gemini-2.5-pro'
 // 3차 fallback: 워커 호스트(맥미니) 로컬 Ollama. OPENROUTER 모델 ID는 폐기됨(qwen3.6-plus 미존재).
 const OLLAMA_FALLBACK_MODEL = process.env.AI_LOCAL_FALLBACK_MODEL || 'qwen3:14b'
+// 기본 컨텍스트(4096)면 긴 분석 프롬프트가 소리 없이 잘린다(실측 프롬프트 ~5.2k 토큰).
+// 32k 는 맥미니 24GB 에서 에밀리 모델과 겹치면 빠듯해 16k.
+const OLLAMA_NUM_CTX = Number(process.env.AI_LOCAL_NUM_CTX) || 16384
+// 로컬 모델이 끝나지 않아도 분석 폴러가 영영 묶이지 않게 전체 시간 제한.
+const OLLAMA_TIMEOUT_MS = Number(process.env.AI_LOCAL_TIMEOUT_MS) || 30 * 60_000
+// ~7 tok/s 라 키워드마다 제안을 쓰면(50개) 30분을 넘는다 — 예비 경로는 상위 N개만.
+const OLLAMA_MAX_SUGGESTIONS = 15
 const OLLAMA_ENDPOINT = (process.env.OLLAMA_ENDPOINT || 'http://127.0.0.1:11434').replace(/\/$/, '')
 
 function getBaseUrl(): string {
@@ -143,34 +150,61 @@ async function callGemini(
   return parseAnalysisResponse(content, model)
 }
 
+/** Ollama NDJSON 스트림의 message.content 조각을 이어 붙인다. 스트림 중 오류 줄은 throw. */
+export async function readOllamaStream(body: ReadableStream<Uint8Array>): Promise<string> {
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let content = ''
+  const handle = (line: string) => {
+    if (!line.trim()) return
+    const chunk = JSON.parse(line) as { message?: { content?: string }; error?: string }
+    if (chunk.error) throw new Error(`Ollama 스트림 오류: ${chunk.error}`)
+    content += chunk.message?.content ?? ''
+  }
+  for await (const part of body as unknown as AsyncIterable<Uint8Array>) {
+    buffer += decoder.decode(part, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() ?? ''
+    lines.forEach(handle)
+  }
+  handle(buffer + decoder.decode())
+  return content
+}
+
 /** Ollama 로컬 호출 (워커 호스트 = 맥미니에서만 가용) */
 async function callOllama(
   model: string,
   systemPrompt: string,
   userPrompt: string
 ): Promise<AnalysisResult> {
+  // stream:true — stream:false 면 생성이 끝나야 헤더가 와서 Node fetch 헤더 대기 한도(300초)에 걸린다.
+  // 맥미니 qwen3:14b 실측 ~7 tok/s (2026-11-25). think:false 로 생각 토큰도 뺀다.
   const res = await fetch(`${OLLAMA_ENDPOINT}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(OLLAMA_TIMEOUT_MS), // 스트림 읽기까지 포함해 끊는다
     body: JSON.stringify({
       model,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        {
+          role: 'user',
+          content: `${userPrompt}\n\n(suggestions 는 우선순위가 높은 순으로 최대 ${OLLAMA_MAX_SUGGESTIONS}개만 작성하세요.)`,
+        },
       ],
       format: 'json',
-      stream: false,
-      options: { temperature: 0.3 },
+      think: false,
+      stream: true,
+      options: { temperature: 0.3, num_ctx: OLLAMA_NUM_CTX },
     }),
   })
 
-  if (!res.ok) {
+  if (!res.ok || !res.body) {
     const body = await res.text().catch(() => '')
     throw new Error(`Ollama [${res.status}]: ${body.slice(0, 200)}`)
   }
 
-  const response = (await res.json()) as { message?: { content?: string } }
-  const content = response.message?.content
+  const content = await readOllamaStream(res.body)
   if (!content) throw new Error('Ollama 응답에 content가 없습니다')
 
   return parseAnalysisResponse(content, model)
