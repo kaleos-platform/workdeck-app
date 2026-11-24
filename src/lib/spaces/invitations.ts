@@ -127,7 +127,7 @@ export async function createInvitation(input: {
     },
     select: { id: true, email: true, role: true, expiresAt: true },
   })
-  // 개인 Space의 첫 초대는 팀 Space로 전환한다(OWNER+MFA 경로만 여기 온다). 초대가 만들어진 뒤에만 — 실패한 초대가 전환만 남기지 않게. 이미 전환됐으면 0건.
+  // 개인 Space의 첫 초대는 팀 Space로 전환한다(OWNER 경로만 여기 온다 — MEMBER 초대는 AAL1 도 허용). 초대가 만들어진 뒤에만 — 실패한 초대가 전환만 남기지 않게. 이미 전환됐으면 0건.
   const converted =
     space.type === 'PERSONAL' &&
     (

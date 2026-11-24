@@ -79,3 +79,10 @@
 - 이미 생긴 접근 회수: `AdminAuditLog`에서 배포 시각 이후 `space.invitation.create|resend` 중 metadata `aal=aal1` 건을 뽑아
   공간 소유자에게 확인 → 대기 초대 취소, 수락된 `SpaceMember` 제거, 개인→팀 공간 전환(`space.type.convert`, via invitation) 여부 확인.
   운영자 재발급 오발송은 `space.invitation.operator_resend` 기준으로 같은 절차(재발급으로 이전 링크 무효화 포함).
+
+## 코드 리뷰 반영(opus, 2026-11-25)
+- 반영: 복사 실패 문구를 링크 대화상자 안에 표시·입력칸 포커스 시 전체 선택, 응답 본문 누락 시 별도 안내,
+  운영자 재발급 감사 로그 `phase: attempt|done`(done 에 emailSent), invitations.ts 공간 전환 주석 정정.
+- 보류(기존 동작, 후속 검토): 소유자 「다시 보내기」(`invitations/[id]/resend`)는 원래 AAL2 면제라
+  AAL1 소유자가 대기 ADMIN 초대를 재발급(링크 획득·만료 연장)할 수 있다. 수락엔 초대 이메일 인증이 필요해 직접 권한 상승은 아니고,
+  이번 CS 경로를 막지 않으려 유지. 막으려면 ADMIN 초대 재발급만 AAL2.

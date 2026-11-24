@@ -90,13 +90,22 @@ describe('POST resend', () => {
       emailSent: true,
       expiresAt: '2026-12-02T00:00:00.000Z',
     })
-    expect(order).toEqual(['audit', 'resend'])
-    expect(writeAuditLog).toHaveBeenCalledWith(
+    expect(order).toEqual(['audit', 'resend', 'audit'])
+    expect(writeAuditLog).toHaveBeenNthCalledWith(
+      1,
       'op-1',
       'space.invitation.operator_resend',
       'space_invitation',
       'inv-1',
-      { spaceId: 'sp-1' }
+      { spaceId: 'sp-1', phase: 'attempt' }
+    )
+    expect(writeAuditLog).toHaveBeenNthCalledWith(
+      2,
+      'op-1',
+      'space.invitation.operator_resend',
+      'space_invitation',
+      'inv-1',
+      { spaceId: 'sp-1', phase: 'done', emailSent: true }
     )
     expect(resendInvitation).toHaveBeenCalledWith('sp-1', 'inv-1', { ignoreSendLimit: true })
     expect(sendInviteEmail).toHaveBeenCalledWith(

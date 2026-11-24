@@ -21,7 +21,7 @@ export async function POST(
       'space.invitation.operator_resend',
       'space_invitation',
       invitationId,
-      { spaceId }
+      { spaceId, phase: 'attempt' }
     )
     const { invitation, token } = await resendInvitation(spaceId, invitationId, {
       ignoreSendLimit: true,
@@ -41,8 +41,17 @@ export async function POST(
     })
     try {
       await recordSendResult(invitation.id, mail.sent)
+      // 실제 재발급 완료 기록 — attempt 만 있고 done 이 없으면 재발급 실패(토큰 미교체 또는 응답 전 오류).
+      await writeAuditLog(
+        auth.user.id,
+        'space.invitation.operator_resend',
+        'space_invitation',
+        invitation.id,
+        { spaceId, phase: 'done', emailSent: mail.sent }
+      )
     } catch (e) {
-      console.error('[invitations] 발송 결과 기록 실패', { invitationId: invitation.id, e })
+      // 토큰은 이미 바뀌었다 — 기록 실패로 링크를 잃지 않게 응답은 계속한다.
+      console.error('[invitations] 발송 결과·완료 기록 실패', { invitationId: invitation.id, e })
     }
     return NextResponse.json({
       link: `${origin}${invitePath}`,

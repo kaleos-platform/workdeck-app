@@ -50,6 +50,7 @@ export function SpaceInvitationsCard({ spaceId }: { spaceId: string }) {
   const [busy, setBusy] = useState(false)
   const [issued, setIssued] = useState<Issued | null>(null)
   const [copied, setCopied] = useState(false)
+  const [copyFailed, setCopyFailed] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -79,8 +80,12 @@ export function SpaceInvitationsCard({ spaceId }: { spaceId: string }) {
       setTarget(null)
       if (!res.ok) {
         setError(body?.message ?? '다시 발급하지 못했습니다')
+      } else if (!body?.link) {
+        // 서버에선 이미 토큰이 바뀌었을 수 있다 — 이전 링크는 무효일 수 있으니 쿨다운 뒤 다시 발급.
+        setError('발급 결과를 받지 못했습니다. 이전 링크는 무효일 수 있으니 1분 뒤 다시 발급하세요')
       } else {
         setCopied(false)
+        setCopyFailed(false)
         setIssued({
           email: inv.email,
           link: body.link,
@@ -100,8 +105,9 @@ export function SpaceInvitationsCard({ spaceId }: { spaceId: string }) {
     try {
       await navigator.clipboard.writeText(link)
       setCopied(true)
+      setCopyFailed(false)
     } catch {
-      setError('복사하지 못했습니다. 링크를 직접 선택해 복사하세요')
+      setCopyFailed(true)
     }
   }
 
@@ -189,7 +195,17 @@ export function SpaceInvitationsCard({ spaceId }: { spaceId: string }) {
                   }.`}
             </DialogDescription>
           </DialogHeader>
-          <Input readOnly value={issued?.link ?? ''} aria-label="초대 링크" />
+          <Input
+            readOnly
+            value={issued?.link ?? ''}
+            aria-label="초대 링크"
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          {copyFailed && (
+            <p className="text-sm text-destructive">
+              복사하지 못했습니다. 위 칸을 눌러 링크를 직접 복사하세요
+            </p>
+          )}
           <DialogFooter>
             <Button onClick={() => issued && copy(issued.link)}>
               {copied ? '복사됨' : '링크 복사'}
