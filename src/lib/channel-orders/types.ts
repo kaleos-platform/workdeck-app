@@ -19,7 +19,8 @@ export const kstMidnight = (t: Date | number): number =>
 /** 채널별 조회 창 한도·겹침(plan 2-2). */
 export const ADAPTER_WINDOW: Record<Adapter, { windowMs: number; overlapMs: number }> = {
   naver: { windowMs: DAY, overlapMs: 60 * 60 * 1000 },
-  coupang: { windowMs: DAY, overlapMs: 3 * DAY },
+  // cafe24 와 같은 이유: 증분이 전수 창(7일)+1일을 다시 읽어 4~7일 된 주문의 상태 변화도 관측한다.
+  coupang: { windowMs: DAY, overlapMs: 8 * DAY },
   // 전수 창(7일)+1일: 증분이 미종결 행을 매번 다시 읽어 관측 상태가 전수 조회보다 낡지 않게 한다(plan 2-2 미종결 재조회).
   cafe24: { windowMs: DAY, overlapMs: 8 * DAY },
 }

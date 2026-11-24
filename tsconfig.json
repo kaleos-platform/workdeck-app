@@ -30,5 +30,11 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "agent", "worker"]
+  "exclude": [
+    "node_modules",
+    "agent",
+    "worker",
+    // 워커 코드(bcryptjs 등 워커 전용 의존성)를 import 한다 — next build 타입 검사 대상에서 뺀다(jest 는 그대로 실행)
+    "src/lib/channel-orders/__tests__/worker-output.test.ts"
+  ]
 }

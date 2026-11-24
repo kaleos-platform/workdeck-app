@@ -3,7 +3,8 @@
  * GET  — observeEnabled 인 네이버·쿠팡 채널의 어댑터·스토어 키·커서·조회 창(읽기 전용).
  * POST — { channelId, kind: 'OBSERVE' | 'FULL_SCAN' } 실행을 시작한다(OBSERVE 는 lease 를 조건부로 잡는다).
  *        이미 실행 중이면 409. 응답의 operationId 를 ingest·finish 에 그대로 보낸다.
- * API 키는 내려주지 않는다 — 기존 N배송 plan·api-credentials 경로를 쓴다.
+ * start 응답: 네이버는 secret({clientId, clientSecret}|null), 쿠팡은 vendorId(비밀 아님)만 싣는다.
+ * 쿠팡 secretKey 는 내려주지 않는다 — 워커가 api-credentials(암호문)로 받아 로컬 복호화한다.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -17,6 +18,7 @@ import {
   type ObserveCursor,
 } from '@/lib/channel-orders/types'
 import { channelOrderErrorResponse, resolveWorkerSpace } from '@/lib/channel-orders/worker-route'
+import { loadCoupangVendorId, loadNaverStoreSecret } from '@/lib/channel-orders/worker-secret'
 
 const WORKER_ADAPTERS = ['naver', 'coupang']
 
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
   const { channelId, kind } = parsed.data
   const setting = await prisma.channelFulfillmentSetting.findUnique({
     where: { channelId },
-    select: { spaceId: true, adapter: true },
+    select: { spaceId: true, adapter: true, storeKey: true },
   })
   if (
     !setting ||
@@ -73,12 +75,18 @@ export async function POST(request: NextRequest) {
   }
   const now = new Date()
   try {
+    // start 성공 뒤에만 조회한다(409 에서 복호화 안 함). 실패해도 null 이라 operation 은 유지 — 워커가 auth_error 로 마감한다.
+    const creds = async () =>
+      setting.adapter === 'naver'
+        ? { secret: await loadNaverStoreSecret(setting.spaceId, setting.storeKey) }
+        : { vendorId: await loadCoupangVendorId(setting.spaceId) }
     if (kind === 'FULL_SCAN') {
       const s = await startFullScan(channelId, now)
       return NextResponse.json({
         operationId: s.operationId,
         storeKey: s.storeKey,
         scanDays: SCAN_DAYS,
+        ...(await creds()),
         // 서버가 계획한 KST 일자 창 — 이 창만 조회하고 창마다 ingest 한다.
         windows: s.windows.map((w) => ({ from: w.from.toISOString(), to: w.to.toISOString() })),
       })
@@ -88,6 +96,7 @@ export async function POST(request: NextRequest) {
       operationId: s.operationId,
       storeKey: s.storeKey,
       cursor: s.cursor,
+      ...(await creds()),
       windows: s.windows.map((w) => ({ from: w.from.toISOString(), to: w.to.toISOString() })),
     })
   } catch (err) {
