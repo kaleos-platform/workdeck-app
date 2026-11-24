@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import SignupPage from '../page'
 import { isLeadGateEnabled, verifyLeadToken } from '@/lib/marketing/lead-signup'
+import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 const auth = {
   signInWithOAuth: jest.fn().mockResolvedValue({ error: null }),
   signUp: jest.fn().mockResolvedValue({ error: null }),
@@ -13,10 +14,12 @@ jest.mock('@/lib/marketing/lead-signup', () => ({
   isLeadGateEnabled: jest.fn(),
   verifyLeadToken: jest.fn(),
 }))
+jest.mock('@/lib/billing/deck-release', () => ({ getReleasedDeckIds: jest.fn() }))
 beforeEach(() => {
   jest.clearAllMocks()
   jest.mocked(isLeadGateEnabled).mockReturnValue(true)
   jest.mocked(verifyLeadToken).mockResolvedValue(null)
+  jest.mocked(getReleasedDeckIds).mockResolvedValue(['recruiting'])
 })
 it('토큰 없거나 무효면 이메일 폼 대신 도입 문의와 Google 버튼을 보여준다', async () => {
   render(await SignupPage({ searchParams: Promise.resolve({ lead: 'bad' }) }))
@@ -87,4 +90,17 @@ it('이메일 가입 metadata에 lead token과 원래 업무 목적지를 싣는
       },
     },
   })
+})
+it('준비중 업무 리드는 기본 목적지에 subscribe 를 붙이지 않는다', async () => {
+  jest.mocked(getReleasedDeckIds).mockResolvedValue([])
+  jest
+    .mocked(verifyLeadToken)
+    .mockResolvedValue({ email: 'lead@example.com', deck: 'recruiting' } as never)
+  render(await SignupPage({ searchParams: Promise.resolve({ lead: 'id.signed' }) }))
+  fireEvent.change(screen.getByPlaceholderText('홍길동'), { target: { value: '테스트' } })
+  for (const input of screen.getAllByPlaceholderText('••••••••'))
+    fireEvent.change(input, { target: { value: 'Password1!' } })
+  fireEvent.click(screen.getByRole('button', { name: '회원가입' }))
+  await waitFor(() => expect(auth.signUp).toHaveBeenCalled())
+  expect(auth.signUp.mock.calls[0][0].options.data.signup_next).toBe(encodeURIComponent('/my-deck'))
 })

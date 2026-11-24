@@ -8,6 +8,7 @@ import {
 import { prisma } from '@/lib/prisma'
 import { resolveSignupSource } from '@/lib/workspace'
 import { ensureSignupUser, SignupNotAllowedError } from '@/lib/marketing/lead-signup'
+import { hashInviteToken, pendingWhere } from '@/lib/spaces/invitations'
 import { hasSpaceAccess } from '@/lib/workspace-shell'
 
 // GET /auth/callback?code=... — 구글 OAuth 코드를 세션으로 교환
@@ -41,6 +42,16 @@ export async function GET(request: NextRequest) {
       } = await supabase.auth.getUser()
 
       if (user) {
+        // 리드 없는 계정은 실제 대기 초대 토큰이 있을 때만 세션을 유지하고 수락 화면으로 보낸다
+        const inviteToken = requestedNext?.startsWith('/invite/')
+          ? requestedNext.slice('/invite/'.length).split(/[/?#]/)[0]
+          : ''
+        const hasPendingInvite = inviteToken
+          ? !!(await prisma.spaceInvitation.findFirst({
+              where: { tokenHash: hashInviteToken(inviteToken), ...pendingWhere(new Date()) },
+              select: { id: true },
+            }))
+          : false
         try {
           const fallbackSource = await resolveSignupSource(user.user_metadata?.signup_source)
           await prisma.$transaction((tx) =>
@@ -51,7 +62,7 @@ export async function GET(request: NextRequest) {
                 email: user.email,
                 name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
               },
-              { fallbackSource, deferWithoutLead: requestedNext?.startsWith('/invite/') }
+              { fallbackSource, deferWithoutLead: hasPendingInvite }
             )
           )
         } catch (error) {

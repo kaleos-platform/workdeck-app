@@ -10,6 +10,7 @@ jest.mock('@/lib/prisma', () => {
     user: { upsert: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
     workspace: { findUnique: jest.fn() },
     spaceMember: { findFirst: jest.fn() },
+    spaceInvitation: { findFirst: jest.fn() },
     marketingLead: { findFirst: jest.fn(), updateMany: jest.fn() },
     $executeRaw: jest.fn(),
     $transaction: jest.fn(),
@@ -33,6 +34,7 @@ beforeEach(() => {
     data: { user: { id: 'u', email: 'invitee@example.com', user_metadata: {} } },
   })
   jest.mocked(prisma.workspace.findUnique).mockResolvedValue(null)
+  jest.mocked(prisma.spaceInvitation.findFirst).mockResolvedValue({ id: 'inv' } as never)
 })
 
 it('Workspace 없이 Space 구성원이면 /workspace-setup 대신 요청 목적지로', async () => {
@@ -68,6 +70,14 @@ it('리드 없는 초대 신규 계정은 Prisma User 생성 없이 수락 화�
   )
   expect(prisma.user.create).not.toHaveBeenCalled()
   expect(auth.signOut).not.toHaveBeenCalled()
+})
+it('리드 없는 신규 계정이 대기 초대 없는 /invite 경로로 오면 blocked 안내', async () => {
+  jest.mocked(prisma.user.findUnique).mockResolvedValue(null)
+  jest.mocked(prisma.spaceInvitation.findFirst).mockResolvedValue(null)
+  expect((await call('&next=%2Finvite%2Fbogus')).headers.get('location')).toBe(
+    'https://app.test/signup?blocked=lead'
+  )
+  expect(auth.signOut).toHaveBeenCalled()
 })
 it('신규 리드는 출처와 전환을 같은 tx에 기록한다', async () => {
   jest.mocked(prisma.user.findUnique).mockResolvedValue(null)

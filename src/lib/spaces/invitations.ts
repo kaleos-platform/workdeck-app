@@ -68,7 +68,11 @@ export function invitationState(
   return 'pending'
 }
 
-const pendingWhere = (now: Date) => ({ acceptedAt: null, revokedAt: null, expiresAt: { gt: now } })
+export const pendingWhere = (now: Date) => ({
+  acceptedAt: null,
+  revokedAt: null,
+  expiresAt: { gt: now },
+})
 
 export async function createInvitation(input: {
   spaceId: string
@@ -279,6 +283,8 @@ export async function acceptInvitation(input: {
 
   const now = new Date()
   await prisma.$transaction(async (tx) => {
+    // ensureSignupUser 와 같은 사용자 lock 을 먼저 잡아 claim → lock 순서 교차를 막는다(같은 tx 안 재획득은 안전).
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.user.id}))`
     // 조건부 update로 한 번만 수락된다. 읽은 tokenHash·role 이 그대로일 때만 — 재발급·역할 갱신 뒤엔 이전 링크로 수락 불가.
     const claimed = await tx.spaceInvitation.updateMany({
       where: { id: inv.id, tokenHash, role: inv.role, ...pendingWhere(now) },

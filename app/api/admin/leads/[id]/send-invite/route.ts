@@ -55,10 +55,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!sent) return errorResponse('메일 발송 설정을 확인해 주세요. 발송되지 않았습니다', 503)
   } catch (error) {
     if (error instanceof Error && error.message === 'resend 409') {
-      return errorResponse(
-        '같은 날 이 이메일로 보낸 메일과 내용이 다릅니다. 메시지를 바꾸어 다시 보낼 수 없습니다. 저장 실패 재시도라면 처음과 같은 메시지로 보내 주세요',
-        409
-      )
+      return errorResponse('이미 발송 중이거나 같은 날 다른 내용으로 보낸 메일이 있습니다', 409)
     }
     return errorResponse('안내 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요', 502)
   }

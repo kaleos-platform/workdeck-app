@@ -18,7 +18,15 @@ export const runtime = 'nodejs'
 const DUPLICATE_WINDOW_MS = 10 * 60 * 1000
 const NOTIFY_HOURLY_LIMIT = 30
 
-function signupUrlForLead(id: string) {
+// 준비중 업무는 가입·구독 진입을 열지 않는다 — 조회 실패도 닫는다
+const isReleased = (deck: string) =>
+  getReleasedDeckIds().then(
+    (ids) => ids.includes(deck),
+    () => false
+  )
+
+function signupUrlForLead(id: string, released: boolean) {
+  if (!released) return undefined
   try {
     return leadSignupUrl(id)
   } catch {
@@ -66,9 +74,10 @@ export async function POST(req: NextRequest) {
     },
     select: { id: true },
   })
+  const releasedPromise = isReleased(deck)
   if (duplicate)
     return NextResponse.json(
-      { ok: true, signupUrl: signupUrlForLead(duplicate.id) },
+      { ok: true, signupUrl: signupUrlForLead(duplicate.id, await releasedPromise) },
       { status: 201 }
     )
 
@@ -91,13 +100,14 @@ export async function POST(req: NextRequest) {
             ? null
             : referrer
         } catch {
-          return referrer
+          return null
         }
       })(),
     },
   })
 
-  const signupUrl = signupUrlForLead(lead.id)
+  const released = await releasedPromise
+  const signupUrl = signupUrlForLead(lead.id, released)
 
   // 스팸 폭주 시 알림 채널을 보호한다 — 저장은 유지하고 알림만 건너뛴다
   const recentCount = await prisma.marketingLead.count({
@@ -115,14 +125,11 @@ export async function POST(req: NextRequest) {
     deckName: DECK_META[deck as keyof typeof DECK_META].name,
     phone,
   }
-  // 공개 여부는 업무 공개 판정 단일 출처(getReleasedDeckIds — DB 실패 시 시드 기본값)로 정한다.
-  // 운영 알림을 그 조회 뒤로 미루지 않도록 신청자 메일 체인만 조회를 기다린다.
+  // 공개 여부는 업무 공개 판정 단일 출처(getReleasedDeckIds)로 정한다.
   const results = await Promise.allSettled([
     notifySlack(notify),
     notifyEmail(notify),
-    getReleasedDeckIds().then((ids) =>
-      notifyApplicant(notify, { released: ids.includes(deck), signupUrl })
-    ),
+    notifyApplicant(notify, { released, signupUrl }),
   ])
   for (const r of results) {
     // 개인정보가 섞이지 않도록 메시지만 남긴다

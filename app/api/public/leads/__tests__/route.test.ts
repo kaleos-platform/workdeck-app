@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server'
 import { POST } from '../route'
 import { prisma } from '@/lib/prisma'
+import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 import { notifyApplicant, notifyEmail, notifySlack } from '@/lib/marketing/lead-notify'
 
 jest.mock('@/lib/prisma', () => ({
@@ -177,4 +178,25 @@ it('10분 안에 다시 문의해도 종료 리드는 중복으로 쓰지 않고
   expect(await res.json()).toMatchObject({
     signupUrl: 'https://app.test/signup?lead=new-lead.signed',
   })
+})
+
+it('준비중 업무 접수는 signupUrl 을 돌려주지 않는다', async () => {
+  ;(getReleasedDeckIds as jest.Mock).mockResolvedValueOnce([])
+  const body = await (await post(valid)).json()
+  expect(body.signupUrl).toBeUndefined()
+  expect((notifyApplicant as jest.Mock).mock.calls[0][1]).toEqual({
+    released: false,
+    signupUrl: undefined,
+  })
+})
+it('공개 여부 조회가 실패하면 signupUrl 없이 접수한다(fail closed)', async () => {
+  ;(getReleasedDeckIds as jest.Mock).mockRejectedValue(new Error('db'))
+  const res = await post(valid)
+  expect(res.status).toBe(201)
+  expect((await res.json()).signupUrl).toBeUndefined()
+  ;(getReleasedDeckIds as jest.Mock).mockImplementation(async () => ['recruiting'])
+})
+it('해석할 수 없는 referrer 는 null 로 저장한다', async () => {
+  await post({ ...valid, referrer: 'not a url' })
+  expect(create.mock.calls[0][0].data.referrer).toBeNull()
 })

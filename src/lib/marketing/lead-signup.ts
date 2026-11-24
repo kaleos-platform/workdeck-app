@@ -100,11 +100,16 @@ export async function ensureSignupUser(
 ): Promise<{ id: string } | null> {
   // OAuth·초대·초기 설정이 동시에 들어와도 User를 한 번만 만들고 최초 출처를 보존한다.
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${user.id}))`
-  const existing = await tx.user.findUnique({ where: { id: user.id }, select: { id: true } })
+  const existing = await tx.user.findUnique({
+    where: { id: user.id },
+    select: { id: true, email: true },
+  })
   const email = user.email?.trim().toLowerCase() ?? ''
   if (existing) {
-    await tx.user.update({ where: { id: user.id }, data: { email } })
-    return existing
+    const authEmail = user.email ?? ''
+    if (existing.email !== authEmail)
+      await tx.user.update({ where: { id: user.id }, data: { email: authEmail } })
+    return { id: existing.id }
   }
   const lead = await findSignupLead(email, tx)
   if (!lead && isLeadGateEnabled() && !options.invitation) {

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { buildMarketingUrl } from '@/lib/domain'
+import { getReleasedDeckIds } from '@/lib/billing/deck-release'
 import { isLeadGateEnabled, verifyLeadToken } from '@/lib/marketing/lead-signup'
 import { Button } from '@/components/ui/button'
 import { SignupAccountSwitch, SignupForm } from '@/components/auth/signup-form'
@@ -26,9 +27,20 @@ export default async function SignupPage({
   const lead = gateEnabled && typeof token === 'string' ? await verifyLeadToken(token) : null
   const restricted = gateEnabled && !lead
   const isBlocked = blocked === 'lead'
+  // 준비중 업무는 구독 확인을 열지 않는다 — 조회 실패도 닫는다
+  const leadDeckReleased = lead
+    ? await getReleasedDeckIds().then(
+        (ids) => ids.includes(lead.deck),
+        () => false
+      )
+    : false
   const safeRedirectTo =
     sanitizeRedirectPath(redirectTo) ??
-    (lead ? `/my-deck?subscribe=${encodeURIComponent(lead.deck)}` : null)
+    (lead
+      ? leadDeckReleased
+        ? `/my-deck?subscribe=${encodeURIComponent(lead.deck)}`
+        : '/my-deck'
+      : null)
   const loginHref = safeRedirectTo
     ? `/login?redirectTo=${encodeURIComponent(safeRedirectTo)}`
     : '/login'
