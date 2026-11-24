@@ -77,6 +77,17 @@ function getWorkerApiKey(): string {
   return key
 }
 
+/** 앱 API 가 2xx 가 아니다 — 상태 코드로 분기할 수 있게 status 를 싣는다(메시지는 기존과 같다). */
+export class WorkerApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
+    super(message)
+    this.name = 'WorkerApiError'
+  }
+}
+
 /** 워커 인증 헤더를 포함한 fetch 래퍼 */
 async function workerFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const url = `${getBaseUrl()}${path}`
@@ -90,7 +101,10 @@ async function workerFetch(path: string, options: RequestInit = {}): Promise<Res
 
   if (!response.ok) {
     const body = await response.text()
-    throw new Error(`API 요청 실패 [${response.status}]: ${path} — ${body}`)
+    throw new WorkerApiError(
+      response.status,
+      `API 요청 실패 [${response.status}]: ${path} — ${body}`
+    )
   }
 
   return response
@@ -515,6 +529,89 @@ export async function postNaverNbaesongFinish(
   apiKey?: string
 ): Promise<void> {
   await workerFetch('/api/collection/naver-nbaesong/finish', {
+    ...withKey(apiKey),
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+// ─── 채널 주문 관측(네이버·쿠팡) ─────────────────────────────────────────────────
+
+export type ChannelOrdersPlanItem = {
+  channelId: string
+  adapter: string
+  storeKey: string | null
+}
+export type ChannelOrdersStart = {
+  operationId: string
+  storeKey: string | null
+  windows: { from: string; to: string }[]
+  /** 네이버 — 복호화된 키. null = 앱에서 복호화 실패·스토어 없음 */
+  secret?: NaverCommerceStoreSecret | null
+  /** 쿠팡 — 비밀 아님. 워커 자격증명과 대조한다. */
+  vendorId?: string | null
+}
+export type ChannelOrdersFinish =
+  | {
+      operationId: string
+      success: boolean
+      through?: string
+      pagesRequested: number
+      pagesIngested: number
+      rows: number
+      errorCode?: string
+    }
+  | {
+      operationId: string
+      success: boolean
+      periodFrom: string
+      periodTo: string
+      pagesRequested: number
+      pagesReceived: number
+      structureOk: boolean
+      errorCode?: string
+    }
+
+/** GET /api/collection/channel-orders/plan — Space 워커 토큰(N배송과 같은 토큰) */
+export async function getChannelOrdersPlan(
+  apiKey?: string
+): Promise<{ items: ChannelOrdersPlanItem[] }> {
+  const response = await workerFetch('/api/collection/channel-orders/plan', withKey(apiKey))
+  const data = await response.json()
+  return { items: data?.items ?? [] }
+}
+
+/** POST /api/collection/channel-orders/plan — 실행 시작(409 busy·404 는 WorkerApiError.status) */
+export async function startChannelOrders(
+  body: { channelId: string; kind: 'OBSERVE' | 'FULL_SCAN' },
+  apiKey?: string
+): Promise<ChannelOrdersStart> {
+  const response = await workerFetch('/api/collection/channel-orders/plan', {
+    ...withKey(apiKey),
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+  return response.json()
+}
+
+/** POST /api/collection/channel-orders/ingest — lines 는 300행 이하 */
+export async function ingestChannelOrders(
+  body: { operationId: string; lines: unknown[] },
+  apiKey?: string
+): Promise<void> {
+  await workerFetch('/api/collection/channel-orders/ingest', {
+    ...withKey(apiKey),
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+/** POST /api/collection/channel-orders/finish */
+export async function finishChannelOrders(
+  body: ChannelOrdersFinish,
+  apiKey?: string
+): Promise<void> {
+  await workerFetch('/api/collection/channel-orders/finish', {
     ...withKey(apiKey),
     method: 'POST',
     body: JSON.stringify(body),

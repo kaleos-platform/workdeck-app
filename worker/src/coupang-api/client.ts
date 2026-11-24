@@ -72,9 +72,11 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/** 워커는 한 프로세스 — 수집·쓰기 폴러·주문 관측이 인스턴스가 달라도 같은 호출 간격을 공유한다. */
+let lastCallAt = 0
+
 export class CoupangApiClient {
   private readonly cfg: CoupangApiConfig
-  private lastCallAt = 0
 
   constructor(cfg: CoupangApiConfig) {
     this.cfg = cfg
@@ -82,11 +84,11 @@ export class CoupangApiClient {
 
   /** 분당 50회 제한 대응 — 직전 호출로부터 최소 MIN_INTERVAL_MS 가 지날 때까지 대기. */
   private async throttle(): Promise<void> {
-    const elapsed = Date.now() - this.lastCallAt
+    const elapsed = Date.now() - lastCallAt
     if (elapsed < MIN_INTERVAL_MS) {
       await sleep(MIN_INTERVAL_MS - elapsed)
     }
-    this.lastCallAt = Date.now()
+    lastCallAt = Date.now()
   }
 
   /**
