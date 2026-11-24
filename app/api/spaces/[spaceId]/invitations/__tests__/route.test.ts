@@ -1,6 +1,6 @@
 /** @jest-environment node */
 jest.mock('@/lib/agent/identity/space-admin', () => ({ requireSpaceOwner: jest.fn() }))
-jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
+jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn(), isAal2Fresh: jest.fn() }))
 jest.mock('@/lib/domain', () => ({ getAppOrigin: () => 'https://app.example.com' }))
 jest.mock('@/lib/admin/auth', () => ({ writeAuditLog: jest.fn() }))
 jest.mock('@/lib/spaces/invite-email', () => ({ sendInviteEmail: jest.fn() }))
@@ -17,7 +17,7 @@ jest.mock('@/lib/spaces/invitations', () => {
 })
 
 import { requireSpaceOwner } from '@/lib/agent/identity/space-admin'
-import { requireAal2 } from '@/lib/auth/mfa'
+import { isAal2Fresh, requireAal2 } from '@/lib/auth/mfa'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { sendInviteEmail } from '@/lib/spaces/invite-email'
 import {
@@ -49,6 +49,7 @@ beforeEach(() => {
   jest.clearAllMocks()
   ;(requireSpaceOwner as jest.Mock).mockResolvedValue({ userId: 'u-owner' })
   ;(requireAal2 as jest.Mock).mockResolvedValue(null)
+  ;(isAal2Fresh as jest.Mock).mockResolvedValue(true)
   ;(createInvitation as jest.Mock).mockResolvedValue({
     invitation: {
       id: 'inv-1',
@@ -94,10 +95,68 @@ it('OWNER가 아니면 그 오류, 초대하지 않는다', async () => {
   expect(createInvitation).not.toHaveBeenCalled()
 })
 
-it('MFA(aal2)가 아니면 그 오류', async () => {
+it('ADMIN 초대는 MFA(aal2)가 아니면 그 오류', async () => {
+  ;(requireAal2 as jest.Mock).mockResolvedValue(new Response(null, { status: 403 }))
+  ;(isAal2Fresh as jest.Mock).mockResolvedValue(false)
+  expect((await post({ email: 'invitee@example.com', role: 'ADMIN' })).status).toBe(403)
+  expect(createInvitation).not.toHaveBeenCalled()
+})
+
+it('AAL1 이어도 MEMBER 초대는 201, 감사 로그에 aal1', async () => {
+  ;(requireAal2 as jest.Mock).mockResolvedValue(new Response(null, { status: 403 }))
+  ;(isAal2Fresh as jest.Mock).mockResolvedValue(false)
+  ;(createInvitation as jest.Mock).mockResolvedValue({
+    invitation: {
+      id: 'inv-2',
+      email: 'invitee@example.com',
+      role: 'MEMBER',
+      expiresAt: new Date(),
+    },
+    token: 'T2',
+    converted: false,
+    resent: false,
+  })
+  expect((await post({ email: 'invitee@example.com', role: 'MEMBER' })).status).toBe(201)
+  expect(requireAal2).not.toHaveBeenCalled()
+  expect(writeAuditLog).toHaveBeenCalledWith(
+    'u-owner',
+    'space.invitation.create',
+    'space_invitation',
+    'inv-2',
+    { spaceId: 'sp-1', email: 'invitee@example.com', role: 'MEMBER', aal: 'aal1' }
+  )
+})
+
+it('AAL1 로 대기 MEMBER 초대를 ADMIN 으로 재초대(상향)하면 403, 초대 안 함', async () => {
   ;(requireAal2 as jest.Mock).mockResolvedValue(new Response(null, { status: 403 }))
   expect((await post({ email: 'invitee@example.com', role: 'ADMIN' })).status).toBe(403)
   expect(createInvitation).not.toHaveBeenCalled()
+})
+
+it('AAL1 로 대기 ADMIN 초대를 MEMBER 로 재초대(하향)하면 200, 역할 MEMBER·aal1', async () => {
+  ;(requireAal2 as jest.Mock).mockResolvedValue(new Response(null, { status: 403 }))
+  ;(isAal2Fresh as jest.Mock).mockResolvedValue(false)
+  ;(createInvitation as jest.Mock).mockResolvedValue({
+    invitation: {
+      id: 'inv-0',
+      email: 'invitee@example.com',
+      role: 'MEMBER',
+      expiresAt: new Date(),
+    },
+    token: 'T3',
+    converted: false,
+    resent: true,
+  })
+  const res = await post({ email: 'invitee@example.com', role: 'MEMBER' })
+  expect(res.status).toBe(200)
+  expect(createInvitation).toHaveBeenCalledWith(expect.objectContaining({ role: 'MEMBER' }))
+  expect(writeAuditLog).toHaveBeenCalledWith(
+    'u-owner',
+    'space.invitation.resend',
+    'space_invitation',
+    'inv-0',
+    expect.objectContaining({ role: 'MEMBER', aal: 'aal1' })
+  )
 })
 
 it('OWNER 역할·잘못된 이메일은 422', async () => {
@@ -131,7 +190,7 @@ it('초대를 만들고 메일을 보내고 링크를 돌려준다(감사 로그
     'space.invitation.create',
     'space_invitation',
     'inv-1',
-    { spaceId: 'sp-1', email: 'invitee@example.com', role: 'ADMIN' }
+    { spaceId: 'sp-1', email: 'invitee@example.com', role: 'ADMIN', aal: 'aal2' }
   )
 })
 
@@ -208,7 +267,24 @@ it('DELETE: 이 Space의 대기 초대가 아니면 404, 맞으면 감사 로그
     'space.invitation.revoke',
     'space_invitation',
     'inv-1',
-    { spaceId: 'sp-1' }
+    { spaceId: 'sp-1', aal: 'aal2' }
+  )
+})
+
+it('DELETE: AAL1 이어도 취소 성공(역할 무관), 감사 로그에 aal1', async () => {
+  ;(requireAal2 as jest.Mock).mockResolvedValue(new Response(null, { status: 403 }))
+  ;(isAal2Fresh as jest.Mock).mockResolvedValue(false)
+  ;(revokeInvitation as jest.Mock).mockResolvedValue(true)
+  expect(
+    (await DELETE(new Request('https://x', { method: 'DELETE' }), delParams('inv-1'))).status
+  ).toBe(200)
+  expect(requireAal2).not.toHaveBeenCalled()
+  expect(writeAuditLog).toHaveBeenCalledWith(
+    'u-owner',
+    'space.invitation.revoke',
+    'space_invitation',
+    'inv-1',
+    { spaceId: 'sp-1', aal: 'aal1' }
   )
 })
 
@@ -292,17 +368,12 @@ it('GET은 OWNER 가 아니면 403, 목록 조회 안 함', async () => {
   expect(listInvitations).not.toHaveBeenCalled()
 })
 
-describe.each([
-  [
-    'OWNER 아님',
-    () =>
-      (requireSpaceOwner as jest.Mock).mockResolvedValue({
-        error: new Response(null, { status: 403 }),
-      }),
-  ],
-  ['aal1', () => (requireAal2 as jest.Mock).mockResolvedValue(new Response(null, { status: 403 }))],
-])('DELETE guard 거부: %s', (_name, deny) => {
-  beforeEach(deny)
+describe('DELETE guard 거부: OWNER 아님', () => {
+  beforeEach(() =>
+    (requireSpaceOwner as jest.Mock).mockResolvedValue({
+      error: new Response(null, { status: 403 }),
+    })
+  )
   it('DELETE는 403, 취소 안 함', async () => {
     expect(
       (await DELETE(new Request('https://x', { method: 'DELETE' }), delParams('inv-1'))).status
