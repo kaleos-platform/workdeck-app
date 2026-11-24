@@ -177,11 +177,16 @@ async function callOllama(
 }
 
 /**
- * Gemini 키·결제 오류(401·402·403, 키 미설정) 여부 — 같은 키를 쓰는 다른 Gemini 모델도 실패하므로
+ * Gemini 키·결제 오류(401·402·403, 무효 키 400, 키 미설정) 여부 — 같은 키를 쓰는 다른 Gemini 모델도 실패하므로
  * pro 단계를 건너뛴다. 상태 코드는 callGemini 오류 메시지 `Gemini [NNN]` 에서 읽는다.
  */
 export function isGeminiKeyError(message: string): boolean {
-  if (message.includes('GEMINI_API_KEY')) return true
+  // 무효·만료 키는 401/403 이 아니라 400 + "API key not valid"(reason API_KEY_INVALID)로 온다(2026-11-24 실측).
+  if (
+    message.includes('GEMINI_API_KEY') ||
+    /API key (not valid|expired)|API_KEY_INVALID/.test(message)
+  )
+    return true
   const status = Number(message.match(/Gemini \[(\d{3})\]/)?.[1])
   return status === 401 || status === 402 || status === 403
 }
@@ -222,7 +227,9 @@ export async function callAnalysisAI(
   try {
     console.log(`[analysis-poller] Fallback 2 재시도 (local): ${OLLAMA_FALLBACK_MODEL}`)
     const result = await callOllama(OLLAMA_FALLBACK_MODEL, systemPrompt, userPrompt)
-    return keyError ? { ...result, geminiError: errors[0] } : result
+    // flash 가 5xx 였고 pro 가 402 인 경우도 키 문제다 — 어느 Gemini 단계든 키 오류면 알린다.
+    const geminiKeyErr = errors.find(isGeminiKeyError)
+    return geminiKeyErr ? { ...result, geminiError: geminiKeyErr } : result
   } catch (err) {
     errors.push(`${OLLAMA_FALLBACK_MODEL}: ${errMsg(err)}`)
     throw new Error(errors.join(' / '))

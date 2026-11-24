@@ -44,8 +44,16 @@ beforeEach(() => {
 
 test('isGeminiKeyError: 401·402·403·키 미설정만 키 오류', () => {
   expect(isGeminiKeyError('Gemini [402]: credits')).toBe(true)
-  expect(isGeminiKeyError('gemini-2.5-flash: Gemini [403]: x / qwen3:14b: Ollama [500]: y')).toBe(true)
+  expect(isGeminiKeyError('gemini-2.5-flash: Gemini [403]: x / qwen3:14b: Ollama [500]: y')).toBe(
+    true
+  )
   expect(isGeminiKeyError('GEMINI_API_KEY 환경변수가 설정되지 않았습니다')).toBe(true)
+  expect(
+    isGeminiKeyError(
+      'Gemini [400]: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key."'
+    )
+  ).toBe(true)
+  expect(isGeminiKeyError('Gemini [400]: {"error":{"message":"Invalid JSON payload"}}')).toBe(false)
   expect(isGeminiKeyError('Gemini [429]: quota')).toBe(false)
   expect(isGeminiKeyError('Gemini [500]: 5xx')).toBe(false)
 })
@@ -64,6 +72,13 @@ test('429 → pro 로 재시도, geminiError 없음', async () => {
   expect(calls).toEqual(['flash', 'pro'])
   expect(r.modelUsed).toBe('gemini-2.5-pro')
   expect(r.geminiError).toBeUndefined()
+})
+
+test('flash 5xx + pro 402 → Ollama 성공이어도 geminiError', async () => {
+  mockFetch({ flash: 503, pro: 402 })
+  const r = await callAnalysisAI('sys', 'user')
+  expect(calls).toEqual(['flash', 'pro', 'ollama'])
+  expect(r.geminiError).toContain('Gemini [402]')
 })
 
 test('전부 실패 → 단계별 오류를 합쳐 throw (402 가 남는다)', async () => {
