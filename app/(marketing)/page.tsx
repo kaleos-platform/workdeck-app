@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { buildAppUrl } from '@/lib/domain'
+import { buildAppUrl, buildMarketingUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { DECK_LANDINGS } from '@/lib/marketing/decks'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
@@ -48,7 +48,7 @@ export default async function HomePage() {
             비즈니스 업무를 필요한 것만 골라 쓰며 목표를 달성하는 워크스페이스입니다.
           </p>
           <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
-            <Link href={buildAppUrl('/signup')}>
+            <Link href={buildMarketingUrl('/recruiting#lead-form')}>
               <Button size="lg" className="w-full gap-2 sm:w-auto">
                 워크스페이스 만들기
                 <ArrowRight className="h-4 w-4" aria-hidden />
@@ -134,7 +134,7 @@ export default async function HomePage() {
           <p className="text-lg break-keep text-white/90">
             필요한 업무 모듈만 골라 월 단위로 구독하고, 언제든 해지할 수 있습니다.
           </p>
-          <Link href={buildAppUrl('/signup')}>
+          <Link href={buildMarketingUrl('/recruiting#lead-form')}>
             <Button size="lg" variant="secondary" className="gap-2">
               시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />

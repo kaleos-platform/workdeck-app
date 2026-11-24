@@ -4899,6 +4899,8 @@ model MarketingLead {
   referrer      String?
   status        MarketingLeadStatus @default(NEW)
   memo          String?
+  invitedAt     DateTime?
+  invitedBy     String?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 

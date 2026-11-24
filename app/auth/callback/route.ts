@@ -7,6 +7,8 @@ import {
 } from '@/lib/auth-redirect'
 import { prisma } from '@/lib/prisma'
 import { resolveSignupSource } from '@/lib/workspace'
+import { ensureSignupUser, SignupNotAllowedError } from '@/lib/marketing/lead-signup'
+import { hashInviteToken, pendingWhere } from '@/lib/spaces/invitations'
 import { hasSpaceAccess } from '@/lib/workspace-shell'
 
 // GET /auth/callback?code=... — 구글 OAuth 코드를 세션으로 교환
@@ -34,25 +36,40 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${origin}${emailVerifiedLoginPath(requestedNext)}`)
       }
 
-      // Google OAuth → Prisma User upsert 후 대시보드로
+      // Google OAuth → 가입 정책 확인·Prisma User 동기화 후 대시보드로
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
       if (user) {
-        await prisma.user.upsert({
-          where: { id: user.id },
-          create: {
-            id: user.id,
-            email: user.email ?? '',
-            name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
-            signupSource:
-              (await resolveSignupSource(user.user_metadata?.signup_source)) ?? undefined,
-          },
-          update: {
-            email: user.email ?? '',
-          },
-        })
+        // 리드 없는 계정은 실제 대기 초대 토큰이 있을 때만 세션을 유지하고 수락 화면으로 보낸다
+        const inviteToken = requestedNext?.startsWith('/invite/')
+          ? requestedNext.slice('/invite/'.length).split(/[/?#]/)[0]
+          : ''
+        const hasPendingInvite = inviteToken
+          ? !!(await prisma.spaceInvitation.findFirst({
+              where: { tokenHash: hashInviteToken(inviteToken), ...pendingWhere(new Date()) },
+              select: { id: true },
+            }))
+          : false
+        try {
+          const fallbackSource = await resolveSignupSource(user.user_metadata?.signup_source)
+          await prisma.$transaction((tx) =>
+            ensureSignupUser(
+              tx,
+              {
+                id: user.id,
+                email: user.email,
+                name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
+              },
+              { fallbackSource, deferWithoutLead: hasPendingInvite }
+            )
+          )
+        } catch (error) {
+          if (!(error instanceof SignupNotAllowedError)) throw error
+          await supabase.auth.signOut()
+          return NextResponse.redirect(`${origin}/signup?blocked=lead`)
+        }
 
         // 워크스페이스 존재 여부 확인 → 없으면 초기 설정 페이지로
         const workspace = await prisma.workspace.findUnique({

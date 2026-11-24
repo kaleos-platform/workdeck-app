@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { buildAppUrl } from '@/lib/domain'
+import { buildAppUrl, buildMarketingUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 
@@ -74,7 +74,7 @@ export function MarketingHeader() {
           <Link href={buildAppUrl('/login')}>
             <Button variant="ghost">로그인</Button>
           </Link>
-          <Link href={buildAppUrl('/signup')}>
+          <Link href={buildMarketingUrl('/recruiting#lead-form')}>
             <Button>시작하기</Button>
           </Link>
         </div>
@@ -131,7 +131,7 @@ export function MarketingHeader() {
                 로그인
               </Button>
             </Link>
-            <Link href={buildAppUrl('/signup')}>
+            <Link href={buildMarketingUrl('/recruiting#lead-form')}>
               <Button className="w-full">시작하기</Button>
             </Link>
           </div>

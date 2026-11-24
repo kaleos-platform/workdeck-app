@@ -1,6 +1,5 @@
 import 'server-only'
-import { buildAdminUrl, buildAppUrl } from '@/lib/domain'
-import { deckStartPath } from './deck-start'
+import { buildAdminUrl } from '@/lib/domain'
 import { sendEmail } from '@/lib/email/send'
 import { emailBlocks, renderEmail } from '@/lib/email/layout'
 
@@ -106,9 +105,9 @@ function kstDate(now: Date) {
  */
 export async function notifyApplicant(
   lead: Pick<LeadNotifyInput, 'deck' | 'deckName' | 'email'>,
-  opts: { released: boolean; now?: Date }
+  opts: { released: boolean; signupUrl?: string; now?: Date }
 ) {
-  const startUrl = buildAppUrl(deckStartPath(lead.deck))
+  const startUrl = opts.signupUrl
   const kind = opts.released ? '도입 신청' : '출시 알림 신청'
   const next = opts.released
     ? '담당자가 확인 후 24시간 안에 이 메일 주소로 이용 방법을 안내드립니다.'
@@ -120,10 +119,10 @@ export async function notifyApplicant(
     body: [
       emailBlocks.heading(title),
       emailBlocks.paragraph(`워크덱에 관심 가져 주셔서 감사합니다. ${next}`),
-      ...(opts.released
+      ...(opts.released && startUrl
         ? [
             emailBlocks.paragraph(
-              '기다리지 않고 바로 써 보고 싶다면 가입 후 곧장 시작할 수 있습니다.',
+              '신청한 이메일로 가입해 주세요. 가입 후 곧장 시작할 수 있습니다.',
               { muted: true }
             ),
             emailBlocks.button('바로 시작하기', startUrl),
@@ -139,7 +138,9 @@ export async function notifyApplicant(
     title,
     '',
     `워크덱에 관심 가져 주셔서 감사합니다. ${next}`,
-    ...(opts.released ? ['', `바로 시작하기: ${startUrl}`] : []),
+    ...(opts.released && startUrl
+      ? ['', '신청한 이메일로 가입해 주세요.', `바로 시작하기: ${startUrl}`]
+      : []),
     '',
     '문의는 이 메일에 회신해 주세요. 본인이 신청하지 않았다면 이 메일은 무시하셔도 됩니다.',
   ].join('\n')
