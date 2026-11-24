@@ -114,4 +114,10 @@ export default withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   tunnelRoute: '/monitoring',
+  sourcemaps: {
+    // 기본 목록(static/chunks)은 Vercel 의 static/immutable/chunks 를 놓친다.
+    // 지정하면 기본 목록을 통째로 대체하므로 서버 경로도 함께 둔다(CLI 직접 전달, glob 미지원).
+    assets: ['.next/server', '.next/static'],
+    deleteSourcemapsAfterUpload: true,
+  },
 })

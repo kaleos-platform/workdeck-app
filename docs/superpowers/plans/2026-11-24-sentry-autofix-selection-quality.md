@@ -63,3 +63,9 @@ dry 첫 실행에서 13건 중 10건이 `insufficient-no-exception-frame`. 운�
 3. [high] locator 경로에도 title·message 가 Codex 로 간다 → **반영**: locator 경로 컨텍스트는 `저장소에서 확인된 라벨 문자열 + 파일 + 줄 + exception.type(safeType)` 만으로 따로 구성, title·message·route 제외. 주입 문자열·scrub 통과 PII 가 담긴 픽스처로 Codex 입력(context 파일)에 안 들어가는지 테스트.
 4. [medium] `loadCorpus` 는 경로·줄이 없는 합친 문자열 → **반영**: base commit 에서 `git grep -n -F -e <라벨>` (추적 파일) 결과를 경로·줄 단위로 받고 `isAllowedPath && !isForbiddenPath` 로 나눈다. 판정: 허용 1줄만 → locator / 허용 0 + 금지·비허용 ≥1 → `blocked-label-path` / 허용 ≥2 줄 또는 허용·금지 동시 → `insufficient-ambiguous-label` / 0 → `insufficient-no-locator` / grep 실패 → `insufficient-locator-error`. 각각 테스트.
 5. [medium] 새 분류의 기록·한도 미정 → **반영**: 새 이유는 모두 status `insufficient`(Codex 미실행, pending 미생성, 일일 처리 한도 미소비, 다음 날 재선정 허용 — 비용 없음). 1주 검토용으로 `runs/<runId>/selection.json` 에 이슈별 `{shortId, status, reason}` 만 기록(메시지 없음)하고 Slack 요약에 이유별 개수. locator 로 진행한 이슈는 기존 경로대로 한도 소비·pending 생성.
+
+## 구현 메모 (변경 A)
+
+- fail-closed 검사는 `package.json` build 가 아니라 `vercel.json` `buildCommand` 끝에 둔다 — Vercel 은 `next build` 를 직접 실행해 npm build 스크립트를 거치지 않는다. 검사 조각은 `.map` 있을 때 exit 1, 없을 때 exit 0 을 로컬에서 확인.
+- 디렉터리 인자 재확인 완료: `handleRunAfterProductionCompile` → `uploadSourcemaps(prepareArtifacts:false)` 는 `sourcemaps.assets` 를 glob 없이 sentry-cli 에 그대로 넘긴다(`bundler-plugin-core` direct upload 분기). 상대 경로는 빌드 cwd(프로젝트 루트) 기준.
+- preview 검증은 develop 머지 전 **PR 브랜치 preview** 에서 먼저 한다(Preview 환경에 `SENTRY_AUTH_TOKEN`·`SENTRY_ORG`·`SENTRY_PROJECT` 있음 확인).
