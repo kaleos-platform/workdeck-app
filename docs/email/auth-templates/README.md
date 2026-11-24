@@ -18,6 +18,9 @@ Supabase 대시보드 → 운영 프로젝트 → Authentication → Emails → 
 | `email_change.html` | Change email address | [Workdeck] 이메일 변경 확인              |
 | `recovery.html`     | Reset password       | [Workdeck] 비밀번호 재설정               |
 
+- 모든 링크는 `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=…`(앱 주소)다. `{{ .ConfirmationURL }}`(supabase.co 주소)을 쓰면 메일 보안 장비가 링크를 먼저 열 때 일회용 토큰이 소비된다. 확인 화면(`/auth/confirm/continue`)에서 버튼을 눌러야 토큰이 확인된다.
+- 가입 메일은 `next={{ .Data.signup_next }}` — 가입 때 `user_metadata.signup_next`(URL 인코딩된 경로)에 싣는다.
+- 이전 본문(ConfirmationURL)으로 되돌리면 선방문 소비가 다시 생긴다. 장애 때만 롤백하고, 전에 백업해 둔다.
 - 초대 링크 형식(`/auth/confirm?token_hash=…&type=invite&next={{ .Data.invite_path }}`)은 `src/lib/spaces/invite-email.ts`가 의존한다. 바꾸지 않는다.
 - 「1시간 동안 유효」 문구는 Auth 설정 `mailer_otp_exp` 3600초 기준이다. 설정을 바꾸면 정의도 고친다.
 - 대시보드에서는 HTML 본문만 설정한다. 앱 메일처럼 plain text 파트를 따로 지정하지 않는다.
