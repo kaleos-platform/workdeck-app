@@ -140,6 +140,15 @@ export function ChannelEditDialog({
 
   const [saving, setSaving] = useState(false)
   const observeSaver = useRef<ObserveSaver | null>(null)
+  // 채널은 저장됐는데 관측 저장이 실패한 경우 — 팝업을 닫을 때 목록을 갱신한다(닫히며 입력을 잃지 않게).
+  const channelSavedPending = useRef(false)
+  function closeDialog(next: boolean) {
+    if (!next && channelSavedPending.current) {
+      channelSavedPending.current = false
+      onSaved()
+    }
+    onOpenChange(next)
+  }
   const [activeTab, setActiveTab] = useState('basic')
 
   // 선택된 채널 유형 정보 — 판매채널 여부에 따라 표시 항목/탭이 달라짐
@@ -311,6 +320,7 @@ export function ChannelEditDialog({
     const observe = observeSaver.current
     if (observe?.invalid) {
       toast.error('주문정보 탭의 주문 관측 설정을 확인해 주세요')
+      setActiveTab('advanced')
       return
     }
 
@@ -399,13 +409,14 @@ export function ChannelEditDialog({
           await observe.save()
         } catch (err) {
           // 채널 정보는 이미 저장됨 — 팝업을 열어 둬서 관측 설정만 다시 저장하게 한다.
-          onSaved()
+          channelSavedPending.current = true
           throw new Error(
             `채널은 저장했지만 ${err instanceof Error ? err.message : '주문 관측 설정을 저장하지 못했습니다'}`
           )
         }
       }
       toast.success(channel ? '채널이 수정되었습니다' : '채널이 생성되었습니다')
+      channelSavedPending.current = false
       onOpenChange(false)
       onSaved()
     } catch (err) {
@@ -418,7 +429,7 @@ export function ChannelEditDialog({
   // ── 렌더 ─────────────────────────────────────────────────────────────────
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{channel ? '채널 수정' : '새 채널 만들기'}</DialogTitle>
@@ -979,7 +990,7 @@ export function ChannelEditDialog({
         </Tabs>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+          <Button variant="outline" onClick={() => closeDialog(false)} disabled={saving}>
             취소
           </Button>
           <Button onClick={handleSave} disabled={saving}>

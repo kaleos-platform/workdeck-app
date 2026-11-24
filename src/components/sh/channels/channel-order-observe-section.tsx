@@ -228,7 +228,7 @@ export function ChannelOrderObserveSection({
           </Select>
         </div>
       )}
-      {invalid && (
+      {dirty && invalid && (
         <p className="text-xs text-destructive">
           {adapter ? '스토어 키 또는 쇼핑몰을 선택하세요' : '가져올 곳을 선택하세요'}
         </p>
