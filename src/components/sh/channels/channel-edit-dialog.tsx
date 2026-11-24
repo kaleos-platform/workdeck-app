@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ChannelOrderObserveSection } from './channel-order-observe-section'
+import { ChannelOrderObserveSection, type ObserveSaver } from './channel-order-observe-section'
 import { Switch } from '@/components/ui/switch'
 import {
   Dialog,
@@ -139,6 +139,16 @@ export function ChannelEditDialog({
   const [fRequireProducts, setFRequireProducts] = useState(false)
 
   const [saving, setSaving] = useState(false)
+  const observeSaver = useRef<ObserveSaver | null>(null)
+  // 채널은 저장됐는데 관측 저장이 실패한 경우 — 팝업을 닫을 때 목록을 갱신한다(닫히며 입력을 잃지 않게).
+  const channelSavedPending = useRef(false)
+  function closeDialog(next: boolean) {
+    if (!next && channelSavedPending.current) {
+      channelSavedPending.current = false
+      onSaved()
+    }
+    onOpenChange(next)
+  }
   const [activeTab, setActiveTab] = useState('basic')
 
   // 선택된 채널 유형 정보 — 판매채널 여부에 따라 표시 항목/탭이 달라짐
@@ -307,6 +317,12 @@ export function ChannelEditDialog({
       toast.error('카테고리명이 중복되었습니다. 중복을 제거해 주세요')
       return
     }
+    const observe = observeSaver.current
+    if (observe?.invalid) {
+      toast.error('주문정보 탭의 주문 관측 설정을 확인해 주세요')
+      setActiveTab('advanced')
+      return
+    }
 
     setSaving(true)
     try {
@@ -388,7 +404,19 @@ export function ChannelEditDialog({
         const suffix = firstField ? ` (${firstField[0]}: ${firstField[1]?.[0]})` : ''
         throw new Error((data?.message ?? '저장 실패') + suffix)
       }
+      if (observe) {
+        try {
+          await observe.save()
+        } catch (err) {
+          // 채널 정보는 이미 저장됨 — 팝업을 열어 둬서 관측 설정만 다시 저장하게 한다.
+          channelSavedPending.current = true
+          throw new Error(
+            `채널은 저장했지만 ${err instanceof Error ? err.message : '주문 관측 설정을 저장하지 못했습니다'}`
+          )
+        }
+      }
       toast.success(channel ? '채널이 수정되었습니다' : '채널이 생성되었습니다')
+      channelSavedPending.current = false
       onOpenChange(false)
       onSaved()
     } catch (err) {
@@ -401,7 +429,7 @@ export function ChannelEditDialog({
   // ── 렌더 ─────────────────────────────────────────────────────────────────
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{channel ? '채널 수정' : '새 채널 만들기'}</DialogTitle>
@@ -918,9 +946,13 @@ export function ChannelEditDialog({
           {/* ── 고급 탭 ── */}
           <TabsContent
             value="advanced"
-            className="mt-4 max-h-[55vh] space-y-4 overflow-y-auto pr-1"
+            // 다른 탭에서 「저장」해도 관측 변경이 남도록 마운트 유지
+            forceMount
+            className="mt-4 max-h-[55vh] space-y-4 overflow-y-auto pr-1 data-[state=inactive]:hidden"
           >
-            {channel && <ChannelOrderObserveSection channelId={channel.id} onSaved={onSaved} />}
+            {channel && (
+              <ChannelOrderObserveSection channelId={channel.id} saverRef={observeSaver} />
+            )}
             <div className="space-y-3 rounded-md border p-3">
               <p className="text-xs font-medium text-muted-foreground">주문 요구사항</p>
               <div className="flex items-center justify-between">
@@ -958,7 +990,7 @@ export function ChannelEditDialog({
         </Tabs>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+          <Button variant="outline" onClick={() => closeDialog(false)} disabled={saving}>
             취소
           </Button>
           <Button onClick={handleSave} disabled={saving}>
