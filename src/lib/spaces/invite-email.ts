@@ -57,19 +57,23 @@ export async function sendInviteEmail(input: {
   return error ? skip(error, input) : { sent: true, via: 'supabase' }
 }
 
+/**
+ * 이미 가입된 이메일 오류인지 판정한다. 최신 GoTrue는 code 'email_exists'(422), 옛 GoTrue는 code 없이
+ * 422 + "already been registered" 메시지. 422만으로는 판정하지 않는다 — email_address_invalid 등도 422다.
+ */
+export function isEmailExistsError(error: { code?: string; status?: number; message: string }) {
+  return (
+    error.code === 'email_exists' ||
+    (error.status === 422 && /already been registered/i.test(error.message))
+  )
+}
+
 async function skip(
   error: { code?: string; status?: number; message: string },
   input: Parameters<typeof sendInviteEmail>[0]
 ): Promise<MailResult> {
   const { code, status } = error
-  // 최신 GoTrue는 code 'email_exists'(422), 옛 GoTrue는 code 없이 422 + "already been registered" 메시지.
-  // 422만으로는 판정하지 않는다 — email_address_invalid 등도 422다.
-  if (
-    code === 'email_exists' ||
-    (status === 422 && /already been registered/i.test(error.message))
-  ) {
-    return sendToRegistered(input)
-  }
+  if (isEmailExistsError(error)) return sendToRegistered(input)
   console.error('[invite-email] Supabase 초대 메일 실패', { status, code })
   return { sent: false, reason: 'send_failed' }
 }
