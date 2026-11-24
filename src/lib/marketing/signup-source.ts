@@ -9,18 +9,21 @@ export const SIGNUP_SOURCE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
 const MAX_LEN = 100
 
-export type SignupSource = Partial<Record<(typeof UTM_KEYS)[number] | 'landing' | 'at', string>>
+export type SignupSource = Partial<
+  Record<(typeof UTM_KEYS)[number] | 'landing' | 'at' | 'referrer', string>
+>
 
-/** 임의 입력(쿠키 JSON·user_metadata)을 짧은 문자열 객체로 정리한다. utm_source 없으면 null. */
+/** 임의 입력(쿠키 JSON·user_metadata)을 짧은 문자열 객체로 정리한다. utm_source·referrer·리드 표시가 없으면 null. */
 export function sanitizeSignupSource(input: unknown): SignupSource | null {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null
   const raw = input as Record<string, unknown>
   const out: SignupSource = {}
-  for (const key of [...UTM_KEYS, 'landing', 'at'] as const) {
+  for (const key of [...UTM_KEYS, 'landing', 'at', 'referrer'] as const) {
     const v = raw[key]
-    if (typeof v === 'string' && v.trim()) out[key] = v.trim().slice(0, MAX_LEN)
+    if (typeof v === 'string' && v.trim())
+      out[key] = v.trim().slice(0, key === 'referrer' ? 300 : MAX_LEN)
   }
-  return out.utm_source ? out : null
+  return out.utm_source || out.referrer || out.landing === 'lead' ? out : null
 }
 
 /** URL 쿼리에서 utm 을 뽑는다. utm_source 가 없으면 null. */
@@ -51,4 +54,23 @@ export function parseSignupSourceCookie(value?: string | null): SignupSource | n
 /** marketing→app 이동에서도 쿠키가 유지되도록 workdeck.work 계열 호스트면 상위 도메인을 쓴다. */
 export function signupSourceCookieDomain(host: string): string | undefined {
   return host === 'workdeck.work' || host.endsWith('.workdeck.work') ? '.workdeck.work' : undefined
+}
+
+/** 운영 목록용 짧은 출처. 전체 원본은 호출 측 툴팁에 남긴다. */
+export function signupSourceLabel(input: unknown): string {
+  const source = sanitizeSignupSource(input)
+  if (!source) return '-'
+  let detail = source.utm_source
+    ? [source.utm_source, source.utm_medium].filter(Boolean).join(' / ')
+    : ''
+  if (!detail && source.referrer) {
+    try {
+      detail = new URL(source.referrer).hostname
+    } catch {
+      /* 잘못된 주소는 라벨에서 생략한다. */
+    }
+  }
+  return source.landing === 'lead'
+    ? ['도입 문의', detail].filter(Boolean).join(' · ')
+    : detail || '-'
 }

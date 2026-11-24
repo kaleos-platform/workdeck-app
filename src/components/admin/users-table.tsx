@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signupSourceLabel, type SignupSource } from '@/lib/marketing/signup-source'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -27,7 +28,7 @@ type AdminUserListItem = {
   email: string
   name: string | null
   createdAt: string
-  signupSource: { utm_source?: string; utm_medium?: string } | null
+  signupSource: SignupSource | null
   isOperator: boolean
   spaceMemberships: { spaceId: string; spaceName: string; role: string }[]
 }
@@ -214,11 +215,9 @@ export function UsersTable() {
                 <TableCell>{u.name ?? '-'}</TableCell>
                 <TableCell>{u.spaceMemberships.length}개</TableCell>
                 <TableCell>
-                  {u.signupSource?.utm_source
-                    ? [u.signupSource.utm_source, u.signupSource.utm_medium]
-                        .filter(Boolean)
-                        .join(' / ')
-                    : '-'}
+                  <span title={u.signupSource ? JSON.stringify(u.signupSource) : undefined}>
+                    {signupSourceLabel(u.signupSource)}
+                  </span>
                 </TableCell>
                 <TableCell>{new Date(u.createdAt).toLocaleDateString('ko-KR')}</TableCell>
                 <TableCell>

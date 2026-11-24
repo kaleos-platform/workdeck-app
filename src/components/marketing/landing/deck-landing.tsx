@@ -1,5 +1,5 @@
 import { DECK_META } from '@/lib/deck-meta'
-import { deckStartPath } from '@/lib/marketing/deck-start'
+import { buildMarketingUrl } from '@/lib/domain'
 import type { DeckLandingContent, DeckLandingLeadForm } from '@/lib/marketing/types'
 import { HeroSection } from './hero-section'
 import { PainPoints } from './pain-points'
@@ -37,19 +37,14 @@ export function DeckLanding({
   const meta = DECK_META[content.slug]
   const leadForm = released ? content.leadForm : RELEASE_NOTIFY_FORM
 
-  // [시작하기]는 이 업무를 보고 온 사람을 위한 CTA다. 가입 후 곧장 해당 업무의
-  // 구독 확인 단계로 이어지도록 목적지를 실어 보낸다 (로그인 상태면 바로 도착).
-  const startHref = deckStartPath(content.slug)
-  const startCta = { ...content.hero.primaryCta, href: startHref }
-  // 도입 신청 폼이 있으면 주 CTA 는 폼으로, 기존 [시작하기]는 보조 CTA 로 내린다.
-  // 준비중이면 가입·구독 경로를 노출하지 않는다 (기존 이용 공간용 로그인만 유지).
+  // 폼 없는 랜딩은 모집 관리 도입 문의로 연결한다.
   const primaryCta = !released
     ? { label: '출시 알림 받기', href: '#apply' }
-    : leadForm
-      ? { label: '무료 이용 신청', href: '#apply' }
-      : startCta
-  const heroSecondaryCta =
-    released && leadForm ? { label: '바로 시작하기', href: startHref } : content.hero.secondaryCta
+    : {
+        label: '도입 문의하기',
+        href: leadForm ? '#lead-form' : buildMarketingUrl('/recruiting#lead-form'),
+      }
+  const heroSecondaryCta = content.hero.secondaryCta
 
   return (
     <div className="w-full">

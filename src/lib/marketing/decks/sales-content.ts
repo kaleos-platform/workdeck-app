@@ -21,7 +21,7 @@ export const salesContentLanding: DeckLandingContent = {
     highlight: '하나의 흐름으로',
     subcopy:
       '상품과 타겟 페르소나를 등록하면 콘텐츠 아이디어 기획, 제작, 채널 배포, 성과 분석이 하나의 흐름으로 이어집니다.',
-    primaryCta: { label: '시작하기', href: '/signup' },
+    primaryCta: { label: '도입 문의하기', href: '#lead-form' },
     secondaryCta: { label: '로그인', href: '/d/sales-content/login' },
   },
   painPoints: [

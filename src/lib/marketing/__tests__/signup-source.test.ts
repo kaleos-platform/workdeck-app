@@ -40,3 +40,27 @@ describe('signup-source', () => {
     expect(signupSourceCookieDomain('evilworkdeck.work')).toBeUndefined()
   })
 })
+
+it('리드·referrer만 있는 출처를 보존하고 referrer는 300자로 제한한다', () => {
+  expect(sanitizeSignupSource({ landing: 'lead' })).toEqual({ landing: 'lead' })
+  expect(sanitizeSignupSource({ referrer: 'x'.repeat(400) })?.referrer).toHaveLength(300)
+})
+
+it('가입 경로 라벨은 리드 표시와 utm 또는 referrer 호스트를 보여준다', async () => {
+  const { signupSourceLabel } = await import('../signup-source')
+  expect(signupSourceLabel({ landing: 'lead', utm_source: 'google', utm_medium: 'cpc' })).toBe(
+    '도입 문의 · google / cpc'
+  )
+  expect(signupSourceLabel({ landing: 'lead', referrer: 'https://www.example.com/path' })).toBe(
+    '도입 문의 · www.example.com'
+  )
+  expect(signupSourceLabel({ landing: 'lead' })).toBe('도입 문의')
+  expect(signupSourceLabel(null)).toBe('-')
+})
+
+it('utm_source 없이 medium만 있으면 referrer 호스트를 보여준다', async () => {
+  const { signupSourceLabel } = await import('../signup-source')
+  expect(
+    signupSourceLabel({ landing: 'lead', utm_medium: 'cpc', referrer: 'https://example.com/path' })
+  ).toBe('도입 문의 · example.com')
+})

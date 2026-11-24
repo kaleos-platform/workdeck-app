@@ -17,7 +17,6 @@ config({ path: '.env.local', override: true })
 import { PrismaClient, type Prisma } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { createClient } from '@supabase/supabase-js'
-import { ensureWorkspaceForUser } from '../src/lib/workspace'
 import { ensureFinanceSeeded } from '../src/lib/finance/kifrs-seed'
 import { rebuildDerivedSnapshots } from '../src/lib/finance/snapshot-rebuild'
 import { buildApplicationPii } from '../src/lib/hiring/pii'
@@ -42,13 +41,7 @@ const DEMO_PASSWORD = 'WorkdeckDemo2026!'
 const DEMO_WORKSPACE_NAME = '모던리빙'
 const BRAND_NAME = '모던리빙'
 
-const ALL_DECK_IDS = [
-  'coupang-ads',
-  'seller-hub',
-  'sales-content',
-  'finance',
-  'recruiting',
-]
+const ALL_DECK_IDS = ['coupang-ads', 'seller-hub', 'sales-content', 'finance', 'recruiting']
 
 // ─── 유틸 ───────────────────────────────────────────────────────────────────
 
@@ -712,10 +705,25 @@ async function main() {
   await cleanupExistingDemoData(userId)
 
   console.log('▸ Workspace + Space 구조 생성 (coupang-ads 기본 활성)...')
-  const { workspace } = await ensureWorkspaceForUser(
-    { id: userId, email: DEMO_EMAIL, name: '모던리빙 데모' },
-    DEMO_WORKSPACE_NAME
-  )
+  // ensureWorkspaceForUser 는 server-only 체인(가입 리드 가드)을 끌어와 tsx 에서 못 쓴다 — 직접 만든다.
+  await prisma.user.upsert({
+    where: { id: userId },
+    create: { id: userId, email: DEMO_EMAIL, name: '모던리빙 데모' },
+    update: {},
+  })
+  const workspace =
+    (await prisma.workspace.findUnique({ where: { ownerId: userId } })) ??
+    (await prisma.workspace.create({ data: { name: DEMO_WORKSPACE_NAME, ownerId: userId } }))
+  if (!(await prisma.spaceMember.findFirst({ where: { userId } }))) {
+    const space = await prisma.space.create({
+      data: {
+        name: workspace.name,
+        type: 'PERSONAL',
+        members: { create: { userId, role: 'OWNER' } },
+      },
+    })
+    await prisma.workspace.update({ where: { id: workspace.id }, data: { spaceId: space.id } })
+  }
   const membership = await prisma.spaceMember.findFirstOrThrow({ where: { userId } })
   const spaceId = membership.spaceId
   const workspaceId = workspace.id

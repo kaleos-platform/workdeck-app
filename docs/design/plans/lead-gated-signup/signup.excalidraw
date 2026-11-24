@@ -1,0 +1,383 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "f0",
+   "x": 0,
+   "y": 40,
+   "width": 390,
+   "height": 560,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "t0",
+   "x": 0,
+   "y": 0,
+   "text": "A. 링크 없이 /signup",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "f430",
+   "x": 430,
+   "y": 40,
+   "width": 390,
+   "height": 560,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "t430",
+   "x": 430,
+   "y": 0,
+   "text": "B. 가입 링크(/signup?lead=…)",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "f860",
+   "x": 860,
+   "y": 40,
+   "width": 390,
+   "height": 560,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "t860",
+   "x": 860,
+   "y": 0,
+   "text": "C. Google 차단 (?blocked=lead)",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "f1290",
+   "x": 1290,
+   "y": 40,
+   "width": 390,
+   "height": 560,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "t1290",
+   "x": 1290,
+   "y": 0,
+   "text": "D. 도입 문의 완료 (랜딩)",
+   "fontSize": 18
+  },
+  {
+   "type": "text",
+   "id": "a1",
+   "x": 20,
+   "y": 60,
+   "text": "Workdeck 회원가입",
+   "fontSize": 22
+  },
+  {
+   "type": "rectangle",
+   "id": "a2",
+   "x": 20,
+   "y": 110,
+   "width": 350,
+   "height": 130,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "① Alert\n워크덱은 도입 문의 후 가입할 수 있습니다.\n문의를 남기면 바로 가입 링크를 드립니다.",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "a3",
+   "x": 20,
+   "y": 260,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "② Button(primary) 도입 문의하기 → 랜딩 #lead-form",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "a4",
+   "x": 20,
+   "y": 325,
+   "text": "이미 문의하셨나요? 문의에 남긴 이메일의",
+   "fontSize": 13
+  },
+  {
+   "type": "text",
+   "id": "a4b",
+   "x": 20,
+   "y": 343,
+   "text": "Google 계정이면 바로 계속할 수 있습니다.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "a5",
+   "x": 20,
+   "y": 370,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ Button(outline) Google로 계속하기",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "a6",
+   "x": 20,
+   "y": 430,
+   "text": "접수 메일의 「바로 가입하기」 링크로도 가입할 수 있습니다.",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "a7",
+   "x": 20,
+   "y": 540,
+   "text": "이미 계정이 있나요? 로그인",
+   "fontSize": 13
+  },
+  {
+   "type": "text",
+   "id": "b1",
+   "x": 450,
+   "y": 60,
+   "text": "Workdeck 회원가입",
+   "fontSize": 22
+  },
+  {
+   "type": "text",
+   "id": "b2",
+   "x": 450,
+   "y": 95,
+   "text": "도입 문의에 남긴 이메일로 가입합니다.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "b3",
+   "x": 450,
+   "y": 130,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Button(outline) Google로 계속하기",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "b3b",
+   "x": 450,
+   "y": 180,
+   "text": "── 또는 ──",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "b4",
+   "x": 450,
+   "y": 205,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "④ Input 이메일  kim@bareun-bakery.kr  (읽기 전용·잠금)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b5",
+   "x": 450,
+   "y": 260,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Input 이름",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b6",
+   "x": 450,
+   "y": 315,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Input 비밀번호",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b7",
+   "x": 450,
+   "y": 370,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Input 비밀번호 확인",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b8",
+   "x": 450,
+   "y": 430,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Button(primary) 가입하기",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "c1",
+   "x": 880,
+   "y": 60,
+   "text": "Workdeck 회원가입",
+   "fontSize": 22
+  },
+  {
+   "type": "rectangle",
+   "id": "c2",
+   "x": 880,
+   "y": 110,
+   "width": 350,
+   "height": 150,
+   "backgroundColor": "#fef3c7",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑤ Alert(주의)\n이 Google 계정(hong@gmail.com)으로는\n도입 문의 기록이 없습니다.\n문의에 남긴 이메일로 다시 시도하거나\n도입 문의를 남겨 주세요.",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c3",
+   "x": 880,
+   "y": 280,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Button(primary) 도입 문의하기",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c4",
+   "x": 880,
+   "y": 335,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Button(outline) 다른 Google 계정으로 계속",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "d1",
+   "x": 1310,
+   "y": 60,
+   "text": "모집 관리 도입 문의",
+   "fontSize": 20
+  },
+  {
+   "type": "rectangle",
+   "id": "d2",
+   "x": 1310,
+   "y": 110,
+   "width": 350,
+   "height": 120,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "(기존) 접수 완료 안내\n도입 신청이 접수됐습니다.\n담당자가 24시간 안에 연락드립니다.",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "d3",
+   "x": 1310,
+   "y": 250,
+   "width": 350,
+   "height": 44,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑥ Button(primary) 바로 가입하기 → /signup?lead=…",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "d4",
+   "x": 1310,
+   "y": 305,
+   "text": "같은 링크가 접수 확인 메일에도 들어갑니다.",
+   "fontSize": 12
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

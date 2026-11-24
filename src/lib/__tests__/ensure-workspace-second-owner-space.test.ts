@@ -12,6 +12,7 @@ import { ensureWorkspaceForUser } from '../workspace'
 // 어드민이 두 번째 OWNER Space 를 만든 뒤에도 기존 Workspace.spaceId 연결이 유지되는지(연결은 spaceId 가 빌 때만 채운다).
 it('이미 연결된 Workspace 는 두 번째 OWNER Space 가 생겨도 spaceId 를 덮어쓰지 않는다', async () => {
   const tx = {
+    user: { findUnique: jest.fn().mockResolvedValue({ id: 'u1' }), update: jest.fn() },
     $executeRaw: jest.fn(),
     workspace: {
       findUnique: jest.fn().mockResolvedValue({ id: 'w1', name: '기존' }),
@@ -37,4 +38,19 @@ it('이미 연결된 Workspace 는 두 번째 OWNER Space 가 생겨도 spaceId 
     where: { id: 'w1', spaceId: null },
     data: { spaceId: 'sp-new' },
   })
+})
+
+it('리드 없는 신규 User면 Workspace를 만들기 전에 거부한다', async () => {
+  const tx = {
+    $executeRaw: jest.fn(),
+    user: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn() },
+    marketingLead: { findFirst: jest.fn().mockResolvedValue(null) },
+    workspace: { findUnique: jest.fn(), create: jest.fn() },
+  }
+  ;(prisma.$transaction as jest.Mock).mockImplementation((fn) => fn(tx))
+  await expect(
+    ensureWorkspaceForUser({ id: 'new', email: 'new@example.com' })
+  ).rejects.toMatchObject({ name: 'SignupNotAllowedError' })
+  expect(tx.user.create).not.toHaveBeenCalled()
+  expect(tx.workspace.create).not.toHaveBeenCalled()
 })

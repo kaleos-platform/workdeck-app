@@ -33,6 +33,7 @@ function collectUtm() {
 }
 
 export function LeadForm({ deck, doneMessage }: { deck: string; doneMessage?: string }) {
+  const [signupUrl, setSignupUrl] = useState<string | null>(null)
   const [done, setDone] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const {
@@ -71,6 +72,8 @@ export function LeadForm({ deck, doneMessage }: { deck: string; doneMessage?: st
         }),
       })
       if (res.ok) {
+        const result = await res.json()
+        setSignupUrl(typeof result.signupUrl === 'string' ? result.signupUrl : null)
         track('generate_lead', { deck })
         setDone(true)
         return
@@ -88,11 +91,19 @@ export function LeadForm({ deck, doneMessage }: { deck: string; doneMessage?: st
   if (done) {
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center" role="status">
-        <CheckCircle2 className="h-10 w-10 text-emerald-600" aria-hidden />
+        <CheckCircle2 className="h-10 w-10 text-emerald-600 dark:text-emerald-400" aria-hidden />
         <p className="text-lg font-medium break-keep">
           {doneMessage ??
             '신청이 완료되었습니다. 담당자가 확인 후 24시간 안에 이메일로 안내드릴게요.'}
         </p>
+        {signupUrl ? (
+          <>
+            <p className="text-sm text-muted-foreground">신청한 이메일로 가입해 주세요.</p>
+            <Button asChild>
+              <Link href={signupUrl}>바로 가입하기</Link>
+            </Button>
+          </>
+        ) : null}
         {/* 중복·과다 접수·발송 실패 때도 거짓이 되지 않게 메일 발송을 단정하지 않는다 */}
         <p className="text-sm break-keep text-muted-foreground">
           안내 메일이 늦어지면 hello@workdeck.work 로 문의해 주세요.

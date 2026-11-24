@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, resolveSpaceContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { getUser } from '@/hooks/use-user'
 import { requireAal2 } from '@/lib/auth/mfa'
+import { SignupNotAllowedError } from '@/lib/marketing/lead-signup'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
 import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
@@ -108,14 +109,21 @@ export async function PUT(request: NextRequest) {
       else guardSpaceId = spaceCtx.space.id
     }
     if (!workspace) {
-      const ensured = (
-        await ensureWorkspaceForUser({
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.name ?? null,
-          signupSource: user.user_metadata?.signup_source,
-        })
-      ).workspace
+      let ensured: { id: string; name: string }
+      try {
+        ensured = (
+          await ensureWorkspaceForUser({
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.name ?? null,
+            signupSource: user.user_metadata?.signup_source,
+          })
+        ).workspace
+      } catch (error) {
+        if (error instanceof SignupNotAllowedError)
+          return errorResponse(error.message, 403, { code: 'SIGNUP_REQUIRES_LEAD' })
+        throw error
+      }
       // ensure 는 ownerId 로 단일 워크스페이스를 돌려준다 — 다른 Space 에 연결된 것이면 덮어쓰지 않는다.
       if (guardSpaceId) {
         const linked = await prisma.workspace.findUnique({

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { buildAppUrl } from '@/lib/domain'
+import { buildMarketingUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 import { buildMarketingMetadata, orgJsonLd } from '@/lib/marketing/seo'
@@ -92,7 +92,7 @@ export default function AboutPage() {
           <p className="text-lg break-keep text-white/90">
             필요한 업무를 구독해 사용해 보시고 의견을 들려주세요.
           </p>
-          <Link href={buildAppUrl('/signup')}>
+          <Link href={buildMarketingUrl('/recruiting#lead-form')}>
             <Button size="lg" variant="secondary" className="gap-2">
               시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />
