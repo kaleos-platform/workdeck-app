@@ -185,6 +185,8 @@ export function classifyEvent(issue, event) {
 // hits: { path, line }[] | null(grep 오류). 허용 경로의 단일 위치만 locator 로 인정
 export function judgeLabelHits(hits) {
   if (!hits) return { reason: 'insufficient-locator-error' }
+  // 실행 코드만 본다 — 문서·테스트에 같은 라벨이 있어도 오류 발생 위치가 아니다
+  hits = hits.filter((h) => /\.[cm]?[jt]sx?$/i.test(h.path) && !isTestPath(h.path))
   const ok = hits.filter((h) => isAllowedPath(h.path) && !isForbiddenPath(h.path))
   const other = hits.length - ok.length
   if (ok.length === 1 && other === 0) return { locator: ok[0] }

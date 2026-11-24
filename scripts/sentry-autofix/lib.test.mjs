@@ -230,6 +230,14 @@ test('judgeLabelHits', () => {
   assert.equal(lib.judgeLabelHits([ok, bad]).reason, 'insufficient-ambiguous-label')
   assert.equal(lib.judgeLabelHits([bad]).reason, 'blocked-label-path')
   assert.equal(lib.judgeLabelHits(null).reason, 'insufficient-locator-error')
+  // 문서·테스트 위치는 무시
+  const noise = [
+    { path: 'docs/plans/x.md', line: 1 },
+    { path: 'src/lib/__tests__/a.test.ts', line: 2 },
+    { path: 'src/lib/a.test.ts', line: 3 },
+  ]
+  assert.deepEqual(lib.judgeLabelHits([ok, ...noise]), { locator: ok })
+  assert.equal(lib.judgeLabelHits(noise).reason, 'insufficient-no-locator')
 })
 
 test('parseGrepOutput', () => {
