@@ -16,6 +16,8 @@ import { startBackfillPoller } from './backfill-poller.js'
 import { startCoupangWritePoller } from './coupang-write-poller.js'
 import { pruneScreenshots } from './screenshot-retention.js'
 import { runNaverNbaesongSync } from './naver-nbaesong-runner.js'
+import { runChannelOrders } from './channel-orders/runner.js'
+import { sleep } from './naver-commerce.js'
 
 // playwright-extra 의 puppeteer 호환 shim 은 브라우저/페이지가 먼저 닫히면
 // cdpSession.send 를 await 되지 않는 promise 에서 던진다. Node 기본 정책상 이 unhandled
@@ -86,12 +88,13 @@ pruneScreenshots()
 cron.schedule('0 4 * * *', pruneScreenshots, { timezone: 'Asia/Seoul' })
 
 // 스마트스토어 N배송 판매 수집 — 매시 20분. 네이버 호출은 IP 가 등록된 이 워커에서만 한다.
-let nbaesongRunning = false
+// naverBusy — N배송과 네이버 채널 주문 관측이 같은 호출 한도를 쓰므로 한 번에 하나만 돈다.
+let naverBusy = false
 cron.schedule(
   '20 * * * *',
   async () => {
-    if (nbaesongRunning) return
-    nbaesongRunning = true
+    if (naverBusy) return
+    naverBusy = true
     try {
       const r = await runNaverNbaesongSync()
       console.log(
@@ -103,10 +106,56 @@ cron.schedule(
         error instanceof Error ? error.message : error
       )
     } finally {
-      nbaesongRunning = false
+      naverBusy = false
     }
   },
   { timezone: 'Asia/Seoul' }
 )
+
+// 채널 주문 관측(네이버·쿠팡, 읽기 전용) — 증분 :05·:35, 대사(09·18시) 전 일일 증분+전수 08:30·17:30.
+let coupangOrdersBusy = false
+async function runOrdersGuarded(mode: 'OBSERVE' | 'DAILY') {
+  const label = mode === 'DAILY' ? '일일' : '증분'
+  const coupang = async () => {
+    if (coupangOrdersBusy) return
+    coupangOrdersBusy = true
+    try {
+      console.log(
+        `[${new Date().toISOString()}] 쿠팡 주문 관측(${label}):`,
+        await runChannelOrders(mode, 'coupang')
+      )
+    } catch (error) {
+      console.error(`쿠팡 주문 관측 실패:`, error instanceof Error ? error.message : error)
+    } finally {
+      coupangOrdersBusy = false
+    }
+  }
+  const naver = async () => {
+    // 일일 실행은 N배송이 끝나길 1분 간격으로 기다리되 :50 이후엔 시작하지 않는다(대사 전에 끝나야 의미가 있다).
+    while (naverBusy) {
+      if (mode !== 'DAILY' || new Date().getMinutes() >= 50) {
+        console.log(
+          `[${new Date().toISOString()}] 네이버 주문 관측(${label}) 건너뜀: 다른 네이버 작업 중`
+        )
+        return
+      }
+      await sleep(60_000)
+    }
+    naverBusy = true
+    try {
+      console.log(
+        `[${new Date().toISOString()}] 네이버 주문 관측(${label}):`,
+        await runChannelOrders(mode, 'naver')
+      )
+    } catch (error) {
+      console.error(`네이버 주문 관측 실패:`, error instanceof Error ? error.message : error)
+    } finally {
+      naverBusy = false
+    }
+  }
+  await Promise.all([coupang(), naver()])
+}
+cron.schedule('5,35 * * * *', () => runOrdersGuarded('OBSERVE'), { timezone: 'Asia/Seoul' })
+cron.schedule('30 8,17 * * *', () => runOrdersGuarded('DAILY'), { timezone: 'Asia/Seoul' })
 
 console.log('크론 스케줄러 + 수동 수집 폴링 대기 중...\n')

@@ -6,9 +6,9 @@
  */
 import bcrypt from 'bcryptjs'
 
-const BASE = 'https://api.commerce.naver.com/external/v1'
+export const BASE = 'https://api.commerce.naver.com/external/v1'
 const RATE_LIMIT_WAIT_MS = 1500
-const MAX_429_RETRIES = 3
+export const MAX_429_RETRIES = 3
 const MAX_PAGES = 100
 
 export type NaverCommerceStoreSecret = { clientId: string; clientSecret: string }
