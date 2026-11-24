@@ -83,3 +83,7 @@ node scripts/sentry-autofix/run.mjs --fixture scripts/sentry-autofix/fixtures/in
 - 이상 징후(토큰 조각 검출 등): 위 unload → `~/.config/workdeck/autofix-codex` 삭제 → pending 의 `quarantine/` 는 사람이 확인 후 삭제
 - **유출이 의심될 때(ChatGPT 계정 세션 해제)**: ① unload ② chatgpt.com 에 러너 전용 계정으로 로그인 → Settings → Security(보안)에서 모든 기기 로그아웃(Log out of all devices) 으로 세션·refresh token 을 폐기 ③ `autofix-codex` 디렉터리 삭제 후 재로그인 ④ 공개된 branch·PR 이 있으면 삭제하고 에디에게 보고(이미 공개된 내용은 회수 불가로 본다)
 - 이전 run 의 잔재 컨테이너는 다음 실행 시작 때(lock 을 쥔 상태에서) 라벨 `workdeck.autofix` + 이름 `workdeck-autofix-` 접두인 것만 이름으로 kill 한다. SIGTERM/SIGINT 를 받으면 이 run 의 컨테이너를 정리하고 lock 을 푼다. lock 은 원자적(link)이며 4시간이 넘으면 회수한다.
+
+## 정보 부족 사유와 선정 기록
+
+예외 스택이 없거나 쓸 수 없으면 Codex 를 돌리지 않고 `insufficient` 로 끝낸다(일일 한도에 세지 않음). 사유: `insufficient-minified-no-sourcemap`, `insufficient-runtime-frames`(`/var/task`·`/opt`·`node_modules`·sentry/instrumentation 설정 프레임뿐), `insufficient-library-only`, `insufficient-message-only`. 메시지가 `[라벨]` 로 시작하면 호스트에서 `git grep -F` 로 저장소 위치를 찾고, 수정 허용 경로의 단일 위치일 때만 라벨·파일·줄·예외 타입만 담은 컨텍스트로 진행한다. 아니면 `insufficient-no-locator`·`insufficient-ambiguous-label`·`insufficient-locator-error`·`blocked-label-path`. 문서·테스트 파일의 일치는 무시한다. 라벨 위치 찾기는 이슈마다 clone 이 들어 run 당 5건까지만 시도한다(넘으면 `insufficient-label-cap`). 매 run 의 결과는 `runs/<runId>/selection.json`(`shortId`·`status`·`reason`, 제목·메시지 없음)에 남고 Slack 요약에 사유별 건수가 붙는다.
