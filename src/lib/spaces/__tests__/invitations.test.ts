@@ -12,7 +12,15 @@ jest.mock('@/lib/prisma', () => {
       findMany: jest.fn(),
       update: jest.fn(),
     },
-    user: { upsert: jest.fn(), findUnique: jest.fn(), findMany: jest.fn() },
+    user: {
+      upsert: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+    },
+    marketingLead: { findFirst: jest.fn(), updateMany: jest.fn() },
+    $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   }
   p.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(p))
@@ -46,7 +54,8 @@ const m = prisma as unknown as {
     findMany: jest.Mock
     update: jest.Mock
   }
-  user: { upsert: jest.Mock; findUnique: jest.Mock; findMany: jest.Mock }
+  user: { create: jest.Mock; update: jest.Mock; findUnique: jest.Mock; findMany: jest.Mock }
+  marketingLead: { findFirst: jest.Mock; updateMany: jest.Mock }
 }
 const future = () => new Date(Date.now() + 86_400_000)
 const user = (over: Partial<{ email: string; emailConfirmed: boolean }> = {}) => ({
@@ -59,6 +68,8 @@ const user = (over: Partial<{ email: string; emailConfirmed: boolean }> = {}) =>
 
 beforeEach(() => {
   jest.clearAllMocks()
+  m.user.findUnique.mockResolvedValue(null)
+  m.marketingLead.findFirst.mockResolvedValue(null)
   m.space.findUnique.mockResolvedValue({ id: 'sp-1', type: 'ORGANIZATION' })
   m.spaceMember.findFirst.mockResolvedValue(null)
   m.spaceInvitation.count.mockResolvedValue(0)
@@ -225,16 +236,31 @@ describe('acceptInvitation', () => {
     expect(m.spaceMember.create).toHaveBeenCalledWith({
       data: { spaceId: 'sp-1', userId: 'u-1', role: 'ADMIN' },
     })
-    expect(m.user.upsert).toHaveBeenCalledWith({
-      where: { id: 'u-1' },
-      create: {
+    expect(m.user.create).toHaveBeenCalledWith({
+      data: {
         id: 'u-1',
         email: 'invitee@example.com',
         name: '초대받은 사람',
         signupSource: { utm_source: 'invite' },
       },
-      update: {},
+      select: { id: true },
     })
+  })
+  it('리드 있는 초대 신규 가입은 리드 출처와 전환을 같은 tx에 기록한다', async () => {
+    m.marketingLead.findFirst.mockResolvedValue({
+      utm: { utm_source: 'ad' },
+      referrer: null,
+      createdAt: new Date('2026-01-01'),
+    })
+    await acceptInvitation({ token: 't', user: user() })
+    expect(m.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          signupSource: expect.objectContaining({ landing: 'lead', utm_source: 'ad' }),
+        }),
+      })
+    )
+    expect(m.marketingLead.updateMany).toHaveBeenCalled()
   })
   it('다른 이메일이면 403', async () => {
     await expect(

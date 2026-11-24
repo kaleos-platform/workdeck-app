@@ -44,7 +44,9 @@ export function HeroSection({ hero, deckName, gradient, icon: Icon, badge }: Her
         <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
           <Link
             href={
-              hero.primaryCta.href.startsWith('#')
+              hero.primaryCta.href.startsWith('#') ||
+              hero.primaryCta.href.startsWith('https://') ||
+              hero.primaryCta.href.startsWith('http://')
                 ? hero.primaryCta.href
                 : buildAppUrl(hero.primaryCta.href)
             }

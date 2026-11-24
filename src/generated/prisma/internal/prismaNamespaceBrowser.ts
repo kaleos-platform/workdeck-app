@@ -3073,6 +3073,8 @@ export const MarketingLeadScalarFieldEnum = {
   referrer: 'referrer',
   status: 'status',
   memo: 'memo',
+  invitedAt: 'invitedAt',
+  invitedBy: 'invitedBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -1,3 +1,7 @@
+import { redirect } from 'next/navigation'
+import { getUser } from '@/hooks/use-user'
+import { prisma } from '@/lib/prisma'
+import { findSignupLead, isLeadGateEnabled } from '@/lib/marketing/lead-signup'
 import { sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { WorkspaceSetupForm } from '@/components/auth/workspace-setup-form'
 
@@ -11,6 +15,16 @@ export default async function WorkspaceSetupPage({
 }: {
   searchParams: Promise<{ redirectTo?: string }>
 }) {
+  if (isLeadGateEnabled()) {
+    const user = await getUser()
+    if (
+      user &&
+      !(await prisma.user.findUnique({ where: { id: user.id }, select: { id: true } })) &&
+      !(await findSignupLead(user.email ?? ''))
+    ) {
+      redirect('/signup?blocked=lead')
+    }
+  }
   const { redirectTo } = await searchParams
 
   return <WorkspaceSetupForm redirectTo={sanitizeRedirectPath(redirectTo)} />

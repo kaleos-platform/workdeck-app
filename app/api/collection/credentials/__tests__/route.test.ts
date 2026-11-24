@@ -275,3 +275,16 @@ describe('PUT /api/collection/credentials — 역할·MFA 게이트', () => {
     expect(resolveSpaceContext).not.toHaveBeenCalled()
   })
 })
+
+it('리드 없는 신규 사용자의 ensure 실패는 403이고 자격증명을 저장하지 않는다', async () => {
+  const { SignupNotAllowedError } = await import('@/lib/marketing/lead-signup')
+  ;(ensureWorkspaceForUser as jest.Mock).mockRejectedValueOnce(new SignupNotAllowedError())
+  const res = await PUT(
+    new NextRequest('http://localhost/api/collection/credentials', {
+      method: 'PUT',
+      body: JSON.stringify({ loginId: 'id', password: 'pw' }),
+    })
+  )
+  expect(res?.status).toBe(403)
+  expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+})

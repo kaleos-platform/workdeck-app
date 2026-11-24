@@ -1,0 +1,621 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 0,
+   "y": 0,
+   "text": "어드민 · 도입 신청 (/admin/leads)",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "frame",
+   "x": 0,
+   "y": 40,
+   "width": 1120,
+   "height": 700,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "h1",
+   "x": 20,
+   "y": 60,
+   "text": "도입 신청",
+   "fontSize": 22
+  },
+  {
+   "type": "rectangle",
+   "id": "flt",
+   "x": 20,
+   "y": 100,
+   "width": 200,
+   "height": 36,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Select 상태: 전체",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "h0",
+   "x": 20,
+   "y": 150,
+   "width": 90,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "접수",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c00",
+   "x": 20,
+   "y": 186,
+   "width": 90,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "11/24\n15:20",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c10",
+   "x": 20,
+   "y": 266,
+   "width": 90,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "11/23\n10:02",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c20",
+   "x": 20,
+   "y": 346,
+   "width": 90,
+   "height": 80,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "11/22\n09:40",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "h1",
+   "x": 110,
+   "y": 150,
+   "width": 150,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "회사",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c01",
+   "x": 110,
+   "y": 186,
+   "width": 150,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "바른베이커리\n5~9명",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c11",
+   "x": 110,
+   "y": 266,
+   "width": 150,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "한빛카페\n1~4명",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c21",
+   "x": 110,
+   "y": 346,
+   "width": 150,
+   "height": 80,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "테스트상사",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "h2",
+   "x": 260,
+   "y": 150,
+   "width": 230,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "담당자",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c02",
+   "x": 260,
+   "y": 186,
+   "width": 230,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "김지원 점장\nkim@bareun-bakery.kr\n② 신청 2회",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c12",
+   "x": 260,
+   "y": 266,
+   "width": 230,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "이수민 대표\nlee@hanbit.kr",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c22",
+   "x": 260,
+   "y": 346,
+   "width": 230,
+   "height": 80,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "홍길동\ntest@example.com",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "h3",
+   "x": 490,
+   "y": 150,
+   "width": 150,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "① 유입 경로",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c03",
+   "x": 490,
+   "y": 186,
+   "width": 150,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "opening /\nredirect",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c13",
+   "x": 490,
+   "y": 266,
+   "width": 150,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "google.com\n(검색)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c23",
+   "x": 490,
+   "y": 346,
+   "width": 150,
+   "height": 80,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "(direct)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "h4",
+   "x": 640,
+   "y": 150,
+   "width": 100,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "상태",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c04",
+   "x": 640,
+   "y": 186,
+   "width": 100,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Select\n연락함",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c14",
+   "x": 640,
+   "y": 266,
+   "width": 100,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Select\n신규",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c24",
+   "x": 640,
+   "y": 346,
+   "width": 100,
+   "height": 80,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Select\n종료",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "h5",
+   "x": 740,
+   "y": 150,
+   "width": 90,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "② 가입",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c05",
+   "x": 740,
+   "y": 186,
+   "width": 90,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "11/24 가입",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c15",
+   "x": 740,
+   "y": 266,
+   "width": 90,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "—",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c25",
+   "x": 740,
+   "y": 346,
+   "width": 90,
+   "height": 80,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "—",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "h6",
+   "x": 830,
+   "y": 150,
+   "width": 120,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "메모",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c06",
+   "x": 830,
+   "y": 186,
+   "width": 120,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "재방문 예정",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c16",
+   "x": 830,
+   "y": 266,
+   "width": 120,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c26",
+   "x": 830,
+   "y": 346,
+   "width": 120,
+   "height": 80,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "스팸",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "h7",
+   "x": 950,
+   "y": 150,
+   "width": 130,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ 작업",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c07",
+   "x": 950,
+   "y": 186,
+   "width": 130,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Button 안내 메일\n11/24 16:02 발송",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c17",
+   "x": 950,
+   "y": 266,
+   "width": 130,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Button 안내 메일",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c27",
+   "x": 950,
+   "y": 346,
+   "width": 130,
+   "height": 80,
+   "backgroundColor": "#f9fafb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "안내 메일\n(비활성)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "text",
+   "id": "n1",
+   "x": 20,
+   "y": 440,
+   "text": "① utm_source / medium, 없으면 referrer 호스트. 올리면 전체 utm·referrer 툴팁",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "n2",
+   "x": 20,
+   "y": 460,
+   "text": "② 가입 = 같은 이메일 User 가입일. 「신청 N회」는 2회 이상일 때만",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "n3",
+   "x": 20,
+   "y": 480,
+   "text": "③ 종료 행은 비활성. 마지막 발송 시각을 버튼 아래 작게",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "dlg",
+   "x": 560,
+   "y": 500,
+   "width": 540,
+   "height": 225,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "d1",
+   "x": 580,
+   "y": 512,
+   "text": "④ Dialog 안내 메일 보내기",
+   "fontSize": 15
+  },
+  {
+   "type": "text",
+   "id": "d1b",
+   "x": 580,
+   "y": 535,
+   "text": "받는 사람 kim@bareun-bakery.kr",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "d2",
+   "x": 580,
+   "y": 560,
+   "width": 240,
+   "height": 110,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Textarea 운영자 메시지(선택)\n0/300자 · 일반 텍스트",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "d3",
+   "x": 840,
+   "y": 560,
+   "width": 240,
+   "height": 110,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑤ 미리보기\n[워크덱] 가입 안내\n문의해 주셔서 감사합니다\n(운영자 메시지)\n[가입하기]\n이 메일 주소로 가입해 주세요",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "d4",
+   "x": 580,
+   "y": 680,
+   "width": 110,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Button(ghost) 취소",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "text",
+   "id": "d6",
+   "x": 705,
+   "y": 690,
+   "text": "같은 주소 하루 1통",
+   "fontSize": 11
+  },
+  {
+   "type": "rectangle",
+   "id": "d5",
+   "x": 970,
+   "y": 680,
+   "width": 110,
+   "height": 34,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "Button 보내기",
+    "fontSize": 12
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

@@ -22,7 +22,7 @@ export const financeLanding: DeckLandingContent = {
     highlight: '현금흐름은 한눈에',
     subcopy:
       '은행·카드 거래내역을 업로드하면 학습된 규칙으로 자동 분류되고, 현금흐름 손익 관점 대시보드에서 자금 흐름을 바로 확인할 수 있습니다.',
-    primaryCta: { label: '시작하기', href: '/signup' },
+    primaryCta: { label: '도입 문의하기', href: '#lead-form' },
     secondaryCta: { label: '로그인', href: '/d/finance/login' },
   },
   painPoints: [

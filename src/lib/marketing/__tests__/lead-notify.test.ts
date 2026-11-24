@@ -39,14 +39,19 @@ describe('신청자 접수 확인 메일', () => {
   beforeEach(() => (sendEmail as jest.Mock).mockClear())
 
   it('공개 업무: 도입 신청 접수 제목·24시간 안내·바로 시작 버튼, 신청자에게 회신은 운영 주소로', async () => {
-    await notifyApplicant(lead, { released: true, now: new Date('2026-11-16T03:00:00Z') })
+    await notifyApplicant(lead, {
+      released: true,
+      signupUrl: 'https://app.test/signup?lead=id.signature',
+      now: new Date('2026-11-16T03:00:00Z'),
+    })
     const arg = (sendEmail as jest.Mock).mock.calls[0][0]
     expect(arg.to).toBe('ceo@brand.kr')
     expect(arg.subject).toContain('모집 관리 도입 신청이 접수됐습니다')
     expect(arg.replyTo).toBe('hello@workdeck.work')
     expect(arg.html).toContain('24시간')
     expect(arg.html).toContain('바로 시작하기')
-    expect(arg.html).toContain(encodeURIComponent('/my-deck?subscribe=recruiting'))
+    expect(arg.html).toContain('https://app.test/signup?lead=id.signature')
+    expect(arg.html).toContain('신청한 이메일로 가입해 주세요')
     expect(arg.text).toContain('24시간')
   })
 
@@ -59,7 +64,10 @@ describe('신청자 접수 확인 메일', () => {
   })
 
   it('신청자가 입력한 글(이름·회사명·연락처·이메일)은 본문에 한 글자도 넣지 않는다', async () => {
-    await notifyApplicant(lead, { released: true })
+    await notifyApplicant(lead, {
+      released: true,
+      signupUrl: 'https://app.test/signup?lead=id.signature',
+    })
     const arg = (sendEmail as jest.Mock).mock.calls[0][0]
     for (const part of [arg.html, arg.text, arg.subject]) {
       expect(part).not.toContain('홍')
@@ -71,8 +79,16 @@ describe('신청자 접수 확인 메일', () => {
   })
 
   it('같은 주소·업무는 KST 하루 1통 (멱등 키)', async () => {
-    await notifyApplicant(lead, { released: true, now: new Date('2026-11-16T14:59:00Z') })
-    await notifyApplicant(lead, { released: true, now: new Date('2026-11-16T15:01:00Z') })
+    await notifyApplicant(lead, {
+      released: true,
+      signupUrl: 'https://app.test/signup?lead=id.signature',
+      now: new Date('2026-11-16T14:59:00Z'),
+    })
+    await notifyApplicant(lead, {
+      released: true,
+      signupUrl: 'https://app.test/signup?lead=id.signature',
+      now: new Date('2026-11-16T15:01:00Z'),
+    })
     const [a, b] = (sendEmail as jest.Mock).mock.calls.map((c) => c[0].idempotencyKey)
     expect(a).toBe('lead-confirm:recruiting:ceo@brand.kr:2026-11-16')
     expect(b).toBe('lead-confirm:recruiting:ceo@brand.kr:2026-11-17')
