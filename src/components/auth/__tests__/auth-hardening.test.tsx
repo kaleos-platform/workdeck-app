@@ -114,9 +114,7 @@ test('2단계 인증 — 코드 확인이 무응답이면 로딩을 풀고 지�
 
 test('초대 수락 — 비밀번호 설정이 무응답이면 로딩을 풀고 지연 안내', async () => {
   auth.updateUser.mockReturnValue(hang())
-  render(
-    <InviteAccept token="t" view="needs_password" invitePath="/invite/t" inviteEmail="a@b.c" />
-  )
+  render(<InviteAccept token="t" view="needs_password" invitePath="/invite/t" />)
   fireEvent.change(screen.getByPlaceholderText('사용할 비밀번호(8자 이상)'), {
     target: { value: 'Password1!' },
   })

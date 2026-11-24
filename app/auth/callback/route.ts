@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { resolveRedirectPath, sanitizeRedirectPath } from '@/lib/auth-redirect'
+import {
+  emailVerifiedLoginPath,
+  resolveRedirectPath,
+  sanitizeRedirectPath,
+} from '@/lib/auth-redirect'
 import { prisma } from '@/lib/prisma'
 import { resolveSignupSource } from '@/lib/workspace'
 import { hasSpaceAccess } from '@/lib/workspace-shell'
@@ -27,12 +31,7 @@ export async function GET(request: NextRequest) {
       // app_metadata.provider가 아닌 URL 파라미터로 구분 (동일 이메일로 여러 provider 연결 시 오작동 방지)
       if (type === 'email') {
         await supabase.auth.signOut()
-        const params = new URLSearchParams({ verified: 'success' })
-        if (requestedNext) {
-          params.set('redirectTo', requestedNext)
-        }
-        const loginPath = requestedNext?.match(/^\/d\/[^/]+$/) ? `${requestedNext}/login` : '/login'
-        return NextResponse.redirect(`${origin}${loginPath}?${params.toString()}`)
+        return NextResponse.redirect(`${origin}${emailVerifiedLoginPath(requestedNext)}`)
       }
 
       // Google OAuth → Prisma User upsert 후 대시보드로

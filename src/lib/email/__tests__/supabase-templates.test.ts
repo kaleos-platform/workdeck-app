@@ -21,7 +21,12 @@ describe('Supabase 인증 메일 템플릿', () => {
 
   it('GoTrue 변수를 깨뜨리지 않는다', () => {
     const byKey = Object.fromEntries(templates.map((t) => [t.key, t.html]))
-    expect(byKey.confirmation).toContain('href="{{ .ConfirmationURL }}"')
+    const confirm = 'href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type='
+    expect(byKey.confirmation).toContain(`${confirm}email&amp;next={{ .Data.signup_next }}"`)
+    expect(byKey.recovery).toContain(`${confirm}recovery"`)
+    expect(byKey.magic_link).toContain(`${confirm}magiclink"`)
+    expect(byKey.email_change).toContain(`${confirm}email_change"`)
+    for (const t of templates) expect(t.html).not.toContain('ConfirmationURL')
     expect(byKey.invite).toContain(
       'href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite&amp;next={{ .Data.invite_path }}"'
     )

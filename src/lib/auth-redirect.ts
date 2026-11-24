@@ -33,3 +33,16 @@ export function resolveRedirectPath(
 ): string {
   return sanitizeRedirectPath(value) ?? fallback
 }
+
+// 가입 인증 메일의 emailRedirectTo — 가입과 「인증 메일 다시 보내기」가 같은 값을 쓴다.
+export function emailConfirmRedirect(origin: string, next: string): string {
+  return `${origin}/auth/callback?type=email&next=${encodeURIComponent(next)}`
+}
+
+// 이메일 인증 완료 뒤 로그인 화면 경로(/auth/callback · /auth/confirm 공용).
+export function emailVerifiedLoginPath(requestedNext: string | null): string {
+  const params = new URLSearchParams({ verified: 'success' })
+  if (requestedNext) params.set('redirectTo', requestedNext)
+  const loginPath = requestedNext?.match(/^\/d\/[^/]+$/) ? `${requestedNext}/login` : '/login'
+  return `${loginPath}?${params.toString()}`
+}

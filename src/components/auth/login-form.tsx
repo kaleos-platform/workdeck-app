@@ -10,8 +10,8 @@ import type { AuthError } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { X, MailCheck, CheckCircle2, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { AUTH_TIMEOUT_MESSAGE, withAuthTimeout } from '@/lib/auth/auth-timeout'
-import { resolveRedirectPath } from '@/lib/auth-redirect'
+import { AUTH_TIMEOUT_MESSAGE, isAuthServerError, withAuthTimeout } from '@/lib/auth/auth-timeout'
+import { emailConfirmRedirect, resolveRedirectPath } from '@/lib/auth-redirect'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,6 +46,11 @@ function getAuthErrorMessage(error: AuthError): string {
 // 로그인 성공 뒤 화면 이동(서버 렌더·세션 확인)이 막히면 버튼이 「로그인 중...」에 머문다 — 이 시간 뒤 풀어준다.
 const NAV_STALL_MS = 15_000
 
+// 인증 메일 다시 보내기 간격(초) — 연속 발송으로 메일이 쌓이거나 발송 한도에 걸리지 않게 한다.
+const RESEND_COOLDOWN_SEC = 60
+// 가입 화면이 남긴 이메일 — URL 에 이메일을 싣지 않고 로그인 화면 이메일 칸을 채운다.
+export const PENDING_EMAIL_KEY = 'wd:pending-email'
+
 interface LoginFormProps {
   isVerifyPending?: boolean
   isVerifySuccess?: boolean
@@ -75,6 +80,14 @@ export function LoginForm({
     }, NAV_STALL_MS)
     return () => clearTimeout(timer)
   }, [navigating])
+  const [needsConfirm, setNeedsConfirm] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
+  const [isResending, setIsResending] = useState(false)
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const timer = setTimeout(() => setCooldown((c) => c - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [cooldown])
   const router = useRouter()
   const supabase = createClient()
   const nextPath = resolveRedirectPath(redirectTo)
@@ -87,9 +100,67 @@ export function LoginForm({
     },
   })
 
+  useEffect(() => {
+    if (!isVerifyPending) return
+    const pending = sessionStorage.getItem(PENDING_EMAIL_KEY)
+    if (pending && !form.getValues('email')) form.setValue('email', pending)
+  }, [isVerifyPending, form])
+
+  async function handleResend() {
+    const email = form.getValues('email').trim()
+    if (!email) {
+      toast.error('위 이메일 칸에 가입한 이메일을 먼저 입력해주세요.')
+      return
+    }
+    setIsResending(true)
+    const result = await withAuthTimeout(
+      supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: emailConfirmRedirect(window.location.origin, nextPath) },
+      })
+    )
+    setIsResending(false)
+
+    if (!result || isAuthServerError(result.error)) {
+      toast.error(AUTH_TIMEOUT_MESSAGE)
+      return
+    }
+    if (result.error) {
+      const limited =
+        result.error.status === 429 || /rate limit|too many/i.test(result.error.message)
+      toast.error(
+        limited
+          ? '잠시 뒤 다시 시도해주세요. 메일 발송은 짧은 시간에 여러 번 할 수 없습니다.'
+          : '인증 메일을 보내지 못했습니다. 이메일을 확인하고 다시 시도해주세요.'
+      )
+      return
+    }
+    toast.success('인증 메일을 다시 보냈습니다. 스팸함도 확인해주세요.')
+    setCooldown(RESEND_COOLDOWN_SEC)
+  }
+
+  const resendButton = (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="mt-2"
+      onClick={handleResend}
+      disabled={isResending || cooldown > 0}
+    >
+      {isResending
+        ? '보내는 중...'
+        : cooldown > 0
+          ? `${cooldown}초 뒤 다시 보낼 수 있어요`
+          : '인증 메일 다시 보내기'}
+    </Button>
+  )
+
   async function onSubmit(data: LoginInput) {
     setIsLoading(true)
     setAuthError(null)
+    setNeedsConfirm(false)
     setNavStalled(false)
 
     const result = await withAuthTimeout(
@@ -108,6 +179,10 @@ export function LoginForm({
     const { error } = result
     if (error) {
       setAuthError(getAuthErrorMessage(error))
+      setNeedsConfirm(
+        error.code === 'email_not_confirmed' ||
+          error.message.toLowerCase().includes('email not confirmed')
+      )
       setIsLoading(false)
       return
     }
@@ -177,6 +252,11 @@ export function LoginForm({
           <MailCheck className="h-4 w-4" />
           <AlertDescription className="pr-6">
             가입한 이메일을 확인하고 인증을 완료해주세요. 인증 완료 후 로그인이 가능합니다.
+            <span className="mt-2 block text-sm text-muted-foreground">
+              메일이 오지 않으면 스팸함과 회사 메일 격리함을 확인하고, noreply@workdeck.work 를 수신
+              허용해주세요. 이미 가입했다면 그대로 로그인하거나 비밀번호 찾기를 이용해주세요.
+            </span>
+            {resendButton}
           </AlertDescription>
           <button
             onClick={() => setShowBanner(false)}
@@ -300,7 +380,10 @@ export function LoginForm({
             {authError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{authError}</AlertDescription>
+                <AlertDescription>
+                  {authError}
+                  {needsConfirm && <span className="block">{resendButton}</span>}
+                </AlertDescription>
               </Alert>
             )}
 
