@@ -298,7 +298,7 @@ export function realDeps(cfg, { noSlack }) {
     },
     gitleaks: (dir) => gitleaksScan(dir),
     // 호스트에서 git 을 쓰는 곳은 여기뿐 — 컨테이너가 만진 적 없는 새 클론에서만 실행한다
-    prepareSource: async ({ repoDir, baseDir }) => {
+    prepareSource: async ({ repoDir, baseDir, label }) => {
       const run = (args) => {
         const r = sh('git', args, { timeout: 300_000 })
         if (r.status !== 0) throw new Error(`git ${args[0]} 실패`)
@@ -306,6 +306,12 @@ export function realDeps(cfg, { noSlack }) {
       }
       run(['clone', '--quiet', '--depth', '1', '--branch', cfg.baseBranch, cfg.repoUrl, repoDir])
       const baseCommit = run(['-C', repoDir, 'rev-parse', 'HEAD'])
+      // 로그 라벨 위치 찾기: 호스트에서 고정 문자열 검색(셸 없음). 줄 본문은 버리고 path·line 만 남긴다
+      let labelHits
+      if (label) {
+        const g = sh('git', ['-C', repoDir, 'grep', '-n', '-F', '-e', label])
+        labelHits = g.status === 1 ? [] : g.status === 0 ? lib.parseGrepOutput(g.stdout) : null
+      }
       fs.mkdirSync(baseDir, { recursive: true })
       const ar = sh(
         'sh',
@@ -316,7 +322,7 @@ export function realDeps(cfg, { noSlack }) {
       )
       if (ar.status !== 0) throw new Error('git archive 실패')
       const corpus = loadCorpus(baseDir)
-      return { baseCommit, grep: (w) => corpus.includes(w) }
+      return { baseCommit, grep: (w) => corpus.includes(w), labelHits }
     },
     copyDir: (src, dst) => {
       if (sh('cp', ['-cR', src, dst], { timeout: 300_000 }).status !== 0) {
@@ -380,6 +386,18 @@ const writeJsonAtomic = (file, obj) => {
   const tmp = `${file}.${process.pid}.tmp`
   fs.writeFileSync(tmp, JSON.stringify(obj), { mode: 0o600 })
   fs.renameSync(tmp, file)
+}
+
+// 선정 결과 기록(제목·메시지 없이 shortId·상태·사유 코드만). 기록 실패는 run 을 막지 않는다
+function writeSelection(cfg, runId, results) {
+  try {
+    const dir = path.join(cfg.stateDir, 'runs', runId)
+    fs.mkdirSync(dir, { recursive: true, mode: 0o700 })
+    writeJsonAtomic(
+      path.join(dir, 'selection.json'),
+      results.map((r) => ({ shortId: r.shortId, status: r.status, reason: r.reasons?.[0] ?? null }))
+    )
+  } catch {}
 }
 
 // 공용 장애로 run 전체를 멈춘다(그 이슈의 실패로 기록하지 않는다)
@@ -690,8 +708,9 @@ export async function processIssue({ cfg, deps, runId, deadline, issue, event })
     reasons: [],
   }
   if (!/^[A-Za-z0-9-]{3,40}$/.test(facts.shortId)) return { ...res, reasons: ['bad-shortid'] }
-  if (!lib.hasUsableException(event))
-    return { ...res, status: 'insufficient', reasons: ['insufficient-no-exception-frame'] }
+  const cls = lib.classifyEvent(issue, event)
+  if (!cls.usable && !cls.label) return { ...res, status: 'insufficient', reasons: [cls.reason] }
+  let locator = null
 
   const safeId = facts.shortId
   const issueDir = path.join(cfg.stateDir, 'runs', runId, safeId)
@@ -711,7 +730,13 @@ export async function processIssue({ cfg, deps, runId, deadline, issue, event })
   let out
   try {
     out = await (async () => {
-      const prep = await deps.prepareSource({ repoDir: d.repo, baseDir: d.base })
+      const prep = await deps.prepareSource({ repoDir: d.repo, baseDir: d.base, label: cls.label })
+      if (!cls.usable) {
+        const j = lib.judgeLabelHits(prep.labelHits)
+        if (j.reason) return { ...res, status: 'insufficient', reasons: [j.reason] }
+        locator = j.locator
+        res.locator = true
+      }
       const rels = baseRel(d.base)
       const baseLower = new Set(rels.map((p) => p.toLowerCase()))
       // .env 류 파일이 export 에 있으면 중단(예시 파일 제외)
@@ -805,7 +830,12 @@ export async function processIssue({ cfg, deps, runId, deadline, issue, event })
         )
         fs.mkdirSync(A)
         for (const k of Object.keys(dirs)) fs.mkdirSync(dirs[k])
-        const context = lib.buildContext(facts, feedback)
+        const context = locator
+          ? lib.buildLocatorContext(
+              { shortId: facts.shortId, label: cls.label, ...locator, type: facts.type },
+              feedback
+            )
+          : lib.buildContext(facts, feedback)
         fs.writeFileSync(path.join(d.ctx, 'context.md'), context)
         fs.writeFileSync(path.join(d.ctx, 'prompt.md'), `${promptText('fix.md')}\n\n${context}`)
 
@@ -1446,10 +1476,12 @@ export async function runDaily({ argv, cfg, deps }) {
         writeJsonAtomic(failFile, failures)
       }
     }
+    writeSelection(cfg, runId, results)
     await pruneRuns(cfg, deps, runId)
     await report({})
     return { exitCode: 0, results, runId }
   } catch (e) {
+    writeSelection(cfg, runId, results)
     // 공용 장애는 고정 코드만 알린다(예외 메시지를 싣지 않는다)
     if (e instanceof AbortRun && /^[A-Za-z0-9-]{3,40}$/.test(e.shortId ?? '')) bump(e.shortId)
     await report({
