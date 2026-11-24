@@ -97,7 +97,7 @@ async function workerFetch(path: string, options: RequestInit = {}): Promise<Res
     ...(options.headers as Record<string, string> | undefined),
   }
 
-  const response = await fetch(url, { ...options, headers })
+  const response = await fetch(url, { signal: AbortSignal.timeout(60_000), ...options, headers })
 
   if (!response.ok) {
     const body = await response.text()
@@ -610,10 +610,11 @@ export async function ingestChannelOrders(
 export async function finishChannelOrders(
   body: ChannelOrdersFinish,
   apiKey?: string
-): Promise<void> {
-  await workerFetch('/api/collection/channel-orders/finish', {
+): Promise<{ accepted: boolean; status: string }> {
+  const response = await workerFetch('/api/collection/channel-orders/finish', {
     ...withKey(apiKey),
     method: 'POST',
     body: JSON.stringify(body),
   })
+  return response.json()
 }

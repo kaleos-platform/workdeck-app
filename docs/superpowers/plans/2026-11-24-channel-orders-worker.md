@@ -8,7 +8,7 @@
 
 ## 현재 상태(코드 대조)
 
-- 서버: plan GET/POST·ingest·finish 가 `naver`·`coupang` 어댑터를 이미 받는다(`WORKER_ADAPTERS`). 창 계획 `ADAPTER_WINDOW`(naver 1일 창·1시간 겹침, coupang 1일 창·3일 겹침), lease 15분, ingest 300행, 개인정보 키 strict 거부.
+- 서버: plan GET/POST·ingest·finish 가 `naver`·`coupang` 어댑터를 이미 받는다(`WORKER_ADAPTERS`). 창 계획 `ADAPTER_WINDOW`(naver 1일 창·1시간 겹침, coupang 1일 창·8일 겹침(증분이 전수 창 7일+1일을 다시 읽어 4~7일 된 주문의 상태 변화도 관측 — cafe24 와 같은 이유)), lease 15분, ingest 300행, 개인정보 키 strict 거부.
 - 키 수급이 비어 있다: plan 주석은 "기존 N배송 plan·api-credentials 경로를 쓴다"지만
   - N배송 plan 은 `daysToSync` 가 빈 스토어를 빼고 secrets 도 그 스토어만 내려준다 → N배송이 따라잡힌 시간대엔 키가 안 온다.
   - `api-credentials` 는 레거시 workspace 키(`WORKER_API_KEY`) 기준, channel-orders 는 Space 워커 토큰 기준 → 두 인증 범위가 다르다.
@@ -59,7 +59,7 @@
 - `runChannelOrders(kind)`: 토큰마다 `GET plan` → 채널마다 `POST plan {kind}` → 409·404 건너뜀 → 수집 → `finish`. 예외 시 `finish(success:false, errorCode)`, finish 409 는 로그만.
 - 오류 코드: 401/403·IP 미등록·토큰 실패 → `auth_error`, 구조 → `structure_invalid`, 기타 HTTP → `api_error`, ingest 409 → `lease_lost`, 마감 초과 → `timeout`.
 - **operation 마감 시한**: 시작 후 12분이 지나면 다음 페이지를 요청하지 않고 `finish(success:false, 'timeout')`(서버 lease 15분 전에 스스로 접음 — lease 연장 없음). 커서는 그대로라 다음 회차가 같은 창부터.
-- **예산 근거**: 쿠팡 일반 OBSERVE = 창 4(3일 겹침+당일) × 6 status ≈ 24호출 × 1.3초 ≈ 35초(+취소 4호출). 최초 backfill 14창 ≈ 84호출 ≈ 2분. FULL_SCAN 8창 × 6 ≈ 48호출 ≈ 1분. 네이버는 창 1~2개. 페이지가 늘어도 12분 안. 단계 0 에서 7일 페이지 수를 실측해 이 수치를 확인하고, 12분을 넘을 규모면 구현 전에 다시 설계한다. 최초 backfill 이 시한에 걸리면 `OBSERVE_MAX_WINDOWS` 를 워커가 줄일 수 없으니 — 서버 상수 조정이 필요하다는 것을 단계 0 결과로 판단.
+- **예산 근거**: 쿠팡 일반 OBSERVE = 창 9(8일 겹침+당일) × 6 status ≈ 54호출 × 1.3초 ≈ 70초(+취소 9호출). 최초 backfill 14창 ≈ 84호출 ≈ 2분. FULL_SCAN 8창 × 6 ≈ 48호출 ≈ 1분. 네이버는 창 1~2개. 페이지가 늘어도 12분 안. 단계 0 에서 7일 페이지 수를 실측해 이 수치를 확인하고, 12분을 넘을 규모면 구현 전에 다시 설계한다. 최초 backfill 이 시한에 걸리면 `OBSERVE_MAX_WINDOWS` 를 워커가 줄일 수 없으니 — 서버 상수 조정이 필요하다는 것을 단계 0 결과로 판단.
 - 스케줄(KST): OBSERVE `5,35 * * * *`. 일일 `30 8 * * *`·`30 17 * * *` — OBSERVE 후 FULL_SCAN(카페24 `runCafe24Daily` 순서). 네이버가 N배송(`:20`)과 겹쳐 `naverBusy` 면 1분 간격 재시도하되 **08:50/17:50 이후엔 시작하지 않는다**(대사 전 끝나야 의미). 못 돌면 대사는 기존 게이트로 「판정 불가」 → Slack 에 그대로 보임(조용히 성공 처리 안 됨).
 - 네이버 직렬화: 한 프로세스 공유 플래그 `naverBusy` 를 N배송 러너와 함께 쓴다.
 
@@ -76,7 +76,7 @@
 - 네이버 7일 결제 목록: 에이엠엘 7페이지 27행, 크림드 7페이지 3행.
 - 쿠팡 ordersheets: `data[]{shipmentBoxId:number, orderId:number, orderedAt, paidAt, status, deliveryCompanyName, invoiceNumber, inTrasitDateTime, deliveredDate, orderItems[]{vendorItemId:number, vendorItemName, sellerProductName, sellerProductItemName, shippingCount, cancelCount, holdCountForCancel, canceled:boolean, estimatedShippingDate}, orderer, receiver, overseaShippingInfoDto}`, `nextToken`. 7일 status 6종 × 7일 = 42페이지, 20건, **53초**(예산 충분).
   - 행 단위 취소 정보가 ordersheets 에 있다: `canceled=true` → `claimStatus='CANCEL'`, `cancelCount>0` → `quantity = shippingCount`(원문 유지) + `claimStatus='PARTIAL_CANCEL'`.
-- 쿠팡 취소 목록 `GET v6/.../returnRequests?searchType=timeFrame&createdAtFrom=yyyy-MM-ddT00:00&createdAtTo=…&cancelType=CANCEL`: 200, 7일 0건 → 항목 구조 미확인. 구현: `data` 배열 검증 + 항목에서 `orderId`·`returnItems[].vendorItemId`·`shipmentBoxId`(문서 필드) 가 없으면 `structure_invalid`(조용히 무시하지 않음). 첫 실건이 오면 구조 실패로 드러나므로 그때 매핑을 확정. 매칭: 항목의 `shipmentBoxId` 로 주문서 단건 `GET v4/vendors/{vendorId}/{shipmentBoxId}/ordersheets` 를 다시 읽어 일반 행 변환(`canceled`/`cancelCount` → claimStatus) 후 ingest. 취소 목록 1장 = 1페이지, 그 장의 단건 조회·ingest 가 모두 끝나야 `pagesIngested++`. 단건 404·구조 이상 → 페이지 실패. OBSERVE 에서만(FULL_SCAN 은 ordersheets 만).
+- 쿠팡 취소 목록 `GET v6/.../returnRequests?searchType=timeFrame&createdAtFrom=yyyy-MM-ddT00:00&createdAtTo=…&cancelType=CANCEL`: 200, 7일 0건 → 항목 구조 미확인. 구현: `data` 배열 검증 + 항목에 `orderId` 가 없으면 `structure_invalid`(조용히 무시하지 않음). 첫 실건이 오면 구조 실패로 드러나므로 그때 매핑을 확정. 매칭: 항목의 `orderId`(페이지 안 중복 제거)로 `GET v4/vendors/{vendorId}/{orderId}/ordersheets`(실측 200, data = 그 주문의 주문서 배열; 이 경로는 shipmentBoxId 가 아니라 orderId 를 받는다. `…/ordersheets/{shipmentBoxId}` 는 단일 객체)를 다시 읽어 모든 주문서를 일반 행 변환(`canceled`/`cancelCount` → claimStatus) 후 ingest. 취소 목록 1장 = 1페이지, 그 장의 단건 조회·ingest 가 모두 끝나야 `pagesIngested++`. 단건 404·구조 이상 → 페이지 실패. OBSERVE 에서만(FULL_SCAN 은 ordersheets 만).
   - 쿠팡 judge 금지 조건(§4)은 해제: 취소 목록 호출 가능 확인.
 
 ## 변경 파일

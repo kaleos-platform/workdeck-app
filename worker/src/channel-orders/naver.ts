@@ -26,7 +26,8 @@ export type NaverHttp = (
   method: 'GET' | 'POST',
   path: string,
   params?: Record<string, string>,
-  body?: unknown
+  body?: unknown,
+  timeoutMs?: number
 ) => Promise<unknown>
 
 const QUERY_CHUNK = 300
@@ -40,7 +41,7 @@ export function createNaverHttp(
   const doFetch = deps.fetch ?? fetch
   const wait = deps.sleep ?? sleep
   let first = true
-  return async (method, path, params, body) => {
+  return async (method, path, params, body, timeoutMs = 60_000) => {
     if (!first) await wait(RATE_LIMIT_MS)
     first = false
     const qs = params ? `?${new URLSearchParams(params)}` : ''
@@ -52,8 +53,10 @@ export function createNaverHttp(
           ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         },
         ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+        signal: AbortSignal.timeout(timeoutMs),
       })
       if (res.status === 429 && attempt < MAX_429_RETRIES) {
+        await res.body?.cancel()
         await wait(RATE_LIMIT_MS)
         continue
       }
@@ -194,7 +197,13 @@ export async function observeNaver(
       if (pages >= MAX_PAGES) throw new HttpError(0, '변경 목록 페이지 상한 초과')
       hooks.request()
       const { items, more } = parseStatusPage(
-        await http('GET', '/pay-order/seller/product-orders/last-changed-statuses', params)
+        await http(
+          'GET',
+          '/pay-order/seller/product-orders/last-changed-statuses',
+          params,
+          undefined,
+          hooks.timeoutMs?.()
+        )
       )
       const changed = new Map<string, string | null>()
       for (const it of items) changed.set(it.productOrderId, it.lastChangedDate)
@@ -204,13 +213,22 @@ export async function observeNaver(
         hooks.check()
         const chunk = ids.slice(i, i + QUERY_CHUNK)
         const got = parseQueryRows(
-          await http('POST', '/pay-order/seller/product-orders/query', undefined, {
-            productOrderIds: chunk,
-          }),
+          await http(
+            'POST',
+            '/pay-order/seller/product-orders/query',
+            undefined,
+            { productOrderIds: chunk },
+            hooks.timeoutMs?.()
+          ),
           changed
         )
-        if (got.length < chunk.length)
-          throw new StructureError('query 응답 건수가 요청보다 적습니다')
+        // 건수 비교는 중복 행이 누락을 가린다 — 요청 id 집합과 응답 키 집합이 정확히 같아야 한다.
+        const asked = new Set(chunk)
+        const gotKeys = new Set(got.map((r) => r.externalLineKey))
+        const missing = chunk.filter((id) => !gotKeys.has(id)).length
+        const extra = got.filter((r) => !asked.has(r.externalLineKey)).length
+        if (missing > 0 || extra > 0)
+          throw new StructureError(`query 응답 불일치(누락 ${missing}건, 요청 외 ${extra}건)`)
         rows.push(...got)
       }
       await hooks.page(rows)
@@ -231,12 +249,18 @@ export async function scanNaver(http: NaverHttp, windows: TimeWindow[], hooks: H
       if (page > MAX_PAGES) throw new HttpError(0, '결제일 목록 페이지 상한 초과')
       hooks.request()
       const { lines, hasNext } = parseScanPage(
-        await http('GET', '/pay-order/seller/product-orders', {
-          from: kstOffset(w.from),
-          to: kstOffset(w.to),
-          rangeType: 'PAYED_DATETIME',
-          page: String(page),
-        })
+        await http(
+          'GET',
+          '/pay-order/seller/product-orders',
+          {
+            from: kstOffset(w.from),
+            to: kstOffset(w.to),
+            rangeType: 'PAYED_DATETIME',
+            page: String(page),
+          },
+          undefined,
+          hooks.timeoutMs?.()
+        )
       )
       await hooks.page(lines)
       if (!hasNext) break

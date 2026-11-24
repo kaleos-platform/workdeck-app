@@ -90,7 +90,10 @@ function makeDeps(
       }
     },
     ingest: async (b) => void fake.ingests.push(b),
-    finish: async (b) => void fake.finishes.push(b),
+    finish: async (b) => {
+      fake.finishes.push(b)
+      return { accepted: true, status: b.success ? 'SUCCEEDED' : 'FAILED' }
+    },
     getApiCredential: async () => ({
       vendorId: 'A001',
       accessKey: 'AK',
@@ -224,6 +227,32 @@ describe('runChannelOrders — 네이버', () => {
       pagesRequested: 1,
       pagesIngested: 1,
     })
+  })
+  it('finish 가 accepted/SUCCEEDED 가 아니면 ok 로 세지 않고 로그에 서버 결과를 남긴다', async () => {
+    const { deps, fake } = makeDeps({
+      finish: async () => ({ accepted: false, status: 'FAILED' }),
+    })
+    const r = await runChannelOrders('OBSERVE', undefined, deps)
+    expect(r.ok).toBe(0)
+    expect(r.failed).toBe(1)
+    expect(fake.logs.join('\n')).toContain('status=FAILED accepted=false')
+  })
+  it('요청 제한 시간 초과(AbortError): 시한 전이면 api_error, 시한 후면 timeout', async () => {
+    for (const [late, code] of [
+      [false, 'api_error'],
+      [true, 'timeout'],
+    ] as const) {
+      let t = 0
+      const { deps, fake } = makeDeps({
+        now: () => t,
+        naverHttp: async () => async () => {
+          if (late) t += 13 * 60_000
+          throw new DOMException('aborted', 'TimeoutError')
+        },
+      })
+      await runChannelOrders('OBSERVE', undefined, deps)
+      expect(fake.finishes[0]).toMatchObject({ success: false, errorCode: code })
+    }
   })
   it('start 409(busy)·404 → 건너뜀, finish 없음', async () => {
     for (const status of [409, 404]) {

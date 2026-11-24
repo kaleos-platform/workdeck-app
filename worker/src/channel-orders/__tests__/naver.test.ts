@@ -185,6 +185,27 @@ describe('observeNaver', () => {
   })
 })
 
+describe('observeNaver query 집합 검증', () => {
+  const mk =
+    (ret: string[]): NaverHttp =>
+    async (_m, path) =>
+      path.endsWith('last-changed-statuses')
+        ? { ...TRACE, data: { lastChangeStatuses: [statusRow('A'), statusRow('B')] } }
+        : { ...TRACE, data: ret.map((id) => queryRow(id)) }
+  it('하나 누락(다른 행 중복으로 건수만 맞음)이면 실패, 메시지에 id 없음', async () => {
+    const { h, pages } = hooks<OrderLine>()
+    const err = await observeNaver(mk(['A', 'A']), W, h).catch((e) => e)
+    expect(err).toBeInstanceOf(StructureError)
+    expect(err.message).not.toMatch(/[AB]\b.*id/)
+    expect(err.message).toContain('누락 1건')
+    expect(pages).toHaveLength(0)
+  })
+  it('요청하지 않은 id 가 오면 실패', async () => {
+    const { h } = hooks<OrderLine>()
+    await expect(observeNaver(mk(['A', 'B', 'Z']), W, h)).rejects.toThrow(StructureError)
+  })
+})
+
 describe('scanNaver', () => {
   it('hasNext 동안 페이지를 넘기고 ScanLine 을 만든다', async () => {
     const http: NaverHttp = async (_m, _p, params) => ({

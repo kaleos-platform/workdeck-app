@@ -96,15 +96,10 @@ describe('쿠팡 행 변환', () => {
     expect(() => parseSheet(sheet(3, [{}], { status: undefined }))).toThrow(StructureError)
   })
   it('취소 목록: 문서 필드가 없으면 조용히 무시하지 않고 실패', () => {
-    expect(parseCancelPage({ data: [] })).toEqual({ boxIds: [], next: null })
+    expect(parseCancelPage({ data: [] })).toEqual({ orderIds: [], next: null })
     expect(
-      parseCancelPage({
-        data: [{ orderId: 1, returnItems: [{ vendorItemId: 2, shipmentBoxId: 3 }] }],
-      }).boxIds
-    ).toEqual(['3'])
-    expect(() =>
-      parseCancelPage({ data: [{ orderId: 1, returnItems: [{ vendorItemId: 2 }] }] })
-    ).toThrow(StructureError)
+      parseCancelPage({ data: [{ orderId: 1 }, { orderId: 1 }, { orderId: 2 }] }).orderIds
+    ).toEqual(['1', '2'])
     expect(() => parseCancelPage({ data: [{ returnItems: [] }] })).toThrow(StructureError)
     expect(() => parseCancelPage({})).toThrow(StructureError)
   })
@@ -137,23 +132,26 @@ describe('observeCoupang / scanCoupang', () => {
     expect(seen[0]).toBe('ACCEPT:2026-11-24~2026-11-24:')
     expect(seen[1]).toBe('ACCEPT:2026-11-24~2026-11-24:T2')
   })
-  it('취소 목록 → 주문서 단건 재조회 후 한 페이지로 ingest', async () => {
+  it('취소 목록 → orderId 로 재조회(중복 제거) 후 한 페이지로 ingest', async () => {
+    const calls: string[] = []
     const get = route((path) => {
-      if (path.endsWith('returnRequests'))
-        return { data: [{ orderId: 5, returnItems: [{ vendorItemId: 7000, shipmentBoxId: 55 }] }] }
-      if (path.endsWith('/55/ordersheets')) return { data: [sheet(55, [{ canceled: true }])] }
+      if (path.endsWith('returnRequests')) return { data: [{ orderId: 5 }, { orderId: 5 }] }
+      if (path.endsWith('/5/ordersheets')) {
+        calls.push(path)
+        return { data: [sheet(55, [{ canceled: true }])] }
+      }
       return undefined
     })
     const { h, pages } = hooks<OrderLine>()
     await observeCoupang(get, 'A001', W, h)
     const last = pages.at(-1)!
     expect(last.map((r) => [r.externalLineKey, r.claimStatus])).toEqual([['55:7000', 'CANCEL']])
+    expect(calls).toHaveLength(1)
   })
   it('취소 단건 결과 없음 → 실패(그 페이지는 적재 안 됨)', async () => {
     const get = route((path) => {
-      if (path.endsWith('returnRequests'))
-        return { data: [{ orderId: 5, returnItems: [{ vendorItemId: 7000, shipmentBoxId: 55 }] }] }
-      if (path.endsWith('/55/ordersheets')) return { data: [] }
+      if (path.endsWith('returnRequests')) return { data: [{ orderId: 5 }] }
+      if (path.endsWith('/5/ordersheets')) return { data: [] }
       return undefined
     })
     const { h, pages } = hooks<OrderLine>()

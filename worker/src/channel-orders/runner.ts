@@ -25,6 +25,7 @@ import {
   type Hooks,
   type OrderLine,
   type ScanLine,
+  type TimeWindow,
 } from './common.js'
 import { observeCoupang, scanCoupang, type CoupangGet } from './coupang.js'
 import { createNaverHttp, observeNaver, scanNaver, type NaverHttp } from './naver.js'
@@ -65,7 +66,7 @@ const defaultDeps: ChannelOrdersDeps = {
   naverHttp: async (secret) => createNaverHttp(await issueToken(secret)),
   coupangGet: (cfg) => {
     const client = new CoupangApiClient(cfg)
-    return (path, query) => client.get(path, query)
+    return (path, query, timeoutMs) => client.get(path, query, timeoutMs)
   },
   now: () => Date.now(),
   deadlineMs: DEADLINE_MS,
@@ -134,13 +135,15 @@ async function runOne(
   }
 
   const deadline = d.now() + d.deadlineMs
-  const windows = start.windows
+  let windows: TimeWindow[] = []
   const count = { requested: 0, ingested: 0, rows: 0 }
   const check = () => {
     if (d.now() >= deadline) throw new DeadlineError()
   }
   const hooks: Hooks<unknown> = {
     check,
+    // 외부 요청 1건 = min(60초, 남은 시한). 이미 지났으면 최소 1ms 로 곧 중단시킨다.
+    timeoutMs: () => Math.max(1, Math.min(60_000, deadline - d.now())),
     request: () => {
       check()
       count.requested++
@@ -159,6 +162,7 @@ async function runOne(
 
   let error: unknown
   try {
+    windows = Array.isArray(start.windows) ? start.windows : []
     if (item.adapter === 'naver') {
       if (!start.secret) throw new AuthError('네이버 자격증명을 받지 못했습니다')
       let http: NaverHttp
@@ -177,16 +181,31 @@ async function runOne(
       else await scanCoupang(get, vendorId, windows, hooks as Hooks<ScanLine>)
     }
   } catch (e) {
-    error = e
+    // 요청 제한 시간 초과(AbortSignal.timeout) — 시한이 지났으면 timeout, 아니면 외부 API 오류.
+    const name = (e as { name?: string } | null)?.name
+    const aborted = name === 'TimeoutError' || name === 'AbortError'
+    error = aborted
+      ? d.now() >= deadline
+        ? new DeadlineError()
+        : new HttpError(0, '외부 요청 제한 시간 초과')
+      : e
   }
 
   const errorCode = error ? errorCodeOf(error) : undefined
   const success = !error && windows.length > 0
-  if (error) d.log(`${tag} 실패(${errorCode}): ${msg(error)}`)
-  else d.log(`${tag} 완료 pages=${count.ingested} rows=${count.rows}`)
+  // CoupangApiError 의 message 는 본문을 담지 않지만 방어적으로 status/reason 만 남긴다.
+  if (error)
+    d.log(
+      `${tag} 실패(${errorCode}): ${
+        error instanceof CoupangApiError
+          ? `coupang status=${error.status} reason=${error.reason}`
+          : msg(error)
+      }`
+    )
   const nowIso = new Date(d.now()).toISOString()
+  let result: { accepted: boolean; status: string }
   try {
-    await d.finish(
+    result = await d.finish(
       kind === 'OBSERVE'
         ? {
             operationId: start.operationId,
@@ -213,7 +232,12 @@ async function runOne(
     d.log(`${tag} finish 실패: ${msg(e)}`) // 409(만료·이미 마감)도 로그만
     return 'failed'
   }
-  return success ? 'ok' : 'failed'
+  const ok = success && result.accepted && result.status === 'SUCCEEDED'
+  if (!error)
+    d.log(
+      `${tag} ${ok ? '완료' : '종료'} status=${result.status} accepted=${result.accepted} pages=${count.ingested} rows=${count.rows}`
+    )
+  return ok ? 'ok' : 'failed'
 }
 
 /**

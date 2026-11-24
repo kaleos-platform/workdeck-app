@@ -67,6 +67,8 @@ export type Hooks<L> = {
   request: () => void
   /** 외부 하위 요청(단건 조회 등) 직전 마감 시한만 확인. */
   check: () => void
+  /** 외부 요청 1건의 제한 시간(ms) = min(60초, 남은 마감 시한). 없으면 클라이언트 기본값. */
+  timeoutMs?: () => number
   /** 그 페이지의 행 전부 ingest(빈 페이지도 1회) 후 pagesIngested++. */
   page: (lines: L[]) => Promise<void>
 }

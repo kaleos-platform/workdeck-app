@@ -18,7 +18,8 @@ import {
 
 export type CoupangGet = (
   path: string,
-  query?: Record<string, string | number | undefined>
+  query?: Record<string, string | number | undefined>,
+  timeoutMs?: number
 ) => Promise<unknown>
 
 export const COUPANG_STATUSES = [
@@ -98,7 +99,7 @@ async function eachSheetPage(
   get: CoupangGet,
   vendorId: string,
   windows: TimeWindow[],
-  request: () => void,
+  hooks: Pick<Hooks<unknown>, 'request' | 'timeoutMs'>,
   onRows: (rows: OrderLine[]) => Promise<void>
 ) {
   for (const w of windows) {
@@ -108,15 +109,19 @@ async function eachSheetPage(
       let token: string | null = null
       for (let pages = 0; ; pages++) {
         if (pages >= MAX_PAGES) throw new StructureError('nextToken 이 끝나지 않습니다')
-        request()
+        hooks.request()
         const { data, next } = listPage(
-          await get(`${API}/v4/vendors/${vendorId}/ordersheets`, {
-            createdAtFrom,
-            createdAtTo,
-            status,
-            maxPerPage: 50,
-            nextToken: token ?? undefined,
-          })
+          await get(
+            `${API}/v4/vendors/${vendorId}/ordersheets`,
+            {
+              createdAtFrom,
+              createdAtTo,
+              status,
+              maxPerPage: 50,
+              nextToken: token ?? undefined,
+            },
+            hooks.timeoutMs?.()
+          )
         )
         await onRows(data.flatMap(parseSheet))
         if (!next) break
@@ -126,22 +131,12 @@ async function eachSheetPage(
   }
 }
 
-/** 취소 목록 한 장 → 다시 읽을 shipmentBoxId 들. 문서 필드가 없으면 구조 오류(조용히 무시하지 않는다). */
-export function parseCancelPage(body: unknown): { boxIds: string[]; next: string | null } {
+/** 취소 목록 한 장 → 다시 읽을 orderId 들. orderId 가 없으면 구조 오류(조용히 무시하지 않는다). */
+export function parseCancelPage(body: unknown): { orderIds: string[]; next: string | null } {
   const { data, next } = listPage(body)
   const ids = new Set<string>()
-  for (const raw of data) {
-    const r = rec(raw)
-    reqText(r?.orderId, 'cancel.orderId')
-    if (!Array.isArray(r?.returnItems) || r.returnItems.length === 0)
-      throw new StructureError('cancel.returnItems 없음')
-    for (const it of r.returnItems) {
-      const item = rec(it)
-      reqText(item?.vendorItemId, 'cancel.vendorItemId')
-      ids.add(reqText(item?.shipmentBoxId ?? r.shipmentBoxId, 'cancel.shipmentBoxId'))
-    }
-  }
-  return { boxIds: [...ids], next }
+  for (const raw of data) ids.add(reqText(rec(raw)?.orderId, 'cancel.orderId'))
+  return { orderIds: [...ids], next }
 }
 
 export async function observeCoupang(
@@ -150,35 +145,41 @@ export async function observeCoupang(
   windows: TimeWindow[],
   hooks: Hooks<OrderLine>
 ) {
-  await eachSheetPage(get, vendorId, windows, hooks.request, (rows) => hooks.page(rows))
-  // 취소: 목록 한 장 = 1페이지. 그 장의 주문서 단건 재조회·ingest 가 끝나야 적재 1로 센다.
+  await eachSheetPage(get, vendorId, windows, hooks, (rows) => hooks.page(rows))
+  // 취소: 목록 한 장 = 1페이지. 그 장의 주문 재조회·ingest 가 끝나야 적재 1로 센다.
   for (const w of windows) {
     let token: string | null = null
     for (let pages = 0; ; pages++) {
       if (pages >= MAX_PAGES) throw new StructureError('취소 목록 nextToken 이 끝나지 않습니다')
       hooks.request()
-      const { boxIds, next } = parseCancelPage(
-        await get(`${API}/v6/vendors/${vendorId}/returnRequests`, {
-          searchType: 'timeFrame',
-          createdAtFrom: `${kstDay(w.from)}T00:00`,
-          createdAtTo: `${kstDay(Date.parse(w.to) - 1)}T23:59`,
-          cancelType: 'CANCEL',
-          nextToken: token ?? undefined,
-        })
+      const { orderIds, next } = parseCancelPage(
+        await get(
+          `${API}/v6/vendors/${vendorId}/returnRequests`,
+          {
+            searchType: 'timeFrame',
+            createdAtFrom: `${kstDay(w.from)}T00:00`,
+            createdAtTo: `${kstDay(Date.parse(w.to) - 1)}T23:59`,
+            cancelType: 'CANCEL',
+            nextToken: token ?? undefined,
+          },
+          hooks.timeoutMs?.()
+        )
       )
       const rows: OrderLine[] = []
-      for (const box of boxIds) {
+      for (const orderId of orderIds) {
         hooks.check()
-        const body = rec(await get(`${API}/v4/vendors/${vendorId}/${box}/ordersheets`))
-        // 단건 응답의 data 는 배열이거나 주문서 객체 하나다.
-        const data = Array.isArray(body?.data)
-          ? body.data
-          : body && rec(body.data)
-            ? [body.data]
-            : null
-        if (!data) throw new StructureError('단건 data 형태 이상')
-        if (data.length === 0) throw new StructureError('취소 주문서 단건 조회 결과 없음')
-        rows.push(...data.flatMap(parseSheet))
+        // 이 경로는 shipmentBoxId 가 아니라 orderId 를 받고, data 는 그 주문의 주문서 배열이다.
+        const body = rec(
+          await get(
+            `${API}/v4/vendors/${vendorId}/${orderId}/ordersheets`,
+            undefined,
+            hooks.timeoutMs?.()
+          )
+        )
+        if (!body || !Array.isArray(body.data))
+          throw new StructureError('주문 재조회 data 형태 이상')
+        if (body.data.length === 0) throw new StructureError('취소 주문 재조회 결과 없음')
+        rows.push(...body.data.flatMap(parseSheet))
       }
       await hooks.page(rows)
       if (!next) break
@@ -193,5 +194,5 @@ export async function scanCoupang(
   windows: TimeWindow[],
   hooks: Hooks<ScanLine>
 ) {
-  await eachSheetPage(get, vendorId, windows, hooks.request, (rows) => hooks.page(rows.map(toScan)))
+  await eachSheetPage(get, vendorId, windows, hooks, (rows) => hooks.page(rows.map(toScan)))
 }
