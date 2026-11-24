@@ -93,7 +93,7 @@ test('가입 — signup_next 를 싣고, 이미 가입 여부를 구분하지 �
     fireEvent.change(input, { target: { value: 'Password1!' } })
   }
   await click('회원가입')
-  expect(auth.signUp.mock.calls[0][0].options.data.signup_next).toBe('/d/abc?x=1')
+  expect(auth.signUp.mock.calls[0][0].options.data.signup_next).toBe('%2Fd%2Fabc%3Fx%3D1')
   expect(push).toHaveBeenCalledWith(expect.stringContaining('verified=pending'))
   expect(sessionStorage.getItem('wd:pending-email')).toBe('user@example.com')
 })
