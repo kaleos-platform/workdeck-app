@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { writeAuditLog } from '@/lib/admin/auth'
@@ -53,9 +54,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
     })
   }
 
+  // 이미 워크덱을 쓰는 계정이면 링크를 만들지 않는다 — 만들면 그 사람의 비밀번호 재설정 링크가 무효가 된다.
+  const appUser = await prisma.user.findFirst({
+    where: { email: { equals: fresh.email, mode: 'insensitive' } },
+    select: { id: true },
+  })
+  if (appUser) {
+    return errorResponse('이미 워크덱 계정이 있습니다. 로그인해서 참여하세요', 409, {
+      reason: 'registered',
+    })
+  }
+
   const admin = getSupabaseAdminClient().auth.admin
   const email = fresh.email
   const invitePath = `/invite/${token}`
+  const startedAt = Date.now()
   let linkType: 'invite' | 'magiclink' = 'invite'
   let { data: link, error } = await admin.generateLink({
     type: 'invite',
@@ -63,16 +76,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
     options: { data: { invite_path: invitePath } },
   })
   if (error && isEmailExistsError(error)) {
-    // 이미 인증된 사용자 — 앱 계정이 있으면 로그인을 요구하고, 없을 때만 로그인 링크를 보낸다.
-    const mail = await admin.generateLink({ type: 'magiclink', email })
-    const existing = mail.data?.user
-    if (existing && (await prisma.user.findUnique({ where: { id: existing.id } }))) {
-      return errorResponse('이미 워크덱 계정이 있습니다. 로그인해서 참여하세요', 409, {
-        reason: 'registered',
-      })
-    }
+    // 인증은 됐지만 앱 계정이 없는 사용자(초대 링크를 보안 장비가 먼저 써 버린 경우 등) — 로그인 링크.
     linkType = 'magiclink'
-    ;({ data: link, error } = mail)
+    ;({ data: link, error } = await admin.generateLink({ type: 'magiclink', email }))
+  } else if (!error && link?.user && Date.parse(link.user.created_at) < startedAt - 60_000) {
+    // 이전부터 있던 미인증 계정 — 남이 미리 정해 둔 비밀번호가 인증 뒤 살아남지 않게 무효화한다.
+    // 비밀번호는 인증 후 초대 화면(needs_password)에서 새로 정한다.
+    const { error: resetError } = await admin.updateUserById(link.user.id, {
+      password: randomBytes(32).toString('base64url'),
+    })
+    if (resetError) {
+      console.error('[invite-signup] 기존 미인증 비밀번호 무효화 실패', { code: resetError.code })
+      return sendFailed()
+    }
   }
   const hashedToken = link?.properties?.hashed_token
   if (error || !hashedToken) {
@@ -99,7 +115,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
     return sendFailed()
   }
   // 발송에 성공했을 때만 제한 기록을 남긴다. 소유자의 sendCount/lastSentAt 은 건드리지 않는다.
-  await writeAuditLog('anonymous', ACTION, 'space_invitation', inv.id)
+  try {
+    await writeAuditLog('anonymous', ACTION, 'space_invitation', inv.id)
+  } catch (e) {
+    // 메일은 이미 나갔다 — 기록 실패로 사용자에게 오류를 보이지 않는다.
+    console.error('[invite-signup] 발송 기록 실패', {
+      error: e instanceof Error ? e.message : 'unknown',
+    })
+  }
   return NextResponse.json({ sent: true })
 }
 

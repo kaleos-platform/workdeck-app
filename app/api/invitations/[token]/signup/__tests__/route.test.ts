@@ -4,7 +4,7 @@ jest.mock('@/lib/domain', () => ({ getAppOrigin: () => 'https://app.test' }))
 jest.mock('@/lib/hiring/applications', () => ({ checkRateLimit: jest.fn() }))
 jest.mock('@/lib/hiring/public-request', () => ({ publicRequestKey: () => 'ip' }))
 jest.mock('@/lib/prisma', () => ({
-  prisma: { adminAuditLog: { count: jest.fn() }, user: { findUnique: jest.fn() } },
+  prisma: { adminAuditLog: { count: jest.fn() }, user: { findFirst: jest.fn() } },
 }))
 jest.mock('@/lib/spaces/invite-signup-email', () => ({ sendInviteSignupEmail: jest.fn() }))
 jest.mock('@/lib/spaces/invitations', () => {
@@ -12,8 +12,9 @@ jest.mock('@/lib/spaces/invitations', () => {
   return { ...actual, findInvitationByToken: jest.fn() }
 })
 const generateLink = jest.fn()
+const updateUserById = jest.fn()
 jest.mock('@/lib/supabase/admin', () => ({
-  getSupabaseAdminClient: () => ({ auth: { admin: { generateLink } } }),
+  getSupabaseAdminClient: () => ({ auth: { admin: { generateLink, updateUserById } } }),
 }))
 
 import { writeAuditLog } from '@/lib/admin/auth'
@@ -37,8 +38,8 @@ const inv = {
 }
 const call = (email = 'Invitee@Example.com') =>
   POST(new Request('https://x', { method: 'POST', body: JSON.stringify({ email }) }), params)
-const ok = (type: string) => ({
-  data: { user: { id: 'au-1' }, properties: { hashed_token: 'HASH' } },
+const ok = (type: string, createdAt = new Date().toISOString()) => ({
+  data: { user: { id: 'au-1', created_at: createdAt }, properties: { hashed_token: 'HASH' } },
   error: null,
   type,
 })
@@ -54,6 +55,7 @@ beforeEach(() => {
   ;(prisma.adminAuditLog.count as jest.Mock).mockResolvedValue(0)
   ;(sendInviteSignupEmail as jest.Mock).mockResolvedValue(true)
   generateLink.mockResolvedValue(ok('invite'))
+  updateUserById.mockResolvedValue({ data: {}, error: null })
 })
 
 it('이메일이 다르면 400 email_mismatch, 응답에 원문 없음', async () => {
@@ -119,19 +121,18 @@ it('신규/미인증 사용자는 invite 링크로 발송하고 감사 기록을
   )
 })
 
-it('인증된 사용자 + 앱 User 행 있음 → 409 registered, 발송 안 함', async () => {
-  generateLink.mockResolvedValueOnce(existsError).mockResolvedValueOnce(ok('magiclink'))
-  ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'au-1' })
+it('앱 User 행 있음 → 409 registered, 링크도 만들지 않음', async () => {
+  ;(prisma.user.findFirst as jest.Mock).mockResolvedValue({ id: 'au-1' })
   const res = await call()
   expect(res.status).toBe(409)
   expect((await res.json()).reason).toBe('registered')
   expect(sendInviteSignupEmail).not.toHaveBeenCalled()
   expect(writeAuditLog).not.toHaveBeenCalled()
+  expect(generateLink).not.toHaveBeenCalled()
 })
 
 it('인증된 사용자 + 앱 User 행 없음 → magiclink 로 발송', async () => {
   generateLink.mockResolvedValueOnce(existsError).mockResolvedValueOnce(ok('magiclink'))
-  ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
   const res = await call()
   expect(res.status).toBe(200)
   expect(generateLink.mock.calls[1][0]).toEqual({ type: 'magiclink', email: 'invitee@example.com' })
@@ -152,4 +153,31 @@ it('메일 발송 실패는 502, 제한 기록을 남기지 않는다', async ()
   expect(res.status).toBe(502)
   expect((await res.json()).reason).toBe('send_failed')
   expect(writeAuditLog).not.toHaveBeenCalled()
+})
+
+it('이전부터 있던 미인증 계정이면 비밀번호를 무작위로 무효화한 뒤 발송', async () => {
+  generateLink.mockResolvedValue(ok('invite', new Date(Date.now() - 86_400_000).toISOString()))
+  const res = await call()
+  expect(res.status).toBe(200)
+  expect(updateUserById).toHaveBeenCalledWith('au-1', { password: expect.any(String) })
+})
+
+it('방금 만든 계정이면 비밀번호를 건드리지 않음', async () => {
+  const res = await call()
+  expect(res.status).toBe(200)
+  expect(updateUserById).not.toHaveBeenCalled()
+})
+
+it('비밀번호 무효화 실패 시 발송하지 않고 502', async () => {
+  generateLink.mockResolvedValue(ok('invite', new Date(Date.now() - 86_400_000).toISOString()))
+  updateUserById.mockResolvedValue({ data: null, error: { code: 'x' } })
+  const res = await call()
+  expect(res.status).toBe(502)
+  expect(sendInviteSignupEmail).not.toHaveBeenCalled()
+})
+
+it('발송 기록 실패해도 200', async () => {
+  ;(writeAuditLog as jest.Mock).mockRejectedValue(new Error('db'))
+  const res = await call()
+  expect(res.status).toBe(200)
 })
