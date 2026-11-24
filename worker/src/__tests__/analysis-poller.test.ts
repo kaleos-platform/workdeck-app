@@ -100,6 +100,15 @@ test('최종 실패 → FAILED 저장 + 키 오류 알림, 같은 날 두 번째
   expect(notify).toHaveBeenCalledTimes(1) // 알림은 하루 1회
 })
 
+test('실제 합친 오류(flash 503 → pro 402 → Ollama 실패)도 키 오류 알림', async () => {
+  mockFetch({ flash: 503, pro: 402, ollama: 500 })
+  const err = await callAnalysisAI('sys', 'user').catch((e: unknown) => e)
+  await handleAnalysisFailure('r4', 'ws-mixed', err)
+  expect(notify).toHaveBeenCalledWith(
+    expect.objectContaining({ workspaceId: 'ws-mixed', geminiKeyError: true })
+  )
+})
+
 test('FAILED 저장이 실패해도 알림은 보낸다', async () => {
   mockFetch({ complete: 500 })
   await handleAnalysisFailure('r3', 'ws-save-fail', new Error('Gemini [500]: down'))

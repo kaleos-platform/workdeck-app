@@ -187,8 +187,10 @@ export function isGeminiKeyError(message: string): boolean {
     /API key (not valid|expired)|API_KEY_INVALID/.test(message)
   )
     return true
-  const status = Number(message.match(/Gemini \[(\d{3})\]/)?.[1])
-  return status === 401 || status === 402 || status === 403
+  // 합친 오류("flash: Gemini [503] / pro: Gemini [402] / ...")에서도 잡히게 모든 상태 코드를 본다.
+  return [...message.matchAll(/Gemini \[(\d{3})\]/g)].some((m) =>
+    ['401', '402', '403'].includes(m[1])
+  )
 }
 
 const errMsg = (err: unknown) => (err instanceof Error ? err.message : String(err))
@@ -444,13 +446,15 @@ export function startAnalysisPoller(): void {
           console.error(
             `[analysis-poller] 컨텍스트 빌드 실패 [${runRes.status}]: ${body.slice(0, 200)}`
           )
-          // /run 이 claim 후 빌드에 실패하면 서버가 이미 FAILED 로 저장하고 { status: 'FAILED' } 를 준다 — 알림만.
-          // (claim 실패 409 등은 다른 워커가 처리 중이므로 알리지 않는다)
-          if (body.includes('"FAILED"')) {
-            await alertAnalysisProblem({
-              error: `컨텍스트 빌드 실패: ${body.slice(0, 200)}`,
+          // 404 = claim 실패(다른 워커가 이미 가져감) — 알리지 않는다.
+          // 그 밖(빌드 실패 500·게이트웨이 타임아웃 등)은 claim 뒤라 PROCESSING 에 묶일 수 있어 FAILED 저장+알림.
+          // 서버가 이미 FAILED 로 저장했으면 /complete 는 404 로 끝나 무해하다.
+          if (runRes.status !== 404) {
+            await handleAnalysisFailure(
+              reportId,
               workspaceId,
-            })
+              new Error(`컨텍스트 빌드 실패 [${runRes.status}]: ${body.slice(0, 200)}`)
+            )
           }
           return
         }
@@ -520,6 +524,10 @@ export function startAnalysisPoller(): void {
           console.error(
             `[analysis-poller] 결과 저장 실패 [${completeRes.status}]: ${body.slice(0, 200)}`
           )
+          await alertAnalysisProblem({
+            error: `분석은 끝났지만 결과 저장 실패 [${completeRes.status}]: ${body.slice(0, 150)}`,
+            workspaceId,
+          })
         }
       } catch (err) {
         console.error(`[analysis-poller] 분석 실행 에러: ${reportId}`, err)
