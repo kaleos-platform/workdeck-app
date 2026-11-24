@@ -72,9 +72,11 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/** 워커는 한 프로세스 — 수집·쓰기 폴러·주문 관측이 인스턴스가 달라도 같은 호출 간격을 공유한다. */
+let lastCallAt = 0
+
 export class CoupangApiClient {
   private readonly cfg: CoupangApiConfig
-  private lastCallAt = 0
 
   constructor(cfg: CoupangApiConfig) {
     this.cfg = cfg
@@ -82,18 +84,21 @@ export class CoupangApiClient {
 
   /** 분당 50회 제한 대응 — 직전 호출로부터 최소 MIN_INTERVAL_MS 가 지날 때까지 대기. */
   private async throttle(): Promise<void> {
-    const elapsed = Date.now() - this.lastCallAt
-    if (elapsed < MIN_INTERVAL_MS) {
-      await sleep(MIN_INTERVAL_MS - elapsed)
-    }
-    this.lastCallAt = Date.now()
+    // 슬롯을 동기로 예약해 동시 호출이 같은 간격을 보지 않게 한다.
+    const wait = Math.max(0, lastCallAt + MIN_INTERVAL_MS - Date.now())
+    lastCallAt = Date.now() + wait
+    await sleep(wait)
   }
 
   /**
    * GET 호출. 서명 + X-Requested-By 헤더를 부착하고, 429는 지수 백오프로 최대 MAX_RETRIES 회
    * 재시도한다. IP 거부 등 다른 실패는 즉시 CoupangApiError 로 던진다.
    */
-  async get<T>(path: string, query?: Record<string, string | number | undefined>): Promise<T> {
+  async get<T>(
+    path: string,
+    query?: Record<string, string | number | undefined>,
+    timeoutMs = 60_000
+  ): Promise<T> {
     const queryStr = buildQueryString(query)
     const url = `${COUPANG_API_BASE}${path}${queryStr ? `?${queryStr}` : ''}`
 
@@ -116,6 +121,7 @@ export class CoupangApiClient {
           Authorization: authorization,
           'X-Requested-By': this.cfg.vendorId,
         },
+        signal: AbortSignal.timeout(timeoutMs),
       })
 
       if (response.ok) {
