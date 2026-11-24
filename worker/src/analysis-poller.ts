@@ -558,10 +558,13 @@ export function startAnalysisPoller(): void {
           console.error(
             `[analysis-poller] 결과 저장 실패 [${completeRes.status}]: ${body.slice(0, 200)}`
           )
-          await alertAnalysisProblem({
-            error: `분석은 끝났지만 결과 저장 실패 [${completeRes.status}]: ${body.slice(0, 150)}`,
-            workspaceId,
-          })
+          // 404 = 분석 중 사용자가 취소해 이미 PROCESSING 이 아님 — 알리지 않는다.
+          if (completeRes.status !== 404) {
+            await alertAnalysisProblem({
+              error: `분석은 끝났지만 결과 저장 실패 [${completeRes.status}]: ${body.slice(0, 150)}`,
+              workspaceId,
+            })
+          }
         }
       } catch (err) {
         console.error(`[analysis-poller] 분석 실행 에러: ${reportId}`, err)
