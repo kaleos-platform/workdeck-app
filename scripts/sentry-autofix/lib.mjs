@@ -3,6 +3,8 @@ import crypto from 'node:crypto'
 
 export const MAX_DIFF_LINES = 200
 export const MAX_ISSUES_PER_RUN = 3
+// 라벨 위치 찾기는 이슈마다 clone 이 든다 — run 당 시도 상한(공개 DSN 으로 라벨 이슈를 쏟아내도 run 이 막히지 않게)
+export const MAX_LABEL_TRIES_PER_RUN = 5
 
 export const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex')
 
@@ -177,7 +179,8 @@ export function classifyEvent(issue, event) {
     const label = scrubText(event?.message || issue?.title || '')
       .trimStart()
       .match(/^\[[\w-]{2,40}\]/)
-    if (label) out.label = label[0]
+    // scrub 표식은 라벨이 아니다
+    if (label && label[0] !== R) out.label = label[0]
   }
   return out
 }
@@ -195,12 +198,12 @@ export function judgeLabelHits(hits) {
   return { reason: 'insufficient-no-locator' }
 }
 
-// git grep -n 출력(path:line:text) → { path, line }[]. 형식이 어긋나면 null
+// git grep -z -n 출력(path\0line\0text) → { path, line }[]. 형식이 어긋나면 null
 export function parseGrepOutput(stdout) {
   const hits = []
   for (const l of String(stdout).split('\n')) {
     if (!l) continue
-    const m = l.match(/^([^:]+):(\d+):/)
+    const m = l.match(/^([^\0]+)\0(\d+)\0/)
     if (!m) return null
     hits.push({ path: m[1], line: Number(m[2]) })
   }

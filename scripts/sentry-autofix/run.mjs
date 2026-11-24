@@ -309,7 +309,18 @@ export function realDeps(cfg, { noSlack }) {
       // 로그 라벨 위치 찾기: 호스트에서 고정 문자열 검색(셸 없음). 줄 본문은 버리고 path·line 만 남긴다
       let labelHits
       if (label) {
-        const g = sh('git', ['-C', repoDir, 'grep', '-n', '-F', '-e', label])
+        const g = sh('git', [
+          '-C',
+          repoDir,
+          '-c',
+          'core.quotePath=false',
+          'grep',
+          '-z',
+          '-n',
+          '-F',
+          '-e',
+          label,
+        ])
         labelHits = g.status === 1 ? [] : g.status === 0 ? lib.parseGrepOutput(g.stdout) : null
       }
       fs.mkdirSync(baseDir, { recursive: true })
@@ -1430,6 +1441,7 @@ export async function runDaily({ argv, cfg, deps }) {
     }
 
     let worked = 0
+    let labelTries = 0
     for (const issue of candidates) {
       if (!fixture && !args.issue && worked >= lib.MAX_ISSUES_PER_RUN) break
       let event
@@ -1437,6 +1449,15 @@ export async function runDaily({ argv, cfg, deps }) {
         event = await getEvent(issue)
       } catch {
         results.push({ shortId: issue.shortId, status: 'failed', reasons: ['event-fetch-failed'] })
+        continue
+      }
+      const cls = lib.classifyEvent(issue, event)
+      if (!cls.usable && cls.label && labelTries++ >= lib.MAX_LABEL_TRIES_PER_RUN) {
+        results.push({
+          shortId: issue.shortId,
+          status: 'insufficient',
+          reasons: ['insufficient-label-cap'],
+        })
         continue
       }
       // 45분 한도는 이슈 단위 — 넘으면 이 run 의 컨테이너만 이름으로 kill. 디스크가 모자라도 kill
