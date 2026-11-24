@@ -43,12 +43,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
               초대받은 이메일: {maskEmail(inv.email)}
             </p>
           </div>
-          <InviteAccept
-            token={token}
-            view={view}
-            invitePath={`/invite/${token}`}
-            inviteEmail={inv.email}
-          />
+          <InviteAccept token={token} view={view} invitePath={`/invite/${token}`} />
         </>
       )}
     </main>
