@@ -4,6 +4,7 @@ import {
   callAnalysisAI,
   handleAnalysisFailure,
   isGeminiKeyError,
+  readOllamaStream,
 } from '../analysis-poller.js'
 import { notifyAnalysisFailed } from '../slack-notifier.js'
 
@@ -27,7 +28,28 @@ function mockFetch(responses: Partial<Record<'flash' | 'pro' | 'ollama' | 'compl
     calls.push(target)
     const status = responses[target] ?? 200
     if (status !== 200) return new Response('{"error":"x"}', { status })
-    if (target === 'ollama') return Response.json({ message: { content: OK_JSON } })
+    if (target === 'ollama') {
+      // 실제 Ollama 처럼 NDJSON 조각으로, 전송 경계가 줄 중간에 걸리게 보낸다.
+      const half = Math.floor(OK_JSON.length / 2)
+      const ndjson = [
+        { message: { content: OK_JSON.slice(0, half) }, done: false },
+        { message: { content: OK_JSON.slice(half) }, done: false },
+        { message: { content: '' }, done: true },
+      ]
+        .map((l) => JSON.stringify(l))
+        .join('\n')
+      const enc = new TextEncoder()
+      const cut = Math.floor(ndjson.length / 3)
+      return new Response(
+        new ReadableStream({
+          start(c) {
+            c.enqueue(enc.encode(ndjson.slice(0, cut)))
+            c.enqueue(enc.encode(ndjson.slice(cut)))
+            c.close()
+          },
+        })
+      )
+    }
     if (target === 'complete') return Response.json({ status: 'FAILED' })
     return Response.json({ candidates: [{ content: { parts: [{ text: OK_JSON }] } }] })
   }) as typeof fetch
@@ -122,4 +144,9 @@ test('알림 미발송(false)이면 억제 기록을 남기지 않아 다음에 
   await alertAnalysisProblem({ error: 'x', workspaceId: 'ws-retry' })
   await alertAnalysisProblem({ error: 'x', workspaceId: 'ws-retry' })
   expect(notify).toHaveBeenCalledTimes(2)
+})
+
+test('Ollama 스트림 오류 줄은 throw', async () => {
+  const body = new Response('{"error":"model not found"}\n').body!
+  await expect(readOllamaStream(body)).rejects.toThrow('model not found')
 })
