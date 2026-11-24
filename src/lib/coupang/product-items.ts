@@ -59,7 +59,7 @@ export async function upsertCoupangProductItems(
     } catch (err) {
       console.error(
         `[product-items] 적재 실패 sellerProductId=${row.sellerProductId} rg=${row.rgVendorItemId} mp=${row.mpVendorItemId}:`,
-        err instanceof Error ? err.message : err
+        err
       )
     }
   }
