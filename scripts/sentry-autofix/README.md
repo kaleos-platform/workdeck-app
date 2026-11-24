@@ -33,7 +33,7 @@ docker build -t workdeck-autofix-codex:latest docker/codex
 # 망(workdeck-autofix-ext / workdeck-autofix-int)은 run.mjs 사전 점검이 없으면 만든다(이름이 겹치지 않는 자기 망만)
 ```
 
-- 전용 Codex 로그인: `CODEX_HOME=~/.config/workdeck/autofix-codex codex login --device-auth` (호스트 `~/.codex` 는 읽지도 마운트하지도 않는다). 프록시는 토큰을 갱신하지 않는다 — access token 은 약 10일마다 재로그인이 필요하다(만료 72시간 전부터 Slack 경고, 2시간 미만이면 사전 점검 실패)
+- 전용 Codex 로그인: `CODEX_HOME=~/.config/workdeck/autofix-codex codex login --device-auth` (호스트 `~/.codex` 는 읽지도 마운트하지도 않는다). 프록시는 토큰을 갱신하지 않는다. 대신 러너가 run lock 을 잡은 뒤·프록시 기동 전에 호스트 `codex app-server` 의 `account/read {refreshToken:true}` 로 갱신한다(access token 수명 약 10일, 남은 시간 7일 이하일 때만 → 약 3일마다). 자식 환경은 PATH·HOME·CODEX_HOME 만, 출력 원문은 버리고 고정 코드만 남긴다. 갱신 실패는 Slack 경고(`토큰 자동 갱신 실패(<코드>)`)만 내고 run 은 계속한다 — 경고가 이어지면 재로그인. 만료 72시간 전부터 경고, 3시간 미만이면 사전 점검 실패. 사람이 직접 재로그인할 때는 04:30 실행 시간대를 피한다(lock 밖)
 - 비밀값: `~/.config/workdeck/sentry-autofix.env`(600) — `SENTRY_API_TOKEN`(필수), `SENTRY_ORG`·`SENTRY_PROJECT`(선택, 기본 kaleos / workdeck-app)
 - 필요 도구: Docker(OrbStack), `gitleaks`, `slack-post`, Node 22+
 - launchd: `mkdir -p ~/Library/Logs/workdeck-autofix && cp ai.workdeck.sentry-autofix.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/ai.workdeck.sentry-autofix.plist`

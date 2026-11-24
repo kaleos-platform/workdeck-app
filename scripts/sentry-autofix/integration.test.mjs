@@ -152,6 +152,8 @@ function setup(scenario) {
   const deps = {
     ...base,
     slack: async (t) => void slack.push(t),
+    // 가짜 auth 로 실제 Codex 토큰 갱신을 시도하지 않는다
+    refreshAuth: async () => ({ ok: false, error: 'disabled-in-test' }),
     gitleaks: Object.assign((d) => gitleaksScan(d), { available: true }),
     // clone·archive 는 첫 시나리오만 실제로 수행하고 이후에는 복사해 쓴다(호스트 git grep 은 새 clone 에서)
     prepareSource: async ({ repoDir, baseDir }) => {

@@ -18,6 +18,7 @@ import {
   gitleaksScan,
   parseArgs,
   readSafe,
+  refreshCodexAuth,
   runDaily,
 } from './run.mjs'
 
@@ -335,7 +336,8 @@ test('dry 코드에 Sentry 쓰기·원격 쓰기·전역 삭제 경로가 없다
       /git[\s'"`,]+push/,
       /['"`]push['"`]/,
       /['"`](?:POST|PUT|DELETE|PATCH)['"`]/,
-      /\bmethod\s*:/,
+      // JSON-RPC(토큰 갱신용 codex app-server) 메서드 3개만 허용
+      /\bmethod\s*:(?!\s*'(?:initialize|initialized|account\/read)')/,
       /['"`]gh['"`]/,
       /\bprune\b/,
       /['"`]rmi?['"`]/,
@@ -422,6 +424,7 @@ function harness(scenario = {}) {
   let tscN = 0
   let fixN = 0
   const envFiles = []
+  const refreshCalls = []
   const docker = async (args) => {
     calls.push(args)
     const ef = args.indexOf('--env-file')
@@ -526,8 +529,12 @@ function harness(scenario = {}) {
       }
     },
     copyDir: (s, d) => fs.cpSync(s, d, { recursive: true }),
+    refreshAuth: async () => {
+      refreshCalls.push({ locked: fs.existsSync(path.join(cfg.stateDir, 'lock')) })
+      return scenario.refresh ? scenario.refresh(cfg) : { ok: true }
+    },
   }
-  return { cfg, deps, calls, slack, root, auth, envFiles }
+  return { cfg, deps, calls, slack, root, auth, envFiles, refreshCalls }
 }
 
 const fixtureFile = path.join(HERE, 'fixtures', 'inject-host-files.json')
@@ -1329,6 +1336,154 @@ test('사전 점검: API 키 모드·만료 임박은 실패, 72시간 이내는
   assert.equal(r.exitCode, 0)
   assert.match(h.slack[0], /경고: .*72시간/)
   cleanup(h)
+})
+
+test('토큰 갱신: 7일 넘게 남으면 호출하지 않는다', async () => {
+  const h = harness({ authExpHours: 9 * 24 })
+  assert.equal((await runFx(h)).exitCode, 0)
+  assert.equal(h.refreshCalls.length, 0)
+  cleanup(h)
+})
+
+test('토큰 갱신: 7일 이하면 run lock 아래에서 호출, 만료가 늘면 경고 없음', async () => {
+  const h = harness({
+    authExpHours: 48,
+    refresh: (cfg) => {
+      const f = path.join(cfg.codexDir, 'auth.json')
+      const a = JSON.parse(fs.readFileSync(f, 'utf8'))
+      const exp = Math.floor(Date.now() / 1000) + 10 * 24 * 3600
+      a.tokens.access_token = mkJwt({ ...CLAIMS, exp }, 'REFRESHEDSIGNATUREvalue')
+      fs.writeFileSync(f, JSON.stringify(a))
+      return { ok: true }
+    },
+  })
+  assert.equal((await runFx(h)).exitCode, 0)
+  assert.deepEqual(h.refreshCalls, [{ locked: true }])
+  assert.doesNotMatch(h.slack[0], /갱신 실패|72시간/)
+  cleanup(h)
+})
+
+test('토큰 갱신: 실패하거나 만료가 늘지 않으면 경고만(고정 코드), run 은 계속', async () => {
+  let h = harness({ authExpHours: 48, refresh: () => ({ ok: false, error: 'timeout' }) })
+  assert.equal((await runFx(h)).exitCode, 0)
+  assert.match(h.slack[0], /토큰 자동 갱신 실패\(timeout\)/)
+  cleanup(h)
+  h = harness({ authExpHours: 48 }) // ok 지만 파일 그대로
+  assert.equal((await runFx(h)).exitCode, 0)
+  assert.match(h.slack[0], /토큰 자동 갱신 실패\(not-extended\)/)
+  cleanup(h)
+})
+
+test('토큰 갱신: 만료 임박이어도 먼저 갱신을 시도하고, 갱신되면 run 을 계속한다', async () => {
+  const h = harness({
+    authExpHours: 1,
+    refresh: (cfg) => {
+      const f = path.join(cfg.codexDir, 'auth.json')
+      const a = JSON.parse(fs.readFileSync(f, 'utf8'))
+      a.tokens.access_token = mkJwt(
+        { ...CLAIMS, exp: Math.floor(Date.now() / 1000) + 10 * 24 * 3600 },
+        'REFRESHEDSIGNATUREvalue'
+      )
+      fs.writeFileSync(f, JSON.stringify(a))
+      return { ok: true }
+    },
+  })
+  assert.equal((await runFx(h)).exitCode, 0)
+  assert.equal(h.refreshCalls.length, 1)
+  cleanup(h)
+})
+
+test('토큰 갱신: 예외가 나도 경고만 남기고 lock 을 푼다', async () => {
+  const h = harness({
+    authExpHours: 48,
+    refresh: () => {
+      throw new Error('boom secret')
+    },
+  })
+  assert.equal((await runFx(h)).exitCode, 0)
+  assert.match(h.slack[0], /토큰 자동 갱신 실패\(exception\)/)
+  assert.doesNotMatch(h.slack[0], /boom/)
+  assert.ok(!fs.existsSync(path.join(h.cfg.stateDir, 'lock')))
+  cleanup(h)
+})
+
+// 가짜 app-server: CODEX_HOME/mode 로 동작을 고른다. 받은 메시지·환경을 CODEX_HOME 에 기록
+const FAKE_APP_SERVER = `#!/usr/bin/env node
+const fs = require('fs'), path = require('path')
+const home = process.env.CODEX_HOME
+const mode = fs.readFileSync(path.join(home, 'mode'), 'utf8').trim()
+fs.writeFileSync(path.join(home, 'env.json'), JSON.stringify(process.env))
+process.stderr.write('STDERR-SECRET user@example.com\\n')
+if (mode === 'exit') process.exit(3)
+if (mode === 'hang') setInterval(() => {}, 1000)
+let buf = ''
+process.stdin.on('data', (d) => {
+  buf += d
+  let i
+  while ((i = buf.indexOf('\\n')) >= 0) {
+    const m = JSON.parse(buf.slice(0, i))
+    buf = buf.slice(i + 1)
+    fs.appendFileSync(path.join(home, 'got.jsonl'), JSON.stringify(m) + '\\n')
+    if (mode === 'hang') continue
+    if (m.id === 1) {
+      const s = JSON.stringify({ id: 1, result: {} }) + '\\n' +
+        JSON.stringify({ method: 'account/updated', params: { email: 'user@example.com' } }) + '\\n'
+      process.stdout.write(s.slice(0, 10)) // 분할 응답
+      setTimeout(() => process.stdout.write(s.slice(10)), 20)
+    }
+    if (m.id === 2) {
+      if (mode === 'error')
+        process.stdout.write(JSON.stringify({ id: 2, error: { message: 'user@example.com failed' } }) + '\\n')
+      else process.stdout.write(JSON.stringify({ id: 2, result: { account: { email: 'user@example.com' } } }) + '\\n')
+    }
+  }
+})
+`
+
+test('refreshCodexAuth: 실제 spawn — 분할 응답·오류·종료·타임아웃, 환경 allowlist, 원문 미노출', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'autofix-refresh-'))
+  const bin = path.join(root, 'fake-codex')
+  fs.writeFileSync(bin, FAKE_APP_SERVER, { mode: 0o755 })
+  const home = path.join(root, 'home')
+  fs.mkdirSync(home)
+  process.env.AUTOFIX_TEST_SECRET = 'should-not-pass'
+  const run = async (mode, timeoutMs = 10_000) => {
+    fs.writeFileSync(path.join(home, 'mode'), mode)
+    fs.rmSync(path.join(home, 'got.jsonl'), { force: true })
+    return refreshCodexAuth({ codexBin: bin, codexDir: home, timeoutMs })
+  }
+  try {
+    const ok = await run('ok')
+    assert.deepEqual(ok, { ok: true })
+    const got = fs
+      .readFileSync(path.join(home, 'got.jsonl'), 'utf8')
+      .trim()
+      .split('\n')
+      .map((l) => JSON.parse(l))
+    assert.deepEqual(
+      got.map((m) => m.method),
+      ['initialize', 'initialized', 'account/read']
+    )
+    assert.deepEqual(got[2].params, { refreshToken: true })
+    const env = JSON.parse(fs.readFileSync(path.join(home, 'env.json'), 'utf8'))
+    assert.equal(env.CODEX_HOME, home)
+    assert.equal(env.AUTOFIX_TEST_SECRET, undefined)
+    assert.deepEqual(
+      // __CF_USER_TEXT_ENCODING 은 macOS 가 모든 프로세스에 넣는다
+      Object.keys(env).filter(
+        (k) => !['PATH', 'HOME', 'CODEX_HOME', '__CF_USER_TEXT_ENCODING'].includes(k)
+      ),
+      []
+    )
+    assert.deepEqual(await run('error'), { ok: false, error: 'refresh-error' })
+    assert.deepEqual(await run('exit'), { ok: false, error: 'exited' })
+    const t0 = Date.now()
+    assert.deepEqual(await run('hang', 500), { ok: false, error: 'timeout' })
+    assert.ok(Date.now() - t0 < 5000)
+  } finally {
+    delete process.env.AUTOFIX_TEST_SECRET
+    fs.rmSync(root, { recursive: true, force: true })
+  }
 })
 
 test('사전 점검: 디스크 여유 20GB 미만이면 실패', async () => {

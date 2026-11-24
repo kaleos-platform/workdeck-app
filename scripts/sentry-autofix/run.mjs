@@ -37,6 +37,9 @@ export function defaultConfig(env = process.env) {
     proxyMaxRequests: 150, // 이슈당 모델 요청 상한
     authMinHours: 3,
     authWarnHours: 72,
+    codexBin: 'codex', // 호스트 Codex CLI(토큰 갱신 전용, 모델 호출 없음)
+    authRefreshHours: 7 * 24, // access token 남은 시간이 이 이하일 때 갱신(수명 10일 → 약 3일마다)
+    authRefreshTimeoutMs: 120_000,
     lockMaxMs: 4 * 60 * MIN,
     maxFailures: 3,
   }
@@ -172,8 +175,80 @@ export function loadCorpus(baseDir) {
   return parts.join('\n')
 }
 
+// ---------- 전용 Codex 토큰 갱신(호스트) ----------
+// `codex app-server` 의 account/read {refreshToken:true} 로 Codex 가 직접 갱신·저장한다.
+// 자식 환경은 PATH·HOME·CODEX_HOME 만. stderr 는 버리고 stdout 은 파싱만 한다(email·계정 id 포함) —
+// 결과는 고정 코드만 돌려준다.
+export function refreshCodexAuth({ codexBin, codexDir, timeoutMs = 120_000 }) {
+  return new Promise((resolve) => {
+    let child
+    try {
+      child = spawn(codexBin, ['app-server'], {
+        env: {
+          PATH: process.env.PATH ?? '/usr/bin:/bin',
+          HOME: os.homedir(),
+          CODEX_HOME: codexDir,
+        },
+        stdio: ['pipe', 'pipe', 'ignore'],
+      })
+    } catch {
+      return resolve({ ok: false, error: 'spawn-failed' })
+    }
+    let done = false
+    let buf = ''
+    const finish = (r) => {
+      if (done) return
+      done = true
+      clearTimeout(timer)
+      child.stdin.destroy()
+      child.kill('SIGTERM')
+      // SIGTERM 을 무시하면 강제 종료(러너가 끝나지 않는 일을 막는다)
+      setTimeout(() => child.exitCode === null && child.kill('SIGKILL'), 5000).unref()
+      resolve(r)
+    }
+    const timer = setTimeout(() => finish({ ok: false, error: 'timeout' }), timeoutMs)
+    const send = (m) => child.stdin.write(`${JSON.stringify(m)}\n`)
+    child.stdin.on('error', () => {})
+    child.on('error', () => finish({ ok: false, error: 'spawn-failed' }))
+    child.on('exit', () => finish({ ok: false, error: 'exited' }))
+    child.stdout.on('data', (d) => {
+      buf += d
+      if (buf.length > 1024 * 1024) return finish({ ok: false, error: 'output-too-large' })
+      let i
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i)
+        buf = buf.slice(i + 1)
+        let m
+        try {
+          m = JSON.parse(line)
+        } catch {
+          continue
+        }
+        if (m?.id === 1) {
+          if (m.error) return finish({ ok: false, error: 'initialize-error' })
+          send({ method: 'initialized' })
+          send({ id: 2, method: 'account/read', params: { refreshToken: true } })
+        } else if (m?.id === 2) {
+          return finish(m.error ? { ok: false, error: 'refresh-error' } : { ok: true })
+        }
+      }
+    })
+    send({
+      id: 1,
+      method: 'initialize',
+      params: { clientInfo: { name: 'workdeck-autofix', version: '1' } },
+    })
+  })
+}
+
 export function realDeps(cfg, { noSlack }) {
   return {
+    refreshAuth: () =>
+      refreshCodexAuth({
+        codexBin: cfg.codexBin,
+        codexDir: cfg.codexDir,
+        timeoutMs: cfg.authRefreshTimeoutMs,
+      }),
     now: () => Date.now(),
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
     freeBytes: () => {
@@ -310,6 +385,12 @@ const writeJsonAtomic = (file, obj) => {
 // 공용 장애로 run 전체를 멈춘다(그 이슈의 실패로 기록하지 않는다)
 class AbortRun extends Error {}
 
+const AUTH_WARN_72H = 'access token 만료 72시간 이내 — 재로그인 예정'
+const authExpSec = (cfg) => {
+  const a = readAuth(cfg)
+  return a ? lib.jwtExp(a.tokens.access_token) : null
+}
+
 // ---------- 사전 점검 ----------
 export async function preflight(cfg, deps) {
   const problems = []
@@ -345,9 +426,8 @@ export async function preflight(cfg, deps) {
     const exp = lib.jwtExp(auth.tokens.access_token)
     const hours = exp === null ? null : (exp * 1000 - deps.now()) / 3_600_000
     if (hours === null) problems.push('access token 만료 시각 확인 불가')
-    else if (hours < cfg.authMinHours) problems.push('access token 만료 임박(재로그인 필요)')
-    else if (hours < cfg.authWarnHours)
-      warnings.push('access token 만료 72시간 이내 — 재로그인 예정')
+    // 만료 임박(authMinHours 미만) 판정은 runDaily 에서 갱신을 시도한 뒤에 한다
+    else if (hours < cfg.authWarnHours) warnings.push(AUTH_WARN_72H)
   }
   return { problems, warnings }
 }
@@ -1201,6 +1281,30 @@ export async function runDaily({ argv, cfg, deps }) {
     writeJsonAtomic(failFile, failures)
   }
   try {
+    // 전용 Codex 토큰 갱신: run lock 아래·프록시 기동 전. 실패해도 남은 시간이 있으면 계속한다
+    const expBefore = authExpSec(cfg)
+    if (expBefore !== null && expBefore * 1000 - deps.now() <= cfg.authRefreshHours * 3_600_000) {
+      let r
+      try {
+        r = await deps.refreshAuth()
+      } catch {
+        r = { ok: false, error: 'exception' }
+      }
+      const expAfter = authExpSec(cfg)
+      if (r.ok && expAfter !== null && expAfter > expBefore) {
+        const i = warnings.indexOf(AUTH_WARN_72H)
+        if (i >= 0) warnings.splice(i, 1)
+      } else {
+        warnings.push(
+          `토큰 자동 갱신 실패(${r.ok ? 'not-extended' : r.error}) — 재로그인이 필요할 수 있음`
+        )
+      }
+    }
+    const expNow = authExpSec(cfg)
+    if (expNow === null || (expNow * 1000 - deps.now()) / 3_600_000 < cfg.authMinHours) {
+      await report({ failure: '사전 점검 실패 — access token 만료 임박(재로그인 필요)' })
+      return { exitCode: 1, results, runId }
+    }
     await killResidue(cfg, deps) // lock 을 쥔 지금은 다른 run 이 없다 — 이전 run 의 잔재 컨테이너만 이름으로 정리
     const token = fixture ? null : parseEnvFile(cfg.envFile).SENTRY_API_TOKEN
     const org = encodeURIComponent(parseEnvFile(cfg.envFile)?.SENTRY_ORG ?? 'kaleos')
