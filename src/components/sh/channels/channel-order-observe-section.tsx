@@ -1,8 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState, type MutableRefObject } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -26,14 +24,16 @@ const MATCH_LABELS = {
 } as const
 type MatchKey = keyof typeof MATCH_LABELS
 type Cafe24Mall = { mallId: string; status: 'needs_auth' | 'connected' | 'reauth_required' }
+/** 팝업 「저장」이 호출하는 관측 저장기. 바뀐 값이 없으면 null. */
+export type ObserveSaver = { invalid: boolean; save: () => Promise<void> }
 
-/** 채널 편집 팝업 고급 탭 — 주문 관측(그림자 수집). ADMIN 이상만 보이고, 이 영역은 자체 저장 버튼으로 저장한다. */
+/** 채널 편집 팝업 고급 탭 — 주문 관측(그림자 수집). ADMIN 이상만 보이고, 팝업 하단 「저장」이 saverRef 로 함께 저장한다. */
 export function ChannelOrderObserveSection({
   channelId,
-  onSaved,
+  saverRef,
 }: {
   channelId: string
-  onSaved?: () => void
+  saverRef: MutableRefObject<ObserveSaver | null>
 }) {
   const [canEdit, setCanEdit] = useState(false)
   const [enabled, setEnabled] = useState(false)
@@ -41,7 +41,7 @@ export function ChannelOrderObserveSection({
   const [storeKey, setStoreKey] = useState('')
   const [mode, setMode] = useState<ModeKey>('diagnose')
   const [matchField, setMatchField] = useState<MatchKey | ''>('')
-  const [saving, setSaving] = useState(false)
+  const [loaded, setLoaded] = useState('')
   const spaceId = useCurrentSpace()?.id
   const [malls, setMalls] = useState<Cafe24Mall[] | null>(null)
   const [mallsFailed, setMallsFailed] = useState(false)
@@ -50,7 +50,6 @@ export function ChannelOrderObserveSection({
   useEffect(() => {
     if (adapter !== 'cafe24' || !spaceId) return
     let alive = true
-    setMallsFailed(false)
     // 조회 실패(권한·네트워크)는 「연결된 몰 없음」과 구분한다.
     fetch(`/api/integrations/cafe24/status?spaceId=${encodeURIComponent(spaceId)}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -77,6 +76,15 @@ export function ChannelOrderObserveSection({
         setStoreKey(d.setting.storeKey ?? '')
         setMode(d.setting.reconcileMode === 'judge' ? 'judge' : 'diagnose')
         setMatchField(d.setting.matchKeyRule?.field ?? '')
+        setLoaded(
+          JSON.stringify([
+            Boolean(d.setting.observeEnabled),
+            d.setting.adapter ?? '',
+            d.setting.storeKey ?? '',
+            d.setting.reconcileMode === 'judge' ? 'judge' : 'diagnose',
+            d.setting.matchKeyRule?.field ?? '',
+          ])
+        )
       })
       .catch(() => null)
     return () => {
@@ -84,37 +92,37 @@ export function ChannelOrderObserveSection({
     }
   }, [channelId])
 
-  if (!canEdit) return null
-
   const invalid =
     enabled && (!adapter || ((adapter === 'naver' || adapter === 'cafe24') && !storeKey.trim()))
+  const dirty = canEdit && JSON.stringify([enabled, adapter, storeKey, mode, matchField]) !== loaded
 
   async function save() {
-    setSaving(true)
-    try {
-      const res = await fetch(`/api/channels/${channelId}/order-observe`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          observeEnabled: enabled,
-          adapter: adapter || 'cafe24',
-          storeKey,
-          reconcileMode: mode,
-          matchKeyRule: matchField ? { field: matchField } : null,
-        }),
-      })
-      if (!res.ok) {
-        const d = await res.json().catch(() => null)
-        throw new Error(d?.message ?? '저장하지 못했습니다')
-      }
-      toast.success('주문 관측 설정을 저장했습니다')
-      onSaved?.()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '저장하지 못했습니다')
-    } finally {
-      setSaving(false)
+    const res = await fetch(`/api/channels/${channelId}/order-observe`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        observeEnabled: enabled,
+        adapter: adapter || 'cafe24',
+        storeKey,
+        reconcileMode: mode,
+        matchKeyRule: matchField ? { field: matchField } : null,
+      }),
+    })
+    if (!res.ok) {
+      const d = await res.json().catch(() => null)
+      throw new Error(d?.message ?? '주문 관측 설정을 저장하지 못했습니다')
     }
   }
+
+  // 바뀐 값이 있을 때만 팝업 저장에 끼운다(권한 없는 사용자·미변경은 PUT 생략).
+  useEffect(() => {
+    saverRef.current = dirty ? { invalid, save } : null
+    return () => {
+      saverRef.current = null
+    }
+  })
+
+  if (!canEdit) return null
 
   return (
     <div className="space-y-3 rounded-md border p-3">
@@ -136,6 +144,7 @@ export function ChannelOrderObserveSection({
           onValueChange={(v) => {
             setAdapter(v as AdapterKey)
             setStoreKey('')
+            setMallsFailed(false)
           }}
         >
           <SelectTrigger>
@@ -219,11 +228,11 @@ export function ChannelOrderObserveSection({
           </Select>
         </div>
       )}
-      <div className="flex justify-end">
-        <Button type="button" size="sm" onClick={save} disabled={saving || invalid}>
-          {saving ? '저장 중...' : '관측 설정 저장'}
-        </Button>
-      </div>
+      {invalid && (
+        <p className="text-xs text-destructive">
+          {adapter ? '스토어 키 또는 쇼핑몰을 선택하세요' : '가져올 곳을 선택하세요'}
+        </p>
+      )}
     </div>
   )
 }
