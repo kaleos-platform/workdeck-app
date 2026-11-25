@@ -179,7 +179,7 @@ export function MembersCard() {
       const res = await fetchWithMfa(`/api/spaces/${spaceId}/invitations/${id}`, {
         method: 'DELETE',
       })
-      // 목록은 AAL2 없이 보이지만 취소는 AAL2 — 필요하면 단계 인증으로 보낸다.
+      // 취소는 인증 앱 없이도 되지만, MFA_REQUIRED 를 받으면 단계 인증으로 보낸다.
       if (await redirectIfMfaRequired(res)) return
       if (!res.ok) {
         const body = await res.json().catch(() => null)

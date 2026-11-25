@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireSpaceOwner } from '@/lib/agent/identity/space-admin'
-import { requireAal2 } from '@/lib/auth/mfa'
+import { isAal2Fresh, requireAal2 } from '@/lib/auth/mfa'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
 import { getAppOrigin } from '@/lib/domain'
@@ -21,19 +21,11 @@ const bodySchema = z.object({
 
 type Ctx = { params: Promise<{ spaceId: string }> }
 
-// OWNER + MFA — ADMIN 이상 권한을 줄 수 있는 작업이라 자격증명 저장과 같은 등급.
-async function guard(spaceId: string): Promise<{ userId: string } | { error: NextResponse }> {
-  const owner = await requireSpaceOwner(spaceId)
-  if ('error' in owner) return { error: owner.error }
-  const mfa = await requireAal2()
-  if (mfa) return { error: mfa }
-  return { userId: owner.userId }
-}
-
 export async function POST(request: Request, { params }: Ctx) {
   const { spaceId } = await params
-  const g = await guard(spaceId)
-  if ('error' in g) return g.error
+  // OWNER 만 — MEMBER 초대는 인증 앱 없이 허용, ADMIN 초대(권한을 주는 동작)만 아래에서 AAL2 요구.
+  const owner = await requireSpaceOwner(spaceId)
+  if ('error' in owner) return owner.error
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {
@@ -41,23 +33,29 @@ export async function POST(request: Request, { params }: Ctx) {
       issues: parsed.error.issues,
     })
   }
+  // 같은 이메일 대기 초대를 ADMIN 으로 다시 초대하는 상향도 요청 역할이 ADMIN 이라 여기서 막힌다. ADMIN→MEMBER 하향은 권한 축소라 AAL1 허용.
+  if (parsed.data.role === 'ADMIN') {
+    const mfa = await requireAal2()
+    if (mfa) return mfa
+  }
+  const aal = (await isAal2Fresh()) ? 'aal2' : 'aal1'
   const email = normalizeEmail(parsed.data.email)
   try {
     const { invitation, token, converted, resent } = await createInvitation({
       spaceId,
       email,
       role: parsed.data.role,
-      invitedById: g.userId,
+      invitedById: owner.userId,
     })
     // 감사 로그를 메일보다 먼저 — 로그 실패가 '메일은 갔는데 500·링크 없음'을 만들지 않게.
     if (converted)
-      await writeAuditLog(g.userId, 'space.type.convert', 'space', spaceId, {
+      await writeAuditLog(owner.userId, 'space.type.convert', 'space', spaceId, {
         from: 'PERSONAL',
         to: 'ORGANIZATION',
         via: 'invitation',
       })
     await writeAuditLog(
-      g.userId,
+      owner.userId,
       resent ? 'space.invitation.resend' : 'space.invitation.create',
       'space_invitation',
       invitation.id,
@@ -65,6 +63,7 @@ export async function POST(request: Request, { params }: Ctx) {
         spaceId,
         email,
         role: parsed.data.role,
+        aal,
       }
     )
     // 요청 Host가 아니라 설정된 앱 origin — Host 헤더로 링크·redirectTo를 조작하지 못하게.
@@ -76,7 +75,7 @@ export async function POST(request: Request, { params }: Ctx) {
       origin,
       invitationId: invitation.id,
       spaceId,
-      inviterId: g.userId,
+      inviterId: owner.userId,
       role: invitation.role,
       expiresAt: invitation.expiresAt,
     })
@@ -103,7 +102,7 @@ export async function POST(request: Request, { params }: Ctx) {
   }
 }
 
-// 조회는 OWNER 만 — 보기만 하는 화면이라 AAL2 를 요구하지 않는다(변경 동작은 각 경로에서 단계 인증).
+// 조회는 OWNER 만 — 보기만 하는 화면이라 AAL2 를 요구하지 않는다.
 export async function GET(_request: Request, { params }: Ctx) {
   const { spaceId } = await params
   const owner = await requireSpaceOwner(spaceId)
