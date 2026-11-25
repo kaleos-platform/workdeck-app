@@ -43,14 +43,46 @@ type Space = SubscriptionAccessOverview['spaces'][number]
 type Change =
   | { kind: 'trial' | 'deck'; row: SubscriptionAccessRow }
   | { kind: 'space'; space: Space }
-const labels: Record<SubscriptionAccessRow['accessReason'], string> = {
-  FREE_BETA: '무료 제공',
-  EXEMPT: '면제',
+type Reason = SubscriptionAccessRow['accessReason']
+// 표시·집계 순서 — 구독·체험을 먼저 보여 준다
+const labels: Record<Reason, string> = {
   SUBSCRIBED: '구독 중',
   TRIAL: '체험 중',
   GRACE: '유료화 유예',
   PAUSED: '결제 준비 중',
   LOCKED: '이용 제한',
+  EXEMPT: '면제',
+  FREE_BETA: '무료 제공',
+}
+// DESIGN.md §2.2 — 구독=정상(emerald), 체험=정보(blue), 유예·결제 준비=주의(amber), 제한=위험(red)
+const tone: Record<Reason, string> = {
+  SUBSCRIBED:
+    'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400',
+  TRIAL:
+    'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400',
+  GRACE:
+    'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400',
+  PAUSED:
+    'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400',
+  LOCKED:
+    'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400',
+  EXEMPT: '',
+  FREE_BETA: '',
+}
+function countByReason(rows: SubscriptionAccessRow[]) {
+  const counts = new Map<Reason, number>()
+  for (const row of rows) counts.set(row.accessReason, (counts.get(row.accessReason) ?? 0) + 1)
+  return (Object.keys(labels) as Reason[]).flatMap((reason) =>
+    counts.has(reason) ? [{ reason, count: counts.get(reason)! }] : []
+  )
+}
+function ReasonBadge({ reason, count }: { reason: Reason; count?: number }) {
+  return (
+    <Badge variant={tone[reason] ? 'outline' : 'secondary'} className={tone[reason]}>
+      {labels[reason]}
+      {count !== undefined && <span className="tabular-nums">{count}</span>}
+    </Badge>
+  )
 }
 const schema = z.object({
   note: z
@@ -143,6 +175,7 @@ export function SubscriptionsClient() {
       .sort((a, b) => a.space.name.localeCompare(b.space.name, 'ko'))
   }, [data, search, deck, status])
   const visibleDeckCount = groups.reduce((sum, group) => sum + group.rows.length, 0)
+  const visibleSummary = countByReason(groups.flatMap((group) => group.rows))
   function open(target: Change) {
     form.reset({
       note: '',
@@ -272,6 +305,17 @@ export function SubscriptionsClient() {
           <span className="text-xs text-muted-foreground tabular-nums">
             {groups.length}개 Space · {visibleDeckCount}개 업무
           </span>
+          {visibleSummary.length > 0 && (
+            <div
+              role="group"
+              className="flex flex-wrap items-center gap-1"
+              aria-label="상태별 업무 수"
+            >
+              {visibleSummary.map(({ reason, count }) => (
+                <ReasonBadge key={reason} reason={reason} count={count} />
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
             <span className="text-xs text-muted-foreground">날짜 KST</span>
             <Button
@@ -327,17 +371,7 @@ export function SubscriptionsClient() {
             </TableHeader>
             {groups.map(({ space, rows, totalRows }) => {
               const expanded = rows.length > 0 && (expandedSpaces[space.id] ?? hasFilters)
-              const summary = Object.entries(
-                rows.reduce<Record<string, number>>((counts, row) => {
-                  counts[row.accessReason] = (counts[row.accessReason] ?? 0) + 1
-                  return counts
-                }, {})
-              )
-                .map(
-                  ([reason, count]) =>
-                    `${labels[reason as SubscriptionAccessRow['accessReason']]} ${count}`
-                )
-                .join(' · ')
+              const summary = countByReason(rows)
               return (
                 <TableBody key={space.id} aria-label={`${space.name} 구독 현황`}>
                   <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -390,19 +424,27 @@ export function SubscriptionsClient() {
                         <span className="text-xs text-muted-foreground">소유자 없음</span>
                       )}
                     </TableCell>
-                    <TableCell>
-                      <p className="text-xs font-medium">
+                    <TableCell className="whitespace-normal">
+                      {summary.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {summary.map(({ reason, count }) => (
+                            <ReasonBadge key={reason} reason={reason} count={count} />
+                          ))}
+                        </div>
+                      )}
+                      <p
+                        className={
+                          summary.length > 0
+                            ? 'mt-1 text-xs text-muted-foreground'
+                            : 'text-xs font-medium'
+                        }
+                      >
                         {totalRows === 0
                           ? '업무 없음'
                           : rows.length === totalRows
                             ? `${totalRows}개 업무`
                             : `${totalRows}개 중 ${rows.length}개 표시`}
                       </p>
-                      {summary && (
-                        <p className="mt-1 text-xs whitespace-normal text-muted-foreground">
-                          {summary}
-                        </p>
-                      )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">—</TableCell>
                     <TableCell className="text-xs text-muted-foreground">—</TableCell>
@@ -447,11 +489,7 @@ export function SubscriptionsClient() {
                         <span className="sr-only">소유자는 Space 행 참조</span>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={row.accessReason === 'LOCKED' ? 'destructive' : 'secondary'}
-                        >
-                          {labels[row.accessReason]}
-                        </Badge>
+                        <ReasonBadge reason={row.accessReason} />
                         {row.subscriptionStatus === 'PAST_DUE' && (
                           <p className="mt-1 text-xs text-destructive">결제 연체</p>
                         )}
