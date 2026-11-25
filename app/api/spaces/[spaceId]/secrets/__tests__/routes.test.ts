@@ -31,6 +31,12 @@ import { GET } from '../route'
 import { PUT, DELETE } from '../[name]/route'
 import { POST as REVEAL } from '../[name]/reveal/route'
 
+// 평문 비밀값 우회 차단 — 이 경로들은 계정 플래그와 무관하게 2단계 인증을 요구해야 한다.
+afterEach(() => {
+  for (const call of (requireAal2 as jest.Mock).mock.calls)
+    expect(call).toEqual([{ ignoreUserFlag: true }])
+})
+
 const BODY = {
   kind: 'API_KEY',
   value: 'SK_TEST_0123456789abcdef',

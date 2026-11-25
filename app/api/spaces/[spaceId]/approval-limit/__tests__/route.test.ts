@@ -8,6 +8,12 @@ import { requireSpaceOwner } from '@/lib/agent/identity/space-admin'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { PUT } from '../route'
 
+// 승인 한도는 권한 정책 — 계정 플래그와 무관하게 2단계 인증을 요구해야 한다.
+afterEach(() => {
+  for (const call of (requireAal2 as jest.Mock).mock.calls)
+    expect(call).toEqual([{ ignoreUserFlag: true }])
+})
+
 const call = (body: unknown) =>
   PUT(
     new NextRequest('http://t/api/spaces/sp1/approval-limit', {

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   const { spaceId, agentId } = await params
   const auth = await requireSpaceAdmin(spaceId)
   if ('error' in auth) return auth.error
-  const mfa = await requireAal2()
+  const mfa = await requireAal2({ ignoreUserFlag: true })
   if (mfa) return mfa
 
   const agent = await prisma.spaceAgent.findFirst({

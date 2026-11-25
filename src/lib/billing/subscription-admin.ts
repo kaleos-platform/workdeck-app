@@ -29,6 +29,14 @@ export async function getSubscriptionAccessOverview(
           where: { role: 'OWNER' },
           select: { user: { select: { id: true, email: true, name: true } } },
         },
+        // 운영자는 플래그와 무관하게 항상 2단계 인증 필수
+        _count: {
+          select: {
+            members: {
+              where: { user: { OR: [{ mfaRequired: true }, { platformRole: 'OPERATOR' }] } },
+            },
+          },
+        },
         deckInstances: { select: { deckAppId: true, createdAt: true } },
         deckAccessPolicies: true,
         subscription: { include: { items: { where: { type: 'DECK' } } } },
@@ -43,6 +51,7 @@ export async function getSubscriptionAccessOverview(
       owners: space.members.map((member) => member.user),
       exemptFlag: space.subscription?.exemptFlag ?? false,
       exemptNote: space.subscription?.exemptNote ?? null,
+      mfaRequiredMemberCount: space._count.members,
     })),
     rows: spaces.flatMap((space) => {
       const subscription = space.subscription
@@ -69,6 +78,7 @@ export async function getSubscriptionAccessOverview(
             spaceId: space.id,
             spaceName: space.name,
             owners: space.members.map((member) => member.user),
+            mfaRequiredMemberCount: space._count.members,
             deckAppId: product.id,
             deckName: product.name,
             pricingMode: product.pricingMode,
