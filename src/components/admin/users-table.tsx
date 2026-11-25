@@ -31,6 +31,8 @@ type AdminUserListItem = {
   createdAt: string
   signupSource: SignupSource | null
   isOperator: boolean
+  mfaRequired: boolean
+  totpEnrolled: boolean | null
   spaceMemberships: { spaceId: string; spaceName: string; role: keyof typeof ROLE_LABEL }[]
 }
 
@@ -75,6 +77,7 @@ export function UsersTable() {
   const [debouncedSource, setDebouncedSource] = useState('')
   const [role, setRole] = useState(ALL)
   const [spaces, setSpaces] = useState(ALL)
+  const [mfa, setMfa] = useState(ALL)
   const [sort, setSort] = useState<SortKey>('createdAt')
   const [dir, setDir] = useState<SortDir>('desc')
   const [users, setUsers] = useState<AdminUserListItem[]>([])
@@ -98,6 +101,7 @@ export function UsersTable() {
     if (debouncedSource) params.set('source', debouncedSource)
     if (role !== ALL) params.set('role', role)
     if (spaces !== ALL) params.set('spaces', spaces)
+    if (mfa !== ALL) params.set('mfa', mfa)
     return params
   }
 
@@ -130,7 +134,7 @@ export function UsersTable() {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- buildParams 는 아래 값들로만 결정된다
-  }, [debouncedQ, debouncedSource, role, spaces, sort, dir])
+  }, [debouncedQ, debouncedSource, role, spaces, mfa, sort, dir])
 
   async function loadMore() {
     if (nextOffset === null) return
@@ -184,6 +188,16 @@ export function UsersTable() {
             <SelectItem value="none">Space 소속 없음</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={mfa} onValueChange={setMfa}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>2단계 인증: 전체</SelectItem>
+            <SelectItem value="required">2단계 인증: 필수</SelectItem>
+            <SelectItem value="off">2단계 인증: 꺼짐</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-md border">
@@ -195,13 +209,14 @@ export function UsersTable() {
               <SortHead label="소속 Space·권한" k="spaces" sort={sort} dir={dir} onSort={onSort} />
               <TableHead>가입 경로</TableHead>
               <SortHead label="가입일" k="createdAt" sort={sort} dir={dir} onSort={onSort} />
+              <TableHead>2단계 인증</TableHead>
               <TableHead>상태</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.length === 0 && !loading && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   결과가 없습니다
                 </TableCell>
               </TableRow>
@@ -238,6 +253,18 @@ export function UsersTable() {
                   </span>
                 </TableCell>
                 <TableCell>{new Date(u.createdAt).toLocaleDateString('ko-KR')}</TableCell>
+                <TableCell>
+                  {u.isOperator || u.mfaRequired ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Badge variant="secondary">필수</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {u.totpEnrolled === null ? '—' : u.totpEnrolled ? '인증 앱 등록' : '미등록'}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">꺼짐</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   {u.isOperator ? <Badge variant="secondary">운영자</Badge> : null}
                 </TableCell>
