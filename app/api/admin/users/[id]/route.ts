@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { requireOperator, writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { getVerifiedTotpUserIds } from '@/lib/admin/mfa-status'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { Prisma } from '@/generated/prisma/client'
 
@@ -21,6 +22,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       avatarUrl: true,
       createdAt: true,
       platformRole: true,
+      mfaRequired: true,
       spaceMemberships: {
         select: {
           role: true,
@@ -60,6 +62,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     }
   }
 
+  const totpIds = await getVerifiedTotpUserIds([id])
+
   return NextResponse.json({
     user: {
       id: user.id,
@@ -68,6 +72,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       avatarUrl: user.avatarUrl,
       createdAt: user.createdAt,
       isOperator: user.platformRole === 'OPERATOR',
+      mfaRequired: user.mfaRequired,
+      totpEnrolled: totpIds ? totpIds.has(id) : null,
       spaceMemberships: user.spaceMemberships.map((m) => ({
         spaceId: m.space.id,
         spaceName: m.space.name,
@@ -207,7 +213,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (authDeleteError) {
     return NextResponse.json(
       {
-        message: 'DB 삭제는 완료되었으나 Supabase Auth 계정 삭제에 실패했습니다. 수동 확인이 필요합니다.',
+        message:
+          'DB 삭제는 완료되었으나 Supabase Auth 계정 삭제에 실패했습니다. 수동 확인이 필요합니다.',
         authError: authDeleteError.message,
       },
       { status: 500 }

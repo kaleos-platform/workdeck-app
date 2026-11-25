@@ -109,7 +109,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   const { spaceId, name } = await params
   const auth = await requireSpaceAdmin(spaceId)
   if ('error' in auth) return auth.error
-  const mfaError = await requireAal2()
+  const mfaError = await requireAal2({ ignoreUserFlag: true })
   if (mfaError) return mfaError
 
   if (!SECRET_NAME_RE.test(name))
@@ -224,7 +224,7 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
   const { spaceId, name } = await params
   const auth = await requireSpaceAdmin(spaceId)
   if ('error' in auth) return auth.error
-  const mfaError = await requireAal2()
+  const mfaError = await requireAal2({ ignoreUserFlag: true })
   if (mfaError) return mfaError
 
   return audited(spaceId, auth.userId, 'secret.delete', { name }, async () =>
