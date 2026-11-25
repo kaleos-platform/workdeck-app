@@ -32,7 +32,7 @@
 수정 대상은 운영자 요청(`autofix:request` 최신) 또는 `act=fix` 이면서 P1·P2 이다(정렬: 운영자 요청 → p → 사용자 수 → 발생 수).
 
 Sentry 이슈에 쓰는 노트는 고정 코드·숫자·id 로만 만든다(제목·메시지·분석 문구 없음). 쓰기 실패는 Slack 경고만 내고 계속한다.
-`autofix:triage p=.. cat=.. act=..`(같은 판단이 7일 안에 있으면 생략), `autofix:ready id=<pending 폴더> sha=<patch 해시 16자> files=.. lines=.. verify=ok|fail review=approve|blocking`,
+`autofix:triage p=.. cat=.. act=..`(같은 판단이 7일 안에 있으면 생략), `autofix:ready id=<pending 폴더> sha=<patch 해시 16자> files=.. lines=.. verify=ok|fail review=approve|blocking sig=<HMAC 32자>`(서명 키 `SENTRY_AUTOFIX_NOTE_SECRET` 은 러너 env 파일에, 32자 이상. 없으면 ready 노트만 생략하고 Slack 경고),
 `autofix:failed <사유 코드>`(실패 기록이 남은 경우). `ready`·`approve` 상태 이슈는 다시 선정하지 않는다(뒤의 `autofix:request` 가 있으면 다시 선정).
 러너 토큰에 이슈 코멘트 쓰기 권한이 필요하다. `--no-write`(또는 cfg.noWrite)는 모든 Sentry 쓰기를 끄고 쓸 내용을 로그로만 낸다. `--fixture` 는 쓰지 않는다.
 

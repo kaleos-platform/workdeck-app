@@ -2,6 +2,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import crypto from 'node:crypto'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -2580,10 +2581,11 @@ test('노트 빌더: 정확한 문구, 잘못된 입력은 throw', () => {
     lines: 14,
     verify: 'ok',
     review: 'approve',
+    sig: 'b'.repeat(32),
   }
   assert.equal(
     lib.readyNote(r),
-    'autofix:ready id=20261125-043000-ab12-WD-1 sha=aaaaaaaaaaaaaaaa files=2 lines=14 verify=ok review=approve'
+    `autofix:ready id=20261125-043000-ab12-WD-1 sha=aaaaaaaaaaaaaaaa files=2 lines=14 verify=ok review=approve sig=${'b'.repeat(32)}`
   )
   for (const bad of [
     { id: '../x' },
@@ -2595,6 +2597,8 @@ test('노트 빌더: 정확한 문구, 잘못된 입력은 throw', () => {
     { files: undefined },
     { verify: 'yes' },
     { review: 'needs-attention' },
+    { sig: 'xyz' },
+    { sig: undefined },
   ])
     assert.throws(() => lib.readyNote({ ...r, ...bad }), JSON.stringify(bad))
   assert.equal(lib.failedNote('fix-timeout'), 'autofix:failed fix-timeout')
@@ -2670,8 +2674,12 @@ test('nextCursor: results="true" 인 next 만, 임의 URL 은 따라가지 않�
 
 // 통합 하네스 보조: 일일 선정 경로(Sentry 대역 + 픽스처 이벤트)
 const goodEvent = JSON.parse(fs.readFileSync(fixtureFile, 'utf8')).event
-function daily(h, issues, { pages, comments = {} } = {}) {
-  fs.writeFileSync(path.join(h.root, 'sentry.env'), 'SENTRY_API_TOKEN=t\n')
+const NOTE_KEY = 's'.repeat(40)
+function daily(h, issues, { pages, comments = {}, noSecret = false } = {}) {
+  fs.writeFileSync(
+    path.join(h.root, 'sentry.env'),
+    `SENTRY_API_TOKEN=t\n${noSecret ? '' : `SENTRY_AUTOFIX_NOTE_SECRET=${NOTE_KEY}\n`}`
+  )
   h.cfg.envFile = path.join(h.root, 'sentry.env')
   const urls = []
   h.deps.fetchJson = async (url) => {
@@ -2781,7 +2789,7 @@ test('통합: act=fix·P1 이슈만 수정, triage·ready 노트를 정확한 �
   assert.deepEqual(texts, [
     '1|autofix:triage p=P1 cat=user-block act=fix',
     '2|autofix:triage p=P3 cat=noise act=ignore',
-    `1|autofix:ready id=${pend} sha=${m.sha256['patch.diff'].slice(0, 16)} files=${r.results[0].files.length} lines=${r.results[0].lines} verify=ok review=approve`,
+    `1|autofix:ready id=${pend} sha=${m.sha256['patch.diff'].slice(0, 16)} files=${r.results[0].files.length} lines=${r.results[0].lines} verify=ok review=approve sig=${lib.noteSig('ready', '1', pend, m.sha256['patch.diff'].slice(0, 16), NOTE_KEY)}`,
   ])
   assert.match(pend, /^\d{8}-\d{6}-[0-9a-f]{4}-[A-Za-z0-9-]{3,40}$/)
   const sel = JSON.parse(
@@ -2868,5 +2876,44 @@ test('통합: 노트 쓰기 실패는 Slack 경고만 내고 run 계속', async 
   const r = await runDaily({ argv: ['--no-slack'], cfg: h.cfg, deps: h.deps })
   assert.equal(r.exitCode, 0)
   assert.match(h.slack[0], /경고: 노트 쓰기 실패 [2-9]건/)
+  cleanup(h)
+})
+
+test('noteSig: 형식·필드 변경 시 값 변경·verifyNoteSig', () => {
+  const secret = 'k'.repeat(32)
+  const sig = lib.noteSig('ready', '123', '20261125-043000-ab12-WD-1', 'a'.repeat(16), secret)
+  assert.match(sig, /^[0-9a-f]{32}$/)
+  assert.equal(
+    sig,
+    crypto
+      .createHmac('sha256', secret)
+      .update(`ready|123|20261125-043000-ab12-WD-1|${'a'.repeat(16)}`)
+      .digest('hex')
+      .slice(0, 32)
+  )
+  const args = ['ready', '123', '20261125-043000-ab12-WD-1', 'a'.repeat(16), secret]
+  for (const [i, v] of [
+    [0, 'approve'],
+    [1, '124'],
+    [2, '20261125-043000-ab12-WD-2'],
+    [3, 'b'.repeat(16)],
+    [4, 'j'.repeat(32)],
+  ])
+    assert.notEqual(lib.noteSig(...args.map((a, j) => (j === i ? v : a))), sig)
+  assert.equal(lib.verifyNoteSig(...args, sig), true)
+  assert.equal(lib.verifyNoteSig(...args, 'c'.repeat(32)), false)
+  assert.equal(lib.verifyNoteSig(...args, 'short'), false)
+})
+
+test('통합: 서명 키가 없거나 32자 미만이면 ready 노트만 생략하고 Slack 경고, 나머지는 계속', async () => {
+  const h = harness()
+  daily(h, [tIssue()], { noSecret: true })
+  await runDaily({ argv: ['--no-slack'], cfg: h.cfg, deps: h.deps })
+  assert.deepEqual(
+    h.comments.map((c) => c.text),
+    ['autofix:triage p=P2 cat=degraded act=fix']
+  )
+  assert.match(h.slack[0], /경고: 서명 키 없음 — ready 메모 생략/)
+  assert.ok(h.logs.some((l) => l === '서명 키 없음 — ready 메모 생략'))
   cleanup(h)
 })

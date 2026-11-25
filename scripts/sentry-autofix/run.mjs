@@ -443,6 +443,7 @@ function writeSelection(cfg, runId, results, triage = new Map()) {
 // 공용 장애로 run 전체를 멈춘다(그 이슈의 실패로 기록하지 않는다)
 class AbortRun extends Error {}
 
+const NO_SIG_WARN = '서명 키 없음 — ready 메모 생략'
 const AUTH_WARN_72H = 'access token 만료 72시간 이내 — 재로그인 예정'
 const authExpSec = (cfg) => {
   const a = readAuth(cfg)
@@ -1473,10 +1474,21 @@ export async function runDaily({ argv, cfg, deps }) {
     let text
     try {
       if (r.status === 'ready' && r.pending) {
+        const secret = parseEnvFile(cfg.envFile)?.SENTRY_AUTOFIX_NOTE_SECRET
+        if (!secret || secret.length < 32) {
+          if (!fixture) {
+            log('서명 키 없음 — ready 메모 생략')
+            if (!warnings.includes(NO_SIG_WARN)) warnings.push(NO_SIG_WARN)
+          }
+          return
+        }
         const m = JSON.parse(readSafe(path.join(r.pending, 'manifest.json'), 1 << 20))
+        const id = path.basename(r.pending)
+        const sha = String(m.sha256?.['patch.diff']).slice(0, 16)
         text = lib.readyNote({
-          id: path.basename(r.pending),
-          sha: String(m.sha256?.['patch.diff']).slice(0, 16),
+          id,
+          sha,
+          sig: lib.noteSig('ready', issue.id, id, sha, secret),
           files: r.files?.length,
           lines: r.lines,
           verify: r.verify?.ok ? 'ok' : 'fail',

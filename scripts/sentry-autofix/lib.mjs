@@ -180,17 +180,35 @@ export function triageNote({ p, cat, act }) {
 
 const PENDING_ID = /^\d{8}-\d{6}-[0-9a-f]{4}-[A-Za-z0-9-]{3,40}$/
 const count = (n) => Number.isInteger(n) && n >= 0
-export function readyNote({ id, sha, files, lines, verify, review }) {
+// 노트 서명: HMAC-SHA256(secret, `kind|issueId|id|sha`) 앞 32 hex. issueId 는 Sentry 숫자 id
+export function noteSig(kind, issueId, id, sha, secret) {
+  return crypto
+    .createHmac('sha256', secret)
+    .update(`${kind}|${issueId}|${id}|${sha}`)
+    .digest('hex')
+    .slice(0, 32)
+}
+
+export function verifyNoteSig(kind, issueId, id, sha, secret, sig) {
+  if (typeof sig !== 'string' || !/^[0-9a-f]{32}$/.test(sig)) return false
+  return crypto.timingSafeEqual(
+    Buffer.from(noteSig(kind, issueId, id, sha, secret)),
+    Buffer.from(sig)
+  )
+}
+
+export function readyNote({ id, sha, files, lines, verify, review, sig }) {
   if (
     !PENDING_ID.test(id) ||
     !/^[0-9a-f]{16}$/.test(sha) ||
     !count(files) ||
     !count(lines) ||
     !['ok', 'fail'].includes(verify) ||
-    !['approve', 'blocking'].includes(review)
+    !['approve', 'blocking'].includes(review) ||
+    !/^[0-9a-f]{32}$/.test(sig)
   )
     throw new Error('bad-ready')
-  return `autofix:ready id=${id} sha=${sha} files=${files} lines=${lines} verify=${verify} review=${review}`
+  return `autofix:ready id=${id} sha=${sha} files=${files} lines=${lines} verify=${verify} review=${review} sig=${sig}`
 }
 
 export function failedNote(code) {
