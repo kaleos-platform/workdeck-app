@@ -3,21 +3,26 @@ import { isSentryApiConfigured } from '@/lib/sentry/api'
 import { buildErrorRows } from '@/lib/sentry/error-rows'
 import { escapeMrkdwn } from '@/lib/slack/mrkdwn'
 import { OPS_SPACE_ID, sendSystemNotification } from '@/lib/slack/send-notification'
-import { triageReason } from './autofix-status'
+import { isApprovable, triageReason } from './autofix-status'
 
 const ADMIN_URL = 'https://admin.workdeck.work/admin/errors?stage=approval'
 const MAX_ITEMS = 5
 const MAX_TITLE = 80
 
-// Sentry 유래 문자열은 자르고 나서 이스케이프한다
+// Sentry 유래 문자열은 자르고 나서 이스케이프한다. `://` 는 U+2044 로 바꿔 자동 링크를 막는다
 const safe = (s: string, max: number) =>
-  escapeMrkdwn(s.length > max ? `${s.slice(0, max)}…` : s).replace(/\s+/g, ' ')
+  escapeMrkdwn(
+    (s.length > max ? `${s.slice(0, max)}…` : s).replaceAll('://', ':\u2044\u2044')
+  ).replace(/\s+/g, ' ')
 
 const reasonOf = (r: ErrorRow) => (r.triage ? triageReason(r.triage, r) : '판단 없음')
 
 export function buildDigestMessage(rows: ErrorRow[]) {
-  const approval = rows.filter((r) => r.stage === 'approval')
-  const confirm = rows.filter((r) => r.stage === 'confirm')
+  const approval = rows.filter((r) => r.stage === 'approval' && isApprovable(r.autofix))
+  // 검증 실패·리뷰 차단된 ready 는 버튼 없이 확인 필요로
+  const confirm = rows.filter(
+    (r) => r.stage === 'confirm' || (r.stage === 'approval' && !isApprovable(r.autofix))
+  )
   if (approval.length === 0 && confirm.length === 0) return null
 
   const n = (p: 'P1' | 'P2' | 'P3') => rows.filter((r) => r.triage?.p === p).length
@@ -30,7 +35,7 @@ export function buildDigestMessage(rows: ErrorRow[]) {
     const text =
       `*승인 대기* ${safe(r.shortId, 30)} ${safe(r.title, MAX_TITLE)} — ${reasonOf(r)}` +
       ` · 변경 ${a.files ?? 0}개 파일/${a.lines ?? 0}줄` +
-      ` · 검증 ${a.verify === 'ok' ? '통과' : '실패'} · 리뷰 ${a.review ?? 'blocking'}`
+      ` · 검증 통과 · 리뷰 ${a.review}`
     blocks.push(
       { type: 'section', text: { type: 'mrkdwn', text } },
       {
@@ -74,7 +79,7 @@ export function buildDigestMessage(rows: ErrorRow[]) {
 
 export async function runSentryAutofixDigest(): Promise<Record<string, unknown>> {
   if (!isSentryApiConfigured()) return { skipped: true }
-  const { rows } = await buildErrorRows('all')
+  const { rows } = await buildErrorRows('all', Infinity)
   const message = buildDigestMessage(rows)
   if (!message) return { skipped: true }
   const sent = await sendSystemNotification({ ...message, spaceId: OPS_SPACE_ID })

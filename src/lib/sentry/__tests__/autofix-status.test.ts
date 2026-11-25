@@ -114,6 +114,12 @@ test('canApprove 는 최신 ready 의 id·sha 일치만 허용', () => {
   expect(canApprove({ kind: 'request' }, ID, SHA)).toBe(false)
 })
 
+test('canApprove 는 검증 실패·리뷰 차단 ready 를 거부', () => {
+  const bad = (t: string) => parseAutofixState([c(t, '2026-11-25T01:00:00Z')])
+  expect(canApprove(bad(READY.replace('verify=ok', 'verify=fail')), ID, SHA)).toBe(false)
+  expect(canApprove(bad(READY.replace('review=approve', 'review=blocking')), ID, SHA)).toBe(false)
+})
+
 test('parseTriage 는 고정 코드만 받고 최신을 쓴다, 상태에는 영향 없음', () => {
   const t = parseTriage([
     c('autofix:triage p=P2 cat=degraded act=confirm', '2026-11-25T01:00:00Z'),

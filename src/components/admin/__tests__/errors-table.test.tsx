@@ -142,6 +142,13 @@ it('우선순위 배지와 근거 문장, 우선순위 정렬', () => {
   expect(order()).toEqual(['승인 오류', '낮은 오류', '없는 오류'])
 })
 
+it('검증 실패 ready 행은 검증 실패 배지만 있고 PR 올리기 버튼이 없다', () => {
+  const bad = { ...approvalRow, autofix: { ...approvalRow.autofix, verify: 'fail' as const } }
+  render(<ErrorsTable rows={[bad]} {...props} />)
+  expect(screen.getAllByText('검증 실패').length).toBeGreaterThan(0)
+  expect(screen.queryByRole('button', { name: 'PR 올리기' })).toBeNull()
+})
+
 it('승인 대기 행은 PR 올리기로 id·sha 를 보낸다', async () => {
   mockFetch.mockResolvedValue({ ok: true, status: 200 })
   render(<ErrorsTable rows={[approvalRow]} {...props} />)

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { requireOperator, writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
 import { addComment, isSentryApiConfigured, listComments } from '@/lib/sentry/api'
+import { isNoteSigConfigured, noteSig } from '@/lib/sentry/autofix-sig'
 import { canApprove, parseAutofixState, shouldWriteNote } from '@/lib/sentry/autofix-status'
 
 const bodySchema = z.discriminatedUnion('action', [
@@ -26,6 +27,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ iss
   if (!isSentryApiConfigured()) return errorResponse('Sentry API 가 설정되지 않았습니다', 503)
 
   const body = parsed.data
+  if (body.action === 'approve' && !isNoteSigConfigured()) {
+    return errorResponse('승인 서명 키가 설정되지 않았습니다', 503)
+  }
   const { action } = body
   let state
   try {
@@ -43,7 +47,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ iss
   const detail = body.action === 'approve' ? { id: body.id } : {}
   const note =
     body.action === 'approve'
-      ? `autofix:approve id=${body.id} sha=${body.sha} by=admin`
+      ? `autofix:approve id=${body.id} sha=${body.sha} by=admin sig=${noteSig('approve', issueId, body.id, body.sha)}`
       : `autofix:${body.action}`
 
   // 감사 기록이 먼저 — 기록에 실패하면 노트를 쓰지 않는다

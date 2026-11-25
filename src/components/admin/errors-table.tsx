@@ -33,6 +33,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import {
   CATEGORY_LABELS,
+  isApprovable,
   STAGE_LABELS,
   triageReason,
   type AutofixKind,
@@ -175,7 +176,9 @@ function actionsFor(r: ErrorRow): { action: Action; label: string }[] {
   const skip = { action: 'skip' as const, label: '제외' }
   switch (r.stage) {
     case 'approval':
-      return [{ action: 'approve', label: 'PR 올리기' }, skip]
+      return isApprovable(r.autofix)
+        ? [{ action: 'approve', label: 'PR 올리기' }, skip]
+        : [request, skip]
     case 'ignore-suggested':
       return [{ action: 'skip', label: '제외 확정' }, request]
     case 'approved':
@@ -486,7 +489,11 @@ export function ErrorsTable({
                             : undefined
                         }
                       >
-                        {stale ? '진행 중(만료)' : STAGE_LABELS[r.stage]}
+                        {stale
+                          ? '진행 중(만료)'
+                          : r.stage === 'approval' && !isApprovable(r.autofix)
+                            ? '검증 실패'
+                            : STAGE_LABELS[r.stage]}
                       </Badge>
                     )}
                   </TableCell>

@@ -24,6 +24,7 @@ export type AutofixState = {
   verify?: 'ok' | 'fail'
   review?: 'approve' | 'blocking'
   by?: 'admin' | 'slack'
+  // 서명(sig=)은 서버(api.ts listComments)에서만 검증한다 — 이 파일은 클라이언트에서도 쓰이므로 crypto 없음
 }
 
 const PR_URL = /^https:\/\/github\.com\/kaleos-platform\/[\w.-]+\/pull\/\d+$/
@@ -102,9 +103,13 @@ export function shouldWriteNote(current: AutofixState, next: 'request' | 'skip')
   return current.kind !== next
 }
 
-// 승인은 최신 ready 의 id·sha 와 정확히 일치할 때만
+// 검증 통과·리뷰 승인된 ready 만 승인 가능
+export const isApprovable = (s: AutofixState) =>
+  s.kind === 'ready' && s.verify === 'ok' && s.review === 'approve'
+
+// 승인은 최신 ready 의 id·sha 와 정확히 일치하고 검증·리뷰가 통과일 때만
 export function canApprove(state: AutofixState, id: string, sha: string): boolean {
-  return state.kind === 'ready' && state.id === id && state.sha === sha
+  return isApprovable(state) && state.id === id && state.sha === sha
 }
 
 export type Triage = {

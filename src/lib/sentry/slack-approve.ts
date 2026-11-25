@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { addComment, isSentryApiConfigured, listComments } from '@/lib/sentry/api'
+import { isNoteSigConfigured, noteSig } from '@/lib/sentry/autofix-sig'
 import { canApprove, parseAutofixState } from '@/lib/sentry/autofix-status'
 import { resolveSlackMember } from '@/lib/slack/member-link'
 import { NOTIFICATION_CHANNEL_KIND } from '@/lib/slack/notification-target'
@@ -50,6 +51,7 @@ export async function handleSentryAutofixApprove(input: {
   if (user?.platformRole !== 'OPERATOR') return '운영자만 승인할 수 있습니다.'
 
   if (!isSentryApiConfigured()) return 'Sentry 연결이 설정되지 않아 승인할 수 없습니다.'
+  if (!isNoteSigConfigured()) return '승인 서명 키가 설정되지 않았습니다'
   try {
     if (!canApprove(parseAutofixState(await listComments(issueId)), id, sha)) {
       return '수정안이 바뀌었거나 이미 처리됐습니다. 어드민에서 확인하세요.'
@@ -59,12 +61,19 @@ export async function handleSentryAutofixApprove(input: {
   }
 
   const meta = { action: 'approve', id, via: 'slack' }
-  await writeAuditLog(member.userId, 'sentryIssue.autofix', 'sentryIssue', issueId, {
-    ...meta,
-    status: 'requested',
-  })
   try {
-    await addComment(issueId, `autofix:approve id=${id} sha=${sha} by=slack`)
+    await writeAuditLog(member.userId, 'sentryIssue.autofix', 'sentryIssue', issueId, {
+      ...meta,
+      status: 'requested',
+    })
+  } catch {
+    return '승인을 기록하지 못했습니다. 잠시 후 다시 시도하세요.'
+  }
+  try {
+    await addComment(
+      issueId,
+      `autofix:approve id=${id} sha=${sha} by=slack sig=${noteSig('approve', issueId, id, sha)}`
+    )
   } catch {
     await writeAuditLog(member.userId, 'sentryIssue.autofix', 'sentryIssue', issueId, {
       ...meta,

@@ -7,7 +7,8 @@ const PRIORITY_RANK = { P1: 1, P2: 2, P3: 3 } as const
 
 // 어드민 오류 화면과 digest cron 이 공유하는 행 구성 — 우선순위 → 사용자 → 발생 순 상위 25건
 export async function buildErrorRows(
-  service: 'all' | 'web' | 'worker'
+  service: 'all' | 'web' | 'worker',
+  limit = 25
 ): Promise<{ rows: ErrorRow[]; counts: { web: number; worker: number } }> {
   const [web, worker] = await Promise.all([listIssues('web'), listIssues('worker')])
   const counts = { web: web.length, worker: worker.length }
@@ -25,13 +26,14 @@ export async function buildErrorRows(
       }
     })
   )
-  const rank = (r: ErrorRow) => (r.triage ? PRIORITY_RANK[r.triage.p] : 4)
+  const rank = (r: ErrorRow) =>
+    r.stage === 'approval' ? 0 : r.triage ? PRIORITY_RANK[r.triage.p] : 4
   const rows = candidates
     .map((i, idx): ErrorRow => {
       const { autofix, triage } = notes[idx]
       return { ...i, autofix, triage, stage: deriveStage(autofix, triage) }
     })
     .sort((a, b) => rank(a) - rank(b) || b.userCount - a.userCount || b.count - a.count)
-    .slice(0, 25)
+    .slice(0, limit)
   return { rows, counts }
 }

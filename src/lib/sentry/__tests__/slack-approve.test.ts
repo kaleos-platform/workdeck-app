@@ -25,12 +25,15 @@ jest.mock('@/lib/slack/token-crypto', () => ({ decryptBotToken: () => 'tok' }))
 jest.mock('@/lib/slack/notification-target', () => ({ NOTIFICATION_CHANNEL_KIND: 'notifications' }))
 jest.mock('@/lib/slack/send-notification', () => ({ OPS_SPACE_ID: 'ops' }))
 jest.mock('@/lib/admin/auth', () => ({ writeAuditLog: (...a: unknown[]) => writeAuditLog(...a) }))
+jest.mock('server-only', () => ({}))
 jest.mock('@/lib/sentry/api', () => ({
   isSentryApiConfigured: () => true,
   listComments: (...a: unknown[]) => listComments(...a),
   addComment: (...a: unknown[]) => addComment(...a),
 }))
 
+process.env.SENTRY_AUTOFIX_NOTE_SECRET = 's'.repeat(40)
+import { noteSig } from '../autofix-sig'
 import { handleSentryAutofixApprove } from '../slack-approve'
 
 const ID = '20261125-043000-ab12-WEB-1A'
@@ -117,7 +120,10 @@ describe('handleSentryAutofixApprove', () => {
     )
     expect(order).toEqual(['audit', 'comment'])
     expect(addComment).toHaveBeenCalledTimes(1)
-    expect(addComment).toHaveBeenCalledWith('99', `autofix:approve id=${ID} sha=${SHA} by=slack`)
+    expect(addComment).toHaveBeenCalledWith(
+      '99',
+      `autofix:approve id=${ID} sha=${SHA} by=slack sig=${noteSig('approve', '99', ID, SHA)}`
+    )
     expect(writeAuditLog).toHaveBeenCalledWith('u1', 'sentryIssue.autofix', 'sentryIssue', '99', {
       action: 'approve',
       id: ID,
@@ -131,5 +137,33 @@ describe('handleSentryAutofixApprove', () => {
     expect(await handleSentryAutofixApprove(input)).toContain('쓰지 못했습니다')
     expect(writeAuditLog).toHaveBeenCalledTimes(2)
     expect(writeAuditLog.mock.calls[1][4]).toMatchObject({ status: 'failed' })
+  })
+
+  it('서명 키가 없으면 안내만 하고 아무것도 쓰지 않는다', async () => {
+    const key = process.env.SENTRY_AUTOFIX_NOTE_SECRET
+    delete process.env.SENTRY_AUTOFIX_NOTE_SECRET
+    try {
+      expect(await handleSentryAutofixApprove(input)).toBe('승인 서명 키가 설정되지 않았습니다')
+    } finally {
+      process.env.SENTRY_AUTOFIX_NOTE_SECRET = key
+    }
+    expect(writeAuditLog).not.toHaveBeenCalled()
+    expect(addComment).not.toHaveBeenCalled()
+  })
+
+  it('검증 실패 ready 는 승인 불가', async () => {
+    listComments.mockResolvedValue([
+      { ...ready[0], text: ready[0].text.replace('verify=ok', 'verify=fail') },
+    ])
+    expect(await handleSentryAutofixApprove(input)).toContain('이미 처리됐습니다')
+    expect(addComment).not.toHaveBeenCalled()
+  })
+
+  it('첫 감사 로그 실패: 안내하고 노트를 쓰지 않는다', async () => {
+    writeAuditLog.mockRejectedValueOnce(new Error('db'))
+    expect(await handleSentryAutofixApprove(input)).toBe(
+      '승인을 기록하지 못했습니다. 잠시 후 다시 시도하세요.'
+    )
+    expect(addComment).not.toHaveBeenCalled()
   })
 })

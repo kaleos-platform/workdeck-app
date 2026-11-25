@@ -1,4 +1,5 @@
 import 'server-only'
+import { verifyNoteSig } from './autofix-sig'
 
 const BASE = 'https://sentry.io/api/0'
 const org = () => process.env.SENTRY_ORG ?? 'kaleos'
@@ -62,6 +63,15 @@ export async function listIssues(service: 'web' | 'worker'): Promise<SentryIssue
   }))
 }
 
+// ready · approve 노트는 서명이 맞는 것만 인정한다 (Sentry 접근권만으로 위조 불가)
+function isAuthentic(issueId: string, text: string): boolean {
+  const first = text.trim().split('\n')[0]
+  const kind = /^autofix:(ready|approve)(\s|$)/.exec(first)?.[1] as 'ready' | 'approve' | undefined
+  if (!kind) return true
+  const f = Object.fromEntries([...first.matchAll(/(\w+)=(\S+)/g)].map((m) => [m[1], m[2]]))
+  return verifyNoteSig(kind, issueId, f.id ?? '', f.sha ?? '', f.sig)
+}
+
 export async function listComments(
   issueId: string
 ): Promise<{ text: string; dateCreated: string }[]> {
@@ -70,7 +80,9 @@ export async function listComments(
     data?: { text?: string }
     dateCreated: string
   }[]
-  return data.map((c) => ({ text: c.data?.text ?? '', dateCreated: c.dateCreated }))
+  return data
+    .map((c) => ({ text: c.data?.text ?? '', dateCreated: c.dateCreated }))
+    .filter((c) => isAuthentic(issueId, c.text))
 }
 
 export async function addComment(issueId: string, text: string): Promise<void> {

@@ -10,6 +10,7 @@ const isSentryApiConfigured = jest.fn()
 jest.mock('@/lib/sentry/error-rows', () => ({
   buildErrorRows: (...a: unknown[]) => buildErrorRows(...a),
 }))
+jest.mock('server-only', () => ({}))
 jest.mock('@/lib/sentry/api', () => ({ isSentryApiConfigured: () => isSentryApiConfigured() }))
 jest.mock('@/lib/slack/send-notification', () => ({
   OPS_SPACE_ID: 'ops',
@@ -93,6 +94,33 @@ describe('buildDigestMessage', () => {
     expect(json).not.toContain('<!channel>')
     expect(json).toContain('&lt;@U123&gt;')
     expect(json).not.toContain('a'.repeat(100))
+  })
+
+  it('검증 실패 ready 는 버튼 없이 확인 필요로', () => {
+    const bad = approval({
+      autofix: {
+        kind: 'ready',
+        id: ID,
+        sha: SHA,
+        files: 1,
+        lines: 1,
+        verify: 'fail',
+        review: 'approve',
+      },
+    })
+    const msg = buildDigestMessage([bad])!
+    const json = JSON.stringify(msg.blocks)
+    expect(json).not.toContain('sentry_autofix_approve')
+    expect(json).not.toContain('승인 대기*')
+    expect(json).toContain('*확인 필요* WEB-1A')
+  })
+
+  it('제목의 URL 은 자동 링크되지 않는다', () => {
+    const json = JSON.stringify(
+      buildDigestMessage([approval({ title: 'see https://evil.example/x' })])!.blocks
+    )
+    expect(json).not.toContain('https://evil')
+    expect(json).toContain('https:\u2044\u2044evil.example')
   })
 
   it('승인 대기·확인 필요는 각각 최대 5건', () => {
