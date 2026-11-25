@@ -28,3 +28,7 @@ export const createSpaceSchema = z.object({
 
 export type BanUserInput = z.infer<typeof banUserSchema>
 export type UpdateMembershipInput = z.infer<typeof updateMembershipSchema>
+
+export const mfaRequiredSchema = z.object({
+  mfaRequired: z.boolean(),
+})

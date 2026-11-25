@@ -56,6 +56,8 @@ type AdminUserDetail = {
   avatarUrl: string | null
   createdAt: string
   isOperator: boolean
+  mfaRequired: boolean
+  totpEnrolled: boolean | null
   spaceMemberships: SpaceMembership[]
 }
 
@@ -73,6 +75,7 @@ export function UserDetail({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [banPending, setBanPending] = useState(false)
+  const [mfaPending, setMfaPending] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('')
   const [deletePending, setDeletePending] = useState(false)
@@ -117,6 +120,25 @@ export function UserDetail({ userId }: { userId: string }) {
       if (res.ok) await load()
     } finally {
       setBanPending(false)
+    }
+  }
+
+  async function toggleMfaRequired(next: boolean) {
+    setMfaPending(true)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/mfa-required`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mfaRequired: next }),
+      })
+      if (res.ok) {
+        await load()
+      } else {
+        const data = await res.json().catch(() => null)
+        alert(data?.message ?? '2단계 인증 설정 변경에 실패했습니다')
+      }
+    } finally {
+      setMfaPending(false)
     }
   }
 
@@ -286,6 +308,21 @@ export function UserDetail({ userId }: { userId: string }) {
                 <Badge variant="outline">정상</Badge>
               )}
             </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">2단계 인증</p>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={user.isOperator || user.mfaRequired}
+                disabled={user.isOperator || mfaPending}
+                onCheckedChange={toggleMfaRequired}
+                aria-label="2단계 인증 필수"
+              />
+              <span>
+                {user.totpEnrolled === null ? '—' : user.totpEnrolled ? '인증 앱 등록' : '미등록'}
+              </span>
+            </div>
+            {user.isOperator && <p className="text-xs text-muted-foreground">운영자는 항상 필수</p>}
           </div>
         </CardContent>
       </Card>
