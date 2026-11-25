@@ -1,5 +1,12 @@
 /** @jest-environment node */
-import { parseAutofixState, shouldWriteNote } from '../autofix-status'
+import {
+  canApprove,
+  deriveStage,
+  parseAutofixState,
+  parseTriage,
+  shouldWriteNote,
+  triageReason,
+} from '../autofix-status'
 
 const c = (text: string, dateCreated: string) => ({ text, dateCreated })
 
@@ -69,4 +76,78 @@ describe('parseAutofixState — 리뷰 보강', () => {
       ]).prUrl
     ).toBeUndefined()
   })
+})
+
+const ID = '20261125-070000-ab12-APP-1'
+const SHA = '0123456789abcdef'
+const READY = `autofix:ready id=${ID} sha=${SHA} files=2 lines=14 verify=ok review=approve`
+
+test('ready · approve 파싱, id·sha 가 틀리면 무시하고 이전 노트로 돌아간다', () => {
+  expect(parseAutofixState([c(READY, '2026-11-25T01:00:00Z')])).toEqual({
+    kind: 'ready',
+    at: '2026-11-25T01:00:00Z',
+    id: ID,
+    sha: SHA,
+    files: 2,
+    lines: 14,
+    verify: 'ok',
+    review: 'approve',
+  })
+  expect(
+    parseAutofixState([c(`autofix:approve id=${ID} sha=${SHA} by=slack`, '2026-11-25T02:00:00Z')])
+  ).toMatchObject({ kind: 'approve', id: ID, sha: SHA, by: 'slack' })
+  const s = parseAutofixState([
+    c('autofix:request', '2026-11-25T00:00:00Z'),
+    c(
+      `autofix:ready id=bad sha=${SHA} files=1 lines=1 verify=ok review=approve`,
+      '2026-11-25T01:00:00Z'
+    ),
+    c(`autofix:approve id=${ID} sha=XYZ by=admin`, '2026-11-25T02:00:00Z'),
+  ])
+  expect(s.kind).toBe('request')
+})
+
+test('canApprove 는 최신 ready 의 id·sha 일치만 허용', () => {
+  const s = parseAutofixState([c(READY, '2026-11-25T01:00:00Z')])
+  expect(canApprove(s, ID, SHA)).toBe(true)
+  expect(canApprove(s, ID, 'fedcba9876543210')).toBe(false)
+  expect(canApprove({ kind: 'request' }, ID, SHA)).toBe(false)
+})
+
+test('parseTriage 는 고정 코드만 받고 최신을 쓴다, 상태에는 영향 없음', () => {
+  const t = parseTriage([
+    c('autofix:triage p=P2 cat=degraded act=confirm', '2026-11-25T01:00:00Z'),
+    c('autofix:triage p=P1 cat=data-loss act=fix', '2026-11-25T02:00:00Z'),
+    c('autofix:triage p=P9 cat=data-loss act=fix', '2026-11-25T03:00:00Z'),
+    c('autofix:triage p=P1 cat=data-loss act=fix extra', '2026-11-25T04:00:00Z'),
+  ])
+  expect(t).toEqual({ p: 'P1', cat: 'data-loss', act: 'fix', at: '2026-11-25T02:00:00Z' })
+  expect(parseTriage([])).toBeNull()
+  expect(
+    parseAutofixState([c('autofix:triage p=P1 cat=data-loss act=fix', '2026-11-25T02:00:00Z')]).kind
+  ).toBe('none')
+})
+
+test('deriveStage', () => {
+  const t = (act: 'fix' | 'confirm' | 'ignore') =>
+    ({ p: 'P1', cat: 'noise', act, at: 'x' }) as const
+  expect(deriveStage({ kind: 'none' }, null)).toBe('unjudged')
+  expect(deriveStage({ kind: 'none' }, t('fix'))).toBe('fix-planned')
+  expect(deriveStage({ kind: 'none' }, t('confirm'))).toBe('confirm')
+  expect(deriveStage({ kind: 'none' }, t('ignore'))).toBe('ignore-suggested')
+  expect(deriveStage({ kind: 'ready' }, t('fix'))).toBe('approval')
+  expect(deriveStage({ kind: 'approve' }, null)).toBe('approved')
+  expect(deriveStage({ kind: 'skip' }, t('fix'))).toBe('skipped')
+  expect(deriveStage({ kind: 'pr' }, null)).toBe('pr')
+})
+
+test('triageReason 은 코드와 수치로만 만든다', () => {
+  const now = Date.parse('2026-11-25T00:00:00Z')
+  const t = { p: 'P1', cat: 'data-loss', act: 'fix', at: 'x' } as const
+  expect(triageReason(t, { count: 48, userCount: 3, firstSeen: '2026-11-22T12:00:00Z' }, now)).toBe(
+    '데이터 누락 · 3일간 48회 · 사용자 3명'
+  )
+  expect(triageReason(t, { count: 2, userCount: 0, firstSeen: '2026-11-25T00:00:00Z' }, now)).toBe(
+    '데이터 누락 · 1일간 2회'
+  )
 })

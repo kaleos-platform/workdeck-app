@@ -12,6 +12,7 @@ export type SentryIssue = {
   permalink: string
   count: number
   userCount: number
+  firstSeen: string
   lastSeen: string
   numComments: number
   service: 'web' | 'worker'
@@ -54,6 +55,7 @@ export async function listIssues(service: 'web' | 'worker'): Promise<SentryIssue
     permalink: String(i.permalink),
     count: Number(i.count),
     userCount: Number(i.userCount ?? 0),
+    firstSeen: String(i.firstSeen),
     lastSeen: String(i.lastSeen),
     numComments: Number(i.numComments ?? 0),
     service,
