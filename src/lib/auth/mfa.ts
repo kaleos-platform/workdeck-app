@@ -5,6 +5,7 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
 import { isMfaFresh } from './mfa-policy'
 
 export async function isAal2Fresh(): Promise<boolean> {
@@ -16,9 +17,30 @@ export async function isAal2Fresh(): Promise<boolean> {
 const mfaRequired = () =>
   NextResponse.json({ message: '2단계 인증이 필요합니다', code: 'MFA_REQUIRED' }, { status: 403 })
 
-export async function requireAal2(): Promise<NextResponse | null> {
+/**
+ * 현재 사용자에게 2단계 인증이 필수인지 — 계정 단위 mfaRequired 또는 운영자.
+ * claims 를 못 읽으면 닫힘(true), User 행이 없으면 false.
+ */
+export async function isMfaRequiredForCurrentUser(): Promise<boolean> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.getClaims()
+  const sub = data?.claims?.sub
+  if (error || !sub) return true
+  const user = await prisma.user.findUnique({
+    where: { id: sub },
+    select: { mfaRequired: true, platformRole: true },
+  })
+  if (!user) return false
+  return user.mfaRequired || user.platformRole === 'OPERATOR'
+}
+
+export async function requireAal2(
+  opts: { ignoreUserFlag?: boolean } = {}
+): Promise<NextResponse | null> {
   // 비상 해제 스위치 — 운영자 게이트(requireOperator)와 같은 변수 하나로 같이 푼다(Task 10 Step 6).
   if (process.env.ADMIN_REQUIRE_MFA === 'false') return null
+  // 계정이 필수로 켜지 않았으면 통과 — 운영자 영역 등은 ignoreUserFlag 로 항상 요구한다.
+  if (!opts.ignoreUserFlag && !(await isMfaRequiredForCurrentUser())) return null
   return (await isAal2Fresh()) ? null : mfaRequired()
 }
 

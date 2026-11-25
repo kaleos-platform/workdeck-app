@@ -14,6 +14,7 @@ const now = Math.floor(Date.now() / 1000)
 function aal(level: string, totpAgeSec: number | null) {
   ;(createClient as jest.Mock).mockResolvedValue({
     auth: {
+      getClaims: jest.fn().mockResolvedValue({ data: { claims: { sub: 'op' } }, error: null }),
       mfa: {
         getAuthenticatorAssuranceLevel: jest.fn().mockResolvedValue({
           data: {
