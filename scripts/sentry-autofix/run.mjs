@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Sentry 오류 자동 수정 러너 — dry 경로 전용 오케스트레이터(호스트, LLM 없음).
-// 이 파일에는 Sentry 쓰기·원격 저장소 쓰기·PR 생성 경로가 없다. Sentry 는 GET 만 쓴다.
-// 사용: node run.mjs [--issue <shortId>] [--fixture <json>] [--no-slack]
+// Sentry 는 GET 과 이슈 노트(comment) 쓰기만 한다(--no-write 로 끔). 원격 저장소 쓰기·PR 생성 경로는 없다.
+// 사용: node run.mjs [--issue <shortId>] [--fixture <json>] [--no-slack] [--no-write]
 import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -42,6 +42,9 @@ export function defaultConfig(env = process.env) {
     authRefreshTimeoutMs: 120_000,
     lockMaxMs: 4 * 60 * MIN,
     maxFailures: 3,
+    triageLimitMs: 10 * MIN, // 판단 배치당
+    triageDeadlineMs: 30 * MIN, // 판단 전체
+    noWrite: false, // true 면 Sentry 노트를 쓰지 않는다(--no-write 와 동일)
   }
 }
 
@@ -242,7 +245,7 @@ export function refreshCodexAuth({ codexBin, codexDir, timeoutMs = 120_000 }) {
 }
 
 export function realDeps(cfg, { noSlack }) {
-  return {
+  const deps = {
     refreshAuth: () =>
       refreshCodexAuth({
         codexBin: cfg.codexBin,
@@ -279,14 +282,33 @@ export function realDeps(cfg, { noSlack }) {
           resolve({ code: code ?? 1, stdout: out, stderr: err, timedOut })
         })
       }),
-    // Sentry 조회 — GET 만(메서드 인자를 받지 않는다)
-    fetchJson: async (url, token) => {
+    // Sentry 조회 — GET 만(메서드 인자를 받지 않는다). Link 헤더(페이지 이동)도 돌려준다
+    fetchPage: async (url, token) => {
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
         signal: AbortSignal.timeout(15_000),
       })
       if (!res.ok) throw new Error(`Sentry API ${res.status}`)
-      return res.json()
+      return { body: await res.json(), link: res.headers.get('link') }
+    },
+    fetchJson: async (url, token) => (await deps.fetchPage(url, token)).body,
+    // Sentry 이슈 노트 쓰기 — 이 호출이 Sentry 쓰기의 유일한 경로
+    addComment: async (issueId, text) => {
+      const env = parseEnvFile(cfg.envFile) ?? {}
+      const org = encodeURIComponent(env.SENTRY_ORG ?? 'kaleos')
+      const res = await fetch(
+        `https://sentry.io/api/0/organizations/${org}/issues/${encodeURIComponent(issueId)}/comments/`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${env.SENTRY_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text }),
+          signal: AbortSignal.timeout(10_000),
+        }
+      )
+      if (!res.ok) throw new Error(`Sentry API ${res.status}`)
     },
     slack: async (text) => {
       if (noSlack) return void console.log(text)
@@ -344,6 +366,7 @@ export function realDeps(cfg, { noSlack }) {
       }
     },
   }
+  return deps
 }
 
 // ---------- 보조 ----------
@@ -354,10 +377,11 @@ export function makeRunId(now) {
 }
 
 export function parseArgs(argv) {
-  const out = { issue: null, fixture: null, noSlack: false }
+  const out = { issue: null, fixture: null, noSlack: false, noWrite: false }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--no-slack') out.noSlack = true
+    else if (a === '--no-write') out.noWrite = true
     else if (a === '--issue' && argv[i + 1]) out.issue = argv[++i]
     else if (a === '--fixture' && argv[i + 1]) out.fixture = argv[++i]
     else throw new Error(`알 수 없는 인자: ${a}`)
@@ -400,13 +424,18 @@ const writeJsonAtomic = (file, obj) => {
 }
 
 // 선정 결과 기록(제목·메시지 없이 shortId·상태·사유 코드만). 기록 실패는 run 을 막지 않는다
-function writeSelection(cfg, runId, results) {
+function writeSelection(cfg, runId, results, triage = new Map()) {
   try {
     const dir = path.join(cfg.stateDir, 'runs', runId)
     fs.mkdirSync(dir, { recursive: true, mode: 0o700 })
     writeJsonAtomic(
       path.join(dir, 'selection.json'),
-      results.map((r) => ({ shortId: r.shortId, status: r.status, reason: r.reasons?.[0] ?? null }))
+      results.map((r) => ({
+        shortId: r.shortId,
+        status: r.status,
+        reason: r.reasons?.[0] ?? null,
+        ...triage.get(r.shortId),
+      }))
     )
   } catch {}
 }
@@ -551,6 +580,22 @@ function makeStepRunner({ cfg, deps, runId, deadline, issueDir, safeId }) {
   return { run }
 }
 
+// 커스텀 provider: 컨테이너에는 토큰이 없고 프록시가 인증을 붙인다. 서버 실행 도구(web search)는 끈다
+const codexCmd = (cwd, outFile) =>
+  [
+    'exec codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral',
+    '-m "$MODEL"',
+    `-c 'model_provider="rp"'`,
+    `-c 'model_providers.rp.name="rp"'`,
+    `-c "model_providers.rp.base_url=\\"$PROXY_URL\\""`,
+    `-c 'model_providers.rp.wire_api="responses"'`,
+    `-c 'model_providers.rp.requires_openai_auth=false'`,
+    `-c 'model_providers.rp.env_http_headers={ "x-autofix-secret" = "AUTOFIX_SECRET" }'`,
+    `-c 'web_search="disabled"'`,
+    `-C ${cwd} -o ${outFile} -`,
+  ].join(' ')
+const codexHome = '/codex-home:rw,nosuid,size=64m,uid=1000,gid=1000,mode=700'
+
 const FIX_LIMIT = 25 * MIN
 const REVIEW_LIMIT = 10 * MIN
 
@@ -606,8 +651,8 @@ export function verifySteps(files) {
 }
 
 // 인증 프록시: 전용 auth.json 을 읽기 전용 파일로 이 컨테이너에만 마운트한다
-async function startProxy({ cfg, deps, runId, secret }) {
-  const name = `workdeck-autofix-proxy-${runId}`
+async function startProxy({ cfg, deps, runId, secret, tag = '' }) {
+  const name = `workdeck-autofix-proxy-${runId}${tag}`
   const r0 = await withSecretEnv(cfg, { PROXY_SECRET: secret }, (envFile) =>
     deps.docker(
       buildRunArgs({
@@ -793,27 +838,12 @@ export async function processIssue({ cfg, deps, runId, deadline, issue, event })
       const secret = crypto.randomBytes(32).toString('hex')
       proxy = await startProxy({ cfg, deps, runId, secret })
       const proxyUrl = `http://${proxy}:8080/v1`
-      // 커스텀 provider: 컨테이너에는 토큰이 없고 프록시가 인증을 붙인다. 서버 실행 도구(web search)는 끈다
-      const codexCmd = (cwd, outFile) =>
-        [
-          'exec codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral',
-          '-m "$MODEL"',
-          `-c 'model_provider="rp"'`,
-          `-c 'model_providers.rp.name="rp"'`,
-          `-c "model_providers.rp.base_url=\\"$PROXY_URL\\""`,
-          `-c 'model_providers.rp.wire_api="responses"'`,
-          `-c 'model_providers.rp.requires_openai_auth=false'`,
-          `-c 'model_providers.rp.env_http_headers={ "x-autofix-secret" = "AUTOFIX_SECRET" }'`,
-          `-c 'web_search="disabled"'`,
-          `-C ${cwd} -o ${outFile} -`,
-        ].join(' ')
       const codexEnv = {
         CODEX_HOME: '/codex-home',
         HOME: '/tmp',
         MODEL: cfg.model,
         PROXY_URL: proxyUrl,
       }
-      const codexHome = '/codex-home:rw,nosuid,size=64m,uid=1000,gid=1000,mode=700'
 
       let feedback = []
       for (let attempt = 1; attempt <= cfg.maxRetryFix; attempt++) {
@@ -1277,6 +1307,116 @@ async function finalize({
   res.pending = dir
 }
 
+// ---------- AI 판단(triage) ----------
+// 45분 같은 시간 한도 + 디스크 감시를 걸고 fn(deadline) 실행. 디스크가 모자라 kill 했으면 diskLow=true
+async function watched(cfg, deps, runId, ms, fn) {
+  const deadline = deps.now() + ms
+  const timer = setTimeout(() => killRun(deps, runId), ms)
+  timer.unref?.()
+  let diskLow = false
+  const baseline = deps.freeBytes()
+  const watch = setInterval(() => {
+    const free = deps.freeBytes()
+    if (free < cfg.diskKillBytes || baseline - free > cfg.diskDropBytes) {
+      diskLow = true
+      killRun(deps, runId)
+    }
+  }, cfg.diskPollMs)
+  watch.unref?.()
+  let value
+  try {
+    value = await fn(deadline)
+  } finally {
+    clearTimeout(timer)
+    clearInterval(watch)
+  }
+  return { value, diskLow }
+}
+
+// 이슈 전체를 40건 이하 배치로 Codex 에 판단시킨다(수정 단계와 같은 격리: 내부망·인증 프록시·토큰 없음·repo 없음).
+// 실패한 배치는 판단 없음(run 은 계속). 반환 Map(shortId → {p,cat,act})
+async function runTriage({ cfg, deps, runId, deadline, issues, warnings }) {
+  const triage = new Map()
+  const inputs = issues
+    .filter((i) => /^[A-Za-z0-9-]{3,40}$/.test(i.shortId))
+    .map((i) => lib.triageInput(i))
+  if (!inputs.length) return triage
+  const triageDir = path.join(cfg.stateDir, 'runs', runId, 'triage')
+  fs.mkdirSync(triageDir, { recursive: true, mode: 0o700 })
+  const steps = makeStepRunner({
+    cfg,
+    deps,
+    runId,
+    deadline,
+    issueDir: triageDir,
+    safeId: 'triage',
+  })
+  const secret = crypto.randomBytes(32).toString('hex')
+  let proxy = null
+  try {
+    try {
+      proxy = await startProxy({ cfg, deps, runId, secret, tag: '-triage' })
+    } catch (e) {
+      if (!(e instanceof AbortRun)) throw e
+      warnings.push(`판단 프록시 기동 실패(${e.message})`)
+      return triage
+    }
+    const codexEnv = {
+      CODEX_HOME: '/codex-home',
+      HOME: '/tmp',
+      MODEL: cfg.model,
+      PROXY_URL: `http://${proxy}:8080/v1`,
+    }
+    fs.writeFileSync(path.join(triageDir, 'prompt.md'), promptText('triage.md'))
+    for (let n = 0, b = 1; n < inputs.length; n += lib.TRIAGE_BATCH, b++) {
+      const batch = inputs.slice(n, n + lib.TRIAGE_BATCH)
+      const A = path.join(triageDir, `b${b}`)
+      const dirIn = path.join(A, 'in')
+      const dirOut = path.join(A, 'out')
+      fs.mkdirSync(dirIn, { recursive: true })
+      fs.mkdirSync(dirOut)
+      fs.writeFileSync(path.join(dirIn, 'input.json'), JSON.stringify(batch))
+      fs.copyFileSync(path.join(triageDir, 'prompt.md'), path.join(dirIn, 'prompt.md'))
+      try {
+        const r = await steps.run(`triage${b}`, {
+          net: cfg.intNet,
+          image: cfg.codexImage,
+          limitMs: cfg.triageLimitMs,
+          workdir: '/in',
+          mounts: [
+            { host: dirIn, ctr: '/in', ro: true },
+            { host: dirOut, ctr: '/out' },
+          ],
+          tmpfs: [codexHome],
+          env: codexEnv,
+          secretEnv: { AUTOFIX_SECRET: secret },
+          cmd: ['sh', '-c', `${codexCmd('/in', '/out/triage.json')} < /in/prompt.md`],
+        })
+        if (r.code !== 0) continue
+        const text = readSafe(path.join(dirOut, 'triage.json'), 64 * 1024) ?? ''
+        for (const [k, v] of lib.parseTriageOutput(
+          text,
+          batch.map((x) => x.shortId)
+        ))
+          triage.set(k, v)
+      } catch (e) {
+        if (e.message === 'deadline') break // 남은 배치는 판단 없음
+        throw e
+      }
+    }
+  } finally {
+    if (proxy) {
+      try {
+        const l = await deps.docker(['logs', '--tail', '300', proxy])
+        fs.writeFileSync(path.join(triageDir, 'logs', 'proxy.log'), `${l.stdout}\n${l.stderr}`)
+      } catch {}
+      await deps.docker(['kill', proxy])
+    }
+    if (!(await cleanDir({ cfg, deps, runId, dir: triageDir }))) warnings.push('정리 실패: triage')
+  }
+  return triage
+}
+
 // ---------- 메인 ----------
 export async function runDaily({ argv, cfg, deps }) {
   const args = parseArgs(argv)
@@ -1284,8 +1424,26 @@ export async function runDaily({ argv, cfg, deps }) {
   const fixture = args.fixture ? JSON.parse(fs.readFileSync(args.fixture, 'utf8')) : null
   const results = []
   const warnings = []
+  let triage = new Map()
+  let triageCounts
   const report = (extra) =>
-    deps.slack(lib.buildSlackSummary({ runId, results, warnings, ...extra }))
+    deps.slack(lib.buildSlackSummary({ runId, results, warnings, triage: triageCounts, ...extra }))
+  // Sentry 노트 쓰기: 픽스처·--no-write 는 쓰지 않고 로그만. 실패는 Slack 경고로 모아 run 은 계속
+  const canWrite = !fixture && !args.noWrite && !cfg.noWrite
+  const log = deps.log ?? console.log
+  let writeFails = 0
+  let writeWarnAt = -1
+  const putNote = async (issueId, text) => {
+    if (fixture) return
+    if (!canWrite) return void log(`[no-write] ${issueId}: ${text}`)
+    try {
+      await deps.addComment(issueId, text)
+    } catch {
+      writeFails++
+      if (writeWarnAt < 0) writeWarnAt = warnings.push('') - 1
+      warnings[writeWarnAt] = `노트 쓰기 실패 ${writeFails}건`
+    }
+  }
 
   const pre = await preflight(cfg, deps)
   const problems = [...pre.problems]
@@ -1310,6 +1468,30 @@ export async function runDaily({ argv, cfg, deps }) {
   }
   process.on('SIGTERM', onSignal)
   process.on('SIGINT', onSignal)
+  // 처리 결과 노트: ready → ready 노트(manifest 기준), 기록이 남은 실패 → failed 노트. 그 외(insufficient 등)는 없음
+  const putOutcomeNote = async (issue, r) => {
+    let text
+    try {
+      if (r.status === 'ready' && r.pending) {
+        const m = JSON.parse(readSafe(path.join(r.pending, 'manifest.json'), 1 << 20))
+        text = lib.readyNote({
+          id: path.basename(r.pending),
+          sha: String(m.sha256?.['patch.diff']).slice(0, 16),
+          files: r.files?.length,
+          lines: r.lines,
+          verify: r.verify?.ok ? 'ok' : 'fail',
+          review: r.review === 'approve' ? 'approve' : 'blocking',
+        })
+      } else if (
+        (r.status === 'failed' || r.status === 'blocked') &&
+        (r.pending || r.reasons.some((x) => RECORD_REASONS.has(x)))
+      )
+        text = lib.failedNote(r.reasons[0])
+    } catch {
+      return // 노트를 만들 수 없으면(코드 형식 위반 등) 쓰지 않는다
+    }
+    if (text) await putNote(issue.id, text)
+  }
   const failFile = path.join(cfg.stateDir, 'failures.json')
   let failures = {}
   try {
@@ -1351,6 +1533,11 @@ export async function runDaily({ argv, cfg, deps }) {
     const org = encodeURIComponent(parseEnvFile(cfg.envFile)?.SENTRY_ORG ?? 'kaleos')
     const project = encodeURIComponent(parseEnvFile(cfg.envFile)?.SENTRY_PROJECT ?? 'workdeck-app')
     const get = (p) => deps.fetchJson(`https://sentry.io/api/0${p}`, token)
+    // fetchPage 가 없는 대역은 Link 헤더 없는 단일 페이지로 본다
+    const getPage = async (p) =>
+      deps.fetchPage
+        ? deps.fetchPage(`https://sentry.io/api/0${p}`, token)
+        : { body: await get(p), link: null }
     const notesOf = async (id) =>
       (await get(`/organizations/${org}/issues/${id}/comments/`)).map((c) => ({
         text: c.data?.text ?? '',
@@ -1379,20 +1566,42 @@ export async function runDaily({ argv, cfg, deps }) {
         query: 'is:unresolved environment:production lastSeen:-14d',
         statsPeriod: '14d',
         sort: 'user',
-        limit: '25',
+        limit: '100',
       })
-      const issues = (await get(`/projects/${org}/${project}/issues/?${q}`)).map((i) => ({
+      // Link 헤더의 다음 cursor 를 따라 수집(같은 query, 상한 200건)
+      const raw = []
+      let cursor = null
+      for (let page = 0; page < 10; page++) {
+        const qs = new URLSearchParams(q)
+        if (cursor) qs.set('cursor', cursor)
+        const res = await getPage(`/projects/${org}/${project}/issues/?${qs}`)
+        raw.push(...res.body)
+        cursor = lib.nextCursor(res.link)
+        if (!cursor || raw.length >= lib.MAX_ISSUES_COLLECT) break
+      }
+      if (raw.length > lib.MAX_ISSUES_COLLECT || cursor)
+        warnings.push(`미해결 이슈가 ${lib.MAX_ISSUES_COLLECT}건을 넘어 일부만 수집`)
+      const issues = raw.slice(0, lib.MAX_ISSUES_COLLECT).map((i) => ({
         id: String(i.id),
         shortId: String(i.shortId),
         title: String(i.title),
+        culprit: String(i.culprit ?? ''),
+        metadata: { type: i.metadata?.type },
+        level: i.level,
+        firstSeen: i.firstSeen,
+        lastSeen: i.lastSeen,
         count: Number(i.count),
         userCount: Number(i.userCount ?? 0),
       }))
       // skip 우선 판단을 위해 최근 노트 하나가 아니라 전체 노트를 본다
       // 한 이슈의 댓글 조회가 실패해도 그 이슈만 건너뛴다(개수는 Slack 경고)
-      const settled = await Promise.all(
-        issues.map(async (i) => [i, await notesOf(i.id).catch(() => null)])
-      )
+      const settled = []
+      for (let n = 0; n < issues.length; n += 10)
+        settled.push(
+          ...(await Promise.all(
+            issues.slice(n, n + 10).map(async (i) => [i, await notesOf(i.id).catch(() => null)])
+          ))
+        )
       const notesById = new Map(settled.filter(([, n]) => n).map(([i, n]) => [i.id, n]))
       const commentFail = settled.length - notesById.size
       if (commentFail) warnings.push(`댓글 조회 실패 ${commentFail}건`)
@@ -1431,13 +1640,34 @@ export async function runDaily({ argv, cfg, deps }) {
         })
         processed[i.shortId] = times.every(Number.isFinite) ? Math.max(...times) : true
       }
-      candidates = lib.pickCandidates({
+      // AI 판단: 선정과 별개로 수집한 모든 이슈를 판단한다. 배치 실패 이슈는 판단 없음
+      const t = await watched(cfg, deps, runId, cfg.triageDeadlineMs, (deadline) =>
+        runTriage({ cfg, deps, runId, deadline, issues, warnings })
+      )
+      if (t.diskLow) throw new AbortRun('disk-low')
+      triage = t.value
+      if (issues.length)
+        triageCounts = {
+          p1: [...triage.values()].filter((x) => x.p === 'P1').length,
+          p2: [...triage.values()].filter((x) => x.p === 'P2').length,
+          p3: [...triage.values()].filter((x) => x.p === 'P3').length,
+          failed: issues.length - triage.size,
+        }
+      for (const i of issues) {
+        const t = triage.get(i.shortId)
+        if (t && lib.shouldWriteTriage(notesById.get(i.id), t, deps.now()))
+          await putNote(i.id, lib.triageNote(t))
+      }
+      const picked = lib.pickCandidates({
         issues,
         notesById,
         processed,
         now: deps.now(),
         max: Infinity,
       })
+      for (const i of picked)
+        if (!triage.has(i.shortId)) log(`판단 없음 — 기존 방식으로 후보 유지: ${i.shortId}`)
+      candidates = lib.selectFixCandidates({ picked, notesById, triage })
     }
 
     let worked = 0
@@ -1461,29 +1691,13 @@ export async function runDaily({ argv, cfg, deps }) {
         continue
       }
       // 45분 한도는 이슈 단위 — 넘으면 이 run 의 컨테이너만 이름으로 kill. 디스크가 모자라도 kill
-      const deadline = deps.now() + cfg.deadlineMs
-      const timer = setTimeout(() => killRun(deps, runId), cfg.deadlineMs)
-      timer.unref?.()
-      let diskLow = false
-      const baseline = deps.freeBytes()
-      const watch = setInterval(() => {
-        const free = deps.freeBytes()
-        if (free < cfg.diskKillBytes || baseline - free > cfg.diskDropBytes) {
-          diskLow = true
-          killRun(deps, runId)
-        }
-      }, cfg.diskPollMs)
-      watch.unref?.()
-      let r
-      try {
-        r = await processIssue({ cfg, deps, runId, deadline, issue, event })
-      } finally {
-        clearTimeout(timer)
-        clearInterval(watch)
-      }
+      const { value: r, diskLow } = await watched(cfg, deps, runId, cfg.deadlineMs, (deadline) =>
+        processIssue({ cfg, deps, runId, deadline, issue, event })
+      )
       if (diskLow) throw Object.assign(new AbortRun('disk-low'), { shortId: issue.shortId })
       if (r.cleanupFailed) warnings.push(`정리 실패: ${r.shortId}`)
       results.push(r)
+      await putOutcomeNote(issue, r)
       if (r.status !== 'insufficient') worked++
       // 일시 오류(deadline·error)는 횟수를 세어 3회면 제외한다
       const key = r.shortId
@@ -1497,12 +1711,12 @@ export async function runDaily({ argv, cfg, deps }) {
         writeJsonAtomic(failFile, failures)
       }
     }
-    writeSelection(cfg, runId, results)
+    writeSelection(cfg, runId, results, triage)
     await pruneRuns(cfg, deps, runId)
     await report({})
     return { exitCode: 0, results, runId }
   } catch (e) {
-    writeSelection(cfg, runId, results)
+    writeSelection(cfg, runId, results, triage)
     // 공용 장애는 고정 코드만 알린다(예외 메시지를 싣지 않는다)
     if (e instanceof AbortRun && /^[A-Za-z0-9-]{3,40}$/.test(e.shortId ?? '')) bump(e.shortId)
     await report({

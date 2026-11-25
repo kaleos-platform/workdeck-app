@@ -33,7 +33,7 @@ export function scrubText(s) {
 
 // ---------- 노트 상태 (src/lib/sentry/autofix-status.ts 규칙 이식) ----------
 const PR_URL = /^https:\/\/github\.com\/kaleos-platform\/[\w.-]+\/pull\/\d+$/
-const KNOWN = /^autofix:(request|running|pr|analysis|failed|skip)(\s|$)/
+const KNOWN = /^autofix:(request|running|pr|analysis|failed|skip|ready|approve)(\s|$)/
 
 // comments: { text, dateCreated }[] → 시간 오름차순 autofix 노트 상태 목록
 export function parseNotes(comments) {
@@ -69,7 +69,7 @@ export function judgeIssue(notes, now) {
     return { eligible: true, priority: 1 } // 만료된 running 은 stale — 재선정 대상
   }
   if (latest.kind === 'request') return { eligible: true, priority: 0 }
-  return { eligible: false, why: latest.kind } // pr / analysis / failed
+  return { eligible: false, why: latest.kind } // pr / analysis / failed / ready / approve
 }
 
 // issues: Sentry 이슈 목록, notesById: Map(issueId → comments), processed: { [shortId]: record }
@@ -102,6 +102,131 @@ export function pickCandidates({
       (b.issue.count ?? 0) - (a.issue.count ?? 0)
   )
   return out.slice(0, max).map((x) => x.issue)
+}
+
+// ---------- AI 판단(triage) ----------
+export const TRIAGE_BATCH = 40
+export const MAX_ISSUES_COLLECT = 200
+const TRIAGE_P = ['P1', 'P2', 'P3']
+const TRIAGE_CAT = ['user-block', 'data-loss', 'integration', 'degraded', 'noise']
+const TRIAGE_ACT = ['fix', 'confirm', 'ignore']
+const SHORT_ID = /^[A-Za-z0-9-]{3,40}$/
+const ISO_TIME = /^\d{4}-\d{2}-\d{2}T[\d:.]+(?:Z|[+-]\d{2}:?\d{2})?$/
+const TRIAGE_AGE_MS = 7 * 86_400_000
+
+const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0)
+const iso = (v) => (typeof v === 'string' && ISO_TIME.test(v) ? v : null)
+
+// 모델에 보내는 이슈 1건 — 이슈 번호·URL 없이 scrub 된 제목·culprit 과 숫자·시각만
+export function triageInput(issue) {
+  const level = String(issue?.level ?? '')
+  return {
+    shortId: String(issue?.shortId ?? ''),
+    type: safeType(issue?.metadata?.type),
+    title: scrubText(issue?.title).slice(0, 200),
+    culprit: scrubText(issue?.culprit).slice(0, 120),
+    count: num(issue?.count),
+    userCount: num(issue?.userCount),
+    firstSeen: iso(issue?.firstSeen),
+    lastSeen: iso(issue?.lastSeen),
+    level: ['fatal', 'error', 'warning', 'info', 'debug'].includes(level) ? level : 'unknown',
+  }
+}
+
+// 모델 출력 → Map(shortId → {p,cat,act}). 엄격한 JSON 배열, 알려진 shortId·고정 값만, 중복은 첫 유효 항목
+export function parseTriageOutput(text, inputShortIds) {
+  const out = new Map()
+  let arr
+  try {
+    arr = JSON.parse(
+      String(text)
+        .trim()
+        .replace(/^```(?:json)?\s*|\s*```$/g, '')
+    )
+  } catch {
+    return out
+  }
+  if (!Array.isArray(arr)) return out
+  const known = new Set(inputShortIds)
+  for (const e of arr) {
+    if (!e || typeof e !== 'object' || Array.isArray(e)) continue
+    const { shortId, p, cat, act } = e
+    if (typeof shortId !== 'string' || !known.has(shortId) || out.has(shortId)) continue
+    if (!TRIAGE_P.includes(p) || !TRIAGE_CAT.includes(cat) || !TRIAGE_ACT.includes(act)) continue
+    out.set(shortId, { p, cat, act })
+  }
+  return out
+}
+
+const TRIAGE_NOTE = /^autofix:triage p=(\S+) cat=(\S+) act=(\S+)$/
+
+// 직전 triage 노트가 같은 판단이고 7일 안이면 다시 쓰지 않는다
+export function shouldWriteTriage(comments, t, now) {
+  const last = comments
+    .filter((c) => TRIAGE_NOTE.test(c.text.trim()))
+    .sort((a, b) => Date.parse(b.dateCreated) - Date.parse(a.dateCreated))[0]
+  if (!last) return true
+  const [, p, cat, act] = last.text.trim().match(TRIAGE_NOTE)
+  const age = now - Date.parse(last.dateCreated)
+  return !(p === t.p && cat === t.cat && act === t.act && age < TRIAGE_AGE_MS)
+}
+
+// 노트 문구는 고정 코드·숫자·id 로만 만든다(제목·메시지·분석 문구 금지). 잘못된 입력은 throw
+export function triageNote({ p, cat, act }) {
+  if (!TRIAGE_P.includes(p) || !TRIAGE_CAT.includes(cat) || !TRIAGE_ACT.includes(act))
+    throw new Error('bad-triage')
+  return `autofix:triage p=${p} cat=${cat} act=${act}`
+}
+
+const PENDING_ID = /^\d{8}-\d{6}-[0-9a-f]{4}-[A-Za-z0-9-]{3,40}$/
+const count = (n) => Number.isInteger(n) && n >= 0
+export function readyNote({ id, sha, files, lines, verify, review }) {
+  if (
+    !PENDING_ID.test(id) ||
+    !/^[0-9a-f]{16}$/.test(sha) ||
+    !count(files) ||
+    !count(lines) ||
+    !['ok', 'fail'].includes(verify) ||
+    !['approve', 'blocking'].includes(review)
+  )
+    throw new Error('bad-ready')
+  return `autofix:ready id=${id} sha=${sha} files=${files} lines=${lines} verify=${verify} review=${review}`
+}
+
+export function failedNote(code) {
+  if (typeof code !== 'string' || !OUT_CODE.test(code)) throw new Error('bad-failed')
+  return `autofix:failed ${code}`
+}
+
+// Sentry Link 헤더에서 다음 페이지 cursor(results="true" 일 때만). 임의 URL 은 따라가지 않는다
+export function nextCursor(link) {
+  for (const part of String(link ?? '').split(',')) {
+    if (!/rel="next"/.test(part) || !/results="true"/.test(part)) continue
+    const c = part.match(/cursor="([\w:-]{1,60})"/)?.[1]
+    if (c) return c
+  }
+  return null
+}
+
+// 수정 대상: 운영자 요청 또는 (판단 act=fix 이고 P1·P2). 판단이 없으면(배치 실패) 기존대로 후보 유지.
+// 정렬: 운영자 요청 먼저 → p → 사용자 수 → 발생 수. picked 는 pickCandidates 결과
+export function selectFixCandidates({ picked, notesById, triage }) {
+  const rank = (i) => (triage.get(i.shortId)?.p ?? 'P9').slice(1)
+  const requested = (i) => {
+    const n = parseNotes(notesById.get(i.id) ?? [])
+    return n[n.length - 1]?.kind === 'request'
+  }
+  return picked
+    .map((issue) => ({ issue, req: requested(issue), t: triage.get(issue.shortId) }))
+    .filter(({ req, t }) => req || !t || (t.act === 'fix' && (t.p === 'P1' || t.p === 'P2')))
+    .sort(
+      (a, b) =>
+        Number(b.req) - Number(a.req) ||
+        rank(a.issue) - rank(b.issue) ||
+        (b.issue.userCount ?? 0) - (a.issue.userCount ?? 0) ||
+        (b.issue.count ?? 0) - (a.issue.count ?? 0)
+    )
+    .map((x) => x.issue)
 }
 
 // ---------- 이벤트 → 사실·컨텍스트 ----------
@@ -659,11 +784,17 @@ export function buildPrBody({
 const OUT_CODE = /^[\w.:/@()[\]$+,=-]{1,120}$/
 
 // Slack 요약 — Codex 원문 분석·원본 오류 메시지는 싣지 않는다
-export function buildSlackSummary({ runId, dry = true, results, failure, warnings = [] }) {
+export function buildSlackSummary({ runId, dry = true, results, failure, warnings = [], triage }) {
   const lines = [`Sentry 자동 수정 ${dry ? '(dry)' : ''} run=${runId}`]
   for (const w of warnings) lines.push(`경고: ${w}`)
   if (failure) lines.push(`실패: ${failure}`)
-  for (const r of results) {
+  if (triage)
+    lines.push(
+      `판단: P1 ${triage.p1} · P2 ${triage.p2} · P3 ${triage.p3} · 판단 실패 ${triage.failed}`
+    )
+  // 승인 대기(ready) 이슈를 먼저
+  const ordered = [...results].sort((a, b) => (b.status === 'ready') - (a.status === 'ready'))
+  for (const r of ordered) {
     const reasons = (r.reasons ?? []).filter((x) => OUT_CODE.test(x)).slice(0, 6)
     lines.push(
       [

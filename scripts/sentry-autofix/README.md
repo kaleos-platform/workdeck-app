@@ -1,7 +1,7 @@
 # Sentry 오류 자동 수정 러너 (dry 경로)
 
 맥미니에서 매일 미해결 Sentry 이슈를 골라 Codex 로 수정안(patch)을 만들고, **승인 대기 묶음(pending)** 으로만 남긴다.
-이 버전에는 push·PR·Sentry 노트 쓰기 코드가 **없다**(Sentry 는 GET 만). publish 는 dry 1주 검증 뒤 별도 구현한다.
+이 버전에는 push·PR 코드가 **없다**. Sentry 는 조회(GET)와 이슈 노트(comment) 쓰기만 한다. publish 는 dry 1주 검증 뒤 별도 구현한다.
 명세: `docs/superpowers/plans/2026-11-21-sentry-autofix-loop.md` Phase 3.
 
 ## 구조
@@ -23,6 +23,18 @@
 산출물은 `~/.local/state/workdeck-autofix/pending/<runId>-<shortId>/` 에 읽기 전용으로 남는다
 (`patch.diff`·`pr-title.txt`·`pr-body.md`·`analysis.md`·`verify.json`·`manifest.json`; 검사에 걸리면 `manifest.status = blocked`, 토큰 조각이 나오면 `quarantine/` 로 격리).
 이미 pending 이 있는 이슈는 다음 실행에서 다시 선정하지 않는다(그 뒤에 운영자가 `autofix:request` 를 남기면 다시 선정). 처리 후 작업 export 는 망 없는 정리 컨테이너가 지우고(호스트는 컨테이너가 만진 디렉터리를 `rmSync` 하지 않는다), 로그만 최근 3개 run 보존한다.
+
+## AI 판단(triage)과 Sentry 노트
+
+일일 선정은 미해결 이슈를 Link 헤더 cursor 로 최대 200건 수집(넘으면 Slack 경고)한 뒤, **수정 후보 선정과 별개로 모든 이슈**를 40건 단위 배치로 Codex 에 판단시킨다
+(`prompts/triage.md`, 수정 단계와 같은 격리: 내부망·인증 프록시·토큰 없음·repo 없음. 입력은 `lib.triageInput` 이 scrub·절단한 필드뿐). 출력은 `lib.parseTriageOutput` 이 엄격히 검사해
+알려진 shortId·고정 코드(`p`=P1~P3, `cat`, `act`)만 받는다. 실패한 배치는 판단 없음으로 두고 run 은 계속하며, 판단 없는 이슈는 기존 방식으로 후보에 남는다.
+수정 대상은 운영자 요청(`autofix:request` 최신) 또는 `act=fix` 이면서 P1·P2 이다(정렬: 운영자 요청 → p → 사용자 수 → 발생 수).
+
+Sentry 이슈에 쓰는 노트는 고정 코드·숫자·id 로만 만든다(제목·메시지·분석 문구 없음). 쓰기 실패는 Slack 경고만 내고 계속한다.
+`autofix:triage p=.. cat=.. act=..`(같은 판단이 7일 안에 있으면 생략), `autofix:ready id=<pending 폴더> sha=<patch 해시 16자> files=.. lines=.. verify=ok|fail review=approve|blocking`,
+`autofix:failed <사유 코드>`(실패 기록이 남은 경우). `ready`·`approve` 상태 이슈는 다시 선정하지 않는다(뒤의 `autofix:request` 가 있으면 다시 선정).
+러너 토큰에 이슈 코멘트 쓰기 권한이 필요하다. `--no-write`(또는 cfg.noWrite)는 모든 Sentry 쓰기를 끄고 쓸 내용을 로그로만 낸다. `--fixture` 는 쓰지 않는다.
 
 ## 설치
 
@@ -50,7 +62,8 @@ AUTOFIX_DOCKER_TEST=1 node --test scripts/sentry-autofix/integration.test.mjs  #
 
 ```bash
 node scripts/sentry-autofix/run.mjs                                   # 일일 선정(최대 3건)
-node scripts/sentry-autofix/run.mjs --issue WORKDECK-APP-1A            # 수동 1건(처리 기록 무시)
+node scripts/sentry-autofix/run.mjs --issue WORKDECK-APP-1A            # 수동 1건(처리 기록 무시, 판단 없음)
+node scripts/sentry-autofix/run.mjs --no-write                          # Sentry 노트 쓰기 끔
 node scripts/sentry-autofix/run.mjs --fixture scripts/sentry-autofix/fixtures/inject-host-files.json --no-slack
 ```
 
@@ -63,7 +76,7 @@ node scripts/sentry-autofix/run.mjs --fixture scripts/sentry-autofix/fixtures/in
 - **프록시 보호**: run 마다 32바이트 임의 비밀값을 `--env-file`(0600, 실행 뒤 삭제)로 프록시(`PROXY_SECRET`)와 codex provider 헤더(`env_http_headers`)에만 전달한다(docker 인자·프로세스 목록에 값이 보이지 않음). 프록시는 `timingSafeEqual` 로 비교해 불일치는 403, 동시 처리 4개·이슈당 요청 150개(거부 요청 포함)·로그 500줄 상한, 응답은 `stream.pipeline`, 클라이언트가 끊으면 업스트림도 중단한다. 요청 본문은 검사한 객체만 다시 직렬화해 보낸다(상위 키·도구 필드·content 종류 허용 목록, `store=false` 강제, JSON 중첩 32단계 상한).
 - **공용 장애 구분**: 업스트림 401/403/429/5xx·upstream 오류·프록시 소멸은 그 이슈 탓이 아니라 run 을 중단하되 이슈별 실패 횟수에는 센다(3회면 일일 선정에서 제외, 마지막 실패보다 뒤의 `autofix:request` 가 있으면 초기화, Slack 에 shortId 표시). 프록시 자체의 request-cap 은 이슈 실패로 기록한다.
 - **디스크 감시**: 3초마다 확인해 이슈 시작 대비 15GB 감소 또는 여유 15GB 미만이면 이 run 컨테이너를 이름으로 kill 하고 run 을 중단한다. 정리 컨테이너 실패는 Slack 경고로 알린다.
-- **컨텍스트 선정의 한계**: Sentry 조회가 25건(`limit=25`)이라 `autofix:request` 노트가 사용자 수 정렬 25위 밖인 이슈는 일일 선정에서 보이지 않는다. 그 이슈는 `--issue <shortId>` 로 수동 실행한다.
+- **컨텍스트 선정의 한계**: Sentry 조회는 사용자 수 정렬 상위 200건까지다. 그 밖의 이슈는 일일 선정에서 보이지 않으니 `--issue <shortId>` 로 수동 실행한다.
 - **디스크**: bind mount 라 쓰기 크기를 docker 가 제한하지 못한다. 대신 사전 점검(여유 20GB 이상)과 실행 중 감시(위 '디스크 감시' 기준)로 막는다.
 - **worker/ 변경은 차단**한다(검증의 tsc 가 worker 를 보지 않음). 허용 경로는 `src|app|components` 아래 `.ts/.tsx/.css` 뿐이다.
 - 검증하지 않은 단계는 PR 본문·Slack 에 "미실행"으로 표시한다.
@@ -75,7 +88,7 @@ node scripts/sentry-autofix/run.mjs --fixture scripts/sentry-autofix/fixtures/in
 - 45분 한도는 이슈당이다(하루 최대 3건). 한도를 넘으면 그 run 의 컨테이너만 이름으로 kill 한다.
 - patch 없이 끝난 실패(fix 실패·timeout·설치 실패 등)도 `pending/<runId>-<shortId>/manifest.json`(상태·사유만)을 남겨 다음 날 재시도하지 않는다. 운영자가 그 뒤에 `autofix:request` 를 남기면 다시 선정한다.
 - 수정된 소스가 jest 프로세스 안에서 돌기 때문에 검증은 완전한 독립이 아니다.
-- Sentry 노트는 쓰지 않으므로 어드민에는 running·analysis 가 표시되지 않는다.
+- running·analysis 노트는 쓰지 않는다(어드민에는 triage·ready·failed 만 표시된다).
 
 ## 중지·폐기
 
