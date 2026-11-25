@@ -284,3 +284,11 @@ test('상태·소유자 조건을 같은 그룹에 적용하고 필터 초기화
   expect(screen.getByText('3개 Space · 3개 업무')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: '빈 공간' })).toBeInTheDocument()
 })
+
+test('구독 상태별 업무 수를 구독·체험 순으로 먼저 보여 준다', async () => {
+  render(<SubscriptionsClient />)
+  const summary = await screen.findByLabelText('상태별 업무 수')
+  expect(summary.textContent).toBe('구독 중1체험 중1')
+  const spaceRow = screen.getByRole('button', { name: '테스트 Space 업무 펼치기' }).closest('tr')!
+  expect(within(spaceRow).getAllByRole('cell')[2].textContent).toBe('구독 중1체험 중12개 업무')
+})

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
+import { ROLE_LABEL } from '@/components/layout/space-switcher'
 import {
   Select,
   SelectContent,
@@ -30,7 +31,7 @@ type AdminUserListItem = {
   createdAt: string
   signupSource: SignupSource | null
   isOperator: boolean
-  spaceMemberships: { spaceId: string; spaceName: string; role: string }[]
+  spaceMemberships: { spaceId: string; spaceName: string; role: keyof typeof ROLE_LABEL }[]
 }
 
 type SortKey = 'createdAt' | 'email' | 'name' | 'spaces'
@@ -191,7 +192,7 @@ export function UsersTable() {
             <TableRow>
               <SortHead label="이메일" k="email" sort={sort} dir={dir} onSort={onSort} />
               <SortHead label="이름" k="name" sort={sort} dir={dir} onSort={onSort} />
-              <SortHead label="소속 Space" k="spaces" sort={sort} dir={dir} onSort={onSort} />
+              <SortHead label="소속 Space·권한" k="spaces" sort={sort} dir={dir} onSort={onSort} />
               <TableHead>가입 경로</TableHead>
               <SortHead label="가입일" k="createdAt" sort={sort} dir={dir} onSort={onSort} />
               <TableHead>상태</TableHead>
@@ -213,7 +214,24 @@ export function UsersTable() {
               >
                 <TableCell className="font-medium">{u.email}</TableCell>
                 <TableCell>{u.name ?? '-'}</TableCell>
-                <TableCell>{u.spaceMemberships.length}개</TableCell>
+                <TableCell className="whitespace-normal">
+                  {u.spaceMemberships.length === 0 ? (
+                    <span className="text-muted-foreground">-</span>
+                  ) : (
+                    <ul className="flex flex-col gap-0.5 text-xs">
+                      {u.spaceMemberships.map((m) => (
+                        <li key={m.spaceId} className="flex items-center gap-1.5">
+                          <span className="max-w-48 truncate" title={m.spaceName}>
+                            {m.spaceName}
+                          </span>
+                          <Badge variant={m.role === 'OWNER' ? 'default' : 'outline'}>
+                            {ROLE_LABEL[m.role] ?? m.role}
+                          </Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </TableCell>
                 <TableCell>
                   <span title={u.signupSource ? JSON.stringify(u.signupSource) : undefined}>
                     {signupSourceLabel(u.signupSource)}
