@@ -31,6 +31,7 @@ export type KeywordStatusMinAggregateOutputType = {
   keyword: string | null
   removedAt: Date | null
   removedMemo: string | null
+  dismissedUntil: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -42,6 +43,7 @@ export type KeywordStatusMaxAggregateOutputType = {
   keyword: string | null
   removedAt: Date | null
   removedMemo: string | null
+  dismissedUntil: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -53,6 +55,7 @@ export type KeywordStatusCountAggregateOutputType = {
   keyword: number
   removedAt: number
   removedMemo: number
+  dismissedUntil: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -66,6 +69,7 @@ export type KeywordStatusMinAggregateInputType = {
   keyword?: true
   removedAt?: true
   removedMemo?: true
+  dismissedUntil?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -77,6 +81,7 @@ export type KeywordStatusMaxAggregateInputType = {
   keyword?: true
   removedAt?: true
   removedMemo?: true
+  dismissedUntil?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,6 +93,7 @@ export type KeywordStatusCountAggregateInputType = {
   keyword?: true
   removedAt?: true
   removedMemo?: true
+  dismissedUntil?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -172,6 +178,7 @@ export type KeywordStatusGroupByOutputType = {
   keyword: string
   removedAt: Date | null
   removedMemo: string | null
+  dismissedUntil: Date | null
   createdAt: Date
   updatedAt: Date
   _count: KeywordStatusCountAggregateOutputType | null
@@ -204,6 +211,7 @@ export type KeywordStatusWhereInput = {
   keyword?: Prisma.StringFilter<"KeywordStatus"> | string
   removedAt?: Prisma.DateTimeNullableFilter<"KeywordStatus"> | Date | string | null
   removedMemo?: Prisma.StringNullableFilter<"KeywordStatus"> | string | null
+  dismissedUntil?: Prisma.DateTimeNullableFilter<"KeywordStatus"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"KeywordStatus"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KeywordStatus"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
@@ -216,6 +224,7 @@ export type KeywordStatusOrderByWithRelationInput = {
   keyword?: Prisma.SortOrder
   removedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   removedMemo?: Prisma.SortOrderInput | Prisma.SortOrder
+  dismissedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
@@ -232,6 +241,7 @@ export type KeywordStatusWhereUniqueInput = Prisma.AtLeast<{
   keyword?: Prisma.StringFilter<"KeywordStatus"> | string
   removedAt?: Prisma.DateTimeNullableFilter<"KeywordStatus"> | Date | string | null
   removedMemo?: Prisma.StringNullableFilter<"KeywordStatus"> | string | null
+  dismissedUntil?: Prisma.DateTimeNullableFilter<"KeywordStatus"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"KeywordStatus"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KeywordStatus"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
@@ -244,6 +254,7 @@ export type KeywordStatusOrderByWithAggregationInput = {
   keyword?: Prisma.SortOrder
   removedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   removedMemo?: Prisma.SortOrderInput | Prisma.SortOrder
+  dismissedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.KeywordStatusCountOrderByAggregateInput
@@ -261,6 +272,7 @@ export type KeywordStatusScalarWhereWithAggregatesInput = {
   keyword?: Prisma.StringWithAggregatesFilter<"KeywordStatus"> | string
   removedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"KeywordStatus"> | Date | string | null
   removedMemo?: Prisma.StringNullableWithAggregatesFilter<"KeywordStatus"> | string | null
+  dismissedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"KeywordStatus"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"KeywordStatus"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"KeywordStatus"> | Date | string
 }
@@ -271,6 +283,7 @@ export type KeywordStatusCreateInput = {
   keyword: string
   removedAt?: Date | string | null
   removedMemo?: string | null
+  dismissedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.WorkspaceCreateNestedOneWithoutKeywordStatusesInput
@@ -283,6 +296,7 @@ export type KeywordStatusUncheckedCreateInput = {
   keyword: string
   removedAt?: Date | string | null
   removedMemo?: string | null
+  dismissedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -293,6 +307,7 @@ export type KeywordStatusUpdateInput = {
   keyword?: Prisma.StringFieldUpdateOperationsInput | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedMemo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dismissedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutKeywordStatusesNestedInput
@@ -305,6 +320,7 @@ export type KeywordStatusUncheckedUpdateInput = {
   keyword?: Prisma.StringFieldUpdateOperationsInput | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedMemo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dismissedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -316,6 +332,7 @@ export type KeywordStatusCreateManyInput = {
   keyword: string
   removedAt?: Date | string | null
   removedMemo?: string | null
+  dismissedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -326,6 +343,7 @@ export type KeywordStatusUpdateManyMutationInput = {
   keyword?: Prisma.StringFieldUpdateOperationsInput | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedMemo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dismissedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -337,6 +355,7 @@ export type KeywordStatusUncheckedUpdateManyInput = {
   keyword?: Prisma.StringFieldUpdateOperationsInput | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedMemo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dismissedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -364,6 +383,7 @@ export type KeywordStatusCountOrderByAggregateInput = {
   keyword?: Prisma.SortOrder
   removedAt?: Prisma.SortOrder
   removedMemo?: Prisma.SortOrder
+  dismissedUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -375,6 +395,7 @@ export type KeywordStatusMaxOrderByAggregateInput = {
   keyword?: Prisma.SortOrder
   removedAt?: Prisma.SortOrder
   removedMemo?: Prisma.SortOrder
+  dismissedUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -386,6 +407,7 @@ export type KeywordStatusMinOrderByAggregateInput = {
   keyword?: Prisma.SortOrder
   removedAt?: Prisma.SortOrder
   removedMemo?: Prisma.SortOrder
+  dismissedUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -442,6 +464,7 @@ export type KeywordStatusCreateWithoutWorkspaceInput = {
   keyword: string
   removedAt?: Date | string | null
   removedMemo?: string | null
+  dismissedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -452,6 +475,7 @@ export type KeywordStatusUncheckedCreateWithoutWorkspaceInput = {
   keyword: string
   removedAt?: Date | string | null
   removedMemo?: string | null
+  dismissedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -492,6 +516,7 @@ export type KeywordStatusScalarWhereInput = {
   keyword?: Prisma.StringFilter<"KeywordStatus"> | string
   removedAt?: Prisma.DateTimeNullableFilter<"KeywordStatus"> | Date | string | null
   removedMemo?: Prisma.StringNullableFilter<"KeywordStatus"> | string | null
+  dismissedUntil?: Prisma.DateTimeNullableFilter<"KeywordStatus"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"KeywordStatus"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KeywordStatus"> | Date | string
 }
@@ -502,6 +527,7 @@ export type KeywordStatusCreateManyWorkspaceInput = {
   keyword: string
   removedAt?: Date | string | null
   removedMemo?: string | null
+  dismissedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -512,6 +538,7 @@ export type KeywordStatusUpdateWithoutWorkspaceInput = {
   keyword?: Prisma.StringFieldUpdateOperationsInput | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedMemo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dismissedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -522,6 +549,7 @@ export type KeywordStatusUncheckedUpdateWithoutWorkspaceInput = {
   keyword?: Prisma.StringFieldUpdateOperationsInput | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedMemo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dismissedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -532,6 +560,7 @@ export type KeywordStatusUncheckedUpdateManyWithoutWorkspaceInput = {
   keyword?: Prisma.StringFieldUpdateOperationsInput | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedMemo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dismissedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -545,6 +574,7 @@ export type KeywordStatusSelect<ExtArgs extends runtime.Types.Extensions.Interna
   keyword?: boolean
   removedAt?: boolean
   removedMemo?: boolean
+  dismissedUntil?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -557,6 +587,7 @@ export type KeywordStatusSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   keyword?: boolean
   removedAt?: boolean
   removedMemo?: boolean
+  dismissedUntil?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -569,6 +600,7 @@ export type KeywordStatusSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   keyword?: boolean
   removedAt?: boolean
   removedMemo?: boolean
+  dismissedUntil?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -581,11 +613,12 @@ export type KeywordStatusSelectScalar = {
   keyword?: boolean
   removedAt?: boolean
   removedMemo?: boolean
+  dismissedUntil?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type KeywordStatusOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "campaignId" | "keyword" | "removedAt" | "removedMemo" | "createdAt" | "updatedAt", ExtArgs["result"]["keywordStatus"]>
+export type KeywordStatusOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "campaignId" | "keyword" | "removedAt" | "removedMemo" | "dismissedUntil" | "createdAt" | "updatedAt", ExtArgs["result"]["keywordStatus"]>
 export type KeywordStatusInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }
@@ -608,6 +641,7 @@ export type $KeywordStatusPayload<ExtArgs extends runtime.Types.Extensions.Inter
     keyword: string
     removedAt: Date | null
     removedMemo: string | null
+    dismissedUntil: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["keywordStatus"]>
@@ -1040,6 +1074,7 @@ export interface KeywordStatusFieldRefs {
   readonly keyword: Prisma.FieldRef<"KeywordStatus", 'String'>
   readonly removedAt: Prisma.FieldRef<"KeywordStatus", 'DateTime'>
   readonly removedMemo: Prisma.FieldRef<"KeywordStatus", 'String'>
+  readonly dismissedUntil: Prisma.FieldRef<"KeywordStatus", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"KeywordStatus", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"KeywordStatus", 'DateTime'>
 }
