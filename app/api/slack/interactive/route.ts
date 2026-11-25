@@ -19,11 +19,13 @@ import { syncSlackDecision } from '@/lib/slack/sync-decision'
 import { decryptBotToken } from '@/lib/slack/token-crypto'
 import { resolveSlackMember } from '@/lib/slack/member-link'
 import { findTeamInstallationForSpace } from '@/lib/slack/tenant'
+import { handleSentryAutofixApprove } from '@/lib/sentry/slack-approve'
 
 export const runtime = 'nodejs'
 
 const APPROVE_ACTION = 'agent_action_approve'
 const REJECT_ACTION = 'agent_action_reject'
+const SENTRY_APPROVE_ACTION = 'sentry_autofix_approve'
 
 interface BlockActionsPayload {
   type?: string
@@ -69,6 +71,20 @@ export async function POST(req: NextRequest) {
   }
 
   if (payload.type !== 'block_actions') return NextResponse.json({ ok: true })
+
+  // Sentry 오류 수정안 승인(운영 Space 전용) — 에이전트 액션 조회보다 먼저 처리한다.
+  // sentry_autofix_open 은 url 버튼이라 서버가 할 일이 없다.
+  const sentryAction = payload.actions?.find((a) => a.action_id === SENTRY_APPROVE_ACTION)
+  if (sentryAction) {
+    const text = await handleSentryAutofixApprove({
+      value: sentryAction.value ?? '',
+      teamId: payload.team?.id,
+      channelId: payload.channel?.id,
+      slackUserId: payload.user?.id,
+    })
+    if (text && payload.response_url) await postEphemeral(payload.response_url, text)
+    return NextResponse.json({ ok: true })
+  }
 
   const action = payload.actions?.find(
     (a) => a.action_id === APPROVE_ACTION || a.action_id === REJECT_ACTION
