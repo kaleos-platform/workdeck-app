@@ -17,7 +17,7 @@
 - 비상 스위치 `ADMIN_REQUIRE_MFA=false` 는 지금처럼 `requireAal2`를 먼저 연다.
 - 플래그 변경 경로는 `requireOperator` 뒤 어드민 API 하나뿐. 일반 사용자 API·폼에서 `mfaRequired` 를 받지 않는다.
 - 운영자(`platformRole = OPERATOR`)는 플래그와 무관하게 `requireAal2` 에서 항상 인증 앱 요구(게이트에서 판정 — 이후 `grant-operator.mjs` 로 승격된 계정도 자동 적용). 어드민에서 운영자 플래그 변경은 400.
-- 계정 플래그와 무관하게 항상 인증 앱 요구(`ignoreUserFlag`)하는 경로: 에이전트 생성 `POST agents`, 에이전트 수정 `PATCH agents/[agentId]`(scopes·ACTIVE·oauthClientId), 토큰 발급 `POST agents/[agentId]/tokens`, 비밀값 저장·허용 에이전트 변경 `PUT·DELETE secrets/[name]`. 이유: AAL1 ADMIN 이 비밀값 허용 에이전트에 토큰을 발급해 `/api/secrets/env` 로 평문을 받는 우회 차단(Codex 지적 1).
+- 계정 플래그와 무관하게 항상 인증 앱 요구(`ignoreUserFlag`)하는 경로: 에이전트 생성 `POST agents`, 에이전트 수정 `PATCH agents/[agentId]`(scopes·ACTIVE·oauthClientId), 토큰 발급 `POST agents/[agentId]/tokens`, 비밀값 저장·허용 에이전트 변경 `PUT·DELETE secrets/[name]`, 승인 한도 변경 `approval-limit`(최종 리뷰 반영). 이유: AAL1 ADMIN 이 비밀값 허용 에이전트에 토큰을 발급해 `/api/secrets/env` 로 평문을 받는 우회 차단(Codex 지적 1).
 - 화면 문구: 칸 이름 「2단계 인증」, 값 「필수」/「꺼짐」, 등록 표시 「인증 앱 등록」/「미등록」, 구독 현황 칸 「인증 필수 구성원」.
 
 ## Review Focus
@@ -35,10 +35,12 @@
 ### Task 1: 스키마 + 마이그레이션
 
 **Files:**
+
 - Modify: `prisma/schema.prisma` (`model User` — `platformRole` 아래)
 - Create: `prisma/migrations/<ts>_user_mfa_required/migration.sql` (migrate dev 생성)
 
 **Interfaces:**
+
 - Produces: `User.mfaRequired: Boolean @default(false)` — 주석 `// 2단계 인증 필수(계정 단위). false 면 requireAal2 를 통과한다(운영자·ignoreUserFlag 경로 제외).`
 
 - [ ] **Step 1:** 필드 추가 후 `npx prisma migrate dev --name user_mfa_required --create-only` (shadow DB 오류 시 memory `reference_migrate_shadow_bypass` 절차).
@@ -58,10 +60,12 @@
 ### Task 2: `requireAal2` 계정 단위 판정
 
 **Files:**
+
 - Modify: `src/lib/auth/mfa.ts`
 - Test: `src/lib/auth/__tests__/mfa.test.ts`
 
 **Interfaces:**
+
 - Consumes: `User.mfaRequired`
 - Produces: `requireAal2(opts?: { ignoreUserFlag?: boolean }): Promise<NextResponse | null>` (기존 무인자 호출 그대로 동작). helper `isMfaRequiredForCurrentUser(): Promise<boolean>` export(Task 3 재사용) — claims 실패면 `true`(닫힘), 행 없음이면 `false`, 그 외 `mfaRequired || platformRole === 'OPERATOR'`.
 
@@ -85,6 +89,7 @@
 ### Task 2b: 평문 우회 경로는 항상 인증 앱
 
 **Files:**
+
 - Modify: `app/api/spaces/[spaceId]/agents/route.ts:85`, `app/api/spaces/[spaceId]/agents/[agentId]/route.ts:52`, `app/api/spaces/[spaceId]/agents/[agentId]/tokens/route.ts:18`, `app/api/spaces/[spaceId]/secrets/[name]/route.ts`(PUT·DELETE 의 `requireAal2()`)
 - Test: 각 경로의 기존 `__tests__` (`agents/__tests__/route.test.ts`, `secrets/__tests__/routes.test.ts`)
 
@@ -95,9 +100,11 @@
 ### Task 3: 계정 설정의 2단계 인증 카드 조건부 표시
 
 **Files:**
+
 - Modify: `app/settings/account/page.tsx`
 
 **Interfaces:**
+
 - Consumes: `isMfaRequiredForCurrentUser()` (Task 2)
 
 - [ ] **Step 1:** 페이지를 `async` 로 바꾸고 `const showMfa = await isMfaRequiredForCurrentUser()` → `{showMfa && <MfaCard />}`. 헤더 설명 문구에서 「2단계 인증,」은 `showMfa` 일 때만.
@@ -107,6 +114,7 @@
 ### Task 4: 어드민 토글 API + 사용자 상세
 
 **Files:**
+
 - Create: `app/api/admin/users/[id]/mfa-required/route.ts`
 - Create: `app/api/admin/users/[id]/mfa-required/__tests__/route.test.ts`
 - Create: `src/lib/admin/mfa-status.ts`
@@ -115,6 +123,7 @@
 - Modify: `src/components/admin/user-detail.tsx` (기본 정보 카드에 「2단계 인증」 Switch + 「인증 앱 등록/미등록」)
 
 **Interfaces:**
+
 - Produces: `getVerifiedTotpUserIds(userIds: string[]): Promise<Set<string> | null>` in `src/lib/admin/mfa-status.ts` — `prisma.$queryRaw` 로 `SELECT DISTINCT user_id FROM auth.mfa_factors WHERE status = 'verified' AND factor_type = 'totp' AND user_id = ANY(${ids}::uuid[])`. 오류면 `null`(호출측 「—」). 빈 배열이면 쿼리 없이 빈 Set. (`src/lib/mcp/auth.ts` 의 `auth.sessions` raw 조회와 같은 방식)
 - Produces: `POST /api/admin/users/[id]/mfa-required` body `{ mfaRequired: boolean }` → `{ ok: true, mfaRequired }`. ban route(`app/api/admin/users/[id]/ban/route.ts`) 구조 복제: `requireOperator` → 대상 404 → 운영자 대상이면 400 `'운영자 계정은 항상 2단계 인증이 필요합니다'` → zod 422 → `prisma.$transaction(async tx => { tx.user.update(...); await writeAuditLog(actor, mfaRequired ? 'user.mfa_required.on' : 'user.mfa_required.off', 'user', id, { email }, tx) })` — 감사 실패 시 변경도 롤백(Codex 지적 4).
 
@@ -127,11 +136,13 @@
 ### Task 5: 어드민 사용자 목록 칸 + 필터
 
 **Files:**
+
 - Modify: `app/api/admin/users/route.ts`
 - Create: `app/api/admin/users/__tests__/route.test.ts`
 - Modify: `src/components/admin/users-table.tsx`
 
 **Interfaces:**
+
 - Consumes: `getVerifiedTotpUserIds` (Task 4)
 - Produces: 쿼리 `mfa=required|off` → where `{ mfaRequired: true|false }`. 응답 user 에 `mfaRequired: boolean`, `totpEnrolled: boolean | null`.
 
@@ -144,12 +155,14 @@
 ### Task 6: 구독 현황 「인증 필수 구성원」 칸
 
 **Files:**
+
 - Modify: `src/lib/billing/subscription-admin.ts` (`getSubscriptionAccessOverview`)
 - Modify: `src/lib/billing/subscription-admin-types.ts`
 - Modify: `src/components/admin/subscriptions-client.tsx`
 - Test: `app/api/admin/subscriptions/__tests__/route.test.ts` 또는 overview 단위 테스트(기존 mock 구조 따름)
 
 **Interfaces:**
+
 - Produces: overview `rows[].mfaRequiredMemberCount: number` — space include 에 `_count: { select: { members: { where: { user: { mfaRequired: true } } } } }`.
 
 - [ ] **Step 1: 실패 테스트** — space mock `_count.members = 2` → 해당 space 의 모든 row `mfaRequiredMemberCount === 2`.
@@ -179,6 +192,7 @@
 ## Codex 비판 검토 반영 (2026-11-25)
 
 지적 4건 — 반영 4, 보류 0.
+
 1. [critical] 에이전트 토큰 발급으로 평문 비밀값 우회 → Task 2b: 에이전트·토큰·비밀값 권한 경로는 `ignoreUserFlag` 로 항상 인증 앱.
 2. [high] 마이그레이션 뒤 승격된 운영자 → 게이트에서 `platformRole === OPERATOR` 면 항상 요구(마이그레이션 의존 제거).
 3. [high] 내부 비운영자 보호 공백 → 마이그레이션이 인증 앱 등록 계정 전체를 필수로 시작 + 배포 전후 수 대조.
