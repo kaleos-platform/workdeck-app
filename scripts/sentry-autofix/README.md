@@ -1,7 +1,7 @@
 # Sentry 오류 자동 수정 러너 (dry 경로)
 
 맥미니에서 매일 미해결 Sentry 이슈를 골라 Codex 로 수정안(patch)을 만들고, **승인 대기 묶음(pending)** 으로만 남긴다.
-이 버전에는 push·PR 코드가 **없다**. Sentry 는 조회(GET)와 이슈 노트(comment) 쓰기만 한다. publish 는 dry 1주 검증 뒤 별도 구현한다.
+`run.mjs` 에는 push·PR 코드가 **없다**. Sentry 는 조회(GET)와 이슈 노트(comment) 쓰기만 한다. PR 생성은 별도 `publish.mjs`(아래 'publish')가 승인된 pending 에만 한다.
 명세: `docs/superpowers/plans/2026-11-21-sentry-autofix-loop.md` Phase 3.
 
 ## 구조
@@ -9,6 +9,7 @@
 | 파일           | 역할                                                                                                                            |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `run.mjs`      | 오케스트레이터(호스트, 토큰 보유, LLM 없음). 사전 점검 → lock → 선정 → 이슈별 컨테이너 단계 → Slack 요약                        |
+| `publish.mjs`  | 승인된 pending → PR 올리는 호스트 전용 poller(10분, Codex·docker 없음). `assertPublishRef` 로 `autofix/<pendingId>` 만 push     |
 | `lib.mjs`      | 순수 함수(선정·scrub·컨텍스트·patch 검사·유출 대조·리뷰 JSON·템플릿)                                                            |
 | `lib.test.mjs` | `node --test` (단위 + docker·slack·fetch·gitleaks 대역 통합 테스트)                                                             |
 | `docker/proxy` | 인증 프록시(Node 내장만, `check.mjs` 순수 검사 + `server.mjs`). 전용 `auth.json` 을 읽기 전용 파일로 **이 컨테이너에만** 마운트 |
@@ -51,10 +52,33 @@ docker build -t workdeck-autofix-codex:latest docker/codex
 - launchd: `mkdir -p ~/Library/Logs/workdeck-autofix && cp ai.workdeck.sentry-autofix.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/ai.workdeck.sentry-autofix.plist`
   (plist 의 경로는 전용 체크아웃 `~/projects/kaleos/workdeck-autofix` 기준 — 이 스크립트가 develop 에 들어간 뒤 맞춘다)
 
+## publish (승인 후 PR 생성)
+
+`publish.mjs` 는 10분마다 `pending/` 중 `manifest.status=ready` 이고 아직 처리 안 한 묶음을 본다(처리 표시: `~/.local/state/workdeck-autofix/published/<pendingId>.json`).
+run.mjs 와 같은 run lock 을 쓰므로 04:30 실행 중에는 조용히 끝난다. 서명 키(`SENTRY_AUTOFIX_NOTE_SECRET` 32자 이상)·`SENTRY_API_TOKEN` 이 없으면 아무것도 하지 않는다.
+
+1. 그 이슈의 최신 상태 노트가 `autofix:approve id=<pendingId> sha=<16자> by=<admin|slack> sig=<HMAC>` 이고 `verifyNoteSig('approve', issueId, id, sha, secret, sig)` 가 참일 때만 진행(그 외 모두 무시).
+2. push 직전 재검증: manifest(status·runId/shortId·review approve·baseCommit)와 `patch.diff`·`pr-title.txt`·`pr-body.md`·`verify.json` **실제 바이트의 sha256**, 승인 sha 앞 16자 일치. 어긋나면 `autofix:failed publish-mismatch` 를 한 번만 쓰고 그 묶음은 종료.
+3. 결정적 브랜치 `autofix/<pendingId>`. 매번 ① `gh pr list --head` 로 PR 이 있으면 `autofix:pr <url>` 노트만 ② 원격 브랜치만 있으면 PR 생성 ③ 없으면 새 clone(`baseCommit` 기준) → `git apply --check`/apply → commit → `git push origin HEAD:refs/heads/autofix/<id>`(force 없음) → `gh pr create --base develop`. push·PR 생성·노트 POST 중 어디서 실패해도 다음 run 이 PR 1개·노트 1개로 수렴한다.
+4. 실패 코드(`publish-conflict`·`publish-base-missing`·`publish-mismatch`)는 `autofix:failed` 노트 + Slack(`PR 생성 실패 <shortId> <코드>`). 네트워크 등 일시 오류는 6번 연속(약 1시간)이면 실패로 기록한다. 성공은 Slack `PR 생성 <shortId> <url>`.
+5. 작업 clone(`publish/<pendingId>`)은 호스트가 만든 디렉터리라 컨테이너가 만진 적이 없다 — 그래서 여기서만 호스트 `rmSync` 로 지운다.
+
+설치·전제:
+
+```bash
+mkdir -p ~/Library/Logs/workdeck-autofix && cp ai.workdeck.sentry-autofix-publish.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/ai.workdeck.sentry-autofix-publish.plist
+node scripts/sentry-autofix/publish.mjs   # 첫 PR 은 수동 1회로 확인
+```
+
+- 호스트에 `gh auth login`(kaleos-dev, `repo` 권한)이 되어 있어야 한다. push·PR 은 이 인증을 쓴다. launchd PATH 에 `gh`(`/opt/homebrew/bin`)가 있다.
+- `vercel.json` 의 `git.deploymentEnabled` 에 `autofix/*: false` 를 넣어 이 브랜치의 Preview 배포를 막는다(와일드카드 동작은 첫 PR 에서 확인, 배포가 뜨면 poller 를 중지).
+- **권고**: `develop` 브랜치 보호(직접 push 금지)를 켠다. 현재는 보호가 없어 호스트 인증으로 develop 직접 push 가 기술적으로 가능하다(코드는 `autofix/` 접두만 허용).
+- 중지: `launchctl unload ~/Library/LaunchAgents/ai.workdeck.sentry-autofix-publish.plist`
+
 ## 테스트
 
 ```bash
-node --test scripts/sentry-autofix/lib.test.mjs                                # 단위 + 대역 통합
+node --test scripts/sentry-autofix/lib.test.mjs scripts/sentry-autofix/publish.test.mjs  # 단위 + 대역 통합 + publish
 AUTOFIX_DOCKER_TEST=1 node --test scripts/sentry-autofix/integration.test.mjs  # 실제 docker(악성 수정 흉내, 외부망·수 분 소요)
 ```
 

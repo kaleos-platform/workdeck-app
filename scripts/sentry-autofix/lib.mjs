@@ -32,8 +32,8 @@ export function scrubText(s) {
 }
 
 // ---------- 노트 상태 (src/lib/sentry/autofix-status.ts 규칙 이식) ----------
-const PR_URL = /^https:\/\/github\.com\/kaleos-platform\/[\w.-]+\/pull\/\d+$/
-const KNOWN = /^autofix:(request|running|pr|analysis|failed|skip|ready|approve)(\s|$)/
+export const PR_URL = /^https:\/\/github\.com\/kaleos-platform\/[\w.-]+\/pull\/\d+$/
+export const KNOWN = /^autofix:(request|running|pr|analysis|failed|skip|ready|approve)(\s|$)/
 
 // comments: { text, dateCreated }[] → 시간 오름차순 autofix 노트 상태 목록
 export function parseNotes(comments) {
@@ -756,7 +756,9 @@ export function parseReview(text) {
 
 // ---------- PR 제목·본문·요약 템플릿(원본 에러 메시지 미포함) ----------
 export function buildPrTitle(facts) {
-  return `🐛 fix: ${facts.type} 수정 — ${facts.shortId} (autofix)`
+  // 예외 타입이 없으면('?') 타입 대신 shortId 만 쓴다
+  const what = facts.type && facts.type !== '?' ? `${facts.type} 수정` : '오류 수정'
+  return `🐛 fix: ${what} — ${facts.shortId} (autofix)`
 }
 
 export function buildPrBody({
@@ -799,7 +801,7 @@ export function buildPrBody({
     .join('\n')
 }
 
-const OUT_CODE = /^[\w.:/@()[\]$+,=-]{1,120}$/
+export const OUT_CODE = /^[\w.:/@()[\]$+,=-]{1,120}$/
 
 // Slack 요약 — Codex 원문 분석·원본 오류 메시지는 싣지 않는다
 export function buildSlackSummary({ runId, dry = true, results, failure, warnings = [], triage }) {

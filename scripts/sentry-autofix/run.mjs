@@ -143,7 +143,7 @@ export function buildRunArgs({
 
 // ---------- 실제 의존성(테스트에서는 대역으로 교체) ----------
 // 모든 외부 프로세스에 timeout 과 비대화형 git 환경을 건다
-function sh(cmd, args, opts = {}) {
+export function sh(cmd, args, opts = {}) {
   return spawnSync(cmd, args, {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
@@ -389,7 +389,7 @@ export function parseArgs(argv) {
   return out
 }
 
-function parseEnvFile(file) {
+export function parseEnvFile(file) {
   const text = readSafe(file, 16384)
   if (text === null) return null
   return Object.fromEntries(
