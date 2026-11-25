@@ -306,7 +306,11 @@ export function SubscriptionsClient() {
             {groups.length}개 Space · {visibleDeckCount}개 업무
           </span>
           {visibleSummary.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1" aria-label="상태별 업무 수">
+            <div
+              role="group"
+              className="flex flex-wrap items-center gap-1"
+              aria-label="상태별 업무 수"
+            >
               {visibleSummary.map(({ reason, count }) => (
                 <ReasonBadge key={reason} reason={reason} count={count} />
               ))}
