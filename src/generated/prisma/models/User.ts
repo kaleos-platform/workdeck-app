@@ -30,6 +30,7 @@ export type UserMinAggregateOutputType = {
   name: string | null
   avatarUrl: string | null
   platformRole: $Enums.PlatformRole | null
+  mfaRequired: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -40,6 +41,7 @@ export type UserMaxAggregateOutputType = {
   name: string | null
   avatarUrl: string | null
   platformRole: $Enums.PlatformRole | null
+  mfaRequired: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +52,7 @@ export type UserCountAggregateOutputType = {
   name: number
   avatarUrl: number
   platformRole: number
+  mfaRequired: number
   signupSource: number
   createdAt: number
   updatedAt: number
@@ -63,6 +66,7 @@ export type UserMinAggregateInputType = {
   name?: true
   avatarUrl?: true
   platformRole?: true
+  mfaRequired?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -73,6 +77,7 @@ export type UserMaxAggregateInputType = {
   name?: true
   avatarUrl?: true
   platformRole?: true
+  mfaRequired?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -83,6 +88,7 @@ export type UserCountAggregateInputType = {
   name?: true
   avatarUrl?: true
   platformRole?: true
+  mfaRequired?: true
   signupSource?: true
   createdAt?: true
   updatedAt?: true
@@ -167,6 +173,7 @@ export type UserGroupByOutputType = {
   name: string | null
   avatarUrl: string | null
   platformRole: $Enums.PlatformRole | null
+  mfaRequired: boolean
   signupSource: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
@@ -199,6 +206,7 @@ export type UserWhereInput = {
   name?: Prisma.StringNullableFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
   platformRole?: Prisma.EnumPlatformRoleNullableFilter<"User"> | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFilter<"User"> | boolean
   signupSource?: Prisma.JsonNullableFilter<"User">
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -214,6 +222,7 @@ export type UserOrderByWithRelationInput = {
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   platformRole?: Prisma.SortOrderInput | Prisma.SortOrder
+  mfaRequired?: Prisma.SortOrder
   signupSource?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -232,6 +241,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringNullableFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
   platformRole?: Prisma.EnumPlatformRoleNullableFilter<"User"> | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFilter<"User"> | boolean
   signupSource?: Prisma.JsonNullableFilter<"User">
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -247,6 +257,7 @@ export type UserOrderByWithAggregationInput = {
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   platformRole?: Prisma.SortOrderInput | Prisma.SortOrder
+  mfaRequired?: Prisma.SortOrder
   signupSource?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -264,6 +275,7 @@ export type UserScalarWhereWithAggregatesInput = {
   name?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   platformRole?: Prisma.EnumPlatformRoleNullableWithAggregatesFilter<"User"> | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   signupSource?: Prisma.JsonNullableWithAggregatesFilter<"User">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -275,6 +287,7 @@ export type UserCreateInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -290,6 +303,7 @@ export type UserUncheckedCreateInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -305,6 +319,7 @@ export type UserUpdateInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -320,6 +335,7 @@ export type UserUncheckedUpdateInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -335,6 +351,7 @@ export type UserCreateManyInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -346,6 +363,7 @@ export type UserUpdateManyMutationInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -357,6 +375,7 @@ export type UserUncheckedUpdateManyInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -368,6 +387,7 @@ export type UserCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   platformRole?: Prisma.SortOrder
+  mfaRequired?: Prisma.SortOrder
   signupSource?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -379,6 +399,7 @@ export type UserMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   platformRole?: Prisma.SortOrder
+  mfaRequired?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -389,6 +410,7 @@ export type UserMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   platformRole?: Prisma.SortOrder
+  mfaRequired?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -413,6 +435,10 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type NullableEnumPlatformRoleFieldUpdateOperationsInput = {
   set?: $Enums.PlatformRole | null
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -483,6 +509,7 @@ export type UserCreateWithoutWorkspaceInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -497,6 +524,7 @@ export type UserUncheckedCreateWithoutWorkspaceInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -527,6 +555,7 @@ export type UserUpdateWithoutWorkspaceInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -541,6 +570,7 @@ export type UserUncheckedUpdateWithoutWorkspaceInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -555,6 +585,7 @@ export type UserCreateWithoutSpaceMembershipsInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -569,6 +600,7 @@ export type UserUncheckedCreateWithoutSpaceMembershipsInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -599,6 +631,7 @@ export type UserUpdateWithoutSpaceMembershipsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -613,6 +646,7 @@ export type UserUncheckedUpdateWithoutSpaceMembershipsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -627,6 +661,7 @@ export type UserCreateWithoutReorderPlansInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -641,6 +676,7 @@ export type UserUncheckedCreateWithoutReorderPlansInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -671,6 +707,7 @@ export type UserUpdateWithoutReorderPlansInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -685,6 +722,7 @@ export type UserUncheckedUpdateWithoutReorderPlansInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -699,6 +737,7 @@ export type UserCreateWithoutOpeningMigrationJobsInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -713,6 +752,7 @@ export type UserUncheckedCreateWithoutOpeningMigrationJobsInput = {
   name?: string | null
   avatarUrl?: string | null
   platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -743,6 +783,7 @@ export type UserUpdateWithoutOpeningMigrationJobsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -757,6 +798,7 @@ export type UserUncheckedUpdateWithoutOpeningMigrationJobsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -820,6 +862,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   name?: boolean
   avatarUrl?: boolean
   platformRole?: boolean
+  mfaRequired?: boolean
   signupSource?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -836,6 +879,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   avatarUrl?: boolean
   platformRole?: boolean
+  mfaRequired?: boolean
   signupSource?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -847,6 +891,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   avatarUrl?: boolean
   platformRole?: boolean
+  mfaRequired?: boolean
   signupSource?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -858,12 +903,13 @@ export type UserSelectScalar = {
   name?: boolean
   avatarUrl?: boolean
   platformRole?: boolean
+  mfaRequired?: boolean
   signupSource?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "avatarUrl" | "platformRole" | "signupSource" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "avatarUrl" | "platformRole" | "mfaRequired" | "signupSource" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.User$workspaceArgs<ExtArgs>
   spaceMemberships?: boolean | Prisma.User$spaceMembershipsArgs<ExtArgs>
@@ -888,6 +934,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     name: string | null
     avatarUrl: string | null
     platformRole: $Enums.PlatformRole | null
+    mfaRequired: boolean
     signupSource: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
@@ -1323,6 +1370,7 @@ export interface UserFieldRefs {
   readonly name: Prisma.FieldRef<"User", 'String'>
   readonly avatarUrl: Prisma.FieldRef<"User", 'String'>
   readonly platformRole: Prisma.FieldRef<"User", 'PlatformRole'>
+  readonly mfaRequired: Prisma.FieldRef<"User", 'Boolean'>
   readonly signupSource: Prisma.FieldRef<"User", 'Json'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>

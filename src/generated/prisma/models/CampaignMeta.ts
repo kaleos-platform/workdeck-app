@@ -409,10 +409,6 @@ export type CampaignMetaUncheckedUpdateManyWithoutWorkspaceNestedInput = {
   deleteMany?: Prisma.CampaignMetaScalarWhereInput | Prisma.CampaignMetaScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type CampaignMetaCreateWithoutWorkspaceInput = {
   id?: string
   campaignId: string
