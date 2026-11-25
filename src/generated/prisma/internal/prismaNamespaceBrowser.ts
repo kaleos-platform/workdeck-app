@@ -346,6 +346,7 @@ export const KeywordStatusScalarFieldEnum = {
   keyword: 'keyword',
   removedAt: 'removedAt',
   removedMemo: 'removedMemo',
+  dismissedUntil: 'dismissedUntil',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

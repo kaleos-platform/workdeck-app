@@ -36,6 +36,7 @@ import {
   Users,
   ShieldCheck,
   type LucideIcon,
+  ListX,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
@@ -51,6 +52,7 @@ import {
   COUPANG_ADS_BASE_PATH,
   COUPANG_ADS_UPLOAD_PATH,
   COUPANG_ADS_ANALYSIS_PATH,
+  COUPANG_ADS_NEGATIVE_KEYWORDS_PATH,
   COUPANG_ADS_EXECUTION_PATH,
   COUPANG_ADS_SETTINGS_PATH,
   COUPANG_ADS_INVENTORY_PATH,
@@ -236,6 +238,11 @@ const COUPANG_MAIN_ROUTES = [
     label: '광고 분석',
     icon: BarChart3,
     href: COUPANG_ADS_ANALYSIS_PATH,
+  },
+  {
+    label: '제외 키워드',
+    icon: ListX,
+    href: COUPANG_ADS_NEGATIVE_KEYWORDS_PATH,
   },
   {
     label: '실행 관리',
