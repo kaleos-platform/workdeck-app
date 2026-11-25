@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import { SpaceInvitationsCard } from '@/components/admin/space-invitations-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -207,6 +208,8 @@ export function BillingSpaceDetail({ spaceId }: { spaceId: string }) {
           </Table>
         </CardContent>
       </Card>
+
+      <SpaceInvitationsCard spaceId={spaceId} />
     </div>
   )
 }

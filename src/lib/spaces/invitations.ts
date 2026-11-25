@@ -127,7 +127,7 @@ export async function createInvitation(input: {
     },
     select: { id: true, email: true, role: true, expiresAt: true },
   })
-  // 개인 Space의 첫 초대는 팀 Space로 전환한다(OWNER+MFA 경로만 여기 온다). 초대가 만들어진 뒤에만 — 실패한 초대가 전환만 남기지 않게. 이미 전환됐으면 0건.
+  // 개인 Space의 첫 초대는 팀 Space로 전환한다(OWNER 경로만 여기 온다 — MEMBER 초대는 AAL1 도 허용). 초대가 만들어진 뒤에만 — 실패한 초대가 전환만 남기지 않게. 이미 전환됐으면 0건.
   const converted =
     space.type === 'PERSONAL' &&
     (
@@ -154,7 +154,8 @@ export async function createInvitation(input: {
 export async function resendInvitation(
   spaceId: string,
   invitationId: string,
-  opts: { role?: 'ADMIN' | 'MEMBER' } = {}
+  // ignoreSendLimit: 운영자 재발급용 — 발송 횟수 상한(MAX_SEND_COUNT)만 건너뛴다. 쿨다운·pending 조건은 그대로.
+  opts: { role?: 'ADMIN' | 'MEMBER'; ignoreSendLimit?: boolean } = {}
 ) {
   if (opts.role && opts.role !== 'ADMIN' && opts.role !== 'MEMBER') throw new Error('invalid role')
   const now = new Date()
@@ -167,6 +168,7 @@ export async function resendInvitation(
       lastSentAt: true,
       createdAt: true,
       sendCount: true,
+      invitedById: true,
     },
   })
   if (!inv) throw new InvitationError(404, 'not_found')
@@ -174,7 +176,8 @@ export async function resendInvitation(
   if (now.getTime() - last.getTime() < RESEND_COOLDOWN_MS) {
     throw new InvitationError(429, 'resend_cooldown')
   }
-  if (inv.sendCount >= MAX_SEND_COUNT) throw new InvitationError(429, 'resend_limit')
+  if (!opts.ignoreSendLimit && inv.sendCount >= MAX_SEND_COUNT)
+    throw new InvitationError(429, 'resend_limit')
 
   const token = randomBytes(32).toString('base64url')
   const expiresAt = new Date(now.getTime() + INVITE_TTL_DAYS * 86_400_000)
@@ -205,6 +208,7 @@ export async function resendInvitation(
       email: inv.email,
       role: (opts.role ?? inv.role) as 'ADMIN' | 'MEMBER',
       expiresAt,
+      invitedById: inv.invitedById,
     },
     token,
   }

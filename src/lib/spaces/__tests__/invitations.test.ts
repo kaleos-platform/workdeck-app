@@ -379,6 +379,7 @@ describe('resendInvitation', () => {
     lastSentAt: sentAt,
     createdAt: sentAt,
     sendCount: 1,
+    invitedById: 'u-owner',
     ...over,
   })
   it('토큰을 재발급하고 만료를 7일 재시작, 조건부(lastSentAt 일치)로 기록한다', async () => {
@@ -434,6 +435,19 @@ describe('resendInvitation', () => {
     })
     m.spaceInvitation.findFirst.mockResolvedValue(row({ sendCount: 5 }))
     await expect(resendInvitation('sp-1', 'inv-1')).resolves.toBeDefined()
+  })
+  it('ignoreSendLimit 이면 발송 횟수 상한은 건너뛰고 원 초대자를 돌려준다', async () => {
+    m.spaceInvitation.findFirst.mockResolvedValue(row({ sendCount: 9 }))
+    const r = await resendInvitation('sp-1', 'inv-1', { ignoreSendLimit: true })
+    expect(r.invitation.invitedById).toBe('u-owner')
+  })
+  it('ignoreSendLimit 이어도 쿨다운은 적용된다', async () => {
+    m.spaceInvitation.findFirst.mockResolvedValue(
+      row({ sendCount: 9, lastSentAt: new Date(Date.now() - 30_000) })
+    )
+    await expect(
+      resendInvitation('sp-1', 'inv-1', { ignoreSendLimit: true })
+    ).rejects.toMatchObject({ reason: 'resend_cooldown' })
   })
   it('동시 클릭에서 진 쪽(조건부 갱신 0건)은 429 resend_cooldown', async () => {
     m.spaceInvitation.findFirst.mockResolvedValue(row())
