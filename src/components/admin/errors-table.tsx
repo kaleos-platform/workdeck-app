@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -64,12 +65,86 @@ function relativeTime(iso: string) {
   return `${Math.floor(sec / 86400)}일 전`
 }
 
+type SortKey = 'title' | 'service' | 'count' | 'userCount' | 'lastSeen' | 'autofix'
+type SortDir = 'asc' | 'desc'
+
+const SORT_VALUE: Record<SortKey, (r: ErrorRow) => string | number> = {
+  title: (r) => r.title,
+  service: (r) => r.service,
+  count: (r) => r.count,
+  userCount: (r) => r.userCount,
+  lastSeen: (r) => Date.parse(r.lastSeen) || 0,
+  autofix: (r) => KIND_LABELS[r.autofix.kind],
+}
+// 숫자·시각은 큰 값부터, 글자는 가나다순부터
+const DESC_FIRST: SortKey[] = ['count', 'userCount', 'lastSeen']
+
+function SortHead({
+  label,
+  k,
+  sort,
+  dir,
+  onSort,
+  className,
+}: {
+  label: string
+  k: SortKey
+  sort: SortKey | null
+  dir: SortDir
+  onSort: (k: SortKey) => void
+  className?: string
+}) {
+  const active = sort === k
+  const Icon = !active ? ArrowUpDown : dir === 'asc' ? ArrowUp : ArrowDown
+  return (
+    <TableHead
+      className={className}
+      aria-sort={active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(k)}
+        className="inline-flex items-center gap-1 hover:text-foreground"
+      >
+        {label}
+        <Icon className={active ? 'size-3.5' : 'size-3.5 opacity-40'} />
+      </button>
+    </TableHead>
+  )
+}
+
 // 조회 상한(25)에 걸린 목록이 있으면 + 를 붙인다
 const countLabel = (n: number, capped: boolean) => `${n}${capped ? '+' : ''}`
 
 export function ErrorsTable({ rows, service, status, counts, lastActivity }: Props) {
   const router = useRouter()
   const [pendingId, setPendingId] = useState<string | null>(null)
+  // null = 서버 순서(사용자 많은 순 → 발생 많은 순)
+  const [sort, setSort] = useState<SortKey | null>(null)
+  const [dir, setDir] = useState<SortDir>('desc')
+
+  function onSort(k: SortKey) {
+    if (k === sort) setDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else {
+      setSort(k)
+      setDir(DESC_FIRST.includes(k) ? 'desc' : 'asc')
+    }
+  }
+
+  const sorted = useMemo(() => {
+    if (!sort) return rows
+    const v = SORT_VALUE[sort]
+    const sign = dir === 'asc' ? 1 : -1
+    return [...rows].sort((a, b) => {
+      const x = v(a)
+      const y = v(b)
+      const c =
+        typeof x === 'number' && typeof y === 'number'
+          ? x - y
+          : String(x).localeCompare(String(y), 'ko')
+      return c * sign
+    })
+  }, [rows, sort, dir])
 
   function go(next: { service?: string; status?: string }) {
     const params = new URLSearchParams()
@@ -140,12 +215,26 @@ export function ErrorsTable({ rows, service, status, counts, lastActivity }: Pro
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>오류</TableHead>
-            <TableHead>서비스</TableHead>
-            <TableHead className="text-right">발생</TableHead>
-            <TableHead className="text-right">사용자</TableHead>
-            <TableHead>마지막</TableHead>
-            <TableHead>자동 수정</TableHead>
+            <SortHead label="오류" k="title" sort={sort} dir={dir} onSort={onSort} />
+            <SortHead label="서비스" k="service" sort={sort} dir={dir} onSort={onSort} />
+            <SortHead
+              label="발생"
+              k="count"
+              sort={sort}
+              dir={dir}
+              onSort={onSort}
+              className="text-right"
+            />
+            <SortHead
+              label="사용자"
+              k="userCount"
+              sort={sort}
+              dir={dir}
+              onSort={onSort}
+              className="text-right"
+            />
+            <SortHead label="마지막" k="lastSeen" sort={sort} dir={dir} onSort={onSort} />
+            <SortHead label="자동 수정" k="autofix" sort={sort} dir={dir} onSort={onSort} />
             <TableHead>동작</TableHead>
           </TableRow>
         </TableHeader>
@@ -157,7 +246,7 @@ export function ErrorsTable({ rows, service, status, counts, lastActivity }: Pro
               </TableCell>
             </TableRow>
           ) : (
-            rows.map((r) => {
+            sorted.map((r) => {
               const kind = r.autofix.kind
               // 러너가 멈춰 until 이 지난 running 은 다시 조작할 수 있게 한다
               const stale =
