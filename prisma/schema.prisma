@@ -352,14 +352,16 @@ model CampaignMeta {
 
 // 키워드 제거 상태 관리
 model KeywordStatus {
-  id          String    @id @default(cuid())
-  workspaceId String
-  campaignId  String
-  keyword     String
-  removedAt   DateTime?
-  removedMemo String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  workspaceId    String
+  campaignId     String
+  keyword        String
+  removedAt      DateTime?
+  removedMemo    String?
+  // 「제외 안 함」 — 이 시각까지 제외 키워드 후보에서 숨긴다(removedAt 과 무관)
+  dismissedUntil DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 

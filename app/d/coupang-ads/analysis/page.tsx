@@ -11,6 +11,7 @@ import {
   Sliders,
   Trash2,
 } from 'lucide-react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,8 @@ import { CampaignSuggestions } from '@/components/analysis/campaign-suggestions'
 import { SuggestionList } from '@/components/analysis/suggestion-list'
 import { AnalysisSchedule } from '@/components/analysis/analysis-schedule'
 import { cn } from '@/lib/utils'
+import { COUPANG_ADS_NEGATIVE_KEYWORDS_PATH } from '@/lib/deck-routes'
+import { excludeRemoveKeyword } from '@/lib/coupang-ads/analysis-suggestions'
 import type { AnalysisReport } from '@/types/analysis'
 
 type DatePreset = 7 | 14 | 30
@@ -62,22 +65,25 @@ export default function AnalysisPage() {
   const [schedule, setSchedule] = useState<ScheduleSummary | null>(null)
   const [rulesCount, setRulesCount] = useState(0)
 
-  const fetchReports = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true)
-    try {
-      const res = await fetch('/api/analysis/reports')
-      if (res.ok) {
-        const data = await res.json()
-        const list: AnalysisReport[] = Array.isArray(data) ? data : data.reports ?? []
-        setReports(list)
-        if (list.length > 0 && !selectedReportId) {
-          setSelectedReportId(list[0].id)
+  const fetchReports = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true)
+      try {
+        const res = await fetch('/api/analysis/reports')
+        if (res.ok) {
+          const data = await res.json()
+          const list: AnalysisReport[] = Array.isArray(data) ? data : (data.reports ?? [])
+          setReports(list)
+          if (list.length > 0 && !selectedReportId) {
+            setSelectedReportId(list[0].id)
+          }
         }
+      } finally {
+        setLoading(false)
       }
-    } finally {
-      setLoading(false)
-    }
-  }, [selectedReportId])
+    },
+    [selectedReportId]
+  )
 
   useEffect(() => {
     fetchReports()
@@ -111,7 +117,7 @@ export default function AnalysisPage() {
     fetch('/api/analysis/rules')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        const list = Array.isArray(data) ? data : data?.rules ?? []
+        const list = Array.isArray(data) ? data : (data?.rules ?? [])
         setRulesCount(list.length)
       })
       .catch(() => {})
@@ -141,6 +147,8 @@ export default function AnalysisPage() {
   }
 
   const selectedReport = reports.find((r) => r.id === selectedReportId) ?? null
+  // 키워드 제거 제안은 『제외 키워드』 화면으로 일원화 — 길이 게이트보다 먼저 거른다
+  const visibleSuggestions = excludeRemoveKeyword(selectedReport?.suggestions)
 
   // 진행 중인 분석 감지
   const activeReport = reports.find((r) => r.status === 'PENDING' || r.status === 'PROCESSING')
@@ -173,7 +181,8 @@ export default function AnalysisPage() {
                 <span className="font-medium">{schedule.intervalDays}일</span>마다 자동 분석
                 {schedule.lastAnalyzedAt && (
                   <span className="text-muted-foreground">
-                    {' '}| 다음:{' '}
+                    {' '}
+                    | 다음:{' '}
                     {(() => {
                       const next = new Date(schedule.lastAnalyzedAt)
                       next.setDate(next.getDate() + schedule.intervalDays)
@@ -207,7 +216,10 @@ export default function AnalysisPage() {
           <div className="flex items-center gap-2 text-sm">
             <Sliders className="h-4 w-4 text-muted-foreground" />
             <span>
-              규칙 <Badge variant="secondary" className="ml-1 text-[10px]">{rulesCount}개</Badge>
+              규칙{' '}
+              <Badge variant="secondary" className="ml-1 text-[10px]">
+                {rulesCount}개
+              </Badge>
             </span>
             <Dialog>
               <DialogTrigger asChild>
@@ -216,7 +228,7 @@ export default function AnalysisPage() {
                   관리
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>분석 규칙 관리</DialogTitle>
                 </DialogHeader>
@@ -287,9 +299,7 @@ export default function AnalysisPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <BarChart3 className="mb-4 h-10 w-10 text-muted-foreground/40" />
-            <p className="text-sm font-medium text-muted-foreground">
-              아직 분석 리포트가 없습니다
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">아직 분석 리포트가 없습니다</p>
             <p className="mt-1 text-xs text-muted-foreground/70">
               위의 &quot;분석 실행&quot; 버튼을 눌러 첫 분석을 시작하세요.
             </p>
@@ -309,11 +319,11 @@ export default function AnalysisPage() {
                 {reports.length}건
               </Badge>
             </div>
-            <div className="space-y-1.5 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
+            <div className="max-h-[calc(100vh-320px)] space-y-1.5 overflow-y-auto pr-1">
               {reports.map((report) => {
                 const isSelected = report.id === selectedReportId
                 const date = new Date(report.createdAt)
-                const suggestionCount = report.suggestions?.length ?? 0
+                const suggestionCount = excludeRemoveKeyword(report.suggestions).length
                 const metadata = report.metadata as { campaignCount?: number } | null
 
                 return (
@@ -325,21 +335,23 @@ export default function AnalysisPage() {
                         'w-full rounded-lg border p-3 text-left transition-colors',
                         isSelected
                           ? 'border-primary bg-primary/5'
-                          : 'border-border hover:bg-muted/50',
+                          : 'border-border hover:bg-muted/50'
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-medium">
-                            {date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                            {' '}
-                            {date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                            {date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}{' '}
+                            {date.toLocaleTimeString('ko-KR', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </span>
                           <TriggerBadge triggeredBy={report.triggeredBy} />
                         </div>
                         <StatusDot status={report.status} />
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground truncate">
+                      <p className="mt-1 truncate text-xs text-muted-foreground">
                         {report.status === 'COMPLETED'
                           ? `${metadata?.campaignCount ?? '-'}개 캠페인, ${suggestionCount}개 제안`
                           : report.status === 'FAILED'
@@ -351,8 +363,11 @@ export default function AnalysisPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); handleDeleteReport(report.id) }}
-                      className="absolute bottom-2 right-2 hidden rounded p-1 text-muted-foreground hover:text-destructive group-hover:block"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteReport(report.id)
+                      }}
+                      className="absolute right-2 bottom-2 hidden rounded p-1 text-muted-foreground group-hover:block hover:text-destructive"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -363,7 +378,7 @@ export default function AnalysisPage() {
           </div>
 
           {/* 우측: 선택된 리포트 상세 */}
-          <div className="space-y-4 min-h-[300px]">
+          <div className="min-h-[300px] space-y-4">
             {selectedReport ? (
               <>
                 {/* 요약 */}
@@ -382,18 +397,28 @@ export default function AnalysisPage() {
                 )}
 
                 {/* 캠페인별 제안 */}
-                {(selectedReport.suggestions?.length ?? 0) > 0 && (
+                {visibleSuggestions.length > 0 && (
                   <CampaignSuggestions
-                    suggestions={selectedReport.suggestions}
+                    suggestions={visibleSuggestions}
                     campaignNames={campaignNames}
                   />
+                )}
+                {selectedReport.status === 'COMPLETED' && (
+                  <p className="text-xs text-muted-foreground">
+                    키워드 제외는{' '}
+                    <Link
+                      href={COUPANG_ADS_NEGATIVE_KEYWORDS_PATH}
+                      className="underline underline-offset-2"
+                    >
+                      『제외 키워드』 화면
+                    </Link>
+                    에서 확인하세요.
+                  </p>
                 )}
 
                 {/* 개선 규칙 제안 */}
                 {(selectedReport.improvementSuggestions?.length ?? 0) > 0 && (
-                  <SuggestionList
-                    improvementSuggestions={selectedReport.improvementSuggestions!}
-                  />
+                  <SuggestionList improvementSuggestions={selectedReport.improvementSuggestions!} />
                 )}
 
                 {/* 실패 상태 */}
@@ -408,7 +433,8 @@ export default function AnalysisPage() {
                 )}
 
                 {/* 처리 중 */}
-                {(selectedReport.status === 'PROCESSING' || selectedReport.status === 'PENDING') && (
+                {(selectedReport.status === 'PROCESSING' ||
+                  selectedReport.status === 'PENDING') && (
                   <Card>
                     <CardContent className="flex items-center justify-center gap-2 py-12">
                       <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -420,9 +446,7 @@ export default function AnalysisPage() {
             ) : (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">
-                  <p className="text-sm text-muted-foreground">
-                    왼쪽에서 리포트를 선택하세요.
-                  </p>
+                  <p className="text-sm text-muted-foreground">왼쪽에서 리포트를 선택하세요.</p>
                 </CardContent>
               </Card>
             )}
@@ -434,16 +458,25 @@ export default function AnalysisPage() {
 }
 
 const TRIGGER_CONFIG: Record<string, { label: string; className: string }> = {
-  manual: { label: '수동', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
-  scheduled: { label: '자동', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
-  collection: { label: '수집 후', className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+  manual: {
+    label: '수동',
+    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  },
+  scheduled: {
+    label: '자동',
+    className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+  },
+  collection: {
+    label: '수집 후',
+    className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  },
 }
 
 function TriggerBadge({ triggeredBy }: { triggeredBy?: string }) {
   const config = TRIGGER_CONFIG[triggeredBy ?? 'manual']
   if (!config) return null
   return (
-    <Badge className={cn('text-[9px] px-1 py-0 leading-tight', config.className)}>
+    <Badge className={cn('px-1 py-0 text-[9px] leading-tight', config.className)}>
       {config.label}
     </Badge>
   )
@@ -458,8 +491,6 @@ function StatusDot({ status }: { status: string }) {
   }
 
   return (
-    <span
-      className={cn('inline-block h-2 w-2 rounded-full', colors[status] ?? 'bg-gray-400')}
-    />
+    <span className={cn('inline-block h-2 w-2 rounded-full', colors[status] ?? 'bg-gray-400')} />
   )
 }

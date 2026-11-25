@@ -16,7 +16,7 @@ export async function GET(
   const { campaignId } = await params
 
   const statuses = await prisma.keywordStatus.findMany({
-    where: { workspaceId: workspace.id, campaignId },
+    where: { workspaceId: workspace.id, campaignId, removedAt: { not: null } },
     select: { keyword: true, removedAt: true, removedMemo: true },
   })
 
@@ -98,8 +98,10 @@ export async function DELETE(
     return errorResponse('유효한 키워드가 없습니다', 400)
   }
 
-  const result = await prisma.keywordStatus.deleteMany({
+  // 행을 지우지 않고 제거 표시만 해제한다 — 「제외 안 함」(dismissedUntil) 기록 보존.
+  const result = await prisma.keywordStatus.updateMany({
     where: { workspaceId: workspace.id, campaignId, keyword: { in: keywords } },
+    data: { removedAt: null, removedMemo: null },
   })
 
   invalidateCoupangAdsCache(workspace.id)

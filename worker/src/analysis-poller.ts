@@ -52,6 +52,45 @@ async function workerFetch(path: string, options: RequestInit = {}): Promise<Res
   return fetch(url, { ...options, headers })
 }
 
+export interface NegativeKeywordSummary {
+  candidateCount: number
+  campaignCount: number
+  spendingAfterRemovalCount: number
+}
+
+/**
+ * 제외 키워드 후보 요약 조회 — 알림 부가 정보라 실패·타임아웃·비 2xx 는 모두 undefined(로그만).
+ * 테스트용으로 export.
+ */
+export async function fetchNegativeKeywordSummary(
+  workspaceId: string | undefined
+): Promise<NegativeKeywordSummary | undefined> {
+  if (!workspaceId) return undefined
+  try {
+    const res = await workerFetch('/api/coupang-ads/negative-keyword-candidates', {
+      headers: { 'x-workspace-id': workspaceId },
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!res.ok) {
+      console.warn(`[analysis-poller] 제외 키워드 요약 조회 실패 [${res.status}]`)
+      return undefined
+    }
+    const body = (await res.json()) as {
+      campaigns?: Array<{ candidates?: unknown[] }>
+      spendingAfterRemoval?: unknown[]
+    }
+    const campaigns = body.campaigns ?? []
+    return {
+      candidateCount: campaigns.reduce((n, c) => n + (c.candidates?.length ?? 0), 0),
+      campaignCount: campaigns.filter((c) => (c.candidates?.length ?? 0) > 0).length,
+      spendingAfterRemovalCount: body.spendingAfterRemoval?.length ?? 0,
+    }
+  } catch (err) {
+    console.warn('[analysis-poller] 제외 키워드 요약 조회 오류(무시):', err)
+    return undefined
+  }
+}
+
 /** 응답 텍스트에서 JSON 추출 */
 function extractJSON(content: string): Record<string, unknown> {
   // 1. ```json ... ``` 코드블록
@@ -419,6 +458,7 @@ async function maybeNotifyAnalysisDone(
     campaignCount: number
     workspaceId?: string
     topSuggestions?: Array<{ type: string; priority: string; target: string; reason: string }>
+    negativeKeywordSummary?: NegativeKeywordSummary
   }
 ): Promise<void> {
   if (!enabled) {
@@ -541,7 +581,12 @@ export function startAnalysisPoller(): void {
           const completeBody = (await completeRes.json().catch(() => ({}))) as {
             slackNotify?: boolean
           }
-          await maybeNotifyAnalysisDone(completeBody.slackNotify !== false, {
+          const slackNotify = completeBody.slackNotify !== false
+          const negativeKeywordSummary = slackNotify
+            ? await fetchNegativeKeywordSummary(workspaceId)
+            : undefined
+          await maybeNotifyAnalysisDone(slackNotify, {
+            negativeKeywordSummary,
             summary,
             suggestionCount: result.suggestions.length,
             campaignCount: campaigns.length,
