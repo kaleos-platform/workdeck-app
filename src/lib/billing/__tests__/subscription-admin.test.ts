@@ -171,6 +171,7 @@ test('구독 없는 Space의 비활성 설치·정책·종료 아이템 이력�
       id: 's',
       name: '공간',
       members: [{ user: { id: 'u', email: 'a@b', name: null } }],
+      _count: { members: 0 },
       deckInstances: [
         { deckAppId: 'inv', createdAt: now, isActive: false },
         { deckAppId: 'unknown', createdAt: now },
@@ -194,8 +195,42 @@ test('구독 없는 Space의 비활성 설치·정책·종료 아이템 이력�
       owners: [{ id: 'u', email: 'a@b', name: null }],
       exemptFlag: false,
       exemptNote: null,
+      mfaRequiredMemberCount: 0,
     },
   ])
+})
+
+test('인증 필수 구성원 수(플래그 사용자 + 운영자)를 Space와 모든 행에 싣는다', async () => {
+  ;(prisma.billingDeckProduct.findMany as jest.Mock).mockResolvedValue([
+    { id: 'inv', name: '재고', pricingMode: 'SUBSCRIPTION', paidActivatedAt: null, isActive: true },
+  ])
+  ;(prisma.space.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 's',
+      name: '공간',
+      members: [],
+      _count: { members: 2 },
+      deckInstances: [{ deckAppId: 'inv', createdAt: now }],
+      deckAccessPolicies: [],
+      subscription: null,
+    },
+  ])
+  const result = await getSubscriptionAccessOverview(now)
+  expect(prisma.space.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      include: expect.objectContaining({
+        _count: {
+          select: {
+            members: {
+              where: { user: { OR: [{ mfaRequired: true }, { platformRole: 'OPERATOR' }] } },
+            },
+          },
+        },
+      }),
+    })
+  )
+  expect(result.spaces[0].mfaRequiredMemberCount).toBe(2)
+  expect(result.rows.every((row) => row.mfaRequiredMemberCount === 2)).toBe(true)
 })
 
 test.each(['missing', 'free', 'unstarted'])(
@@ -308,6 +343,7 @@ test('정책만 있거나 종료 아이템만 있는 업무 이력을 포함하�
       id: 's',
       name: '공간',
       members: [],
+      _count: { members: 0 },
       deckInstances: [],
       deckAccessPolicies: [
         { deckAppId: 'inv', trialEndsAt: oldTrial, exemptFlag: false, exemptNote: null },
@@ -365,6 +401,7 @@ test('업무 없는 Space도 OWNER 정보와 전체 면제 상태를 반환한�
       id: 'empty',
       name: '빈 공간',
       members: [{ user }],
+      _count: { members: 0 },
       deckInstances: [],
       deckAccessPolicies: [],
       subscription: null,
@@ -373,6 +410,13 @@ test('업무 없는 Space도 OWNER 정보와 전체 면제 상태를 반환한�
   const result = await getSubscriptionAccessOverview(now)
   expect(result.rows).toEqual([])
   expect(result.spaces).toEqual([
-    { id: 'empty', name: '빈 공간', owners: [user], exemptFlag: false, exemptNote: null },
+    {
+      id: 'empty',
+      name: '빈 공간',
+      owners: [user],
+      exemptFlag: false,
+      exemptNote: null,
+      mfaRequiredMemberCount: 0,
+    },
   ])
 })

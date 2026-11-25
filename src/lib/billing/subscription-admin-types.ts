@@ -4,6 +4,7 @@ export type SubscriptionAccessRow = {
   spaceId: string
   spaceName: string
   owners: { id: string; email: string; name: string | null }[]
+  mfaRequiredMemberCount: number
   deckAppId: string
   deckName: string
   pricingMode: 'FREE_BETA' | 'SUBSCRIPTION'
@@ -28,5 +29,6 @@ export type SubscriptionAccessOverview = {
     owners: SubscriptionAccessRow['owners']
     exemptFlag: boolean
     exemptNote: string | null
+    mfaRequiredMemberCount: number
   }[]
 }

@@ -253,6 +253,7 @@ export const UserScalarFieldEnum = {
   name: 'name',
   avatarUrl: 'avatarUrl',
   platformRole: 'platformRole',
+  mfaRequired: 'mfaRequired',
   signupSource: 'signupSource',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

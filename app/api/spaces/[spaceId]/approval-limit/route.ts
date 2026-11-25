@@ -19,7 +19,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   const auth = await requireSpaceOwner(spaceId)
   if ('error' in auth) return auth.error
   // 승인 정책 변경은 자격증명 저장과 같은 MFA(aal2) 관문을 둔다(컨트롤러 결정). 본문을 읽기 전에 막는다.
-  const mfaError = await requireAal2()
+  const mfaError = await requireAal2({ ignoreUserFlag: true })
   if (mfaError) return mfaError
   const parsed = bodySchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)

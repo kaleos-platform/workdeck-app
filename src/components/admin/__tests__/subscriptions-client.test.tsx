@@ -167,7 +167,7 @@ test('유효한 유료 항목만 결제 기한을 표시하고 미구독·면제
   await screen.findByRole('row', { name: /유료 정상/ })
   for (const variant of variants) {
     const row = screen.getByRole('row', { name: new RegExp(variant.deckName) })
-    expect(within(row).getAllByRole('cell')[4].textContent).toBe(
+    expect(within(row).getAllByRole('cell')[5].textContent).toBe(
       variant.deckName.startsWith('유료') ? '2099-12-15' : '-'
     )
   }
@@ -290,7 +290,7 @@ test('구독 상태별 업무 수를 구독·체험 순으로 먼저 보여 준�
   const summary = await screen.findByLabelText('상태별 업무 수')
   expect(summary.textContent).toBe('구독 중1체험 중1')
   const spaceRow = screen.getByRole('button', { name: '테스트 Space 업무 펼치기' }).closest('tr')!
-  expect(within(spaceRow).getAllByRole('cell')[2].textContent).toBe('구독 중1체험 중12개 업무')
+  expect(within(spaceRow).getAllByRole('cell')[3].textContent).toBe('구독 중1체험 중12개 업무')
 })
 
 test('구독 예약·결제 연체를 상태 안에서 따로 센다', async () => {
