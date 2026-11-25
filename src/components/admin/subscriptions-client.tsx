@@ -379,13 +379,14 @@ export function SubscriptionsClient() {
           </div>
         </div>
         <div className="rounded-md border">
-          <Table className="min-w-[1250px] table-fixed">
+          <Table className="min-w-[1380px] table-fixed">
             <TableHeader className="sticky top-0 z-20 bg-background">
               <TableRow>
                 <TableHead className="sticky left-0 z-30 w-[230px] bg-background">
                   Space / 업무
                 </TableHead>
                 <TableHead className="w-[220px]">소유자</TableHead>
+                <TableHead className="w-[130px]">인증 필수 구성원</TableHead>
                 <TableHead className="w-[160px]">이용 상태</TableHead>
                 <TableHead className="w-[130px]">체험 종료일</TableHead>
                 <TableHead className="w-[130px]">유료 이용 기한</TableHead>
@@ -447,6 +448,9 @@ export function SubscriptionsClient() {
                         <span className="text-xs text-muted-foreground">소유자 없음</span>
                       )}
                     </TableCell>
+                    <TableCell className="text-xs tabular-nums">
+                      {space.mfaRequiredMemberCount ? `${space.mfaRequiredMemberCount}명` : '—'}
+                    </TableCell>
                     <TableCell className="whitespace-normal">
                       <StatusSummary rows={rows} />
                       <p
@@ -504,6 +508,9 @@ export function SubscriptionsClient() {
                       </TableCell>
                       <TableCell>
                         <span className="sr-only">소유자는 Space 행 참조</span>
+                      </TableCell>
+                      <TableCell className="text-xs tabular-nums">
+                        {row.mfaRequiredMemberCount ? `${row.mfaRequiredMemberCount}명` : '—'}
                       </TableCell>
                       <TableCell>
                         <ReasonBadge reason={row.accessReason} />
@@ -575,7 +582,7 @@ export function SubscriptionsClient() {
             {groups.length === 0 && (
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                     {data.spaces.length
                       ? '검색 조건에 맞는 구독이 없습니다'
                       : '등록된 Space가 없습니다. Space를 생성하면 이곳에서 구독을 관리할 수 있습니다.'}

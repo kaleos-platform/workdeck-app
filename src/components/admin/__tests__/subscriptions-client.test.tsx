@@ -167,7 +167,7 @@ test('유효한 유료 항목만 결제 기한을 표시하고 미구독·면제
   await screen.findByRole('row', { name: /유료 정상/ })
   for (const variant of variants) {
     const row = screen.getByRole('row', { name: new RegExp(variant.deckName) })
-    expect(within(row).getAllByRole('cell')[4].textContent).toBe(
+    expect(within(row).getAllByRole('cell')[5].textContent).toBe(
       variant.deckName.startsWith('유료') ? '2099-12-15' : '-'
     )
   }
