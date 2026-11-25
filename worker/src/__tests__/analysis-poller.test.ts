@@ -4,6 +4,7 @@ import {
   callAnalysisAI,
   handleAnalysisFailure,
   isGeminiKeyError,
+  fetchNegativeKeywordSummary,
   readOllamaStream,
 } from '../analysis-poller.js'
 import { notifyAnalysisFailed } from '../slack-notifier.js'
@@ -149,4 +150,43 @@ test('알림 미발송(false)이면 억제 기록을 남기지 않아 다음에 
 test('Ollama 스트림 오류 줄은 throw', async () => {
   const body = new Response('{"error":"model not found"}\n').body!
   await expect(readOllamaStream(body)).rejects.toThrow('model not found')
+})
+
+describe('fetchNegativeKeywordSummary', () => {
+  test('성공: 후보·캠페인·제거 후 지출 개수 집계 + workspace 헤더', async () => {
+    const fn = jest.fn(async () =>
+      Response.json({
+        campaigns: [{ candidates: [{}, {}] }, { candidates: [] }, { candidates: [{}] }],
+        spendingAfterRemoval: [{}, {}],
+      })
+    )
+    global.fetch = fn as unknown as typeof fetch
+    await expect(fetchNegativeKeywordSummary('ws1')).resolves.toEqual({
+      candidateCount: 3,
+      campaignCount: 2,
+      spendingAfterRemovalCount: 2,
+    })
+    const [url, init] = fn.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe('http://app.test/api/coupang-ads/negative-keyword-candidates')
+    expect((init.headers as Record<string, string>)['x-workspace-id']).toBe('ws1')
+  })
+
+  test('404 는 undefined', async () => {
+    global.fetch = jest.fn(async () => new Response('nf', { status: 404 })) as typeof fetch
+    await expect(fetchNegativeKeywordSummary('ws1')).resolves.toBeUndefined()
+  })
+
+  test('타임아웃(abort)은 undefined', async () => {
+    global.fetch = jest.fn(async () => {
+      throw new DOMException('timeout', 'TimeoutError')
+    }) as typeof fetch
+    await expect(fetchNegativeKeywordSummary('ws1')).resolves.toBeUndefined()
+  })
+
+  test('workspaceId 없으면 호출 안 함', async () => {
+    const fn = jest.fn()
+    global.fetch = fn as unknown as typeof fetch
+    await expect(fetchNegativeKeywordSummary(undefined)).resolves.toBeUndefined()
+    expect(fn).not.toHaveBeenCalled()
+  })
 })

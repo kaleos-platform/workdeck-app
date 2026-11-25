@@ -219,21 +219,29 @@ export async function notifyAnalysisDone(params: {
     target: string
     reason: string
   }>
+  negativeKeywordSummary?: {
+    candidateCount: number
+    campaignCount: number
+    spendingAfterRemovalCount: number
+  }
 }): Promise<void> {
-  const analysisUrl = process.env.WORKDECK_APP_URL
-    ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/analysis`
-    : 'https://app.workdeck.work/d/coupang-ads/analysis'
+  const appBase = process.env.WORKDECK_APP_URL ?? 'https://app.workdeck.work'
+  const analysisUrl = `${appBase}/d/coupang-ads/analysis`
+
+  // REMOVE_KEYWORD 는 「제외 키워드」 화면이 맡는다 — 알림 제안·개수에서 뺀다.
+  const topSuggestions = params.topSuggestions?.filter((s) => s.type !== 'REMOVE_KEYWORD')
+  const suggestionCount = topSuggestions ? topSuggestions.length : params.suggestionCount
 
   const blocks: Block[] = [
     header(':white_check_mark: 쿠팡 광고 분석 완료'),
     divider(),
     section(`*상태*\n완료`, `*캠페인*\n${params.campaignCount}개`),
-    section(`*제안*\n${params.suggestionCount}개`),
+    section(`*제안*\n${suggestionCount}개`),
     section(params.summary),
   ]
 
   // 상위 제안 본문 (우선순위 순, 상위 N건 + 나머지 개수)
-  const sug = (params.topSuggestions ?? [])
+  const sug = (topSuggestions ?? [])
     .slice()
     .sort((a, b) => (PRIORITY_RANK[a.priority] ?? 3) - (PRIORITY_RANK[b.priority] ?? 3))
   if (sug.length > 0) {
@@ -252,11 +260,20 @@ export async function notifyAnalysisDone(params: {
     blocks.push(section(lines.join('\n\n')))
   }
 
+  const nk = params.negativeKeywordSummary
+  if (nk && (nk.candidateCount > 0 || nk.spendingAfterRemovalCount > 0)) {
+    blocks.push(
+      section(
+        `제외 후보 ${nk.candidateCount}개(캠페인 ${nk.campaignCount}개) · 제거했는데 지출 중 ${nk.spendingAfterRemovalCount}개 → <${appBase}/d/coupang-ads/negative-keywords|제외 키워드 화면>`
+      )
+    )
+  }
+
   blocks.push(section(`<${analysisUrl}|:mag: 광고 분석 보기>`))
 
   await postMessage(
     blocks,
-    `쿠팡 광고 분석 완료: ${params.campaignCount}개 캠페인, ${params.suggestionCount}개 제안`,
+    `쿠팡 광고 분석 완료: ${params.campaignCount}개 캠페인, ${suggestionCount}개 제안`,
     params.workspaceId,
     DECK_KEY_COUPANG_ADS
   )
