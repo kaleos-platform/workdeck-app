@@ -16,15 +16,23 @@ const BRANCH = `autofix/${ID}`
 const PR = 'https://github.com/kaleos-platform/workdeck-app/pull/77'
 const BASE = 'a'.repeat(40)
 const T = Date.parse('2026-11-25T10:00:00Z')
+const PATCH =
+  'diff --git a/src/a.ts b/src/a.ts\nindex 1111111..2222222 100644\n--- a/src/a.ts\n+++ b/src/a.ts\n@@ -1,1 +1,1 @@\n-a\n+b\n'
+const VERCEL = JSON.stringify({ git: { deploymentEnabled: { 'autofix/*': false } } })
 
 // 상태 디렉터리 + pending 묶음 + env 파일. 반환 cfg
-function setup({ title = '🐛 fix: TypeError 수정 — X (autofix)', secret = SECRET, patch } = {}) {
+function setup({
+  title = '🐛 fix: TypeError 수정 — X (autofix)',
+  secret = SECRET,
+  patch,
+  createdAt = new Date(T - 3600_000).toISOString(),
+} = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'publish-'))
   const stateDir = path.join(root, 'state')
   const dir = path.join(stateDir, 'pending', ID)
   fs.mkdirSync(dir, { recursive: true })
   const content = {
-    'patch.diff': patch ?? 'diff --git a/src/a.ts b/src/a.ts\n',
+    'patch.diff': patch ?? PATCH,
     'pr-title.txt': title,
     'pr-body.md': 'body',
     'verify.json': JSON.stringify({ ok: true }),
@@ -40,6 +48,7 @@ function setup({ title = '🐛 fix: TypeError 수정 — X (autofix)', secret = 
       runId: ID.slice(0, 20),
       shortId: SHORT,
       status: 'ready',
+      createdAt,
       baseCommit: BASE,
       review: { ok: true, verdict: 'approve', blocking: [] },
       sentryIssueId: ISSUE,
@@ -73,7 +82,15 @@ const comment = (text, min = 0) => ({
 })
 
 // gh/git 대역: 호출 기록 + 상태(원격 브랜치·PR 존재 여부)
-function fakes({ comments, prs = [], remoteBranch = false, failOn = {}, noteFails = 0 }) {
+function fakes({
+  comments,
+  prs = [],
+  remoteBranch = false,
+  failOn = {},
+  noteFails = 0,
+  vercel = VERCEL,
+  remoteTree = 'tree1',
+}) {
   const f = { calls: [], notes: [], slack: [], prs, remoteBranch, noteFails }
   f.deps = {
     now: () => T,
@@ -95,6 +112,13 @@ function fakes({ comments, prs = [], remoteBranch = false, failOn = {}, noteFail
         return { status: 0, stdout: JSON.stringify(f.prs.map((url) => ({ url }))) }
       if (cmd === 'git' && args[0] === 'ls-remote')
         return { status: 0, stdout: f.remoteBranch ? `abc\trefs/heads/${BRANCH}\n` : '' }
+      if (cmd === 'git' && args.includes('show')) return { status: 0, stdout: vercel }
+      if (cmd === 'git' && args.includes('ls-files')) return { status: 0, stdout: 'src/a.ts\n' }
+      if (cmd === 'git' && args.includes('rev-parse')) {
+        const what = args[args.indexOf('rev-parse') + 1]
+        const tree = what === 'FETCH_HEAD^{tree}' ? remoteTree : 'tree1'
+        return { status: 0, stdout: what.endsWith('^{tree}') ? tree : 'c'.repeat(40) }
+      }
       if (cmd === 'git' && args.includes('push')) f.remoteBranch = true
       if (cmd === 'gh' && args[1] === 'create') {
         f.prs.push(PR)
@@ -215,11 +239,31 @@ test('정상 경로: 명령 순서·push refspec·PR 인자·pr 노트·marker',
     ['git', 'clone', '--quiet', '--depth', '1', '--branch', 'develop', cfg.repoUrl, repo],
     ['git', '-C', repo, 'fetch', '--quiet', '--depth', '1', 'origin', BASE],
     ['git', '-C', repo, 'checkout', '--quiet', '--detach', BASE],
+    ['git', '-C', repo, 'show', 'HEAD:vercel.json'],
+    ['git', '-C', repo, 'ls-files'],
     ['git', '-C', repo, 'apply', '--check', path.join(dir, 'patch.diff')],
     ['git', '-C', repo, 'apply', path.join(dir, 'patch.diff')],
     ['git', '-C', repo, 'add', '-A'],
-    ['git', '-C', repo, 'commit', '--quiet', '-m', title],
+    [
+      'git',
+      '-C',
+      repo,
+      '-c',
+      'user.name=workdeck-autofix',
+      '-c',
+      'user.email=kaleos-dev@users.noreply.github.com',
+      '-c',
+      'core.hooksPath=/dev/null',
+      '-c',
+      'commit.gpgsign=false',
+      'commit',
+      '--no-verify',
+      '--quiet',
+      '-m',
+      title,
+    ],
     ['git', '-C', repo, 'push', 'origin', `HEAD:refs/heads/${BRANCH}`],
+    ['git', '-C', repo, 'rev-parse', 'HEAD'],
     [
       'gh',
       'pr',
@@ -239,10 +283,9 @@ test('정상 경로: 명령 순서·push refspec·PR 인자·pr 노트·marker',
   assert.deepEqual(f.notes, [`autofix:pr ${PR}`])
   assert.deepEqual(f.slack, [`PR 생성 ${SHORT} ${PR}`])
   assert.equal(r.results[0].status, 'pr')
-  assert.equal(
-    JSON.parse(fs.readFileSync(path.join(cfg.stateDir, 'published', `${ID}.json`))).url,
-    PR
-  )
+  const mk = JSON.parse(fs.readFileSync(path.join(cfg.stateDir, 'published', `${ID}.json`)))
+  assert.equal(mk.url, PR)
+  assert.equal(mk.commit, 'c'.repeat(40))
   assert.equal(fs.existsSync(path.join(cfg.stateDir, 'publish', ID)), false) // 클론 정리
   // marker 가 있으면 다음 run 은 아무것도 안 한다
   f.calls.length = 0
@@ -273,13 +316,65 @@ test('복구: PR 이 이미 있으면 노트만', async () => {
   assert.deepEqual(f.notes, [`autofix:pr ${PR}`])
 })
 
-test('복구: 원격 브랜치만 있으면 PR 생성만(clone·push 없음)', async () => {
+test('복구: 원격 브랜치만 있으면 tree 일치 확인 뒤 PR 생성만(push 없음)', async () => {
   const { cfg, sha } = setup()
   const f = fakes({ comments: withApprove(sha), remoteBranch: true })
   await publishRun({ cfg, deps: f.deps })
   assert.equal(created(f).length, 1)
-  assert.ok(!cmdLines(f).some((l) => l.includes('clone') || l.includes('push')))
+  assert.ok(!cmdLines(f).some((l) => l.includes(' push ')))
+  assert.ok(cmdLines(f).some((l) => l.endsWith(`origin refs/heads/${BRANCH}`)))
   assert.deepEqual(f.notes, [`autofix:pr ${PR}`])
+})
+
+test('원격 브랜치 tree 가 baseCommit+patch 와 다르면 publish-mismatch, PR 없음', async () => {
+  const { cfg, sha } = setup()
+  const f = fakes({ comments: withApprove(sha), remoteBranch: true, remoteTree: 'evil' })
+  await publishRun({ cfg, deps: f.deps })
+  assert.equal(created(f).length, 0)
+  assert.deepEqual(f.notes, ['autofix:failed publish-mismatch'])
+})
+
+test('base 의 vercel.json 에 autofix/* 가 꺼져 있지 않으면 publish-preview-unguarded', async () => {
+  const off = JSON.stringify({ git: { deploymentEnabled: { 'autofix/*': true } } })
+  for (const vercel of ['{}', 'not json', off]) {
+    const { cfg, sha } = setup()
+    const f = fakes({ comments: withApprove(sha), vercel })
+    await publishRun({ cfg, deps: f.deps })
+    assert.deepEqual(f.notes, ['autofix:failed publish-preview-unguarded'])
+    assert.ok(!cmdLines(f).some((l) => l.includes(' push ')))
+    assert.deepEqual(f.slack, [`PR 생성 실패 ${SHORT} publish-preview-unguarded`])
+  }
+})
+
+test('push 직전 checkPatch: 허용 경로 밖 patch 는 publish-mismatch', async () => {
+  const bad = PATCH.replaceAll('src/a.ts', '.github/workflows/x.yml')
+  const { cfg, sha } = setup({ patch: bad })
+  const f = fakes({ comments: withApprove(sha) })
+  await publishRun({ cfg, deps: f.deps })
+  assert.deepEqual(f.notes, ['autofix:failed publish-mismatch'])
+  assert.ok(!cmdLines(f).some((l) => l.includes(' push ') || l.includes(' apply ')))
+})
+
+test('14일 넘은 pending 은 다루지 않는다', async () => {
+  const { cfg, sha } = setup({ createdAt: new Date(T - 15 * 86400_000).toISOString() })
+  const f = fakes({ comments: withApprove(sha) })
+  await publishRun({ cfg, deps: f.deps })
+  assert.deepEqual(f.calls, [])
+  assert.deepEqual(f.notes, [])
+})
+
+test('유효한 approve 뒤의 깨진/위조 ready 노트는 없는 것으로 본다', async () => {
+  const { cfg, sha } = setup()
+  const forged = `autofix:ready id=${ID} sha=${sha} files=1 lines=1 verify=ok review=approve sig=${'0'.repeat(32)}`
+  const f = fakes({
+    comments: () => [
+      comment(approveText(sha), 5),
+      comment('autofix:ready x', 2),
+      comment(forged, 1),
+    ],
+  })
+  await publishRun({ cfg, deps: f.deps })
+  assert.equal(created(f).length, 1)
 })
 
 test('pr 노트 POST 실패 → 다음 run 이 기존 PR 로 노트 작성(PR 생성은 총 1번)', async () => {
@@ -288,8 +383,22 @@ test('pr 노트 POST 실패 → 다음 run 이 기존 PR 로 노트 작성(PR �
   await publishRun({ cfg, deps: f.deps })
   assert.deepEqual(f.notes, [])
   assert.equal(created(f).length, 1)
+  const mf = path.join(cfg.stateDir, 'published', `${ID}.json`)
+  assert.equal(JSON.parse(fs.readFileSync(mf)).status, 'pr-note-pending')
   await publishRun({ cfg, deps: f.deps })
   assert.equal(created(f).length, 1)
+  assert.deepEqual(f.notes, [`autofix:pr ${PR}`])
+  assert.equal(JSON.parse(fs.readFileSync(mf)).status, 'pr')
+})
+
+test('pr 노트가 계속 실패해도 failed 노트·횟수 상한 없이 재시도', async () => {
+  const { cfg, sha } = setup()
+  const f = fakes({ comments: withApprove(sha), noteFails: 20 })
+  for (let n = 0; n < 10; n++) await publishRun({ cfg, deps: f.deps })
+  assert.deepEqual(f.notes, [])
+  assert.equal(created(f).length, 1)
+  f.noteFails = 0
+  await publishRun({ cfg, deps: f.deps })
   assert.deepEqual(f.notes, [`autofix:pr ${PR}`])
 })
 

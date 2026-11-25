@@ -2640,14 +2640,63 @@ test('selectFixCandidates: 운영자 요청 또는 fix+P1·P2, 판단 없으면 
   const triage = new Map([
     ['WD-1', { p: 'P2', cat: 'degraded', act: 'fix' }],
     ['WD-2', { p: 'P1', cat: 'user-block', act: 'fix' }],
-    ['WD-3', { p: 'P3', cat: 'degraded', act: 'fix' }], // P3 제외
+    ['WD-3', { p: 'P3', cat: 'degraded', act: 'fix' }], // P3 이지만 사용자 9명 → 하한으로 유지
     ['WD-4', { p: 'P1', cat: 'noise', act: 'ignore' }], // act 불일치 제외
     // WD-5: 판단 없음 → 유지
     ['WD-6', { p: 'P3', cat: 'noise', act: 'ignore' }], // 운영자 요청 → 유지, 먼저
     ['WD-7', { p: 'P2', cat: 'degraded', act: 'fix' }],
   ])
   const out = lib.selectFixCandidates({ picked, notesById, triage }).map((i) => i.shortId)
-  assert.deepEqual(out, ['WD-6', 'WD-2', 'WD-7', 'WD-1', 'WD-5'])
+  assert.deepEqual(out, ['WD-6', 'WD-2', 'WD-7', 'WD-1', 'WD-3', 'WD-5'])
+})
+
+test('selectFixCandidates: fatal·사용자 5명 이상은 판단(ignore)과 무관하게 후보 하한', () => {
+  const picked = [
+    { ...issue('1', 0, 1), level: 'fatal' },
+    issue('2', 5, 1),
+    issue('3', 4, 1), // 하한 미달 + ignore → 제외
+  ]
+  const triage = new Map(picked.map((i) => [i.shortId, { p: 'P3', cat: 'noise', act: 'ignore' }]))
+  const out = lib.selectFixCandidates({ picked, notesById: new Map(), triage })
+  assert.deepEqual(out.map((i) => i.shortId).sort(), ['WD-1', 'WD-2'])
+})
+
+test('통합: 판단 입력 순서는 deps.random 으로 섞이고(주입 시 결정적), 없으면 원래 순서', async () => {
+  const order = async (random) => {
+    let seen = []
+    const h = harness({
+      triageOut: (inputs) => {
+        seen = inputs.map((x) => x.shortId)
+        return '[]'
+      },
+    })
+    if (random) h.deps.random = random
+    daily(
+      h,
+      [1, 2, 3, 4].map((n) => tIssue({ id: String(n), shortId: `WD-${n}` }))
+    )
+    await runDaily({ argv: ['--no-slack', '--no-write'], cfg: h.cfg, deps: h.deps })
+    cleanup(h)
+    return seen
+  }
+  assert.deepEqual(await order(undefined), ['WD-1', 'WD-2', 'WD-3', 'WD-4'])
+  const a = await order(() => 0)
+  assert.deepEqual(a, await order(() => 0)) // 같은 random → 같은 순서
+  assert.notDeepEqual(a, ['WD-1', 'WD-2', 'WD-3', 'WD-4'])
+})
+
+test('통합: lock 을 쥐고 있으면 30초 간격 10번 기다린 뒤 포기', async () => {
+  const h = harness()
+  daily(h, [])
+  const held = acquireLock(h.cfg.stateDir)
+  const sleeps = []
+  h.deps.sleep = async (ms) => void sleeps.push(ms)
+  const r = await runDaily({ argv: ['--no-slack', '--no-write'], cfg: h.cfg, deps: h.deps })
+  assert.equal(r.exitCode, 0)
+  assert.deepEqual(sleeps, Array(10).fill(30_000))
+  assert.match(h.slack[0], /lock/)
+  held.release()
+  cleanup(h)
 })
 
 test('buildSlackSummary: 판단 줄·ready 먼저·제목 미포함', () => {

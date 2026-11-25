@@ -37,10 +37,23 @@ class Fail extends Error {
 
 const repoSlug = (url) => url.match(/github\.com\/([\w.-]+\/[\w.-]+?)(?:\.git)?$/)?.[1]
 
+const READY =
+  /^autofix:ready id=(\S+) sha=([0-9a-f]{16}) files=\d+ lines=\d+ verify=(?:ok|fail) review=(?:approve|blocking) sig=([0-9a-f]{32})$/
+const MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000
+
+// ready·approve 는 형식이 맞고 서명이 유효한 것만 인정한다(앱 파서와 같은 규칙 — 위조·깨진 노트는 없는 것으로 본다)
+function validState(text, issueId, secret) {
+  const line = text.trim().split('\n')[0]
+  const kind = line.match(/^autofix:(ready|approve)(\s|$)/)?.[1]
+  if (!kind) return true
+  const mm = line.match(kind === 'ready' ? READY : APPROVE)
+  return !!mm && lib.verifyNoteSig(kind, issueId, mm[1], mm[2], secret, mm[3])
+}
+
 // 최신 상태 노트(KNOWN)의 첫 줄
-function latestNoteLine(comments) {
+function latestNoteLine(comments, issueId, secret) {
   const known = comments
-    .filter((c) => lib.KNOWN.test(c.text.trim()))
+    .filter((c) => lib.KNOWN.test(c.text.trim()) && validState(c.text, issueId, secret))
     .sort((a, b) => Date.parse(a.dateCreated) - Date.parse(b.dateCreated))
   return known.length ? known[known.length - 1].text.trim().split('\n')[0] : null
 }
@@ -92,7 +105,7 @@ export async function publishRun({ cfg, deps }) {
 
     for (const id of ids) {
       const marker = readMarker(id)
-      if (marker && marker.status !== 'retry') continue
+      if (marker && marker.status !== 'retry' && marker.status !== 'pr-note-pending') continue
       const dir = path.join(pendingRoot, id)
       let m
       try {
@@ -100,6 +113,11 @@ export async function publishRun({ cfg, deps }) {
       } catch {
         continue
       }
+      if (
+        marker?.status !== 'pr-note-pending' &&
+        !(deps.now() - Date.parse(m?.createdAt) < MAX_AGE_MS)
+      )
+        continue // 14일 넘은 묶음은 다루지 않는다
       if (m?.status !== 'ready' || !/^\d{1,20}$/.test(String(m.sentryIssueId ?? ''))) continue
       const issueId = String(m.sentryIssueId)
       const shortId = String(m.shortId ?? '')
@@ -116,11 +134,21 @@ export async function publishRun({ cfg, deps }) {
         log(`${id}: 노트 조회 실패`)
         continue
       }
-      const line = latestNoteLine(comments)
+      const line = latestNoteLine(comments, issueId, secret)
       if (!line) continue
       const prDone = line.match(/^autofix:pr (\S+)$/)
       if (prDone && lib.PR_URL.test(prDone[1])) {
         writeMarker(id, { status: 'pr', url: prDone[1] }) // 노트는 있는데 marker 만 없던 경우
+        continue
+      }
+      if (marker?.status === 'pr-note-pending') {
+        // PR 은 이미 있다 — 노트만 계속 재시도(실패 처리·횟수 상한 없음)
+        try {
+          await deps.addComment(issueId, `autofix:pr ${marker.url}`)
+          writeMarker(id, { ...marker, status: 'pr' })
+        } catch {
+          log(`${id}: pr 노트 쓰기 재시도 실패`)
+        }
         continue
       }
       const ap = line.match(APPROVE)
@@ -173,12 +201,19 @@ export async function publishRun({ cfg, deps }) {
         if (!title || title.includes('\n') || title.length > 200 || title.includes('? 수정'))
           title = lib.buildPrTitle({ type: '?', shortId })
 
+        let commit
         const finish = async (url) => {
           if (!lib.PR_URL.test(url ?? '')) throw new Fail('publish-bad-url', { transient: true })
-          await putNote(`autofix:pr ${url}`) // 실패하면 marker 없이 끝나 다음 run 이 PR 을 찾아 다시 쓴다
-          writeMarker(id, { status: 'pr', url })
+          // PR 이 생긴 뒤의 노트 실패는 autofix:failed 가 아니다 — marker 로 남기고 다음 run 들이 노트를 재시도한다
+          writeMarker(id, { status: 'pr-note-pending', url, commit })
           results.push({ id, status: 'pr', url })
           await slack(`PR 생성 ${shortId} ${url}`)
+          try {
+            await putNote(`autofix:pr ${url}`)
+            writeMarker(id, { status: 'pr', url, commit })
+          } catch {
+            log(`${id}: pr 노트 쓰기 실패 — 다음 run 에서 재시도`)
+          }
         }
         const createPr = () => {
           const r = run('gh', [
@@ -224,21 +259,20 @@ export async function publishRun({ cfg, deps }) {
           await finish(existing.url)
           continue
         }
-        // (b) 원격 브랜치만 있으면 PR 생성부터
+        // (b) 원격 브랜치 유무. 있으면 push 는 건너뛰되, 그 브랜치가 baseCommit+patch 와 같은 tree 인지 확인한다
         const ls = run('git', ['ls-remote', '--heads', cfg.repoUrl, branch])
         if (ls.status !== 0) throw new Fail('publish-git-error', { transient: true })
-        if (String(ls.stdout).trim()) {
-          await finish(createPr())
-          continue
-        }
-        // (c) 새 클론 → apply → push → PR. 클론은 host 가 만든 디렉터리라(컨테이너가 만진 적 없음) host rmSync 가 안전하다
+        const remoteExists = String(ls.stdout).trim() !== ''
+        // (c) 새 클론 → apply → commit → (push) → PR. 클론은 host 가 만든 디렉터리라(컨테이너가 만진 적 없음) host rmSync 가 안전하다
         const work = path.join(cfg.stateDir, 'publish', id)
         const repo = path.join(work, 'repo')
         fs.rmSync(work, { recursive: true, force: true })
         fs.mkdirSync(work, { recursive: true, mode: 0o700 })
         try {
           const g = (args, code, transient = false) => {
-            if (run('git', ['-C', repo, ...args]).status !== 0) throw new Fail(code, { transient })
+            const r = run('git', ['-C', repo, ...args])
+            if (r.status !== 0) throw new Fail(code, { transient })
+            return String(r.stdout).trim()
           }
           const c = run('git', [
             'clone',
@@ -253,12 +287,61 @@ export async function publishRun({ cfg, deps }) {
           if (c.status !== 0) throw new Fail('publish-clone-failed', { transient: true })
           g(['fetch', '--quiet', '--depth', '1', 'origin', m.baseCommit], 'publish-base-missing')
           g(['checkout', '--quiet', '--detach', m.baseCommit], 'publish-base-missing')
+          // PR 브랜치의 Preview 배포가 꺼져 있는 base 에서만 올린다
+          let guarded = false
+          try {
+            const v = JSON.parse(g(['show', 'HEAD:vercel.json'], 'publish-preview-unguarded'))
+            guarded = v?.git?.deploymentEnabled?.['autofix/*'] === false
+          } catch {}
+          if (!guarded) throw new Fail('publish-preview-unguarded')
+          // 러너가 쓰는 patch 검사를 push 직전에 다시 한다
           const patch = path.join(dir, 'patch.diff')
+          const patchText = bytes['patch.diff'].toString('utf8')
+          const baseLower = new Set(
+            g(['ls-files'], 'publish-git-error', true)
+              .split('\n')
+              .map((x) => x.toLowerCase())
+          )
+          if (lib.checkPatch(lib.parsePatch(patchText), { baseLower, patchText }).reasons.length)
+            throw new Fail('publish-mismatch')
           g(['apply', '--check', patch], 'publish-conflict')
           g(['apply', patch], 'publish-conflict')
           g(['add', '-A'], 'publish-conflict')
-          g(['commit', '--quiet', '-m', title], 'publish-commit-failed', true)
-          g(['push', 'origin', `HEAD:refs/heads/${branch}`], 'publish-push-failed', true)
+          g(
+            [
+              '-c',
+              'user.name=workdeck-autofix',
+              '-c',
+              'user.email=kaleos-dev@users.noreply.github.com',
+              '-c',
+              'core.hooksPath=/dev/null',
+              '-c',
+              'commit.gpgsign=false',
+              'commit',
+              '--no-verify',
+              '--quiet',
+              '-m',
+              title,
+            ],
+            'publish-commit-failed',
+            true
+          )
+          if (remoteExists) {
+            g(
+              ['fetch', '--quiet', '--depth', '1', 'origin', `refs/heads/${branch}`],
+              'publish-git-error',
+              true
+            )
+            if (
+              g(['rev-parse', 'HEAD^{tree}'], 'publish-git-error', true) !==
+              g(['rev-parse', 'FETCH_HEAD^{tree}'], 'publish-git-error', true)
+            )
+              throw new Fail('publish-mismatch')
+            commit = g(['rev-parse', 'FETCH_HEAD'], 'publish-git-error', true)
+          } else {
+            g(['push', 'origin', `HEAD:refs/heads/${branch}`], 'publish-push-failed', true)
+            commit = g(['rev-parse', 'HEAD'], 'publish-git-error', true)
+          }
           await finish(createPr())
         } finally {
           fs.rmSync(work, { recursive: true, force: true })

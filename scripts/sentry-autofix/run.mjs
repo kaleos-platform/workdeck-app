@@ -253,6 +253,7 @@ export function realDeps(cfg, { noSlack }) {
         timeoutMs: cfg.authRefreshTimeoutMs,
       }),
     now: () => Date.now(),
+    random: Math.random,
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
     freeBytes: () => {
       fs.mkdirSync(cfg.stateDir, { recursive: true, mode: 0o700 })
@@ -1341,6 +1342,12 @@ async function runTriage({ cfg, deps, runId, deadline, issues, warnings }) {
   const inputs = issues
     .filter((i) => /^[A-Za-z0-9-]{3,40}$/.test(i.shortId))
     .map((i) => lib.triageInput(i))
+  // 배치 안 순서가 판단 편향(앞쪽 쏠림)을 만들지 않게 섞는다. 테스트는 deps.random 을 주입한다
+  if (deps.random)
+    for (let i = inputs.length - 1; i > 0; i--) {
+      const j = Math.floor(deps.random() * (i + 1))
+      ;[inputs[i], inputs[j]] = [inputs[j], inputs[i]]
+    }
   if (!inputs.length) return triage
   const triageDir = path.join(cfg.stateDir, 'runs', runId, 'triage')
   fs.mkdirSync(triageDir, { recursive: true, mode: 0o700 })
@@ -1455,7 +1462,12 @@ export async function runDaily({ argv, cfg, deps }) {
     await report({ failure: `사전 점검 실패 — ${problems.join(' / ')}` })
     return { exitCode: 1, results, runId }
   }
-  const lock = acquireLock(cfg.stateDir, { maxMs: cfg.lockMaxMs, now: deps.now() })
+  let lock = acquireLock(cfg.stateDir, { maxMs: cfg.lockMaxMs, now: deps.now() })
+  // 다른 실행(publish 등)이 잠깐 쥐고 있을 수 있다 — 30초 간격으로 최대 10번 다시 시도
+  for (let n = 0; !lock && n < 10; n++) {
+    await deps.sleep(30_000)
+    lock = acquireLock(cfg.stateDir, { maxMs: cfg.lockMaxMs, now: deps.now() })
+  }
   if (!lock) {
     await report({ failure: '이전 실행이 아직 진행 중(lock)' })
     return { exitCode: 0, results, runId }
@@ -1667,7 +1679,7 @@ export async function runDaily({ argv, cfg, deps }) {
         }
       for (const i of issues) {
         const t = triage.get(i.shortId)
-        if (t && lib.shouldWriteTriage(notesById.get(i.id), t, deps.now()))
+        if (t && notesById.has(i.id) && lib.shouldWriteTriage(notesById.get(i.id), t, deps.now()))
           await putNote(i.id, lib.triageNote(t))
       }
       const picked = lib.pickCandidates({

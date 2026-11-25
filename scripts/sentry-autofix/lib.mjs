@@ -236,7 +236,14 @@ export function selectFixCandidates({ picked, notesById, triage }) {
   }
   return picked
     .map((issue) => ({ issue, req: requested(issue), t: triage.get(issue.shortId) }))
-    .filter(({ req, t }) => req || !t || (t.act === 'fix' && (t.p === 'P1' || t.p === 'P2')))
+    .filter(
+      ({ issue, req, t }) =>
+        req ||
+        !t ||
+        issue.level === 'fatal' || // 판단과 무관한 하한: 치명 수준·사용자 5명 이상은 후보에 남긴다
+        (issue.userCount ?? 0) >= 5 ||
+        (t.act === 'fix' && (t.p === 'P1' || t.p === 'P2'))
+    )
     .sort(
       (a, b) =>
         Number(b.req) - Number(a.req) ||

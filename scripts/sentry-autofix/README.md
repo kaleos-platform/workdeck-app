@@ -61,7 +61,8 @@ run.mjs 와 같은 run lock 을 쓰므로 04:30 실행 중에는 조용히 끝�
 2. push 직전 재검증: manifest(status·runId/shortId·review approve·baseCommit)와 `patch.diff`·`pr-title.txt`·`pr-body.md`·`verify.json` **실제 바이트의 sha256**, 승인 sha 앞 16자 일치. 어긋나면 `autofix:failed publish-mismatch` 를 한 번만 쓰고 그 묶음은 종료.
 3. 결정적 브랜치 `autofix/<pendingId>`. 매번 ① `gh pr list --head` 로 PR 이 있으면 `autofix:pr <url>` 노트만 ② 원격 브랜치만 있으면 PR 생성 ③ 없으면 새 clone(`baseCommit` 기준) → `git apply --check`/apply → commit → `git push origin HEAD:refs/heads/autofix/<id>`(force 없음) → `gh pr create --base develop`. push·PR 생성·노트 POST 중 어디서 실패해도 다음 run 이 PR 1개·노트 1개로 수렴한다.
 4. 실패 코드(`publish-conflict`·`publish-base-missing`·`publish-mismatch`)는 `autofix:failed` 노트 + Slack(`PR 생성 실패 <shortId> <코드>`). 네트워크 등 일시 오류는 6번 연속(약 1시간)이면 실패로 기록한다. 성공은 Slack `PR 생성 <shortId> <url>`.
-5. 작업 clone(`publish/<pendingId>`)은 호스트가 만든 디렉터리라 컨테이너가 만진 적이 없다 — 그래서 여기서만 호스트 `rmSync` 로 지운다.
+5. 보안 하한: base 의 `vercel.json` 에 `git.deploymentEnabled['autofix/*'] === false` 가 없으면 `publish-preview-unguarded`. push 직전 `checkPatch` 를 다시 돌려 사유가 있으면 `publish-mismatch`. 원격 브랜치가 이미 있으면 base+patch 재적용 tree 와 비교해 다르면 `publish-mismatch`(push 한 commit sha 는 marker 에 기록). commit 은 고정 작성자·`--no-verify`·hooks 끔. `createdAt` 14일 넘은 pending 은 무시. ready·approve 노트는 형식·서명이 맞는 것만 인정한다. PR 은 생겼는데 `autofix:pr` 노트 쓰기만 실패하면 marker `pr-note-pending` 으로 남겨 횟수 제한 없이 재시도(failed 노트 없음).
+6. 작업 clone(`publish/<pendingId>`)은 호스트가 만든 디렉터리라 컨테이너가 만진 적이 없다 — 그래서 여기서만 호스트 `rmSync` 로 지운다.
 
 설치·전제:
 
