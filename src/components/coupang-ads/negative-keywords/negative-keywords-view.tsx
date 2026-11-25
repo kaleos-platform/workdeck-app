@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertTriangle, ChevronDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -39,7 +39,7 @@ async function postAction(
     body: JSON.stringify({ action, campaignId, keywords, removedAt }),
   })
   const json = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(json.error ?? '요청에 실패했습니다')
+  if (!res.ok) throw new Error(json.message ?? '요청에 실패했습니다')
   return json
 }
 
@@ -52,12 +52,14 @@ export function NegativeKeywordsView() {
     null
   )
   const [busy, setBusy] = useState(false)
+  // 상태 갱신 전 더블클릭으로 remove 가 두 번 나가지 않게 동기 잠금
+  const removingRef = useRef(false)
 
   const load = useCallback(async () => {
     try {
       const res = await fetch('/api/coupang-ads/negative-keyword-candidates')
       const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(json.error ?? '불러오지 못했습니다')
+      if (!res.ok) throw new Error(json.message ?? '불러오지 못했습니다')
       setData(json)
       setError(null)
     } catch (e) {
@@ -114,22 +116,24 @@ export function NegativeKeywordsView() {
   }
 
   const handleRemoveCopy = async (c: CampaignNegativeKeywords) => {
-    if (selection?.campaignId !== c.campaignId) return
+    if (selection?.campaignId !== c.campaignId || removingRef.current) return
+    removingRef.current = true
     const keywords = selection.keywords
     // 사용자 제스처 안에서 가장 먼저 복사. 실패하면 제거 기록도 남기지 않는다.
     try {
       await navigator.clipboard.writeText(keywords.join(','))
     } catch {
       toast.error('클립보드에 복사하지 못했습니다. 제거 표시는 하지 않았습니다')
+      removingRef.current = false
       return
     }
     setBusy(true)
     try {
-      const { removedAt } = await postAction('remove', c.campaignId, keywords)
+      const { removedAt, count: removed = 0 } = await postAction('remove', c.campaignId, keywords)
       setSelection(null)
       patchCampaign(c.campaignId, (x) => ({
         ...x,
-        removedCount: x.removedCount + keywords.length,
+        removedCount: x.removedCount + removed,
         candidates: x.candidates.filter((k) => !keywords.includes(k.keyword)),
       }))
       toast.success(`${c.campaignName} — ${keywords.length}개 제거 표시, 클립보드에 복사됨`, {
@@ -138,7 +142,7 @@ export function NegativeKeywordsView() {
           onClick: () =>
             postAction('undo', c.campaignId, keywords, removedAt)
               .then(({ count }) => {
-                if ((count ?? 0) < keywords.length) {
+                if ((count ?? 0) < removed) {
                   toast.info('일부는 다른 사람이 다시 제거해 되돌리지 않았습니다')
                 }
                 return load()
@@ -150,6 +154,7 @@ export function NegativeKeywordsView() {
       toast.error('복사는 됐지만 제거 기록에 실패했습니다. 다시 눌러 주세요')
     } finally {
       setBusy(false)
+      removingRef.current = false
     }
   }
 

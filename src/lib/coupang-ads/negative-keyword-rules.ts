@@ -1,3 +1,5 @@
+import { formatDateToYmdKst } from '@/lib/date-range'
+
 /**
  * 쿠팡 광고 「제외 키워드」 후보 규칙 — 서버 상수, 모든 작업 공간 공통(설정 화면 없음).
  * 계획: docs/superpowers/plans/2026-11-25-coupang-negative-keyword-cards.md
@@ -83,9 +85,7 @@ export interface NegativeKeywordCandidatesResponse {
 }
 
 /** YYYY-MM-DD (KST) */
-export function kstDateKey(d: Date): string {
-  return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
-}
+export const kstDateKey = formatDateToYmdKst
 
 /** 반열린 구간 [start, end) — end = 오늘 00:00 KST(오늘 제외). AdRecord.date 는 KST 자정 시각으로 저장된다. */
 export function negativeKeywordWindow(now: Date) {

@@ -186,7 +186,10 @@ d('제외 키워드 e2e', () => {
     expect(first.every((s) => s.removedAt?.toISOString() === r1.removedAt)).toBe(true)
 
     await new Promise((r) => setTimeout(r, 10))
-    await post({ action: 'remove', campaignId: CAMP, keywords: ['cand'] })
+    const retry = await (
+      await post({ action: 'remove', campaignId: CAMP, keywords: ['cand'] })
+    ).json()
+    expect(retry.count).toBe(0)
     const again = await prisma.keywordStatus.findFirst({
       where: { workspaceId: WS_ID, keyword: 'cand' },
     })

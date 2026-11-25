@@ -67,14 +67,15 @@ export async function POST(request: NextRequest) {
   let count = 0
   if (action === 'remove') {
     // 새 행은 createMany 로 now 가 들어가고, 기존 행 중 removedAt 이 없는 것만 now 로 채운다.
-    await prisma.$transaction([
+    const [created, updated] = await prisma.$transaction([
       createRows({ removedAt: now, removedMemo: REMOVED_MEMO }),
       prisma.keywordStatus.updateMany({
         where: { ...where, removedAt: null },
         data: { removedAt: now, removedMemo: REMOVED_MEMO },
       }),
     ])
-    count = keywords.length
+    // 이번에 새로 제거 표시한 수(이미 제거된 키워드 제외) — undo 대상 수와 같다
+    count = created.count + updated.count
   } else if (action === 'undo') {
     const res = await prisma.keywordStatus.updateMany({
       where: { ...where, removedAt: undoAt! },
