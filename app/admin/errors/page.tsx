@@ -1,19 +1,11 @@
 import { notFound } from 'next/navigation'
 import { requireOperator } from '@/lib/admin/auth'
 import { ErrorsTable, type ErrorRow, type Summary } from '@/components/admin/errors-table'
-import { isSentryApiConfigured, listComments, listIssues } from '@/lib/sentry/api'
-import {
-  deriveStage,
-  parseAutofixState,
-  parseTriage,
-  STAGE_LABELS,
-  type Stage,
-  type AutofixKind,
-  type AutofixState,
-} from '@/lib/sentry/autofix-status'
+import { isSentryApiConfigured } from '@/lib/sentry/api'
+import { buildErrorRows } from '@/lib/sentry/error-rows'
+import { STAGE_LABELS, type Stage, type AutofixKind } from '@/lib/sentry/autofix-status'
 
 const SERVICES = ['all', 'web', 'worker'] as const
-const PRIORITY_RANK = { P1: 1, P2: 2, P3: 3 } as const
 
 export default async function AdminErrorsPage({
   searchParams,
@@ -51,30 +43,9 @@ export default async function AdminErrorsPage({
   let counts: { web: number; worker: number }
   let lastActivity: { at: string; shortId: string; kind: AutofixKind } | null = null
   try {
-    const [web, worker] = await Promise.all([listIssues('web'), listIssues('worker')])
-    counts = { web: web.length, worker: worker.length }
-    const candidates = service === 'web' ? web : service === 'worker' ? worker : [...web, ...worker]
-    const notes = await Promise.all(
-      candidates.map(async (i) => {
-        const none = { autofix: { kind: 'none' } as AutofixState, triage: null }
-        if (i.numComments <= 0) return none
-        try {
-          const comments = await listComments(i.id)
-          return { autofix: parseAutofixState(comments), triage: parseTriage(comments) }
-        } catch {
-          // 노트 한 건 조회 실패가 목록 전체를 막지 않게 한다
-          return none
-        }
-      })
-    )
-    const rank = (r: ErrorRow) => (r.triage ? PRIORITY_RANK[r.triage.p] : 4)
-    const all = candidates
-      .map((i, idx): ErrorRow => {
-        const { autofix, triage } = notes[idx]
-        return { ...i, autofix, triage, stage: deriveStage(autofix, triage) }
-      })
-      .sort((a, b) => rank(a) - rank(b) || b.userCount - a.userCount || b.count - a.count)
-      .slice(0, 25)
+    const built = await buildErrorRows(service)
+    counts = built.counts
+    const all = built.rows
     summary = {
       total: all.length,
       approval: all.filter((r) => r.stage === 'approval').length,
