@@ -84,6 +84,40 @@ function ReasonBadge({ reason, count }: { reason: Reason; count?: number }) {
     </Badge>
   )
 }
+// 상태 안의 세부 구분 — 체험 중 구독 예약, 구독 중 결제 연체
+const flags = [
+  {
+    label: '구독 예약',
+    match: (row: SubscriptionAccessRow) => row.itemAwaitingTrialEnd,
+    className:
+      'border-dashed border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400',
+  },
+  {
+    label: '결제 연체',
+    match: (row: SubscriptionAccessRow) => row.subscriptionStatus === 'PAST_DUE',
+    className: 'border-dashed border-red-300 text-red-700 dark:border-red-700 dark:text-red-400',
+  },
+]
+function StatusSummary({ rows, label }: { rows: SubscriptionAccessRow[]; label?: string }) {
+  const counts = countByReason(rows)
+  if (counts.length === 0) return null
+  return (
+    <div role="group" aria-label={label} className="flex flex-wrap items-center gap-1">
+      {counts.map(({ reason, count }) => (
+        <ReasonBadge key={reason} reason={reason} count={count} />
+      ))}
+      {flags.map((flag) => {
+        const count = rows.filter(flag.match).length
+        return count > 0 ? (
+          <Badge key={flag.label} variant="outline" className={flag.className}>
+            {flag.label}
+            <span className="tabular-nums">{count}</span>
+          </Badge>
+        ) : null
+      })}
+    </div>
+  )
+}
 const schema = z.object({
   note: z
     .string()
@@ -175,7 +209,7 @@ export function SubscriptionsClient() {
       .sort((a, b) => a.space.name.localeCompare(b.space.name, 'ko'))
   }, [data, search, deck, status])
   const visibleDeckCount = groups.reduce((sum, group) => sum + group.rows.length, 0)
-  const visibleSummary = countByReason(groups.flatMap((group) => group.rows))
+  const visibleRows = groups.flatMap((group) => group.rows)
   function open(target: Change) {
     form.reset({
       note: '',
@@ -305,17 +339,7 @@ export function SubscriptionsClient() {
           <span className="text-xs text-muted-foreground tabular-nums">
             {groups.length}개 Space · {visibleDeckCount}개 업무
           </span>
-          {visibleSummary.length > 0 && (
-            <div
-              role="group"
-              className="flex flex-wrap items-center gap-1"
-              aria-label="상태별 업무 수"
-            >
-              {visibleSummary.map(({ reason, count }) => (
-                <ReasonBadge key={reason} reason={reason} count={count} />
-              ))}
-            </div>
-          )}
+          <StatusSummary rows={visibleRows} label="상태별 업무 수" />
           <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
             <span className="text-xs text-muted-foreground">날짜 KST</span>
             <Button
@@ -371,7 +395,6 @@ export function SubscriptionsClient() {
             </TableHeader>
             {groups.map(({ space, rows, totalRows }) => {
               const expanded = rows.length > 0 && (expandedSpaces[space.id] ?? hasFilters)
-              const summary = countByReason(rows)
               return (
                 <TableBody key={space.id} aria-label={`${space.name} 구독 현황`}>
                   <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -425,16 +448,10 @@ export function SubscriptionsClient() {
                       )}
                     </TableCell>
                     <TableCell className="whitespace-normal">
-                      {summary.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {summary.map(({ reason, count }) => (
-                            <ReasonBadge key={reason} reason={reason} count={count} />
-                          ))}
-                        </div>
-                      )}
+                      <StatusSummary rows={rows} />
                       <p
                         className={
-                          summary.length > 0
+                          rows.length > 0
                             ? 'mt-1 text-xs text-muted-foreground'
                             : 'text-xs font-medium'
                         }

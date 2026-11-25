@@ -292,3 +292,19 @@ test('구독 상태별 업무 수를 구독·체험 순으로 먼저 보여 준�
   const spaceRow = screen.getByRole('button', { name: '테스트 Space 업무 펼치기' }).closest('tr')!
   expect(within(spaceRow).getAllByRole('cell')[2].textContent).toBe('구독 중1체험 중12개 업무')
 })
+
+test('구독 예약·결제 연체를 상태 안에서 따로 센다', async () => {
+  ;(global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      ...payload,
+      rows: [
+        { ...payload.rows[0], itemAwaitingTrialEnd: true },
+        { ...payload.rows[1], subscriptionStatus: 'PAST_DUE' },
+      ],
+    }),
+  })
+  render(<SubscriptionsClient />)
+  const summary = await screen.findByLabelText('상태별 업무 수')
+  expect(summary.textContent).toBe('구독 중1체험 중1구독 예약1결제 연체1')
+})
