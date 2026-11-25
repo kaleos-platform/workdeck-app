@@ -39,7 +39,7 @@ export async function requireAal2(
 ): Promise<NextResponse | null> {
   // 비상 해제 스위치 — 운영자 게이트(requireOperator)와 같은 변수 하나로 같이 푼다(Task 10 Step 6).
   if (process.env.ADMIN_REQUIRE_MFA === 'false') return null
-  // 계정이 필수로 켜지 않았으면 통과 — 운영자 영역 등은 ignoreUserFlag 로 항상 요구한다.
+  // 계정이 필수로 켜지 않았으면 통과 — 평문 비밀값으로 이어지는 경로는 ignoreUserFlag 로 항상 요구한다.
   if (!opts.ignoreUserFlag && !(await isMfaRequiredForCurrentUser())) return null
   return (await isAal2Fresh()) ? null : mfaRequired()
 }
