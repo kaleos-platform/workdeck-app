@@ -401,7 +401,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
       {/* 희망 매장(복수 선택) */}
       {stores.length > 1 && (
         <div className="space-y-1.5">
-          <Label className="text-sm">희망 근무 매장</Label>
+          <Label className="text-sm">희망 근무 장소</Label>
           <div className="flex flex-wrap gap-3">
             {stores.map((s) => (
               <label key={s.id} className="flex items-center gap-2 text-sm">

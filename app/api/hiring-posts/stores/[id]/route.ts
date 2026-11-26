@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     where: { id, spaceId: resolved.space.id },
     select: { id: true },
   })
-  if (!existing) return errorResponse('매장을 찾을 수 없습니다', 404)
+  if (!existing) return errorResponse('장소를 찾을 수 없습니다', 404)
 
   let body: unknown
   try {
@@ -55,7 +55,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     where: { id, spaceId: resolved.space.id },
     select: { id: true },
   })
-  if (!existing) return errorResponse('매장을 찾을 수 없습니다', 404)
+  if (!existing) return errorResponse('장소를 찾을 수 없습니다', 404)
 
   await prisma.hiringStore.delete({ where: { id } })
   return NextResponse.json({ ok: true })

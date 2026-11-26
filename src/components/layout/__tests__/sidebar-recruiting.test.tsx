@@ -24,7 +24,7 @@ it('모집 관리 사이드바는 홈·공고 관리·지원자·설정 4개 링
     'href',
     '/d/recruiting/settings'
   )
-  for (const name of ['공고 템플릿', '메시지 템플릿', '블랙리스트', '매장 관리', '직무 관리']) {
+  for (const name of ['공고 템플릿', '메시지 템플릿', '블랙리스트', '장소 관리', '직무 관리']) {
     expect(screen.queryByRole('link', { name })).not.toBeInTheDocument()
   }
   expect(screen.queryByRole('button', { name: '설정' })).not.toBeInTheDocument()

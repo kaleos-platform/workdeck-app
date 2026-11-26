@@ -1,0 +1,209 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "fa",
+   "x": 0,
+   "y": 40,
+   "width": 390,
+   "height": 1000,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "ta",
+   "x": 0,
+   "y": 0,
+   "text": "A 확정 — 기업 정보 저장된 공간",
+   "fontSize": 18
+  },
+  {
+   "type": "text",
+   "id": "a1",
+   "x": 16,
+   "y": 60,
+   "text": "① 카페 하루",
+   "fontSize": 18
+  },
+  {
+   "type": "text",
+   "id": "a2",
+   "x": 16,
+   "y": 88,
+   "text": "② ● 모집 중  12월 15일 마감(D-12)   성수점 외 1곳",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "a2n",
+   "x": 16,
+   "y": 108,
+   "text": "(테두리·그림자 없는 머리글 — Card 아님)",
+   "fontSize": 11
+  },
+  {
+   "type": "rectangle",
+   "id": "a3",
+   "x": 16,
+   "y": 136,
+   "width": 358,
+   "height": 230,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "본문 블록 Card (디자인 이미지·텍스트) — 변경 없음",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "a4",
+   "x": 16,
+   "y": 378,
+   "width": 358,
+   "height": 140,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "직무 블록 — 주말 바리스타\n시급 12,000원 · 토·일 10:00~18:00",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "a5",
+   "x": 16,
+   "y": 530,
+   "width": 358,
+   "height": 48,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "지원하기 — Button(버튼 블록)",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "a6",
+   "x": 16,
+   "y": 592,
+   "width": 358,
+   "height": 330,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ 기업 소개 Card\n카페 하루 (섹션 제목)\n성수동에서 7년째 직접 로스팅하는 동네 카페예요.\n주말 바리스타와 함께 일할 분을 찾고 있어요.\n\n④ 근무 장소\n📍 성수점 — 서울 성동구 연무장길 12\n📍 서울숲점 — 서울 성동구 서울숲2길 7\n\n⑤ [홈페이지] [블로그] [인스타그램]  — Button outline sm",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "a7",
+   "x": 80,
+   "y": 950,
+   "text": "워크덱으로 만든 채용 페이지",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "fb",
+   "x": 430,
+   "y": 40,
+   "width": 390,
+   "height": 640,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "tb",
+   "x": 430,
+   "y": 0,
+   "text": "기업 정보 없음(저장 전) — 지금과 같은 정보",
+   "fontSize": 18
+  },
+  {
+   "type": "text",
+   "id": "b2",
+   "x": 446,
+   "y": 60,
+   "text": "② ● 모집 중  12월 15일 마감(D-12)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "b3",
+   "x": 446,
+   "y": 80,
+   "text": "성수점 (서울 성동구 연무장길 12) 외 1곳",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "b4",
+   "x": 446,
+   "y": 112,
+   "width": 358,
+   "height": 230,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "본문 블록 Card — 변경 없음",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b5",
+   "x": 446,
+   "y": 354,
+   "width": 358,
+   "height": 140,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "직무 블록",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b6",
+   "x": 446,
+   "y": 506,
+   "width": 358,
+   "height": 48,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "지원하기 — Button",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "b7",
+   "x": 510,
+   "y": 580,
+   "text": "워크덱으로 만든 채용 페이지",
+   "fontSize": 12
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}
