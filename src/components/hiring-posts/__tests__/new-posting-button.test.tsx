@@ -202,3 +202,29 @@ describe('템플릿으로 새 공고', () => {
     )
   })
 })
+
+it('긴 복사 원본 제목은 전체 내용을 확인할 수 있고 원본 선택을 유지한다', async () => {
+  const title = '아주 긴 공고 제목 '.repeat(20).trim()
+  ;(fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      postings: [
+        {
+          id: 'long-title',
+          title,
+          status: 'DRAFT',
+          closingDate: null,
+          createdAt: '2026-11-26T00:00:00Z',
+        },
+      ],
+    }),
+  })
+  render(<NewPostingButton />)
+  fireEvent.click(screen.getByRole('button', { name: '새 공고' }))
+  fireEvent.click(screen.getByRole('button', { name: '이전 공고 복사해서 시작' }))
+  expect(await screen.findByTitle(title)).toHaveTextContent(title.trim())
+  fireEvent.click(screen.getByRole('radio'))
+  expect(screen.getByRole('radio')).toBeChecked()
+  expect(screen.getByRole('button', { name: '복사해서 시작' })).toBeEnabled()
+  expect(fetch).toHaveBeenCalledTimes(1)
+})
