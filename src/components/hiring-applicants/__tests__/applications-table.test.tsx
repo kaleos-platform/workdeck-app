@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { toast } from 'sonner'
 import { createApplicantSearch } from '@/lib/hiring/application-search-action'
 import { ApplicationsTable } from '../applications-table'
@@ -307,4 +307,34 @@ it('확인 필요 열에 직접 등록 배지를 해당 행에만 표시한다',
   const rows = props.rows.map((r) => ({ ...r, directRegistration: r.id === 'a' }))
   render(<ApplicationsTable {...props} rows={rows} />)
   expect(screen.getAllByText('직접 등록')).toHaveLength(1)
+})
+
+describe('지원자 일괄 삭제', () => {
+  it('삭제 권한이 없으면 삭제 버튼을 숨긴다', () => {
+    render(<ApplicationsTable {...props} />)
+    fireEvent.click(screen.getByRole('checkbox', { name: '전체 선택' }))
+    expect(screen.queryByRole('button', { name: '삭제' })).not.toBeInTheDocument()
+  })
+
+  it('확인 후 선택한 id로 DELETE를 호출하고 선택을 비운 뒤 새로고침한다', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ deleted: 2 }),
+    }) as jest.Mock
+    render(<ApplicationsTable {...props} canDelete />)
+    fireEvent.click(screen.getByRole('checkbox', { name: '전체 선택' }))
+    fireEvent.click(screen.getByRole('button', { name: '삭제' }))
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveTextContent('선택한 지원자 2명을 삭제할까요?')
+    expect(global.fetch).not.toHaveBeenCalled()
+    fireEvent.click(within(dialog).getByRole('button', { name: '삭제' }))
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('2명 삭제했어요'))
+    expect(global.fetch).toHaveBeenCalledWith('/api/hiring-applicants/applications/bulk', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: ['a', 'b'] }),
+    })
+    expect(refresh).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('checkbox', { name: 'QAa 선택' })).not.toBeChecked()
+  })
 })

@@ -4,7 +4,7 @@ import { createApplicantSearch } from '@/lib/hiring/application-search-action'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Download, Loader2 } from 'lucide-react'
+import { Download, Loader2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   FloatingActionBar,
   floatingActionButtonClass,
@@ -48,6 +56,8 @@ import {
 
 type Props = {
   canExportExcel: boolean
+  // OWNER/ADMIN만 삭제 가능
+  canDelete?: boolean
   rows: ApplicationListRow[]
   total: number
   pageSize: number
@@ -134,6 +144,7 @@ export function ApplicationsTable(props: Props) {
 
 function ApplicationsTableContent({
   canExportExcel,
+  canDelete = false,
   rows,
   total,
   pageSize,
@@ -166,6 +177,7 @@ function ApplicationsTableContent({
   const [bulkStage, setBulkStage] = useState<HiringApplicationStage | ''>('')
   const [bulkLoading, setBulkLoading] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const lastIndex = useRef<number | null>(null)
   const bulkInFlight = useRef(false)
   const exportInFlight = useRef(false)
@@ -236,6 +248,33 @@ function ApplicationsTableContent({
       startTransition(() => router.refresh())
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '일괄 변경 실패')
+    } finally {
+      bulkInFlight.current = false
+      setBulkLoading(false)
+    }
+  }
+
+  async function runBulkDelete() {
+    if (bulkInFlight.current || pending || selected.size === 0) return
+    bulkInFlight.current = true
+    setBulkLoading(true)
+    try {
+      const res = await fetch('/api/hiring-applicants/applications/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selected) }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.message ?? '지원자를 삭제하지 못했어요')
+      }
+      const { deleted } = await res.json()
+      toast.success(`${deleted}명 삭제했어요`)
+      setDeleteOpen(false)
+      setSelected(new Set())
+      startTransition(() => router.refresh())
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '지원자를 삭제하지 못했어요')
     } finally {
       bulkInFlight.current = false
       setBulkLoading(false)
@@ -649,11 +688,46 @@ function ApplicationsTableContent({
               {bulkLoading && <Loader2 className="mr-1 size-4 animate-spin" />}
               적용
             </Button>
+            {canDelete && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className={floatingActionButtonClass}
+                onClick={() => setDeleteOpen(true)}
+                disabled={busy}
+              >
+                <Trash2 className="mr-1 size-4" />
+                삭제
+              </Button>
+            )}
           </>
         }
       >
         <span className="text-sm font-semibold">{selected.size}개 선택됨</span>
       </FloatingActionBar>
+      <Dialog open={deleteOpen} onOpenChange={(v) => !bulkLoading && setDeleteOpen(v)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>선택한 지원자 {selected.size}명을 삭제할까요?</DialogTitle>
+            <DialogDescription>
+              지원서·메모·첨부 파일이 모두 삭제되며 되돌릴 수 없어요.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" disabled={bulkLoading} onClick={() => setDeleteOpen(false)}>
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={bulkLoading}
+              onClick={() => void runBulkDelete()}
+            >
+              {bulkLoading ? '삭제 중…' : '삭제'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

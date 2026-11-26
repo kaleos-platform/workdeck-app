@@ -228,7 +228,8 @@ export const ModelName = {
   ChannelFulfillmentSetting: 'ChannelFulfillmentSetting',
   ChannelOrderLine: 'ChannelOrderLine',
   ChannelOrderScanLine: 'ChannelOrderScanLine',
-  PipelineOperation: 'PipelineOperation'
+  PipelineOperation: 'PipelineOperation',
+  HiringFileDeletion: 'HiringFileDeletion'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3312,6 +3313,18 @@ export const PipelineOperationScalarFieldEnum = {
 } as const
 
 export type PipelineOperationScalarFieldEnum = (typeof PipelineOperationScalarFieldEnum)[keyof typeof PipelineOperationScalarFieldEnum]
+
+
+export const HiringFileDeletionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  paths: 'paths',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringFileDeletionScalarFieldEnum = (typeof HiringFileDeletionScalarFieldEnum)[keyof typeof HiringFileDeletionScalarFieldEnum]
 
 
 export const SortOrder = {

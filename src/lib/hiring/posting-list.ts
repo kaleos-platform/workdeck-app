@@ -4,7 +4,7 @@ import { closedPostingWhere, openPostingWhere } from './posting-status'
 import { jobTypeEnum } from '@/lib/validations/hiring-posts'
 
 const PAGE_SIZE = 50
-const STATUSES = new Set(['DRAFT', 'ACTIVE', 'CLOSED', 'ARCHIVED'])
+const STATUSES = new Set(['DRAFT', 'ACTIVE', 'CLOSED'])
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&')
 
 export async function listPostingPage(
@@ -23,9 +23,11 @@ export async function listPostingPage(
   const position = typeof params.position === 'string' ? params.position.trim().slice(0, 200) : ''
   const parsedJobType = jobTypeEnum.safeParse(params.jobType)
   const jobType = parsedJobType.success ? parsedJobType.data : ''
+  // 폐지된 보관(ARCHIVED) 북마크는 마감 목록으로 연다.
+  const rawStatus = params.status === 'ARCHIVED' ? 'CLOSED' : params.status
   const status: PostingListStatus | 'ALL' =
-    typeof params.status === 'string' && STATUSES.has(params.status)
-      ? (params.status as PostingListStatus)
+    typeof rawStatus === 'string' && STATUSES.has(rawStatus)
+      ? (rawStatus as PostingListStatus)
       : 'ALL'
   const requestedPage =
     typeof params.page === 'string' && /^\d+$/.test(params.page) ? Number(params.page) : 1

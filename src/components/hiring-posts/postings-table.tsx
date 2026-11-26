@@ -4,13 +4,23 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { CalendarPlus, Copy, Link2, Loader2, Lock, MoreHorizontal, Pencil } from 'lucide-react'
+import {
+  CalendarPlus,
+  Copy,
+  Link2,
+  Loader2,
+  Lock,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -23,6 +33,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { closePosting } from './close-posting'
+import { DeletePostingDialog } from './delete-posting-dialog'
 import { CloseConfirmDialog } from './close-confirm-dialog'
 import { ExtendDeadlineDialog } from './extend-deadline-dialog'
 import { getPostingDisplayStatus } from '@/lib/hiring/posting-status'
@@ -54,7 +65,6 @@ const STATUS_TABS: Array<{ value: 'ALL' | PostingStatus; label: string }> = [
   { value: 'DRAFT', label: STATUS_LABELS.DRAFT },
   { value: 'ACTIVE', label: STATUS_LABELS.ACTIVE },
   { value: 'CLOSED', label: STATUS_LABELS.CLOSED },
-  { value: 'ARCHIVED', label: STATUS_LABELS.ARCHIVED },
 ]
 
 function formatDate(value: string | null): string {
@@ -77,6 +87,7 @@ export function PostingsTable({
   store,
   position,
   jobType,
+  canDelete = false,
 }: {
   postings: PostingRow[]
   total: number
@@ -87,6 +98,7 @@ export function PostingsTable({
   store: string
   position: string
   jobType: string
+  canDelete?: boolean
 }) {
   const router = useRouter()
   const [query, setQuery] = useState(q)
@@ -99,6 +111,7 @@ export function PostingsTable({
   // 확인 팝업 대상 행(마감 확인·마감일 연장)
   const [closeTarget, setCloseTarget] = useState<PostingRow | null>(null)
   const [extendTarget, setExtendTarget] = useState<PostingRow | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<PostingRow | null>(null)
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   // 마지막으로 이동한 조건 — 서버 값이 이것과 다를 때(뒤로가기 등)만 입력창을 맞춘다.
   const applied = useRef({ q, store, position, jobType })
@@ -405,6 +418,18 @@ export function PostingsTable({
                             마감
                           </DropdownMenuItem>
                         )}
+                        {canDelete && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onSelect={() => setDeleteTarget(p)}
+                            >
+                              <Trash2 className="size-4" />
+                              삭제
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -443,6 +468,17 @@ export function PostingsTable({
         busy={!!closingId}
         onConfirm={() => closeTarget && void handleClose(closeTarget.id)}
       />
+      {deleteTarget && (
+        <DeletePostingDialog
+          open
+          onOpenChange={(v) => !v && setDeleteTarget(null)}
+          postingId={deleteTarget.id}
+          title={deleteTarget.title}
+          applicantCount={deleteTarget.applicantCount}
+          isOpen={getPostingDisplayStatus(deleteTarget.status, deleteTarget.closingDate) === 'OPEN'}
+          onDeleted={() => router.refresh()}
+        />
+      )}
       {extendTarget?.closingDate && (
         <ExtendDeadlineDialog
           open

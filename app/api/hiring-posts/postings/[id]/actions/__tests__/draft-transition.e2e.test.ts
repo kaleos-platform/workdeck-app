@@ -45,7 +45,7 @@ afterAll(async () => {
   if (created) await prisma.$disconnect()
 })
 
-it.each(['close', 'archive'])('발행 이력이 없는 초안의 %s 요청은 차단한다', async (action) => {
+it.each(['close'])('발행 이력이 없는 초안의 %s 요청은 차단한다', async (action) => {
   const posting = await prisma.hiringPosting.create({
     data: { spaceId, title: '[QA] 초안', status: 'DRAFT' },
   })
@@ -65,7 +65,7 @@ it.each(['close', 'archive'])('발행 이력이 없는 초안의 %s 요청은 �
   ).toEqual({ status: 'DRAFT', publishedAt: null })
 })
 
-it.each(['close', 'archive'])('발행 이력이 있는 이전 초안의 %s 동작을 유지한다', async (action) => {
+it.each(['close'])('발행 이력이 있는 이전 초안의 %s 동작을 유지한다', async (action) => {
   const posting = await prisma.hiringPosting.create({
     data: {
       spaceId,
@@ -83,33 +83,30 @@ it.each(['close', 'archive'])('발행 이력이 있는 이전 초안의 %s 동�
   )
   expect(response?.status).toBe(200)
   expect((await prisma.hiringPosting.findUniqueOrThrow({ where: { id: posting.id } })).status).toBe(
-    action === 'close' ? 'CLOSED' : 'ARCHIVED'
+    'CLOSED'
   )
 })
 
-it.each(['ACTIVE', 'CLOSED', 'ARCHIVED'] as const)(
-  '기존 %s 공고의 마감과 보관을 유지한다',
-  async (status) => {
-    for (const action of ['close', 'archive']) {
-      const posting = await prisma.hiringPosting.create({
-        data: { spaceId, title: '[QA] 기존 상태', status },
-      })
-      const response = await POST(
-        new NextRequest('http://localhost/actions', {
-          method: 'POST',
-          body: JSON.stringify({ action }),
-        }),
-        { params: Promise.resolve({ id: posting.id }) }
-      )
-      expect(response?.status).toBe(200)
-      expect(await response?.json()).toEqual({
-        posting: { id: posting.id, status: action === 'close' ? 'CLOSED' : 'ARCHIVED' },
-      })
-    }
+it.each(['ACTIVE', 'CLOSED'] as const)('기존 %s 공고의 마감을 유지한다', async (status) => {
+  for (const action of ['close']) {
+    const posting = await prisma.hiringPosting.create({
+      data: { spaceId, title: '[QA] 기존 상태', status },
+    })
+    const response = await POST(
+      new NextRequest('http://localhost/actions', {
+        method: 'POST',
+        body: JSON.stringify({ action }),
+      }),
+      { params: Promise.resolve({ id: posting.id }) }
+    )
+    expect(response?.status).toBe(200)
+    expect(await response?.json()).toEqual({
+      posting: { id: posting.id, status: 'CLOSED' },
+    })
   }
-)
+})
 
-it.each(['close', 'archive'])(
+it.each(['close'])(
   '조회 후 발행 이력 없는 초안으로 변경되면 %s 요청을 차단한다',
   async (action) => {
     const posting = await prisma.hiringPosting.create({

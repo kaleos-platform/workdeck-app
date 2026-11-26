@@ -1,8 +1,9 @@
 // 지원자 stage 일괄 변경 — 쓰기 권한(hiring-applicants) + spaceId 스코프.
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
-import { bulkStageSchema } from '@/lib/validations/hiring-applicants'
+import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
+import { deleteApplications } from '@/lib/hiring/delete'
+import { bulkDeleteSchema, bulkStageSchema } from '@/lib/validations/hiring-applicants'
 
 export async function PATCH(req: NextRequest) {
   const resolved = await resolveDeckContext('recruiting', { write: true })
@@ -19,4 +20,19 @@ export async function PATCH(req: NextRequest) {
   })
 
   return NextResponse.json({ ok: true, updated: result.count })
+}
+
+// 지원자 일괄 완전 삭제 — OWNER/ADMIN 만. 다른 공간 id 는 조용히 제외된다.
+export async function DELETE(req: NextRequest) {
+  const resolved = await resolveDeckContext('recruiting', { write: true })
+  if ('error' in resolved) return resolved.error
+  const roleError = assertRole(resolved.role, 'ADMIN')
+  if (roleError) return roleError
+
+  const body = await req.json().catch(() => null)
+  const parsed = bulkDeleteSchema.safeParse(body)
+  if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
+
+  const deleted = await deleteApplications(resolved.space.id, parsed.data.ids)
+  return NextResponse.json({ deleted })
 }

@@ -111,8 +111,12 @@ export const updateApplicationSchema = z
     message: '변경할 값이 없습니다',
   })
 
+const bulkIds = z.array(z.string().min(1)).min(1).max(200)
+
+export const bulkDeleteSchema = z.object({ ids: bulkIds })
+
 export const bulkStageSchema = z.object({
-  ids: z.array(z.string().min(1)).min(1).max(200),
+  ids: bulkIds,
   stage: z.enum(APPLICATION_STAGES),
 })
 
