@@ -11,6 +11,17 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_VERCEL_URL: process.env.VERCEL_URL ?? '',
     NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? '',
   },
+  // 운영자 어드민 도메인은 검색 색인 대상이 아니다. robots.txt Disallow 대신 noindex 헤더를 쓴다 —
+  // 크롤링을 막으면 구글이 noindex 를 못 봐서 이미 발견한 로그인 URL 이 「중복 페이지」로 남는다(GSC 2026-11-26).
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'admin.workdeck.work' }],
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+    ]
+  },
   async redirects() {
     return [
       // inventory-mgmt → seller-hub/inventory
