@@ -72,7 +72,7 @@ export function startCoupangWritePoller(): void {
       console.log(`[coupang-write-poller] 잡 완료: ${job.id}`)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      console.error('[coupang-write-poller] 잡 실패:', message)
+      console.error('[coupang-write-poller] 잡 실패:', err)
       if (job) {
         // 보고까지 실패하면 잡은 RUNNING 에 남고 reap cron 이 같은 PUT 을 다시 쏜다.
         // 최소한 흔적은 남긴다.
