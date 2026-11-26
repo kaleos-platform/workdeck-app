@@ -25,7 +25,7 @@ describe('getPostingDisplayStatus', () => {
     expect(getPostingDisplayStatus('ACTIVE', '2026-11-01T00:00:00.000Z', lastSecond)).toBe('CLOSED')
     expect(getPostingDisplayStatus('CLOSED', null, lastSecond)).toBe('CLOSED')
     expect(getPostingDisplayStatus('DRAFT', '2020-01-01', lastSecond)).toBe('DRAFT')
-    expect(getPostingDisplayStatus('ARCHIVED', '2020-01-01', lastSecond)).toBe('ARCHIVED')
+    expect(getPostingDisplayStatus('ARCHIVED', '2020-01-01', lastSecond)).toBe('CLOSED') // 폐지된 보관 값은 마감으로 본다
   })
 })
 

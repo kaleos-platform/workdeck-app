@@ -38,7 +38,11 @@ async function loadPostings(params: PostingSearchParams) {
         timings.membership_cookie === undefined ? null : Math.round(timings.membership_cookie),
     })
   }
-  return { rows, ...pagination }
+  return {
+    rows,
+    canDelete: resolved.role === 'OWNER' || resolved.role === 'ADMIN',
+    ...pagination,
+  }
 }
 
 // 공고 목록 페이지
@@ -55,7 +59,7 @@ export default async function PostingsPage({
   ) {
     return <p className="p-6">검색 조건이 올바르지 않습니다. 주소를 확인해 주세요.</p>
   }
-  const { rows, ...pagination } = await loadPostings(params)
+  const { rows, canDelete, ...pagination } = await loadPostings(params)
   const postings: PostingRow[] = rows.map((p) => ({
     id: p.id,
     uuid: p.uuid,
@@ -75,7 +79,7 @@ export default async function PostingsPage({
           있습니다.
         </p>
       </div>
-      <PostingsTable postings={postings} {...pagination} />
+      <PostingsTable postings={postings} canDelete={canDelete} {...pagination} />
     </div>
   )
 }

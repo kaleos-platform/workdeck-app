@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { createPostingSchema } from '@/lib/validations/hiring-posts'
 import { createDraftPosting, listPostings, type PostingListStatus } from '@/lib/hiring/postings'
 
-const VALID_STATUS = new Set(['DRAFT', 'ACTIVE', 'CLOSED', 'ARCHIVED'])
+const VALID_STATUS = new Set(['DRAFT', 'ACTIVE', 'CLOSED'])
 
 // 공고 목록 (?status 필터)
 export async function GET(req: NextRequest) {

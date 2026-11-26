@@ -3,7 +3,8 @@ import { PostingDetail } from '../posting-detail'
 import { renderPostingEmbed } from '@/lib/hiring/render-embed-html'
 
 const refresh = jest.fn()
-jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
+const push = jest.fn()
+jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh, push }) }))
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }))
 
 it('다른 공고 지원서 링크가 있으면 발행 팝업에서 확인을 안내하되 발행은 허용한다', () => {
@@ -193,18 +194,6 @@ it('발행 실패 시 팝업과 입력한 날짜를 유지하고 오류를 안�
   expect(screen.getByRole('button', { name: '발행하기' })).toBeEnabled()
 })
 
-it('보관 공고는 재발행 대신 복사해서 새 모집한다', () => {
-  render(
-    <PostingDetail
-      posting={{ id: 'test', uuid: 'qa', title: 'QA', status: 'ARCHIVED', closingDate: null }}
-      origin="https://workdeck.test"
-      embedHtml="<p>QA</p>"
-    />
-  )
-  expect(screen.queryByRole('button', { name: '공고 발행' })).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: '복사해서 새 모집' })).toBeInTheDocument()
-})
-
 it('발행 상태라도 마감일이 지나면 HTML 지원 링크에 새 모집 안내를 표시한다', () => {
   const { rerender } = render(
     <PostingDetail
@@ -364,5 +353,49 @@ describe('마감 확인·마감일 연장', () => {
       />
     )
     expect(screen.queryByRole('button', { name: '마감일 연장' })).not.toBeInTheDocument()
+  })
+})
+
+describe('공고 삭제', () => {
+  const base = { id: 'test', uuid: 'qa', title: '합성 공고', closingDate: null }
+  const renderDetail = (status: 'ACTIVE' | 'CLOSED', canDelete?: boolean) =>
+    render(
+      <PostingDetail
+        posting={{ ...base, status }}
+        origin="https://workdeck.test"
+        embedHtml="<p>QA</p>"
+        applicantCount={4}
+        canDelete={canDelete}
+      />
+    )
+
+  it('삭제 권한이 없으면 삭제 버튼을 숨긴다', () => {
+    renderDetail('CLOSED', false)
+    expect(screen.queryByRole('button', { name: '삭제' })).not.toBeInTheDocument()
+  })
+
+  it('모집중 공고는 확인 대신 안내만 보여주고 API를 부르지 않는다', () => {
+    global.fetch = jest.fn() as unknown as typeof fetch
+    renderDetail('ACTIVE', true)
+    fireEvent.click(screen.getByRole('button', { name: '삭제' }))
+    expect(screen.getByRole('dialog')).toHaveTextContent(
+      '모집중인 공고는 삭제할 수 없어요. 먼저 마감 처리한 뒤 삭제해 주세요.'
+    )
+    expect(screen.getByRole('button', { name: '확인' })).toBeInTheDocument()
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('마감 공고는 지원자 수를 안내하고 삭제 후 목록으로 이동한다', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 }) as unknown as typeof fetch
+    renderDetail('CLOSED', true)
+    fireEvent.click(screen.getByRole('button', { name: '삭제' }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('지원자 4명과 첨부 파일도 함께 삭제')
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '삭제' }))
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledWith('/api/hiring-posts/postings/test', {
+        method: 'DELETE',
+      })
+    )
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/d/recruiting/postings'))
   })
 })

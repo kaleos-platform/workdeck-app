@@ -82,7 +82,7 @@ export async function createDraftPosting(
 }
 
 // ─── 공고 목록/상세 조회 ───────────────────────────────────────────────────────
-export type PostingListStatus = 'DRAFT' | 'ACTIVE' | 'CLOSED' | 'ARCHIVED'
+export type PostingListStatus = 'DRAFT' | 'ACTIVE' | 'CLOSED'
 
 /** 공고 목록 (상태 필터 옵션) — 지원자 수·마감일 포함 */
 export async function listPostings(spaceId: string, status?: PostingListStatus) {

@@ -25,7 +25,7 @@ import type { ToolDefinition } from './types'
 const DECK = 'recruiting'
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000
 const STATS_ROW_LIMIT = 50_000
-const STATUSES = ['DRAFT', 'ACTIVE', 'CLOSED', 'ARCHIVED'] as const
+const STATUSES = ['DRAFT', 'ACTIVE', 'CLOSED'] as const
 
 const iso = (d: Date | null) => d?.toISOString() ?? null
 const kstDate = (d: Date) => new Date(d.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10)
@@ -41,7 +41,7 @@ async function findPosting(spaceId: string, postingId: string) {
 const listPostings: ToolDefinition = {
   name: 'hiring_list_postings',
   description:
-    '채용 공고 목록을 반환합니다(제목·상태·화면 상태·마감일·발행일·지원자 수·공개 URL·편집 URL). status 로 DRAFT(작성 중)/ACTIVE(모집중: 발행됐고 마감일이 지나지 않음)/CLOSED(마감: 직접 마감했거나 마감일이 지남)/ARCHIVED(보관)를 거를 수 있습니다. 응답의 status 는 저장 상태이고 displayStatus(DRAFT/OPEN/CLOSED/ARCHIVED)가 웹 화면에 보이는 상태입니다(발행됨이어도 마감일이 지나면 CLOSED). 최신 작성순 최대 200개. 지원자 개인정보는 제공하지 않습니다.',
+    '채용 공고 목록을 반환합니다(제목·상태·화면 상태·마감일·발행일·지원자 수·공개 URL·편집 URL). status 로 DRAFT(작성 중)/ACTIVE(모집중: 발행됐고 마감일이 지나지 않음)/CLOSED(마감: 직접 마감했거나 마감일이 지남)를 거를 수 있습니다. 응답의 status 는 저장 상태이고 displayStatus(DRAFT/OPEN/CLOSED)가 웹 화면에 보이는 상태입니다(발행됨이어도 마감일이 지나면 CLOSED). 최신 작성순 최대 200개. 지원자 개인정보는 제공하지 않습니다.',
   inputSchema: { status: z.enum(STATUSES).optional() },
   mode: 'read',
   scope: 'hiring:read',

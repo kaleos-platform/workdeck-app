@@ -561,7 +561,8 @@ export const ModelName = {
   ChannelFulfillmentSetting: 'ChannelFulfillmentSetting',
   ChannelOrderLine: 'ChannelOrderLine',
   ChannelOrderScanLine: 'ChannelOrderScanLine',
-  PipelineOperation: 'PipelineOperation'
+  PipelineOperation: 'PipelineOperation',
+  HiringFileDeletion: 'HiringFileDeletion'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -577,7 +578,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "browserWriteJob" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "platformCredential" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringUploadCleanup" | "hiringCleanupCursor" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "hiringMessageSeed" | "billingDeckProduct" | "spaceDeckAccess" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy" | "openingMigrationJob" | "channelFulfillmentSetting" | "channelOrderLine" | "channelOrderScanLine" | "pipelineOperation"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "browserWriteJob" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "platformCredential" | "spaceCredential" | "spaceSecret" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invReconExcludedCode" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "finLiabilitySnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingMailSetting" | "hiringDailyDigestLog" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringUploadCleanup" | "hiringCleanupCursor" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "hiringMessageSeed" | "billingDeckProduct" | "spaceDeckAccess" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken" | "keywordRankSnapshot" | "marketingLead" | "scNotionConnection" | "scDriveConnection" | "scSource" | "scSourceVersion" | "scMedia" | "scPublishRequest" | "scMediaCopy" | "openingMigrationJob" | "channelFulfillmentSetting" | "channelOrderLine" | "channelOrderScanLine" | "pipelineOperation" | "hiringFileDeletion"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -13753,6 +13754,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HiringFileDeletion: {
+      payload: Prisma.$HiringFileDeletionPayload<ExtArgs>
+      fields: Prisma.HiringFileDeletionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringFileDeletionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringFileDeletionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringFileDeletionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringFileDeletionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>
+        }
+        findMany: {
+          args: Prisma.HiringFileDeletionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>[]
+        }
+        create: {
+          args: Prisma.HiringFileDeletionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>
+        }
+        createMany: {
+          args: Prisma.HiringFileDeletionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringFileDeletionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringFileDeletionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>
+        }
+        update: {
+          args: Prisma.HiringFileDeletionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringFileDeletionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringFileDeletionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringFileDeletionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringFileDeletionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringFileDeletionPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringFileDeletionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringFileDeletion>
+        }
+        groupBy: {
+          args: Prisma.HiringFileDeletionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringFileDeletionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringFileDeletionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringFileDeletionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -16859,6 +16934,18 @@ export const PipelineOperationScalarFieldEnum = {
 export type PipelineOperationScalarFieldEnum = (typeof PipelineOperationScalarFieldEnum)[keyof typeof PipelineOperationScalarFieldEnum]
 
 
+export const HiringFileDeletionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  paths: 'paths',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringFileDeletionScalarFieldEnum = (typeof HiringFileDeletionScalarFieldEnum)[keyof typeof HiringFileDeletionScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -18550,6 +18637,7 @@ export type GlobalOmitConfig = {
   channelOrderLine?: Prisma.ChannelOrderLineOmit
   channelOrderScanLine?: Prisma.ChannelOrderScanLineOmit
   pipelineOperation?: Prisma.PipelineOperationOmit
+  hiringFileDeletion?: Prisma.HiringFileDeletionOmit
 }
 
 /* Types for Logging */
