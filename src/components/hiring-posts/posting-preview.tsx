@@ -55,7 +55,7 @@ export function PostingPreview({
 
         {!noStores && linkedStores.length > 0 && (
           <div className="space-y-2">
-            <div className="text-sm font-medium">근무 매장</div>
+            <div className="text-sm font-medium">근무 장소</div>
             <div className="space-y-1">
               {linkedStores.map((s) => (
                 <div key={s.id} className="rounded-md border px-4 py-2.5">

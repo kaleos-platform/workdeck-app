@@ -111,7 +111,7 @@ it('마감일 저장 실패 시 이동을 막고 최신 날짜로 재시도한�
   })
 })
 
-it('매장 선택 직후 이동해도 저장 실패 시 선택을 유지하고 재시도한다', async () => {
+it('장소 선택 직후 이동해도 저장 실패 시 선택을 유지하고 재시도한다', async () => {
   global.fetch = jest.fn().mockResolvedValueOnce({ ok: false }).mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
   fireEvent.click(screen.getByRole('checkbox', { name: 'QA 매장' }))
@@ -126,7 +126,7 @@ it('매장 선택 직후 이동해도 저장 실패 시 선택을 유지하고 �
   expect(JSON.parse((fetch as jest.Mock).mock.calls[1][1].body)).toEqual({ storeIds: ['store-qa'] })
 })
 
-it('매장 생성 후 연결 실패는 매장을 재생성하지 않고 연결만 재시도한다', async () => {
+it('장소 생성 후 연결 실패는 매장을 재생성하지 않고 연결만 재시도한다', async () => {
   global.fetch = jest
     .fn()
     .mockResolvedValueOnce({
@@ -136,8 +136,8 @@ it('매장 생성 후 연결 실패는 매장을 재생성하지 않고 연결�
     .mockResolvedValueOnce({ ok: false })
     .mockResolvedValue({ ok: true })
   render(<BuildWizard data={data} />)
-  fireEvent.click(screen.getByRole('button', { name: '매장 추가' }))
-  fireEvent.change(screen.getByLabelText('매장명'), { target: { value: '새 QA 매장' } })
+  fireEvent.click(screen.getByRole('button', { name: '장소 추가' }))
+  fireEvent.change(screen.getByLabelText('장소 이름'), { target: { value: '새 QA 매장' } })
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: /^추가$/ }))
   })

@@ -142,6 +142,7 @@ export const RECRUITING_APPLICATIONS_PATH = `${RECRUITING_BASE_PATH}/application
 export const RECRUITING_BLACKLIST_PATH = `${RECRUITING_BASE_PATH}/blacklist`
 export const RECRUITING_DETAIL_TEMPLATES_PATH = `${RECRUITING_BASE_PATH}/templates`
 export const RECRUITING_SETTINGS_PATH = `${RECRUITING_BASE_PATH}/settings`
+export const RECRUITING_COMPANY_PATH = `${RECRUITING_BASE_PATH}/settings/company`
 export const RECRUITING_STORES_PATH = `${RECRUITING_BASE_PATH}/settings/stores`
 export const RECRUITING_POSITIONS_PATH = `${RECRUITING_BASE_PATH}/settings/positions`
 export const RECRUITING_MESSAGES_PATH = `${RECRUITING_BASE_PATH}/settings/messages`

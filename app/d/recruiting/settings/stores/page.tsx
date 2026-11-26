@@ -24,7 +24,7 @@ export default async function StoresSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">공고에 연결할 근무 매장을 관리합니다.</p>
+      <p className="text-sm text-muted-foreground">공고에 연결할 근무 장소를 관리합니다.</p>
       <StoresManager initialStores={stores} />
     </div>
   )

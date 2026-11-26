@@ -229,7 +229,8 @@ export const ModelName = {
   ChannelOrderLine: 'ChannelOrderLine',
   ChannelOrderScanLine: 'ChannelOrderScanLine',
   PipelineOperation: 'PipelineOperation',
-  HiringFileDeletion: 'HiringFileDeletion'
+  HiringFileDeletion: 'HiringFileDeletion',
+  HiringCompanyProfile: 'HiringCompanyProfile'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3325,6 +3326,22 @@ export const HiringFileDeletionScalarFieldEnum = {
 } as const
 
 export type HiringFileDeletionScalarFieldEnum = (typeof HiringFileDeletionScalarFieldEnum)[keyof typeof HiringFileDeletionScalarFieldEnum]
+
+
+export const HiringCompanyProfileScalarFieldEnum = {
+  spaceId: 'spaceId',
+  companyName: 'companyName',
+  intro: 'intro',
+  homepageUrl: 'homepageUrl',
+  blogUrl: 'blogUrl',
+  instagramUrl: 'instagramUrl',
+  youtubeUrl: 'youtubeUrl',
+  showIntro: 'showIntro',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringCompanyProfileScalarFieldEnum = (typeof HiringCompanyProfileScalarFieldEnum)[keyof typeof HiringCompanyProfileScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -1,0 +1,103 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "f",
+   "x": 0,
+   "y": 40,
+   "width": 900,
+   "height": 330,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "tt",
+   "x": 0,
+   "y": 0,
+   "text": "「매장」→「장소」 문구 (예시, 화면 전체 동일 규칙)",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "w1",
+   "x": 24,
+   "y": 60,
+   "width": 852,
+   "height": 40,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "설정 탭: 매장 관리 → 장소 관리 / 「새 매장」 → 「새 장소」 / 매장명 → 장소 이름",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "w2",
+   "x": 24,
+   "y": 112,
+   "width": 852,
+   "height": 40,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "공고 만들기: 근무 매장 선택 → 근무 장소 선택",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "w3",
+   "x": 24,
+   "y": 164,
+   "width": 852,
+   "height": 40,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "지원자 목록·상세: 희망 매장 → 희망 장소",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "w4",
+   "x": 24,
+   "y": 216,
+   "width": 852,
+   "height": 40,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "공개 지원서: 희망 근무 매장 → 희망 근무 장소",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "w5",
+   "x": 24,
+   "y": 268,
+   "width": 852,
+   "height": 80,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "유지: URL /settings/stores · DB(HiringStore) · 코드 이름 · 이미 저장된 지원서 응답 값\n메일·알림 문구도 「장소」로(메일 템플릿 포함 여부는 구현 때 목록으로 확인)",
+    "fontSize": 14
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

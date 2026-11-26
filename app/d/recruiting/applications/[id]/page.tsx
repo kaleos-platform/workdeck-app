@@ -85,7 +85,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
                 }`}
               />
               {app.stores.length > 0 && (
-                <Field label="희망 매장" value={app.stores.map((s) => s.store.name).join(', ')} />
+                <Field label="희망 장소" value={app.stores.map((s) => s.store.name).join(', ')} />
               )}
               {app.referrer && <Field label="유입 경로" value={app.referrer} />}
               <div className="flex flex-col gap-1 sm:col-span-2">

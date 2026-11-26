@@ -955,7 +955,7 @@ export function ContentBlockEditor({
               id="tpl-name"
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
-              placeholder="예: 매장 알바 기본 상세"
+              placeholder="예: 서빙 알바 기본 상세"
               maxLength={200}
             />
             <p className="text-xs text-muted-foreground">

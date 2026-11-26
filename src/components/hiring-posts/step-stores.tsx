@@ -51,13 +51,13 @@ export function StepStores({ ref, postingId, value, onChange }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ storeIds: nextStoreIds }),
     })
-    if (!res.ok) throw new Error('매장 연결 저장에 실패했습니다. 이동 버튼을 눌러 다시 저장하세요.')
+    if (!res.ok) throw new Error('장소 연결 저장에 실패했습니다. 이동 버튼을 눌러 다시 저장하세요.')
     router.refresh()
   })
   useImperativeHandle(ref, () => ({
     flush: () =>
       creatingRef.current
-        ? Promise.reject(new Error('매장 추가가 진행 중입니다. 완료 후 다시 이동하세요.'))
+        ? Promise.reject(new Error('장소 추가가 진행 중입니다. 완료 후 다시 이동하세요.'))
         : saver.flush(valueRef.current.noStores ? [] : valueRef.current.storeIds),
   }))
 
@@ -80,7 +80,7 @@ export function StepStores({ ref, postingId, value, onChange }: Props) {
   async function handleCreate() {
     if (creatingRef.current) return
     if (!newName.trim()) {
-      toast.error('매장명을 입력하세요')
+      toast.error('장소 이름을 입력하세요')
       return
     }
     creatingRef.current = true
@@ -91,7 +91,7 @@ export function StepStores({ ref, postingId, value, onChange }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName.trim(), roadAddress: newAddress.trim() || undefined }),
       })
-      if (!res.ok) throw new Error('매장 생성에 실패했습니다')
+      if (!res.ok) throw new Error('장소 생성에 실패했습니다')
       const { store } = await res.json()
       const created: WizardStore = {
         id: store.id,
@@ -109,11 +109,11 @@ export function StepStores({ ref, postingId, value, onChange }: Props) {
       setNewName('')
       setNewAddress('')
       setDialogOpen(false)
-      toast.success('매장을 추가했습니다')
+      toast.success('장소를 추가했습니다')
       // 생성은 완료됐으므로 연결 실패 시 기존 매장의 연결만 재시도한다.
       await saver.flush(next.storeIds)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '매장 생성에 실패했습니다')
+      toast.error(err instanceof Error ? err.message : '장소 생성에 실패했습니다')
     } finally {
       creatingRef.current = false
       setCreating(false)
@@ -125,21 +125,21 @@ export function StepStores({ ref, postingId, value, onChange }: Props) {
       <div className="flex items-center justify-between rounded-lg border px-4 py-3">
         <div className="space-y-0.5">
           <Label htmlFor="no-stores">모집 장소 없음</Label>
-          <p className="text-xs text-muted-foreground">특정 매장 없이 모집하는 경우 켜세요.</p>
+          <p className="text-xs text-muted-foreground">특정 장소 없이 모집하는 경우 켜세요.</p>
         </div>
         <Switch id="no-stores" checked={noStores} onCheckedChange={toggleNoStores} />
       </div>
 
       {noStores ? (
         <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          이 공고는 특정 근무 매장 없이 모집합니다.
+          이 공고는 특정 근무 장소 없이 모집합니다.
         </div>
       ) : (
         <>
           <div className="space-y-1">
             {stores.length === 0 ? (
               <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                등록된 매장이 없습니다. 매장 추가 버튼으로 추가하세요.
+                등록된 장소가 없습니다. 장소 추가 버튼으로 추가하세요.
               </div>
             ) : (
               stores.map((s) => (
@@ -163,7 +163,7 @@ export function StepStores({ ref, postingId, value, onChange }: Props) {
           </div>
 
           <Button size="sm" variant="outline" onClick={() => setDialogOpen(true)}>
-            <Plus /> 매장 추가
+            <Plus /> 장소 추가
           </Button>
 
           <Dialog
@@ -178,12 +178,12 @@ export function StepStores({ ref, postingId, value, onChange }: Props) {
           >
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>매장 추가</DialogTitle>
-                <DialogDescription>새 매장을 만들고 이 공고에 연결합니다.</DialogDescription>
+                <DialogTitle>장소 추가</DialogTitle>
+                <DialogDescription>새 장소를 만들고 이 공고에 연결합니다.</DialogDescription>
               </DialogHeader>
               <div inert={creating} className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="store-name">매장명</Label>
+                  <Label htmlFor="store-name">장소 이름</Label>
                   <Input
                     id="store-name"
                     value={newName}
