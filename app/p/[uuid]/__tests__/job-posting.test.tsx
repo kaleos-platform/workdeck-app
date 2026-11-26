@@ -28,7 +28,7 @@ const posting = (over: Record<string, unknown> = {}) => ({
   uuid: 'qa',
   title: '바리스타 모집',
   spaceId: 's',
-  space: { name: '카페' },
+  space: { name: '카페', hiringCompanyProfile: null },
   closingDate: null,
   publishedAt: null,
   createdAt: new Date('2026-11-01T00:00:00Z'),
@@ -67,13 +67,13 @@ beforeEach(() => {
 
 describe('공개 공고 본문', () => {
   // JobPosting 은 공개 회사명 출처가 정해질 때까지 내지 않는다(에디 결정 2026-11-23)
-  it('JSON-LD 를 내지 않고 매장 도로명 주소를 표시한다', async () => {
+  it('JSON-LD 를 내지 않고 장소 도로명 주소를 표시한다', async () => {
     const c = await load(posting())
     expect(ld(c)).toHaveLength(0)
     expect(c.textContent).toContain('본점 (서울 강남구 테헤란로 1)')
   })
 
-  it('다른 공간에 연결된 매장은 표시하지 않는다', async () => {
+  it('다른 공간에 연결된 장소는 표시하지 않는다', async () => {
     const p = posting()
     p.stores.push({ store: { name: '타매장', roadAddress: '부산 1', spaceId: 'other' } })
     const c = await load(p)

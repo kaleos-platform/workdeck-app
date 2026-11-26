@@ -1,0 +1,197 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "f",
+   "x": 0,
+   "y": 40,
+   "width": 900,
+   "height": 760,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "tt",
+   "x": 0,
+   "y": 0,
+   "text": "모집 관리 > 설정 > 기업 정보 (데스크톱)",
+   "fontSize": 18
+  },
+  {
+   "type": "text",
+   "id": "h1",
+   "x": 24,
+   "y": 60,
+   "text": "설정",
+   "fontSize": 24
+  },
+  {
+   "type": "rectangle",
+   "id": "tabs",
+   "x": 24,
+   "y": 100,
+   "width": 852,
+   "height": 40,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "① 탭 — 기업 정보(선택) · ② 장소 관리 · 직무 관리 · 메시지 관리",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "d",
+   "x": 24,
+   "y": 156,
+   "text": "모집 공고에 보이는 기업 정보예요. 저장하면 모든 공개 공고에 표시돼요.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "n",
+   "x": 24,
+   "y": 190,
+   "width": 520,
+   "height": 64,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ 기업명 — Input  [카페 하루]\n안내: 작업 공간 이름을 미리 넣었어요. 저장해야 공고에 표시돼요",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "i",
+   "x": 24,
+   "y": 270,
+   "width": 852,
+   "height": 150,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "④ 기업 소개 — Textarea (여러 줄, 0/1,000)\n성수동에서 7년째 직접 로스팅하는 동네 카페예요.\n주말 바리스타와 함께 일할 분을 찾고 있어요.",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "lk",
+   "x": 24,
+   "y": 440,
+   "text": "⑤ 링크 (선택, https 주소)",
+   "fontSize": 14
+  },
+  {
+   "type": "rectangle",
+   "id": "l1",
+   "x": 24,
+   "y": 466,
+   "width": 420,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "홈페이지 — Input  https://cafeharu.kr",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "l2",
+   "x": 456,
+   "y": 466,
+   "width": 420,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "블로그 — Input  https://blog.naver.com/cafeharu",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "l3",
+   "x": 24,
+   "y": 522,
+   "width": 420,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "인스타그램 — Input  https://instagram.com/cafeharu",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "l4",
+   "x": 456,
+   "y": 522,
+   "width": 420,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "유튜브 — Input  (비어 있음)",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "st",
+   "x": 24,
+   "y": 600,
+   "width": 520,
+   "height": 40,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑥ 상태 — Badge: 공고에 표시 중 / 아직 저장 안 됨",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "sv",
+   "x": 756,
+   "y": 600,
+   "width": 120,
+   "height": 40,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "저장 — Button",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "pv",
+   "x": 24,
+   "y": 660,
+   "width": 520,
+   "height": 40,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑦ 「공고에서 보기」 링크 — 최근 모집 중 공고 미리보기 새 탭",
+    "fontSize": 14
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

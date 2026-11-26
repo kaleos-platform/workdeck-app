@@ -93,7 +93,7 @@ export type PostingPositionInput = z.infer<typeof postingPositionSchema>
 
 // ─── 매장 (Store) ──────────────────────────────────────────────────────────────
 export const storeSchema = z.object({
-  name: z.string().min(1, '매장명을 입력하세요').max(200),
+  name: z.string().min(1, '장소 이름을 입력하세요').max(200),
   roadAddress: optionalText(300),
   detailAddress: optionalText(300),
   zipcode: optionalText(20),
@@ -106,6 +106,47 @@ export const linkStoresSchema = z.object({
   storeIds: z.array(idLike),
 })
 export type LinkStoresInput = z.infer<typeof linkStoresSchema>
+
+// ─── 기업 정보 (CompanyProfile) ─────────────────────────────────────────────────
+const toNullIfBlank = (v: unknown) => {
+  if (typeof v !== 'string') return v ?? null
+  const t = v.trim()
+  return t === '' ? null : t
+}
+
+const httpsUrl = (label: string) =>
+  z.preprocess(
+    toNullIfBlank,
+    z
+      .string()
+      .max(300, `${label}은 300자 이하로 입력하세요`)
+      .refine((v) => {
+        try {
+          return new URL(v).protocol === 'https:'
+        } catch {
+          return false
+        }
+      }, `${label}은 https:// 로 시작하는 주소만 입력할 수 있습니다`)
+      .nullable()
+  )
+
+export const companyProfileSchema = z.object({
+  companyName: z
+    .string()
+    .trim()
+    .min(1, '기업명을 입력하세요')
+    .max(50, '기업명은 50자 이하로 입력하세요'),
+  intro: z.preprocess(
+    toNullIfBlank,
+    z.string().max(1000, '기업 소개는 1,000자 이하로 입력하세요').nullable()
+  ),
+  homepageUrl: httpsUrl('홈페이지 주소'),
+  blogUrl: httpsUrl('블로그 주소'),
+  instagramUrl: httpsUrl('인스타그램 주소'),
+  youtubeUrl: httpsUrl('유튜브 주소'),
+  showIntro: z.boolean(),
+})
+export type CompanyProfileInput = z.infer<typeof companyProfileSchema>
 
 // ─── 직무 기준정보 (Position) ──────────────────────────────────────────────────
 export const positionSchema = z.object({

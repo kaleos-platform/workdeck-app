@@ -10,6 +10,7 @@ import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { BookOpen, Globe, Instagram, Youtube } from 'lucide-react'
 import { getHiringPublicApplyPath } from '@/lib/deck-routes'
 import { getUser } from '@/hooks/use-user'
 import {
@@ -31,6 +32,22 @@ const loadPosting = cache(async (uuid: string) =>
   prisma.hiringPosting.findUnique({
     where: { uuid },
     include: {
+      // 공고의 spaceId 로만 조인 — 다른 공간 값이 섞일 경로 없음
+      space: {
+        select: {
+          hiringCompanyProfile: {
+            select: {
+              companyName: true,
+              intro: true,
+              homepageUrl: true,
+              blogUrl: true,
+              instagramUrl: true,
+              youtubeUrl: true,
+              showIntro: true,
+            },
+          },
+        },
+      },
       positions: { orderBy: { createdAt: 'asc' } },
       stores: { include: { store: { select: { name: true, roadAddress: true, spaceId: true } } } },
       contents: {
@@ -108,6 +125,9 @@ export default async function PublicPostingPage({ params, searchParams }: Params
   const { positions, stores, contents } = filterPosting(posting)
   const isClosed =
     !isPreview && (posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate))
+  const profile = posting.space.hiringCompanyProfile
+  const placeLabel =
+    stores.length > 1 ? `${stores[0].store.name} 외 ${stores.length - 1}곳` : stores[0]?.store.name
   const applyHref = `${getHiringPublicApplyPath(uuid)}${isPreview ? '?preview=1' : ''}`
 
   // 마감일 D-day (KST 기준 날짜 비교 — closingDate는 UTC 자정으로 저장된 날짜값)
@@ -132,38 +152,45 @@ export default async function PublicPostingPage({ params, searchParams }: Params
         </div>
       )}
 
-      <header className="space-y-3 rounded-lg border bg-card p-6 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
+      <header className="space-y-1">
+        {profile && <p className="text-base font-semibold">{profile.companyName}</p>}
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span
+              aria-hidden="true"
+              className={`size-1.5 rounded-full ${
+                isPreview ? 'bg-amber-500' : isClosed ? 'bg-muted-foreground' : 'bg-emerald-500'
+              }`}
+            />
+            {isPreview ? '발행 전' : isClosed ? '마감' : '모집 중'}
+          </span>
           {isPreview ? (
-            <Badge className="border-amber-200 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-              발행 전
-            </Badge>
-          ) : isClosed ? (
-            <Badge className="bg-muted text-muted-foreground">마감</Badge>
-          ) : (
-            <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-              모집 중
-            </Badge>
-          )}
-          {isPreview ? (
-            <span className="text-sm text-muted-foreground">
-              지원 접수 전 ·{' '}
-              {posting.closingDate
-                ? `설정 마감일 ${posting.closingDate.toISOString().slice(0, 10)}`
-                : '상시 모집'}
-            </span>
-          ) : (
-            !isClosed &&
-            (closingLabel ? (
-              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                {closingLabel}
+            <>
+              <span aria-hidden="true">·</span>
+              <span>
+                지원 접수 전 ·{' '}
+                {posting.closingDate
+                  ? `설정 마감일 ${posting.closingDate.toISOString().slice(0, 10)}`
+                  : '상시 모집'}
               </span>
-            ) : (
-              <span className="text-sm text-muted-foreground">상시 모집</span>
-            ))
+            </>
+          ) : (
+            !isClosed && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{closingLabel ?? '상시 모집'}</span>
+              </>
+            )
           )}
-        </div>
-        {stores.length > 0 && (
+          {stores.length > 0 && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{placeLabel}</span>
+            </>
+          )}
+        </p>
+        {/* 기업 정보가 없는 공간은 주소를 머리글에 그대로 둔다 */}
+        {!profile && stores.length > 0 && (
           <p className="text-sm text-muted-foreground">
             {stores
               .map((s) =>
@@ -278,6 +305,8 @@ export default async function PublicPostingPage({ params, searchParams }: Params
         </section>
       )}
 
+      {profile && <CompanyFooter profile={profile} stores={stores.map((s) => s.store)} />}
+
       {process.env.HIRING_PUBLIC_POWERED_BY !== 'off' && (
         <footer className="pb-2 text-center text-xs text-muted-foreground">
           <a
@@ -340,5 +369,55 @@ function ConditionRow({ label, value }: { label: string; value: string }) {
       <dt className="shrink-0 text-muted-foreground">{label}</dt>
       <dd className="font-medium">{value}</dd>
     </div>
+  )
+}
+
+type CompanyProfile = NonNullable<LoadedPosting['space']['hiringCompanyProfile']>
+
+// 기업 소개 푸터 — 카드 없이 작은 회색 글씨. 근무 장소는 소개 표시 설정과 무관하게 항상 남긴다.
+function CompanyFooter({
+  profile,
+  stores,
+}: {
+  profile: CompanyProfile
+  stores: { name: string; roadAddress: string | null }[]
+}) {
+  const links = [
+    { href: profile.homepageUrl, label: '홈페이지', Icon: Globe },
+    { href: profile.blogUrl, label: '블로그', Icon: BookOpen },
+    { href: profile.instagramUrl, label: '인스타그램', Icon: Instagram },
+    { href: profile.youtubeUrl, label: '유튜브', Icon: Youtube },
+    // 저장 시 https 만 받지만 렌더에서도 한 번 더 거른다(javascript: 등 차단)
+  ].filter((l): l is typeof l & { href: string } => !!l.href?.startsWith('https://'))
+  const showIntro = profile.showIntro && !!profile.intro
+  const showLinks = profile.showIntro && links.length > 0
+
+  return (
+    <section className="space-y-4 border-t pt-6 text-sm text-muted-foreground">
+      <p className="font-medium text-foreground">{profile.companyName}</p>
+      {showIntro && <p className="whitespace-pre-line">{profile.intro}</p>}
+      {showLinks && (
+        <div className="-ml-2 flex flex-wrap gap-1">
+          {links.map(({ href, label, Icon }) => (
+            <Button key={label} variant="ghost" size="sm" asChild>
+              <a href={href} target="_blank" rel="noopener noreferrer nofollow">
+                <Icon aria-hidden="true" />
+                {label}
+              </a>
+            </Button>
+          ))}
+        </div>
+      )}
+      {stores.length > 0 && (
+        <div className="space-y-1">
+          <h2 className="text-xs font-medium text-foreground">근무 장소</h2>
+          <ul className="space-y-0.5 text-xs">
+            {stores.map((s, i) => (
+              <li key={i}>{s.roadAddress ? `${s.name} — ${s.roadAddress}` : s.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
   )
 }

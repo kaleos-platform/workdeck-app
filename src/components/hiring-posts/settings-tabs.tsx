@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  RECRUITING_COMPANY_PATH,
   RECRUITING_MESSAGES_PATH,
   RECRUITING_POSITIONS_PATH,
   RECRUITING_STORES_PATH,
@@ -10,7 +11,8 @@ import {
 import { cn } from '@/lib/utils'
 
 const TABS = [
-  { label: '매장 관리', href: RECRUITING_STORES_PATH },
+  { label: '기업 정보', href: RECRUITING_COMPANY_PATH },
+  { label: '장소 관리', href: RECRUITING_STORES_PATH },
   { label: '직무 관리', href: RECRUITING_POSITIONS_PATH },
   { label: '메시지 관리', href: RECRUITING_MESSAGES_PATH },
 ]
