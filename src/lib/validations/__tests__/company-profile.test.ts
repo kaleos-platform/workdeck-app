@@ -25,3 +25,8 @@ it('길이 상한: 기업명 50, 소개 1000, URL 300', () => {
   const long = `https://a.com/${'a'.repeat(300)}`
   expect(companyProfileSchema.safeParse({ ...base, blogUrl: long }).success).toBe(false)
 })
+
+it('대문자 스킴 HTTPS:// 는 https:// 로 정규화해 저장한다', () => {
+  const r = companyProfileSchema.parse({ ...base, homepageUrl: 'HTTPS://Example.com/path' })
+  expect(r.homepageUrl).toBe('https://example.com/path')
+})

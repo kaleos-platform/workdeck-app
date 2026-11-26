@@ -127,6 +127,8 @@ const httpsUrl = (label: string) =>
           return false
         }
       }, `${label}은 https:// 로 시작하는 주소만 입력할 수 있습니다`)
+      // HTTPS://… 처럼 대문자 스킴도 https:// 로 정규화해 저장(공개 화면 필터와 일치)
+      .transform((v) => new URL(v).href)
       .nullable()
   )
 
