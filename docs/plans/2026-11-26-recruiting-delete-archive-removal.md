@@ -106,7 +106,7 @@
 
 ## 구현 후 코드 리뷰 반영 (opus code-reviewer, 지적 8건 — 반영 6, 보류 2)
 
-1. [high] `HiringFileDeletion` RLS 누락 → migration `hiring_file_deletion_rls`(ENABLE RLS + REVOKE anon/authenticated).
+1. [high] `HiringFileDeletion` RLS 누락 → 원장 생성 migration 안에 ENABLE RLS + REVOKE anon/authenticated 추가(migration-rls-lint 규칙: 같은 migration).
 2. [medium] cron 업로드 정리 실패 시 원장 재시도 건너뜀 → catch 경로에서도 `processFileDeletions` 실행.
 3. [medium] postingId SetNull 된 세션 누락 → 세션 조회에 `applicationId in 지원서들` OR 추가.
 4. [low] 즉시 시도·cron 경합 P2025 → `deleteMany`로 멱등 처리.
