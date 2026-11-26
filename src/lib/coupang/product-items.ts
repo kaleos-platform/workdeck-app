@@ -14,7 +14,8 @@ export type CoupangProductItemRowInput = {
 
 /**
  * 수집 결과를 적재한다. listingId 는 사람이 확정한 매핑이므로 절대 덮지 않는다.
- * 키는 rgVendorItemId 우선, 없으면 mpVendorItemId(마켓플레이스 전용 상품).
+ * 기존 행은 rgVendorItemId·mpVendorItemId 중 하나라도 같으면 같은 상품으로 보고 갱신한다
+ * (MP 축만 있던 행이 나중에 RG 축을 얻어도 새 행을 만들지 않는다).
  */
 export async function upsertCoupangProductItems(
   spaceId: string,
@@ -24,12 +25,11 @@ export async function upsertCoupangProductItems(
   let n = 0
 
   for (const row of rows) {
-    const where = row.rgVendorItemId
-      ? { spaceId_rgVendorItemId: { spaceId, rgVendorItemId: row.rgVendorItemId } }
-      : row.mpVendorItemId
-        ? { spaceId_mpVendorItemId: { spaceId, mpVendorItemId: row.mpVendorItemId } }
-        : null
-    if (!where) continue
+    const keys = [
+      ...(row.rgVendorItemId ? [{ rgVendorItemId: row.rgVendorItemId }] : []),
+      ...(row.mpVendorItemId ? [{ mpVendorItemId: row.mpVendorItemId }] : []),
+    ]
+    if (keys.length === 0) continue
 
     const data = {
       sellerProductId: row.sellerProductId,
@@ -44,17 +44,21 @@ export async function upsertCoupangProductItems(
       collectedAt,
     }
 
-    // MP 축만 있던 행이 나중에 RG 축을 얻으면 키가 rgVendorItemId 로 바뀌어 create 경로를
-    // 타고, 기존 행이 이미 가진 mpVendorItemId 와 충돌(P2002)한다. 그 한 행 때문에 남은
-    // 배치를 통째로 잃지 않도록 행 단위로 격리한다.
-    // ponytail: 근본 해결은 키 선택을 두 축 조회 후 결정하는 것 — 이 패스에서는 범위 밖.
+    // 행 단위로 격리한다 — 한 행 실패로 남은 배치를 잃지 않는다.
     try {
-      await prisma.coupangProductItem.upsert({
-        where,
-        // listingId 를 create/update 어느 쪽에도 쓰지 않는다 — 수집이 매핑을 지우면 안 된다.
-        create: { spaceId, ...data },
-        update: data,
+      const existing = await prisma.coupangProductItem.findMany({
+        where: { spaceId, OR: keys },
+        select: { id: true },
+        take: 2,
       })
+      // 두 축이 서로 다른 기존 행에 걸려 있으면 합칠 수 없다 — 사람이 정리해야 한다
+      if (existing.length > 1) throw new Error('RG·MP 축이 서로 다른 기존 행에 있음')
+      if (existing.length === 1) {
+        // listingId 는 쓰지 않는다 — 수집이 사람이 확정한 매핑을 지우면 안 된다.
+        await prisma.coupangProductItem.update({ where: { id: existing[0].id }, data })
+      } else {
+        await prisma.coupangProductItem.create({ data: { spaceId, ...data } })
+      }
       n += 1
     } catch (err) {
       console.error(

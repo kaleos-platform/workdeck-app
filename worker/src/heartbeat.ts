@@ -48,6 +48,6 @@ async function sendHeartbeat(service: string, baseUrl: string) {
       console.error(`[heartbeat] HTTP ${res.status}`)
     }
   } catch (err) {
-    console.error('[heartbeat] 발송 실패:', (err as Error).message)
+    console.error('[heartbeat] 발송 실패:', err)
   }
 }

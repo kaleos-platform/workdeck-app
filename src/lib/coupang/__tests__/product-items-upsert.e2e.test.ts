@@ -89,4 +89,39 @@ d('upsertCoupangProductItems', () => {
     expect(rows[0].rgSalePrice).toBe(66000)
     expect(rows[0].listingId).toBe(listing.id) // 사람이 확정한 매핑이 수집으로 지워지지 않는다
   })
+
+  test('MP 축만 있던 행이 RG 축을 얻으면 같은 행을 갱신한다(P2002 없음)', async () => {
+    const spaceId = SPACE_ID
+    const base = {
+      sellerProductId: '99900000001',
+      itemName: 'E2E MP→RG',
+      rgSalePrice: null,
+      mpSalePrice: 10000,
+      barcode: null,
+      skuInfo: null,
+      statusName: '승인완료',
+    }
+    expect(
+      await upsertCoupangProductItems(spaceId, [
+        { ...base, rgVendorItemId: null, mpVendorItemId: 'mp-e2e-1' },
+      ])
+    ).toBe(1)
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      expect(
+        await upsertCoupangProductItems(spaceId, [
+          { ...base, rgVendorItemId: 'rg-e2e-1', rgSalePrice: 9000, mpVendorItemId: 'mp-e2e-1' },
+        ])
+      ).toBe(1)
+      expect(log).not.toHaveBeenCalled()
+    } finally {
+      log.mockRestore()
+    }
+    const rows = await prisma.coupangProductItem.findMany({
+      where: { spaceId, sellerProductId: '99900000001' },
+    })
+    expect(rows).toHaveLength(1)
+    expect(rows[0].rgVendorItemId).toBe('rg-e2e-1')
+    expect(rows[0].rgSalePrice).toBe(9000)
+  })
 })
