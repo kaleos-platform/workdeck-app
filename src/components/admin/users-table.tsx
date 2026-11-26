@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Table,
   TableBody,
@@ -66,6 +67,39 @@ function SortHead({
         <Icon className={active ? 'size-3.5' : 'size-3.5 opacity-40'} />
       </button>
     </TableHead>
+  )
+}
+
+// 서버가 대표 순서로 정렬해 준다 — [0] 이 대표. 2개 이상이면 툴팁에 전체 목록
+function SpaceCell({ memberships }: { memberships: AdminUserListItem['spaceMemberships'] }) {
+  if (memberships.length === 0) return <span className="text-muted-foreground">-</span>
+  const [rep, ...rest] = memberships
+  const label = (
+    <span className="inline-flex items-center gap-1">
+      <span className="max-w-48 truncate" title={rep.spaceName}>
+        {rep.spaceName}
+      </span>
+      {rest.length > 0 && <span className="text-muted-foreground">외 {rest.length}</span>}
+    </span>
+  )
+  if (rest.length === 0) return label
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span tabIndex={0} className="cursor-default">
+          {label}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <ul className="flex flex-col gap-0.5">
+          {memberships.map((m) => (
+            <li key={m.spaceId}>
+              {m.spaceName} · {ROLE_LABEL[m.role] ?? m.role}
+            </li>
+          ))}
+        </ul>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -173,9 +207,11 @@ export function UsersTable() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>전체 상태</SelectItem>
+            <SelectItem value={ALL}>전체 권한</SelectItem>
             <SelectItem value="operator">운영자</SelectItem>
-            <SelectItem value="user">일반 사용자</SelectItem>
+            <SelectItem value="owner">소유자</SelectItem>
+            <SelectItem value="admin">관리자</SelectItem>
+            <SelectItem value="member">멤버</SelectItem>
           </SelectContent>
         </Select>
         <Select value={spaces} onValueChange={setSpaces}>
@@ -206,11 +242,11 @@ export function UsersTable() {
             <TableRow>
               <SortHead label="이메일" k="email" sort={sort} dir={dir} onSort={onSort} />
               <SortHead label="이름" k="name" sort={sort} dir={dir} onSort={onSort} />
-              <SortHead label="소속 Space·권한" k="spaces" sort={sort} dir={dir} onSort={onSort} />
+              <SortHead label="소속" k="spaces" sort={sort} dir={dir} onSort={onSort} />
+              <TableHead>권한</TableHead>
               <TableHead>가입 경로</TableHead>
               <SortHead label="가입일" k="createdAt" sort={sort} dir={dir} onSort={onSort} />
               <TableHead>2단계 인증</TableHead>
-              <TableHead>상태</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -229,22 +265,19 @@ export function UsersTable() {
               >
                 <TableCell className="font-medium">{u.email}</TableCell>
                 <TableCell>{u.name ?? '-'}</TableCell>
-                <TableCell className="whitespace-normal">
-                  {u.spaceMemberships.length === 0 ? (
-                    <span className="text-muted-foreground">-</span>
+                <TableCell>
+                  <SpaceCell memberships={u.spaceMemberships} />
+                </TableCell>
+                <TableCell>
+                  {u.isOperator || u.spaceMemberships.length > 0 ? (
+                    <span>
+                      {u.isOperator && <span className="font-medium">운영자</span>}
+                      {u.isOperator && u.spaceMemberships.length > 0 && ' · '}
+                      {u.spaceMemberships.length > 0 &&
+                        (ROLE_LABEL[u.spaceMemberships[0].role] ?? u.spaceMemberships[0].role)}
+                    </span>
                   ) : (
-                    <ul className="flex flex-col gap-0.5 text-xs">
-                      {u.spaceMemberships.map((m) => (
-                        <li key={m.spaceId} className="flex items-center gap-1.5">
-                          <span className="max-w-48 truncate" title={m.spaceName}>
-                            {m.spaceName}
-                          </span>
-                          <Badge variant={m.role === 'OWNER' ? 'default' : 'outline'}>
-                            {ROLE_LABEL[m.role] ?? m.role}
-                          </Badge>
-                        </li>
-                      ))}
-                    </ul>
+                    <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -264,9 +297,6 @@ export function UsersTable() {
                   ) : (
                     <span className="text-muted-foreground">꺼짐</span>
                   )}
-                </TableCell>
-                <TableCell>
-                  {u.isOperator ? <Badge variant="secondary">운영자</Badge> : null}
                 </TableCell>
               </TableRow>
             ))}

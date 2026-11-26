@@ -42,7 +42,7 @@ it('mfa=required 는 mfaRequired 또는 운영자, totpEnrolled 는 helper 기�
 
 it('mfa=off 는 mfaRequired false 이고 운영자 제외', async () => {
   await call('?mfa=off')
-  expect(findMany.mock.calls[0][0].where).toMatchObject({ mfaRequired: false, platformRole: null })
+  expect(findMany.mock.calls[0][0].where.AND).toEqual([{ mfaRequired: false, platformRole: null }])
 })
 
 it('mfa=required 와 q 검색의 OR 가 서로 덮어쓰지 않는다', async () => {
@@ -58,4 +58,80 @@ it('helper 가 null 이면 totpEnrolled 는 모두 null 이고 200', async () =>
   expect(res.status).toBe(200)
   const { users } = await res.json()
   expect(users.every((u: { totpEnrolled: null }) => u.totpEnrolled === null)).toBe(true)
+})
+
+const where = () => findMany.mock.calls[0][0].where
+
+it('role=admin 은 ADMIN 있음 + OWNER 없음', async () => {
+  await call('?role=admin')
+  expect(where().AND).toEqual(
+    expect.arrayContaining([
+      { spaceMemberships: { some: { role: 'ADMIN' } } },
+      { spaceMemberships: { none: { role: 'OWNER' } } },
+    ])
+  )
+})
+
+it('role=member 는 MEMBER 있음 + OWNER·ADMIN 없음', async () => {
+  await call('?role=member')
+  expect(where().AND).toEqual(
+    expect.arrayContaining([
+      { spaceMemberships: { some: { role: 'MEMBER' } } },
+      { spaceMemberships: { none: { role: { in: ['OWNER', 'ADMIN'] } } } },
+    ])
+  )
+})
+
+it('role=owner 는 OWNER 있음', async () => {
+  await call('?role=owner')
+  expect(where().AND).toEqual([{ spaceMemberships: { some: { role: 'OWNER' } } }])
+})
+
+it('role=user 등 알 수 없는 값은 무시', async () => {
+  await call('?role=user')
+  expect(where().AND).toEqual([])
+})
+
+it('spaces=none 과 role=owner 가 서로 덮어쓰지 않는다', async () => {
+  await call('?spaces=none&role=owner')
+  expect(where().AND).toEqual(
+    expect.arrayContaining([
+      { spaceMemberships: { none: {} } },
+      { spaceMemberships: { some: { role: 'OWNER' } } },
+    ])
+  )
+})
+
+it('role=operator 와 mfa=off 가 서로 덮어쓰지 않는다', async () => {
+  await call('?role=operator&mfa=off')
+  expect(where().AND).toEqual(
+    expect.arrayContaining([
+      { platformRole: 'OPERATOR' },
+      { mfaRequired: false, platformRole: null },
+    ])
+  )
+})
+
+it('소속은 대표 순서(권한 > 먼저 소속 > spaceId)로 정렬, 응답 모양 유지', async () => {
+  const m = (id: string, role: string, at: string) => ({
+    role,
+    createdAt: new Date(at),
+    space: { id, name: id },
+  })
+  findMany.mockResolvedValue([
+    {
+      ...row('a', true),
+      spaceMemberships: [
+        m('s1', 'MEMBER', '2026-01-01'),
+        m('s2', 'OWNER', '2026-03-01'),
+        m('s3', 'OWNER', '2026-02-01'),
+      ],
+    },
+  ])
+  const { users } = await (await call()).json()
+  expect(users[0].spaceMemberships).toEqual([
+    { spaceId: 's3', spaceName: 's3', role: 'OWNER' },
+    { spaceId: 's2', spaceName: 's2', role: 'OWNER' },
+    { spaceId: 's1', spaceName: 's1', role: 'MEMBER' },
+  ])
 })
