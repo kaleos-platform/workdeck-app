@@ -32,5 +32,4 @@ it('발행 공고(접수 중·마감)이면서 마감일이 있을 때만 연장
   expect(canExtendDeadline({ status: 'CLOSED', closingDate: '2026-11-20' })).toBe(true)
   expect(canExtendDeadline({ status: 'ACTIVE', closingDate: null })).toBe(false)
   expect(canExtendDeadline({ status: 'DRAFT', closingDate: '2026-11-20' })).toBe(false)
-  expect(canExtendDeadline({ status: 'ARCHIVED', closingDate: '2026-11-20' })).toBe(false)
 })

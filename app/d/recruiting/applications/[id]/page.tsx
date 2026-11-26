@@ -14,6 +14,7 @@ import { DuplicatedBadge, BlacklistBadge } from '@/components/hiring-applicants/
 import { ApplicationStatusBadge } from '@/components/hiring-applicants/application-status-badge'
 import { MemoPanel } from '@/components/hiring-applicants/memo-panel'
 import { DetailActionBar } from '@/components/hiring-applicants/detail-action-bar'
+import { DeleteApplicantButton } from '@/components/hiring-applicants/delete-applicant-button'
 import { CopyValueButton } from '@/components/hiring-applicants/copy-value-button'
 import { PreQuestions } from '@/components/hiring-applicants/pre-questions'
 import { BlacklistButton, FileDownloadList } from '@/components/hiring-applicants/detail-actions'
@@ -53,8 +54,11 @@ export default async function ApplicationDetailPage({ params }: Params) {
         <ApplicationStatusBadge stage={app.stage} hiringStage={app.hiringStage} />
         {app.duplicated && <DuplicatedBadge />}
         {blacklisted && <BlacklistBadge />}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1">
           <BlacklistButton applicationId={app.id} blacklisted={blacklisted} />
+          {(resolved.role === 'OWNER' || resolved.role === 'ADMIN') && (
+            <DeleteApplicantButton applicationId={app.id} />
+          )}
         </div>
       </div>
       <p className="text-sm text-muted-foreground">

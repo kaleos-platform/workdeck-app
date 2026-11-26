@@ -26,6 +26,7 @@ export type ApplicationsSearchParams = {
 type Props = {
   spaceId: string
   canExportExcel: boolean
+  canDelete?: boolean
   raw: ApplicationsSearchParams
   // 공고 상세 탭처럼 특정 공고로 고정할 때 지정한다(URL 의 posting 값은 무시).
   lockedPostingId?: string
@@ -38,6 +39,7 @@ type Props = {
 export async function ApplicationsListSection({
   spaceId,
   canExportExcel,
+  canDelete = false,
   raw,
   lockedPostingId,
   basePath,
@@ -104,6 +106,7 @@ export async function ApplicationsListSection({
   return (
     <ApplicationsTable
       canExportExcel={canExportExcel}
+      canDelete={canDelete}
       key={JSON.stringify([sp.store, sp.position])}
       rows={rows}
       total={total}

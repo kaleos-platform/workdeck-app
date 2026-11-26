@@ -9,6 +9,7 @@ import { prisma } from '@/lib/prisma'
 import { updatePostingSchema } from '@/lib/validations/hiring-posts'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { getPostingDetail } from '@/lib/hiring/postings'
+import { deletePosting } from '@/lib/hiring/delete'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -81,12 +82,12 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (roleError) return roleError
   const { id } = await params
 
-  const existing = await prisma.hiringPosting.findFirst({
-    where: { id, spaceId: resolved.space.id },
-    select: { id: true },
-  })
-  if (!existing) return errorResponse('공고를 찾을 수 없습니다', 404)
-
-  await prisma.hiringPosting.delete({ where: { id } })
-  return NextResponse.json({ ok: true })
+  const result = await deletePosting(resolved.space.id, id)
+  if (result.status === 'not_found') return errorResponse('공고를 찾을 수 없습니다', 404)
+  if (result.status === 'open')
+    return errorResponse(
+      '모집중인 공고는 삭제할 수 없어요. 먼저 마감 처리한 뒤 삭제해 주세요.',
+      409
+    )
+  return NextResponse.json({ ok: true, deletedApplications: result.deletedApplications })
 }

@@ -12,7 +12,7 @@ import { checkPublishable } from '@/lib/hiring/postings'
 
 type Params = { params: Promise<{ id: string }> }
 
-// 공고 상태 전이: publish(발행) / close(마감) / reopen(재개) / archive(보관) / extend(마감일 연장)
+// 공고 상태 전이: publish(발행) / close(마감) / reopen(재개) / extend(마감일 연장)
 export async function POST(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
@@ -67,19 +67,17 @@ export async function POST(req: NextRequest, { params }: Params) {
         return NextResponse.json({ posting: updated })
       })
     }
-    case 'close':
-    case 'archive': {
+    case 'close': {
       const [updated] = await prisma.hiringPosting.updateManyAndReturn({
         where: {
           id,
           spaceId: resolved.space.id,
           OR: [{ status: { not: 'DRAFT' } }, { publishedAt: { not: null } }],
         },
-        data: { status: parsed.data.action === 'close' ? 'CLOSED' : 'ARCHIVED' },
+        data: { status: 'CLOSED' },
         select: { id: true, status: true },
       })
-      if (!updated)
-        return errorResponse('발행 이력이 없는 초안은 마감하거나 보관할 수 없습니다', 409)
+      if (!updated) return errorResponse('발행 이력이 없는 초안은 마감할 수 없습니다', 409)
       return NextResponse.json({ posting: updated })
     }
     case 'reopen': {

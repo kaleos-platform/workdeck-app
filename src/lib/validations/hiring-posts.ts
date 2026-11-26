@@ -66,7 +66,7 @@ export const postingMailSettingsSchema = z
 
 // 발행/마감/재개/연장 액션 — extend 는 발행된 공고의 마감일을 늦추기만 한다
 export const postingActionSchema = z.object({
-  action: z.enum(['publish', 'close', 'reopen', 'archive', 'extend']),
+  action: z.enum(['publish', 'close', 'reopen', 'extend']),
   closingDate: z.string().date('올바른 마감일을 입력하세요').nullable().optional(),
 })
 export type PostingActionInput = z.infer<typeof postingActionSchema>

@@ -4,15 +4,17 @@ import { isPostingRecruitmentLocked } from '@/lib/hiring/publication-policy'
 
 import { PublishDialog } from './publish-dialog'
 import { closePosting } from './close-posting'
+import { DeletePostingDialog } from './delete-posting-dialog'
 import { CloseConfirmDialog } from './close-confirm-dialog'
 import { ExtendDeadlineDialog } from './extend-deadline-dialog'
 import { canExtendDeadline } from './extend-posting'
+import { getPostingDisplayStatus } from '@/lib/hiring/posting-status'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeft, CalendarPlus, Copy, ExternalLink, Lock, Pencil } from 'lucide-react'
+import { ArrowLeft, CalendarPlus, Copy, ExternalLink, Lock, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -44,6 +46,8 @@ type Props = {
   // 탭은 URL(?tab=)로 결정되며 서버가 내려준다. 기본은 공고 상세.
   tab?: 'recruit' | 'applicants'
   applicantCount?: number
+  // OWNER/ADMIN만 삭제 가능(서버에서 계산)
+  canDelete?: boolean
   // 지원자 탭 내용(서버에서 렌더한 목록)
   children?: ReactNode
 }
@@ -72,6 +76,7 @@ export function PostingDetail({
   usesFormLink = false,
   tab = 'recruit',
   applicantCount = 0,
+  canDelete = false,
   children,
 }: Props) {
   const router = useRouter()
@@ -82,6 +87,7 @@ export function PostingDetail({
   const [busy, setBusy] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
   const [extendOpen, setExtendOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const canExtend = canExtendDeadline({ status, closingDate })
 
   const hasOutputErrors = embedIssues.some((issue) => issue.severity === 'error')
@@ -172,6 +178,11 @@ export function PostingDetail({
               <Pencil /> 수정
             </Link>
           </Button>
+          {canDelete && (
+            <Button variant="outline" onClick={() => setDeleteOpen(true)} disabled={busy}>
+              <Trash2 /> 삭제
+            </Button>
+          )}
         </div>
       </div>
 
@@ -181,6 +192,17 @@ export function PostingDetail({
         busy={busy}
         onConfirm={() => void runAction()}
       />
+      {canDelete && (
+        <DeletePostingDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          postingId={posting.id}
+          title={posting.title}
+          applicantCount={applicantCount}
+          isOpen={getPostingDisplayStatus(status, closingDate) === 'OPEN'}
+          onDeleted={() => router.push(RECRUITING_POSTINGS_PATH)}
+        />
+      )}
       {canExtend && closingDate && (
         <ExtendDeadlineDialog
           open={extendOpen}
