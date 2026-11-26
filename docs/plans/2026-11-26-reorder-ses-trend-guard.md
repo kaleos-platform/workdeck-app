@@ -77,5 +77,10 @@
 - 신규 회귀 테스트 7개: 기존 코드에서 상한 사례 3개 실패를 확인한 뒤, 수정 후 발주 엔진 전체 7 suites / 65 tests 통과.
 - 별도 코드 리뷰에서 correctness·회귀·계획 불일치 지적 없음.
 - 전체 lint: 0 errors / 기존 다른 파일 warnings 64개. 변경 TypeScript 파일은 formatting 검사 통과.
-- typecheck·build 결과는 검증 종료 후 갱신한다.
+- `npm run typecheck` 및 pre-push typecheck 통과.
+- 기본 Turbopack build는 약 5분간 compile 단계 출력 갱신이 없어 TERM 종료(exit 143). 성공으로 간주하지 않았다.
+- webpack 기본 heap build는 약 4GB 한도에서 `JavaScript heap out of memory`(exit 134).
+- `NODE_OPTIONS=--max-old-space-size=8192 npm run build -- --webpack`: compile·TypeScript·페이지 생성까지 통과(exit 0). 저장소 설정 변경 없음.
+- [Draft PR #1650](https://github.com/kaleos-platform/workdeck-app/pull/1650), base `develop`. 구현 커밋 `99764585` 기준 CI migration-lint·rls-lockdown·Vercel preview 통과, visual-smoke는 조건에 따라 skip.
+- 운영 배포·머지는 수행하지 않았다.
 - 운영 MCP preview 비교, 큰 reorderRoundUnit 상품 조회, 에밀리 후속 보고 확인은 미완료. 현재 연결 도구에서 Workdeck/AML 조회 도구가 제공되지 않는다.
