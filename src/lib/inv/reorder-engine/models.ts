@@ -37,13 +37,18 @@ export function forecastRates(series: DayPoint[], horizonDays: number): Record<M
   }
   const ma30 = recentAvg(series, 30)
   const ma90 = recentAvg(series, 90)
+  // ponytail: 단기 급등의 장기 외삽을 비품절 실적 2배로 제한. 급성장 과소 예측이 확인되면 배수 재검토.
+  const trendCap = 2 * Math.max(recentAvg(valid, 30), recentAvg(valid, 90))
   return {
     MA30: ma30,
     MA90: ma90,
     MA_BLEND: 0.6 * ma30 + 0.4 * ma90,
-    SES_TREND: holt(
-      valid.map((p) => p.qty),
-      horizonDays
+    SES_TREND: Math.min(
+      holt(
+        valid.map((p) => p.qty),
+        horizonDays
+      ),
+      trendCap
     ),
     CROSTON: Math.max(
       0,
