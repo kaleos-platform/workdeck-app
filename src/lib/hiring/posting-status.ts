@@ -1,12 +1,11 @@
 import { isHiringDeadlinePassed } from './closing-date'
 
-export type PostingDisplayStatus = 'DRAFT' | 'OPEN' | 'CLOSED' | 'ARCHIVED'
+export type PostingDisplayStatus = 'DRAFT' | 'OPEN' | 'CLOSED'
 
 export const DISPLAY_STATUS_LABELS: Record<PostingDisplayStatus, string> = {
   DRAFT: '작성 중',
   OPEN: '모집중',
   CLOSED: '마감',
-  ARCHIVED: '보관',
 }
 
 /** 저장 상태 + 마감일 → 화면 상태. 발행(ACTIVE)이어도 마감일이 지났으면 마감. */
@@ -15,7 +14,9 @@ export function getPostingDisplayStatus(
   closingDate: Date | string | null | undefined,
   now = new Date()
 ): PostingDisplayStatus {
-  if (status === 'DRAFT' || status === 'ARCHIVED' || status === 'CLOSED') return status
+  // 폐지된 ARCHIVED 가 남아 있으면 마감으로 본다.
+  if (status === 'ARCHIVED') return 'CLOSED'
+  if (status === 'DRAFT' || status === 'CLOSED') return status
   const date = typeof closingDate === 'string' ? new Date(closingDate) : closingDate
   return isHiringDeadlinePassed(date, now) ? 'CLOSED' : 'OPEN'
 }

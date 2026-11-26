@@ -931,3 +931,8 @@ export type ChannelOrderScanLine = Prisma.ChannelOrderScanLineModel
  * 
  */
 export type PipelineOperation = Prisma.PipelineOperationModel
+/**
+ * Model HiringFileDeletion
+ * 
+ */
+export type HiringFileDeletion = Prisma.HiringFileDeletionModel

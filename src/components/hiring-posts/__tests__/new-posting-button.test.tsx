@@ -99,11 +99,11 @@ it('생성 응답을 기다리는 동안 중복 제출과 닫기를 막는다', 
   await waitFor(() => expect(screen.getByRole('button', { name: '공고 만들기' })).toBeEnabled())
 })
 
-it('이전 공고 복사 모드는 보관 제외 최근 10개를 보여주고 복사 API 후 편집 화면으로 이동한다', async () => {
+it('이전 공고 복사 모드는 최근 10개를 보여주고 복사 API 후 편집 화면으로 이동한다', async () => {
   const postings = Array.from({ length: 12 }, (_, i) => ({
     id: `p${i}`,
     title: `공고 ${i}`,
-    status: i === 0 ? 'ARCHIVED' : 'ACTIVE',
+    status: 'ACTIVE',
     createdAt: '2026-11-01T00:00:00.000Z',
   }))
   ;(fetch as jest.Mock).mockImplementation(async (url: string, options?: { method?: string }) => {
@@ -118,7 +118,7 @@ it('이전 공고 복사 모드는 보관 제외 최근 10개를 보여주고 �
   fireEvent.click(screen.getByRole('button', { name: '이전 공고 복사해서 시작' }))
   const radios = await screen.findAllByRole('radio')
   expect(radios).toHaveLength(10)
-  expect(screen.queryByText('공고 0')).not.toBeInTheDocument()
+  expect(screen.queryByText('공고 10')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: '복사해서 시작' })).toBeDisabled()
   fireEvent.click(screen.getByRole('radio', { name: /공고 3/ }))
   fireEvent.click(screen.getByRole('button', { name: '복사해서 시작' }))

@@ -80,11 +80,13 @@ export default async function PostingDetailPage({ params, searchParams }: PagePr
       usesFormLink={embed.usesFormLink}
       tab={tab}
       applicantCount={applicantCount}
+      canDelete={resolved.role === 'OWNER' || resolved.role === 'ADMIN'}
     >
       {tab === 'applicants' && (
         <ApplicationsListSection
           spaceId={resolved.space.id}
           canExportExcel={resolved.role === 'OWNER' || resolved.role === 'ADMIN'}
+          canDelete={resolved.role === 'OWNER' || resolved.role === 'ADMIN'}
           raw={listParams}
           lockedPostingId={id}
           basePath={getRecruitingPostingPath(id)}

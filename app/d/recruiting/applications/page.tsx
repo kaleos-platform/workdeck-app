@@ -36,6 +36,7 @@ export default async function ApplicationsPage({ searchParams }: Props) {
       <ApplicationsListSection
         spaceId={resolved.space.id}
         canExportExcel={resolved.role === 'OWNER' || resolved.role === 'ADMIN'}
+        canDelete={resolved.role === 'OWNER' || resolved.role === 'ADMIN'}
         raw={raw}
       />
     </div>

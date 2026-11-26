@@ -53,7 +53,7 @@ export function NewPostingButton({
   const [recentError, setRecentError] = useState(false)
   const [sourceId, setSourceId] = useState<string | null>(null)
 
-  // 복사 모드에 처음 들어갈 때 최근 공고 10개(보관 제외)를 불러온다.
+  // 복사 모드에 처음 들어갈 때 최근 공고 10개를 불러온다.
   useEffect(() => {
     if (!open || mode !== 'copy' || recent !== null) return
     let live = true
@@ -61,7 +61,7 @@ export function NewPostingButton({
       .then(async (res) => {
         if (!res.ok) throw new Error()
         const { postings } = (await res.json()) as { postings: RecentPosting[] }
-        if (live) setRecent(postings.filter((p) => p.status !== 'ARCHIVED').slice(0, 10))
+        if (live) setRecent(postings.slice(0, 10))
       })
       .catch(() => live && setRecentError(true))
     return () => {

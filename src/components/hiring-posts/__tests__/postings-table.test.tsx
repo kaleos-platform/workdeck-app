@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { PostingsTable, type PostingRow } from '../postings-table'
 const push = jest.fn()
 const refresh = jest.fn()
@@ -197,4 +197,47 @@ it('새 공고 옆에 공고 템플릿 링크가 있다', () => {
     'href',
     '/d/recruiting/templates'
   )
+})
+
+describe('공고 삭제 메뉴', () => {
+  const row = (status: 'ACTIVE' | 'CLOSED'): PostingRow => ({
+    id: 'p1',
+    uuid: 'u-1',
+    title: '합성 공고',
+    status,
+    closingDate: null,
+    createdAt: '2026-11-01T00:00:00.000Z',
+    applicantCount: 3,
+  })
+  const base = { ...props, total: 1, page: 1, q: '', status: 'ALL' as const }
+
+  it('권한이 없으면 삭제 항목이 없다', async () => {
+    render(<PostingsTable {...base} postings={[row('CLOSED')]} />)
+    fireEvent.keyDown(screen.getByRole('button', { name: '행 메뉴' }), { key: 'Enter' })
+    await screen.findByRole('menuitem', { name: '수정' })
+    expect(screen.queryByRole('menuitem', { name: '삭제' })).not.toBeInTheDocument()
+  })
+
+  it('모집중 공고는 안내만 보여주고 마감 공고는 확인 후 삭제한다', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 }) as unknown as typeof fetch
+    const { unmount } = render(<PostingsTable {...base} postings={[row('ACTIVE')]} canDelete />)
+    fireEvent.keyDown(screen.getByRole('button', { name: '행 메뉴' }), { key: 'Enter' })
+    fireEvent.click(await screen.findByRole('menuitem', { name: '삭제' }))
+    expect(await screen.findByRole('dialog')).toHaveTextContent('모집중인 공고는 삭제할 수 없어요')
+    expect(global.fetch).not.toHaveBeenCalled()
+    unmount()
+
+    render(<PostingsTable {...base} postings={[row('CLOSED')]} canDelete />)
+    fireEvent.keyDown(screen.getByRole('button', { name: '행 메뉴' }), { key: 'Enter' })
+    fireEvent.click(await screen.findByRole('menuitem', { name: '삭제' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent('지원자 3명과 첨부 파일도 함께 삭제')
+    fireEvent.click(within(dialog).getByRole('button', { name: '삭제' }))
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledWith('/api/hiring-posts/postings/p1', {
+        method: 'DELETE',
+      })
+    )
+    await waitFor(() => expect(refresh).toHaveBeenCalled())
+  })
 })

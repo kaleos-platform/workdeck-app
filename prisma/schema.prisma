@@ -4145,7 +4145,7 @@ enum HiringPostingStatus {
   DRAFT // 작성 중 (임시저장)
   ACTIVE // 발행됨 — 공개 URL 라이브
   CLOSED // 마감
-  ARCHIVED // 보관 (목록 기본 제외)
+  ARCHIVED // 폐지 — 쓰지 않음, 2026-11-26 CLOSED로 변환
 }
 
 enum HiringJobType {
@@ -5236,4 +5236,16 @@ model PipelineOperation {
 
   @@index([spaceId, kind, startedAt])
   @@index([channelId, kind, startedAt])
+}
+
+// 공고·지원자 삭제 후 Storage 에서 지워야 할 파일 경로 원장(FK 없음 — Space 삭제 후에도 정리).
+model HiringFileDeletion {
+  id        String   @id @default(cuid())
+  spaceId   String
+  paths     Json
+  attempts  Int      @default(0)
+  lastError String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

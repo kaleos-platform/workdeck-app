@@ -1,16 +1,16 @@
 import { Badge } from '@/components/ui/badge'
 import { getPostingDisplayStatus } from '@/lib/hiring/posting-status'
 
+// 저장 상태 타입. Prisma enum에 폐지된 ARCHIVED 값이 남아 있어 타입에만 포함하며 화면에는 쓰지 않는다(마감으로 표시).
 export type PostingStatus = 'DRAFT' | 'ACTIVE' | 'CLOSED' | 'ARCHIVED'
 
-export const STATUS_LABELS: Record<PostingStatus, string> = {
+export const STATUS_LABELS: Record<Exclude<PostingStatus, 'ARCHIVED'>, string> = {
   DRAFT: '작성 중',
   ACTIVE: '모집중',
   CLOSED: '마감',
-  ARCHIVED: '보관',
 }
 
-// DRAFT=secondary, ACTIVE=emerald 쌍, CLOSED=neutral, ARCHIVED=ghost (DESIGN.md §3.2)
+// DRAFT=secondary, ACTIVE=emerald 쌍, CLOSED=neutral (DESIGN.md §3.2)
 // closingDate 를 주면 마감일이 지난 발행 공고를 「마감」으로 표시한다.
 export function PostingStatusBadge({
   status: stored,
@@ -20,7 +20,7 @@ export function PostingStatusBadge({
   closingDate?: Date | string | null
 }) {
   const display = getPostingDisplayStatus(stored, closingDate)
-  const status: PostingStatus = display === 'OPEN' ? 'ACTIVE' : display
+  const status = display === 'OPEN' ? 'ACTIVE' : display
   if (status === 'ACTIVE') {
     return (
       <Badge
@@ -40,9 +40,6 @@ export function PostingStatusBadge({
         {STATUS_LABELS.CLOSED}
       </Badge>
     )
-  }
-  if (status === 'ARCHIVED') {
-    return <Badge variant="ghost">{STATUS_LABELS.ARCHIVED}</Badge>
   }
   return (
     <Badge
