@@ -55,7 +55,7 @@ export function StoresManager({ initialStores }: { initialStores: StoreRow[] }) 
 
   async function handleSubmit() {
     if (!form.name.trim()) {
-      toast.error('매장명을 입력하세요')
+      toast.error('장소 이름을 입력하세요')
       return
     }
     setSaving(true)
@@ -76,7 +76,7 @@ export function StoresManager({ initialStores }: { initialStores: StoreRow[] }) 
       )
       if (!res.ok) throw new Error('저장에 실패했습니다')
       await refresh()
-      toast.success('매장을 저장했습니다')
+      toast.success('장소를 저장했습니다')
       setEditingId(null)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장에 실패했습니다')
@@ -100,12 +100,12 @@ export function StoresManager({ initialStores }: { initialStores: StoreRow[] }) 
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('이 매장을 삭제할까요?')) return
+    if (!confirm('이 장소를 삭제할까요?')) return
     try {
       const res = await fetch(`/api/hiring-posts/stores/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('삭제에 실패했습니다')
       await refresh()
-      toast.success('매장을 삭제했습니다')
+      toast.success('장소를 삭제했습니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제에 실패했습니다')
     }
@@ -116,7 +116,7 @@ export function StoresManager({ initialStores }: { initialStores: StoreRow[] }) 
       <div className="flex justify-end">
         {editingId === null && (
           <Button size="sm" onClick={openNew}>
-            <Plus /> 매장 추가
+            <Plus /> 장소 추가
           </Button>
         )}
       </div>
@@ -124,7 +124,7 @@ export function StoresManager({ initialStores }: { initialStores: StoreRow[] }) 
       {editingId !== null && (
         <div className="grid gap-3 rounded-lg border bg-muted/30 p-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label>매장명</Label>
+            <Label>장소 이름</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -171,7 +171,7 @@ export function StoresManager({ initialStores }: { initialStores: StoreRow[] }) 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>매장명</TableHead>
+              <TableHead>장소 이름</TableHead>
               <TableHead>주소</TableHead>
               <TableHead className="w-20">상태</TableHead>
               <TableHead className="w-28 text-right">관리</TableHead>
@@ -181,7 +181,7 @@ export function StoresManager({ initialStores }: { initialStores: StoreRow[] }) 
             {stores.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="h-24 text-center text-sm text-muted-foreground">
-                  등록된 매장이 없습니다.
+                  등록된 장소가 없습니다.
                 </TableCell>
               </TableRow>
             ) : (

@@ -561,6 +561,7 @@ model Space {
   hiringBlacklists       HiringBlacklist[]
   hiringMessageTemplates HiringMessageTemplate[]
   hiringMessageSeed      HiringMessageSeed?
+  hiringCompanyProfile   HiringCompanyProfile?
 
   // ─── 에이전트 승인 큐 (Agent) ───
   agentPendingActions AgentPendingAction[]
@@ -5248,4 +5249,19 @@ model HiringFileDeletion {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+}
+
+// 모집 관리 기업 정보 — 공간당 1개. 공개 공고 머리글·푸터에 표시(저장해야 반영).
+model HiringCompanyProfile {
+  spaceId      String   @id
+  companyName  String
+  intro        String?
+  homepageUrl  String?
+  blogUrl      String?
+  instagramUrl String?
+  youtubeUrl   String?
+  showIntro    Boolean  @default(true)
+  space        Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
 }

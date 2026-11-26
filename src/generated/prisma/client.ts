@@ -936,3 +936,8 @@ export type PipelineOperation = Prisma.PipelineOperationModel
  * 
  */
 export type HiringFileDeletion = Prisma.HiringFileDeletionModel
+/**
+ * Model HiringCompanyProfile
+ * 
+ */
+export type HiringCompanyProfile = Prisma.HiringCompanyProfileModel
