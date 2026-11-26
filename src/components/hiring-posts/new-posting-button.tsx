@@ -130,7 +130,7 @@ export function NewPostingButton({
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <form onSubmit={createPosting} className="space-y-4">
+        <form onSubmit={createPosting} className="min-w-0 space-y-4">
           <DialogHeader>
             <DialogTitle>{template ? '이 템플릿으로 새 공고' : '새 공고 만들기'}</DialogTitle>
             <DialogDescription>
@@ -212,7 +212,10 @@ export function NewPostingButton({
                           disabled={creating}
                           onChange={() => setSourceId(p.id)}
                         />
-                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                        <span
+                          className="min-w-0 flex-1 truncate text-sm font-medium"
+                          title={p.title}
+                        >
                           {p.title}
                         </span>
                         <PostingStatusBadge status={p.status} closingDate={p.closingDate} />
