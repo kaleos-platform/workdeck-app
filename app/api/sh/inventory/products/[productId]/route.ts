@@ -17,7 +17,7 @@ export async function GET(
     include: {
       options: {
         orderBy: { createdAt: 'asc' },
-        include: { stockLevels: { select: { quantity: true } } },
+        include: { stockLevels: { select: { quantity: true, locationId: true } } },
       },
     },
   })
@@ -29,6 +29,7 @@ export async function GET(
     name: o.name,
     sku: o.sku,
     totalStock: o.stockLevels.reduce((s, sl) => s + sl.quantity, 0),
+    stockByLocation: Object.fromEntries(o.stockLevels.map((sl) => [sl.locationId, sl.quantity])),
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
   }))
