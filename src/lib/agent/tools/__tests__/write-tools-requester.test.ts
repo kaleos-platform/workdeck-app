@@ -10,6 +10,8 @@ jest.mock('@/lib/prisma', () => ({
     invProduct: {
       findFirst: jest.fn().mockResolvedValue({ name: '머드팬티', internalName: null }),
     },
+    invStorageLocation: { findFirst: jest.fn().mockResolvedValue({ name: '본사 창고' }) },
+    invStockLevel: { findMany: jest.fn().mockResolvedValue([]) },
   },
 }))
 jest.mock('@/lib/agent/actions/create', () => ({
@@ -37,6 +39,11 @@ const ARGS: Record<string, Record<string, unknown>> = {
   finance_create_class_rule: { matchKey: 'k', categoryId: 'c1', matchType: 'EXACT' },
   sellerhub_create_reorder_plan: { productId: 'p1' },
   sellerhub_propose_keyword_update: { target: { listingId: 'l1' }, add: ['a'], remove: [] },
+  sellerhub_propose_stock_adjustment: {
+    locationId: 'loc1',
+    items: [{ optionId: 'o1', quantity: 5 }],
+    reason: '실사',
+  },
   ads_trigger_analysis: { from: '2026-10-01', to: '2026-10-02' },
   ads_approve_execution_task: { taskId: 'task1' },
 }
