@@ -200,7 +200,7 @@ const sellerhubProposeKeywordUpdateTool: ToolDefinition = {
 const sellerhubProposeStockAdjustmentTool: ToolDefinition = {
   name: 'sellerhub_propose_stock_adjustment',
   description:
-    '한 보관 위치의 옵션 재고를 실물 수량으로 맞추는 조정을 제안합니다. items 는 {optionId, quantity(실물 절대값, 0 이상)} 최대 50개, reason 은 필수(500자 이하), movementDate(YYYY-MM-DD)는 선택(기본 오늘). 쓰기 권한이 있어도 항상 사람이 웹에서 확인·승인해야 반영됩니다. 위치 id 와 위치별 현재 재고는 sellerhub_get_stock_status(productId 필터)의 matrix 행으로 확인하세요. 자동 연동 위치(로켓그로스·3PL 자동 대조)는 조정할 수 없고, 현재 재고와 같은 수량이나 승인 대기 중인 같은 옵션 제안이 있으면 거부됩니다. 제안 후 재고가 바뀌면 승인 시 실패하니 다시 제안하세요. 호출 전에 사용자에게 위치·옵션·수량을 확인받으세요.',
+    '한 보관 위치의 옵션 재고를 실물 수량으로 맞추는 조정을 제안합니다. items 는 {optionId, quantity(실물 절대값, 0 이상)} 최대 50개, reason 은 필수(500자 이하), movementDate(YYYY-MM-DD)는 선택(기본 오늘). 쓰기 권한이 있어도 항상 사람이 웹에서 확인·승인해야 반영됩니다. locationId 는 sellerhub_get_stock_status 응답의 locations[] 에서 사용자가 말한 위치 이름(name)으로 찾은 id 를 쓰세요. matrix 행의 byLocation 키는 재고가 있는 위치만 나오므로 위치 선택에 쓰지 마세요(현재 수량 확인용, 키가 없으면 0). 거부되면 오류에 조정 가능한 위치 이름·id 가 나옵니다. 자동 연동 위치(로켓그로스·3PL 자동 대조)는 조정할 수 없고, 현재 재고와 같은 수량이나 승인 대기 중인 같은 옵션 제안이 있으면 거부됩니다. 제안 후 재고가 바뀌면 승인 시 실패하니 다시 제안하세요. 호출 전에 사용자에게 위치·옵션·수량을 확인받으세요.',
   inputSchema: {
     locationId: z.string(),
     items: z.array(z.object({ optionId: z.string(), quantity: z.number() })).max(50),
