@@ -126,6 +126,27 @@ it('요약 칩 개수를 보이고 누르면 URL 을 바꾼다', () => {
   expect(mockPush).toHaveBeenLastCalledWith('/admin/errors?priority=P1')
 })
 
+it('사람이 할 일(확인 필요·승인 대기)은 건수가 있으면 칩·배지·주 버튼으로 강조한다', () => {
+  render(
+    <ErrorsTable
+      rows={[row({ id: 'c', title: '확인 오류', autofix: { kind: 'none' }, stage: 'confirm' })]}
+      {...props}
+      summary={{ ...props.summary, approval: 0 }}
+    />
+  )
+  expect(screen.getByRole('button', { name: '확인 필요 2' }).className).toMatch(/amber/)
+  expect(screen.getByRole('button', { name: '승인 대기 0' }).className).not.toMatch(/amber/)
+  expect(screen.getByRole('button', { name: '제외 제안 0' }).className).not.toMatch(/amber/)
+  expect(screen.getByText('확인 필요', { selector: '[data-slot=badge]' }).className).toMatch(
+    /amber/
+  )
+  // 주 행동은 채운 버튼, 제외는 테두리 버튼
+  expect(screen.getByRole('button', { name: '분석 요청' }).className).not.toMatch(
+    /(^| )border( |$)/
+  )
+  expect(screen.getByRole('button', { name: '제외' }).className).toMatch(/(^| )border( |$)/)
+})
+
 it('우선순위 배지와 근거 문장, 우선순위 정렬', () => {
   const p3 = row({
     id: 'p3',

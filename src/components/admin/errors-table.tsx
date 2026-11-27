@@ -176,6 +176,11 @@ function PriorityBadge({ triage }: { triage: Triage | null }) {
   )
 }
 
+// 사람이 처리할 단계(확인 필요·승인 대기) 강조 — DESIGN.md §2.2 주의 색
+const ATTENTION =
+  'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400'
+const ATTENTION_CHIP = `${ATTENTION} hover:bg-amber-100 hover:text-amber-800 dark:hover:bg-amber-900`
+
 // 러너가 멈춰 until 이 지난 running · analyzing 은 다시 조작할 수 있게 한다
 const isStale = (r: ErrorRow) =>
   (r.autofix.kind === 'running' || r.autofix.kind === 'analyzing') && isUntilPassed(r.autofix)
@@ -239,7 +244,7 @@ function ActionButtons({
         <Button
           key={a.action}
           size="sm"
-          variant={a.action === 'approve' ? 'default' : 'outline'}
+          variant={a.action === 'approve' || a.action === 'analyze' ? 'default' : 'outline'}
           disabled={busy}
           onClick={(e) => {
             e.stopPropagation()
@@ -345,7 +350,13 @@ export function ErrorsTable({
     }
   }
 
-  const chips: { label: string; n: number; active: boolean; onClick: () => void }[] = [
+  const chips: {
+    label: string
+    n: number
+    active: boolean
+    attention?: boolean
+    onClick: () => void
+  }[] = [
     {
       label: '전체',
       n: summary.total,
@@ -354,12 +365,14 @@ export function ErrorsTable({
     },
     {
       label: '승인 대기',
+      attention: true,
       n: summary.approval,
       active: stage === 'approval',
       onClick: () => go({ stage: 'approval', priority: null }),
     },
     {
       label: '확인 필요',
+      attention: true,
       n: summary.confirm,
       active: stage === 'confirm',
       onClick: () => go({ stage: 'confirm', priority: null }),
@@ -396,6 +409,8 @@ export function ErrorsTable({
             type="button"
             size="sm"
             variant={c.active ? 'default' : 'outline'}
+            // 사람이 처리할 건이 있으면 주의 색으로 띄운다(선택된 칩은 기본 강조 유지)
+            className={c.attention && c.n > 0 && !c.active ? ATTENTION_CHIP : undefined}
             aria-pressed={c.active}
             onClick={c.onClick}
           >
@@ -525,9 +540,7 @@ export function ErrorsTable({
                       <Badge
                         variant={r.stage === 'failed' ? 'destructive' : 'secondary'}
                         className={
-                          r.stage === 'approval'
-                            ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400'
-                            : undefined
+                          r.stage === 'approval' || r.stage === 'confirm' ? ATTENTION : undefined
                         }
                       >
                         {stale
