@@ -215,15 +215,44 @@ const stockAdjustParams = z.object({
 type StockAdjustParams = z.infer<typeof stockAdjustParams>
 type StockDb = Pick<typeof prisma, 'invStorageLocation' | 'invProductOption'>
 
+// 자동 연동 위치(로켓그로스 같은 외부 소스·주간 자동 대조 3PL)는 수동 조정 대상이 아니다.
+function isAdjustableLocation(l: {
+  externalSource: string | null
+  syncProvider: string | null
+  autoReconcileWeekly: boolean
+}) {
+  return !l.externalSource && !(l.syncProvider && l.autoReconcileWeekly)
+}
+
 // 위치·옵션 자격 확인 — validateCreate 와 execute(트랜잭션 안)가 같은 조건을 쓴다.
 async function loadStockAdjustTargets(db: StockDb, spaceId: string, params: StockAdjustParams) {
   const location = await db.invStorageLocation.findFirst({
     where: { id: params.locationId, spaceId },
   })
+  // 에이전트가 다른 위치 id 를 집는 일이 있어(재고 현황 byLocation 키) 거부할 때 이름과 고를 수 있는 위치를 함께 알린다.
+  const hint = async () => {
+    const all = await db.invStorageLocation.findMany({
+      where: { spaceId, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        externalSource: true,
+        syncProvider: true,
+        autoReconcileWeekly: true,
+      },
+      orderBy: { name: 'asc' },
+    })
+    const ok = all.filter((l) => isAdjustableLocation(l)).map((l) => `${l.name}(${l.id})`)
+    return ok.length ? ` 조정 가능한 위치: ${ok.join(', ')}` : ' 조정 가능한 위치가 없습니다.'
+  }
   if (!location || !location.isActive)
-    throw new ToolUserError('보관 장소를 찾을 수 없거나 비활성입니다')
-  if (location.externalSource || (location.syncProvider && location.autoReconcileWeekly))
-    throw new ToolUserError('자동 연동되는 위치는 재고를 조정할 수 없습니다')
+    throw new ToolUserError(
+      `보관 장소를 찾을 수 없거나 비활성입니다: ${params.locationId}.${await hint()}`
+    )
+  if (!isAdjustableLocation(location))
+    throw new ToolUserError(
+      `「${location.name}」(${location.id})은 자동 연동되는 위치라 재고를 조정할 수 없습니다.${await hint()}`
+    )
   const ids = params.items.map((i) => i.optionId)
   const options = await db.invProductOption.findMany({
     where: { id: { in: ids }, deletedAt: null, product: { spaceId, status: 'ACTIVE' } },
