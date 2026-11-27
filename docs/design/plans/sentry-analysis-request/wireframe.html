@@ -1,0 +1,70 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>Sentry 분석 요청 — 와이어프레임</title>
+<style>
+body{font-family:-apple-system,"Apple SD Gothic Neo",sans-serif;background:#f4f4f5;margin:0;padding:24px;color:#18181b;font-size:13px}
+h1{font-size:18px;margin:0 0 4px}.sub{color:#71717a;margin:0 0 18px}
+.row{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.frame{background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:14px}
+.frame h2{font-size:13px;margin:0 0 10px}.n{display:inline-block;background:#18181b;color:#fff;border-radius:99px;width:20px;height:20px;text-align:center;line-height:20px;font-size:11px;margin-right:6px}
+.muted{color:#71717a;font-size:12px}
+.chips{display:flex;gap:8px;margin:8px 0 10px}.chip{border:1px solid #d4d4d8;border-radius:99px;padding:3px 10px;font-size:12px}.chip.on{background:#18181b;color:#fff;border-color:#18181b}
+table{border-collapse:collapse;width:100%}th{font-size:11px;color:#71717a;text-align:left;padding:6px 8px;border-bottom:1px solid #e4e4e7;white-space:nowrap}td{padding:7px 8px;border-bottom:1px solid #f4f4f5;vertical-align:top}
+.r{text-align:right;font-variant-numeric:tabular-nums}
+.bd{display:inline-block;border-radius:99px;padding:1px 8px;font-size:11px;border:1px solid #e4e4e7;background:#f4f4f5;white-space:nowrap}
+.p1{background:#fef2f2;color:#b91c1c;border-color:#fecaca}.p2{background:#fffbeb;color:#b45309;border-color:#fde68a}
+.t{font-weight:600}.why{color:#52525b;font-size:12px;margin-top:2px}
+.b{display:inline-block;border:1px solid #d4d4d8;border-radius:6px;padding:3px 9px;font-size:12px;margin-right:4px;white-space:nowrap}.b.p{background:#18181b;color:#fff;border-color:#18181b}
+.sheet{width:360px;border-left:1px solid #e4e4e7;padding-left:14px}
+.sec{border-top:1px solid #f4f4f5;padding:10px 0}.sec h3{font-size:12px;margin:0 0 6px;color:#52525b}
+.kv{display:grid;grid-template-columns:70px 1fr;gap:4px 8px;font-size:12px}
+.slack{width:360px;background:#fff;border:1px solid #e4e4e7;border-radius:8px;padding:10px;font-size:12px;line-height:1.6}
+.notes{max-width:1180px;margin-top:20px;background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:14px 18px;line-height:1.7}
+.flow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;margin-bottom:16px}.fb{background:#fff;border:1px solid #d4d4d8;border-radius:6px;padding:5px 9px}
+</style>
+<style>.slack{line-height:2.4}.slack .b{padding:1px 7px}.new{outline:2px dashed #71717a;outline-offset:2px}.lk{text-decoration:underline}</style>
+<h1>Sentry「확인 필요」→ 분석 요청 → GitHub 이슈 — 와이어프레임</h1>
+<p class="sub">admin/errors (데스크톱 운영 화면) + Slack 요약. 점선 = 새로 생기는 곳. 회색조, 위험·주의만 색.</p>
+
+<div class="flow"><b>흐름</b>
+<span class="fb">확인 필요</span>→<span class="fb">① [분석 요청] (어드민·Slack)</span>→<span class="fb">② 분석 요청됨</span>→<span class="fb">러너 10분 안 수거 · 격리 컨테이너 코드 읽기만</span>→<span class="fb">② 분석 중</span>→<span class="fb">GitHub 이슈 게시(private, 라벨 sentry-analysis)</span>→<span class="fb">③ 분석 완료 · 판정 · 이슈 링크</span>→<span class="fb">④ 판정별 다음 버튼</span>
+<span class="muted">· 실패 시 "분석 실패" + [다시 요청]</span></div>
+
+<div class="row">
+<div class="frame" style="width:800px"><h2><span class="n">1</span>목록 — 확인 필요 행에 [분석 요청]</h2>
+ <div class="chips"><span class="chip">전체 17</span><span class="chip">승인 대기 0</span><span class="chip on">확인 필요 9</span><span class="chip">제외 제안 4</span><span class="chip">P1 0</span></div>
+ <table><tr><th>우선순위</th><th>오류</th><th>서비스</th><th class="r">발생</th><th class="r">사용자</th><th>마지막</th><th>처리 단계</th><th>동작</th></tr>
+ <tr><td><span class="bd p2">P2 중간</span></td><td><div class="t">[product-items] 적재 실패 P2002</div><div class="why">데이터 누락 · 3일간 48회 · 사용자 2명</div></td><td>워커</td><td class="r">48</td><td class="r">2</td><td>2시간 전</td><td><span class="bd">확인 필요</span></td><td><span class="b p new">분석 요청</span><span class="b">제외</span></td></tr>
+ <tr><td><span class="bd p2">P2 중간</span></td><td><div class="t">TypeError: Cannot read 'items'</div><div class="why">기능 저하 · 5일간 7회 · 사용자 3명</div></td><td>웹</td><td class="r">7</td><td class="r">3</td><td>어제</td><td><span class="bd new">② 분석 요청됨</span></td><td><span class="b">제외</span></td></tr>
+ <tr><td><span class="bd">P3 낮음</span></td><td><div class="t">[heartbeat] HTTP 500</div><div class="why">외부 연동 · 2일간 12회</div></td><td>워커</td><td class="r">12</td><td class="r">0</td><td>30분 전</td><td><span class="bd new">② 분석 중</span></td><td></td></tr>
+ <tr><td><span class="bd p2">P2 중간</span></td><td><div class="t">[coupang-ads] 리포트 파싱 실패</div><div class="why">데이터 누락 · 4일간 21회</div></td><td>워커</td><td class="r">21</td><td class="r">0</td><td>1시간 전</td><td><span class="bd new lk">③ 고칠 것 · 이슈 #1651 ↗</span></td><td><span class="b new">수정 요청</span><span class="b">제외</span></td></tr>
+ <tr><td><span class="bd">P3 낮음</span></td><td><div class="t">AuthApiError: refresh token</div><div class="why">기능 저하 · 6일간 9회 · 사용자 4명</div></td><td>웹</td><td class="r">9</td><td class="r">4</td><td>어제</td><td><span class="bd new lk">③ 지켜볼 것 · 이슈 #1652 ↗</span></td><td><span class="b">제외</span></td></tr>
+ <tr><td><span class="bd">P3 낮음</span></td><td><div class="t">Bad uncompressed size</div><div class="why">노이즈 · 3일간 2회</div></td><td>웹</td><td class="r">2</td><td class="r">1</td><td>3일 전</td><td><span class="bd new lk">③ 무시 · 이슈 #1653 ↗</span></td><td><span class="b new">제외 확정</span></td></tr>
+ <tr><td><span class="bd p2">P2 중간</span></td><td><div class="t">[finance] 업로드 시간 초과</div><div class="why">기능 저하 · 1일간 3회</div></td><td>웹</td><td class="r">3</td><td class="r">1</td><td>5시간 전</td><td><span class="bd" style="background:#fef2f2;color:#b91c1c;border-color:#fecaca">분석 실패</span></td><td><span class="b new">다시 요청</span><span class="b">제외</span></td></tr>
+ </table>
+ <p class="muted">수정 요청은 행에서 빼고 상세 패널에만 둔다(확인 필요 단계). ③ 분석 완료 뒤에는 판정에 맞는 버튼 하나 + 제외.</p>
+</div>
+
+<div class="frame"><h2><span class="n">5</span>상세 패널 — Sheet에 「분석」 섹션</h2>
+ <div class="sheet" style="border:none;padding:0">
+  <div class="t" style="font-size:14px">[coupang-ads] 리포트 파싱 실패</div><div class="muted">WORKDECK-APP-2C · scripts/coupang-ads · Sentry ↗</div>
+  <div class="sec"><h3>AI 판단</h3><div class="kv"><span class="muted">우선순위</span><span><span class="bd p2">P2 중간</span></span><span class="muted">유형</span><span>데이터 누락</span><span class="muted">제안</span><span>확인 필요</span></div></div>
+  <div class="sec new"><h3>분석 · 1시간 전</h3><div class="kv"><span class="muted">판정</span><span><span class="bd">고칠 것</span></span><span class="muted">확신도</span><span>중간</span><span class="muted">자동 수정</span><span>가능 (worker/ 아님)</span><span class="muted">결과</span><span class="lk">GitHub 이슈 #1651 ↗</span></div>
+   <p class="muted">원인·영향·고칠 방향 글은 이슈에서 읽는다(어드민·Sentry·Slack엔 고정 값만)</p></div>
+  <div class="sec"><span class="b p">수정 요청</span><span class="b">제외</span></div>
+ </div></div>
+
+<div class="frame"><h2><span class="n">6</span>Slack 요약 — 확인 필요 줄에 버튼</h2>
+ <div class="slack"><b>Sentry 오류 판단 — P1 0 · P2 6 · P3 9 · 판단 전 2</b><br>
+ <b>확인 필요</b> APP-1J [product-items] 적재 실패 P2002 — 데이터 누락 · 3일간 48회 <span class="b new">분석 요청</span><br>
+ <b>확인 필요</b> APP-1M TypeError: Cannot read 'items' — 기능 저하 · 5일간 7회 <span class="b new">분석 요청</span><br>
+ <b class="new">분석 완료</b> APP-2C [coupang-ads] 리포트 파싱 실패 — 고칠 것 · <span class="lk">이슈 #1651</span><br>
+ <span class="muted">제외 제안 4 · 수정 예정 0 · 어드민에서 보기</span></div></div>
+</div>
+
+<div class="notes"><b>번호</b><br>
+① 확인 필요 행 동작: [분석 요청] [제외]. 수정 요청은 상세 패널로<br>
+② 진행 상태 배지: 분석 요청됨 → 분석 중(러너가 집으면) → 완료 또는 분석 실패 [다시 요청]<br>
+③ 완료 배지 = 판정(고칠 것/지켜볼 것/무시) + GitHub 이슈 링크. 판정은 러너가 고정 코드로 메모에 남김<br>
+④ 판정별 다음 버튼: 고칠 것 → [수정 요청], 지켜볼 것 → 그대로 두기, 무시 → [제외 확정]<br>
+⑤ 상세 패널 「분석」 섹션: 판정·확신도·자동 수정 가능 여부·이슈 링크. 분석 글 본문은 이슈에만<br>
+⑥ Slack 요약: 확인 필요 줄마다 [분석 요청] 버튼(운영자만, 기존 PR 올리기 버튼과 같은 검사), 새로 끝난 분석은 「분석 완료」 줄로<br>
+<b>고를 것</b> A. 판정을 메모에 고정 코드로 남겨 배지·버튼에 쓰기(권장) / 이슈 링크만 · B. 분석 실행 시점: 10분 주기 수거(권장, PR 올리기와 같은 poller) / 다음 날 04:30 · C. Slack 버튼: 넣기(권장) / 어드민만</div>

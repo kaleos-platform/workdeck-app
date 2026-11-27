@@ -2966,3 +2966,268 @@ test('통합: 서명 키가 없거나 32자 미만이면 ready 노트만 생략�
   assert.ok(h.logs.some((l) => l === '서명 키 없음 — ready 메모 생략'))
   cleanup(h)
 })
+
+// ---------- 분석 요청(analyze) ----------
+const V_SECRET = 's'.repeat(32)
+const V_NONCE = '20261127-010203-0a1b2c3d'
+
+test('analyze: 앱과 공유하는 HMAC 시험 벡터(리터럴)', () => {
+  assert.equal(lib.analyzeRequestSig('123', V_NONCE, V_SECRET), '155d3594dcb210d2680723039428b67f')
+  assert.equal(
+    lib.analyzedSig('123', V_NONCE, 'fix', 'mid', 'yes', 42, V_SECRET),
+    'd4bf32eff2a54bcd4dea39f26de7ffbc'
+  )
+  assert.equal(lib.sha256('fix|mid|yes|42').slice(0, 16), 'b0c208ff7cedfa83')
+})
+
+test('analyze: 공통 계약 정규식 — 형식 고정', () => {
+  assert.ok(lib.KNOWN.test('autofix:analyze-request id=x'))
+  assert.ok(lib.KNOWN.test('autofix:analyzing'))
+  assert.ok(lib.KNOWN.test('autofix:analyzed id=x'))
+  assert.ok(lib.KNOWN.test('autofix:analyze-failed code'))
+  assert.ok(!lib.KNOWN.test('autofix:analyzer'))
+  const sig = '155d3594dcb210d2680723039428b67f'
+  assert.ok(lib.ANALYZE_REQUEST.test(`autofix:analyze-request id=${V_NONCE} by=admin sig=${sig}`))
+  assert.ok(lib.ANALYZE_REQUEST.test(`autofix:analyze-request id=${V_NONCE} by=slack sig=${sig}`))
+  assert.ok(!lib.ANALYZE_REQUEST.test(`autofix:analyze-request id=${V_NONCE} by=bot sig=${sig}`))
+  assert.ok(
+    !lib.ANALYZE_REQUEST.test(`autofix:analyze-request id=${V_NONCE} by=admin sig=${sig} x`)
+  )
+  assert.ok(lib.ANALYZING.test(`autofix:analyzing id=${V_NONCE} until=2026-11-27T01:00:00.000Z`))
+  const ok = `autofix:analyzed id=${V_NONCE} verdict=fix conf=mid auto=yes issue=42 sig=d4bf32eff2a54bcd4dea39f26de7ffbc`
+  assert.ok(lib.ANALYZED.test(ok))
+  assert.ok(!lib.ANALYZED.test(ok.replace('issue=42', 'issue=12345678')))
+  assert.ok(!lib.ANALYZED.test(ok.replace('verdict=fix', 'verdict=deploy')))
+})
+
+test('analyze: parseNotes 는 새 kind 의 id·필드를 유지하고 임의 키는 무시', () => {
+  const n = lib.parseNotes([
+    note(`autofix:analyze-request id=${V_NONCE} by=admin sig=${'a'.repeat(32)}`, 5),
+    note(`autofix:analyzing id=${V_NONCE} until=2026-11-27T01:00:00Z at=evil kind=x`, 4),
+    note(
+      `autofix:analyzed id=${V_NONCE} verdict=watch conf=low auto=no issue=7 sig=${'b'.repeat(32)}`,
+      3
+    ),
+    note('autofix:analyze-failed gh-list-failed', 2),
+  ])
+  assert.deepEqual(
+    n.map((x) => x.kind),
+    ['analyze-request', 'analyzing', 'analyzed', 'analyze-failed']
+  )
+  assert.equal(n[0].id, V_NONCE)
+  assert.equal(n[0].by, 'admin')
+  assert.equal(n[1].until, '2026-11-27T01:00:00Z')
+  assert.notEqual(n[1].at, 'evil')
+  assert.equal(n[1].kind, 'analyzing')
+  assert.equal(n[2].verdict, 'watch')
+  assert.equal(n[2].issue, '7')
+  assert.equal(n[3].reason, 'gh-list-failed')
+  // 기존 analysis(예약어)는 그대로 — id 등 새 필드를 만들지 않는다
+  assert.deepEqual(Object.keys(lib.parseNotes([note('autofix:analysis id=z', 1)])[0]), [
+    'kind',
+    'at',
+  ])
+})
+
+test('analyze: judgeIssue — 최신이 새 kind 면 수정 대상 아님(옛 request·analysis 이력과 섞여도)', () => {
+  const j = (arr) => lib.judgeIssue(lib.parseNotes(arr), NOW)
+  const req = `autofix:analyze-request id=${V_NONCE} by=admin sig=${'a'.repeat(32)}`
+  const done = `autofix:analyzed id=${V_NONCE} verdict=fix conf=mid auto=yes issue=1 sig=${'b'.repeat(32)}`
+  for (const text of [
+    req,
+    `autofix:analyzing id=${V_NONCE} until=2099-01-01T00:00:00Z`,
+    done,
+    'autofix:analyze-failed x',
+  ]) {
+    assert.equal(j([note(text, 5)]).eligible, false, text)
+    assert.equal(
+      j([note('autofix:request', 30), note('autofix:analysis', 20), note(text, 5)]).eligible,
+      false
+    )
+    assert.equal(j([note('autofix:failed x', 30), note(text, 5)]).eligible, false)
+  }
+  assert.equal(j([note(req, 5)]).why, 'analyze-request')
+  // 분석 뒤 운영자가 수정 요청을 하면 다시 대상(우선)
+  assert.deepEqual(j([note(req, 10), note(done, 8), note('autofix:request', 5)]), {
+    eligible: true,
+    priority: 0,
+  })
+  // 새 kind 노트가 뒤에 오면 앞선 request 는 가려진다
+  assert.equal(j([note('autofix:request', 10), note(req, 5)]).eligible, false)
+})
+
+test('analyze: parseAnalyzeRequest 서명 검증 + analyzeFresh 는 nonce 발급 시각 기준', () => {
+  const text = `autofix:analyze-request id=${V_NONCE} by=slack sig=155d3594dcb210d2680723039428b67f`
+  assert.deepEqual(lib.parseAnalyzeRequest(text, '123', V_SECRET), { nonce: V_NONCE, by: 'slack' })
+  assert.equal(lib.parseAnalyzeRequest(text, '124', V_SECRET), null)
+  assert.equal(lib.parseAnalyzeRequest(text, '123', 'x'.repeat(32)), null)
+  assert.equal(lib.parseAnalyzeRequest(text.replace('by=slack', 'by=bot'), '123', V_SECRET), null)
+  assert.equal(lib.parseAnalyzeRequest(`${text} extra`, '123', V_SECRET), null)
+  const t = Date.UTC(2026, 10, 27, 1, 2, 3)
+  assert.equal(lib.nonceTime(V_NONCE), t)
+  assert.ok(Number.isNaN(lib.nonceTime('bad')))
+  assert.equal(lib.analyzeFresh(V_NONCE, t + 24 * 3_600_000 - 1), true)
+  assert.equal(lib.analyzeFresh(V_NONCE, t + 24 * 3_600_000), false)
+  assert.equal(lib.analyzeFresh(V_NONCE, t - 6 * 60_000), false) // 먼 미래 발급
+  assert.equal(lib.analyzeFresh(V_NONCE, t - 60_000), true)
+})
+
+test('analyze: parseAnalyzeOutput 엄격 검사', () => {
+  const ok = '{"verdict":"watch","conf":"low","auto":"no"}'
+  assert.deepEqual(lib.parseAnalyzeOutput(ok), { verdict: 'watch', conf: 'low', auto: 'no' })
+  assert.deepEqual(lib.parseAnalyzeOutput(`${ok}\n`), { verdict: 'watch', conf: 'low', auto: 'no' })
+  for (const bad of [
+    '',
+    'null',
+    '[]',
+    '```json\n' + ok + '\n```',
+    '{"verdict":"watch","conf":"low"}',
+    '{"verdict":"watch","conf":"low","auto":"no","x":1}',
+    '{"verdict":"stop","conf":"low","auto":"no"}',
+    '{"verdict":"watch","conf":"HIGH","auto":"no"}',
+    '{"verdict":"watch","conf":"low","auto":true}',
+    '{"verdict":["watch"],"conf":"low","auto":"no"}',
+  ])
+    assert.equal(lib.parseAnalyzeOutput(bad), null, bad)
+})
+
+test('analyze: 노트 빌더는 고정 형식만 만든다', () => {
+  assert.equal(
+    lib.analyzingNote({ nonce: V_NONCE, until: '2026-11-27T01:40:00.000Z' }),
+    `autofix:analyzing id=${V_NONCE} until=2026-11-27T01:40:00.000Z`
+  )
+  assert.throws(
+    () => lib.analyzingNote({ nonce: 'x', until: '2026-11-27T01:40:00Z' }),
+    /bad-analyzing/
+  )
+  assert.throws(() => lib.analyzingNote({ nonce: V_NONCE, until: 'not a date' }), /bad-analyzing/)
+  const sig = lib.analyzedSig('123', V_NONCE, 'fix', 'mid', 'yes', 42, V_SECRET)
+  const text = lib.analyzedNote({
+    nonce: V_NONCE,
+    verdict: 'fix',
+    conf: 'mid',
+    auto: 'yes',
+    issue: 42,
+    sig,
+  })
+  assert.equal(
+    text,
+    `autofix:analyzed id=${V_NONCE} verdict=fix conf=mid auto=yes issue=42 sig=d4bf32eff2a54bcd4dea39f26de7ffbc`
+  )
+  assert.throws(
+    () =>
+      lib.analyzedNote({
+        nonce: V_NONCE,
+        verdict: 'fix\nx',
+        conf: 'mid',
+        auto: 'yes',
+        issue: 42,
+        sig,
+      }),
+    /bad-analyzed/
+  )
+  assert.throws(
+    () =>
+      lib.analyzedNote({
+        nonce: V_NONCE,
+        verdict: 'fix',
+        conf: 'mid',
+        auto: 'yes',
+        issue: 'https://x',
+        sig,
+      }),
+    /bad-analyzed/
+  )
+  assert.equal(lib.analyzeFailedNote('gh-list-failed'), 'autofix:analyze-failed gh-list-failed')
+  for (const bad of ['', 'A', 'a b', 'a\nb', 'x'.repeat(41), 'ko-한글', 5])
+    assert.throws(() => lib.analyzeFailedNote(bad), /bad-analyze-failed/)
+  assert.equal(lib.analyzeFailCode('token-leak:analysis.md'), 'token-leak-analysis-md')
+  assert.equal(lib.analyzeFailCode('???'), 'unknown')
+})
+
+test('analyze: buildAnalysisIssueBody — 첫 줄 고정·섹션·펜스·6000자 상한', () => {
+  const body = lib.buildAnalysisIssueBody({
+    nonce: V_NONCE,
+    shortId: 'WORKDECK-APP-1A',
+    verdict: 'ignore',
+    conf: 'high',
+    auto: 'no',
+    analysis: '## 무엇\n본문 ``` 펜스 포함',
+  })
+  const lines = body.split('\n')
+  assert.equal(lines[0], `요청 ID: ${V_NONCE}`)
+  assert.ok(body.includes('- 판정: 무시') && body.includes('- 러너 자동 수정: 불가'))
+  assert.ok(body.includes('````\n## 무엇')) // 내용의 백틱보다 긴 펜스
+  const big = lib.buildAnalysisIssueBody({
+    nonce: V_NONCE,
+    shortId: 'A-1',
+    verdict: 'fix',
+    conf: 'mid',
+    auto: 'yes',
+    analysis: 'x'.repeat(50000),
+  })
+  assert.ok(big.length <= 6000)
+})
+
+test('analyze: analysisPiiHits — 개인정보는 잡고 줄 번호·ISO 시각·Sentry id 는 통과', () => {
+  const hit = (s) => lib.analysisPiiHits(s)
+  assert.deepEqual(hit('a@b.co'), ['email'])
+  assert.deepEqual(hit('연락 010-1234-5678'), ['phone'])
+  assert.deepEqual(hit('+82 10 1234 5678'), ['phone'])
+  assert.deepEqual(hit('Bearer abc.def'), ['bearer'])
+  assert.deepEqual(hit('eyJhbGciOi.eyJzdWIiOiIx.abc_def'), ['jwt'])
+  assert.deepEqual(hit('1234-5678-9012-3456'), ['card'])
+  assert.deepEqual(
+    hit('주민 900101-1234567'),
+    ['rrn', 'long-digits'].filter((x) => hit('주민 900101-1234567').includes(x))
+  )
+  assert.ok(hit('서울시 강남구 테헤란로 123').includes('address'))
+  assert.ok(hit('sk_live_abcdef').includes('token-prefix'))
+  assert.ok(hit('사업자 123-45-67890').includes('biz-reg'))
+  assert.deepEqual(hit('계좌 123456789012'), ['long-digits'])
+  for (const ok of [
+    'app/api/x/route.ts:84 와 product-service.ts:210-245, 줄 1234',
+    '발생 2026-11-25T09:12:00.123Z 부터 2026-11-27T01:02:03+09:00 까지',
+    'Sentry 이슈 6012345678, WORKDECK-APP-1A, 요청 20261127-010203-0a1b2c3d',
+    'sha b0c208ff7cedfa83 / P2002 / 처리 3건, 이동 2회, 으로 3개 중 2번째',
+    '재시도 10 회, 12345 건 중 1234 건',
+  ])
+    assert.deepEqual(hit(ok), [], ok)
+})
+
+test('analyze: pickAnalysis 선정 규칙', () => {
+  const NOW_A = Date.UTC(2026, 10, 27, 2, 0, 0)
+  const nonce = '20261127-010000-0a1b2c3d'
+  const reqLine = (n, issueId = '123', s = V_SECRET) =>
+    `autofix:analyze-request id=${n} by=admin sig=${lib.analyzeRequestSig(issueId, n, s)}`
+  const at = (min) => new Date(NOW_A - min * 60_000).toISOString()
+  const pick = (comments, stateOf = () => null) =>
+    lib.pickAnalysis({ comments, issueId: '123', secret: V_SECRET, now: NOW_A, stateOf })
+  const c = (text, min) => ({ text, dateCreated: at(min) })
+  assert.deepEqual(pick([c(reqLine(nonce), 30)]), {
+    mode: 'request',
+    nonce,
+    requestAt: at(30),
+  })
+  assert.equal(pick([c(reqLine(nonce, '123', 'x'.repeat(32)), 30)]), null)
+  assert.equal(
+    pick([c(reqLine(nonce), 30)], () => ({ stage: 'done' })),
+    null
+  )
+  assert.equal(
+    pick([c(reqLine(nonce), 30)], () => ({ stage: 'failed' })),
+    null
+  )
+  assert.ok(pick([c(reqLine(nonce), 30)], () => ({ stage: 'issue-created', attempts: 1 })))
+  // 위조(서명 틀림) 요청이 최신이어도 앞선 유효 요청을 가리지 못한다
+  const forged = `autofix:analyze-request id=20261127-015900-ffffffff by=admin sig=${'0'.repeat(32)}`
+  assert.equal(pick([c(reqLine(nonce), 30), c(forged, 5)])?.nonce, nonce)
+  // 만료 analyzing: 같은 nonce 의 유효 요청이 앞에 있어야 한다
+  const running = (n, untilMin) => `autofix:analyzing id=${n} until=${at(untilMin)}`
+  assert.equal(pick([c(reqLine(nonce), 30), c(running(nonce, 10), 20)])?.mode, 'retry')
+  assert.equal(pick([c(reqLine(nonce), 30), c(running(nonce, -10), 20)]), null)
+  assert.equal(pick([c(reqLine(nonce), 30), c(running('20261127-011111-aaaaaaaa', 10), 20)]), null)
+  assert.equal(pick([c(running(nonce, 10), 20)]), null)
+  // 뒤에 skip·analyzed 가 있으면 선정하지 않는다
+  assert.equal(pick([c(reqLine(nonce), 30), c('autofix:skip', 10)]), null)
+})

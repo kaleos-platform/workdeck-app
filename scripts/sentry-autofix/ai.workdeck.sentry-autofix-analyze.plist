@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>ai.workdeck.sentry-autofix-analyze</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>/Users/kaleos/projects/kaleos/workdeck-autofix/scripts/sentry-autofix/analyze.mjs</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/kaleos/projects/kaleos/workdeck-autofix</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/kaleos/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+  <!-- 10분마다. 04:30 run·publish 와 같은 run lock 을 쓰고, 03:45~06:30 KST 에는 분석을 시작하지 않는다 -->
+  <key>StartInterval</key>
+  <integer>600</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/kaleos/Library/Logs/workdeck-autofix/analyze.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/kaleos/Library/Logs/workdeck-autofix/analyze.err.log</string>
+</dict>
+</plist>

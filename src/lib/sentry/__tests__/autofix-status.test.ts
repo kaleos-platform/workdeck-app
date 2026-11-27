@@ -157,3 +157,107 @@ test('triageReason 은 코드와 수치로만 만든다', () => {
     '데이터 누락 · 1일간 2회'
   )
 })
+
+describe('분석 요청 노트', () => {
+  const N = '20261127-010203-0a1b2c3d'
+  const REQ = `autofix:analyze-request id=${N} by=admin sig=${'a'.repeat(32)}`
+  const DONE = `autofix:analyzed id=${N} verdict=fix conf=mid auto=yes issue=42 sig=${'b'.repeat(32)}`
+  const ING = `autofix:analyzing id=${N} until=2026-11-27T02:00:00Z`
+
+  test('요청·분석 중·완료·실패 파싱과 stage', () => {
+    expect(parseAutofixState([c(REQ, '2026-11-27T01:00:00Z')])).toMatchObject({
+      kind: 'analyze-request',
+      id: N,
+      by: 'admin',
+    })
+    expect(
+      parseAutofixState([c(REQ, '2026-11-27T01:00:00Z'), c(ING, '2026-11-27T01:10:00Z')])
+    ).toMatchObject({
+      kind: 'analyzing',
+      until: '2026-11-27T02:00:00Z',
+    })
+    const done = parseAutofixState([
+      c(REQ, '2026-11-27T01:00:00Z'),
+      c(DONE, '2026-11-27T01:30:00Z'),
+    ])
+    expect(done).toMatchObject({
+      kind: 'analyzed',
+      verdict: 'fix',
+      conf: 'mid',
+      auto: 'yes',
+      issueNumber: 42,
+    })
+    expect(deriveStage(done, null)).toBe('analyzed')
+    expect(deriveStage({ kind: 'analyze-request' }, null)).toBe('analyze-requested')
+    expect(deriveStage({ kind: 'analyzing' }, null)).toBe('analyzing')
+    const failed = parseAutofixState([c('autofix:analyze-failed gate-pii', '2026-11-27T01:00:00Z')])
+    expect(failed).toMatchObject({ kind: 'analyze-failed', reason: 'gate-pii' })
+    expect(deriveStage(failed, null)).toBe('analyze-failed')
+  })
+
+  test('analyzed 는 직전 요청의 nonce 와 같을 때만 인정, 아니면 무시', () => {
+    const OLD = '20261126-010203-ffffffff'
+    const mismatch = parseAutofixState([
+      c(REQ, '2026-11-27T01:00:00Z'),
+      c(DONE.replace(N, OLD), '2026-11-27T01:30:00Z'),
+    ])
+    expect(mismatch.kind).toBe('analyze-request')
+    expect(parseAutofixState([c(DONE, '2026-11-27T01:30:00Z')]).kind).toBe('none')
+    // 새 요청이 analyzed 이후에 오면 최신은 새 요청
+    expect(
+      parseAutofixState([
+        c(REQ, '2026-11-27T01:00:00Z'),
+        c(DONE, '2026-11-27T01:30:00Z'),
+        c(REQ.replace(N, OLD), '2026-11-27T02:00:00Z'),
+      ]).kind
+    ).toBe('analyze-request')
+  })
+
+  test('형식이 틀린 메모는 없는 것으로 본다 (issue 비숫자·잘못된 nonce)', () => {
+    const bad = [
+      DONE.replace('issue=42', 'issue=https://evil.example'),
+      DONE.replace('issue=42', 'issue=12345678'),
+      DONE.replace('verdict=fix', 'verdict=boom'),
+      REQ.replace('by=admin', 'by=eve'),
+      REQ.replace(N, 'abc'),
+      'autofix:analyze-failed Bad Code',
+      'autofix:analyzing id=x until=y',
+    ]
+    for (const t of bad) {
+      expect(
+        parseAutofixState([c(REQ, '2026-11-27T01:00:00Z'), c(t, '2026-11-27T02:00:00Z')]).kind
+      ).toBe('analyze-request')
+    }
+  })
+
+  test('shouldWriteNote(analyze-request): 요청됨·분석 중이면 생략, 만료되면 허용', () => {
+    const now = Date.parse('2026-11-27T03:00:00Z')
+    expect(shouldWriteNote({ kind: 'none' }, 'analyze-request', now)).toBe(true)
+    expect(shouldWriteNote({ kind: 'analyze-request' }, 'analyze-request', now)).toBe(false)
+    expect(
+      shouldWriteNote({ kind: 'analyzing', until: '2026-11-27T04:00:00Z' }, 'analyze-request', now)
+    ).toBe(false)
+    expect(
+      shouldWriteNote({ kind: 'analyzing', until: '2026-11-27T02:00:00Z' }, 'analyze-request', now)
+    ).toBe(true)
+    expect(shouldWriteNote({ kind: 'analyze-failed' }, 'analyze-request', now)).toBe(true)
+  })
+
+  test('기존 analysis 는 그대로 분석만', () => {
+    expect(
+      deriveStage(parseAutofixState([c('autofix:analysis', '2026-11-27T01:00:00Z')]), null)
+    ).toBe('analysis')
+  })
+})
+
+test('분석 요청은 수정안 승인 흐름(ready·approve·진행 중 running)을 덮지 않는다', () => {
+  const now = Date.parse('2026-11-27T00:00:00Z')
+  expect(shouldWriteNote({ kind: 'ready' }, 'analyze-request', now)).toBe(false)
+  expect(shouldWriteNote({ kind: 'approve' }, 'analyze-request', now)).toBe(false)
+  expect(
+    shouldWriteNote({ kind: 'running', until: '2026-11-27T01:00:00Z' }, 'analyze-request', now)
+  ).toBe(false)
+  expect(
+    shouldWriteNote({ kind: 'running', until: '2026-11-26T23:00:00Z' }, 'analyze-request', now)
+  ).toBe(true)
+})

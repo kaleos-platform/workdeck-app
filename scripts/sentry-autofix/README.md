@@ -76,10 +76,34 @@ node scripts/sentry-autofix/publish.mjs   # 첫 PR 은 수동 1회로 확인
 - **권고**: `develop` 브랜치 보호(직접 push 금지)를 켠다. 현재는 보호가 없어 호스트 인증으로 develop 직접 push 가 기술적으로 가능하다(코드는 `autofix/` 접두만 허용).
 - 중지: `launchctl unload ~/Library/LaunchAgents/ai.workdeck.sentry-autofix-publish.plist`
 
+## analyze (분석 요청 → 비공개 이슈)
+
+`analyze.mjs` 는 10분마다(launchd `ai.workdeck.sentry-autofix-analyze.plist`) 운영자의 분석 요청을 처리하는 호스트 poller 다. 코드는 수정하지 않고 원인·영향·판정만 분석해 **비공개 저장소 `kaleos-platform/kaleos-ax-project`** 이슈(라벨 `sentry-analysis`)로 올린다. 라벨은 에디 확인 후 저장소에 한 번 만들어 둔다(러너는 만들지 않는다).
+
+- **Sentry 노트**(고정 코드만, AI 문장 없음): 요청 `autofix:analyze-request id=<nonce> by=admin|slack sig=` (앱이 씀) → `autofix:analyzing id= until=` → `autofix:analyzed id= verdict= conf= auto= issue=<n> sig=` / `autofix:analyze-failed <code>`. 서명은 `noteSig` 재사용(`lib.analyzeRequestSig`·`lib.analyzedSig`). 형식·시험 벡터는 계획 문서 "공통 계약" 과 같다.
+- **선정**: 미해결 이슈의 최신 상태 노트가 (a) 서명이 맞고 **nonce 에 박힌 발급 시각 기준 24시간 이내**인 analyze-request 이거나 (b) 같은 nonce 의 analyzing 이고 until 이 지난 것(중단된 분석)일 때만. 소비한 nonce 는 `~/.local/state/workdeck-autofix/analyze/<issueId>-<nonce>.json`(stage `started|issue-created|done|failed`, 이슈 번호·결과 포함, 원자적 rename)에 남겨 재게시해도 다시 실행하지 않는다. **회당 1건**.
+- **lock·시간대**: publish 와 같은 run lock(잡혀 있으면 조용히 종료). 04:30 일일 러너 보호를 위해 `now+40분` 이 04:25 KST 를 넘는 03:45 ~ 06:30 KST 에는 시작하지 않는다. 별도 lock 은 쓰지 않는다(일일 `killResidue` 가 분석 컨테이너를 죽인다).
+- **실행**: `analyzing` 노트 → clone+archive export → 인증 프록시 → 분석 컨테이너(내부망, `/work/repo` **읽기 전용**, `/ctx` 에 컨텍스트와 `prompts/analyze.md`, `/out` 만 쓰기, 25분). 설치·patch·검증은 없다. 출력은 `/out/analysis.md`(3000자 이내 안내) + `/out/verdict.json`(`{verdict: fix|watch|ignore, conf: high|mid|low, auto: yes|no}` 만).
+- **호스트 검사**(하나라도 걸리면 이슈를 올리지 않고 `autofix:analyze-failed <code>`): `readSafeBuf` 64KB · UTF-8 · `checkText(analysis)` · `parseAnalyzeOutput` 엄격 검사 · `scanTexts`(토큰 조각·Sentry 원문 조각·gitleaks; 마크다운 백틱은 양쪽에서 빼고 대조) · `analysisPiiHits`(이메일·전화·카드·JWT·Bearer·주민/사업자번호·주소 구조. 긴 숫자는 12자리 이상만이라 줄 번호·ISO 시각·Sentry id 는 통과). 검사는 모델 출력에만 하고 `요청 ID` 머리말은 검사 뒤에 붙인다. 프롬프트는 오류 메시지를 인용하지 말고 유형·`파일:줄` 로 지칭하게 한다.
+- **게시**: 본문 첫 줄 `요청 ID: <nonce>`. 만들기 전에 `gh issue list --repo kaleos-platform/kaleos-ax-project --label sentry-analysis --state all --limit 200 --json number,body` 로 첫 줄 정확 일치를 로컬 비교한다(조회 오류면 이번 주기 중단 — 만들지 않음, 있으면 재사용). 생성 직후 상태에 `issue-created`+번호를 기록하므로 응답 유실·중간 중단에도 이슈는 요청당 1개로 수렴한다. 제목 `[Sentry 분석] <shortId> <판정>`(Sentry 제목 없음).
+- **완료**: 메모 직전에 Sentry 노트를 다시 조회해 analyzing 이후 `skip`·`request`·더 새 유효 analyze-request 가 있으면 analyzed 를 쓰지 않는다(상태 done, Slack 만). 아니면 analyzed 메모(서명) → Slack `분석 완료 <shortId> <판정> 이슈 #<n>`(제목·본문 없음). 실패는 Slack `분석 실패 <shortId> <code>`.
+- **일시 오류**(gh·Sentry·docker·프록시): 다음 주기에 재시도(analyzing 이 만료되는 40분 뒤부터), 3회째에도 실패하면 `analyze-failed`. 검사 거부·시간 초과(`analyze-timeout`)·정보 부족은 바로 실패.
+- `--no-write`(Sentry 노트 쓰기 끔)·`--no-slack` 은 run.mjs 와 같다. 이슈 생성은 `--no-write` 에서도 일어난다.
+- **남는 위험(수용)**: 한글 산문 속 짧은 숫자열 개인정보·게시된 이슈 본문의 모델 문장(저장소 협업자 2명뿐인 비공개 저장소, 에디 결정)·Sentry 쓰기 권한자의 과거 요청+완료 쌍 재게시. 최근 200건 밖 이슈는 중복 검색에서 빠진다(`ponytail:` 주석).
+
+설치:
+
+```bash
+cp ai.workdeck.sentry-autofix-analyze.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/ai.workdeck.sentry-autofix-analyze.plist
+node scripts/sentry-autofix/analyze.mjs --no-write --no-slack   # 수동 1회(노트·Slack 없이 확인)
+```
+
+호스트에 `gh auth login`(kaleos-dev, 대상 저장소 이슈 쓰기 권한)과 `SENTRY_AUTOFIX_NOTE_SECRET`·전용 Codex 로그인·docker 이미지가 필요하다. 중지: `launchctl unload ~/Library/LaunchAgents/ai.workdeck.sentry-autofix-analyze.plist`.
+
 ## 테스트
 
 ```bash
-node --test scripts/sentry-autofix/lib.test.mjs scripts/sentry-autofix/publish.test.mjs  # 단위 + 대역 통합 + publish
+node --test scripts/sentry-autofix/lib.test.mjs scripts/sentry-autofix/publish.test.mjs scripts/sentry-autofix/analyze.test.mjs  # 단위 + 대역 통합 + publish + analyze
 AUTOFIX_DOCKER_TEST=1 node --test scripts/sentry-autofix/integration.test.mjs  # 실제 docker(악성 수정 흉내, 외부망·수 분 소요)
 ```
 
