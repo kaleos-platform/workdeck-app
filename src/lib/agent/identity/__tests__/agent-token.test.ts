@@ -2,6 +2,7 @@
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     agentToken: { create: jest.fn(), findUnique: jest.fn(), updateMany: jest.fn() },
+    $executeRaw: jest.fn(),
   },
 }))
 
@@ -18,6 +19,7 @@ import { parseScopes } from '../principal'
 
 const p = prisma as unknown as {
   agentToken: { create: jest.Mock; findUnique: jest.Mock; updateMany: jest.Mock }
+  $executeRaw: jest.Mock
 }
 const NOW = new Date('2026-10-09T00:00:00Z')
 const TID = 'c'.repeat(25) // cuid 길이(TOKEN_RE는 20–40자)
@@ -46,6 +48,7 @@ describe('agent-token', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     p.agentToken.updateMany.mockResolvedValue({ count: 1 })
+    p.$executeRaw.mockResolvedValue(1)
     p.agentToken.create.mockImplementation(async () => ({ id: TID }))
   })
 
@@ -93,6 +96,25 @@ describe('agent-token', () => {
       scopes: ['ads:read'],
       tokenId: TID,
     })
+  })
+
+  it('lastUsedAt 은 락을 기다리지 않는 한 문장으로 갱신한다(5분 간격)', async () => {
+    p.agentToken.findUnique.mockResolvedValue(row())
+    await verifyAgentToken(`wdk_agt_${TID}.${'s'.repeat(43)}`, NOW)
+    expect(p.agentToken.updateMany).not.toHaveBeenCalled()
+    const [strings, ...values] = p.$executeRaw.mock.calls[0]
+    expect(strings.join('?')).toContain('FOR UPDATE SKIP LOCKED')
+    expect(values).toEqual([NOW, TID, new Date(NOW.getTime() - 5 * 60 * 1000)])
+  })
+
+  it('lastUsedAt 갱신이 실패해도 인증은 성공한다', async () => {
+    p.agentToken.findUnique.mockResolvedValue(row())
+    p.$executeRaw.mockRejectedValue(new Error('lock'))
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    await expect(verifyAgentToken(`wdk_agt_${TID}.${'s'.repeat(43)}`, NOW)).resolves.not.toBeNull()
+    await new Promise((r) => setImmediate(r))
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
   })
 
   it.each([
