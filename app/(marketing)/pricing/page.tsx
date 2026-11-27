@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MARKETING_CTA_CLASS } from '@/components/marketing/cta-class'
 import { Badge } from '@/components/ui/badge'
 import { buildMarketingUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
@@ -80,10 +81,8 @@ export default async function PricingPage() {
               return (
                 <div key={row.slug} className="flex flex-col gap-4 rounded-xl border bg-card p-6">
                   <div className="flex items-center justify-between">
-                    <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${meta.gradient}`}
-                    >
-                      <Icon className="h-5 w-5 text-white" aria-hidden />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50">
+                      <Icon className="h-5 w-5 text-blue-600" aria-hidden />
                     </div>
                     {released ? (
                       <Badge variant="outline" className="text-emerald-600">
@@ -142,16 +141,16 @@ export default async function PricingPage() {
       <FaqSection faq={faq} />
 
       {/* 최종 CTA */}
-      <section className="bg-gradient-to-br from-blue-600 to-cyan-500 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8">
+      <section className="bg-blue-50 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-3xl space-y-6 text-center">
           <h2 className="text-2xl font-bold break-keep sm:text-3xl">
             필요한 업무만 골라 시작하세요
           </h2>
-          <p className="text-lg break-keep text-white/90">
+          <p className="text-lg break-keep text-muted-foreground">
             워크스페이스를 만들고 원하는 업무 모듈을 구독하면 바로 이용할 수 있습니다.
           </p>
           <Link href={buildMarketingUrl('/recruiting#lead-form')}>
-            <Button size="lg" variant="secondary" className="gap-2">
+            <Button size="lg" className={`gap-2 ${MARKETING_CTA_CLASS}`}>
               시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>

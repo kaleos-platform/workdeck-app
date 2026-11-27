@@ -3,10 +3,9 @@ import { getFeatureIcon } from './feature-icons'
 
 interface FeatureGridProps {
   features: DeckLandingFeature[]
-  gradient: string
 }
 
-export function FeatureGrid({ features, gradient }: FeatureGridProps) {
+export function FeatureGrid({ features }: FeatureGridProps) {
   return (
     <section className="border-t bg-muted/30 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
       <div className="mx-auto max-w-6xl">
@@ -16,10 +15,8 @@ export function FeatureGrid({ features, gradient }: FeatureGridProps) {
             const Icon = getFeatureIcon(feature.icon)
             return (
               <div key={feature.title} className="space-y-4">
-                <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${gradient}`}
-                >
-                  <Icon className="h-5 w-5 text-white" aria-hidden />
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <Icon className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
                   <h3 className="mb-1.5 font-semibold break-keep">{feature.title}</h3>

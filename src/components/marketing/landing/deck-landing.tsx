@@ -51,7 +51,6 @@ export function DeckLanding({
       <HeroSection
         hero={{ ...content.hero, primaryCta, secondaryCta: heroSecondaryCta }}
         deckName={meta.name}
-        gradient={meta.gradient}
         icon={meta.icon}
         badge={released ? undefined : '준비중'}
       />
@@ -63,9 +62,9 @@ export function DeckLanding({
       ) : null}
 
       {content.featureStyle === 'rows' ? (
-        <FeatureRows features={content.features} gradient={meta.gradient} />
+        <FeatureRows features={content.features} />
       ) : (
-        <FeatureGrid features={content.features} gradient={meta.gradient} />
+        <FeatureGrid features={content.features} />
       )}
 
       {content.migration ? <MigrationComparison migration={content.migration} /> : null}
@@ -75,7 +74,7 @@ export function DeckLanding({
       ) : null}
 
       {content.workflow && content.workflow.length > 0 ? (
-        <WorkflowSection steps={content.workflow} gradient={meta.gradient} />
+        <WorkflowSection steps={content.workflow} />
       ) : null}
 
       {/* rows는 기능 행에 이미지가 이미 있으므로 하단 쇼케이스를 생략한다 */}
@@ -87,7 +86,7 @@ export function DeckLanding({
 
       <FaqSection faq={content.faq} />
 
-      <CtaSection finalCta={content.finalCta} primaryCta={primaryCta} gradient={meta.gradient} />
+      <CtaSection finalCta={content.finalCta} primaryCta={primaryCta} />
 
       {content.relatedDecks && content.relatedDecks.length > 0 ? (
         <DeckCrossLinks relatedDecks={content.relatedDecks} />

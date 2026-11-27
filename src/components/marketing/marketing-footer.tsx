@@ -18,13 +18,13 @@ export function MarketingFooter() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t bg-muted/30">
+    <footer className="border-t bg-muted/40">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-3">
           {/* 브랜드 */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-cyan-500">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
                 <LayoutGrid className="h-5 w-5 text-white" aria-hidden />
               </div>
               <span className="font-bold">Workdeck</span>

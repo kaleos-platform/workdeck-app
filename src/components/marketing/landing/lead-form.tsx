@@ -91,7 +91,7 @@ export function LeadForm({ deck, doneMessage }: { deck: string; doneMessage?: st
   if (done) {
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center" role="status">
-        <CheckCircle2 className="h-10 w-10 text-emerald-600 dark:text-emerald-400" aria-hidden />
+        <CheckCircle2 className="h-10 w-10 text-emerald-600" aria-hidden />
         <p className="text-lg font-medium break-keep">
           {doneMessage ??
             '신청이 완료되었습니다. 담당자가 확인 후 24시간 안에 이메일로 안내드릴게요.'}

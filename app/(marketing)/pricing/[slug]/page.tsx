@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MARKETING_CTA_CLASS } from '@/components/marketing/cta-class'
 import { Badge } from '@/components/ui/badge'
 import { JsonLd } from '@/components/marketing/json-ld'
 import { buildAppUrl } from '@/lib/domain'
@@ -107,10 +108,8 @@ export default async function DeckProductPage({ params }: ProductPageProps) {
         <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1.2fr_1fr]">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${meta.gradient}`}
-              >
-                <Icon className="h-6 w-6 text-white" aria-hidden />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50">
+                <Icon className="h-6 w-6 text-blue-600" aria-hidden />
               </div>
               {released ? (
                 <Badge variant="outline" className="text-emerald-600">
@@ -172,7 +171,7 @@ export default async function DeckProductPage({ params }: ProductPageProps) {
                 </p>
               </div>
               <Link href={buildAppUrl('/settings/billing')} className="block">
-                <Button size="lg" className="w-full gap-2">
+                <Button size="lg" className={`w-full gap-2 ${MARKETING_CTA_CLASS}`}>
                   구독 신청하기
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Button>
