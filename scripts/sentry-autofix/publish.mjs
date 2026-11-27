@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as lib from './lib.mjs'
+import { findOrCreateAnalysisIssue } from './analyze.mjs'
 import {
   acquireLock,
   defaultConfig,
@@ -178,7 +179,13 @@ export async function publishRun({ cfg, deps }) {
           m.review?.verdict === 'approve' &&
           (m.review?.blocking ?? []).length === 0 &&
           /^[0-9a-f]{40}$/.test(String(m.baseCommit ?? ''))
-        for (const f of ['patch.diff', 'pr-title.txt', 'pr-body.md', 'verify.json']) {
+        for (const f of [
+          'patch.diff',
+          'pr-title.txt',
+          'pr-body.md',
+          'verify.json',
+          'analysis.md',
+        ]) {
           const b = ok ? readSafeBuf(path.join(dir, f), 1 << 20) : null
           if (!b || lib.sha256(b) !== sums[f]) ok = false
           else bytes[f] = b
@@ -216,20 +223,52 @@ export async function publishRun({ cfg, deps }) {
           }
         }
         const createPr = () => {
-          const r = run('gh', [
-            'pr',
-            'create',
-            '--repo',
-            slug,
-            '--base',
-            cfg.baseBranch,
-            '--head',
-            branch,
-            '--title',
-            title,
-            '--body-file',
-            path.join(dir, 'pr-body.md'),
-          ])
+          // 분석은 공개 PR 이 아니라 비공개 저장소 이슈에 둔다(첫 줄 `수정안 ID:` 로 재시도 중복 방지). PR 본문엔 링크만
+          let prBody = bytes['pr-body.md']
+            .toString('utf8')
+            .replace(/^## 분석\n[\s\S]*(?=^Fixes )/m, '')
+          const analysis = bytes['analysis.md'].toString('utf8').trim()
+          fs.mkdirSync(path.join(cfg.stateDir, 'publish'), { recursive: true, mode: 0o700 })
+          const tmp = (n) => path.join(cfg.stateDir, 'publish', `${id}.${n}`)
+          if (analysis) {
+            let n
+            try {
+              n = findOrCreateAnalysisIssue({
+                run,
+                header: `수정안 ID: ${id}`,
+                title: `[Sentry 수정 분석] ${shortId}`,
+                body: lib.buildFixAnalysisIssueBody({ id, shortId, branch, analysis }),
+                bodyFile: tmp('issue.md'),
+              })
+            } catch (e) {
+              throw new Fail(e.message, { transient: true })
+            }
+            const link = `- 분석: 비공개 기록 https://github.com/${lib.ANALYZE_REPO}/issues/${n}\n`
+            prBody = /^Fixes /m.test(prBody)
+              ? prBody.replace(/^Fixes /m, `${link}\nFixes `)
+              : `${prBody}\n${link}`
+          }
+          const bodyFile = tmp('pr-body.md')
+          fs.writeFileSync(bodyFile, prBody, { mode: 0o600 })
+          let r
+          try {
+            r = run('gh', [
+              'pr',
+              'create',
+              '--repo',
+              slug,
+              '--base',
+              cfg.baseBranch,
+              '--head',
+              branch,
+              '--title',
+              title,
+              '--body-file',
+              bodyFile,
+            ])
+          } finally {
+            fs.rmSync(bodyFile, { force: true })
+          }
           if (r.status !== 0) throw new Fail('publish-pr-failed', { transient: true })
           return String(r.stdout).trim().split('\n').pop()
         }

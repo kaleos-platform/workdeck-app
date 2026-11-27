@@ -26,6 +26,9 @@ function setup({
   secret = SECRET,
   patch,
   createdAt = new Date(T - 3600_000).toISOString(),
+  analysis = '',
+  prBody = 'body',
+  analysisSha,
 } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'publish-'))
   const stateDir = path.join(root, 'state')
@@ -34,7 +37,8 @@ function setup({
   const content = {
     'patch.diff': patch ?? PATCH,
     'pr-title.txt': title,
-    'pr-body.md': 'body',
+    'pr-body.md': prBody,
+    'analysis.md': analysis,
     'verify.json': JSON.stringify({ ok: true }),
   }
   const sha256 = {}
@@ -42,6 +46,7 @@ function setup({
     fs.writeFileSync(path.join(dir, n), d)
     sha256[n] = lib.sha256(d)
   }
+  if (analysisSha) sha256['analysis.md'] = analysisSha
   fs.writeFileSync(
     path.join(dir, 'manifest.json'),
     JSON.stringify({
@@ -90,8 +95,9 @@ function fakes({
   noteFails = 0,
   vercel = VERCEL,
   remoteTree = 'tree1',
+  issues = [],
 }) {
-  const f = { calls: [], notes: [], slack: [], prs, remoteBranch, noteFails }
+  const f = { calls: [], notes: [], slack: [], prs, remoteBranch, noteFails, issues, prBody: null }
   f.deps = {
     now: () => T,
     log: () => {},
@@ -108,6 +114,16 @@ function fakes({
       f.calls.push([cmd, ...args])
       const key = [cmd, ...args].find((a) => failOn[a])
       if (key) return { status: 1, stdout: '', stderr: '' }
+      const bodyOf = () => fs.readFileSync(args[args.indexOf('--body-file') + 1], 'utf8')
+      if (cmd === 'gh' && args[0] === 'issue' && args[1] === 'list')
+        return { status: 0, stdout: JSON.stringify(f.issues) }
+      if (cmd === 'gh' && args[0] === 'issue' && args[1] === 'create') {
+        f.issues.push({ number: 9, body: bodyOf() })
+        return {
+          status: 0,
+          stdout: 'https://github.com/kaleos-platform/kaleos-ax-project/issues/9\n',
+        }
+      }
       if (cmd === 'gh' && args[1] === 'list')
         return { status: 0, stdout: JSON.stringify(f.prs.map((url) => ({ url }))) }
       if (cmd === 'git' && args[0] === 'ls-remote')
@@ -121,6 +137,7 @@ function fakes({
       }
       if (cmd === 'git' && args.includes('push')) f.remoteBranch = true
       if (cmd === 'gh' && args[1] === 'create') {
+        f.prBody = bodyOf()
         f.prs.push(PR)
         return { status: 0, stdout: `${PR}\n` }
       }
@@ -277,7 +294,7 @@ test('정상 경로: 명령 순서·push refspec·PR 인자·pr 노트·marker',
       '--title',
       title,
       '--body-file',
-      path.join(dir, 'pr-body.md'),
+      path.join(cfg.stateDir, 'publish', `${ID}.pr-body.md`),
     ],
   ])
   assert.deepEqual(f.notes, [`autofix:pr ${PR}`])
@@ -436,4 +453,77 @@ test('lock 을 다른 프로세스가 쥐고 있으면 아무 일도 안 함', a
   assert.equal(r.exitCode, 0)
   assert.deepEqual(f.calls, [])
   held.release()
+})
+
+const ISSUE_LINK =
+  '- 분석: 비공개 기록 https://github.com/kaleos-platform/kaleos-ax-project/issues/9'
+const ANALYSIS = '원인: 비밀스러운 분석 문장'
+const runOnce = async (opts, fopts = {}) => {
+  const { cfg, sha } = setup(opts)
+  const f = fakes({ comments: withApprove(sha), ...fopts })
+  const r = await publishRun({ cfg, deps: f.deps })
+  return { cfg, f, r }
+}
+
+test('분석은 비공개 이슈로, PR 본문에는 링크만(분석 문장 없음)', async () => {
+  const { f, cfg } = await runOnce({
+    analysis: ANALYSIS,
+    prBody: '요약\n- 리뷰 결과: approve\nFixes X-1\n',
+  })
+  assert.equal(f.issues.length, 1)
+  assert.equal(f.issues[0].body.split('\n')[0], `수정안 ID: ${ID}`)
+  assert.ok(f.issues[0].body.includes(ANALYSIS))
+  assert.ok(f.prBody.includes(ISSUE_LINK))
+  assert.ok(!f.prBody.includes('비밀스러운'))
+  assert.ok(f.prBody.indexOf(ISSUE_LINK) < f.prBody.indexOf('Fixes X-1'))
+  assert.equal(fs.readdirSync(path.join(cfg.stateDir, 'publish')).length, 0) // 임시 파일 정리
+})
+
+test('옛 묶음(pr-body 안에 ## 분석)도 분석 없이 올린다', async () => {
+  const legacy = `요약\n- 리뷰 결과: approve\n## 분석\n\`\`\`\n${ANALYSIS}\n\`\`\`\nFixes X-1\n`
+  const { f } = await runOnce({ analysis: ANALYSIS, prBody: legacy })
+  assert.ok(!f.prBody.includes('분석\n'))
+  assert.ok(!f.prBody.includes('비밀스러운'))
+  assert.ok(f.prBody.includes(ISSUE_LINK) && f.prBody.includes('Fixes X-1'))
+})
+
+test('분석 안에 Fixes 로 시작하는 줄이 있어도 분석 전체를 지운다', async () => {
+  const legacy = `요약\n## 분석\n\`\`\`\nFixes 가짜\n${ANALYSIS}\n\`\`\`\nFixes X-1\n`
+  const { f } = await runOnce({ analysis: ANALYSIS, prBody: legacy })
+  assert.ok(!f.prBody.includes('비밀스러운'))
+  assert.ok(!f.prBody.includes('Fixes 가짜'))
+  assert.ok(f.prBody.includes('Fixes X-1'))
+})
+
+test('재시도 시 기존 비공개 이슈를 재사용(중복 생성 없음)', async () => {
+  const issues = [
+    { number: 5, body: `수정안 ID: ${ID}\n\n본문` },
+    { number: 6, body: '다른 이슈' },
+  ]
+  const { f } = await runOnce({ analysis: ANALYSIS }, { issues })
+  assert.equal(f.calls.filter((c) => c[1] === 'issue' && c[2] === 'create').length, 0)
+  assert.ok(f.prBody.includes('issues/5'))
+})
+
+test('gh issue list 실패 → 이슈·PR 만들지 않고 일시 오류', async () => {
+  const { f, cfg } = await runOnce({ analysis: ANALYSIS }, { failOn: { issue: true } })
+  assert.equal(created(f).length, 0)
+  assert.equal(f.issues.length, 0)
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(cfg.stateDir, 'published', `${ID}.json`))).status,
+    'retry'
+  )
+})
+
+test('analysis.md sha 불일치 → publish-mismatch', async () => {
+  const { f, r } = await runOnce({ analysis: ANALYSIS, analysisSha: 'f'.repeat(64) })
+  assert.equal(created(f).length, 0)
+  assert.equal(r.results[0].code, 'publish-mismatch')
+})
+
+test('분석이 비어 있으면 이슈·링크 없이 PR', async () => {
+  const { f } = await runOnce({ analysis: '' })
+  assert.equal(f.issues.length, 0)
+  assert.equal(created(f).length, 1)
+  assert.ok(!f.prBody.includes('분석: 비공개'))
 })
