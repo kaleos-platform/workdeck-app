@@ -164,8 +164,20 @@ export function getRecruitingPostingDetailPath(id: string): string {
   return `${RECRUITING_POSTINGS_PATH}/${id}`
 }
 
-export function getRecruitingApplicationPath(id: string): string {
-  return `${RECRUITING_APPLICATIONS_PATH}/${id}`
+/** 지원자 상세 경로. from 은 상세에서 돌아갈(삭제 후 포함) 목록 주소다. */
+export function getRecruitingApplicationPath(id: string, from?: string): string {
+  const path = `${RECRUITING_APPLICATIONS_PATH}/${id}`
+  return from ? `${path}?from=${encodeURIComponent(from)}` : path
+}
+
+/** 돌아갈 주소는 모집 관리 내부 경로만 허용한다(외부 이동 차단). 아니면 전체 지원자 목록. */
+export function safeRecruitingReturnPath(from: unknown): string {
+  return typeof from === 'string' &&
+    from.startsWith('/d/recruiting/') &&
+    !from.includes('//') &&
+    !from.includes('\\')
+    ? from
+    : RECRUITING_APPLICATIONS_PATH
 }
 
 // ─── 채용 관리 ① 공고 제작 (Hiring Posts) ─────────────────────────────────────

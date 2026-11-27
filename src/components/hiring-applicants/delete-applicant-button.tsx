@@ -13,10 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { RECRUITING_APPLICATIONS_PATH } from '@/lib/deck-routes'
 
-// 지원자 상세 헤더의 삭제 버튼 — 확인 후 완전 삭제하고 목록으로 이동한다. OWNER/ADMIN에게만 렌더한다.
-export function DeleteApplicantButton({ applicationId }: { applicationId: string }) {
+// 지원자 상세 헤더의 삭제 버튼 — 확인 후 완전 삭제하고 들어온 목록(returnTo)으로 돌아간다. OWNER/ADMIN에게만 렌더한다.
+export function DeleteApplicantButton({
+  applicationId,
+  returnTo,
+}: {
+  applicationId: string
+  returnTo: string
+}) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -34,7 +39,8 @@ export function DeleteApplicantButton({ applicationId }: { applicationId: string
       }
       toast.success('지원자 정보를 삭제했어요')
       setOpen(false)
-      router.push(RECRUITING_APPLICATIONS_PATH)
+      router.push(returnTo)
+      router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '지원자를 삭제하지 못했어요')
     } finally {

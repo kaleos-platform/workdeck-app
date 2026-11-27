@@ -3,7 +3,7 @@
 import { createApplicantSearch } from '@/lib/hiring/application-search-action'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Download, Loader2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -172,6 +172,11 @@ function ApplicationsTableContent({
   setPositionInput: (value: string) => void
 }) {
   const router = useRouter()
+  // 상세에서 돌아올 주소(전체 지원자 목록 또는 공고의 지원자 탭, 필터·페이지 포함)
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const query = searchParams.toString()
+  const returnTo = query ? `${pathname}?${query}` : pathname
   const [pending, startTransition] = useTransition()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkStage, setBulkStage] = useState<HiringApplicationStage | ''>('')
@@ -578,7 +583,7 @@ function ApplicationsTableContent({
                   onClick={(e) => {
                     // 이름 링크는 브라우저가 직접 처리하므로 행 클릭 이동과 겹치지 않게 한다.
                     if ((e.target as HTMLElement).closest('a')) return
-                    if (!busy) router.push(getRecruitingApplicationPath(r.id))
+                    if (!busy) router.push(getRecruitingApplicationPath(r.id, returnTo))
                   }}
                 >
                   <TableCell onClick={(e) => e.stopPropagation()}>
@@ -592,7 +597,7 @@ function ApplicationsTableContent({
                   </TableCell>
                   <TableCell className="font-medium">
                     <Link
-                      href={getRecruitingApplicationPath(r.id)}
+                      href={getRecruitingApplicationPath(r.id, returnTo)}
                       className="block truncate hover:underline focus-visible:underline"
                     >
                       {r.maskedName}
