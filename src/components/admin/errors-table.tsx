@@ -32,8 +32,10 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { fetchWithMfa, redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 import {
+  analysisIssueUrl,
   CATEGORY_LABELS,
   isApprovable,
+  isUntilPassed,
   STAGE_LABELS,
   triageReason,
   type AutofixKind,
@@ -76,7 +78,7 @@ type Props = {
   lastActivity: { at: string; shortId: string; kind: AutofixKind } | null
 }
 
-type Action = 'request' | 'skip' | 'approve'
+type Action = 'request' | 'skip' | 'approve' | 'analyze'
 
 const KIND_LABELS: Record<AutofixKind, string> = {
   none: '없음',
@@ -88,7 +90,14 @@ const KIND_LABELS: Record<AutofixKind, string> = {
   skip: '제외',
   ready: '승인 대기',
   approve: '승인됨',
+  'analyze-request': '분석 요청됨',
+  analyzing: '분석 중',
+  analyzed: '분석 완료',
+  'analyze-failed': '분석 실패',
 }
+
+const VERDICT_LABELS = { fix: '고칠 것', watch: '지켜볼 것', ignore: '무시' } as const
+const CONF_LABELS = { high: '높음', mid: '중간', low: '낮음' } as const
 
 const PRIORITY_LABELS = { P1: 'P1 높음', P2: 'P2 중간', P3: 'P3 낮음' } as const
 const PRIORITY_CLASS = {
@@ -167,14 +176,30 @@ function PriorityBadge({ triage }: { triage: Triage | null }) {
   )
 }
 
-// 러너가 멈춰 until 이 지난 running 은 다시 조작할 수 있게 한다
+// 러너가 멈춰 until 이 지난 running · analyzing 은 다시 조작할 수 있게 한다
 const isStale = (r: ErrorRow) =>
-  r.autofix.kind === 'running' && !!r.autofix.until && Date.parse(r.autofix.until) < Date.now()
+  (r.autofix.kind === 'running' || r.autofix.kind === 'analyzing') && isUntilPassed(r.autofix)
 
-function actionsFor(r: ErrorRow): { action: Action; label: string }[] {
+function actionsFor(r: ErrorRow, inSheet = false): { action: Action; label: string }[] {
   const request = { action: 'request' as const, label: '수정 요청' }
   const skip = { action: 'skip' as const, label: '제외' }
+  const analyze = { action: 'analyze' as const, label: '분석 요청' }
+  const retry = { action: 'analyze' as const, label: '다시 요청' }
   switch (r.stage) {
+    case 'confirm':
+      return inSheet ? [analyze, request, skip] : [analyze, skip]
+    case 'analyze-requested':
+      return [skip]
+    case 'analyzing':
+      return isStale(r) ? [retry] : []
+    case 'analyze-failed':
+      return [retry, skip]
+    case 'analyzed':
+      return r.autofix.verdict === 'fix'
+        ? [request, skip]
+        : r.autofix.verdict === 'ignore'
+          ? [{ action: 'skip', label: '제외 확정' }]
+          : [skip]
     case 'approval':
       return isApprovable(r.autofix)
         ? [{ action: 'approve', label: 'PR 올리기' }, skip]
@@ -199,12 +224,14 @@ function ActionButtons({
   row,
   busy,
   onAct,
+  inSheet,
 }: {
   row: ErrorRow
   busy: boolean
   onAct: (row: ErrorRow, action: Action) => void
+  inSheet?: boolean
 }) {
-  const list = actionsFor(row)
+  const list = actionsFor(row, inSheet)
   if (list.length === 0) return null
   return (
     <div className="flex gap-2">
@@ -303,9 +330,11 @@ export function ErrorsTable({
       toast.success(
         action === 'request'
           ? '수정을 요청했습니다'
-          : action === 'approve'
-            ? 'PR 올리기를 승인했습니다'
-            : '제외했습니다'
+          : action === 'analyze'
+            ? '분석을 요청했습니다'
+            : action === 'approve'
+              ? 'PR 올리기를 승인했습니다'
+              : '제외했습니다'
       )
       setOpenId(null)
       router.refresh()
@@ -478,6 +507,18 @@ export function ErrorsTable({
                       >
                         <Badge variant="secondary">PR #{r.autofix.prUrl.split('/').pop()} ↗</Badge>
                       </a>
+                    ) : r.stage === 'analyzed' && r.autofix.issueNumber ? (
+                      <a
+                        href={analysisIssueUrl(r.autofix.issueNumber)}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Badge variant="secondary">
+                          {VERDICT_LABELS[r.autofix.verdict ?? 'watch']} · 이슈 #
+                          {r.autofix.issueNumber} ↗
+                        </Badge>
+                      </a>
                     ) : r.stage === 'unjudged' ? (
                       '—'
                     ) : (
@@ -490,7 +531,9 @@ export function ErrorsTable({
                         }
                       >
                         {stale
-                          ? '진행 중(만료)'
+                          ? r.stage === 'analyzing'
+                            ? '분석 중(만료)'
+                            : '진행 중(만료)'
                           : r.stage === 'approval' && !isApprovable(r.autofix)
                             ? '검증 실패'
                             : STAGE_LABELS[r.stage]}
@@ -565,7 +608,35 @@ export function ErrorsTable({
                     <p className="text-xs text-muted-foreground">코드는 PR에서 검토합니다</p>
                   </section>
                 )}
-                <ActionButtons row={open} busy={pendingId === open.id} onAct={act} />
+                {open.autofix.kind === 'analyzed' && open.autofix.issueNumber && (
+                  <section className="flex flex-col gap-2">
+                    <h3 className="font-semibold">분석</h3>
+                    <dl className="grid grid-cols-[4rem_1fr] gap-y-1.5">
+                      <dt className="text-muted-foreground">판정</dt>
+                      <dd>{VERDICT_LABELS[open.autofix.verdict ?? 'watch']}</dd>
+                      <dt className="text-muted-foreground">확신도</dt>
+                      <dd>{CONF_LABELS[open.autofix.conf ?? 'low']}</dd>
+                      <dt className="text-muted-foreground">자동 수정</dt>
+                      <dd>{open.autofix.auto === 'yes' ? '가능' : '불가'}</dd>
+                      <dt className="text-muted-foreground">결과</dt>
+                      <dd>
+                        <a
+                          href={analysisIssueUrl(open.autofix.issueNumber)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          이슈 #{open.autofix.issueNumber} ↗
+                        </a>
+                      </dd>
+                      <dt className="text-muted-foreground">시각</dt>
+                      <dd suppressHydrationWarning>
+                        {open.autofix.at ? relativeTime(open.autofix.at) : '—'}
+                      </dd>
+                    </dl>
+                  </section>
+                )}
+                <ActionButtons row={open} busy={pendingId === open.id} onAct={act} inSheet />
               </div>
             </>
           )}

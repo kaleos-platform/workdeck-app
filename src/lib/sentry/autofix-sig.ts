@@ -1,8 +1,8 @@
 import 'server-only'
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 
 // 환경변수 SENTRY_AUTOFIX_NOTE_SECRET(32자 이상): 앱과 맥미니 러너만 아는 ready/approve 노트 서명 키. 없으면 fail closed.
-export type NoteKind = 'ready' | 'approve'
+export type NoteKind = 'ready' | 'approve' | 'analyze-request' | 'analyzed'
 
 const secret = () => {
   const s = process.env.SENTRY_AUTOFIX_NOTE_SECRET
@@ -36,4 +36,15 @@ export function verifyNoteSig(
   const a = Buffer.from(sig)
   const b = Buffer.from(compute(key, kind, issueId, id, sha))
   return a.length === b.length && timingSafeEqual(a, b)
+}
+
+// 분석 요청 메모(서명 포함). nonce = YYYYMMDD-HHMMSS-<8hex>(UTC 발급 시각)
+export function analyzeRequestNote(
+  issueId: string,
+  by: 'admin' | 'slack',
+  now = new Date()
+): string {
+  const t = now.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15)
+  const nonce = `${t}-${randomBytes(4).toString('hex')}`
+  return `autofix:analyze-request id=${nonce} by=${by} sig=${noteSig('analyze-request', issueId, nonce, '0'.repeat(16))}`
 }

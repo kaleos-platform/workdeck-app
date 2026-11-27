@@ -58,11 +58,23 @@ export function buildDigestMessage(rows: ErrorRow[]) {
       }
     )
   }
-  const lines = confirm
-    .slice(0, MAX_ITEMS)
-    .map((r) => `*확인 필요* ${safe(r.shortId, 30)} ${safe(r.title, MAX_TITLE)} — ${reasonOf(r)}`)
-  if (lines.length > 0) {
-    blocks.push({ type: 'section', text: { type: 'mrkdwn', text: lines.join('\n') } })
+  for (const r of confirm.slice(0, MAX_ITEMS)) {
+    const text = `*확인 필요* ${safe(r.shortId, 30)} ${safe(r.title, MAX_TITLE)} — ${reasonOf(r)}`
+    blocks.push({ type: 'section', text: { type: 'mrkdwn', text } })
+    // 검증 실패 ready 는 확인 필요로 보이되 분석 버튼은 단계가 confirm 인 행만
+    if (r.stage === 'confirm') {
+      blocks.push({
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: '분석 요청' },
+            action_id: 'sentry_autofix_analyze',
+            value: r.id,
+          },
+        ],
+      })
+    }
   }
   const count = (s: ErrorRow['stage']) => rows.filter((r) => r.stage === s).length
   blocks.push({

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url'
 import * as lib from './lib.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const MIN = 60_000
+export const MIN = 60_000
 const GB = 1024 ** 3
 
 export function defaultConfig(env = process.env) {
@@ -407,7 +407,7 @@ export function parseEnvFile(file) {
   )
 }
 
-function readAuth(cfg) {
+export function readAuth(cfg) {
   const text = readSafe(path.join(cfg.codexDir, 'auth.json'), 65536)
   if (text === null) return null
   try {
@@ -551,7 +551,7 @@ async function withSecretEnv(cfg, secrets, fn) {
   }
 }
 
-function makeStepRunner({ cfg, deps, runId, deadline, issueDir, safeId }) {
+export function makeStepRunner({ cfg, deps, runId, deadline, issueDir, safeId }) {
   const run = async (step, opts) => {
     const timeoutMs = Math.min(opts.limitMs, deadline - deps.now())
     if (timeoutMs <= 0) throw new Error('deadline')
@@ -583,7 +583,7 @@ function makeStepRunner({ cfg, deps, runId, deadline, issueDir, safeId }) {
 }
 
 // 커스텀 provider: 컨테이너에는 토큰이 없고 프록시가 인증을 붙인다. 서버 실행 도구(web search)는 끈다
-const codexCmd = (cwd, outFile) =>
+export const codexCmd = (cwd, outFile) =>
   [
     'exec codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral',
     '-m "$MODEL"',
@@ -596,12 +596,12 @@ const codexCmd = (cwd, outFile) =>
     `-c 'web_search="disabled"'`,
     `-C ${cwd} -o ${outFile} -`,
   ].join(' ')
-const codexHome = '/codex-home:rw,nosuid,size=64m,uid=1000,gid=1000,mode=700'
+export const codexHome = '/codex-home:rw,nosuid,size=64m,uid=1000,gid=1000,mode=700'
 
 const FIX_LIMIT = 25 * MIN
 const REVIEW_LIMIT = 10 * MIN
 
-function promptText(name) {
+export function promptText(name) {
   return fs.readFileSync(path.join(HERE, 'prompts', name), 'utf8')
 }
 
@@ -653,7 +653,7 @@ export function verifySteps(files) {
 }
 
 // 인증 프록시: 전용 auth.json 을 읽기 전용 파일로 이 컨테이너에만 마운트한다
-async function startProxy({ cfg, deps, runId, secret, tag = '' }) {
+export async function startProxy({ cfg, deps, runId, secret, tag = '' }) {
   const name = `workdeck-autofix-proxy-${runId}${tag}`
   const r0 = await withSecretEnv(cfg, { PROXY_SECRET: secret }, (envFile) =>
     deps.docker(
@@ -725,7 +725,7 @@ async function killResidue(cfg, deps) {
 // 컨테이너가 만진 디렉터리는 호스트가 지우지 않는다(chmod 000·깊은 중첩에서 rmSync 가 멈출 수 있음).
 // 망 없는 컨테이너에서 시간 제한을 두고 정리한다. logs 는 남긴다. 성공 여부 반환
 let cleanSeq = 0
-async function cleanDir({ cfg, deps, runId, dir }) {
+export async function cleanDir({ cfg, deps, runId, dir }) {
   try {
     const name = `workdeck-autofix-${runId}-clean-${++cleanSeq}`
     const r = await deps.docker(
@@ -1204,7 +1204,7 @@ function inBase(baseDir, f) {
 }
 
 // 텍스트들을 토큰 조각·원문 조각·gitleaks 로 검사 → 사유 목록
-async function scanTexts({ deps, issueDir, windows, facts, grep, texts, files = [] }) {
+export async function scanTexts({ deps, issueDir, windows, facts, grep, texts, files = [] }) {
   const reasons = []
   const raws = [...facts.rawMessages, facts.message]
   // 템플릿으로 어차피 공개되는 값(예외 타입·shortId·경로·프레임·base 에 있던 변경 파일)은 조각 검사에서 제외
@@ -1311,7 +1311,7 @@ async function finalize({
 
 // ---------- AI 판단(triage) ----------
 // 45분 같은 시간 한도 + 디스크 감시를 걸고 fn(deadline) 실행. 디스크가 모자라 kill 했으면 diskLow=true
-async function watched(cfg, deps, runId, ms, fn) {
+export async function watched(cfg, deps, runId, ms, fn) {
   const deadline = deps.now() + ms
   const timer = setTimeout(() => killRun(deps, runId), ms)
   timer.unref?.()
