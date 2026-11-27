@@ -46,3 +46,12 @@
 - Supabase의 조직 제한이 기존 업무에 미치는 영향 확인.
 
 API key·DB URL·token·로그인 세션·환경 파일 내용을 기록하거나 조회하지 않는다.
+
+
+## 실제 조회 진행 결과 — 2026-11-27
+
+- 사용자가 CLI 우선 확인, CLI에서 불가능할 때 브라우저 사용 원칙을 명시했다. `/opt/homebrew/bin/supabase` 2.84.2가 설치되어 있고, 기존 CLI 인증으로 조직/프로젝트 목록 조회에 성공했다. Workdeck dev/prod는 모두 kaleos 조직 소속이다. 키·토큰·환경 파일을 직접 읽지 않았다.
+- 설치 CLI 및 현재 공식 CLI reference/source에는 Spend Cap·청구 사용량 명령이 없어 Ego로 전환했다. CLI 인증 성공은 Ego 세션 로그인 성공을 뜻하지 않는다.
+- 사용자 진행 승인으로 `workdeck-skills`의 고정 `supabase-billing-audit` 템플릿과 호스트 읽기 전용 신원을 추가했다. source 브랜치 `feat/supabase-billing-ego`, 최종 커밋 `5f8610d`. Python31·Node4 테스트 및 독립 리뷰 통과. 설정 저장·결제정보·자격증명 조회·로그인 제출은 허용하지 않는다.
+- 최종 실조회 task `supabase-billing-audit-20261127-03`는 `needs_user_action/login_required`, TaskSpace73 정리 완료로 종료됐다. 현재 플랜 unknown, Spend Cap null, Storage/egress 모두 null, 조회 출처 없음이다. 앞선 미수행/조직 미확인 시도의 결과는 비용 확인 증거로 쓰지 않는다.
+- 따라서 **추가 과금 없음 조건은 아직 검증되지 않았다.** 사용자 Ego Supabase 로그인 완료 후 같은 조직의 billing/usage를 새 task로 확인해야 한다. 그 전 자동 재시도나 CS 기능 운영 활성화는 하지 않는다.
