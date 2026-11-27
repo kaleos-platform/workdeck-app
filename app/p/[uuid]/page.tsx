@@ -317,7 +317,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
             rel="noopener"
             className="hover:underline"
           >
-            워크덱으로 만든 채용 페이지
+            made with <span className="underline underline-offset-2">workdeck</span>
           </a>
         </footer>
       )}
