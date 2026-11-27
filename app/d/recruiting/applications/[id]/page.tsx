@@ -9,7 +9,7 @@ import { getApplicationDetail } from '@/lib/hiring/applications'
 import { getApplicationHistory } from '@/lib/hiring/migration/application-history'
 import { ApplicationHistory } from '@/components/hiring-applicants/application-history'
 import type { ApplicationEntryValue } from '@/lib/hiring/pii'
-import { RECRUITING_APPLICATIONS_PATH } from '@/lib/deck-routes'
+import { safeRecruitingReturnPath } from '@/lib/deck-routes'
 import { DuplicatedBadge, BlacklistBadge } from '@/components/hiring-applicants/badges'
 import { ApplicationStatusBadge } from '@/components/hiring-applicants/application-status-badge'
 import { MemoPanel } from '@/components/hiring-applicants/memo-panel'
@@ -19,14 +19,18 @@ import { CopyValueButton } from '@/components/hiring-applicants/copy-value-butto
 import { PreQuestions } from '@/components/hiring-applicants/pre-questions'
 import { BlacklistButton, FileDownloadList } from '@/components/hiring-applicants/detail-actions'
 
-type Params = { params: Promise<{ id: string }> }
+type Params = {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ from?: string | string[] }>
+}
 
 const STANDARD_KEYS = new Set(['name', 'phone', 'email', 'address'])
 
-export default async function ApplicationDetailPage({ params }: Params) {
+export default async function ApplicationDetailPage({ params, searchParams }: Params) {
   const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
   const { id } = await params
+  const backHref = safeRecruitingReturnPath((await searchParams).from)
 
   const detail = await getApplicationDetail(resolved.space.id, id)
   if (!detail) notFound()
@@ -42,10 +46,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
 
   return (
     <div className="space-y-4 p-6">
-      <Link
-        href={RECRUITING_APPLICATIONS_PATH}
-        className="text-xs text-muted-foreground hover:text-foreground"
-      >
+      <Link href={backHref} className="text-xs text-muted-foreground hover:text-foreground">
         ← 목록으로
       </Link>
 
@@ -57,7 +58,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
         <div className="ml-auto flex items-center gap-1">
           <BlacklistButton applicationId={app.id} blacklisted={blacklisted} />
           {(resolved.role === 'OWNER' || resolved.role === 'ADMIN') && (
-            <DeleteApplicantButton applicationId={app.id} />
+            <DeleteApplicantButton applicationId={app.id} returnTo={backHref} />
           )}
         </div>
       </div>

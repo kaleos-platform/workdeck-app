@@ -8,7 +8,11 @@ jest.mock('@/lib/hiring/application-search-action', () => ({
 }))
 const refresh = jest.fn()
 const push = jest.fn()
-jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh, push }) }))
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh, push }),
+  usePathname: () => '/d/recruiting/postings/p1',
+  useSearchParams: () => new URLSearchParams('tab=applicants'),
+}))
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() } }))
 jest.mock('@/components/ui/select', () => ({
   Select: ({
@@ -261,7 +265,11 @@ it('엑셀 URL 에 process 를 전달한다', async () => {
 it('이름 셀은 실제 링크이고 링크 클릭은 행 이동과 중복되지 않는다', () => {
   render(<ApplicationsTable {...props} />)
   const link = screen.getByRole('link', { name: 'QAa' })
-  expect(link).toHaveAttribute('href', '/d/recruiting/applications/a')
+  // 상세에서 돌아올 수 있게 현재 목록 주소(공고 지원자 탭)를 from 으로 넘긴다.
+  expect(link).toHaveAttribute(
+    'href',
+    '/d/recruiting/applications/a?from=%2Fd%2Frecruiting%2Fpostings%2Fp1%3Ftab%3Dapplicants'
+  )
   fireEvent.click(link)
   expect(push).not.toHaveBeenCalled()
 })
