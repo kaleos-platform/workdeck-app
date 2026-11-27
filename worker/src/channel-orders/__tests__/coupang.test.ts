@@ -96,7 +96,7 @@ describe('쿠팡 행 변환', () => {
     expect(() => parseSheet(sheet(3, [{}], { status: undefined }))).toThrow(StructureError)
   })
   it('취소 목록: 문서 필드가 없으면 조용히 무시하지 않고 실패', () => {
-    expect(parseCancelPage({ data: [] })).toEqual({ orderIds: [], next: null })
+    expect(parseCancelPage({ data: [] })).toMatchObject({ orderIds: [], next: null })
     expect(
       parseCancelPage({ data: [{ orderId: 1 }, { orderId: 1 }, { orderId: 2 }] }).orderIds
     ).toEqual(['1', '2'])
@@ -147,6 +147,56 @@ describe('observeCoupang / scanCoupang', () => {
     const last = pages.at(-1)!
     expect(last.map((r) => [r.externalLineKey, r.claimStatus])).toEqual([['55:7000', 'CANCEL']])
     expect(calls).toHaveLength(1)
+  })
+  it('전량 취소 주문 재조회 400 → 취소 목록 항목으로 취소 행, 다른 400 은 실패', async () => {
+    const receipt = {
+      orderId: 5,
+      receiptStatus: 'RETURNS_COMPLETED',
+      createdAt: '2026-11-24T11:12:28+09:00',
+      modifiedAt: '2026-11-24T11:12:42+09:00',
+      requesterName: '개인정보',
+      returnItems: [
+        { shipmentBoxId: 55, vendorItemId: 7000, vendorItemName: '상품 A', purchaseCount: 2 },
+      ],
+    }
+    const fail = (body: string) =>
+      Object.assign(new Error('쿠팡 API 호출 실패 [400]'), { status: 400, body })
+    const run = (body: string) =>
+      observeCoupang(
+        route((path) => {
+          if (path.endsWith('returnRequests')) return { data: [receipt] }
+          if (path.endsWith('/5/ordersheets')) throw fail(body)
+          return undefined
+        }),
+        'A001',
+        W,
+        hooks<OrderLine>().h
+      )
+    const { h, pages } = hooks<OrderLine>()
+    await observeCoupang(
+      route((path) => {
+        if (path.endsWith('returnRequests')) return { data: [receipt] }
+        if (path.endsWith('/5/ordersheets'))
+          throw fail('{"code":400,"message":"해당 주문이 취소 또는 반품 되었습니다."}')
+        return undefined
+      }),
+      'A001',
+      W,
+      h
+    )
+    expect(pages.at(-1)).toEqual([
+      expect.objectContaining({
+        externalLineKey: '55:7000',
+        externalOrderId: '5',
+        paidAt: '2026-11-24T02:12:28.000Z',
+        quantity: 2,
+        claimStatus: 'CANCEL',
+        channelStatus: 'CANCEL:RETURNS_COMPLETED',
+        sourceChangedAt: '2026-11-24T02:12:42.000Z',
+      }),
+    ])
+    expect(JSON.stringify(pages.at(-1))).not.toContain('개인정보')
+    await expect(run('{"code":400,"message":"잘못된 요청"}')).rejects.toThrow('[400]')
   })
   it('취소 단건 결과 없음 → 실패(그 페이지는 적재 안 됨)', async () => {
     const get = route((path) => {
