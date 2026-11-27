@@ -11,6 +11,8 @@ import { applyKeywordOps } from '@/lib/sh/keyword-review'
 import { lastChangeAt, isMeasuring, MEASURE_DAYS } from '@/lib/sh/keyword-review-query'
 import { keywordListSchema } from '@/lib/sh/schemas'
 import { buildAppUrl } from '@/lib/domain'
+import { getTodayStrKst } from '@/lib/date-range'
+import { lockStockLevel, setStockLevel } from '@/lib/inv/movement-processor'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너(finance.ts와 동일 패턴).
 function def<T>(d: ActionDefinition<T>): ActionDefinition {
@@ -179,5 +181,181 @@ const keywordUpdate: ActionDefinition<KeywordUpdateParams> = {
   },
 }
 
+// ─── 4) seller-hub.stock.adjust ──────────────────────────────────────────────
+// 화면 「조정」과 같은 결과(InvStockLevel 절대값 + ADJUSTMENT 이동 기록). 항상 웹 단건 승인.
+// 제안 시점 재고(수량 + updatedAt)를 expectedBefore/expectedUpdatedAt 로 박아 두고, 실행 때 하나라도 다르면 전체 실패.
+const stockAdjustParams = z.object({
+  locationId: z.string(),
+  items: z
+    .array(
+      z.object({
+        optionId: z.string(),
+        quantity: z.number().int().min(0),
+        expectedBefore: z.number().int(),
+        expectedUpdatedAt: z.string().nullable(),
+      })
+    )
+    .min(1)
+    .max(50)
+    .refine((a) => new Set(a.map((i) => i.optionId)).size === a.length, {
+      message: '같은 옵션이 중복되었습니다',
+    }),
+  reason: z.string().trim().min(1).max(500),
+  movementDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    // 2026-02-30 처럼 넘어가거나 Invalid Date 가 승인 뒤에야 실패하지 않게 제안 시점에 거른다
+    .refine((s) => !Number.isNaN(Date.parse(s)) && new Date(s).toISOString().slice(0, 10) === s, {
+      message: '존재하지 않는 날짜입니다',
+    })
+    .refine((s) => s <= getTodayStrKst(), { message: '미래 날짜로 조정할 수 없습니다' })
+    .optional(),
+})
+
+type StockAdjustParams = z.infer<typeof stockAdjustParams>
+type StockDb = Pick<typeof prisma, 'invStorageLocation' | 'invProductOption'>
+
+// 위치·옵션 자격 확인 — validateCreate 와 execute(트랜잭션 안)가 같은 조건을 쓴다.
+async function loadStockAdjustTargets(db: StockDb, spaceId: string, params: StockAdjustParams) {
+  const location = await db.invStorageLocation.findFirst({
+    where: { id: params.locationId, spaceId },
+  })
+  if (!location || !location.isActive)
+    throw new ToolUserError('보관 장소를 찾을 수 없거나 비활성입니다')
+  if (location.externalSource || (location.syncProvider && location.autoReconcileWeekly))
+    throw new ToolUserError('자동 연동되는 위치는 재고를 조정할 수 없습니다')
+  const ids = params.items.map((i) => i.optionId)
+  const options = await db.invProductOption.findMany({
+    where: { id: { in: ids }, deletedAt: null, product: { spaceId, status: 'ACTIVE' } },
+    select: { id: true, name: true, sku: true, product: { select: { name: true } } },
+  })
+  const byId = new Map(options.map((o) => [o.id, o]))
+  const missing = ids.find((id) => !byId.has(id))
+  if (missing)
+    throw new ToolUserError(`옵션을 찾을 수 없거나 사용할 수 없는 상품입니다: ${missing}`)
+  return { location, byId }
+}
+
+// 다른 상품의 같은 이름 옵션이 승인 화면에서 한 줄로 합쳐지지 않게 상품명을 붙인다
+const optionLabel = (o: { name: string; sku: string | null; product: { name: string } }) =>
+  `${o.product.name} / ${o.name}${o.sku ? ` (${o.sku})` : ''}`
+
+const stockAdjust: ActionDefinition<StockAdjustParams> = {
+  actionType: 'seller-hub.stock.adjust',
+  deckKey: 'seller-hub',
+  title: '재고 조정(실물 수량으로 맞춤)',
+  paramsSchema: stockAdjustParams,
+  requiredRole: 'ADMIN',
+  scope: 'sellerhub:write',
+  external: true, // 사람이 관리하는 재고 기준값을 덮어쓴다 — 쓰기 권한이 있어도 승인 후 실행
+  requiresWebReview: () => true, // 전후 수량을 보고 단건 승인
+  retryableAfterFailure: true, // 단일 트랜잭션 — 실패하면 변경이 남지 않는다
+  resultUrl: (_r, ctx) => buildAppUrl(`/d/seller-ops/inventory/movements?spaceId=${ctx.spaceId}`),
+  validateCreate: async (ctx, params) => {
+    const { byId } = await loadStockAdjustTargets(prisma, ctx.spaceId, params)
+    const rows = await prisma.invStockLevel.findMany({
+      // execute 의 findUnique(optionId_locationId)와 같은 기준 — Space 는 위치·옵션 검증이 보장
+      where: {
+        locationId: params.locationId,
+        optionId: { in: params.items.map((i) => i.optionId) },
+      },
+      select: { optionId: true, quantity: true, updatedAt: true },
+    })
+    const cur = new Map(rows.map((r) => [r.optionId, r]))
+    for (const it of params.items) {
+      if (it.quantity === it.expectedBefore)
+        throw new ToolUserError(
+          `현재 재고와 같아 조정할 필요가 없습니다: ${optionLabel(byId.get(it.optionId)!)}`
+        )
+      const row = cur.get(it.optionId)
+      if (
+        (row?.quantity ?? 0) !== it.expectedBefore ||
+        (row?.updatedAt.toISOString() ?? null) !== it.expectedUpdatedAt
+      )
+        throw new ToolUserError(
+          `현재 재고가 제안 기준과 다릅니다: ${optionLabel(byId.get(it.optionId)!)}`
+        )
+    }
+    // best-effort 중복 차단 — 동시 제안은 못 막지만 실행 시 updatedAt 검사가 덮어쓰기를 막는다.
+    const pending = await prisma.agentPendingAction.findMany({
+      where: {
+        spaceId: ctx.spaceId,
+        actionType: 'seller-hub.stock.adjust',
+        status: 'PENDING',
+        expiresAt: { gt: new Date() },
+        payload: { path: ['locationId'], equals: params.locationId },
+      },
+      select: { id: true, payload: true },
+    })
+    const mine = new Set(params.items.map((i) => i.optionId))
+    for (const p of pending) {
+      const items = (p.payload as { items?: { optionId?: string }[] } | null)?.items ?? []
+      if (items.some((i) => i.optionId && mine.has(i.optionId)))
+        throw new ToolUserError(`이미 승인 대기 중인 재고 조정 제안이 있습니다: ${p.id}`)
+    }
+  },
+  snapshot: async (ctx, params) => {
+    const { location, byId } = await loadStockAdjustTargets(prisma, ctx.spaceId, params)
+    const out: Record<string, string> = {
+      위치: location.name,
+      이동일: params.movementDate ?? getTodayStrKst(),
+    }
+    for (const it of params.items) {
+      const d = it.quantity - it.expectedBefore
+      let key = optionLabel(byId.get(it.optionId)!)
+      if (key in out) key = `${key} #${it.optionId.slice(-6)}` // 라벨이 같아도 줄이 덮이지 않게
+      out[key] = `${it.expectedBefore} → ${it.quantity} (${d > 0 ? '+' : ''}${d})`
+    }
+    return out
+  },
+  execute: async (ctx, params) => {
+    const movementDate = new Date(params.movementDate ?? getTodayStrKst())
+    const items = [...params.items].sort((a, b) => (a.optionId < b.optionId ? -1 : 1)) // 교착 방지
+    return prisma.$transaction(async (tx) => {
+      const { byId } = await loadStockAdjustTargets(tx, ctx.spaceId, params)
+      const adjusted: { optionId: string; before: number; after: number; delta: number }[] = []
+      for (const it of items) {
+        // 재고 행이 없으면 FOR UPDATE 가 잠글 게 없다 — upsertStockLevel 과 같은 advisory lock 을 먼저 잡는다.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${it.optionId} || ':' || ${params.locationId}))`
+        await lockStockLevel(tx, it.optionId, params.locationId)
+        const row = await tx.invStockLevel.findUnique({
+          where: { optionId_locationId: { optionId: it.optionId, locationId: params.locationId } },
+        })
+        if (
+          (row?.quantity ?? 0) !== it.expectedBefore ||
+          (row?.updatedAt.toISOString() ?? null) !== it.expectedUpdatedAt
+        )
+          throw new Error(`제안 이후 재고가 바뀌었습니다: ${optionLabel(byId.get(it.optionId)!)}`)
+        const { before, after } = await setStockLevel(
+          tx,
+          ctx.spaceId,
+          it.optionId,
+          params.locationId,
+          it.quantity
+        )
+        const delta = after - before
+        await tx.invMovement.create({
+          data: {
+            spaceId: ctx.spaceId,
+            optionId: it.optionId,
+            locationId: params.locationId,
+            type: 'ADJUSTMENT',
+            quantity: delta,
+            movementDate,
+            reason: `${params.reason} (에이전트 제안 승인)`,
+            referenceId: ctx.actionId ?? null,
+          },
+        })
+        adjusted.push({ optionId: it.optionId, before, after, delta })
+      }
+      return { locationId: params.locationId, adjusted }
+    })
+  },
+}
+
 // seller-hub deck 승인 큐 액션.
-export const sellerHubActions: ActionDefinition[] = [def(reorderPlanCreate), def(keywordUpdate)]
+export const sellerHubActions: ActionDefinition[] = [
+  def(reorderPlanCreate),
+  def(keywordUpdate),
+  def(stockAdjust),
+]

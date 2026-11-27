@@ -38,6 +38,7 @@ it('finance 재분류: learn 기본/true 는 승인, learn:false 만 바로 실�
 })
 
 const EXTERNAL = [
+  'seller-hub.stock.adjust',
   'finance.classrule.create',
   'coupang-ads.execution.approve',
   'sales-content.post.publish',
