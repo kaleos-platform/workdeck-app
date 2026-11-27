@@ -9,6 +9,8 @@ export const IGNORE_ERRORS = [
   // Node 런타임 경고가 console.error 로 찍혀 cold start 마다 들어온다
   'ExperimentalWarning',
   'DeprecationWarning',
+  // SheetJS 가 크기 칸이 0인 zip(채널 주문 엑셀)을 읽을 때 남기는 경고 — 파싱은 정상 진행(WORKDECK-APP-1G)
+  'Bad uncompressed size',
 ]
 
 const R = '[redacted]'
