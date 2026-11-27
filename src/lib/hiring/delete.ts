@@ -7,6 +7,46 @@ import { removeCleanupFiles } from './cleanup-storage'
 
 const PATH_CHUNK = 100
 
+export const MIGRATION_IN_PROGRESS_MESSAGE =
+  '오프닝에서 이전 중인 데이터라 이전이 끝난 뒤 삭제할 수 있어요.'
+
+/** 이전이 끝나지 않은 공간의 이관 데이터 삭제 시도. 라우트에서 409로 바꾼다. */
+export class MigrationInProgressError extends Error {
+  constructor() {
+    super(MIGRATION_IN_PROGRESS_MESSAGE)
+  }
+}
+
+// 이전 완료 = 그 공간의 오프닝 이전 작업이 모두 종료 상태이고, 하나 이상이 실제 적용(DONE·GRANT_MANUAL)됐다.
+// 진행 중에는 이전 감사·재계획이 원장을 다시 읽으므로 삭제(tombstone)를 막는다.
+const TERMINAL_JOB = ['DONE', 'GRANT_MANUAL', 'HELD', 'FAILED']
+const APPLIED_JOB = ['DONE', 'GRANT_MANUAL']
+
+async function assertMigrationSettled(
+  tx: Prisma.TransactionClient,
+  spaceId: string,
+  targets: { targetModel: 'HiringPosting' | 'HiringApplication'; ids: string[] }[]
+) {
+  const migrated = await tx.hiringMigrationRecord.findFirst({
+    where: {
+      spaceId,
+      OR: targets
+        .filter((t) => t.ids.length)
+        .map((t) => ({ targetModel: t.targetModel, targetId: { in: t.ids } })),
+    },
+    select: { id: true },
+  })
+  if (!migrated) return
+  const jobs = await tx.openingMigrationJob.findMany({
+    where: { targetSpaceId: spaceId },
+    select: { status: true },
+  })
+  const settled =
+    jobs.every((j) => TERMINAL_JOB.includes(j.status)) &&
+    jobs.some((j) => APPLIED_JOB.includes(j.status))
+  if (!settled) throw new MigrationInProgressError()
+}
+
 export type DeletePostingResult =
   | { status: 'ok'; deletedApplications: number }
   | { status: 'not_found' }
@@ -97,6 +137,10 @@ export async function deletePosting(
         where: { postingId, spaceId },
         select: { id: true },
       })
+      await assertMigrationSettled(tx, spaceId, [
+        { targetModel: 'HiringPosting', ids: [postingId] },
+        { targetModel: 'HiringApplication', ids: applications.map((a) => a.id) },
+      ])
       const files = await tx.hiringApplicationFile.findMany({
         where: { spaceId, application: { postingId } },
         select: { filePath: true },
@@ -141,6 +185,9 @@ export async function deleteApplications(spaceId: string, ids: string[]): Promis
         SELECT id FROM "HiringApplication" WHERE id = ANY(${ids}::text[]) AND "spaceId" = ${spaceId} FOR UPDATE`
       const targetIds = locked.map((r) => r.id)
       if (!targetIds.length) return { deleted: 0, ledgerIds: [] as string[] }
+      await assertMigrationSettled(tx, spaceId, [
+        { targetModel: 'HiringApplication', ids: targetIds },
+      ])
 
       const files = await tx.hiringApplicationFile.findMany({
         where: { spaceId, applicationId: { in: targetIds } },

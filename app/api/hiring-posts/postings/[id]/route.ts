@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma'
 import { updatePostingSchema } from '@/lib/validations/hiring-posts'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { getPostingDetail } from '@/lib/hiring/postings'
-import { deletePosting } from '@/lib/hiring/delete'
+import { deletePosting, MigrationInProgressError } from '@/lib/hiring/delete'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -82,7 +82,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (roleError) return roleError
   const { id } = await params
 
-  const result = await deletePosting(resolved.space.id, id)
+  let result: Awaited<ReturnType<typeof deletePosting>>
+  try {
+    result = await deletePosting(resolved.space.id, id)
+  } catch (e) {
+    if (e instanceof MigrationInProgressError) return errorResponse(e.message, 409)
+    throw e
+  }
   if (result.status === 'not_found') return errorResponse('공고를 찾을 수 없습니다', 404)
   if (result.status === 'open')
     return errorResponse(

@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
-import { deleteApplications } from '@/lib/hiring/delete'
+import { deleteApplications, MigrationInProgressError } from '@/lib/hiring/delete'
 import { bulkDeleteSchema, bulkStageSchema } from '@/lib/validations/hiring-applicants'
 
 export async function PATCH(req: NextRequest) {
@@ -33,6 +33,12 @@ export async function DELETE(req: NextRequest) {
   const parsed = bulkDeleteSchema.safeParse(body)
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
 
-  const deleted = await deleteApplications(resolved.space.id, parsed.data.ids)
+  let deleted: number
+  try {
+    deleted = await deleteApplications(resolved.space.id, parsed.data.ids)
+  } catch (e) {
+    if (e instanceof MigrationInProgressError) return errorResponse(e.message, 409)
+    throw e
+  }
   return NextResponse.json({ deleted })
 }
