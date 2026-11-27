@@ -6,7 +6,12 @@ import { removeFeedbackFiles } from '@/lib/feedback/storage'
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     userFeedbackAttachment: { findMany: jest.fn(), updateMany: jest.fn() },
-    feedbackFileDeletion: { findMany: jest.fn(), delete: jest.fn(), update: jest.fn(), create: jest.fn() },
+    feedbackFileDeletion: {
+      findMany: jest.fn(),
+      delete: jest.fn(),
+      update: jest.fn(),
+      create: jest.fn(),
+    },
     $transaction: jest.fn(),
   },
 }))
@@ -93,6 +98,7 @@ it('원장: 1시간 미만은 건너뛰고, 성공은 행 삭제, 실패는 atte
   expect(led.findMany.mock.calls[0][0]).toMatchObject({
     where: { createdAt: { lt: new Date(now.getTime() - 3_600_000) } },
     take: 100,
+    orderBy: [{ attempts: 'asc' }, { createdAt: 'asc' }],
   })
   expect(led.delete).toHaveBeenCalledWith({ where: { id: 'l1' } })
   expect(led.update).toHaveBeenCalledWith({
@@ -127,18 +133,42 @@ it('remove가 throw하면 그 그룹만 복구+원장 삭제, 다른 그룹은 �
     ])
     .mockResolvedValue([])
   att.updateMany.mockResolvedValueOnce({ count: 2 }).mockResolvedValue({ count: 1 })
-  remove.mockRejectedValueOnce(new Error('net')).mockResolvedValueOnce({ removed: ['p2'], failed: [] })
+  remove
+    .mockRejectedValueOnce(new Error('net'))
+    .mockResolvedValueOnce({ removed: ['p2'], failed: [] })
   const r = await runFeedbackCleanup(now)
-  expect(att.updateMany).toHaveBeenLastCalledWith({ where: { id: { in: ['a1'] } }, data: { deletedAt: null } })
+  expect(att.updateMany).toHaveBeenLastCalledWith({
+    where: { id: { in: ['a1'] } },
+    data: { deletedAt: null },
+  })
   expect(led.delete).toHaveBeenCalledTimes(2)
   expect(r).toMatchObject({ expiredRemoved: 1, expiredFailed: 1 })
 })
 
 it('원장 루프: remove throw 시 attempts+1 후 다음 행 계속', async () => {
-  led.findMany.mockResolvedValue([{ id: 'l1', paths: ['x'] }, { id: 'l2', paths: ['y'] }])
-  remove.mockRejectedValueOnce(new Error('env')).mockResolvedValueOnce({ removed: ['y'], failed: [] })
+  led.findMany.mockResolvedValue([
+    { id: 'l1', paths: ['x'] },
+    { id: 'l2', paths: ['y'] },
+  ])
+  remove
+    .mockRejectedValueOnce(new Error('env'))
+    .mockResolvedValueOnce({ removed: ['y'], failed: [] })
   const r = await runFeedbackCleanup(now)
-  expect(led.update).toHaveBeenCalledWith({ where: { id: 'l1' }, data: { attempts: { increment: 1 }, lastError: expect.any(String) } })
+  expect(led.update).toHaveBeenCalledWith({
+    where: { id: 'l1' },
+    data: { attempts: { increment: 1 }, lastError: expect.any(String) },
+  })
   expect(led.delete).toHaveBeenCalledWith({ where: { id: 'l2' } })
   expect(r).toMatchObject({ ledgerDone: 1, ledgerFailed: 1 })
+})
+
+it('복구 count가 실패 건수보다 적으면(cascade 삭제) 원장 행을 지우지 않는다', async () => {
+  att.findMany
+    .mockResolvedValueOnce([{ id: 'a1' }])
+    .mockResolvedValueOnce([{ id: 'a1', feedbackId: 'f1', path: 'p1', sizeBytes: 1 }])
+    .mockResolvedValue([])
+  att.updateMany.mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 0 })
+  remove.mockResolvedValueOnce({ removed: [], failed: ['p1'] })
+  await runFeedbackCleanup(now)
+  expect(led.delete).not.toHaveBeenCalled()
 })

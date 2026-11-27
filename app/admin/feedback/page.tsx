@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { requireOperator } from '@/lib/admin/auth'
+import { feedbackStorageUsedBytes } from '@/lib/feedback/usage'
 import { prisma } from '@/lib/prisma'
 import { FeedbackTable } from '@/components/admin/feedback-table'
 import { FEEDBACK_STATUSES, FEEDBACK_TYPES, storageCapBytes } from '@/lib/feedback/policy'
@@ -23,7 +24,7 @@ export default async function AdminFeedbackPage({
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const page = Math.min(pageCount, Math.max(1, Number.parseInt(sp.page ?? '1', 10) || 1))
 
-  const [rows, grouped, live, ledger] = await Promise.all([
+  const [rows, grouped, usedBytes] = await Promise.all([
     prisma.userFeedback.findMany({
       where,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -41,11 +42,7 @@ export default async function AdminFeedbackPage({
       },
     }),
     prisma.userFeedback.groupBy({ by: ['status'], _count: { _all: true } }),
-    prisma.userFeedbackAttachment.aggregate({
-      where: { deletedAt: null },
-      _sum: { sizeBytes: true },
-    }),
-    prisma.feedbackFileDeletion.aggregate({ _sum: { bytes: true } }),
+    feedbackStorageUsedBytes(),
   ])
   const counts = Object.fromEntries(FEEDBACK_STATUSES.map((s) => [s, 0])) as Record<
     UserFeedbackStatus,
@@ -72,7 +69,7 @@ export default async function AdminFeedbackPage({
         }))}
         summary={{
           counts,
-          totalBytes: (live._sum.sizeBytes ?? 0) + (ledger._sum.bytes ?? 0),
+          totalBytes: usedBytes,
           capBytes: storageCapBytes(),
         }}
         type={type ?? ''}

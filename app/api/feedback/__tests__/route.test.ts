@@ -104,6 +104,13 @@ describe('POST /api/feedback', () => {
     expect((await post()).status).toBe(201)
     expect(p.userFeedback.create.mock.calls[0][0].data.spaceId).toBeNull()
   })
+  it('공간 불일치(409) → 201 spaceId null', async () => {
+    ;(resolveRequestedSpaceContext as jest.Mock).mockResolvedValue({
+      error: NextResponse.json({}, { status: 409 }),
+    })
+    expect((await post()).status).toBe(201)
+    expect(p.userFeedback.create.mock.calls[0][0].data.spaceId).toBeNull()
+  })
   it('비구성원 403 그대로', async () => {
     ;(resolveRequestedSpaceContext as jest.Mock).mockResolvedValue({
       error: NextResponse.json({}, { status: 403 }),

@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { errorResponse, resolveRequestedSpaceContext } from '@/lib/api-helpers'
 import { checkRateLimit } from '@/lib/hiring/applications'
-import { sniffImage } from '@/lib/hiring/storage'
+import { extFromMime, sniffImage } from '@/lib/hiring/storage'
 import {
   MAX_FILES,
   MAX_FILE_BYTES,
@@ -16,15 +16,10 @@ import {
   removeFeedbackFiles,
   uploadFeedbackFile,
 } from '@/lib/feedback/storage'
+import { feedbackStorageUsedBytes } from '@/lib/feedback/usage'
 import { notifyFeedbackSlack } from '@/lib/feedback/notify'
 import { after } from 'next/server'
 
-const EXT = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-} as const
 const MAX_REQUEST_BYTES = 4_000_000
 
 type User = { id: string; email?: string | null }
@@ -49,7 +44,7 @@ export async function submitFeedback(req: Request, user: User): Promise<NextResp
     return errorResponse(`이미지는 ${MAX_FILES}장까지 첨부할 수 있습니다`, 400)
   if (raw.some((f) => f.size > MAX_FILE_BYTES))
     return errorResponse('이미지는 장당 1MB 이하여야 합니다', 413)
-  const files: { data: Uint8Array; mime: keyof typeof EXT }[] = []
+  const files: { data: Uint8Array; mime: string }[] = []
   for (const f of raw) {
     const data = new Uint8Array(await f.arrayBuffer())
     const mime = sniffImage(data)
@@ -60,25 +55,18 @@ export async function submitFeedback(req: Request, user: User): Promise<NextResp
   if (!checkRateLimit(`feedback:${user.id}`))
     return errorResponse('요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요', 429)
 
-  // 작업 공간이 없는 사용자도 제출할 수 있다(404 → null). 비구성원 403 등은 그대로 거절.
+  // 작업 공간이 없거나(404) 탭 간 공간이 어긋난(409) 경우에도 접수한다(공간 null). 비구성원 403 등은 그대로 거절.
   const ctx = await resolveRequestedSpaceContext(null)
   let space: { id: string; name: string } | null = null
   if ('error' in ctx) {
-    if (ctx.error.status !== 404) return ctx.error
+    if (ctx.error.status !== 404 && ctx.error.status !== 409) return ctx.error
   } else space = ctx.space
 
   // ponytail: 상한 검사는 lock 없음 — 동시 요청 시 수 MB 초과 가능, 포함량 100GB 대비 무시. 정밀 상한 필요 시 advisory lock.
   const bytes = files.reduce((s, f) => s + f.data.length, 0)
   let capReached = false
   if (files.length) {
-    const [a, l] = await Promise.all([
-      prisma.userFeedbackAttachment.aggregate({
-        where: { deletedAt: null },
-        _sum: { sizeBytes: true },
-      }),
-      prisma.feedbackFileDeletion.aggregate({ _sum: { bytes: true } }),
-    ])
-    capReached = (a._sum.sizeBytes ?? 0) + (l._sum.bytes ?? 0) + bytes > storageCapBytes()
+    capReached = (await feedbackStorageUsedBytes()) + bytes > storageCapBytes()
     if (!capReached) {
       try {
         await assertFeedbackBucket()
@@ -103,7 +91,10 @@ export async function submitFeedback(req: Request, user: User): Promise<NextResp
 
   const upload = files.length > 0 && !capReached
   if (upload) {
-    const items = files.map((f) => ({ ...f, path: `${fb.id}/${randomUUID()}.${EXT[f.mime]}` }))
+    const items = files.map((f) => ({
+      ...f,
+      path: `${fb.id}/${randomUUID()}.${extFromMime(f.mime)}`,
+    }))
     const paths = items.map((i) => i.path)
     // 경로는 업로드 전에 원장에 예약 — 어디서 끊겨도 cron이 정리한다
     let ledger: { id: string }

@@ -1,19 +1,11 @@
 import 'server-only'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { MAX_FILE_BYTES } from '@/lib/feedback/policy'
 
 /** 비공개 버킷(public false, file size limit 1 MiB) — Supabase 대시보드에서 수동 생성. 이미지 변환(transform) 사용 금지. */
 export const FEEDBACK_FILES_BUCKET = 'feedback-files'
 
-let cached: SupabaseClient | null = null
-function serviceClient(): SupabaseClient {
-  if (cached) return cached
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY
-  if (!url || !key) throw new Error('Supabase 환경변수(service role)가 설정되지 않았습니다')
-  cached = createClient(url, key, { auth: { persistSession: false } })
-  return cached
-}
+const serviceClient = getSupabaseAdminClient
 const bucket = () => serviceClient().storage.from(FEEDBACK_FILES_BUCKET)
 
 let bucketOk = false
@@ -50,8 +42,8 @@ export async function removeFeedbackFiles(
   return error ? { removed: [], failed: paths } : { removed: paths, failed: [] }
 }
 
+/** 호출 전에 assertFeedbackBucket()을 한 번 거칠 것(fail closed). */
 export async function signFeedbackFile(path: string, seconds = 600): Promise<string> {
-  await assertFeedbackBucket()
   const { data, error } = await bucket().createSignedUrl(path, seconds)
   if (error || !data) throw new Error(`서명 URL 생성 실패: ${error?.message}`)
   return data.signedUrl

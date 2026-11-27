@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireOperator, writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
-import { removeFeedbackFiles, signFeedbackFile } from '@/lib/feedback/storage'
+import { assertFeedbackBucket, removeFeedbackFiles, signFeedbackFile } from '@/lib/feedback/storage'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = { params: Promise<{ id: string }> }
@@ -19,11 +19,16 @@ export async function GET(_request: Request, { params }: Ctx) {
     where: { feedbackId: id },
     orderBy: { createdAt: 'asc' },
   })
+  // 버킷 설정이 틀리면 서명하지 않는다(fail closed)
+  const bucketOk = await assertFeedbackBucket().then(
+    () => true,
+    () => false
+  )
   return NextResponse.json(
     await Promise.all(
       rows.map(async (r) => ({
         id: r.id,
-        url: r.deletedAt ? null : await signFeedbackFile(r.path).catch(() => null),
+        url: r.deletedAt || !bucketOk ? null : await signFeedbackFile(r.path).catch(() => null),
         mimeType: r.mimeType,
         sizeBytes: r.sizeBytes,
         deletedAt: r.deletedAt,
@@ -32,7 +37,7 @@ export async function GET(_request: Request, { params }: Ctx) {
   )
 }
 
-// DELETE — 미삭제 첨부를 즉시 삭제(성공분만 deletedAt 기록)
+// DELETE — cron과 같은 순서: 선점+원장+감사 로그(한 tx) → Storage 삭제 → 성공 시 원장 삭제, 실패 시 원장 유지(cron 재시도)
 export async function DELETE(_request: Request, { params }: Ctx) {
   const auth = await requireOperator()
   if (!auth.ok) return auth.response
@@ -40,19 +45,49 @@ export async function DELETE(_request: Request, { params }: Ctx) {
   if (!(await prisma.userFeedback.findUnique({ where: { id }, select: { id: true } })))
     return errorResponse(NOT_FOUND, 404)
 
-  const live = await prisma.userFeedbackAttachment.findMany({
-    where: { feedbackId: id, deletedAt: null },
-    select: { path: true },
+  const now = new Date()
+  const { rows, ledger } = await prisma.$transaction(async (tx) => {
+    const marked = await tx.userFeedbackAttachment.updateMany({
+      where: { feedbackId: id, deletedAt: null },
+      data: { deletedAt: now },
+    })
+    const rows = marked.count
+      ? await tx.userFeedbackAttachment.findMany({
+          where: { feedbackId: id, deletedAt: now },
+          select: { path: true, sizeBytes: true },
+        })
+      : []
+    const ledger = rows.length
+      ? await tx.feedbackFileDeletion.create({
+          data: {
+            paths: rows.map((a) => a.path),
+            bytes: rows.reduce((n, a) => n + a.sizeBytes, 0),
+          },
+          select: { id: true },
+        })
+      : null
+    await writeAuditLog(
+      auth.user.id,
+      'userFeedback.attachmentsDelete',
+      'userFeedback',
+      id,
+      { count: rows.length },
+      tx
+    )
+    return { rows, ledger }
   })
-  const { removed, failed } = await removeFeedbackFiles(live.map((a) => a.path))
-  const result = { removed: removed.length, failed: failed.length }
-  await prisma.$transaction(async (tx) => {
-    if (removed.length > 0)
-      await tx.userFeedbackAttachment.updateMany({
-        where: { feedbackId: id, path: { in: removed }, deletedAt: null },
-        data: { deletedAt: new Date() },
-      })
-    await writeAuditLog(auth.user.id, 'userFeedback.attachmentsDelete', 'userFeedback', id, result, tx)
-  })
+  const result = { removed: 0, failed: 0 }
+  if (ledger) {
+    let failed: string[]
+    try {
+      ;({ failed } = await removeFeedbackFiles(rows.map((a) => a.path)))
+    } catch {
+      failed = rows.map((a) => a.path)
+    }
+    result.failed = failed.length
+    result.removed = rows.length - failed.length
+    if (!failed.length)
+      await prisma.feedbackFileDeletion.delete({ where: { id: ledger.id } }).catch(() => null)
+  }
   return NextResponse.json(result)
 }

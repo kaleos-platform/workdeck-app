@@ -41,11 +41,15 @@ export async function runFeedbackCleanup(now: Date, batch = 100) {
         select: { id: true, feedbackId: true, path: true, sizeBytes: true },
       })
       const byFeedback = new Map<string, typeof claimed>()
-      for (const a of claimed) byFeedback.set(a.feedbackId, [...(byFeedback.get(a.feedbackId) ?? []), a])
+      for (const a of claimed)
+        byFeedback.set(a.feedbackId, [...(byFeedback.get(a.feedbackId) ?? []), a])
       const out: { ledgerId: string; items: typeof claimed }[] = []
       for (const items of byFeedback.values()) {
         const row = await tx.feedbackFileDeletion.create({
-          data: { paths: items.map((a) => a.path), bytes: items.reduce((n, a) => n + a.sizeBytes, 0) },
+          data: {
+            paths: items.map((a) => a.path),
+            bytes: items.reduce((n, a) => n + a.sizeBytes, 0),
+          },
         })
         out.push({ ledgerId: row.id, items })
       }
@@ -66,11 +70,14 @@ export async function runFeedbackCleanup(now: Date, batch = 100) {
         await prisma.feedbackFileDeletion.delete({ where: { id: ledgerId } })
       } else {
         await prisma.$transaction(async (tx) => {
-          await tx.userFeedbackAttachment.updateMany({
-            where: { id: { in: items.filter((a) => failed.includes(a.path)).map((a) => a.id) } },
+          const failedIds = items.filter((a) => failed.includes(a.path)).map((a) => a.id)
+          const restored = await tx.userFeedbackAttachment.updateMany({
+            where: { id: { in: failedIds } },
             data: { deletedAt: null },
           })
-          await tx.feedbackFileDeletion.delete({ where: { id: ledgerId } })
+          // 되돌릴 행이 줄었으면(탈퇴 cascade 등) 원장을 남겨 원장 루프가 재시도한다
+          if (restored.count === failedIds.length)
+            await tx.feedbackFileDeletion.delete({ where: { id: ledgerId } })
         })
       }
     }
@@ -80,11 +87,13 @@ export async function runFeedbackCleanup(now: Date, batch = 100) {
   let ledgerFailed = 0
   const rows = await prisma.feedbackFileDeletion.findMany({
     where: { createdAt: { lt: new Date(now.getTime() - LEDGER_GRACE_MS) } },
-    orderBy: { createdAt: 'asc' },
+    orderBy: [{ attempts: 'asc' }, { createdAt: 'asc' }],
     take: batch,
   })
   for (const row of rows) {
-    const paths = Array.isArray(row.paths) ? row.paths.filter((p): p is string => typeof p === 'string') : []
+    const paths = Array.isArray(row.paths)
+      ? row.paths.filter((p): p is string => typeof p === 'string')
+      : []
     let failed: string[]
     try {
       ;({ failed } = await removeFeedbackFiles(paths))

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { fetchWithMfa } from '@/lib/auth/mfa-client'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -61,7 +62,7 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
 
   const loadAttachments = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/feedback/${feedback.id}/attachments`)
+      const res = await fetchWithMfa(`/api/admin/feedback/${feedback.id}/attachments`)
       if (!res.ok) throw new Error()
       setAttachments(await res.json())
       setAttachError(false)
@@ -77,7 +78,7 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
   async function save() {
     setSaving(true)
     try {
-      const res = await fetch(`/api/admin/feedback/${feedback.id}`, {
+      const res = await fetchWithMfa(`/api/admin/feedback/${feedback.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -101,7 +102,7 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
   async function deleteAttachments() {
     setDeleting(true)
     try {
-      const res = await fetch(`/api/admin/feedback/${feedback.id}/attachments`, {
+      const res = await fetchWithMfa(`/api/admin/feedback/${feedback.id}/attachments`, {
         method: 'DELETE',
       })
       const body = await res.json().catch(() => null)
