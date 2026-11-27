@@ -131,12 +131,65 @@ async function eachSheetPage(
   }
 }
 
-/** 취소 목록 한 장 → 다시 읽을 orderId 들. orderId 가 없으면 구조 오류(조용히 무시하지 않는다). */
-export function parseCancelPage(body: unknown): { orderIds: string[]; next: string | null } {
+/** 취소 목록 한 장 → 다시 읽을 orderId 들(+ 그 항목 원문). orderId 가 없으면 구조 오류(조용히 무시하지 않는다). */
+export function parseCancelPage(body: unknown): {
+  orderIds: string[]
+  receipts: Map<string, Record<string, unknown>[]>
+  next: string | null
+} {
   const { data, next } = listPage(body)
-  const ids = new Set<string>()
-  for (const raw of data) ids.add(reqText(rec(raw)?.orderId, 'cancel.orderId'))
-  return { orderIds: [...ids], next }
+  const receipts = new Map<string, Record<string, unknown>[]>()
+  for (const raw of data) {
+    const id = reqText(rec(raw)?.orderId, 'cancel.orderId')
+    receipts.set(id, [...(receipts.get(id) ?? []), rec(raw) as Record<string, unknown>])
+  }
+  return { orderIds: [...receipts.keys()], receipts, next }
+}
+
+/** 쿠팡은 전량 취소된 주문의 주문서 재조회를 400 「해당 주문이 취소 또는 반품 되었습니다」로 거부한다. */
+export function isCancelledRefetchError(e: unknown): boolean {
+  const err = e as { status?: unknown; body?: unknown } | null
+  return err?.status === 400 && typeof err.body === 'string' && /취소 또는 반품/.test(err.body)
+}
+
+/**
+ * 재조회가 막힌 전량 취소 주문 → 취소 목록 항목(returnItems)으로 취소 행을 만든다.
+ * 키는 주문서와 같은 shipmentBoxId:vendorItemId. 수령인 등 개인정보 필드는 읽지 않는다.
+ */
+export function cancelReceiptLines(orderId: string, receipts: Record<string, unknown>[]): OrderLine[] {
+  const lines: OrderLine[] = []
+  for (const r of receipts) {
+    // ponytail: 취소 목록엔 결제 시각이 없어 접수 시각으로 대신한다(전량 취소는 보통 결제 직후). 판정 창 소속만 쓰임.
+    const paidAt = iso(r.createdAt)
+    if (!paidAt) throw new StructureError('cancel.createdAt 없음')
+    if (!Array.isArray(r.returnItems) || r.returnItems.length === 0)
+      throw new StructureError('cancel.returnItems 없음')
+    for (const it of r.returnItems) {
+      const item = rec(it)
+      const productName = text(item?.vendorItemName) ?? text(item?.sellerProductName)
+      if (!productName) throw new StructureError('cancel.vendorItemName 없음')
+      const qty = item?.purchaseCount
+      if (typeof qty !== 'number' || !Number.isInteger(qty) || qty < 0)
+        throw new StructureError('cancel.purchaseCount 이상')
+      lines.push({
+        externalLineKey: `${reqText(item?.shipmentBoxId, 'cancel.shipmentBoxId')}:${reqText(item?.vendorItemId, 'cancel.vendorItemId')}`,
+        externalOrderId: orderId,
+        paidAt,
+        productName: productName.slice(0, 500),
+        optionText: null,
+        quantity: qty,
+        channelStatus: `CANCEL:${text(r.receiptStatus) ?? 'UNKNOWN'}`.slice(0, 300),
+        claimStatus: 'CANCEL',
+        deliveryKind: 'NORMAL',
+        shippingDueAt: null,
+        carrierCode: null,
+        trackingNumber: null,
+        dispatchedAt: null,
+        sourceChangedAt: iso(r.modifiedAt),
+      })
+    }
+  }
+  return lines
 }
 
 export async function observeCoupang(
@@ -152,7 +205,7 @@ export async function observeCoupang(
     for (let pages = 0; ; pages++) {
       if (pages >= MAX_PAGES) throw new StructureError('취소 목록 nextToken 이 끝나지 않습니다')
       hooks.request()
-      const { orderIds, next } = parseCancelPage(
+      const { orderIds, receipts, next } = parseCancelPage(
         await get(
           `${API}/v6/vendors/${vendorId}/returnRequests`,
           {
@@ -169,13 +222,19 @@ export async function observeCoupang(
       for (const orderId of orderIds) {
         hooks.check()
         // 이 경로는 shipmentBoxId 가 아니라 orderId 를 받고, data 는 그 주문의 주문서 배열이다.
-        const body = rec(
-          await get(
+        let fetched: unknown
+        try {
+          fetched = await get(
             `${API}/v4/vendors/${vendorId}/${orderId}/ordersheets`,
             undefined,
             hooks.timeoutMs?.()
           )
-        )
+        } catch (e) {
+          if (!isCancelledRefetchError(e)) throw e
+          rows.push(...cancelReceiptLines(orderId, receipts.get(orderId) ?? []))
+          continue
+        }
+        const body = rec(fetched)
         if (!body || !Array.isArray(body.data))
           throw new StructureError('주문 재조회 data 형태 이상')
         if (body.data.length === 0) throw new StructureError('취소 주문 재조회 결과 없음')
