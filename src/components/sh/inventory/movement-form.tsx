@@ -261,6 +261,8 @@ export function MovementForm({ onCreated }: Props) {
     if (targets.length === 0) return '옵션을 1개 이상 선택하세요'
 
     for (const t of targets) {
+      // Number('')는 0이라 빈 칸이 재고 0으로 저장되지 않게 먼저 막는다
+      if (t.quantity.trim() === '') return `"${t.optionName}" 수량을 입력하세요`
       const qty = Number(t.quantity)
       if (!Number.isFinite(qty)) return `"${t.optionName}" 수량을 입력하세요`
       if (movementType !== 'ADJUSTMENT' && qty <= 0)
@@ -358,6 +360,13 @@ export function MovementForm({ onCreated }: Props) {
         toast.error(`전체 실패 (${ng}건): ${failures.map((f) => f.name).join(', ')}`)
       } else {
         toast.warning(`${ok}건 성공 / ${ng}건 실패: ${failures.map((f) => f.name).join(', ')}`)
+        // 성공한 행은 선택을 풀어 다시 저장해도 중복 등록되지 않게 한다
+        const done = new Set(
+          targets.filter((_, i) => results[i].status === 'fulfilled').map((t) => t.optionId)
+        )
+        setOptionEntries((prev) =>
+          prev.map((e) => (done.has(e.optionId) ? { ...e, selected: false, quantity: '' } : e))
+        )
         if (allWarnings.length > 0) {
           const extra = allWarnings.length > 1 ? ` 외 ${allWarnings.length - 1}건` : ''
           toast.warning(`재고 부족 경고 ${allWarnings.length}건: ${allWarnings[0]}${extra}`)
