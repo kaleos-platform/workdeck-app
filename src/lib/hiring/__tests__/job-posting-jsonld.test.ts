@@ -1,10 +1,13 @@
-import { buildJobPostingJsonLd, type JobPostingInput } from '../job-posting-jsonld'
+import {
+  buildJobPostingJsonLd,
+  parseKoreanAddress,
+  type JobPostingInput,
+} from '../job-posting-jsonld'
 
 const input = (over: Partial<JobPostingInput> = {}): JobPostingInput => ({
-  title: '바리스타 모집',
   status: 'ACTIVE',
   isPreview: false,
-  closingDate: null,
+  closingDate: new Date('2999-12-31T00:00:00Z'),
   publishedAt: new Date('2026-11-10T00:00:00Z'),
   createdAt: new Date('2026-11-01T00:00:00Z'),
   companyName: '카페',
@@ -37,7 +40,7 @@ describe('buildJobPostingJsonLd', () => {
   it('필수 필드를 채운다', () => {
     const r = build()
     expect(r['@type']).toBe('JobPosting')
-    expect(r.title).toBe('바리스타 모집')
+    expect(r.title).toBe('바리스타')
     expect(r.datePosted).toBe('2026-11-10T00:00:00.000Z')
     expect(r.hiringOrganization).toEqual({ '@type': 'Organization', name: '카페' })
     expect(r.jobLocation).toEqual([
@@ -46,12 +49,14 @@ describe('buildJobPostingJsonLd', () => {
         address: {
           '@type': 'PostalAddress',
           streetAddress: '서울 강남구 테헤란로 1',
+          addressRegion: '서울',
+          addressLocality: '강남구',
           addressCountry: 'KR',
         },
       },
     ])
     expect(r.directApply).toBe(true)
-    expect(r.validThrough).toBeUndefined()
+    expect(r.validThrough).toBe('2999-12-31T23:59:59+09:00')
     expect(r.description).toContain('커피 제조 &lt;b&gt;')
     expect(r.description).toContain('<p>안내</p>')
   })
@@ -71,12 +76,9 @@ describe('buildJobPostingJsonLd', () => {
     expect(freelancer.baseSalary).toBeUndefined()
   })
 
-  it('validThrough 는 마감일 KST 23:59:59', () => {
-    const r = build({ closingDate: new Date('2999-12-31T00:00:00Z') })
-    expect(r.validThrough).toBe('2999-12-31T23:59:59+09:00')
-  })
-
   it.each([
+    ['상시 모집(마감일 없음)', { closingDate: null }],
+    ['회사명 공백', { companyName: '  ' }],
     ['CLOSED', { status: 'CLOSED' }],
     ['DRAFT', { status: 'DRAFT' }],
     ['미리보기', { isPreview: true }],
@@ -92,5 +94,28 @@ describe('buildJobPostingJsonLd', () => {
     ],
   ])('%s 이면 null', (_n, over) => {
     expect(buildJobPostingJsonLd(input(over as Partial<JobPostingInput>))).toBeNull()
+  })
+})
+
+describe('parseKoreanAddress', () => {
+  it.each([
+    ['서울특별시 강남구 테헤란로 1', { addressRegion: '서울특별시', addressLocality: '강남구' }],
+    ['서울 강남구 테헤란로 1', { addressRegion: '서울', addressLocality: '강남구' }],
+    ['경기도 성남시 분당구 판교로 1', { addressRegion: '경기도', addressLocality: '성남시' }],
+    ['세종특별자치시 한누리대로 2130', { addressRegion: '세종특별자치시' }],
+    [
+      '제주특별자치도 제주시 중앙로 1',
+      { addressRegion: '제주특별자치도', addressLocality: '제주시' },
+    ],
+    [
+      '강원특별자치도 춘천시 중앙로 1',
+      { addressRegion: '강원특별자치도', addressLocality: '춘천시' },
+    ],
+    ['테헤란로 1', {}],
+    ['여의도 영등포구 1', {}],
+    ['울릉도 1', {}],
+    ['', {}],
+  ])('%s', (road, expected) => {
+    expect(parseKoreanAddress(road)).toEqual(expected)
   })
 })

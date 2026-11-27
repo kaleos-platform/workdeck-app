@@ -22,7 +22,6 @@ export interface JobPostingPosition {
 }
 
 export interface JobPostingInput {
-  title: string
   status: string
   isPreview: boolean
   closingDate: Date | null
@@ -80,7 +79,32 @@ function positionHtml(p: JobPostingPosition): string {
   return parts.join('')
 }
 
+// 시·도 정식 이름·축약형만 정확히 인정한다(「여의도」「울릉도」 같은 지명 오인 방지)
+const REGIONS = new Set(
+  [
+    '서울 부산 대구 인천 광주 대전 울산 세종 경기 강원 충북 충남 전북 전남 경북 경남 제주',
+    '서울특별시 부산광역시 대구광역시 인천광역시 광주광역시 대전광역시 울산광역시 세종특별자치시',
+    '경기도 강원도 강원특별자치도 충청북도 충청남도 전라북도 전북특별자치도 전라남도 경상북도 경상남도 제주도 제주특별자치도',
+  ]
+    .join(' ')
+    .split(' ')
+)
+
+/** 도로명 주소 앞 토큰에서 시·도(addressRegion)·시·군·구(addressLocality)를 뽑는다. 못 뽑으면 생략. */
+export function parseKoreanAddress(road: string): {
+  addressRegion?: string
+  addressLocality?: string
+} {
+  const [first, second] = road.trim().split(/\s+/)
+  if (!first || !REGIONS.has(first)) return {}
+  return {
+    addressRegion: first,
+    ...(second && /[시군구]$/.test(second) ? { addressLocality: second } : {}),
+  }
+}
+
 export function buildJobPostingJsonLd(input: JobPostingInput): Record<string, unknown> | null {
+  if (!input.companyName.trim() || !input.closingDate) return null
   if (input.status !== 'ACTIVE' || input.isPreview) return null
   if (isHiringDeadlinePassed(input.closingDate)) return null
   if (input.positions.length !== 1 || !input.positionsBlockRendered) return null
@@ -107,16 +131,19 @@ export function buildJobPostingJsonLd(input: JobPostingInput): Record<string, un
   return {
     '@context': 'https://schema.org',
     '@type': 'JobPosting',
-    title: input.title,
+    title: position.name,
     description,
     datePosted: (input.publishedAt ?? input.createdAt).toISOString(),
-    ...(input.closingDate
-      ? { validThrough: `${input.closingDate.toISOString().slice(0, 10)}T23:59:59+09:00` }
-      : {}),
+    validThrough: `${input.closingDate.toISOString().slice(0, 10)}T23:59:59+09:00`,
     hiringOrganization: { '@type': 'Organization', name: input.companyName },
     jobLocation: [...new Set(addresses)].map((streetAddress) => ({
       '@type': 'Place',
-      address: { '@type': 'PostalAddress', streetAddress, addressCountry: 'KR' },
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress,
+        ...parseKoreanAddress(streetAddress),
+        addressCountry: 'KR',
+      },
     })),
     ...(employmentType.length ? { employmentType } : {}),
     ...(unitText && position.payAmount != null
