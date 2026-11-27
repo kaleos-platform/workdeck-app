@@ -258,6 +258,17 @@ describe('decideProduction — 발주 엔진 공식', () => {
     expect(r.suggestedProductionQty).toBe(0)
   })
 
+  it('단종·예측 제외는 엔진 수량이 와도 권장 0', () => {
+    expect(decideProduction({ ...base, discontinued: true, engineQty: 40 })).toMatchObject({
+      status: 'DISCONTINUED',
+      suggestedProductionQty: 0,
+    })
+    expect(decideProduction({ ...base, excluded: true, engineQty: 40 })).toMatchObject({
+      status: 'EXCLUDED',
+      suggestedProductionQty: 0,
+    })
+  })
+
   it('엔진 수량 0 이고 재고 충분하면 OK 그대로', () => {
     const r = decideProduction({ ...base, onHandQty: 500, engineQty: 0 })
     expect(r.status).toBe('OK')

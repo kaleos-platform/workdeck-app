@@ -298,7 +298,9 @@ export function decideProduction(input: {
     targetCoverDays: input.targetCoverDays,
     suggestedProductionQty: rawQty,
   })
-  const suggestedProductionQty = input.engineQty ?? rawQty
+  // 단종·제외는 엔진 수량이 와도 0
+  const suggestedProductionQty =
+    input.discontinued || input.excluded ? 0 : (input.engineQty ?? rawQty)
   if (
     suggestedProductionQty === 0 &&
     (judged.status === 'PRODUCE_NOW' || judged.status === 'PRODUCE_SOON')
@@ -481,7 +483,7 @@ export async function queryOptionSalesVelocity(
       ? []
       : (
           await prisma.invProduct.findMany({
-            where: { spaceId, id: { in: productIds } },
+            where: { spaceId, id: { in: productIds }, status: 'ACTIVE' },
             select: {
               id: true,
               reorderRoundUnit: true,
