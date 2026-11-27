@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { removeFeedbackFiles } from '@/lib/feedback/storage'
 import { DAY_MS, RETENTION_DAYS } from '@/lib/feedback/policy'
 
+class RestoreMismatch extends Error {}
+
 const LEDGER_GRACE_MS = 3_600_000 // 업로드 진행 중인 예약 행 보호
 const STATUSES = ['DONE', 'ON_HOLD'] as const
 
@@ -69,16 +71,20 @@ export async function runFeedbackCleanup(now: Date, batch = 100) {
       if (!failed.length) {
         await prisma.feedbackFileDeletion.delete({ where: { id: ledgerId } })
       } else {
-        await prisma.$transaction(async (tx) => {
-          const failedIds = items.filter((a) => failed.includes(a.path)).map((a) => a.id)
-          const restored = await tx.userFeedbackAttachment.updateMany({
-            where: { id: { in: failedIds } },
-            data: { deletedAt: null },
-          })
-          // 되돌릴 행이 줄었으면(탈퇴 cascade 등) 원장을 남겨 원장 루프가 재시도한다
-          if (restored.count === failedIds.length)
+        // 되돌릴 행이 줄었으면(탈퇴 cascade 등) 복구를 롤백하고 원장만 남겨 원장 루프가 재시도한다
+        await prisma
+          .$transaction(async (tx) => {
+            const failedIds = items.filter((a) => failed.includes(a.path)).map((a) => a.id)
+            const restored = await tx.userFeedbackAttachment.updateMany({
+              where: { id: { in: failedIds } },
+              data: { deletedAt: null },
+            })
+            if (restored.count !== failedIds.length) throw new RestoreMismatch()
             await tx.feedbackFileDeletion.delete({ where: { id: ledgerId } })
-        })
+          })
+          .catch((e) => {
+            if (!(e instanceof RestoreMismatch)) throw e
+          })
       }
     }
   }
