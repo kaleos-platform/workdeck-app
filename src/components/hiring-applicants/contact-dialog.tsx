@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { NOTIFICATION_LABELS } from '@/lib/hiring/application-shared'
-import { normalizeSmsPhone } from '@/lib/hiring/message-template'
+import { formatPhone, normalizeSmsPhone } from '@/lib/hiring/message-template'
 import { SmsComposer } from '@/components/hiring-applicants/sms-sender'
 import { StatusLinkPanel } from '@/components/hiring-applicants/notification-sender'
 import type { HiringNotificationType } from '@/generated/prisma/client'
@@ -56,7 +56,7 @@ export function ContactDialog({
   async function copyPhone() {
     if (!phone) return
     try {
-      await navigator.clipboard.writeText(phone)
+      await navigator.clipboard.writeText(formatPhone(phone))
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     } catch {
@@ -103,7 +103,7 @@ export function ContactDialog({
             <p className="text-sm">
               <span className="text-muted-foreground">받는 사람 </span>
               <span className="font-medium">
-                {name ?? '(이름 없음)'} {phone}
+                {name ?? '(이름 없음)'} {formatPhone(phone)}
               </span>
             </p>
             <div className="flex flex-wrap gap-2">
