@@ -1,10 +1,14 @@
 'use client'
 
-import { useTransition } from 'react'
+import * as Sentry from '@sentry/nextjs'
+import { useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-export default function RecruitingError({ reset }: { error: Error; reset: () => void }) {
+export default function RecruitingError({ error, reset }: { error: Error; reset: () => void }) {
+  useEffect(() => {
+    Sentry.captureException(error)
+  }, [error])
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
