@@ -4,14 +4,13 @@ import { getFeatureIcon } from './feature-icons'
 
 interface FeatureRowsProps {
   features: DeckLandingFeature[]
-  gradient: string
 }
 
 /**
  * 기능을 한 행씩 크게 설명한다. 이미지가 있으면 설명과 좌우 교차 배치,
  * 없으면 가운데 정렬 글만 둔다.
  */
-export function FeatureRows({ features, gradient }: FeatureRowsProps) {
+export function FeatureRows({ features }: FeatureRowsProps) {
   return (
     <section className="border-t bg-muted/30 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-14 sm:space-y-16">
@@ -24,10 +23,8 @@ export function FeatureRows({ features, gradient }: FeatureRowsProps) {
               <div
                 className={`flex items-center gap-2 text-sm font-medium text-muted-foreground ${image ? '' : 'justify-center'}`}
               >
-                <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br ${gradient}`}
-                >
-                  <Icon className="h-4 w-4 text-white" aria-hidden />
+                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-50 text-blue-600">
+                  <Icon className="h-4 w-4" aria-hidden />
                 </span>
                 {feature.title}
               </div>

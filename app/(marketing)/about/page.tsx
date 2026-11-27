@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MARKETING_CTA_CLASS } from '@/components/marketing/cta-class'
 import { buildMarketingUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
@@ -69,10 +70,8 @@ export default function AboutPage() {
                   href={`/${slug}`}
                   className="group flex items-center gap-4 rounded-xl border bg-card p-5 transition-colors hover:border-foreground/20"
                 >
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${meta.gradient}`}
-                  >
-                    <Icon className="h-5 w-5 text-white" aria-hidden />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+                    <Icon className="h-5 w-5 text-blue-600" aria-hidden />
                   </div>
                   <span className="font-semibold break-keep">{meta.name}</span>
                   <ArrowRight
@@ -86,14 +85,14 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-gradient-to-br from-blue-600 to-cyan-500 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8">
+      <section className="bg-blue-50 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-3xl space-y-6 text-center">
           <h2 className="text-2xl font-bold break-keep sm:text-3xl">함께 만들어가요</h2>
-          <p className="text-lg break-keep text-white/90">
+          <p className="text-lg break-keep text-muted-foreground">
             필요한 업무를 구독해 사용해 보시고 의견을 들려주세요.
           </p>
           <Link href={buildMarketingUrl('/recruiting#lead-form')}>
-            <Button size="lg" variant="secondary" className="gap-2">
+            <Button size="lg" className={`gap-2 ${MARKETING_CTA_CLASS}`}>
               시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>

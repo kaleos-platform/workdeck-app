@@ -1,0 +1,227 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "frame",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 1620,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "rectangle",
+   "id": "hdr",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 56,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "① 헤더 — 안 A와 같음",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "h1",
+   "x": 210,
+   "y": 96,
+   "text": "② H1  사장님 업무, 필요한 것만 골라 한 곳에서",
+   "fontSize": 24
+  },
+  {
+   "type": "text",
+   "id": "sub",
+   "x": 250,
+   "y": 140,
+   "text": "공고 만들기·지원자 관리부터 시작해서 하나씩 더해 가세요.",
+   "fontSize": 14
+  },
+  {
+   "type": "rectangle",
+   "id": "cta",
+   "x": 355,
+   "y": 176,
+   "width": 190,
+   "height": 48,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "label": {
+    "text": "[도입 문의하기 →]",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "heroimg",
+   "x": 130,
+   "y": 248,
+   "width": 640,
+   "height": 260,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ 넓은 실제 화면 이미지(가운데)",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "trust",
+   "x": 0,
+   "y": 532,
+   "width": 900,
+   "height": 56,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "④ 신뢰 줄 — 안 A와 같음",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "rows_t",
+   "x": 32,
+   "y": 620,
+   "text": "⑤⑥ 반복·흩어진 일→결과, AI 활용을 업무별 교차 행으로",
+   "fontSize": 20
+  },
+  {
+   "type": "rectangle",
+   "id": "r1t",
+   "x": 32,
+   "y": 664,
+   "width": 400,
+   "height": 160,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "모집 관리 [지금 사용 가능]\n문제: 카톡으로 흩어진 지원서\n결과: 지원자가 한 목록에",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "r1i",
+   "x": 468,
+   "y": 664,
+   "width": 400,
+   "height": 160,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "실제 화면 이미지",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "r2i",
+   "x": 32,
+   "y": 840,
+   "width": 400,
+   "height": 120,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "일러스트(준비중)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "r2t",
+   "x": 468,
+   "y": 840,
+   "width": 400,
+   "height": 120,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "재무 관리 [준비중]\n결과: 통장 내역이 자동으로 정리\n출시 알림 받기 →",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "more",
+   "x": 32,
+   "y": 976,
+   "width": 836,
+   "height": 64,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "나머지 준비중 업무 3개 — 한 줄 칩(쿠팡 광고 관리 · 브랜드 운영 · 세일즈 콘텐츠)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "how",
+   "x": 0,
+   "y": 1064,
+   "width": 900,
+   "height": 120,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑦ 시작 3단계 — 안 A와 같음",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "faq",
+   "x": 0,
+   "y": 1200,
+   "width": 900,
+   "height": 160,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑧ FAQ — 안 A와 같음",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "final",
+   "x": 0,
+   "y": 1376,
+   "width": 900,
+   "height": 120,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑨ 마지막 CTA — 안 A와 같음",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "ftr",
+   "x": 0,
+   "y": 1512,
+   "width": 900,
+   "height": 90,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑩ 푸터",
+    "fontSize": 13
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}
