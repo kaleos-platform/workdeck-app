@@ -1,4 +1,5 @@
-// 지원서 상세(server component). PII 는 서버에서만 복호화해 HTML 로 렌더(클라이언트 prop 미전달).
+// 지원서 상세(server component). PII 는 서버에서만 복호화해 HTML 로 렌더. 이메일·주소는 서버 HTML 전용,
+// 휴대폰·이름만 연락 팝업용으로 DetailActionsProvider client prop 으로 넘긴다.
 // 상호작용(상태 변경·메모·연락·블랙리스트·다운로드)은 client island 로 분리. 휴대폰·이메일 복사는 값을
 // prop 으로 받지 않고 서버 렌더된 DOM 텍스트를 읽는다.
 import { notFound, redirect } from 'next/navigation'
@@ -89,7 +90,7 @@ export default async function ApplicationDetailPage({ params, searchParams }: Pa
                 timeStyle: 'short',
               })}
             </p>
-            <div className="ml-auto flex items-center gap-1">
+            <div className="-ml-2 flex items-center gap-1 sm:ml-auto">
               <BlacklistButton applicationId={app.id} blacklisted={blacklisted} />
               {(resolved.role === 'OWNER' || resolved.role === 'ADMIN') && (
                 <DeleteApplicantButton applicationId={app.id} returnTo={backHref} />

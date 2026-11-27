@@ -71,7 +71,7 @@ export function DetailActionsProvider({
 
 export function DetailActionButtons({ className }: { className?: string }) {
   const ctx = useContext(DetailActionsContext)
-  if (!ctx) return null
+  if (!ctx) throw new Error('DetailActionButtons 는 DetailActionsProvider 안에서만 쓴다')
   return (
     <div className={cn('flex gap-2', className)}>
       <Button variant="outline" onClick={ctx.openStage}>
