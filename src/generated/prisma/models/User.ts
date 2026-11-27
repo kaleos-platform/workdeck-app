@@ -214,6 +214,7 @@ export type UserWhereInput = {
   spaceMemberships?: Prisma.SpaceMemberListRelationFilter
   openingMigrationJobs?: Prisma.OpeningMigrationJobListRelationFilter
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
+  feedbacks?: Prisma.UserFeedbackListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -230,6 +231,7 @@ export type UserOrderByWithRelationInput = {
   spaceMemberships?: Prisma.SpaceMemberOrderByRelationAggregateInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobOrderByRelationAggregateInput
   reorderPlans?: Prisma.ReorderPlanOrderByRelationAggregateInput
+  feedbacks?: Prisma.UserFeedbackOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -249,6 +251,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   spaceMemberships?: Prisma.SpaceMemberListRelationFilter
   openingMigrationJobs?: Prisma.OpeningMigrationJobListRelationFilter
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
+  feedbacks?: Prisma.UserFeedbackListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -295,6 +298,7 @@ export type UserCreateInput = {
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
+  feedbacks?: Prisma.UserFeedbackCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -311,6 +315,7 @@ export type UserUncheckedCreateInput = {
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
+  feedbacks?: Prisma.UserFeedbackUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -327,6 +332,7 @@ export type UserUpdateInput = {
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
+  feedbacks?: Prisma.UserFeedbackUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -343,6 +349,7 @@ export type UserUncheckedUpdateInput = {
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
+  feedbacks?: Prisma.UserFeedbackUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -503,6 +510,20 @@ export type UserUpdateOneWithoutOpeningMigrationJobsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOpeningMigrationJobsInput, Prisma.UserUpdateWithoutOpeningMigrationJobsInput>, Prisma.UserUncheckedUpdateWithoutOpeningMigrationJobsInput>
 }
 
+export type UserCreateNestedOneWithoutFeedbacksInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutFeedbacksInput, Prisma.UserUncheckedCreateWithoutFeedbacksInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutFeedbacksInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutFeedbacksNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutFeedbacksInput, Prisma.UserUncheckedCreateWithoutFeedbacksInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutFeedbacksInput
+  upsert?: Prisma.UserUpsertWithoutFeedbacksInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutFeedbacksInput, Prisma.UserUpdateWithoutFeedbacksInput>, Prisma.UserUncheckedUpdateWithoutFeedbacksInput>
+}
+
 export type UserCreateWithoutWorkspaceInput = {
   id: string
   email: string
@@ -516,6 +537,7 @@ export type UserCreateWithoutWorkspaceInput = {
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
+  feedbacks?: Prisma.UserFeedbackCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWorkspaceInput = {
@@ -531,6 +553,7 @@ export type UserUncheckedCreateWithoutWorkspaceInput = {
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
+  feedbacks?: Prisma.UserFeedbackUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWorkspaceInput = {
@@ -562,6 +585,7 @@ export type UserUpdateWithoutWorkspaceInput = {
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
+  feedbacks?: Prisma.UserFeedbackUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkspaceInput = {
@@ -577,6 +601,7 @@ export type UserUncheckedUpdateWithoutWorkspaceInput = {
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
+  feedbacks?: Prisma.UserFeedbackUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSpaceMembershipsInput = {
@@ -592,6 +617,7 @@ export type UserCreateWithoutSpaceMembershipsInput = {
   workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
+  feedbacks?: Prisma.UserFeedbackCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSpaceMembershipsInput = {
@@ -607,6 +633,7 @@ export type UserUncheckedCreateWithoutSpaceMembershipsInput = {
   workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
+  feedbacks?: Prisma.UserFeedbackUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSpaceMembershipsInput = {
@@ -638,6 +665,7 @@ export type UserUpdateWithoutSpaceMembershipsInput = {
   workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
+  feedbacks?: Prisma.UserFeedbackUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSpaceMembershipsInput = {
@@ -653,6 +681,7 @@ export type UserUncheckedUpdateWithoutSpaceMembershipsInput = {
   workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
+  feedbacks?: Prisma.UserFeedbackUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReorderPlansInput = {
@@ -668,6 +697,7 @@ export type UserCreateWithoutReorderPlansInput = {
   workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.UserFeedbackCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReorderPlansInput = {
@@ -683,6 +713,7 @@ export type UserUncheckedCreateWithoutReorderPlansInput = {
   workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.UserFeedbackUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReorderPlansInput = {
@@ -714,6 +745,7 @@ export type UserUpdateWithoutReorderPlansInput = {
   workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.UserFeedbackUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReorderPlansInput = {
@@ -729,6 +761,7 @@ export type UserUncheckedUpdateWithoutReorderPlansInput = {
   workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
   openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.UserFeedbackUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOpeningMigrationJobsInput = {
@@ -744,6 +777,7 @@ export type UserCreateWithoutOpeningMigrationJobsInput = {
   workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
+  feedbacks?: Prisma.UserFeedbackCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOpeningMigrationJobsInput = {
@@ -759,6 +793,7 @@ export type UserUncheckedCreateWithoutOpeningMigrationJobsInput = {
   workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
+  feedbacks?: Prisma.UserFeedbackUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOpeningMigrationJobsInput = {
@@ -790,6 +825,7 @@ export type UserUpdateWithoutOpeningMigrationJobsInput = {
   workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
+  feedbacks?: Prisma.UserFeedbackUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOpeningMigrationJobsInput = {
@@ -805,6 +841,87 @@ export type UserUncheckedUpdateWithoutOpeningMigrationJobsInput = {
   workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
   spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
+  feedbacks?: Prisma.UserFeedbackUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutFeedbacksInput = {
+  id: string
+  email: string
+  name?: string | null
+  avatarUrl?: string | null
+  platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
+  signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutOwnerInput
+  spaceMemberships?: Prisma.SpaceMemberCreateNestedManyWithoutUserInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobCreateNestedManyWithoutUserInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserUncheckedCreateWithoutFeedbacksInput = {
+  id: string
+  email: string
+  name?: string | null
+  avatarUrl?: string | null
+  platformRole?: $Enums.PlatformRole | null
+  mfaRequired?: boolean
+  signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+  spaceMemberships?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutUserInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedCreateNestedManyWithoutUserInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserCreateOrConnectWithoutFeedbacksInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutFeedbacksInput, Prisma.UserUncheckedCreateWithoutFeedbacksInput>
+}
+
+export type UserUpsertWithoutFeedbacksInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutFeedbacksInput, Prisma.UserUncheckedUpdateWithoutFeedbacksInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutFeedbacksInput, Prisma.UserUncheckedCreateWithoutFeedbacksInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutFeedbacksInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutFeedbacksInput, Prisma.UserUncheckedUpdateWithoutFeedbacksInput>
+}
+
+export type UserUpdateWithoutFeedbacksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.WorkspaceUpdateOneWithoutOwnerNestedInput
+  spaceMemberships?: Prisma.SpaceMemberUpdateManyWithoutUserNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUpdateManyWithoutUserNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutFeedbacksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformRole?: Prisma.NullableEnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole | null
+  mfaRequired?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  signupSource?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+  spaceMemberships?: Prisma.SpaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  openingMigrationJobs?: Prisma.OpeningMigrationJobUncheckedUpdateManyWithoutUserNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 
@@ -816,12 +933,14 @@ export type UserCountOutputType = {
   spaceMemberships: number
   openingMigrationJobs: number
   reorderPlans: number
+  feedbacks: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   spaceMemberships?: boolean | UserCountOutputTypeCountSpaceMembershipsArgs
   openingMigrationJobs?: boolean | UserCountOutputTypeCountOpeningMigrationJobsArgs
   reorderPlans?: boolean | UserCountOutputTypeCountReorderPlansArgs
+  feedbacks?: boolean | UserCountOutputTypeCountFeedbacksArgs
 }
 
 /**
@@ -855,6 +974,13 @@ export type UserCountOutputTypeCountReorderPlansArgs<ExtArgs extends runtime.Typ
   where?: Prisma.ReorderPlanWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountFeedbacksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserFeedbackWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -870,6 +996,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   spaceMemberships?: boolean | Prisma.User$spaceMembershipsArgs<ExtArgs>
   openingMigrationJobs?: boolean | Prisma.User$openingMigrationJobsArgs<ExtArgs>
   reorderPlans?: boolean | Prisma.User$reorderPlansArgs<ExtArgs>
+  feedbacks?: boolean | Prisma.User$feedbacksArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -915,6 +1042,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   spaceMemberships?: boolean | Prisma.User$spaceMembershipsArgs<ExtArgs>
   openingMigrationJobs?: boolean | Prisma.User$openingMigrationJobsArgs<ExtArgs>
   reorderPlans?: boolean | Prisma.User$reorderPlansArgs<ExtArgs>
+  feedbacks?: boolean | Prisma.User$feedbacksArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -927,6 +1055,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     spaceMemberships: Prisma.$SpaceMemberPayload<ExtArgs>[]
     openingMigrationJobs: Prisma.$OpeningMigrationJobPayload<ExtArgs>[]
     reorderPlans: Prisma.$ReorderPlanPayload<ExtArgs>[]
+    feedbacks: Prisma.$UserFeedbackPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1336,6 +1465,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   spaceMemberships<T extends Prisma.User$spaceMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$spaceMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   openingMigrationJobs<T extends Prisma.User$openingMigrationJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$openingMigrationJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OpeningMigrationJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reorderPlans<T extends Prisma.User$reorderPlansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reorderPlansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  feedbacks<T extends Prisma.User$feedbacksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserFeedbackPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1850,6 +1980,30 @@ export type User$reorderPlansArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.ReorderPlanScalarFieldEnum | Prisma.ReorderPlanScalarFieldEnum[]
+}
+
+/**
+ * User.feedbacks
+ */
+export type User$feedbacksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserFeedback
+   */
+  select?: Prisma.UserFeedbackSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserFeedback
+   */
+  omit?: Prisma.UserFeedbackOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserFeedbackInclude<ExtArgs> | null
+  where?: Prisma.UserFeedbackWhereInput
+  orderBy?: Prisma.UserFeedbackOrderByWithRelationInput | Prisma.UserFeedbackOrderByWithRelationInput[]
+  cursor?: Prisma.UserFeedbackWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserFeedbackScalarFieldEnum | Prisma.UserFeedbackScalarFieldEnum[]
 }
 
 /**

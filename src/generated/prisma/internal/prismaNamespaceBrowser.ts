@@ -230,7 +230,10 @@ export const ModelName = {
   ChannelOrderScanLine: 'ChannelOrderScanLine',
   PipelineOperation: 'PipelineOperation',
   HiringFileDeletion: 'HiringFileDeletion',
-  HiringCompanyProfile: 'HiringCompanyProfile'
+  HiringCompanyProfile: 'HiringCompanyProfile',
+  UserFeedback: 'UserFeedback',
+  UserFeedbackAttachment: 'UserFeedbackAttachment',
+  FeedbackFileDeletion: 'FeedbackFileDeletion'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3342,6 +3345,49 @@ export const HiringCompanyProfileScalarFieldEnum = {
 } as const
 
 export type HiringCompanyProfileScalarFieldEnum = (typeof HiringCompanyProfileScalarFieldEnum)[keyof typeof HiringCompanyProfileScalarFieldEnum]
+
+
+export const UserFeedbackScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  spaceId: 'spaceId',
+  type: 'type',
+  body: 'body',
+  pagePath: 'pagePath',
+  userAgent: 'userAgent',
+  status: 'status',
+  memo: 'memo',
+  closedAt: 'closedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserFeedbackScalarFieldEnum = (typeof UserFeedbackScalarFieldEnum)[keyof typeof UserFeedbackScalarFieldEnum]
+
+
+export const UserFeedbackAttachmentScalarFieldEnum = {
+  id: 'id',
+  feedbackId: 'feedbackId',
+  path: 'path',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type UserFeedbackAttachmentScalarFieldEnum = (typeof UserFeedbackAttachmentScalarFieldEnum)[keyof typeof UserFeedbackAttachmentScalarFieldEnum]
+
+
+export const FeedbackFileDeletionScalarFieldEnum = {
+  id: 'id',
+  paths: 'paths',
+  bytes: 'bytes',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  createdAt: 'createdAt'
+} as const
+
+export type FeedbackFileDeletionScalarFieldEnum = (typeof FeedbackFileDeletionScalarFieldEnum)[keyof typeof FeedbackFileDeletionScalarFieldEnum]
 
 
 export const SortOrder = {

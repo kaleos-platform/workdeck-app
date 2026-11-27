@@ -941,3 +941,18 @@ export type HiringFileDeletion = Prisma.HiringFileDeletionModel
  * 
  */
 export type HiringCompanyProfile = Prisma.HiringCompanyProfileModel
+/**
+ * Model UserFeedback
+ * 
+ */
+export type UserFeedback = Prisma.UserFeedbackModel
+/**
+ * Model UserFeedbackAttachment
+ * 
+ */
+export type UserFeedbackAttachment = Prisma.UserFeedbackAttachmentModel
+/**
+ * Model FeedbackFileDeletion
+ * 
+ */
+export type FeedbackFileDeletion = Prisma.FeedbackFileDeletionModel
