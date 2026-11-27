@@ -86,15 +86,15 @@ model UserFeedbackAttachment {
 
 ### 저장소
 
-- Supabase Storage **비공개** 버킷 `feedback-files`(신규). 생성은 hiring 버킷처럼 **Supabase 대시보드 수동**(dev·prod 각각, public false, 파일 크기 제한 2MB, 허용 MIME png/jpeg/webp/gif). `storage.buckets` 마이그레이션은 `migrate dev` shadow DB 오류 이력이 있어 택하지 않음. 배포 체크리스트에 포함. 공개 URL 금지, 어드민 열람은 서명 URL(짧은 만료).
+- Supabase Storage **비공개** 버킷 `feedback-files`(신규). 생성은 hiring 버킷처럼 **Supabase 대시보드 수동**(dev·prod 각각, public false, 파일 크기 제한 1MB, 허용 MIME png/jpeg/webp/gif). `storage.buckets` 마이그레이션은 `migrate dev` shadow DB 오류 이력이 있어 택하지 않음. 배포 체크리스트에 포함. 공개 URL 금지, 어드민 열람은 서명 URL(짧은 만료).
 - 경로: `{feedbackId}/{random}.{ext}`.
 
 ### 제출 흐름
 
 1. 사이드바 버튼 → Dialog(유형 라디오, 본문 textarea, 이미지 최대 3장, 미리보기·제거).
    안내 문구는 Tally 톤 차용: "불편한 점, 제안하고 싶은 기능, 오류를 남겨주시면 확인 후 조치하겠습니다. 자세히 적을수록 빨라요."
-2. 클라이언트에서 이미지 축소(최장변 1920px, JPEG/WebP 재인코딩)해 장당 ~1MB 이하로 만든 뒤 **한 번의 multipart POST** `/api/feedback`. (Vercel 함수 본문 4.5MB 한도 때문. 서명 업로드 URL 방식은 고아 파일 정리가 추가로 필요해 택하지 않음.)
-3. 서버: 로그인 필수 → zod 검증(유형·본문 길이) → 파일 검증(최대 3개, 장당 ≤2MB, 매직바이트로 png/jpeg/webp/gif만) → 사용자별 rate limit(기존 `checkRateLimit`(`src/lib/hiring/applications.ts`, 분당 5·시간당 20 고정, 인스턴스별 in-memory) 재사용, 키 `feedback:{userId}` — 남용 방지 수준이면 충분) → DB 행 생성 → Storage 업로드 → 첨부 행 생성. 업로드·DB 실패 시 올린 파일 삭제 후 오류 응답.
+2. 클라이언트에서 이미지 축소(최장변 1600px, WebP 품질 0.8, 미지원 시 JPEG)해 장당 ~300~500KB로 만든 뒤 **한 번의 multipart POST** `/api/feedback`. (Vercel 함수 본문 4.5MB 한도 때문. 서명 업로드 URL 방식은 고아 파일 정리가 추가로 필요해 택하지 않음.)
+3. 서버: 로그인 필수 → zod 검증(유형·본문 길이) → 파일 검증(최대 3개, 장당 ≤1MB, 매직바이트로 png/jpeg/webp/gif만) → 사용자별 rate limit(기존 `checkRateLimit`(`src/lib/hiring/applications.ts`, 분당 5·시간당 20 고정, 인스턴스별 in-memory) 재사용, 키 `feedback:{userId}` — 남용 방지 수준이면 충분) → DB 행 생성 → Storage 업로드 → 첨부 행 생성. 업로드·DB 실패 시 올린 파일 삭제 후 오류 응답.
 4. `pagePath`는 클라이언트가 `location.pathname + search` 전송, `spaceId`는 서버가 현재 세션의 작업 공간에서 결정(`src/lib/api-helpers.ts`의 `resolveSpaceContext` 계열, 클라이언트 값 신뢰 안 함). 작업 공간이 없으면 404 대신 null로 저장하도록 감싼다.
 5. 성공 시 토스트 "의견이 접수됐어요. 확인 후 조치할게요." 후 Dialog 닫기.
 6. Slack 알림은 응답을 막지 않게 실패 무시(로그만). 내용: 유형, 제출자 이메일, 작업 공간 이름, 화면 경로, 본문 앞 300자(escape), 첨부 개수, 어드민 상세 링크. 첨부 원본·서명 URL은 넣지 않음.
@@ -121,6 +121,18 @@ model UserFeedbackAttachment {
 ### 범위 밖(확정)
 
 - Tally 기존 응답 이전 — 하지 않음(새로 받는 것만).
+
+### Supabase 비용 가드 (에디 요구: 비용 증가 없음)
+
+운영은 Supabase Pro(조직 단위 포함량: Storage 100GB, 비캐시 egress 250GB, DB 디스크 8GB/프로젝트). 초과분만 과금(Storage ≈$0.021/GB·월, egress $0.09/GB). 의견 기능이 이 포함량을 의미 있게 소비하지 않도록:
+
+1. **총 용량 상한**: 미삭제 첨부 sizeBytes 합이 `FEEDBACK_STORAGE_CAP_MB`(기본 500) 이상이면 서버가 첨부를 거부하고 본문만 접수(Dialog에 "지금은 이미지를 받을 수 없어요" 안내). Slack 알림에 "첨부 용량 상한 도달" 1회 표시. 최악의 경우에도 의견 첨부 기여 ≤0.5GB.
+2. **작은 파일**: 클라이언트 축소 + 서버 장당 1MB·3장 상한 + 버킷 자체 1MB 제한(이중 방어).
+3. **자동 삭제**: 완료 30일·보류 90일 → 보관량은 처리 속도에 비례해 고정 수준 유지.
+4. **egress 최소화**: 어드민 목록에는 이미지 미로드(첨부 수만). 상세 열 때만 서명 URL(만료 10분)로 원본 로드. **Supabase 이미지 변환(transform/render) 사용 금지** — Pro에서 원본 이미지 수 기준 별도 과금 항목.
+5. **새 과금 리소스 없음**: Realtime·Edge Functions·추가 Auth 사용 없음, DB는 작은 텍스트 행. 정리 cron은 Vercel cron(하루 1회)으로 Supabase 컴퓨트 부담 없음.
+
+예상 규모: 월 100건·건당 평균 1장·400KB 가정 시 월 ~40MB, 자동 삭제로 상시 보관 수십 MB → 포함량 대비 0.1% 미만. 배포 전 Supabase 대시보드 Usage에서 현재 조직 Storage·egress 사용량을 확인해 포함량 여유를 기록한다(운영 DB 직접 조회는 권한상 불가해 미확인).
 
 ## 제약
 
