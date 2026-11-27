@@ -37,8 +37,8 @@ export function DeletePostingDialog({
   onDeleted,
 }: Props) {
   const [busy, setBusy] = useState(false)
-  // 서버가 모집중으로 판단해 409를 준 경우에도 안내로 전환한다.
-  const [blocked, setBlocked] = useState(false)
+  // 서버가 409(모집중·이전 진행 중)를 주면 그 안내 문구로 전환한다.
+  const [blocked, setBlocked] = useState<string | null>(null)
 
   async function handleDelete() {
     if (busy) return
@@ -46,7 +46,8 @@ export function DeletePostingDialog({
     try {
       const res = await fetch(`/api/hiring-posts/postings/${postingId}`, { method: 'DELETE' })
       if (res.status === 409) {
-        setBlocked(true)
+        const data = (await res.json().catch(() => null)) as { message?: string } | null
+        setBlocked(data?.message ?? OPEN_POSTING_DELETE_MESSAGE)
         return
       }
       if (!res.ok) {
@@ -63,13 +64,13 @@ export function DeletePostingDialog({
     }
   }
 
-  const guide = isOpen || blocked
+  const guide = isOpen || blocked !== null
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
         if (busy) return
-        if (!v) setBlocked(false)
+        if (!v) setBlocked(null)
         onOpenChange(v)
       }}
     >
@@ -78,7 +79,7 @@ export function DeletePostingDialog({
           <>
             <DialogHeader>
               <DialogTitle>공고를 삭제할 수 없어요</DialogTitle>
-              <DialogDescription>{OPEN_POSTING_DELETE_MESSAGE}</DialogDescription>
+              <DialogDescription>{blocked ?? OPEN_POSTING_DELETE_MESSAGE}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button onClick={() => onOpenChange(false)}>확인</Button>

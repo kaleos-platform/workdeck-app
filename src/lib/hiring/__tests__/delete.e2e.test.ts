@@ -42,6 +42,9 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!created) return
   await prisma.hiringMigrationRecord.deleteMany({ where: { spaceId: { in: [spaceA, spaceB] } } })
+  await prisma.openingMigrationJob.deleteMany({
+    where: { targetSpaceId: { in: [spaceA, spaceB] } },
+  })
   await prisma.hiringFileDeletion.deleteMany({ where: { spaceId: { in: [spaceA, spaceB] } } })
   await prisma.hiringUploadCleanup.deleteMany({ where: { spaceId: { in: [spaceA, spaceB] } } })
   await prisma.space.deleteMany({ where: { id: { in: [spaceA, spaceB] } } })
@@ -63,6 +66,26 @@ const req = (body?: unknown) =>
 // 파일 참조 트리거가 허용하는 이관 경로 형식(spaceId/migration/<64hex>/<64hex>).
 const hex64 = () => (randomUUID() + randomUUID()).replaceAll('-', '')
 const day = (offset: number) => new Date(Date.now() + offset * 86_400_000)
+const migrationRecord = (targetModel: string, targetId: string) => ({
+  sourceRef: `qa-${randomUUID()}`,
+  spaceId: spaceA,
+  sourceSnapshotAt: new Date(),
+  transformVersion: 'qa',
+  sourceHash: 'h',
+  targetModel,
+  targetId,
+  targetHash: 'h',
+  sourceSnapshotEnc: 'enc',
+  sourceSnapshotIv: 'iv',
+  metadata: { keep: 1 },
+})
+// 공간 A 의 오프닝 이전 작업 상태를 하나로 맞춘다.
+const setMigrationJob = async (status: 'APPLYING' | 'DONE') => {
+  await prisma.openingMigrationJob.deleteMany({ where: { targetSpaceId: spaceA } })
+  await prisma.openingMigrationJob.create({
+    data: { openingBrandId: `qa-${randomUUID()}`, targetSpaceId: spaceA, status },
+  })
+}
 
 describe('공고 삭제', () => {
   it('모집중 공고는 409, 그대로 남는다', async () => {
@@ -136,23 +159,9 @@ describe('공고 삭제', () => {
       },
     })
     await prisma.hiringMigrationRecord.createMany({
-      data: [
-        ['HiringPosting', p.id],
-        ['HiringApplication', a.id],
-      ].map(([targetModel, targetId]) => ({
-        sourceRef: `qa-${randomUUID()}`,
-        spaceId: spaceA,
-        sourceSnapshotAt: new Date(),
-        transformVersion: 'qa',
-        sourceHash: 'h',
-        targetModel,
-        targetId,
-        targetHash: 'h',
-        sourceSnapshotEnc: 'enc',
-        sourceSnapshotIv: 'iv',
-        metadata: { keep: 1 },
-      })),
+      data: [migrationRecord('HiringPosting', p.id), migrationRecord('HiringApplication', a.id)],
     })
+    await setMigrationJob('DONE') // 이전 완료 공간이라 삭제 가능
     // 즉시 Storage 삭제가 실패하는 경우 → 원장 행이 남아야 한다.
     jest.mocked(removeCleanupFiles).mockRejectedValue(Error('storage down'))
 
@@ -177,6 +186,48 @@ describe('공고 삭제', () => {
     jest.mocked(removeCleanupFiles).mockResolvedValue(undefined)
     await expect(processFileDeletions()).resolves.toMatchObject({ failed: 0 })
     expect(await prisma.hiringFileDeletion.count({ where: { spaceId: spaceA } })).toBe(0)
+  })
+})
+
+describe('오프닝 이전 데이터 삭제', () => {
+  it('이전이 끝나지 않은 공간의 이관 공고·지원자는 409, 아무것도 지우지 않는다', async () => {
+    const p = await prisma.hiringPosting.create({
+      data: { spaceId: spaceA, title: '[QA] 이전 중', status: 'CLOSED' },
+    })
+    const a = await prisma.hiringApplication.create({ data: { spaceId: spaceA, postingId: p.id } })
+    await prisma.hiringMigrationRecord.createMany({
+      data: [migrationRecord('HiringPosting', p.id), migrationRecord('HiringApplication', a.id)],
+    })
+    await setMigrationJob('APPLYING')
+
+    const res = await deletePostingRoute(req(), idParams(p.id))
+    expect(res?.status).toBe(409)
+    const single = await deleteApplicationRoute(req(), idParams(a.id))
+    expect(single?.status).toBe(409)
+    const bulk = await bulkDeleteRoute(req({ ids: [a.id] }))
+    expect(bulk?.status).toBe(409)
+    expect(await prisma.hiringPosting.count({ where: { id: p.id } })).toBe(1)
+    expect(await prisma.hiringApplication.count({ where: { id: a.id } })).toBe(1)
+    const records = await prisma.hiringMigrationRecord.findMany({
+      where: { targetId: { in: [p.id, a.id] } },
+    })
+    expect(records.every((r) => r.sourceSnapshotEnc === 'enc')).toBe(true)
+
+    // 이전 작업이 끝나면 삭제된다.
+    await setMigrationJob('DONE')
+    const done = await deletePostingRoute(req(), idParams(p.id))
+    expect(await done?.json()).toEqual({ ok: true, deletedApplications: 1 })
+  })
+
+  it('이관 기록은 있는데 이전 작업이 없는 공간도 막는다', async () => {
+    await prisma.openingMigrationJob.deleteMany({ where: { targetSpaceId: spaceA } })
+    const p = await prisma.hiringPosting.create({
+      data: { spaceId: spaceA, title: '[QA] 작업 없음', status: 'CLOSED' },
+    })
+    await prisma.hiringMigrationRecord.create({ data: migrationRecord('HiringPosting', p.id) })
+    const res = await deletePostingRoute(req(), idParams(p.id))
+    expect(res?.status).toBe(409)
+    await prisma.hiringPosting.delete({ where: { id: p.id } })
   })
 })
 
