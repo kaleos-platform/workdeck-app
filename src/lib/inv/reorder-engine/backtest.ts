@@ -5,6 +5,11 @@ import type { DayPoint } from './series'
 
 const MODEL_ORDER: ModelKey[] = ['MA_BLEND', 'MA30', 'MA90', 'SES_TREND', 'CROSTON']
 const MIN_TRAIN_DAYS = 30
+/**
+ * 기본 모델(MA_BLEND)에서 바꾸려면 점수(WAPE)가 이만큼 이상 낮아야 한다.
+ * 백테스트 창이 하루씩 움직일 때 근소차로 추천이 뒤집히는 것을 막는다(에디 결정 2026-11-28, 5%p).
+ */
+export const MODEL_SWITCH_MARGIN = 0.05
 
 type Scores = Record<ModelKey, number | null>
 
@@ -46,7 +51,10 @@ export function backtestProduct(optionSeries: DayPoint[][], horizonDays: number)
   return out
 }
 
-/** 점수 = 백테스트와 실적(있으면) 평균, 최소 점수 모델. 전부 null 이면 MA_BLEND. 'USER' 실적은 선택에서 무시. */
+/**
+ * 점수 = 백테스트와 실적(있으면) 평균, 최소 점수 모델. 전부 null 이면 MA_BLEND. 'USER' 실적은 선택에서 무시.
+ * 최소 점수 모델이 MA_BLEND 보다 MODEL_SWITCH_MARGIN 미만으로만 낮으면 MA_BLEND 를 유지한다.
+ */
 export function recommendModel(
   backtest: Scores,
   realized: Partial<Record<ModelKey | 'USER', number>> = {}
@@ -58,6 +66,15 @@ export function recommendModel(
     if (parts.length === 0) continue
     scores[k] = parts.reduce((s, v) => s + v, 0) / parts.length
     if (best === null || scores[k]! < scores[best]!) best = k
+  }
+  if (
+    best !== null &&
+    best !== 'MA_BLEND' &&
+    scores.MA_BLEND != null &&
+    // 부동소수 오차로 정확히 5%p 차가 미달 처리되지 않게 1e-9 여유
+    scores.MA_BLEND - scores[best]! < MODEL_SWITCH_MARGIN - 1e-9
+  ) {
+    best = 'MA_BLEND'
   }
   return { model: best ?? 'MA_BLEND', scores }
 }
