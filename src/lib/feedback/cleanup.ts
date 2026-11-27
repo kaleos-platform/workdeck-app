@@ -29,25 +29,48 @@ export async function runFeedbackCleanup(now: Date, batch = 100) {
     left -= candidates.length
     if (!candidates.length) continue
     const ids = candidates.map((c) => c.id)
-    const claim = await prisma.userFeedbackAttachment.updateMany({
-      where: { id: { in: ids }, deletedAt: null, feedback },
-      data: { deletedAt: now },
+    // 선점과 원장 기록을 한 transaction으로: 도중에 죽어도 경로는 항상 DB(원장)에 남는다
+    const groups = await prisma.$transaction(async (tx) => {
+      const claim = await tx.userFeedbackAttachment.updateMany({
+        where: { id: { in: ids }, deletedAt: null, feedback },
+        data: { deletedAt: now },
+      })
+      if (!claim.count) return []
+      const claimed = await tx.userFeedbackAttachment.findMany({
+        where: { id: { in: ids }, deletedAt: now },
+        select: { id: true, feedbackId: true, path: true, sizeBytes: true },
+      })
+      const byFeedback = new Map<string, typeof claimed>()
+      for (const a of claimed) byFeedback.set(a.feedbackId, [...(byFeedback.get(a.feedbackId) ?? []), a])
+      const out: { ledgerId: string; items: typeof claimed }[] = []
+      for (const items of byFeedback.values()) {
+        const row = await tx.feedbackFileDeletion.create({
+          data: { paths: items.map((a) => a.path), bytes: items.reduce((n, a) => n + a.sizeBytes, 0) },
+        })
+        out.push({ ledgerId: row.id, items })
+      }
+      return out
     })
-    if (!claim.count) continue
-    const claimed = await prisma.userFeedbackAttachment.findMany({
-      where: { id: { in: ids }, deletedAt: now },
-      select: { id: true, feedbackId: true, path: true },
-    })
-    const byFeedback = new Map<string, typeof claimed>()
-    for (const a of claimed) byFeedback.set(a.feedbackId, [...(byFeedback.get(a.feedbackId) ?? []), a])
-    for (const group of byFeedback.values()) {
-      const { removed, failed } = await removeFeedbackFiles(group.map((a) => a.path))
+    for (const { ledgerId, items } of groups) {
+      let failed: string[]
+      let removed: string[]
+      try {
+        ;({ removed, failed } = await removeFeedbackFiles(items.map((a) => a.path)))
+      } catch {
+        removed = []
+        failed = items.map((a) => a.path)
+      }
       expiredRemoved += removed.length
       expiredFailed += failed.length
-      if (failed.length) {
-        await prisma.userFeedbackAttachment.updateMany({
-          where: { id: { in: group.filter((a) => failed.includes(a.path)).map((a) => a.id) } },
-          data: { deletedAt: null },
+      if (!failed.length) {
+        await prisma.feedbackFileDeletion.delete({ where: { id: ledgerId } })
+      } else {
+        await prisma.$transaction(async (tx) => {
+          await tx.userFeedbackAttachment.updateMany({
+            where: { id: { in: items.filter((a) => failed.includes(a.path)).map((a) => a.id) } },
+            data: { deletedAt: null },
+          })
+          await tx.feedbackFileDeletion.delete({ where: { id: ledgerId } })
         })
       }
     }
@@ -62,7 +85,12 @@ export async function runFeedbackCleanup(now: Date, batch = 100) {
   })
   for (const row of rows) {
     const paths = Array.isArray(row.paths) ? row.paths.filter((p): p is string => typeof p === 'string') : []
-    const { failed } = await removeFeedbackFiles(paths)
+    let failed: string[]
+    try {
+      ;({ failed } = await removeFeedbackFiles(paths))
+    } catch {
+      failed = paths.length ? paths : ['?']
+    }
     if (!failed.length) {
       await prisma.feedbackFileDeletion.delete({ where: { id: row.id } })
       ledgerDone++
