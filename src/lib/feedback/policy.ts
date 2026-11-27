@@ -22,8 +22,8 @@ export const FEEDBACK_STATUS_LABEL: Record<UserFeedbackStatus, string> = {
 export const MAX_FILES = 3
 export const MAX_FILE_BYTES = 1_048_576
 
-const DAY_MS = 86_400_000
-const RETENTION_DAYS: Partial<Record<UserFeedbackStatus, number>> = { DONE: 30, ON_HOLD: 90 }
+export const DAY_MS = 86_400_000
+export const RETENTION_DAYS: Partial<Record<UserFeedbackStatus, number>> = { DONE: 30, ON_HOLD: 90 }
 
 const pagePathSchema = z
   .string()

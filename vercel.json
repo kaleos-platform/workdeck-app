@@ -49,6 +49,9 @@
     "app/api/cron/hiring-upload-cleanup/route.ts": {
       "maxDuration": 60
     },
+    "app/api/cron/feedback-attachment-cleanup/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/collection/naver-nbaesong/ingest/route.ts": {
       "maxDuration": 60
     },
@@ -64,6 +67,7 @@
   },
   "crons": [
     { "path": "/api/cron/hiring-upload-cleanup", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/feedback-attachment-cleanup", "schedule": "0 18 * * *" },
     {
       "path": "/api/cron/wekeep-weekly-reconcile",
       "schedule": "0 0 * * 1"
