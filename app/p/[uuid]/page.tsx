@@ -24,6 +24,8 @@ import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
 import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { buttonBlockStyle } from '@/lib/hiring/button-color'
 import { buildAppUrl, buildMarketingUrl } from '@/lib/domain'
+import { JsonLd } from '@/components/marketing/json-ld'
+import { buildJobPostingJsonLd } from '@/lib/hiring/job-posting-jsonld'
 
 type Params = { params: Promise<{ uuid: string }>; searchParams: Promise<{ preview?: string }> }
 
@@ -144,8 +146,39 @@ export default async function PublicPostingPage({ params, searchParams }: Params
     return `${diffDays === 0 ? 'D-DAY' : `D-${diffDays}`} · ${dateText}`
   })()
 
+  // 화면에 렌더되는 값(filterPosting 결과)만 넘긴다 — 마크업 = 화면
+  const jsonLd =
+    profile && process.env.HIRING_JOBPOSTING !== 'off'
+      ? buildJobPostingJsonLd({
+          companyName: profile.companyName,
+          isPreview,
+          status: posting.status,
+          closingDate: posting.closingDate,
+          publishedAt: posting.publishedAt,
+          createdAt: posting.createdAt,
+          positions,
+          positionsBlockRendered:
+            positions.length > 0 && contents.some((c) => c.contentType === 'positions'),
+          hasInternalApplyLink: contents.some((c) => {
+            if (c.contentType === 'button') {
+              const btn = c.data as { title?: string; linkType?: string } | null
+              return !!btn?.title && btn.linkType === 'form'
+            }
+            if ((c.contentType === 'image' || c.contentType === 'design') && c.imagePath) {
+              return (c.data as { link?: { linkType?: string } } | null)?.link?.linkType === 'form'
+            }
+            return false
+          }),
+          stores: stores.map((s) => ({ roadAddress: s.store.roadAddress })),
+          textBlocksHtml: contents
+            .filter((c) => c.contentType === 'text' && c.data)
+            .map((c) => renderTiptapHtml(c.data)),
+        })
+      : null
+
   return (
     <article className="space-y-6">
+      {jsonLd && <JsonLd data={jsonLd} />}
       {isPreview && (
         <div className="sticky top-0 z-50 -mx-4 -mt-4 bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-900 shadow-sm sm:-mx-6 sm:-mt-6 dark:bg-amber-950 dark:text-amber-200">
           미리보기 — 발행 전 화면입니다
