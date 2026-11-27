@@ -193,7 +193,7 @@ async function upsertStockLevel(
   return updated.quantity
 }
 
-async function setStockLevel(
+export async function setStockLevel(
   tx: Tx,
   spaceId: string,
   optionId: string,
