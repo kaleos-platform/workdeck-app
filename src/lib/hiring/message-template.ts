@@ -19,6 +19,12 @@ export function normalizeSmsPhone(phone: string | null | undefined): string | nu
   return digits.length >= 9 && digits.length <= 11 ? digits : null
 }
 
+// 휴대폰 표시용 010-1234-5678. 형식이 다르면 받은 그대로 둔다(문자·전화 링크는 normalizeSmsPhone 숫자 사용).
+export function formatPhone<T extends string | null | undefined>(value: T): T | string {
+  const m = /^(01\d)(\d{3,4})(\d{4})$/.exec((value ?? '').replace(/\D/g, ''))
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : value
+}
+
 export const SAMPLE_MESSAGES = [
   {
     title: '서류 합격·면접 안내',
