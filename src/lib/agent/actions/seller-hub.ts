@@ -204,6 +204,11 @@ const stockAdjustParams = z.object({
   movementDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
+    // 2026-02-30 처럼 넘어가거나 Invalid Date 가 승인 뒤에야 실패하지 않게 제안 시점에 거른다
+    .refine((s) => !Number.isNaN(Date.parse(s)) && new Date(s).toISOString().slice(0, 10) === s, {
+      message: '존재하지 않는 날짜입니다',
+    })
+    .refine((s) => s <= getTodayStrKst(), { message: '미래 날짜로 조정할 수 없습니다' })
     .optional(),
 })
 
@@ -222,7 +227,7 @@ async function loadStockAdjustTargets(db: StockDb, spaceId: string, params: Stoc
   const ids = params.items.map((i) => i.optionId)
   const options = await db.invProductOption.findMany({
     where: { id: { in: ids }, deletedAt: null, product: { spaceId, status: 'ACTIVE' } },
-    select: { id: true, name: true, sku: true },
+    select: { id: true, name: true, sku: true, product: { select: { name: true } } },
   })
   const byId = new Map(options.map((o) => [o.id, o]))
   const missing = ids.find((id) => !byId.has(id))
@@ -231,8 +236,9 @@ async function loadStockAdjustTargets(db: StockDb, spaceId: string, params: Stoc
   return { location, byId }
 }
 
-const optionLabel = (o: { name: string; sku: string | null }) =>
-  o.sku ? `${o.name} (${o.sku})` : o.name
+// 다른 상품의 같은 이름 옵션이 승인 화면에서 한 줄로 합쳐지지 않게 상품명을 붙인다
+const optionLabel = (o: { name: string; sku: string | null; product: { name: string } }) =>
+  `${o.product.name} / ${o.name}${o.sku ? ` (${o.sku})` : ''}`
 
 const stockAdjust: ActionDefinition<StockAdjustParams> = {
   actionType: 'seller-hub.stock.adjust',
@@ -290,11 +296,15 @@ const stockAdjust: ActionDefinition<StockAdjustParams> = {
   },
   snapshot: async (ctx, params) => {
     const { location, byId } = await loadStockAdjustTargets(prisma, ctx.spaceId, params)
-    const out: Record<string, string> = { 위치: location.name }
+    const out: Record<string, string> = {
+      위치: location.name,
+      이동일: params.movementDate ?? getTodayStrKst(),
+    }
     for (const it of params.items) {
       const d = it.quantity - it.expectedBefore
-      out[optionLabel(byId.get(it.optionId)!)] =
-        `${it.expectedBefore} → ${it.quantity} (${d > 0 ? '+' : ''}${d})`
+      let key = optionLabel(byId.get(it.optionId)!)
+      if (key in out) key = `${key} #${it.optionId.slice(-6)}` // 라벨이 같아도 줄이 덮이지 않게
+      out[key] = `${it.expectedBefore} → ${it.quantity} (${d > 0 ? '+' : ''}${d})`
     }
     return out
   },

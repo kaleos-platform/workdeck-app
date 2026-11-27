@@ -152,6 +152,10 @@ d('seller-hub.stock.adjust', () => {
     const r = await propose(await params(opt[0], 7))
     expect(r.status).toBe('pending_approval')
     expect(await stock(opt[0])).toBe(10) // 승인 전엔 그대로
+    // Slack·일괄 승인(webReviewed 없음)은 막힌다
+    const blocked = await approveAndExecute(r.actionId, USER_ID)
+    expect(blocked.status).toBe('BLOCKED')
+    expect(await stock(opt[0])).toBe(10)
     const out = await approveAndExecute(r.actionId, USER_ID, { webReviewed: true })
     expect(out.status).toBe('EXECUTED')
     expect(await stock(opt[0])).toBe(7)
@@ -192,17 +196,19 @@ d('seller-hub.stock.adjust', () => {
   })
 
   test('다중 옵션 중 하나만 바뀌어도 전체 롤백', async () => {
-    const a = await params(opt[2], 1)
-    const b = await params(opt[3], 2)
+    // 실행은 optionId 순 — 뒤에 처리되는 옵션을 바꿔야 앞 옵션의 쓰기가 실제로 롤백되는지 확인된다
+    const [first, last] = [opt[2], opt[3]].sort()
+    const a = await params(first, 1)
+    const b = await params(last, 2)
     const r = await propose({ ...a, items: [...a.items, ...b.items] })
     await prisma.invStockLevel.update({
-      where: { optionId_locationId: { optionId: opt[3], locationId: locId } },
+      where: { optionId_locationId: { optionId: last, locationId: locId } },
       data: { quantity: 11 },
     })
     const out = await approveAndExecute(r.actionId, USER_ID, { webReviewed: true })
     expect(out.status).toBe('FAILED')
-    expect(await stock(opt[2])).toBe(10)
-    expect(await stock(opt[3])).toBe(11)
+    expect(await stock(first)).toBe(10)
+    expect(await stock(last)).toBe(11)
     expect(
       await prisma.invMovement.count({
         where: { spaceId: SPACE_ID, optionId: { in: [opt[2], opt[3]] } },
@@ -213,6 +219,15 @@ d('seller-hub.stock.adjust', () => {
   test('자동 연동 위치(externalSource·3PL 자동 대조) 거부', async () => {
     await expect(propose(await params(opt[4], 3, extLocId))).rejects.toThrow(/자동 연동/)
     await expect(propose(await params(opt[4], 3, syncLocId))).rejects.toThrow(/자동 연동/)
+  })
+
+  test('존재하지 않는 날짜·미래 날짜 거부', async () => {
+    await expect(
+      propose({ ...(await params(opt[4], 3)), movementDate: '2026-02-30' })
+    ).rejects.toThrow()
+    await expect(
+      propose({ ...(await params(opt[4], 3)), movementDate: '2999-01-01' })
+    ).rejects.toThrow()
   })
 
   test('차이 0 거부', async () => {

@@ -236,7 +236,7 @@ const sellerhubProposeStockAdjustmentTool: ToolDefinition = {
       locationId,
       items,
       reason: params.reason as string,
-      movementDate: params.movementDate as string | undefined,
+      movementDate: (params.movementDate as string | undefined) ?? getTodayStrKst(), // 승인일이 아니라 제안(실사)일
     }
     const up = items.filter((i) => i.quantity > i.expectedBefore).length
     const down = items.filter((i) => i.quantity < i.expectedBefore).length
