@@ -5,12 +5,11 @@
  * GROSS 수량 — 기간별 취소/반품 데이터는 스키마에 없어 순판매 분리는 불가, missingFields 참조).
  * 로켓그로스 재고는 발주 계획과 같은 규칙으로 반품 등급 재고를 차감한다.
  *
- * 생산 판단은 발주 계획과 같은 엔진 공식이다(@/lib/inv/reorder-engine):
- *   일률 = 상품 선택 모델(없으면 MA_BLEND)의 일률 — max(periodDays, 상품 분석 기간 ?? 90)일 KST 마감 시계열,
- *          품절일 제외, 전 판매채널 (표시 지표 salesQty·dailyVelocity 는 periodDays)
- *   권장 생산량 = computeOrderQty — 일률×(리드타임+목표 커버일수)+안전재고−(재고+생산 중), 라운딩 없음
- *   재고·생산 중 = loadReorderStockInputs (반품 등급 차감, 외부 물류 입고 대기분 포함)
- * 발주 계획과 다를 수 있는 부분: 모델 미설정 상품은 백테스트 추천 대신 MA_BLEND, 라운딩·레이어드 없음.
+ * 생산 판단은 발주 계획 엔진 그대로다(loadPlanOptionInputs → computeProductPlan, 레이어드 끔):
+ *   모델 = 상품 설정 모델, 없으면 백테스트 추천. 일률·bias·발주 단위 라운딩(필요량 < 단위/2 → 0)·
+ *   신상품(이력 60일 미만 = 수동 수량 0)까지 발주 미리보기와 같다. 상품 전 옵션으로 백테스트한다.
+ *   엔진 대상이 아닌 옵션(단종·예측 제외·비활성 상품 등)만 기존 공식(설정 모델 ?? MA_BLEND + 라운딩).
+ * 발주 계획과 다른 부분: 레이어드(로켓 몫) 분할 없음 — 위치 분배는 sellerhub_get_reorder_preview.
  * 로켓 이동(보충) 판단과 dailyVelocity 등 표시 지표는 단순 평균(기간 판매 ÷ 일수)이다.
  */
 
@@ -26,12 +25,16 @@ import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-source
 import { isExternalLogisticsLocation } from '@/lib/inv/location-kind'
 import {
   computeOrderQty,
+  computeProductPlan,
   DEFAULT_PLAN_WINDOW_DAYS,
   isModelKey,
   loadNetByDate,
+  loadPlanOptionInputs,
   loadReorderStockInputs,
   optionDailyRate,
+  roundToOrderUnit,
   type ModelKey,
+  type PlanOptionResult,
 } from '@/lib/inv/reorder-engine'
 import { costExVat } from '@/lib/sh/cost'
 import { addDaysYmd, lastClosedDateKst } from '@/lib/sh/sales-analytics'
@@ -67,6 +70,8 @@ export type ProductionStatus =
   | 'CHECK_STOCK'
   | 'DISCONTINUED'
   | 'EXCLUDED'
+  /** 이력 60일 미만 신상품 — 생산이 필요해 보이나 수량은 발주 화면 수동 입력(엔진 권장 0) */
+  | 'NEW_OPTION'
 export type VelocitySortBy = 'rocket' | 'production' | 'stockValue'
 
 /**
@@ -249,10 +254,16 @@ export function judgeProductionStatus(input: {
   }
 }
 
-/** 생산 판단 한 번에 — 권장량(단종·제외 = 0) + 상태·소진일. 재고현황 등급과 같은 소진일 공식. */
+/**
+ * 생산 판단 한 번에 — 권장량(단종·제외 = 0) + 상태·소진일. 재고현황 등급과 같은 소진일 공식.
+ * engineQty(발주 엔진 수량, 라운딩·bias 반영)를 주면 권장량은 그 값이고, 소진일상 생산 필요라도
+ * engineQty 가 0 이면 PRODUCE_NOW/SOON 대신 OK(발주 단위 절반 미만) 또는 NEW_OPTION(수동 수량).
+ */
 export function decideProduction(input: {
   discontinued?: boolean
   excluded?: boolean
+  engineQty?: number
+  newOption?: boolean
   dailyRate: number
   onHandQty: number
   incomingQty: number
@@ -265,7 +276,7 @@ export function decideProduction(input: {
   reason: string
   daysOfCoverWithIncoming: number | null
 } {
-  const suggestedProductionQty =
+  const rawQty =
     input.discontinued || input.excluded
       ? 0
       : suggestProductionQty({
@@ -285,8 +296,27 @@ export function decideProduction(input: {
     safetyStockQty: input.safetyStockQty,
     productionLeadTimeDays: input.productionLeadTimeDays,
     targetCoverDays: input.targetCoverDays,
-    suggestedProductionQty,
+    suggestedProductionQty: rawQty,
   })
+  const suggestedProductionQty = input.engineQty ?? rawQty
+  if (
+    suggestedProductionQty === 0 &&
+    (judged.status === 'PRODUCE_NOW' || judged.status === 'PRODUCE_SOON')
+  ) {
+    return input.newOption
+      ? {
+          suggestedProductionQty,
+          status: 'NEW_OPTION',
+          reason: `신상품(이력 60일 미만) — ${judged.reason}. 수량은 발주 화면에서 수동 입력`,
+          daysOfCoverWithIncoming: judged.daysOfCoverWithIncoming,
+        }
+      : {
+          suggestedProductionQty,
+          status: 'OK',
+          reason: `필요량 ${rawQty}개 < 발주 단위 절반 — 생산 권장 없음 (${judged.reason})`,
+          daysOfCoverWithIncoming: judged.daysOfCoverWithIncoming,
+        }
+  }
   return { suggestedProductionQty, ...judged }
 }
 
@@ -404,6 +434,7 @@ export async function queryOptionSalesVelocity(
             id: true,
             name: true,
             internalName: true,
+            reorderRoundUnit: true,
             reorderConfig: {
               select: {
                 leadTimeDays: true,
@@ -440,16 +471,76 @@ export async function queryOptionSalesVelocity(
   const optionIds = options.map((o) => o.id)
   const optionIdSet = new Set(optionIds)
 
-  // 생산 일률 시계열 창 = 발주 계획과 같은 분석 기간(상품 설정, 기본 90) — 표시 기간(periodDays)과 별개.
-  // MA_BLEND(30일 0.6 + 90일 0.4)가 계획·재고현황 등급과 같은 값이 되도록 한다.
+  const now = new Date()
+
+  // ── 생산 판단 = 발주 엔진(상품 전 옵션 — 필터로 일부 옵션만 보여도 백테스트는 엔진과 같게)
+  // 대상 = 예측 제외가 아닌 상품의 삭제·단종 아닌 옵션(발주 계획 라우트와 같은 옵션 집합).
+  const productIds = Array.from(new Set(options.map((o) => o.product.id)))
+  const planProducts =
+    productIds.length === 0
+      ? []
+      : (
+          await prisma.invProduct.findMany({
+            where: { spaceId, id: { in: productIds } },
+            select: {
+              id: true,
+              reorderRoundUnit: true,
+              options: {
+                where: { deletedAt: null, status: 'ACTIVE' },
+                select: { id: true, safetyStockQty: true, createdAt: true },
+              },
+              reorderConfig: {
+                select: {
+                  analysisWindowDays: true,
+                  leadTimeDays: true,
+                  targetCoverDays: true,
+                  forecastModel: true,
+                  excludeFromForecast: true,
+                },
+              },
+            },
+          })
+        ).filter((p) => !p.reorderConfig?.excludeFromForecast && p.options.length > 0)
+  const enginePlanByOption = new Map<string, PlanOptionResult>()
+  if (planProducts.length > 0) {
+    const { optionInputsByProduct, realizedByProduct } = await loadPlanOptionInputs({
+      spaceId,
+      products: planProducts,
+      now,
+      rocketChannelId: null,
+    })
+    for (const p of planProducts) {
+      const storedModel = p.reorderConfig?.forecastModel
+      const results = computeProductPlan({
+        options: optionInputsByProduct.get(p.id) ?? [],
+        product: {
+          leadTimeDays: p.reorderConfig?.leadTimeDays ?? defaultProductionLeadTimeDays,
+          targetCoverDays:
+            targetCoverOverride ?? p.reorderConfig?.targetCoverDays ?? DEFAULT_TARGET_COVER_DAYS,
+          roundUnit: p.reorderRoundUnit ?? 10,
+          windowDays: p.reorderConfig?.analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS,
+          configModel: isModelKey(storedModel) ? storedModel : null,
+          realized: realizedByProduct.get(p.id),
+          layered: false,
+        },
+        now,
+      })
+      for (const r of results) enginePlanByOption.set(r.optionId, r)
+    }
+  }
+
+  // 엔진 대상이 아닌 옵션(단종·예측 제외·비활성 상품)만 기존 공식으로 생산 일률을 낸다.
+  // 그런 옵션이 없으면 수요는 표시 기간(현재+직전)만 로드한다 — 엔진 입력과 중복 로드 최소화.
   const productionWindowOf = (analysisWindowDays: number | null | undefined) =>
-    Math.max(periodDays, analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS)
+    analysisWindowDays ?? DEFAULT_PLAN_WINDOW_DAYS
+  const fallbackOptions = options.filter((o) => !enginePlanByOption.has(o.id))
   const maxProductionWindow = Math.max(
-    productionWindowOf(null),
-    ...options.map((o) => productionWindowOf(o.product.reorderConfig?.analysisWindowDays))
+    0,
+    ...fallbackOptions.map((o) => productionWindowOf(o.product.reorderConfig?.analysisWindowDays))
   )
   const productionFrom = addDaysYmd(to, -(maxProductionWindow - 1))
-  const demandFrom = productionFrom < prevFrom ? productionFrom : prevFrom
+  const demandFrom =
+    maxProductionWindow > 0 && productionFrom < prevFrom ? productionFrom : prevFrom
 
   const demandRows = await loadOptionDemand(
     spaceId,
@@ -460,11 +551,11 @@ export async function queryOptionSalesVelocity(
 
   // ── 반품 등급 재고(로켓 가용에서 제외) + 생산 판단 재고 입력(발주 계획과 같은 loader)
   // + 품절일 판정용 재고 순증감
-  const now = new Date()
+  const fallbackIds = fallbackOptions.map((o) => o.id)
   const [returnStock, stockInputs, netByOption] = await Promise.all([
     getCoupangReturnStockByOption(spaceId),
     loadReorderStockInputs(spaceId, optionIds, now),
-    loadNetByDate(spaceId, optionIds, new Date(now.getTime() - maxProductionWindow * DAY_MS)),
+    loadNetByDate(spaceId, fallbackIds, new Date(now.getTime() - maxProductionWindow * DAY_MS)),
   ])
 
   // ── 수요 분할: (현재|직전) × (선택 채널|로켓)
@@ -556,19 +647,37 @@ export async function queryOptionSalesVelocity(
     const productionTargetCoverDays =
       targetCoverOverride ?? o.product.reorderConfig?.targetCoverDays ?? DEFAULT_TARGET_COVER_DAYS
     const storedModel = o.product.reorderConfig?.forecastModel
-    const forecastModel: ModelKey = isModelKey(storedModel) ? storedModel : DEFAULT_FORECAST_MODEL
-    const productionDailyRate = optionDailyRate({
-      qtyByDate: productionDailyByOption.get(o.id) ?? {},
-      netByDate: netByOption.get(o.id) ?? {},
-      currentStock: productionOnHandQty + (stock?.returnGradeQty ?? 0),
-      windowDays: productionWindowOf(o.product.reorderConfig?.analysisWindowDays),
-      horizonDays: productionLeadTimeDays + productionTargetCoverDays,
-      model: forecastModel,
-      now,
+    const enginePlan = enginePlanByOption.get(o.id)
+    const roundUnit = o.product.reorderRoundUnit ?? 10
+    // 상품 모델 = 설정 ?? 백테스트 추천(엔진). 신상품 옵션(MANUAL)도 상품 모델로 표기한다.
+    const forecastModel: ModelKey = isModelKey(storedModel)
+      ? storedModel
+      : (enginePlan?.recommendedModel ?? DEFAULT_FORECAST_MODEL)
+    // 엔진 일률 = bias 전 선택 모델 일률(신상품 = 형제 평균) — 미리보기 dailyForecast 와 같은 값
+    const productionDailyRate = enginePlan
+      ? enginePlan.dailyRate
+      : optionDailyRate({
+          qtyByDate: productionDailyByOption.get(o.id) ?? {},
+          netByDate: netByOption.get(o.id) ?? {},
+          currentStock: productionOnHandQty + (stock?.returnGradeQty ?? 0),
+          windowDays: productionWindowOf(o.product.reorderConfig?.analysisWindowDays),
+          horizonDays: productionLeadTimeDays + productionTargetCoverDays,
+          model: forecastModel,
+          now,
+        })
+    const fallbackRaw = suggestProductionQty({
+      totalDailyVelocityRaw: productionDailyRate,
+      targetCoverDays: productionTargetCoverDays,
+      leadTimeDays: productionLeadTimeDays,
+      safetyStockQty,
+      totalAvailableQty: productionOnHandQty,
+      incomingQty,
     })
     const production = decideProduction({
       discontinued: o.status === 'DISCONTINUED',
       excluded: o.product.reorderConfig?.excludeFromForecast === true,
+      engineQty: enginePlan ? enginePlan.finalQty : roundToOrderUnit(fallbackRaw, roundUnit),
+      newOption: enginePlan?.isNewOption === true,
       dailyRate: productionDailyRate,
       onHandQty: productionOnHandQty,
       incomingQty,
@@ -627,6 +736,8 @@ export async function queryOptionSalesVelocity(
       // 생산 판단 (전사 판매·재고 기준)
       daysOfCoverWithIncoming: production.daysOfCoverWithIncoming,
       forecastModel,
+      recommendedModel: enginePlan?.recommendedModel ?? null,
+      roundUnit,
       productionDailyRate: round2(productionDailyRate),
       productionTargetCoverDays,
       productionLeadTimeDays,
@@ -653,7 +764,10 @@ export async function queryOptionSalesVelocity(
   }
   if (params.onlyNeedsProduction) {
     filtered = filtered.filter(
-      (r) => r.productionStatus === 'PRODUCE_NOW' || r.productionStatus === 'PRODUCE_SOON'
+      (r) =>
+        r.productionStatus === 'PRODUCE_NOW' ||
+        r.productionStatus === 'PRODUCE_SOON' ||
+        r.productionStatus === 'NEW_OPTION'
     )
   }
 
@@ -693,6 +807,7 @@ export async function queryOptionSalesVelocity(
     CHECK_STOCK: 0,
     DISCONTINUED: 0,
     EXCLUDED: 0,
+    NEW_OPTION: 0,
   }
   for (const r of filtered) productionStatusCounts[r.productionStatus] += 1
   // 표시 재고 음수 + CHECK_STOCK(반품 등급 차감 전사 재고 음수) 모두 센다
@@ -783,6 +898,7 @@ function emptyResult(input: {
         CHECK_STOCK: 0,
         DISCONTINUED: 0,
         EXCLUDED: 0,
+        NEW_OPTION: 0,
       },
       truncatedForSize: false,
       returned: 0,

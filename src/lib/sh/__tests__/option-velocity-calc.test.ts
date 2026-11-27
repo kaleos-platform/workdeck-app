@@ -231,4 +231,36 @@ describe('decideProduction — 발주 엔진 공식', () => {
   it('재고 음수 → CHECK_STOCK 유지', () => {
     expect(decideProduction({ ...base, onHandQty: -5 }).status).toBe('CHECK_STOCK')
   })
+
+  it('엔진 수량(engineQty)이 있으면 그 값을 권장량으로 쓴다', () => {
+    const r = decideProduction({ ...base, engineQty: 70 })
+    expect(r.suggestedProductionQty).toBe(70)
+    expect(r.status).toBe('PRODUCE_NOW')
+  })
+
+  it('소진일상 생산 필요라도 엔진 수량 0(단위 절반 미만)이면 OK', () => {
+    // 일률 0.01 · 재고 0 → 필요 1, 단위 10 의 절반 미만
+    const r = decideProduction({
+      ...base,
+      dailyRate: 0.01,
+      onHandQty: 0,
+      safetyStockQty: 0,
+      engineQty: 0,
+    })
+    expect(r.suggestedProductionQty).toBe(0)
+    expect(r.status).toBe('OK')
+    expect(r.reason).toContain('필요량 1개')
+  })
+
+  it('신상품 + 엔진 수량 0 + 생산 필요 → NEW_OPTION', () => {
+    const r = decideProduction({ ...base, engineQty: 0, newOption: true })
+    expect(r.status).toBe('NEW_OPTION')
+    expect(r.suggestedProductionQty).toBe(0)
+  })
+
+  it('엔진 수량 0 이고 재고 충분하면 OK 그대로', () => {
+    const r = decideProduction({ ...base, onHandQty: 500, engineQty: 0 })
+    expect(r.status).toBe('OK')
+    expect(r.reason).toContain('충분')
+  })
 })

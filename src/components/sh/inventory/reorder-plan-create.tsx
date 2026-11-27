@@ -396,7 +396,14 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
       setExcluded(cfg?.excludeFromForecast === true)
       // 예측 제외 상품은 미리보기(422)를 부르지 않고 해제 안내를 보여 준다.
       if (cfg?.excludeFromForecast) return
-      void fetchPreview(productId, false, [], {}, { modelByProduct: {}, manualQtyByOption: {} })
+      // 리드타임 입력은 방금 비웠으므로 서버 기본값, 보정계수는 모니터링에서 넘긴 값(state 는 아직 이전 값)
+      void fetchPreview(
+        productId,
+        false,
+        [],
+        { demandAdjustFactorOverride: initialDemandAdjust },
+        { modelByProduct: {}, manualQtyByOption: {} }
+      )
     })()
   }
 
