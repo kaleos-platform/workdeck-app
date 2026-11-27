@@ -30,13 +30,19 @@ type MovementType = 'INBOUND' | 'OUTBOUND' | 'RETURN' | 'TRANSFER' | 'ADJUSTMENT
 type LocationItem = { id: string; name: string; isActive: boolean }
 type ChannelItem = { id: string; name: string; isActive: boolean }
 type ProductItem = { id: string; name: string; code: string | null; optionsCount: number }
-type OptionItem = { id: string; name: string; sku: string | null; totalStock: number }
+type OptionItem = {
+  id: string
+  name: string
+  sku: string | null
+  totalStock: number
+  stockByLocation?: Record<string, number>
+}
 
 type OptionEntry = {
   optionId: string
   optionName: string
   sku: string | null
-  totalStock: number
+  stockByLocation: Record<string, number>
   selected: boolean
   quantity: string
 }
@@ -173,7 +179,7 @@ export function MovementForm({ onCreated }: Props) {
             optionId: o.id,
             optionName: o.name,
             sku: o.sku,
-            totalStock: o.totalStock,
+            stockByLocation: o.stockByLocation ?? {},
             selected: false,
             quantity: '',
           }))
@@ -194,6 +200,23 @@ export function MovementForm({ onCreated }: Props) {
 
   function updateEntry(optionId: string, patch: Partial<OptionEntry>) {
     setOptionEntries((prev) => prev.map((e) => (e.optionId === optionId ? { ...e, ...patch } : e)))
+  }
+
+  // 위치가 바뀌면 입력값은 다른 위치 기준이므로 비운다
+  function changeLocation(id: string) {
+    setLocationId(id)
+    setOptionEntries((prev) => prev.map((e) => ({ ...e, selected: false, quantity: '' })))
+  }
+
+  function stockAt(e: OptionEntry) {
+    return e.stockByLocation[locationId] ?? 0
+  }
+
+  // 조정은 실물 - 현재 위치 재고, 그 외는 null
+  function adjustmentDiff(e: OptionEntry): number | null {
+    if (movementType !== 'ADJUSTMENT' || !e.selected || e.quantity === '') return null
+    const qty = Number(e.quantity)
+    return Number.isFinite(qty) ? qty - stockAt(e) : null
   }
 
   function toggleAll(selected: boolean) {
@@ -222,9 +245,10 @@ export function MovementForm({ onCreated }: Props) {
     }
   }
 
+  // 조정에서 차이 0인 행은 기록하지 않는다
   function selectedTargets(): Array<{ optionId: string; quantity: number }> {
     return optionEntries
-      .filter((e) => e.selected)
+      .filter((e) => e.selected && adjustmentDiff(e) !== 0)
       .map((e) => ({ optionId: e.optionId, quantity: Number(e.quantity) }))
   }
 
@@ -264,9 +288,15 @@ export function MovementForm({ onCreated }: Props) {
       toast.error(err)
       return
     }
+    const targets = selectedTargets()
+    const skipped = optionEntries.filter((e) => e.selected).length - targets.length
+    if (targets.length === 0) {
+      toast.error('현재 재고와 차이가 있는 옵션이 없습니다')
+      return
+    }
+    if (skipped > 0) toast.info(`${skipped}건은 현재 재고와 차이가 없어 제외했습니다`)
     setSubmitting(true)
     try {
-      const targets = selectedTargets()
       const results = await Promise.allSettled(
         targets.map(async (t) => {
           const body: Record<string, unknown> = {
@@ -340,6 +370,8 @@ export function MovementForm({ onCreated }: Props) {
   }
 
   const selectedCount = optionEntries.filter((e) => e.selected).length
+  const locationName = locations.find((l) => l.id === locationId)?.name ?? ''
+  const checksStock = movementType === 'OUTBOUND' || movementType === 'TRANSFER'
   const totalQty = optionEntries
     .filter((e) => e.selected)
     .reduce((s, e) => s + (Number(e.quantity) || 0), 0)
@@ -386,12 +418,51 @@ export function MovementForm({ onCreated }: Props) {
             </div>
           </div>
 
+          {/* Location(s) */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>{movementType === 'TRANSFER' ? '출발 위치' : '위치'}</Label>
+              <Select value={locationId} onValueChange={changeLocation}>
+                <SelectTrigger>
+                  <SelectValue placeholder="위치 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {movementType === 'TRANSFER' && (
+              <div className="space-y-2">
+                <Label>도착 위치</Label>
+                <Select value={toLocationId} onValueChange={setToLocationId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="도착 위치 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations
+                      .filter((l) => l.id !== locationId)
+                      .map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
           {/* Product selector */}
           <div className="space-y-2">
             <Label>상품</Label>
-            <Select value={productId} onValueChange={setProductId}>
+            <Select value={productId} onValueChange={setProductId} disabled={!locationId}>
               <SelectTrigger>
-                <SelectValue placeholder="상품 선택" />
+                <SelectValue placeholder={locationId ? '상품 선택' : '위치를 먼저 선택하세요'} />
               </SelectTrigger>
               <SelectContent>
                 {products.length === 0 ? (
@@ -448,39 +519,63 @@ export function MovementForm({ onCreated }: Props) {
                   </div>
                 ) : (
                   <div className="max-h-64 overflow-y-auto">
-                    {optionEntries.map((e) => (
-                      <div
-                        key={e.optionId}
-                        className={`flex items-center gap-3 border-b px-3 py-2 last:border-b-0 ${
-                          e.selected ? 'bg-primary/5' : ''
-                        }`}
-                      >
-                        <Checkbox
-                          checked={e.selected}
-                          onCheckedChange={(v) => updateEntry(e.optionId, { selected: v === true })}
-                          aria-label={`${e.optionName} 선택`}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{e.optionName}</p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {e.sku ? `${e.sku} · ` : ''}재고 {e.totalStock.toLocaleString('ko-KR')}
-                          </p>
+                    {optionEntries.map((e) => {
+                      const stock = stockAt(e)
+                      const diff = adjustmentDiff(e)
+                      const over =
+                        checksStock && e.selected && e.quantity !== '' && Number(e.quantity) > stock
+                      return (
+                        <div
+                          key={e.optionId}
+                          className={`flex items-center gap-3 border-b px-3 py-2 last:border-b-0 ${
+                            e.selected ? 'bg-primary/5' : ''
+                          }`}
+                        >
+                          <Checkbox
+                            checked={e.selected}
+                            onCheckedChange={(v) =>
+                              updateEntry(e.optionId, { selected: v === true })
+                            }
+                            aria-label={`${e.optionName} 선택`}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{e.optionName}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {e.sku ? `${e.sku} · ` : ''}
+                              {locationName} 재고 {stock.toLocaleString('ko-KR')}
+                            </p>
+                            {over && <p className="text-xs text-destructive">재고보다 많습니다</p>}
+                          </div>
+                          {diff !== null && (
+                            <span
+                              className={`w-12 text-right text-xs tabular-nums ${
+                                diff > 0
+                                  ? 'text-emerald-600'
+                                  : diff < 0
+                                    ? 'text-destructive'
+                                    : 'text-muted-foreground'
+                              }`}
+                            >
+                              {diff > 0 ? `+${diff}` : diff}
+                            </span>
+                          )}
+                          <Input
+                            type="number"
+                            className={`h-8 w-24 ${over ? 'border-destructive' : ''}`}
+                            aria-invalid={over || undefined}
+                            value={e.quantity}
+                            onChange={(ev) =>
+                              updateEntry(e.optionId, {
+                                quantity: ev.target.value,
+                                selected: ev.target.value !== '' ? true : e.selected,
+                              })
+                            }
+                            placeholder={movementType === 'ADJUSTMENT' ? '실물' : '수량'}
+                            disabled={!e.selected}
+                          />
                         </div>
-                        <Input
-                          type="number"
-                          className="h-8 w-24"
-                          value={e.quantity}
-                          onChange={(ev) =>
-                            updateEntry(e.optionId, {
-                              quantity: ev.target.value,
-                              selected: ev.target.value !== '' ? true : e.selected,
-                            })
-                          }
-                          placeholder={movementType === 'ADJUSTMENT' ? '실물' : '수량'}
-                          disabled={!e.selected}
-                        />
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -491,45 +586,6 @@ export function MovementForm({ onCreated }: Props) {
               )}
             </div>
           )}
-
-          {/* Location(s) */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{movementType === 'TRANSFER' ? '출발 위치' : '위치'}</Label>
-              <Select value={locationId} onValueChange={setLocationId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="위치 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((l) => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {movementType === 'TRANSFER' && (
-              <div className="space-y-2">
-                <Label>도착 위치</Label>
-                <Select value={toLocationId} onValueChange={setToLocationId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="도착 위치 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations
-                      .filter((l) => l.id !== locationId)
-                      .map((l) => (
-                        <SelectItem key={l.id} value={l.id}>
-                          {l.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </div>
 
           {/* OUTBOUND extras */}
           {movementType === 'OUTBOUND' && (
