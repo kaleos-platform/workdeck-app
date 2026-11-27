@@ -34,8 +34,68 @@ const ANALYZE_LIMIT = 25 * MIN // 분석 컨테이너
 const TOTAL_LIMIT = 30 * MIN // 소스 준비·프록시 포함 전체
 const UNTIL_MS = 40 * MIN // analyzing 노트 유효 시간
 const MAX_ATTEMPTS = 3 // 일시 오류 연속 횟수(10분 주기)를 넘으면 analyze-failed
-const ISSUE_URL = new RegExp(`^https://github\\.com/${lib.ANALYZE_REPO}/issues/(\\d{1,7})$`)
 const SHORT_ID = /^[A-Za-z0-9-]{3,40}$/
+
+const ISSUE_URL = new RegExp(`^https://github\\.com/${lib.ANALYZE_REPO}/issues/(\\d{1,7})$`)
+
+// 비공개 분석 저장소에서 첫 줄(header)로 이슈를 찾고(검색 색인 지연 회피 — 로컬 비교), 없을 때만 만든다. 이슈 번호 반환.
+// 실패는 Error(code) — 호출자가 일시 오류로 다룬다. 조회 오류면 만들지 않는다
+export function findOrCreateAnalysisIssue({ run, header, title, body, bodyFile }) {
+  const lp = run('gh', [
+    'issue',
+    'list',
+    '--repo',
+    lib.ANALYZE_REPO,
+    '--label',
+    lib.ANALYZE_LABEL,
+    '--state',
+    'all',
+    '--limit',
+    '200',
+    '--json',
+    'number,body',
+  ])
+  let list
+  try {
+    if (lp.status !== 0) throw new Error('gh')
+    list = JSON.parse(lp.stdout)
+    if (!Array.isArray(list)) throw new Error('shape')
+  } catch {
+    throw new Error('gh-list-failed')
+  }
+  // ponytail: 최근 200건만 본다 — 이슈가 그보다 쌓이면 nonce 검색(gh search)으로 바꿀 것
+  const found = list.find(
+    (x) =>
+      String(x?.body ?? '')
+        .split('\n')[0]
+        .replace(/\r$/, '') === header &&
+      Number.isInteger(x?.number) &&
+      x.number > 0
+  )
+  if (found) return found.number
+  fs.writeFileSync(bodyFile, body, { mode: 0o600 })
+  let cr
+  try {
+    cr = run('gh', [
+      'issue',
+      'create',
+      '--repo',
+      lib.ANALYZE_REPO,
+      '--label',
+      lib.ANALYZE_LABEL,
+      '--title',
+      title,
+      '--body-file',
+      bodyFile,
+    ])
+  } finally {
+    fs.rmSync(bodyFile, { force: true })
+  }
+  if (cr.status !== 0) throw new Error('gh-create-failed')
+  const m = String(cr.stdout).trim().split('\n').pop().match(ISSUE_URL)
+  if (!m) throw new Error('gh-create-unparsable') // 다음 주기에 검색부터
+  return Number(m[1])
+}
 
 class Fail extends Error {
   constructor(code, { transient = false } = {}) {
@@ -245,57 +305,17 @@ export async function analyzeRun({ cfg, deps }) {
       // 2) 이슈 게시: 첫 줄 `요청 ID: <nonce>` 로 먼저 찾고(검색 색인 지연 회피 — 로컬 비교), 없을 때만 만든다
       if (st.issueNumber === undefined) {
         const header = `요청 ID: ${nonce}`
-        const lp = run('gh', [
-          'issue',
-          'list',
-          '--repo',
-          lib.ANALYZE_REPO,
-          '--label',
-          lib.ANALYZE_LABEL,
-          '--state',
-          'all',
-          '--limit',
-          '200',
-          '--json',
-          'number,body',
-        ])
-        let list
+        let n
         try {
-          if (lp.status !== 0) throw new Error('gh')
-          list = JSON.parse(lp.stdout)
-          if (!Array.isArray(list)) throw new Error('shape')
-        } catch {
-          throw new Fail('gh-list-failed', { transient: true }) // 조회 오류면 만들지 않는다
-        }
-        // ponytail: 최근 200건만 본다 — 이슈가 그보다 쌓이면 nonce 검색(gh search)으로 바꿀 것
-        const found = list.find(
-          (x) => firstLine(x?.body) === header && Number.isInteger(x?.number) && x.number > 0
-        )
-        let n = found?.number
-        if (n === undefined) {
-          const bodyFile = path.join(stateRoot, `${issueId}-${nonce}.body.md`)
-          fs.writeFileSync(bodyFile, body, { mode: 0o600 })
-          let cr
-          try {
-            cr = run('gh', [
-              'issue',
-              'create',
-              '--repo',
-              lib.ANALYZE_REPO,
-              '--label',
-              lib.ANALYZE_LABEL,
-              '--title',
-              `[Sentry 분석] ${shortId} ${lib.VERDICT_KO[verdict]}`,
-              '--body-file',
-              bodyFile,
-            ])
-          } finally {
-            fs.rmSync(bodyFile, { force: true })
-          }
-          if (cr.status !== 0) throw new Fail('gh-create-failed', { transient: true })
-          const m = String(cr.stdout).trim().split('\n').pop().match(ISSUE_URL)
-          if (!m) throw new Fail('gh-create-unparsable', { transient: true }) // 다음 주기에 검색부터
-          n = Number(m[1])
+          n = findOrCreateAnalysisIssue({
+            run,
+            header,
+            title: `[Sentry 분석] ${shortId} ${lib.VERDICT_KO[verdict]}`,
+            body,
+            bodyFile: path.join(stateRoot, `${issueId}-${nonce}.body.md`),
+          })
+        } catch (e) {
+          throw new Fail(e.message, { transient: true })
         }
         st = { ...st, stage: 'issue-created', issueNumber: n, result: { verdict, conf, auto } } // 본문 사본은 남기지 않는다
         saveState(st) // 생성 직후 기록 — 이후 실패해도 같은 요청으로 이슈가 또 만들어지지 않는다

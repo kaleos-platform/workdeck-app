@@ -1804,11 +1804,13 @@ test('UTF-8 이 아닌 patch·analysis 의 HTML 주석은 blocked(B3·B6)', asyn
   cleanup(h)
 })
 
-test('PR 본문의 analysis 는 코드펜스로 감싼다(B6), jest 통과 0개·실패는 verify 실패(B4)', async () => {
+test('PR 본문에 analysis 를 넣지 않는다(공개 저장소), jest 통과 0개·실패는 verify 실패(B4)', async () => {
   let h = harness()
   await runFx(h)
   const dir = path.join(h.cfg.stateDir, 'pending', pendingOf(h)[0])
-  assert.match(fs.readFileSync(path.join(dir, 'pr-body.md'), 'utf8'), /## 분석\n```\n원인/)
+  const prBody = fs.readFileSync(path.join(dir, 'pr-body.md'), 'utf8')
+  assert.doesNotMatch(prBody, /## 분석|원인/)
+  assert.match(prBody, /\nFixes /)
   cleanup(h)
   for (const jestJson of [
     { success: true, numPassedTests: 0, numFailedTests: 0 },
