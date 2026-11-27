@@ -196,6 +196,9 @@ model User {
   // 발주 계획 (작성자)
   reorderPlans ReorderPlan[]
 
+  // 의견 남기기 (탈퇴 시 함께 삭제)
+  feedbacks UserFeedback[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -437,6 +440,7 @@ model Space {
   invitations        SpaceInvitation[]
   deckInstances      DeckInstance[]
   pipelineOperations PipelineOperation[]
+  feedbacks          UserFeedback[]
 
   // 연결된 레거시 쿠팡 Workspace (Workspace.spaceId 역방향)
   workspace Workspace?
@@ -5264,4 +5268,69 @@ model HiringCompanyProfile {
   space        Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   updatedAt    DateTime @updatedAt
   createdAt    DateTime @default(now())
+}
+
+// ─── 의견 남기기 (사용자 피드백) ─────────────────────────────────────────────
+// 설계: docs/superpowers/specs/2026-11-27-user-feedback-design.md
+enum UserFeedbackType {
+  FEATURE
+  BUG
+  QUESTION
+  REVIEW
+  OTHER
+}
+
+enum UserFeedbackStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  ON_HOLD
+}
+
+model UserFeedback {
+  id          String                   @id @default(cuid())
+  userId      String // 제출자 (탈퇴 시 Cascade)
+  user        User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spaceId     String? // 제출 당시 작업 공간(없을 수 있음)
+  space       Space?                   @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  type        UserFeedbackType
+  body        String // 1~5000자
+  pagePath    String? // 보던 화면 pathname만 (query 미저장, 최대 500자)
+  userAgent   String? // 최대 500자
+  status      UserFeedbackStatus       @default(NEW)
+  memo        String? // 운영자 내부 메모
+  closedAt    DateTime? // DONE/ON_HOLD 진입 시각, 그 외 상태면 null
+  attachments UserFeedbackAttachment[]
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  @@index([createdAt])
+  @@index([status, closedAt])
+  @@index([userId])
+  @@index([spaceId])
+}
+
+model UserFeedbackAttachment {
+  id         String       @id @default(cuid())
+  feedbackId String
+  feedback   UserFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  path       String       @unique // Storage 객체 경로
+  mimeType   String
+  sizeBytes  Int
+  deletedAt  DateTime? // 파일 삭제됨(행은 이력으로 보존)
+  createdAt  DateTime     @default(now())
+
+  @@index([feedbackId])
+}
+
+// Storage 파일 삭제 원장 — FK·PII 없음. 업로드 전 경로 예약(성공 시 삭제) + 탈퇴·실패 후 삭제 대기.
+model FeedbackFileDeletion {
+  id        String   @id @default(cuid())
+  paths     Json
+  bytes     Int      @default(0)
+  attempts  Int      @default(0)
+  lastError String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

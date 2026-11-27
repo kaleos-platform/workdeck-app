@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/admin/billing', label: '결제' },
   { href: '/admin/decks', label: '업무 관리' },
   { href: '/admin/leads', label: '도입 신청' },
+  { href: '/admin/feedback', label: '의견' },
   { href: '/admin/opening-migrations', label: '오프닝 이전' },
   { href: '/admin/integrations', label: '플랫폼 연동' },
   { href: '/admin/recovery', label: '복구 관리' },

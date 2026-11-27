@@ -1,0 +1,209 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "text",
+   "id": "t1",
+   "x": 0,
+   "y": 0,
+   "text": "의견 남기기 — 흐름",
+   "fontSize": 20
+  },
+  {
+   "type": "rectangle",
+   "id": "b2",
+   "x": 0,
+   "y": 50,
+   "width": 240,
+   "height": 90,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "① 사이드바 「의견 남기기」\n(Button, 로그아웃 위)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a3",
+   "x": 240,
+   "y": 95,
+   "width": 60,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     60,
+     0
+    ]
+   ]
+  },
+  {
+   "type": "rectangle",
+   "id": "b4",
+   "x": 300,
+   "y": 50,
+   "width": 240,
+   "height": 90,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "② Dialog 제출\n(유형·본문·이미지 ≤3)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a5",
+   "x": 540,
+   "y": 95,
+   "width": 60,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     60,
+     0
+    ]
+   ]
+  },
+  {
+   "type": "rectangle",
+   "id": "b6",
+   "x": 600,
+   "y": 50,
+   "width": 240,
+   "height": 90,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "strokeStyle": "dashed",
+   "label": {
+    "text": "Slack #agent 알림\n(after(), 본문 요약)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b7",
+   "x": 0,
+   "y": 220,
+   "width": 240,
+   "height": 90,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑥ 어드민 「의견」 목록\n(필터·요약·Table)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a8",
+   "x": 240,
+   "y": 265,
+   "width": 60,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     60,
+     0
+    ]
+   ]
+  },
+  {
+   "type": "rectangle",
+   "id": "b9",
+   "x": 300,
+   "y": 220,
+   "width": 240,
+   "height": 90,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑩ 상세\n상태·메모·첨부 삭제",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a10",
+   "x": 540,
+   "y": 265,
+   "width": 60,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     60,
+     0
+    ]
+   ]
+  },
+  {
+   "type": "rectangle",
+   "id": "b11",
+   "x": 600,
+   "y": 220,
+   "width": 240,
+   "height": 90,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "strokeStyle": "dashed",
+   "label": {
+    "text": "자동 정리 cron\n완료 30일 후 첨부 삭제",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a12",
+   "x": 720,
+   "y": 140,
+   "width": -600,
+   "height": 80,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -600,
+     80
+    ]
+   ]
+  },
+  {
+   "type": "text",
+   "id": "t13",
+   "x": 0,
+   "y": 360,
+   "text": "점선 = 시스템 동작(화면 없음). 상한(500MB) 도달 시 의견만 접수·이미지 미저장 안내.",
+   "fontSize": 13
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

@@ -908,3 +908,24 @@ export const OpeningMigrationStatus = {
 } as const
 
 export type OpeningMigrationStatus = (typeof OpeningMigrationStatus)[keyof typeof OpeningMigrationStatus]
+
+
+export const UserFeedbackType = {
+  FEATURE: 'FEATURE',
+  BUG: 'BUG',
+  QUESTION: 'QUESTION',
+  REVIEW: 'REVIEW',
+  OTHER: 'OTHER'
+} as const
+
+export type UserFeedbackType = (typeof UserFeedbackType)[keyof typeof UserFeedbackType]
+
+
+export const UserFeedbackStatus = {
+  NEW: 'NEW',
+  IN_PROGRESS: 'IN_PROGRESS',
+  DONE: 'DONE',
+  ON_HOLD: 'ON_HOLD'
+} as const
+
+export type UserFeedbackStatus = (typeof UserFeedbackStatus)[keyof typeof UserFeedbackStatus]
