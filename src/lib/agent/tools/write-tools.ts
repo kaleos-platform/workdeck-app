@@ -197,6 +197,70 @@ const sellerhubProposeKeywordUpdateTool: ToolDefinition = {
   },
 }
 
+const sellerhubProposeStockAdjustmentTool: ToolDefinition = {
+  name: 'sellerhub_propose_stock_adjustment',
+  description:
+    '한 보관 위치의 옵션 재고를 실물 수량으로 맞추는 조정을 제안합니다. items 는 {optionId, quantity(실물 절대값, 0 이상)} 최대 50개, reason 은 필수(500자 이하), movementDate(YYYY-MM-DD)는 선택(기본 오늘). 쓰기 권한이 있어도 항상 사람이 웹에서 확인·승인해야 반영됩니다. 위치 id 와 위치별 현재 재고는 sellerhub_get_stock_status(productId 필터)의 matrix 행으로 확인하세요. 자동 연동 위치(로켓그로스·3PL 자동 대조)는 조정할 수 없고, 현재 재고와 같은 수량이나 승인 대기 중인 같은 옵션 제안이 있으면 거부됩니다. 제안 후 재고가 바뀌면 승인 시 실패하니 다시 제안하세요. 호출 전에 사용자에게 위치·옵션·수량을 확인받으세요.',
+  inputSchema: {
+    locationId: z.string(),
+    items: z.array(z.object({ optionId: z.string(), quantity: z.number() })).max(50),
+    reason: z.string(),
+    movementDate: z.string().optional(),
+  },
+  mode: 'write',
+  scope: 'sellerhub:write',
+  async execute(ctx, params) {
+    await requireDeck(ctx.spaceId, 'seller-hub')
+    const locationId = params.locationId as string
+    const input = params.items as { optionId: string; quantity: number }[]
+    const location = await prisma.invStorageLocation.findFirst({
+      where: { id: locationId, spaceId: ctx.spaceId },
+      select: { name: true },
+    })
+    const rows = await prisma.invStockLevel.findMany({
+      // execute 의 findUnique(optionId_locationId)와 같은 기준 — Space 는 위치·옵션 검증이 보장
+      where: {
+        locationId,
+        optionId: { in: input.map((i) => i.optionId) },
+      },
+      select: { optionId: true, quantity: true, updatedAt: true },
+    })
+    const cur = new Map(rows.map((r) => [r.optionId, r]))
+    const items = input.map((i) => ({
+      optionId: i.optionId,
+      quantity: i.quantity,
+      expectedBefore: cur.get(i.optionId)?.quantity ?? 0,
+      expectedUpdatedAt: cur.get(i.optionId)?.updatedAt.toISOString() ?? null,
+    }))
+    const actionParams = {
+      locationId,
+      items,
+      reason: params.reason as string,
+      movementDate: params.movementDate as string | undefined,
+    }
+    const up = items.filter((i) => i.quantity > i.expectedBefore).length
+    const down = items.filter((i) => i.quantity < i.expectedBefore).length
+    const summary = `재고 조정 제안: ${location?.name ?? `위치 ${locationId}`} · 옵션 ${items.length}개 (+${up} / -${down})`
+    return createPendingAction({
+      spaceId: ctx.spaceId,
+      actionType: 'seller-hub.stock.adjust',
+      params: actionParams,
+      summary,
+      source: 'MCP',
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      actorTokenId: ctx.actorTokenId,
+      authenticatedUserId: ctx.authenticatedUserId,
+      workId: ctx.workId,
+      idempotencyKey: idempotencyKeyFor('seller-hub.stock.adjust', ctx.spaceId, {
+        params: actionParams,
+        day: getTodayStrKst(),
+      }),
+    })
+  },
+}
+
 // ─── coupang-ads (Workspace 스코프) ──────────────────────────────────────────────
 
 const adsTriggerAnalysisTool: ToolDefinition = {
@@ -276,6 +340,7 @@ export const writeTools: ToolDefinition[] = [
   financeCreateClassRuleTool,
   sellerhubCreateReorderPlanTool,
   sellerhubProposeKeywordUpdateTool,
+  sellerhubProposeStockAdjustmentTool,
   adsTriggerAnalysisTool,
   adsApproveExecutionTaskTool,
 ]
