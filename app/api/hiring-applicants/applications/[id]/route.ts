@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
-import { deleteApplications } from '@/lib/hiring/delete'
+import { deleteApplications, MigrationInProgressError } from '@/lib/hiring/delete'
 import { updateApplicationSchema } from '@/lib/validations/hiring-applicants'
 
 type Params = { params: Promise<{ id: string }> }
@@ -43,7 +43,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (roleError) return roleError
   const { id } = await params
 
-  const deleted = await deleteApplications(resolved.space.id, [id])
+  let deleted: number
+  try {
+    deleted = await deleteApplications(resolved.space.id, [id])
+  } catch (e) {
+    if (e instanceof MigrationInProgressError) return errorResponse(e.message, 409)
+    throw e
+  }
   if (!deleted) return errorResponse('지원서를 찾을 수 없습니다', 404)
   return NextResponse.json({ deleted })
 }
