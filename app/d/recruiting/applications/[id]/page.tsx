@@ -13,7 +13,11 @@ import { safeRecruitingReturnPath } from '@/lib/deck-routes'
 import { DuplicatedBadge, BlacklistBadge } from '@/components/hiring-applicants/badges'
 import { ApplicationStatusBadge } from '@/components/hiring-applicants/application-status-badge'
 import { MemoPanel } from '@/components/hiring-applicants/memo-panel'
-import { DetailActionBar } from '@/components/hiring-applicants/detail-action-bar'
+import {
+  DetailActionBar,
+  DetailActionButtons,
+  DetailActionsProvider,
+} from '@/components/hiring-applicants/detail-action-bar'
 import { DeleteApplicantButton } from '@/components/hiring-applicants/delete-applicant-button'
 import { CopyValueButton } from '@/components/hiring-applicants/copy-value-button'
 import { PreQuestions } from '@/components/hiring-applicants/pre-questions'
@@ -44,113 +48,128 @@ export default async function ApplicationDetailPage({ params, searchParams }: Pa
       !(Array.isArray(e.value) && e.value.length === 0)
   )
 
+  const postingLabel = `${app.posting?.title ?? '(삭제된 공고)'}${
+    app.postingPosition?.name ? ` · ${app.postingPosition.name}` : ''
+  }`
+
   return (
-    <div className="space-y-4 p-6">
-      <Link href={backHref} className="text-xs text-muted-foreground hover:text-foreground">
-        ← 목록으로
-      </Link>
+    <DetailActionsProvider
+      applicationId={app.id}
+      stage={app.stage}
+      hiringStage={app.hiringStage}
+      phone={pii.phone}
+      name={pii.name}
+      postingTitle={app.posting?.title ?? null}
+      positionName={app.postingPosition?.name ?? null}
+      notifications={app.notifications.map((n) => ({
+        id: n.id,
+        notiType: n.notiType,
+        createdAt: n.createdAt.toISOString(),
+      }))}
+    >
+      <div className="space-y-4 p-6">
+        <Link href={backHref} className="text-xs text-muted-foreground hover:text-foreground">
+          ← 목록으로
+        </Link>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-semibold">{pii.name ?? '(이름 없음)'}</h1>
-        <ApplicationStatusBadge stage={app.stage} hiringStage={app.hiringStage} />
-        {app.duplicated && <DuplicatedBadge />}
-        {blacklisted && <BlacklistBadge />}
-        <div className="ml-auto flex items-center gap-1">
-          <BlacklistButton applicationId={app.id} blacklisted={blacklisted} />
-          {(resolved.role === 'OWNER' || resolved.role === 'ADMIN') && (
-            <DeleteApplicantButton applicationId={app.id} returnTo={backHref} />
-          )}
-        </div>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        {app.posting?.title ?? '(삭제된 공고)'}
-        {app.postingPosition?.name ? ` · ${app.postingPosition.name}` : ''} · 지원일{' '}
-        {app.createdAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
-        {app.referrer ? ` · ${app.referrer}` : ''}
-      </p>
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="flex min-h-[calc(100dvh-14rem)] min-w-0 flex-col gap-6 lg:col-span-2">
-          {/* 기본 정보 (복호화 PII — 서버 렌더) */}
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold">기본 정보</h2>
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border p-4 text-sm sm:grid-cols-2">
-              <Field label="이름" value={pii.name} />
-              <Field label="휴대폰" value={pii.phone} copyLabel="휴대폰" />
-              <Field label="이메일" value={pii.email} copyLabel="이메일" />
-              <Field label="거주 지역" value={pii.address} />
-              <Field
-                label="지원 공고/포지션"
-                value={`${app.posting?.title ?? '(삭제된 공고)'}${
-                  app.postingPosition?.name ? ` · ${app.postingPosition.name}` : ''
-                }`}
-              />
-              {app.stores.length > 0 && (
-                <Field label="희망 장소" value={app.stores.map((s) => s.store.name).join(', ')} />
+        <header className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight">{pii.name ?? '(이름 없음)'}</h1>
+            <ApplicationStatusBadge stage={app.stage} hiringStage={app.hiringStage} />
+            {app.duplicated && <DuplicatedBadge />}
+            {blacklisted && <BlacklistBadge />}
+            <DetailActionButtons className="ml-auto hidden lg:flex" />
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="text-sm text-muted-foreground">
+              {postingLabel} · 지원{' '}
+              {app.createdAt.toLocaleString('ko-KR', {
+                timeZone: 'Asia/Seoul',
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              })}
+            </p>
+            <div className="ml-auto flex items-center gap-1">
+              <BlacklistButton applicationId={app.id} blacklisted={blacklisted} />
+              {(resolved.role === 'OWNER' || resolved.role === 'ADMIN') && (
+                <DeleteApplicantButton applicationId={app.id} returnTo={backHref} />
               )}
-              {app.referrer && <Field label="유입 경로" value={app.referrer} />}
-              <div className="flex flex-col gap-1 sm:col-span-2">
-                <dt className="text-xs text-muted-foreground">지원 서류</dt>
-                <dd>
-                  <FileDownloadList
-                    applicationId={app.id}
-                    files={app.files.map((f) => ({
-                      id: f.id,
-                      fileName: f.fileName,
-                      fieldLabel: fileFieldLabel(app.applicationEntries, f.id),
-                      sizeBytes: f.sizeBytes,
-                    }))}
-                  />
-                </dd>
-              </div>
-            </dl>
-          </section>
+            </div>
+          </div>
+        </header>
 
-          <PreQuestions entries={customEntries} />
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="flex min-w-0 flex-col gap-6 max-lg:min-h-[calc(100dvh-14rem)] lg:col-span-2">
+            {/* 기본 정보 (복호화 PII — 서버 렌더). 이름·지원 공고는 헤더에 있어 반복하지 않는다. */}
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold">기본 정보</h2>
+              <dl className="divide-y rounded-lg border text-sm">
+                <Field label="휴대폰" value={formatPhone(pii.phone)} copyLabel="휴대폰" />
+                <Field label="이메일" value={pii.email} copyLabel="이메일" />
+                <Field label="거주 지역" value={pii.address} />
+                {app.stores.length > 0 && (
+                  <Field label="희망 장소" value={app.stores.map((s) => s.store.name).join(', ')} />
+                )}
+                {app.referrer && <Field label="유입 경로" value={app.referrer} />}
+                <div className={ROW}>
+                  <dt className="text-muted-foreground">지원 서류</dt>
+                  <dd className="min-w-0">
+                    <FileDownloadList
+                      applicationId={app.id}
+                      files={app.files.map((f) => ({
+                        id: f.id,
+                        fileName: f.fileName,
+                        fieldLabel: fileFieldLabel(app.applicationEntries, f.id),
+                        sizeBytes: f.sizeBytes,
+                      }))}
+                    />
+                  </dd>
+                </div>
+              </dl>
+            </section>
 
-          {history.status !== 'absent' && (
-            <details className="rounded-lg border p-4">
-              <summary className="cursor-pointer text-sm font-semibold">
-                이전 기록(오프닝워크)
-              </summary>
-              <div className="mt-4">
-                <ApplicationHistory applicationId={app.id} result={history} />
-              </div>
-            </details>
-          )}
+            <PreQuestions entries={customEntries} />
 
-          <DetailActionBar
+            {history.status !== 'absent' && (
+              <details className="rounded-lg border p-4">
+                <summary className="cursor-pointer text-sm font-semibold">
+                  이전 기록(오프닝워크)
+                </summary>
+                <div className="mt-4">
+                  <ApplicationHistory applicationId={app.id} result={history} />
+                </div>
+              </details>
+            )}
+
+            <DetailActionBar />
+          </div>
+
+          {/* 우측(데스크톱): 메모 스레드 sticky / 모바일: 제목 아래 요약 한 줄 */}
+          <MemoPanel
             applicationId={app.id}
-            stage={app.stage}
-            hiringStage={app.hiringStage}
-            phone={pii.phone}
-            name={pii.name}
-            postingTitle={app.posting?.title ?? null}
-            positionName={app.postingPosition?.name ?? null}
-            notifications={app.notifications.map((n) => ({
-              id: n.id,
-              notiType: n.notiType,
-              createdAt: n.createdAt.toISOString(),
+            currentUserId={resolved.user.id}
+            legacyMemo={app.memo}
+            initial={app.comments.map((c) => ({
+              id: c.id,
+              userId: c.userId,
+              content: c.content,
+              createdAt: c.createdAt.toISOString(),
+              editedAt: c.editedAt ? c.editedAt.toISOString() : null,
             }))}
           />
         </div>
-
-        {/* 우측(데스크톱): 메모 스레드 sticky / 모바일: 제목 아래 요약 한 줄 */}
-        <MemoPanel
-          applicationId={app.id}
-          currentUserId={resolved.user.id}
-          legacyMemo={app.memo}
-          initial={app.comments.map((c) => ({
-            id: c.id,
-            userId: c.userId,
-            content: c.content,
-            createdAt: c.createdAt.toISOString(),
-            editedAt: c.editedAt ? c.editedAt.toISOString() : null,
-          }))}
-        />
       </div>
-    </div>
+    </DetailActionsProvider>
   )
+}
+
+const ROW = 'grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5'
+
+// 010-1234-5678 형태로 보여 준다(복사도 이 텍스트). 숫자 형식이 다르면 받은 그대로 둔다.
+function formatPhone(value: string | null) {
+  const digits = value?.replace(/\D/g, '') ?? ''
+  const m = /^(01\d)(\d{3,4})(\d{4})$/.exec(digits)
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : value
 }
 
 function Field({
@@ -163,10 +182,12 @@ function Field({
   copyLabel?: string
 }) {
   return (
-    <div className="flex flex-col gap-0.5" data-copy-root>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="flex items-center gap-1 font-medium">
-        <span data-copy-value>{value || '-'}</span>
+    <div className={ROW} data-copy-root>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="flex min-w-0 items-center gap-1 font-medium">
+        <span className="min-w-0 break-all" data-copy-value>
+          {value || '-'}
+        </span>
         {copyLabel && value && <CopyValueButton label={copyLabel} />}
       </dd>
     </div>
