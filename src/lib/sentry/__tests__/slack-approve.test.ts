@@ -34,7 +34,7 @@ jest.mock('@/lib/sentry/api', () => ({
 
 process.env.SENTRY_AUTOFIX_NOTE_SECRET = 's'.repeat(40)
 import { noteSig } from '../autofix-sig'
-import { handleSentryAutofixApprove } from '../slack-approve'
+import { handleSentryAnalyzeRequest, handleSentryAutofixApprove } from '../slack-approve'
 
 const ID = '20261125-043000-ab12-WEB-1A'
 const SHA = '0123456789abcdef'
@@ -165,5 +165,93 @@ describe('handleSentryAutofixApprove', () => {
       '승인을 기록하지 못했습니다. 잠시 후 다시 시도하세요.'
     )
     expect(addComment).not.toHaveBeenCalled()
+  })
+})
+
+describe('handleSentryAnalyzeRequest', () => {
+  const ain = { value: '99', teamId: 'T1', channelId: 'C1', slackUserId: 'U1' }
+  beforeEach(() => listComments.mockResolvedValue([]))
+
+  it('value 가 숫자가 아니면 무시', async () => {
+    expect(await handleSentryAnalyzeRequest({ ...ain, value: '9|x' })).toBeNull()
+    expect(findInstall).not.toHaveBeenCalled()
+  })
+
+  it('다른 team·운영 채널 아님이면 무시', async () => {
+    findInstall.mockResolvedValue(null)
+    expect(await handleSentryAnalyzeRequest(ain)).toBeNull()
+    findInstall.mockResolvedValue({ teamId: 'T1', botToken: 'b', botTokenIv: 'i' })
+    findChannel.mockResolvedValue(null)
+    expect(await handleSentryAnalyzeRequest(ain)).toBeNull()
+    expect(addComment).not.toHaveBeenCalled()
+  })
+
+  it('Slack 연결 없음·운영자 아님이면 안내', async () => {
+    resolveMember.mockResolvedValue(null)
+    expect(await handleSentryAnalyzeRequest(ain)).toContain('Slack 연결이 없어')
+    resolveMember.mockResolvedValue({ userId: 'u1', role: 'ADMIN' })
+    findUser.mockResolvedValue({ platformRole: null })
+    expect(await handleSentryAnalyzeRequest(ain)).toBe('운영자만 요청할 수 있습니다.')
+    expect(addComment).not.toHaveBeenCalled()
+  })
+
+  it('서명 키가 없으면 아무것도 쓰지 않는다', async () => {
+    const key = process.env.SENTRY_AUTOFIX_NOTE_SECRET
+    delete process.env.SENTRY_AUTOFIX_NOTE_SECRET
+    try {
+      expect(await handleSentryAnalyzeRequest(ain)).toBe('승인 서명 키가 설정되지 않았습니다')
+    } finally {
+      process.env.SENTRY_AUTOFIX_NOTE_SECRET = key
+    }
+    expect(writeAuditLog).not.toHaveBeenCalled()
+    expect(addComment).not.toHaveBeenCalled()
+  })
+
+  it('이미 요청됨·분석 중이면 안내만', async () => {
+    const N = '20261127-010203-0a1b2c3d'
+    listComments.mockResolvedValue([
+      {
+        text: `autofix:analyze-request id=${N} by=admin sig=${noteSig('analyze-request', '99', N, '0'.repeat(16))}`,
+        dateCreated: '2026-11-27T01:00:00Z',
+      },
+    ])
+    expect(await handleSentryAnalyzeRequest(ain)).toBe('이미 분석 요청됨')
+    listComments.mockResolvedValue([
+      {
+        text: `autofix:analyzing id=${N} until=2999-01-01T00:00:00Z`,
+        dateCreated: '2026-11-27T01:00:00Z',
+      },
+    ])
+    expect(await handleSentryAnalyzeRequest(ain)).toBe('이미 분석 요청됨')
+    expect(addComment).not.toHaveBeenCalled()
+  })
+
+  it('성공: 감사 후 서명된 요청 메모 by=slack', async () => {
+    const order: string[] = []
+    writeAuditLog.mockImplementation(async () => void order.push('audit'))
+    addComment.mockImplementation(async () => void order.push('comment'))
+    expect(await handleSentryAnalyzeRequest(ain)).toBe(
+      '분석을 요청했습니다. 10분~40분 안에 결과가 Slack 으로 옵니다.'
+    )
+    expect(order).toEqual(['audit', 'comment'])
+    const [issueId, text] = addComment.mock.calls[0]
+    expect(issueId).toBe('99')
+    const m =
+      /^autofix:analyze-request id=(\d{8}-\d{6}-[0-9a-f]{8}) by=slack sig=([0-9a-f]{32})$/.exec(
+        text
+      )
+    expect(m).not.toBeNull()
+    expect(m![2]).toBe(noteSig('analyze-request', '99', m![1], '0'.repeat(16)))
+    expect(writeAuditLog).toHaveBeenCalledWith('u1', 'sentryIssue.autofix', 'sentryIssue', '99', {
+      action: 'analyze',
+      status: 'requested',
+      via: 'slack',
+    })
+  })
+
+  it('메모 쓰기 실패: failed 감사', async () => {
+    addComment.mockRejectedValue(new Error('boom'))
+    expect(await handleSentryAnalyzeRequest(ain)).toContain('쓰지 못했습니다')
+    expect(writeAuditLog.mock.calls[1][4]).toMatchObject({ status: 'failed' })
   })
 })

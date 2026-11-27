@@ -63,3 +63,52 @@ describe('listComments 서명 검증', () => {
     expect(await serve([r])).toEqual([])
   })
 })
+
+describe('분석 노트 서명 검증', () => {
+  const N = '20261127-010203-0a1b2c3d'
+  const sha16 = 'b0c208ff7cedfa83'
+  const req = (sig: string) => `autofix:analyze-request id=${N} by=admin sig=${sig}`
+  const done = (sig: string) =>
+    `autofix:analyzed id=${N} verdict=fix conf=mid auto=yes issue=42 sig=${sig}`
+
+  it('공통 시험 벡터 (러너와 동일 값)', () => {
+    process.env.SENTRY_AUTOFIX_NOTE_SECRET = 's'.repeat(32)
+    expect(noteSig('analyze-request', '123', N, '0000000000000000')).toBe(
+      '155d3594dcb210d2680723039428b67f'
+    )
+    expect(noteSig('analyzed', '123', N, sha16)).toBe('d4bf32eff2a54bcd4dea39f26de7ffbc')
+  })
+
+  it('서명이 맞는 analyze-request·analyzed 만 유지 (analyzing·analyze-failed 는 서명 없이 통과)', async () => {
+    process.env.SENTRY_AUTOFIX_NOTE_SECRET = 's'.repeat(32)
+    const ok = [req('155d3594dcb210d2680723039428b67f'), done('d4bf32eff2a54bcd4dea39f26de7ffbc')]
+    const ing = `autofix:analyzing id=${N} until=2026-11-27T02:00:00Z`
+    const failed = 'autofix:analyze-failed gate'
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => [...ok, ing, failed].map((t) => ({ data: { text: t }, dateCreated: 'x' })),
+    })
+    const r = (await listComments('123')).map((c) => c.text)
+    expect(r).toEqual([...ok, ing, failed])
+  })
+
+  it('틀린 서명·내용 변조(판정 바꿈)·다른 이슈는 버린다', async () => {
+    process.env.SENTRY_AUTOFIX_NOTE_SECRET = 's'.repeat(32)
+    const sigDone = 'd4bf32eff2a54bcd4dea39f26de7ffbc'
+    expect(
+      await serveFor('123', [
+        req('0'.repeat(32)),
+        req(''),
+        done(sigDone).replace('verdict=fix', 'verdict=ignore'),
+        done(sigDone).replace('issue=42', 'issue=43'),
+        req('155d3594dcb210d2680723039428b67f') + 'x',
+      ])
+    ).toEqual([])
+    expect(await serveFor('124', [req('155d3594dcb210d2680723039428b67f')])).toEqual([])
+  })
+})
+
+function serveFor(issueId: string, texts: string[]) {
+  mockFetch.mockResolvedValue({ ok: true, json: async () => texts.map(mk) })
+  return listComments(issueId).then((r) => r.map((c) => c.text))
+}

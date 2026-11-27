@@ -1,5 +1,6 @@
 import 'server-only'
-import { verifyNoteSig } from './autofix-sig'
+import { createHash } from 'node:crypto'
+import { verifyNoteSig, type NoteKind } from './autofix-sig'
 
 const BASE = 'https://sentry.io/api/0'
 const org = () => process.env.SENTRY_ORG ?? 'kaleos'
@@ -63,13 +64,24 @@ export async function listIssues(service: 'web' | 'worker'): Promise<SentryIssue
   }))
 }
 
-// ready · approve 노트는 서명이 맞는 것만 인정한다 (Sentry 접근권만으로 위조 불가)
+// ready · approve · analyze-request · analyzed 노트는 서명이 맞는 것만 인정한다 (Sentry 접근권만으로 위조 불가)
 function isAuthentic(issueId: string, text: string): boolean {
   const first = text.trim().split('\n')[0]
-  const kind = /^autofix:(ready|approve)(\s|$)/.exec(first)?.[1] as 'ready' | 'approve' | undefined
+  const kind = /^autofix:(ready|approve|analyze-request|analyzed)(\s|$)/.exec(first)?.[1] as
+    | NoteKind
+    | undefined
   if (!kind) return true
   const f = Object.fromEntries([...first.matchAll(/(\w+)=(\S+)/g)].map((m) => [m[1], m[2]]))
-  return verifyNoteSig(kind, issueId, f.id ?? '', f.sha ?? '', f.sig)
+  const sha =
+    kind === 'analyze-request'
+      ? '0'.repeat(16)
+      : kind === 'analyzed'
+        ? createHash('sha256')
+            .update(`${f.verdict}|${f.conf}|${f.auto}|${f.issue}`)
+            .digest('hex')
+            .slice(0, 16)
+        : (f.sha ?? '')
+  return verifyNoteSig(kind, issueId, f.id ?? '', sha, f.sig)
 }
 
 export async function listComments(

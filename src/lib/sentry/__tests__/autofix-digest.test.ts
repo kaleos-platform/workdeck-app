@@ -84,6 +84,38 @@ describe('buildDigestMessage', () => {
     })
   })
 
+  it('확인 필요 줄마다 분석 요청 버튼(value=issueId)', () => {
+    const msg = buildDigestMessage([confirm(), confirm({ id: '101', shortId: 'WEB-2B' })])!
+    const acts = (msg.blocks as { type: string; elements?: Record<string, unknown>[] }[]).filter(
+      (b) => b.type === 'actions'
+    )
+    expect(acts.map((a) => a.elements![0])).toEqual([
+      expect.objectContaining({
+        text: { type: 'plain_text', text: '분석 요청' },
+        action_id: 'sentry_autofix_analyze',
+        value: '100',
+      }),
+      expect.objectContaining({ action_id: 'sentry_autofix_analyze', value: '101' }),
+    ])
+  })
+
+  it('검증 실패 ready(확인 필요로 표시)에는 분석 버튼이 없다', () => {
+    const bad = approval({
+      autofix: {
+        kind: 'ready',
+        id: ID,
+        sha: SHA,
+        files: 1,
+        lines: 1,
+        verify: 'fail',
+        review: 'approve',
+      },
+    })
+    expect(JSON.stringify(buildDigestMessage([bad])!.blocks)).not.toContain(
+      'sentry_autofix_analyze'
+    )
+  })
+
   it('Sentry 제목은 이스케이프·절단된다', () => {
     const msg = buildDigestMessage([
       approval({ title: '<@U123> *bold* <https://x|y> ' + 'a'.repeat(200), shortId: '<!channel>' }),
@@ -131,6 +163,7 @@ describe('buildDigestMessage', () => {
     const json = JSON.stringify(buildDigestMessage(rows)!.blocks)
     expect(json.match(/승인 대기\*/g)).toHaveLength(5)
     expect(json.match(/확인 필요\*/g)).toHaveLength(5)
+    expect(json.match(/sentry_autofix_analyze/g)).toHaveLength(5)
   })
 })
 

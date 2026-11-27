@@ -182,3 +182,107 @@ it('판단 전 행의 시트는 수정안 없이 안내만 보인다', () => {
   expect(screen.getByText('아직 판단 전')).toBeInTheDocument()
   expect(screen.queryByText('수정안')).not.toBeInTheDocument()
 })
+
+describe('분석 요청 단계별 버튼', () => {
+  const names = () => screen.queryAllByRole('button').map((b) => b.textContent)
+  const rowButtons = () =>
+    names().filter((n) =>
+      ['분석 요청', '수정 요청', '제외', '제외 확정', '다시 요청'].includes(n ?? '')
+    )
+  const an = (autofix: ErrorRow['autofix'], stage: ErrorRow['stage']) =>
+    row({ id: 'z', title: '분석 오류', autofix, stage })
+
+  it('확인 필요 행: [분석 요청][제외], 시트에는 [수정 요청] 추가', () => {
+    render(<ErrorsTable rows={[an({ kind: 'none' }, 'confirm')]} {...props} />)
+    expect(rowButtons()).toEqual(['분석 요청', '제외'])
+    fireEvent.click(screen.getByText('판단 전'))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(rowButtons()).toEqual(['분석 요청', '수정 요청', '제외'])
+  })
+
+  it('분석 요청 → analyze 액션과 토스트 대상 호출', async () => {
+    mockFetch.mockResolvedValue({ ok: true, status: 200 })
+    render(<ErrorsTable rows={[an({ kind: 'none' }, 'confirm')]} {...props} />)
+    fireEvent.click(screen.getByRole('button', { name: '분석 요청' }))
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled())
+    expect(JSON.parse(mockFetch.mock.calls[0][1].body)).toEqual({ action: 'analyze' })
+  })
+
+  it('분석 요청됨 [제외] / 분석 중 버튼 없음 / 만료 [다시 요청] / 실패 [다시 요청][제외]', () => {
+    const { rerender } = render(
+      <ErrorsTable rows={[an({ kind: 'analyze-request' }, 'analyze-requested')]} {...props} />
+    )
+    expect(rowButtons()).toEqual(['제외'])
+    rerender(
+      <ErrorsTable
+        rows={[an({ kind: 'analyzing', until: '2999-01-01T00:00:00Z' }, 'analyzing')]}
+        {...props}
+      />
+    )
+    expect(rowButtons()).toEqual([])
+    rerender(
+      <ErrorsTable
+        rows={[an({ kind: 'analyzing', until: '2000-01-01T00:00:00Z' }, 'analyzing')]}
+        {...props}
+      />
+    )
+    expect(screen.getByText('분석 중(만료)')).toBeInTheDocument()
+    expect(rowButtons()).toEqual(['다시 요청'])
+    rerender(<ErrorsTable rows={[an({ kind: 'analyze-failed' }, 'analyze-failed')]} {...props} />)
+    expect(rowButtons()).toEqual(['다시 요청', '제외'])
+  })
+
+  it('분석 완료: 판정별 버튼과 이슈 링크 배지', () => {
+    const done = (verdict: 'fix' | 'watch' | 'ignore') =>
+      an(
+        {
+          kind: 'analyzed',
+          verdict,
+          conf: 'mid',
+          auto: 'yes',
+          issueNumber: 42,
+          at: '2026-11-27T00:00:00Z',
+        },
+        'analyzed'
+      )
+    const { rerender } = render(<ErrorsTable rows={[done('fix')]} {...props} />)
+    expect(rowButtons()).toEqual(['수정 요청', '제외'])
+    const link = screen.getByRole('link', { name: '고칠 것 · 이슈 #42 ↗' })
+    expect(link).toHaveAttribute(
+      'href',
+      'https://github.com/kaleos-platform/kaleos-ax-project/issues/42'
+    )
+    rerender(<ErrorsTable rows={[done('watch')]} {...props} />)
+    expect(rowButtons()).toEqual(['제외'])
+    expect(screen.getByRole('link', { name: '지켜볼 것 · 이슈 #42 ↗' })).toBeInTheDocument()
+    rerender(<ErrorsTable rows={[done('ignore')]} {...props} />)
+    expect(rowButtons()).toEqual(['제외 확정'])
+    expect(screen.getByRole('link', { name: '무시 · 이슈 #42 ↗' })).toBeInTheDocument()
+  })
+
+  it('시트 「분석」 섹션: 판정·확신도·자동 수정·결과 링크', () => {
+    render(
+      <ErrorsTable
+        rows={[
+          an(
+            {
+              kind: 'analyzed',
+              verdict: 'fix',
+              conf: 'high',
+              auto: 'no',
+              issueNumber: 7,
+              at: '2026-11-27T00:00:00Z',
+            },
+            'analyzed'
+          ),
+        ]}
+        {...props}
+      />
+    )
+    fireEvent.click(screen.getByText('판단 전'))
+    expect(screen.getByText('분석')).toBeInTheDocument()
+    expect(screen.getByText('높음')).toBeInTheDocument()
+    expect(screen.getByText('불가')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '이슈 #7 ↗' })).toBeInTheDocument()
+  })
+})
