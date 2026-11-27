@@ -1,4 +1,10 @@
-import { fillMessage, normalizeSmsPhone, textToDoc, docToText } from '../message-template'
+import {
+  fillMessage,
+  formatPhone,
+  normalizeSmsPhone,
+  textToDoc,
+  docToText,
+} from '../message-template'
 
 it('변수를 치환하고 없는 값은 빈 문자열로 둔다', () => {
   expect(
@@ -67,4 +73,11 @@ describe('textToDoc / docToText 왕복', () => {
       })
     ).toBe('a\nb')
   })
+})
+
+it('휴대폰은 하이픈 형식으로 보여 주고 다른 형식은 그대로 둔다', () => {
+  expect(formatPhone('01000001007')).toBe('010-0000-1007')
+  expect(formatPhone('011-123-4567')).toBe('011-123-4567')
+  expect(formatPhone('0212345678')).toBe('0212345678')
+  expect(formatPhone(null)).toBeNull()
 })
