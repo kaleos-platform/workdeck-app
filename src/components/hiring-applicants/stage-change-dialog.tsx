@@ -143,7 +143,7 @@ export function StageChangeDialog({
       />
       {nextStage === 'REJECTED' && stage !== 'REJECTED' && (
         <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
-          불합격으로 변경합니다. 지원자에게 보이는 결과 화면에도 반영될 수 있으니 확인하세요.
+          불합격으로 변경합니다. 지원자에게 자동으로 알리지 않습니다. 결과 안내는 「연락하기」에서 따로 보내세요.
         </p>
       )}
     </div>
