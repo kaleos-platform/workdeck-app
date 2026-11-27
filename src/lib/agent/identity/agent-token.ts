@@ -74,18 +74,17 @@ export async function verifyAgentToken(
   if (row.agent.kind !== 'agent' && row.agent.kind !== 'integration') return null
 
   // 마지막 사용 시각 — 실패해도 인증은 막지 않는다.
-  prisma.agentToken
-    .updateMany({
-      where: {
-        id: row.id,
-        OR: [
-          { lastUsedAt: null },
-          { lastUsedAt: { lt: new Date(now.getTime() - LAST_USED_THROTTLE_MS) } },
-        ],
-      },
-      data: { lastUsedAt: now },
-    })
-    .catch((err: unknown) => console.error('[agent-token] lastUsedAt 갱신 실패', err))
+  // 자동 커밋 한 문장 + SKIP LOCKED: Prisma updateMany 는 UPDATE 후 COMMIT 을 따로 보내서,
+  // 응답 뒤 인스턴스가 멈추면 커밋 안 된 트랜잭션이 행 락을 쥔 채 남고 이후 요청이 그 락에서
+  // 줄을 서 연결(max=1)을 점유했다(2026-11-27 504 장애). 락이 잡혀 있으면 기다리지 않고 건너뛴다.
+  const cutoff = new Date(now.getTime() - LAST_USED_THROTTLE_MS)
+  prisma.$executeRaw`
+    UPDATE "AgentToken" SET "lastUsedAt" = ${now}
+    WHERE "id" IN (
+      SELECT "id" FROM "AgentToken"
+      WHERE "id" = ${row.id} AND ("lastUsedAt" IS NULL OR "lastUsedAt" < ${cutoff})
+      FOR UPDATE SKIP LOCKED
+    )`.catch((err: unknown) => console.error('[agent-token] lastUsedAt 갱신 실패', err))
 
   return {
     spaceId: row.agent.spaceId,
