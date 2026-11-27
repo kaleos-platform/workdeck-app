@@ -101,7 +101,9 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
   async function deleteAttachments() {
     setDeleting(true)
     try {
-      const res = await fetch(`/api/admin/feedback/${feedback.id}/attachments`, { method: 'DELETE' })
+      const res = await fetch(`/api/admin/feedback/${feedback.id}/attachments`, {
+        method: 'DELETE',
+      })
       const body = await res.json().catch(() => null)
       if (!res.ok) throw new Error(body?.message ?? '첨부 삭제에 실패했습니다')
       if (body?.failed > 0) toast.error(`${body.failed}개 삭제에 실패했습니다. 다시 시도해 주세요`)
@@ -130,7 +132,7 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
         <div className="flex flex-col gap-4">
           <section className="rounded-lg border p-4">
             <h2 className="mb-2 text-sm font-medium text-muted-foreground">본문</h2>
-            <p className="break-words whitespace-pre-wrap text-sm">{feedback.body}</p>
+            <p className="text-sm break-words whitespace-pre-wrap">{feedback.body}</p>
           </section>
           <section className="rounded-lg border p-4 text-sm">
             <h2 className="mb-2 text-sm font-medium text-muted-foreground">메타</h2>
@@ -212,9 +214,11 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
         )}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">
-            {feedback.deleteAt
-              ? `첨부 삭제 예정: ${new Date(feedback.deleteAt).toLocaleDateString('ko-KR')} (${FEEDBACK_STATUS_LABEL[feedback.status]})`
-              : '삭제 예정일 없음 (완료·보류로 바꾸면 자동 삭제가 예약됩니다)'}
+            {attachments && live.length === 0
+              ? '남은 첨부 없음'
+              : feedback.deleteAt
+                ? `첨부 삭제 예정: ${new Date(feedback.deleteAt).toLocaleDateString('ko-KR')} (${FEEDBACK_STATUS_LABEL[feedback.status]})`
+                : '삭제 예정일 없음 (완료·보류로 바꾸면 자동 삭제가 예약됩니다)'}
           </p>
           <Button
             variant="destructive"
