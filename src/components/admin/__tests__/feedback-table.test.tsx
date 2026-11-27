@@ -16,10 +16,18 @@ const row: FeedbackRow = {
 const summary = { counts: { NEW: 4, IN_PROGRESS: 2, DONE: 11, ON_HOLD: 3 }, totalBytes: 38.24 * 1048576, capBytes: 500 * 1048576 }
 const base = { rows: [row], summary, type: '', status: '', page: 1, pageCount: 1 }
 
+it('모바일 카드는 상세 링크이고 날짜·제출자·첨부 수를 보여준다', () => {
+  const { container } = render(<FeedbackTable {...base} />)
+  const card = container.querySelector('.md\\:hidden a[href="/admin/feedback/fb-1"]')
+  expect(card).not.toBeNull()
+  expect(card).toHaveTextContent('qa@example.com')
+  expect(card).toHaveTextContent('첨부 2')
+})
+
 it('첨부는 개수만 표시하고 이미지를 로드하지 않는다', () => {
   const { container } = render(<FeedbackTable {...base} />)
   expect(container.querySelector('img')).toBeNull()
-  expect(screen.getByText('2')).toBeInTheDocument()
+  expect(container.querySelector('table')).toHaveTextContent('2')
 })
 
 it('상태별 건수와 총 용량(MB 소수 1자리)을 요약한다', () => {
@@ -33,7 +41,7 @@ it('상태별 건수와 총 용량(MB 소수 1자리)을 요약한다', () => {
 
 it('행은 상세 링크이고 화면 경로는 링크가 아니다', () => {
   render(<FeedbackTable {...base} />)
-  expect(screen.getByRole('link', { name: /재고 현황에서/ })).toHaveAttribute('href', '/admin/feedback/fb-1')
+  expect(screen.getAllByRole('link', { name: /재고 현황에서/ })[0]).toHaveAttribute('href', '/admin/feedback/fb-1')
 })
 
 it('필터 값이 선택기에 반영되고 페이지 링크가 필터를 유지한다', () => {

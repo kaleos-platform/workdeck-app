@@ -102,7 +102,32 @@ export function FeedbackTable({
           </SelectContent>
         </Select>
       </div>
-      <div className="overflow-x-auto">
+      <ul className="flex flex-col gap-2 md:hidden">
+        {rows.map((r) => (
+          <li key={r.id}>
+            <Link
+              href={`/admin/feedback/${r.id}`}
+              className="block rounded-lg border p-3 text-sm hover:bg-muted/40"
+            >
+              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                <span>{new Date(r.createdAt).toLocaleDateString('ko-KR')}</span>
+                <span>
+                  {FEEDBACK_TYPE_LABEL[r.type]} · {FEEDBACK_STATUS_LABEL[r.status]}
+                </span>
+              </div>
+              <p className="mt-1 line-clamp-2 break-words">{r.body}</p>
+              <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                <span className="truncate">{r.email}</span>
+                <span className="shrink-0">첨부 {r.attachmentCount}</span>
+              </div>
+            </Link>
+          </li>
+        ))}
+        {rows.length === 0 ? (
+          <li className="p-6 text-center text-sm text-muted-foreground">접수된 의견이 없습니다</li>
+        ) : null}
+      </ul>
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[900px] table-fixed text-left">
           <colgroup>
             <col className="w-[110px]" />

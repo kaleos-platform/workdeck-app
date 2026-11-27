@@ -106,16 +106,19 @@ export async function submitFeedback(req: Request, user: User): Promise<NextResp
     const items = files.map((f) => ({ ...f, path: `${fb.id}/${randomUUID()}.${EXT[f.mime]}` }))
     const paths = items.map((i) => i.path)
     // 경로는 업로드 전에 원장에 예약 — 어디서 끊겨도 cron이 정리한다
-    const ledger = await prisma.feedbackFileDeletion.create({
-      data: { paths, bytes },
-      select: { id: true },
-    })
-    const uploaded: string[] = []
+    let ledger: { id: string }
     try {
-      for (const i of items) {
-        await uploadFeedbackFile(i.path, i.data, i.mime)
-        uploaded.push(i.path)
-      }
+      ledger = await prisma.feedbackFileDeletion.create({
+        data: { paths, bytes },
+        select: { id: true },
+      })
+    } catch (e) {
+      console.error('[feedback] 원장 예약 실패:', (e as Error).message)
+      await prisma.userFeedback.delete({ where: { id: fb.id } }).catch(() => null)
+      return errorResponse('의견을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요', 500)
+    }
+    try {
+      for (const i of items) await uploadFeedbackFile(i.path, i.data, i.mime)
       await prisma.$transaction([
         prisma.userFeedbackAttachment.createMany({
           data: items.map((i) => ({

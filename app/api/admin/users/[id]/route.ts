@@ -183,10 +183,14 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   // 2)(3) 하나의 트랜잭션으로: solo Space 삭제 + User 삭제 (Workspace/잔여 SpaceMember cascade)
   // HiringPostingPosition.spaceId는 onDelete: Restrict라 Space 자신이 지워질 때 먼저 정리해야
   // space.deleteMany가 FK 위반으로 실패하지 않는다(이 데이터는 어차피 지워질 Space 소속이라 보존할 이유가 없음).
-  let ledger: { id: string; paths: string[] } | null = null
+  let ledger: { id: string; paths: string[] } | null
   try {
-    await prisma.$transaction(async (tx) => {
+    ledger = await prisma.$transaction(async (tx) => {
+      // 제출(createMany+원장 삭제)과 경합해 경로를 놓치지 않도록 User·UserFeedback 행을 먼저 잠근다.
+      await tx.$executeRaw`SELECT 1 FROM "User" WHERE id = ${id} FOR UPDATE`
+      await tx.$executeRaw`SELECT 1 FROM "UserFeedback" WHERE "userId" = ${id} FOR UPDATE`
       // 의견 첨부 파일은 user.delete(Cascade)로 행이 사라지므로 경로를 삭제 원장에 먼저 남긴다.
+      let led: { id: string; paths: string[] } | null = null
       const files = await tx.userFeedbackAttachment.findMany({
         where: { feedback: { userId: id }, deletedAt: null },
         select: { path: true, sizeBytes: true },
@@ -196,13 +200,14 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
         const row = await tx.feedbackFileDeletion.create({
           data: { paths, bytes: files.reduce((n, f) => n + f.sizeBytes, 0) },
         })
-        ledger = { id: row.id, paths }
+        led = { id: row.id, paths }
       }
       if (soloSpaceIds.length > 0) {
         await tx.hiringPostingPosition.deleteMany({ where: { spaceId: { in: soloSpaceIds } } })
         await tx.space.deleteMany({ where: { id: { in: soloSpaceIds } } })
       }
       await tx.user.delete({ where: { id } })
+      return led
     })
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2003') {
@@ -216,13 +221,13 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   }
 
   // commit 후 즉시 파일 삭제 시도 — 실패 시 원장이 남아 cron이 재시도한다(탈퇴 응답에는 영향 없음).
-  const pending = ledger as { id: string; paths: string[] } | null
-  if (pending) {
+  if (ledger) {
     try {
-      const { failed } = await removeFeedbackFiles(pending.paths)
-      if (failed.length === 0) await prisma.feedbackFileDeletion.delete({ where: { id: pending.id } })
+      const { failed } = await removeFeedbackFiles(ledger.paths)
+      if (failed.length === 0) await prisma.feedbackFileDeletion.delete({ where: { id: ledger.id } })
     } catch {
-      // 원장 유지 — cron 재시도
+      // 원장 유지 — cron 재시도 (경로는 로그에 남기지 않는다)
+      console.error('[feedback] withdrawal cleanup failed')
     }
   }
 

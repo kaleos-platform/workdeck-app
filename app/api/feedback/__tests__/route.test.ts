@@ -173,6 +173,13 @@ describe('POST /api/feedback', () => {
     expect(p.feedbackFileDeletion.delete).not.toHaveBeenCalled()
     expect(p.userFeedback.delete).toHaveBeenCalled()
   })
+  it('원장 예약 실패 → 의견 행 삭제, 500, 업로드 없음', async () => {
+    p.feedbackFileDeletion.create.mockRejectedValueOnce(new Error('db'))
+    const res = await post({}, [pngFile()])
+    expect(res.status).toBe(500)
+    expect(p.userFeedback.delete).toHaveBeenCalledWith({ where: { id: 'fb1' } })
+    expect(uploadFeedbackFile).not.toHaveBeenCalled()
+  })
   it('버킷 검증 실패 → 503, 업로드 없음', async () => {
     ;(assertFeedbackBucket as jest.Mock).mockRejectedValueOnce(new Error('public'))
     expect((await post({}, [pngFile()])).status).toBe(503)

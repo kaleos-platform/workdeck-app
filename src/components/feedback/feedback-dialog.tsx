@@ -41,6 +41,7 @@ export function FeedbackDialog({
   const [error, setError] = useState<string | null>(null)
   const [skipped, setSkipped] = useState(false)
   const seq = useRef(0)
+  const submitting = useRef(false)
   const input = useRef<HTMLInputElement>(null)
 
   const reset = (list: Attachment[]) => {
@@ -90,7 +91,8 @@ export function FeedbackDialog({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (busy || !type || !body.trim()) return
+    if (submitting.current || busy || !type || !body.trim()) return
+    submitting.current = true
     setBusy(true)
     setError(null)
     try {
@@ -126,6 +128,7 @@ export function FeedbackDialog({
     } catch {
       setError(GENERIC_ERROR)
     } finally {
+      submitting.current = false
       setBusy(false)
     }
   }

@@ -26,7 +26,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       data: {
         status,
         memo,
-        closedAt: nextClosedAt(current.status, status ?? current.status, current.closedAt, new Date()),
+        // 메모만 바꿀 땐 closedAt을 쓰지 않는다(동시 상태 변경 덮어쓰기 방지)
+        ...(status !== undefined && {
+          closedAt: nextClosedAt(current.status, status, current.closedAt, new Date()),
+        }),
       },
     })
     await writeAuditLog(

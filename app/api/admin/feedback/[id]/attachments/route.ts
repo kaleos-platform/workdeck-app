@@ -23,7 +23,7 @@ export async function GET(_request: Request, { params }: Ctx) {
     await Promise.all(
       rows.map(async (r) => ({
         id: r.id,
-        url: r.deletedAt ? null : await signFeedbackFile(r.path),
+        url: r.deletedAt ? null : await signFeedbackFile(r.path).catch(() => null),
         mimeType: r.mimeType,
         sizeBytes: r.sizeBytes,
         deletedAt: r.deletedAt,

@@ -19,6 +19,7 @@ jest.mock('@/lib/prisma', () => {
     space: { deleteMany: jest.fn() },
     userFeedbackAttachment: { findMany: jest.fn() },
     feedbackFileDeletion: { create: jest.fn(), delete: jest.fn() },
+    $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   }
   p.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(p))
@@ -40,6 +41,15 @@ beforeEach(() => {
   jest.mocked(prisma.feedbackFileDeletion.create).mockResolvedValue({ id: 'L1' } as never)
 })
 
+it('첨부 조회 전에 User·UserFeedback 행을 먼저 잠근다', async () => {
+  await call()
+  const raw = jest.mocked(prisma.$executeRaw).mock
+  expect(raw.calls).toHaveLength(2)
+  expect((raw.calls[0][0] as unknown as string[]).join('?')).toContain('"User"')
+  expect((raw.calls[1][0] as unknown as string[]).join('?')).toContain('"UserFeedback"')
+  const find = jest.mocked(prisma.userFeedbackAttachment.findMany).mock.invocationCallOrder[0]
+  expect(raw.invocationCallOrder[1]).toBeLessThan(find)
+})
 it('미삭제 첨부가 없으면 원장을 만들지 않는다', async () => {
   expect((await call()).status).toBe(200)
   expect(prisma.feedbackFileDeletion.create).not.toHaveBeenCalled()

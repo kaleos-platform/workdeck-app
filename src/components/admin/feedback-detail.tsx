@@ -80,7 +80,10 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
       const res = await fetch(`/api/admin/feedback/${feedback.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, memo: memo || null }),
+        body: JSON.stringify({
+          ...(status !== feedback.status && { status }),
+          ...(memo !== feedback.memo && { memo: memo || null }),
+        }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => null)
@@ -187,7 +190,7 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
         ) : (
           <div className="flex flex-wrap gap-3">
             {attachments.map((a) =>
-              a.url ? (
+              a.url && !a.deletedAt ? (
                 <a key={a.id} href={a.url} target="_blank" rel="noreferrer">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -201,7 +204,7 @@ export function FeedbackDetail({ feedback }: { feedback: FeedbackDetailData }) {
                   key={a.id}
                   className="flex h-32 w-32 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground"
                 >
-                  삭제됨
+                  {a.deletedAt ? '삭제됨' : '불러오지 못함'}
                 </div>
               )
             )}

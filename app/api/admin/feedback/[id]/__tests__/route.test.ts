@@ -53,10 +53,10 @@ it('DONE→IN_PROGRESS면 closedAt null', async () => {
     closedAt: null,
   })
 })
-it('메모만 변경하면 closedAt 유지', async () => {
+it('메모만 변경하면 closedAt을 쓰지 않는다', async () => {
   await call({ memo: '메모' })
   const data = jest.mocked(prisma.userFeedback.update).mock.calls[0][0].data
-  expect(data.closedAt).toEqual(closed)
+  expect('closedAt' in data).toBe(false)
   expect(data.memo).toBe('메모')
 })
 it('감사 로그는 같은 tx로 기록하고 meta에 본문이 없다', async () => {
