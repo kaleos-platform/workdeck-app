@@ -1,0 +1,322 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "text",
+   "id": "t1",
+   "x": 0,
+   "y": 0,
+   "text": "어드민 의견 상세 — desktop 900",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "b2",
+   "x": 0,
+   "y": 30,
+   "width": 900,
+   "height": 720,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b3",
+   "x": 0,
+   "y": 30,
+   "width": 900,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "← 의견 목록 (top nav)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "t4",
+   "x": 20,
+   "y": 88,
+   "text": "의견 상세  [서비스 오류][확인 중]",
+   "fontSize": 20
+  },
+  {
+   "type": "rectangle",
+   "id": "b5",
+   "x": 20,
+   "y": 125,
+   "width": 520,
+   "height": 160,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑩ 본문 전체\n재고 현황에서 엑셀 업로드하면 멈춰요. 어제부터 계속 그래요.\n파일은 20MB 정도이고 진행 표시줄이 90%에서 멈춥니다.",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b6",
+   "x": 20,
+   "y": 300,
+   "width": 520,
+   "height": 130,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑩ 메타 (Card)\n화면 경로 /d/seller-ops/inventory\n브라우저 Chrome 131 · macOS\n제출자 qa@example.com (mailto 링크)\n작업 공간 크림드 · 접수 2026-11-27 14:02",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b7",
+   "x": 560,
+   "y": 125,
+   "width": 320,
+   "height": 300,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑪ 상태·메모 (Card)\nSelect 상태: 확인 중\nTextarea 내부 메모\n(제출자에게 안 보임)\n[ 저장 — Button ]",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b8",
+   "x": 20,
+   "y": 445,
+   "width": 860,
+   "height": 230,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑫ 첨부 (Card)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b9",
+   "x": 40,
+   "y": 485,
+   "width": 130,
+   "height": 100,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "Image 1 thumb",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b10",
+   "x": 180,
+   "y": 485,
+   "width": 130,
+   "height": 100,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "Image 2 thumb",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b11",
+   "x": 320,
+   "y": 485,
+   "width": 130,
+   "height": 100,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "Image 3 thumb",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "t12",
+   "x": 40,
+   "y": 600,
+   "text": "첨부 삭제 예정: 2026-12-27 (완료 30일)",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "b13",
+   "x": 40,
+   "y": 625,
+   "width": 200,
+   "height": 36,
+   "backgroundColor": "#fee2e2",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "label": {
+    "text": "첨부 지금 삭제 — Button destructive",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b14",
+   "x": 560,
+   "y": 610,
+   "width": 300,
+   "height": 56,
+   "backgroundColor": "#fee2e2",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeStyle": "dashed",
+   "label": {
+    "text": "AlertDialog 확인: 첨부 3장을 삭제합니다. 되돌릴 수 없어요. [취소][삭제]",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "text",
+   "id": "t1015",
+   "x": 1000,
+   "y": 0,
+   "text": "mobile 390 (세로 스택)",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "b1016",
+   "x": 1000,
+   "y": 30,
+   "width": 390,
+   "height": 900,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1017",
+   "x": 1010,
+   "y": 50,
+   "width": 370,
+   "height": 36,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "← 의견 목록",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "t1018",
+   "x": 1014,
+   "y": 95,
+   "text": "[서비스 오류][확인 중]",
+   "fontSize": 14
+  },
+  {
+   "type": "rectangle",
+   "id": "b1019",
+   "x": 1010,
+   "y": 125,
+   "width": 370,
+   "height": 120,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑩ 본문 전체\n재고 현황에서 엑셀 업로드하면 멈춰요...",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1020",
+   "x": 1010,
+   "y": 255,
+   "width": 370,
+   "height": 120,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑩ 메타\n/d/seller-ops/inventory · Chrome 131\nqa@example.com (mailto) · 크림드",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1021",
+   "x": 1010,
+   "y": 385,
+   "width": 370,
+   "height": 170,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑪ Select 상태 / Textarea 메모 / 저장 Button",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1022",
+   "x": 1010,
+   "y": 565,
+   "width": 370,
+   "height": 150,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑫ 썸네일 3개(가로 스크롤)\n첨부 삭제 예정: 2026-12-27 (완료 30일)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1023",
+   "x": 1010,
+   "y": 725,
+   "width": 370,
+   "height": 44,
+   "backgroundColor": "#fee2e2",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "label": {
+    "text": "첨부 지금 삭제 — destructive (AlertDialog 확인)",
+    "fontSize": 11
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

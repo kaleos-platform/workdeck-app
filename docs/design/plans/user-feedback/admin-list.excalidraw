@@ -1,0 +1,350 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "text",
+   "id": "t1",
+   "x": 0,
+   "y": 0,
+   "text": "어드민 의견 목록 — desktop 900",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "b2",
+   "x": 0,
+   "y": 30,
+   "width": 900,
+   "height": 700,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b3",
+   "x": 0,
+   "y": 30,
+   "width": 900,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "대시보드 · 사용자 · 작업 공간 · … · 도입 신청 · ⑥ 의견 (top nav)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "t4",
+   "x": 20,
+   "y": 90,
+   "text": "의견",
+   "fontSize": 22
+  },
+  {
+   "type": "rectangle",
+   "id": "b5",
+   "x": 20,
+   "y": 125,
+   "width": 860,
+   "height": 40,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑦ 접수 4 · 확인 중 2 · 완료 11 · 보류 3 · 첨부 용량 38.2MB / 500MB",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b6",
+   "x": 20,
+   "y": 180,
+   "width": 200,
+   "height": 36,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑧ Select 유형: 전체",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b7",
+   "x": 232,
+   "y": 180,
+   "width": 200,
+   "height": 36,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑧ Select 상태: 전체",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b8",
+   "x": 20,
+   "y": 230,
+   "width": 860,
+   "height": 300,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b9",
+   "x": 20,
+   "y": 230,
+   "width": 860,
+   "height": 34,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑨ Table  접수일 · 유형 · 상태 · 제출자 · 작업 공간 · 본문 요약 · 첨부",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b10",
+   "x": 20,
+   "y": 264,
+   "width": 860,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "11-27  |  서비스 오류  |  접수  |  qa@example.com  |  크림드  |  재고 현황에서 엑셀 업로드하면 멈춰요  |  2   (Badge: 유형·상태)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b11",
+   "x": 20,
+   "y": 314,
+   "width": 860,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "11-26  |  기능 제안  |  확인 중  |  demo@example.com  |  에이엠엘 샘플  |  발주 계획을 CSV로 내려받고 싶어요  |  0   (Badge: 유형·상태)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b12",
+   "x": 20,
+   "y": 364,
+   "width": 860,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "11-25  |  문의  |  완료  |  test1@example.com  |  샘플 스토어  |  구독 결제일은 언제 바뀌나요?  |  0   (Badge: 유형·상태)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b13",
+   "x": 20,
+   "y": 414,
+   "width": 860,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "11-24  |  이용 후기  |  완료  |  test2@example.com  |  —  |  광고 분석 보고서가 편해요  |  1   (Badge: 유형·상태)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b14",
+   "x": 20,
+   "y": 464,
+   "width": 860,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "11-22  |  기타  |  보류  |  qa@example.com  |  크림드  |  모바일에서 표가 넓어요  |  3   (Badge: 유형·상태)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b15",
+   "x": 20,
+   "y": 560,
+   "width": 860,
+   "height": 40,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "Pagination — 이전 · 1 2 3 · 다음 (20건/페이지) · 행 클릭 → 상세",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "t1016",
+   "x": 1000,
+   "y": 0,
+   "text": "mobile 390",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "b1017",
+   "x": 1000,
+   "y": 30,
+   "width": 390,
+   "height": 700,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1018",
+   "x": 1000,
+   "y": 30,
+   "width": 390,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "≡ 의견 (top nav 햄버거)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1019",
+   "x": 1010,
+   "y": 84,
+   "width": 370,
+   "height": 56,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑦ 접수 4 · 확인 중 2 · 완료 11\n보류 3 · 첨부 38.2/500MB",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1020",
+   "x": 1010,
+   "y": 150,
+   "width": 180,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑧ Select 유형",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1021",
+   "x": 1200,
+   "y": 150,
+   "width": 180,
+   "height": 34,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑧ Select 상태",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1022",
+   "x": 1010,
+   "y": 196,
+   "width": 370,
+   "height": 90,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑨ 카드 목록(Table → 행 카드)\n[서비스 오류][접수] 11-27 · 첨부 2\n재고 현황에서 엑셀 업로드하면 멈춰요\nqa@example.com · 크림드",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1023",
+   "x": 1010,
+   "y": 296,
+   "width": 370,
+   "height": 90,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "[기능 제안][확인 중] 11-26 · 첨부 0\n발주 계획을 CSV로 내려받고 싶어요\ndemo@example.com · 에이엠엘 샘플",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1024",
+   "x": 1010,
+   "y": 400,
+   "width": 370,
+   "height": 36,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "Pagination",
+    "fontSize": 12
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

@@ -1,0 +1,475 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "text",
+   "id": "t1",
+   "x": 0,
+   "y": 0,
+   "text": "Dialog — desktop 900",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "b2",
+   "x": 0,
+   "y": 30,
+   "width": 900,
+   "height": 680,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b3",
+   "x": 0,
+   "y": 30,
+   "width": 200,
+   "height": 680,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b4",
+   "x": 12,
+   "y": 60,
+   "width": 176,
+   "height": 36,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "대시보드 · 내 업무 (사이드바 메뉴)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b5",
+   "x": 12,
+   "y": 540,
+   "width": 176,
+   "height": 36,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "① 의견 남기기\nButton ghost + MessageSquare",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b6",
+   "x": 12,
+   "y": 590,
+   "width": 176,
+   "height": 36,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "로그아웃 (기존)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b7",
+   "x": 12,
+   "y": 640,
+   "width": 176,
+   "height": 50,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "strokeStyle": "dashed",
+   "label": {
+    "text": "접힘: 아이콘만 + Tooltip\n「의견 남기기」",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b8",
+   "x": 250,
+   "y": 60,
+   "width": 560,
+   "height": 620,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "t9",
+   "x": 270,
+   "y": 76,
+   "text": "의견 남기기  (Dialog)",
+   "fontSize": 18
+  },
+  {
+   "type": "text",
+   "id": "t10",
+   "x": 270,
+   "y": 106,
+   "text": "불편한 점, 제안하고 싶은 기능, 오류를 남겨주시면 확인 후 조치할게요. 자세히 적을수록 빨라요.",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "b11",
+   "x": 270,
+   "y": 140,
+   "width": 520,
+   "height": 56,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "② 유형 — RadioGroup\n(●) 기능 제안  ( ) 서비스 오류  ( ) 문의  ( ) 이용 후기  ( ) 기타",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b12",
+   "x": 270,
+   "y": 210,
+   "width": 520,
+   "height": 130,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "③ 본문 — Textarea (필수)\n재고 현황에서 엑셀 업로드하면 멈춰요. 어제부터 계속 그래요.",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b13",
+   "x": 270,
+   "y": 355,
+   "width": 100,
+   "height": 80,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "이미지1\nthumb ✕",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b14",
+   "x": 380,
+   "y": 355,
+   "width": 100,
+   "height": 80,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "이미지2\nthumb ✕",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b15",
+   "x": 490,
+   "y": 355,
+   "width": 100,
+   "height": 80,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "이미지3\nthumb ✕",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b16",
+   "x": 600,
+   "y": 355,
+   "width": 190,
+   "height": 80,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "strokeStyle": "dashed",
+   "label": {
+    "text": "④ + 이미지 추가 (Button)\n최대 3장",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "t17",
+   "x": 270,
+   "y": 445,
+   "text": "GIF는 정지 이미지로 저장돼요",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "b18",
+   "x": 270,
+   "y": 475,
+   "width": 520,
+   "height": 70,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑤ 상한 도달 결과(접수 후 Dialog 안내) — Alert\n의견은 접수됐지만 이미지는 저장되지 않았어요",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b20",
+   "x": 560,
+   "y": 590,
+   "width": 110,
+   "height": 40,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "취소 — Button outline",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b21",
+   "x": 680,
+   "y": 590,
+   "width": 110,
+   "height": 40,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "보내기 — Button",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "t1022",
+   "x": 1000,
+   "y": 0,
+   "text": "Dialog — mobile 390",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "b1023",
+   "x": 1000,
+   "y": 30,
+   "width": 390,
+   "height": 780,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1024",
+   "x": 1010,
+   "y": 50,
+   "width": 370,
+   "height": 740,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "t1025",
+   "x": 1024,
+   "y": 64,
+   "text": "의견 남기기",
+   "fontSize": 18
+  },
+  {
+   "type": "text",
+   "id": "t1026",
+   "x": 1024,
+   "y": 94,
+   "text": "불편한 점, 제안하고 싶은 기능, 오류를 남겨주시면\n확인 후 조치할게요. 자세히 적을수록 빨라요.",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "b1027",
+   "x": 1024,
+   "y": 140,
+   "width": 342,
+   "height": 150,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "② 유형 — RadioGroup (세로)\n(●) 기능 제안\n( ) 서비스 오류  ( ) 문의\n( ) 이용 후기  ( ) 기타",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1028",
+   "x": 1024,
+   "y": 300,
+   "width": 342,
+   "height": 120,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "③ 본문 — Textarea",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1029",
+   "x": 1024,
+   "y": 432,
+   "width": 100,
+   "height": 70,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "이미지1 ✕",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1030",
+   "x": 1132,
+   "y": 432,
+   "width": 100,
+   "height": 70,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "이미지2 ✕",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1031",
+   "x": 1240,
+   "y": 432,
+   "width": 100,
+   "height": 70,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "이미지3 ✕",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1032",
+   "x": 1024,
+   "y": 512,
+   "width": 342,
+   "height": 40,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "strokeStyle": "dashed",
+   "label": {
+    "text": "④ + 이미지 추가 — Button (GIF는 정지 이미지로 저장돼요)",
+    "fontSize": 11
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1033",
+   "x": 1024,
+   "y": 565,
+   "width": 342,
+   "height": 70,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "⑤ Alert\n의견은 접수됐지만 이미지는 저장되지 않았어요",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1034",
+   "x": 1024,
+   "y": 730,
+   "width": 164,
+   "height": 44,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "취소 — Button outline",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1035",
+   "x": 1202,
+   "y": 730,
+   "width": 164,
+   "height": 44,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "strokeColor": "#374151",
+   "label": {
+    "text": "보내기 — Button",
+    "fontSize": 12
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

@@ -1,123 +1,205 @@
 # 의견 남기기 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. 현재 세션에서 직접 실행하며 별도 위임은 필요할 때만 한다.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 로그인 이용자의 의견을 앱 안에서 접수하고 운영자가 상태·메모·첨부 수명주기를 관리한다. Supabase 추가 과금 방지 조건을 확인한 후 운영 활성화한다.
+**Goal:** 로그인 이용자가 사이드바 「의견 남기기」로 의견(이미지 최대 3장)을 보내고, 운영자가 어드민 「의견」에서 상태·메모·첨부를 관리하며, 첨부는 완료 30일·보류 90일 뒤 자동 삭제된다.
 
-**Architecture:** 기존 도입 신청의 운영자 인증·감사 로그·Slack 알림 패턴과 비공개 Storage를 재사용한다. 업로드 예약과 삭제 재시도 정보를 DB에 남겨 용량 상한·탈퇴 삭제·상태 재개 경쟁을 관리한다. 앱·어드민 기능은 기본 비활성으로 준비하고 비용 조건 확인 뒤 활성화하는 안을 제안한다.
+**Architecture:** 「도입 신청」(`MarketingLead` · `/admin/leads` · `src/lib/marketing/lead-notify.ts`) 구조를 따른다. 첨부는 비공개 Storage 버킷 `feedback-files`, 서버 service-role 업로드(hiring 어댑터 방식). 탈퇴 시 파일 정리는 `HiringFileDeletion`과 같은 FK 없는 삭제 원장 + cron.
 
-**Tech Stack:** 기존 Next.js App Router, TypeScript, Prisma, Supabase Storage, Zod, shadcn, Jest. 신규 패키지·프로젝트·Compute tier·이미지 변환·Realtime·Edge Functions 없음.
+**Tech Stack:** Next.js 16 App Router, Prisma 7, Supabase Storage, Zod, shadcn/ui, Jest. 새 의존성 없음.
+
+**Spec:** `docs/superpowers/specs/2026-11-27-user-feedback-design.md` (비용 메모: `docs/superpowers/specs/2026-11-27-user-feedback-cost-review.md` — 아래 「비용 검토 반영」에 채택분만 적용)
+
+## Global Constraints
+
+- 유형 enum `FEATURE BUG QUESTION REVIEW OTHER`(표시: 기능 제안·서비스 오류·문의·이용 후기·기타). 상태 `NEW IN_PROGRESS DONE ON_HOLD`(접수·확인 중·완료·보류).
+- 본문 1~5000자(trim 후), 메모 ≤2000자, 첨부 ≤3장, 장당 ≤1 MiB(1_048_576 bytes), png/jpeg/webp/gif(매직바이트 `sniffImage`).
+- 보관: DONE closedAt+30일, ON_HOLD closedAt+90일에 첨부만 삭제. 본문 보존.
+- 총 첨부 상한 `FEEDBACK_STORAGE_CAP_MB`(기본 500, `0`=첨부 받지 않음). 점유량 = 미삭제(`deletedAt IS NULL`) 첨부 sizeBytes 합 + 삭제 원장(`FeedbackFileDeletion.bytes`) 합. 점유량 + 이번 요청 바이트 > 상한이면 첨부 거부·본문만 저장.
+- **파일 경로는 항상 DB 어딘가에 있다**: 업로드 전 원장 기록 → 업로드 → 첨부 행 생성과 원장 행 삭제를 한 transaction. 어느 단계에서 끊겨도 원장이 남아 cron이 정리.
+- Slack: `FEEDBACK_SLACK_WEBHOOK_URL` → 없으면 `LEAD_SLACK_WEBHOOK_URL` → 없으면 생략. 원본·서명 URL 미포함. `after()`로 응답 후 실행.
+- Supabase 이미지 변환(transform) 사용 금지. 목록에서 이미지 로드 금지, 상세에서만 서명 URL(600초).
+- 스키마는 `npx prisma migrate dev`만. 신규 테이블 `ENABLE ROW LEVEL SECURITY`(선례 `20261121120000_channel_order_observe`).
+- 어드민 API 첫 줄 `requireOperator()`, 변경은 `writeAuditLog(..., tx)` 같은 transaction.
+- UI는 `workdeck-ui` 스킬 + `DESIGN.md`. 화면 구조는 Task 0 와이어프레임 합의안대로.
+- 커밋 스타일 `✨ feat: …`, 릴리스는 develop → develop 환경 검증 → main.
+
+## 비용 검토 반영(Codex 메모 중 채택/보류)
+
+- 채택: 상한 도달 시 응답 `attachmentsAccepted:false` + Dialog 안내 / 화면 주소는 **pathname만 저장**(query 미저장 — 설계의 pathname+search에서 변경, 토큰·검색어 유출 방지) / Slack `after()` / 감사 로그 tx / cron bounded batch(100건) / Storage 삭제 성공분만 `deletedAt` 기록.
+- 보류: advisory lock·예약 상태머신·lease — 상한 500MB 대비 동시 요청 초과분은 수 MB로 비용 영향 0. rate limiter 분리 — 도입 신청 라우트가 이미 `checkRateLimit('lead:…')`로 재사용 중, 같은 방식. 기능 기본 비활성 플래그 — `FEEDBACK_STORAGE_CAP_MB=0`이 첨부 kill switch.
+- 운영 릴리스(main) 게이트: Spend Cap 상태 + 포함량 여유 확인 후(Task 8 Step 4). 로컬·develop 구현은 진행. egress는 상한이 없으므로 Spend Cap ON이 무과금 보장의 최종 조건, OFF면 포함량 여유(250GB 대비 의견 이미지 열람은 MB 단위)로 실질 0원.
+
+## Codex 계획 검토(2026-11-27): 지적 7건 — 반영 7, 보류 0
+
+고아 파일(업로드 전 원장 예약)·RLS(`--create-only`)·재개 경쟁(선점 updateMany 후 삭제)·롤백 순서·원장 bytes 상한 포함·Spend Cap 게이트·버킷 fail closed. 원래 제안의 lease·advisory lock 대신 위의 작은 방식으로 반영.
+
+## Review Focus
+
+1. 탈퇴 사용자 첨부 — 사용자 삭제 후에도 Storage 파일이 남지 않아야 함(원장 → cron 재시도). Task 5 테스트.
+2. 완료→다시 확인 중으로 되돌린 건 — cron이 첨부를 지우면 안 됨. Task 2·6 테스트.
+3. 상한 도달 — 의견은 접수, 이미지 미저장이 이용자에게 보임. Task 3·7 테스트.
+4. Storage 일부 삭제 실패 — 실패 경로는 `deletedAt` null로 남아 다음 실행에 재시도. Task 6 테스트.
+5. 작업 공간 없는 사용자 — 제출 성공, spaceId null. 비구성원 요청 등 403은 그대로 거절. Task 3 테스트.
 
 ---
 
-## 실행 경계
+### Task 0: 화면 와이어프레임 합의
 
-- 작업 경로 `/Users/kaleos/projects/kaleos/workdeck-app-user-feedback`, 브랜치 `feat/user-feedback`, 시작 HEAD `d35bfc0a`. 루트의 다른 기능 브랜치를 변경하지 않는다.
-- 원 설계 `docs/superpowers/specs/2026-11-27-user-feedback-design.md`와 비용 검토 `docs/superpowers/specs/2026-11-27-user-feedback-cost-review.md`를 함께 적용한다. 비용 검토의 새 동작은 아직 제안이며 사용자 결정과 혼동하지 않는다.
-- 자격증명·환경 파일 조회/복사/pull 금지. 실제 DB 연결이 필요한 단계는 비밀값을 다루지 않는 승인된 실행 경로가 준비되기 전까지 실행하지 않는다.
-- DB migration·배포·장시간 테스트 전 `/Users/kaleos/projects/kaleos/workdeck-app/.agent-continuity/HOLD`를 만들고 `finally`/shell trap으로 제거한다. 같은 디렉터리 `TASKS.md`에 결과와 한계를 기록한다.
-- UI는 `.codex/skills/workdeck-ui/SKILL.md`, `.claude/skills/ui-plan/SKILL.md`, `DESIGN.md` 기준. 새 화면 미리보기 합의가 필요하며 기존 승인이 있으면 반복 요청하지 않는다. 현재 인계에는 와이어프레임 승인 증거가 없다.
-- Slack 코드 작성은 가능하지만 실제 메시지 전송은 사용자 명시 지시가 있기 전 수행하지 않는다. 단위 테스트 fetch mock만 사용한다.
+**Files:** Create `docs/design/plans/user-feedback/`(repo `ui-plan` 스킬 산출물 위치 관례 따름)
 
-## 파일과 책임
+- [ ] **Step 1:** `.claude/skills/ui-plan/SKILL.md` 절차로 ① 사이드바 버튼(펼침/접힘) + Dialog(유형 라디오 5, 본문, 이미지 3장 미리보기·제거, 상한 안내 상태) ② 어드민 목록(요약: 상태별 건수·총 첨부 용량, 필터: 유형·상태) ③ 어드민 상세(본문·화면 경로·브라우저·상태·메모·mailto·첨부 썸네일·삭제 예정일·「첨부 지금 삭제」) 데스크톱 + 390px 미리보기(PNG + 라이브 주소) 작성. 합성 데이터만.
+- [ ] **Step 2:** 에디 합의 받고 `plan.md`에 확정 구조 기록. 커밋.
 
-| 경로 | 책임 |
-|---|---|
-| `prisma/schema.prisma`, 생성 migration | 의견·첨부·삭제 작업·관계·인덱스·RLS |
-| `src/lib/feedback/policy.ts` | 유형·상태·입력 검증·보관 날짜·상태 전이 |
-| `src/lib/feedback/service.ts` | 의견 생성, 첨부 예약, 상태·메모 변경 transaction |
-| `src/lib/feedback/storage.ts` | feedback-files 업로드·삭제·서명 URL; 서버 전용 |
-| `src/lib/feedback/cleanup.ts` | 기한 지난 첨부 claim, Storage 삭제, 재시도·점유량 회수 |
-| `src/lib/feedback/notify.ts` | Slack payload 구성·escape·환경 표시·실패 격리 |
-| `src/lib/rate-limit.ts` | 기존 in-memory limiter 이동; 기존 호출 호환 |
-| `app/api/feedback/route.ts` | 로그인·요청 경계·multipart 검증·접수 응답 |
-| `app/api/admin/feedback/[id]/route.ts` | 운영자 상태·메모 변경 |
-| `app/api/admin/feedback/[id]/attachments/route.ts` | 운영자 서명 URL·즉시 삭제 |
-| `app/api/cron/feedback-attachment-cleanup/route.ts` | 기존 withCronRun·cron 인증 재사용 |
-| `src/components/feedback/feedback-dialog.tsx`, `src/components/layout/sidebar.tsx` | 이용자 접수 Dialog와 사이드바 입구 |
-| `app/admin/feedback/page.tsx`, `app/admin/feedback/[id]/page.tsx` | 서버 조회·필터·상세 진입 |
-| `src/components/admin/feedback-table.tsx`, `src/components/admin/feedback-detail.tsx` | 목록·운영자 편집 UI |
-| `app/admin/layout.tsx`, `vercel.json`, `app/(marketing)/privacy/page.tsx` | 메뉴·cron 등록·개인정보 고지 |
-| `app/api/admin/users/[id]/route.ts` | 탈퇴 transaction에 삭제 작업 적재 |
-| 각 모듈 `__tests__` | 검증·권한·예약 경쟁·부분 실패·재시도·UI 회귀 |
+### Task 1: 스키마 + 마이그레이션
 
-## Task 1: 비용 조건과 화면 구조 확정
+**Files:**
+- Modify: `prisma/schema.prisma`
+- Create: `prisma/migrations/<ts>_user_feedback/migration.sql`(migrate dev 생성)
 
-- [x] 원 설계와 현재 구현 조사: 설계 2커밋만 있으며 기능 코드는 없음.
-- [x] 공식 Supabase 문서로 비용 보장 한계 검토, 비용 보완 문서 저장.
-- [ ] 현재 Spend Cap 상태와 실제 포함량 여유 확인. API key나 DB URL은 요청하지 않는다.
-- [ ] 비용 검토의 활성화 조건, pathname만 저장하는 안전안, 첨부 미저장 안내를 기존 사용자 요구와 대조해 확정.
-- [ ] `docs/design/plans/user-feedback/`에 Dialog·어드민 목록·상세 데스크톱/390px skeleton 작성. 기존 sidebar의 로그아웃 위 버튼, 모바일 상세 세로 배치를 표시한다.
-- [ ] `ui-plan` 미리보기 절차로 합의된 구조를 `plan.md`에 기록한다. 공개된 운영 데이터 대신 합성 데이터만 사용한다.
+**Interfaces:**
+- Produces: `UserFeedback`, `UserFeedbackAttachment`, `FeedbackFileDeletion`, enum `UserFeedbackType`, `UserFeedbackStatus` (필드는 설계 문서 그대로. 단 `pagePath`는 pathname만)
+- `UserFeedback.user` → User `onDelete: Cascade`, `space` → Space `onDelete: SetNull`, User/Space에 역관계 추가.
+- `FeedbackFileDeletion { id String @id @default(cuid()); paths Json; bytes Int @default(0); attempts Int @default(0); lastError String?; createdAt DateTime @default(now()); @@index([createdAt]) }` — FK 없음, PII 없음. 용도 2가지: 업로드 진행 중 경로 예약(성공 시 삭제), 탈퇴·실패 후 삭제 대기.
 
-## Task 2: 순수 입력 검증과 보관 정책
+- [ ] **Step 1:** 스키마 추가 후 `npx prisma migrate dev --create-only --name user_feedback` (적용 전 SQL만 생성). shadow DB 오류 시 memory `reference_migrate_shadow_bypass` 절차.
+- [ ] **Step 2:** 생성 SQL 끝에 세 테이블 `ALTER TABLE "…" ENABLE ROW LEVEL SECURITY;` 추가(선례와 동일) → `npx prisma migrate dev`로 최초 적용 → `npx prisma migrate status` = up to date. dev DB에서 `select relname, relrowsecurity from pg_class where relname in (...)` 세 행 모두 true 확인(dev 전용 읽기 조회).
+- [ ] **Step 3:** `npm run typecheck` PASS. 커밋 `✨ feat(feedback): 의견 스키마`.
 
-- [ ] `src/lib/feedback/__tests__/policy.test.ts`에 본문 공백/5001자 거절, 5개 유형, 4개 상태, 메모 2000자 제한 테스트를 먼저 작성한다.
-- [ ] `feedbackClosedAt(currentStatus,nextStatus,currentClosedAt,now)`는 같은 상태 메모 저장 시 날짜를 유지하고 DONE↔ON_HOLD 전이 때만 now를 새로 기록하는 테스트를 작성한다. NEW/IN_PROGRESS는 null이다.
-- [ ] `attachmentDeleteAt(status,closedAt)`는 DONE 30일·ON_HOLD 90일, 그 외/null은 null, 만료 경계 `<= now`로 테스트한다. 날짜 계산은 UTC milliseconds를 사용한다.
-- [ ] 실패를 확인한 뒤 `policy.ts`에 Zod 스키마와 순수 함수만 구현한다. generated Prisma·Storage import는 하지 않는다.
-- [ ] 단위 테스트와 대상 ESLint를 실행한다. 비밀 환경을 자동 로드하는 runner는 피하고 비밀값 없는 격리 설정으로 실행한다.
+### Task 2: 정책 순수 함수
 
-정책 예제:
+**Files:**
+- Create: `src/lib/feedback/policy.ts`, `src/lib/feedback/__tests__/policy.test.ts`
+
+**Interfaces:**
+- Produces:
+  - `FEEDBACK_TYPES`, `FEEDBACK_STATUSES`, `FEEDBACK_TYPE_LABEL: Record<UserFeedbackType,string>`, `FEEDBACK_STATUS_LABEL`
+  - `feedbackInputSchema` (zod: `type`, `body` trim 1~5000, `pagePath` optional `/`로 시작 ≤500, query·hash 제거)
+  - `adminUpdateSchema` (zod: `status?`, `memo?` ≤2000 nullable)
+  - `nextClosedAt(current: Status, next: Status, currentClosedAt: Date|null, now: Date): Date|null`
+  - `attachmentDeleteAt(status: Status, closedAt: Date|null): Date|null`
+  - `MAX_FILES=3`, `MAX_FILE_BYTES=1_048_576`, `storageCapBytes(env = process.env): number`
+
+- [ ] **Step 1: 실패 테스트**
 
 ```ts
-expect(attachmentDeleteAt('DONE', new Date('2026-01-01T00:00:00Z')))
-  .toEqual(new Date('2026-01-31T00:00:00Z'))
-expect(feedbackClosedAt('DONE', 'DONE', closedAt, now)).toEqual(closedAt)
-expect(feedbackClosedAt('DONE', 'NEW', closedAt, now)).toBeNull()
+const t = new Date('2026-01-01T00:00:00Z'), now = new Date('2026-02-01T00:00:00Z')
+expect(attachmentDeleteAt('DONE', t)).toEqual(new Date('2026-01-31T00:00:00Z'))
+expect(attachmentDeleteAt('ON_HOLD', t)).toEqual(new Date('2026-04-01T00:00:00Z'))
+expect(attachmentDeleteAt('IN_PROGRESS', t)).toBeNull()
+expect(nextClosedAt('DONE', 'DONE', t, now)).toEqual(t)          // 메모만 저장
+expect(nextClosedAt('DONE', 'ON_HOLD', t, now)).toEqual(now)
+expect(nextClosedAt('DONE', 'IN_PROGRESS', t, now)).toBeNull()   // 삭제 예약 취소
+expect(nextClosedAt('NEW', 'DONE', null, now)).toEqual(now)
+expect(feedbackInputSchema.safeParse({ type: 'BUG', body: '   ' }).success).toBe(false)
+expect(feedbackInputSchema.safeParse({ type: 'BUG', body: 'x'.repeat(5001) }).success).toBe(false)
+expect(feedbackInputSchema.parse({ type: 'BUG', body: 'a', pagePath: '/d/x?token=1#h' }).pagePath).toBe('/d/x')
+expect(storageCapBytes({ FEEDBACK_STORAGE_CAP_MB: '0' })).toBe(0)
+expect(storageCapBytes({})).toBe(500 * 1024 * 1024)
+expect(storageCapBytes({ FEEDBACK_STORAGE_CAP_MB: 'abc' })).toBe(0)  // 잘못된 값 = 첨부 끔
 ```
 
-## Task 3: DB 스키마·RLS·삭제 예약 구조
+- [ ] **Step 2:** `npx jest src/lib/feedback/__tests__/policy.test.ts` → FAIL(모듈 없음)
+- [ ] **Step 3:** 구현(Prisma enum 타입만 import, Storage import 금지).
+- [ ] **Step 4:** 재실행 PASS. 커밋.
 
-- [ ] 원 설계의 UserFeedback/UserFeedbackAttachment 및 User/Space 반대 관계를 추가한다. User Cascade, Space SetNull. 직접 클라이언트 테이블 조회는 제공하지 않는다.
-- [ ] 업로드 예약 상태(RESERVED/READY/DELETE_PENDING/DELETED), 예약 시각·lease와 삭제 큐의 무작위 경로/sizeBytes/시도 시각을 추가한다. 삭제 큐는 User/Feedback Cascade와 독립이며 PII를 넣지 않는다.
-- [ ] 용량 집계는 미해제 예약·실제 객체·삭제 큐를 중복 없이 센다. Attachment→삭제 큐 이동과 원래 예약 해제는 같은 transaction이다. Storage 삭제 확인 전까지 용량을 반환하지 않는다.
-- [ ] HOLD 생성 후 승인된 dev 실행 경로에서 `npx prisma migrate dev --name user_feedback`로 migration을 생성·적용한다. generated SQL에서 신규 테이블의 RLS 활성화 및 anon/authenticated 직접 접근 불가를 확인한다. 필요한 정책 보완도 migration에 남긴다. `db push`·운영 직접 SQL 금지.
-- [ ] 실패·drift가 발생하면 임의 reset하지 않고 결과를 기록한다. 생성 migration은 커밋에 포함한다. 종료 후 HOLD 제거.
+### Task 3: Storage 어댑터 + 제출 API + Slack
 
-## Task 4: 예약·업로드·정리 서비스
+**Files:**
+- Create: `src/lib/feedback/storage.ts`, `src/lib/feedback/notify.ts`, `src/lib/feedback/submit.ts`, `app/api/feedback/route.ts`, `app/api/feedback/__tests__/route.test.ts`, `src/lib/feedback/__tests__/notify.test.ts`
 
-- [ ] DB 통합 테스트에서 두 요청이 동시에 마지막 용량을 예약할 때 한 요청만 성공하는 재현을 작성한다. 본문은 각각 접수 가능하되 첨부 수락 결과를 구분한다.
-- [ ] transaction 공통 advisory lock 아래 예약 생성까지 수행하고, Storage 업로드는 transaction 밖에서 실행한다. 상한 500MiB와 장당 1MiB는 바이트 단위로 고정한다. 설정값이 잘못되면 첨부를 비활성 처리한다.
-- [ ] Storage adapter는 기존 hiring 방식을 참고하되 feedback 전용 bucket 상수 사용. public bucket이나 잘못된 파일 제한이면 업로드와 서명 URL 발급을 거절한다. MIME+magic byte를 대조하고 임의 원본 파일명 대신 UUID를 사용한다.
-- [ ] 업로드 실패·DB finalize 실패·업로드 타임아웃 후 실제 성공의 각 경우를 재현한다. 즉시 정리 시도 후 실패는 경로를 보존하고 다음 cron에서 재시도한다. 오래된 업로드가 삭제 후 객체를 재생성하지 않도록 lease 만료+업로드 최대 시간 이후 유예를 두고 재검사한다.
-- [ ] 정리 서비스는 bounded batch로 claim→삭제→성공 경로만 DELETED 처리한다. DONE/ON_HOLD의 closedAt를 claim transaction에서 재검사한다. 같은 피드백 상태 변경도 행 lock으로 직렬화한다.
-- [ ] Storage 일부 실패 시 성공 객체만 반환·반영하고 실패 경로는 보존하는 테스트를 통과시킨다. API 응답만 성공했다고 객체가 모두 사라졌다고 가정하지 않는다.
+**Interfaces:**
+- Consumes: Task 2 전부. `sniffImage`(`src/lib/hiring/storage.ts`), `checkRateLimit`(`src/lib/hiring/applications.ts`), `resolveRequestedSpaceContext(null)`(`src/lib/api-helpers.ts`), `buildAdminUrl`(`src/lib/domain.ts`), `getUser`.
+- Produces:
+  - `FEEDBACK_FILES_BUCKET = 'feedback-files'`
+  - `uploadFeedbackFile(path: string, data: Uint8Array, mime: string): Promise<void>`
+  - `removeFeedbackFiles(paths: string[]): Promise<{ removed: string[]; failed: string[] }>` (Supabase `remove` 반환 목록으로 성공분 판정. 없는 경로는 removed로 취급 — 멱등)
+  - `assertFeedbackBucket(): Promise<void>` — hiring `getBucket` 선례처럼 `public === false`·file_size_limit ≤1 MiB 확인, 아니면 throw(업로드·서명 모두 fail closed). 프로세스당 1회 캐시.
+  - `signFeedbackFile(path: string, seconds = 600): Promise<string>`
+  - `notifyFeedbackSlack(input: { id; type; userEmail; spaceName: string|null; pagePath: string|null; body; attachmentCount; capReached: boolean }): Promise<void>` — throw 안 함
+  - `POST /api/feedback` multipart(`type`, `body`, `pagePath`, `files[]`) → 201 `{ id, attachmentsAccepted: boolean, attachmentReason: 'cap' | null }`
 
-## Task 5: 이용자 접수 API와 Slack
+- [ ] **Step 1: 실패 테스트(route)** — prisma·storage·getUser mock:
+  - 비로그인 → 401
+  - `type:'NOPE'` → 400, 빈 본문 → 400
+  - 4장 → 400, 1 MiB+1 파일 → 413, 확장자 png인데 매직바이트 불일치 → 400
+  - `checkRateLimit` false → 429, 키가 `feedback:${userId}`
+  - 작업 공간 없음(`resolveRequestedSpaceContext`가 404) → 201, `spaceId:null`
+  - 비구성원 403 → 403 그대로
+  - 상한: 기존 합 499MiB + 요청 2MiB(cap 500) → 201 `attachmentsAccepted:false, attachmentReason:'cap'`, 업로드 미호출, 첨부 행 0
+  - 정상 2장 → 201, `uploadFeedbackFile` 2회, 경로 `${id}/${uuid}.${ext}`(원본 파일명 미사용), 첨부 행 2
+  - 업로드 전 `feedbackFileDeletion.create({ paths, bytes })`가 업로드보다 먼저 호출
+  - 정상 경로: 첨부 createMany와 원장 행 delete가 같은 `$transaction`
+  - 업로드 2번째 실패 → 500, 즉시 `removeFeedbackFiles` 시도·성공 시 원장 삭제, 실패 시 원장 유지(삭제 안 함), 의견 행 삭제
+  - 버킷 public이면(`assertFeedbackBucket` throw) 첨부 있는 요청 503, 업로드 미호출
+  - 본문에 `userId`/`spaceId` 필드를 넣어도 무시(세션 값 사용)
+- [ ] **Step 2: 실패 테스트(notify)** — fetch mock: 전용 webhook 우선, 없으면 LEAD, 둘 다 없으면 fetch 미호출 / 본문 301자 → 300자+… / `<&>` escape / 어드민 링크 `buildAdminUrl('/admin/feedback/'+id)` 포함 / `capReached` 시 "첨부 용량 상한 도달" 문구 / fetch reject여도 resolve.
+- [ ] **Step 3:** 실행 → FAIL.
+- [ ] **Step 4:** 구현. 요청 처리 순서: getUser → Content-Length > 4_000_000이면 413 → formData → zod → 파일 검증 → rate limit → space 결정 → 상한 계산(첨부 `_sum sizeBytes where deletedAt null` + 원장 `_sum bytes`) → 의견 create → 원장 create(경로 예약) → 업로드 → `$transaction[첨부 createMany, 원장 delete]` → `after(() => notifyFeedbackSlack(...))` → 201. `submit.ts`에 핵심 로직, route는 얇게.
+  - `// ponytail: 상한 검사는 lock 없음 — 동시 요청 시 수 MB 초과 가능, 포함량 100GB 대비 무시. 정밀 상한 필요 시 advisory lock.`
+- [ ] **Step 5:** PASS. 커밋.
 
-- [ ] `/api/feedback` 테스트: 미로그인 401, 잘못된 유형/본문/파일 400, 초과 크기 413, 인스턴스 limiter 초과 429. 클라이언트 `userId/spaceId`는 받지 않는다.
-- [ ] 사용자 인증 후 요청 본문을 읽는다. Content-Length 선검사와 실제 읽기 바이트 제한을 함께 적용한다. 3×1MiB와 multipart overhead를 포함해 Vercel 4.5MB보다 낮게 제한한다.
-- [ ] 기존 limiter를 공용 파일로 옮기고 hiring 기존 export를 유지한다. 기존 hiring limiter 회귀와 `feedback:{userId}` 키 분리를 테스트한다.
-- [ ] 서버에서 현재 membership을 결정한다. 공간 없음만 null로 접수하고 mismatch/forbidden/DB 장애는 null로 삼키지 않는다. pathname 검증은 합의한 정책을 적용한다.
-- [ ] 등록 응답은 `{ id, attachmentsAccepted, attachmentReason }`를 반환한다. 중복 클릭은 UI에서 막고 네트워크 재시도에 대한 중복 접수 방침을 명시한다.
-- [ ] Slack notifier를 fetch mock으로 테스트한다. 전용 webhook→lead webhook fallback, escape, 본문 300자, 첨부 개수·어드민 링크, 원본·서명 URL 제외. URL/본문이 로그로 유출되지 않게 한다. Next.js `after` 등 응답 이후 실행 보장이 있는 기존 패턴을 확인해 적용하며 미await Promise만 남기지 않는다.
+### Task 4: 이용자 Dialog + 사이드바 입구
 
-## Task 6: 운영자 API·조회·탈퇴 연동
+**Files:**
+- Create: `src/components/feedback/feedback-dialog.tsx`, `src/components/feedback/compress-image.ts`, `src/components/feedback/__tests__/feedback-dialog.test.tsx`
+- Modify: `src/components/layout/sidebar.tsx`(하단 로그아웃 버튼 블록 바로 위, 같은 스타일, 아이콘 `MessageSquarePlus`, 접힘=Tooltip+aria-label)
 
-- [ ] 모든 admin handler와 PII 조회 페이지 첫 단계에 `requireOperator()`를 사용한다. 비운영자 404, MFA 필요 403, 존재하지 않는 의견 404를 테스트한다.
-- [ ] 상태·메모 수정은 의견 update와 `writeAuditLog(..., tx)`를 같은 transaction에 묶는다. 감사 기록 실패 시 상태가 바뀌지 않는지 검사한다. 본문·첨부 URL은 감사 meta에 복제하지 않는다.
-- [ ] 목록 최신순은 createdAt desc/id desc로 안정화하고 50건 cursor pagination을 사용한다. status/type URL 필터를 서버 검증한다. 목록에서는 서명 URL 생성·이미지 로드 없이 첨부 수만 반환한다.
-- [ ] 상태별 건수·총 점유량 집계를 서버에서 가져온다. 상세만 10분 서명 URL을 발급한다. GET에 삭제 부작용을 넣지 않는다. 즉시 삭제는 인증된 명시적 변경 API를 사용한다.
-- [ ] 사용자 삭제 transaction에서 pending 삭제 큐를 생성하고 commit 후 삭제를 시도한다. 삭제 실패→cron 재시도 및 Cascade 후 경로 보존을 통합 테스트한다.
+**Interfaces:**
+- Consumes: `POST /api/feedback`, `FEEDBACK_TYPE_LABEL`, `MAX_FILES`, `MAX_FILE_BYTES`
+- Produces: `<FeedbackDialog open onOpenChange />`, `compressImage(file: File): Promise<Blob>`(canvas, 최장변 1600px, `image/webp` 0.8, 미지원 시 `image/jpeg` 0.8)
 
-## Task 7: 합의된 UI·개인정보 고지
+- [ ] **Step 1: 실패 테스트** (fetch·compressImage mock): 유형 미선택/본문 빈칸이면 제출 비활성 / 제출 중 버튼 disabled(중복 방지) / 4번째 이미지 추가 불가 / 압축 후 1 MiB 초과 파일은 파일별 오류, 전송 제외 / 500 응답 시 입력 유지 + 오류 문구 / 201 `attachmentsAccepted:true` → 토스트 "의견이 접수됐어요. 확인 후 조치할게요." + 닫힘 + 초기화 / `attachmentsAccepted:false` → "의견은 접수됐지만 이미지는 저장되지 않았어요" 표시 / `pagePath`로 `location.pathname` 전송.
+- [ ] **Step 2:** FAIL 확인 → 구현(Task 0 합의안, 안내 문구: "불편한 점, 제안하고 싶은 기능, 오류를 남겨주시면 확인 후 조치할게요. 자세히 적을수록 빨라요.", GIF는 정지 이미지로 저장된다는 보조 문구) → PASS.
+- [ ] **Step 3:** 커밋.
 
-- [ ] 실제 sidebar 로그아웃 위에 버튼을 넣고 접힘 상태 tooltip/aria-label을 제공한다. Dialog는 기존 shadcn 패턴 사용, 새 의존성 없이 canvas 이미지 축소·프리뷰·제거를 구현한다. GIF는 정지 이미지로 변환되는 동작을 안내한다.
-- [ ] 폼 검증·전송 중 중복 제출 방지·오류 후 입력 유지·성공 후 초기화·첨부 미수락 응답 안내를 컴포넌트 테스트한다. canvas 실패 및 압축 후 1MiB 초과 시 원본을 보내지 않고 파일별 오류를 표시한다.
-- [ ] 어드민 목록은 table-fixed/명시적 폭/min-w-0, 모바일 가로 스크롤, 텍스트 title을 적용한다. 필터 가까이에 가벼운 상태 건수와 첨부 용량을 둔다.
-- [ ] 상세에는 본문·pathname·브라우저·상태·메모·mailto·첨부 예정일·즉시 삭제 확인과 삭제 이력을 제공한다. 열람 권한 오류·서명 만료·저장 실패 UI를 검증한다.
-- [ ] 개인정보 고지는 실제 저장 항목과 삭제 정책·전달 채널에 맞춘다. 실패 재시도가 있는 파일을 DB Cascade만으로 즉시 파기 완료했다고 표현하지 않는다.
+### Task 5: 어드민 API + 탈퇴 원장
 
-## Task 8: cron·검증·릴리스
+**Files:**
+- Create: `app/api/admin/feedback/[id]/route.ts`(PATCH), `app/api/admin/feedback/[id]/attachments/route.ts`(GET 서명 URL, DELETE 즉시 삭제), 각 `__tests__/route.test.ts`
+- Modify: `app/api/admin/users/[id]/route.ts:191` 직전, 해당 테스트
 
-- [ ] `withCronRun`과 기존 cron 인증을 적용하고 하루 한 번 실행을 `vercel.json`에 추가한다. 신규 cron 중복·Vercel 플랜 제약은 확인 후 결정한다.
-- [ ] `feedback-files` 버킷은 dev/prod 각각 비공개·1MiB·허용 MIME로 운영 담당자가 생성한다. 설정·키를 자동 변경하거나 읽지 않는다.
-- [ ] HOLD를 생성하고 `npm test -- --runInBand <feedback 관련 테스트 경로>`, `npm run typecheck`, 대상 ESLint, `npm run lint`, `npm run build`를 실행한다. 필요한 DB 통합 테스트는 별도 dev 경로에서 실행한다. 결과와 기존 실패를 구분하고 HOLD를 제거한다.
-- [ ] UI는 URL부터 새로 진입해 desktop/390px 캡처와 키보드·axe 검증. 이전 element ref 재사용 금지. 실고객 데이터와 운영 접수 생성 없이 합성 fixture를 쓴다.
-- [ ] 비용 확인값과 미리보기 승인·migration·테스트 증거가 갖춰진 뒤 diff를 검토한다. 누락 항목을 성공으로 간주하지 않는다.
-- [ ] develop 환경 검증 후 main 릴리스 순서를 지킨다. 배포는 사용자 권한과 비용 조건이 확인된 시점에 진행하며 HOLD를 사용한다. 실 Slack 전송은 별도 사용자 지시 확인 후 수행한다.
+**Interfaces:**
+- Consumes: Task 2 `adminUpdateSchema`, `nextClosedAt`; Task 3 `removeFeedbackFiles`, `signFeedbackFile`
+- Produces: `PATCH /api/admin/feedback/:id {status?, memo?}` → 200 갱신 행; `GET …/attachments` → `[{id, url, mimeType, sizeBytes, deletedAt}]`; `DELETE …/attachments` → `{ removed, failed }`
 
-## 현재 상태
+- [ ] **Step 1: 실패 테스트:** 비운영자 → `requireOperator` 결과 그대로(404) / 없는 id 404 / PATCH DONE→IN_PROGRESS면 `closedAt:null` / 메모만 변경 시 closedAt 유지 / `writeAuditLog`가 같은 tx로 호출되고 meta에 본문 없음 / audit throw 시 update 롤백 / GET은 deletedAt null만 서명, 삭제 부작용 없음 / DELETE에서 remove 일부 실패 → 성공분만 `deletedAt`, 응답 failed 포함 / 사용자 삭제 시 tx 안에서 `feedbackFileDeletion.create({ paths, bytes })`가 `tx.user.delete` 전에 호출(미삭제 첨부 없으면 생략; 진행 중 업로드는 Task 3 예약 원장이 이미 커버), commit 후 즉시 `removeFeedbackFiles` 시도, 성공 시 원장 행 삭제, 실패해도 탈퇴 응답은 성공.
+- [ ] **Step 2:** FAIL → 구현 → PASS. 커밋.
 
-문서 검토와 계획 작성만 수행했다. 앱 코드·DB schema·migration·버킷·운영 설정·배포·Slack 메시지 전송은 변경하지 않았다. 기능 테스트나 build 성공을 주장하지 않는다. 구현은 비용 조건 답변과 새 UI 구조 합의 여부를 확인해 이 체크리스트를 갱신하며 진행한다.
+### Task 6: 첨부 정리 cron
+
+**Files:**
+- Create: `src/lib/feedback/cleanup.ts`, `src/lib/feedback/__tests__/cleanup.test.ts`, `app/api/cron/feedback-attachment-cleanup/route.ts`
+- Modify: `vercel.json`(crons: `{ "path": "/api/cron/feedback-attachment-cleanup", "schedule": "0 18 * * *" }` = 03:00 KST, functions maxDuration 60)
+
+**Interfaces:**
+- Produces: `runFeedbackCleanup(now: Date, batch = 100): Promise<{ expiredRemoved: number; expiredFailed: number; ledgerDone: number; ledgerFailed: number }>`; route = `withCronRun('/api/cron/feedback-attachment-cleanup', …)`
+
+- [ ] **Step 1: 실패 테스트:** DONE closedAt 31일 전 → 삭제 / DONE 29일 전 → 유지 / ON_HOLD 89일 → 유지, 91일 → 삭제 / IN_PROGRESS(closedAt null) → 유지 / **선점 후 재개**: 선점(claim) updateMany가 상태·closedAt 조건을 다시 걸어 0건이면 Storage 미호출 / remove 일부 실패 → 실패분 deletedAt null로 되돌림 / 원장 행: createdAt 1시간 미만은 건너뜀(업로드 진행 중), 처리 성공 → 행 삭제, 실패 → attempts+1·lastError / batch 상한 100.
+- [ ] **Step 2:** FAIL → 구현. 순서 = 후보 id 조회 → `updateMany({ where: { id: in, deletedAt: null, feedback: { status, closedAt: { lte: cutoff } } }, data: { deletedAt: now } })`로 **먼저 선점** → 선점된 행만 다시 읽어 Storage remove → 실패 경로 `deletedAt: null` 복구. 선점 이후의 재개는 "첨부 삭제됨"으로 상세에 표시(순서 확정, 별도 lock 없음). → PASS. 커밋.
+
+### Task 7: 어드민 화면 + 메뉴 + 개인정보 고지
+
+**Files:**
+- Create: `app/admin/feedback/page.tsx`, `app/admin/feedback/[id]/page.tsx`, `src/components/admin/feedback-table.tsx`, `src/components/admin/feedback-detail.tsx`, `src/components/admin/__tests__/feedback-table.test.tsx`
+- Modify: `app/admin/layout.tsx` NAV_ITEMS(`{ href: '/admin/feedback', label: '의견' }`, '도입 신청' 뒤), `app/(marketing)/privacy/page.tsx`
+
+**Interfaces:**
+- Consumes: Task 2 라벨·`attachmentDeleteAt`, Task 5 API
+
+- [ ] **Step 1: 실패 테스트(table):** 상태·유형 필터 URL 파라미터 반영 / 첨부 수만 표시(img 태그 없음) / 요약에 상태별 건수·총 용량(MB 소수 1자리) / 행 클릭 → 상세 링크.
+- [ ] **Step 2:** 구현: 페이지 서버 컴포넌트 첫 줄 `requireOperator()`, 목록 createdAt desc·id desc, 50건 offset 페이지네이션(memory `reference_prisma_cursor_nullable_sort` — offset 사용). 상세: 첨부 썸네일은 GET attachments 서명 URL, 삭제 예정일 = `attachmentDeleteAt`, 「첨부 지금 삭제」 확인 다이얼로그, 제출자 `mailto:`. 표 폭은 memory `project_table_column_width_maxw_dead` 주의(table-fixed+colgroup).
+- [ ] **Step 3:** 개인정보처리방침 수집 항목에 추가: "의견 남기기 — 의견 내용, 첨부 이미지, 이용 화면 주소, 브라우저 정보 / 문의 응대·서비스 개선 / 회원 탈퇴 시 파기(첨부는 처리 완료 30일·보류 90일 후 파기)". 기존 표 형식·개정일 관례 따름.
+- [ ] **Step 4:** PASS. 커밋.
+
+### Task 8: 검증 + 릴리스
+
+- [ ] **Step 1:** `npx jest src/lib/feedback app/api/feedback app/api/admin/feedback app/api/admin/users src/components/feedback src/components/admin --runInBand` PASS, `npm run typecheck`, `npm run lint`, `npm run build` PASS.
+- [ ] **Step 2:** dev 버킷 `feedback-files` 생성 요청(에디, 대시보드: public off, 1 MB, MIME png/jpeg/webp/gif). 로컬 dev 서버 + memory `reference_local_dev_qa_login`으로 제출(이미지 2장)→어드민 목록·상세·상태 변경·첨부 삭제 실제 확인, 데스크톱+390px 캡처.
+- [ ] **Step 3:** `/code-review`(코드 리뷰) → 반영. PR base develop, 머지 후 develop 환경에서 Step 2 흐름 재확인.
+- [ ] **Step 4(게이트):** 에디가 Supabase 조직 플랜·Spend Cap ON/OFF·청구 주기 Storage/egress 사용량을 확인해 계획 「운영 확인값」에 기록(비밀값 제외) + prod 버킷 생성(설정은 `assertFeedbackBucket` 통과로 재확인) + 익명 공개 URL 접근 400/404 확인 + `FEEDBACK_SLACK_WEBHOOK_URL` 등록 후 release PR(develop→main). 배포 후 prod에서 qa 계정 1건 제출→Slack 수신·어드민 확인→테스트 건 삭제.
+
+## 롤백
+
+- 1단계(즉시): `FEEDBACK_STORAGE_CAP_MB=0` 후 redeploy → 새 첨부 중단. 사이드바 입구만 숨기려면 UI 커밋만 revert(테이블·cron 유지).
+- 2단계(완전 제거): 남은 첨부 전부 상태 무관 삭제(운영자 일괄 삭제 또는 cron 1회 강제) + 원장 0건 확인 **후에만** 코드 revert와 drop 마이그레이션. 테이블을 먼저 지우지 않는다(경로 유실 → 개인정보 잔존).
