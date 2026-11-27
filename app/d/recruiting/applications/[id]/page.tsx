@@ -6,6 +6,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { fileFieldLabel } from '@/lib/hiring/file-fields'
+import { formatPhone } from '@/lib/hiring/message-template'
 import { getApplicationDetail } from '@/lib/hiring/applications'
 import { getApplicationHistory } from '@/lib/hiring/migration/application-history'
 import { ApplicationHistory } from '@/components/hiring-applicants/application-history'
@@ -165,13 +166,6 @@ export default async function ApplicationDetailPage({ params, searchParams }: Pa
 }
 
 const ROW = 'grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5'
-
-// 010-1234-5678 형태로 보여 준다(복사도 이 텍스트). 숫자 형식이 다르면 받은 그대로 둔다.
-function formatPhone(value: string | null) {
-  const digits = value?.replace(/\D/g, '') ?? ''
-  const m = /^(01\d)(\d{3,4})(\d{4})$/.exec(digits)
-  return m ? `${m[1]}-${m[2]}-${m[3]}` : value
-}
 
 function Field({
   label,

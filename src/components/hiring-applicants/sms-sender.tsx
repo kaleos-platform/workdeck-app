@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { RECRUITING_MESSAGES_PATH } from '@/lib/deck-routes'
-import { fillMessage, normalizeSmsPhone } from '@/lib/hiring/message-template'
+import { fillMessage, formatPhone, normalizeSmsPhone } from '@/lib/hiring/message-template'
 
 type Template = { id: string; title: string; content: string }
 
@@ -59,7 +59,7 @@ export function SmsComposer({ phone, name, postingTitle, positionName }: Props) 
       <p className="text-sm">
         <span className="text-muted-foreground">받는 사람 </span>
         <span className="font-medium">
-          {name ?? '(이름 없음)'} {phone ?? '(연락처 없음)'}
+          {name ?? '(이름 없음)'} {formatPhone(phone) ?? '(연락처 없음)'}
         </span>
       </p>
 
