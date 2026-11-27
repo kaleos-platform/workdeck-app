@@ -217,7 +217,10 @@ d('seller-hub.stock.adjust', () => {
   })
 
   test('자동 연동 위치(externalSource·3PL 자동 대조) 거부', async () => {
-    await expect(propose(await params(opt[4], 3, extLocId))).rejects.toThrow(/자동 연동/)
+    // 거부 문구에 거부된 위치 이름과 조정 가능한 위치(id 포함)가 나와 에이전트가 바로잡을 수 있다
+    await expect(propose(await params(opt[4], 3, extLocId))).rejects.toThrow(
+      new RegExp(`자동 연동.*조정 가능한 위치:.*${locId}`)
+    )
     await expect(propose(await params(opt[4], 3, syncLocId))).rejects.toThrow(/자동 연동/)
   })
 
