@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { buildMarketingUrl } from '@/lib/domain'
+import { buildAppUrl, buildMarketingUrl } from '@/lib/domain'
 
 /**
  * `/p/[uuid]`(공개 채용 공고 페이지)는 인증 없이 누구나 열람 가능한
@@ -26,6 +26,6 @@ export default function robots(): MetadataRoute.Robots {
         '/p/*/apply',
       ],
     },
-    sitemap: buildMarketingUrl('/sitemap.xml'),
+    sitemap: [buildMarketingUrl('/sitemap.xml'), buildAppUrl('/p/sitemap.xml')],
   }
 }
