@@ -37,6 +37,7 @@ import {
   ShieldCheck,
   type LucideIcon,
   ListX,
+  MessageSquarePlus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
@@ -108,6 +109,7 @@ import {
   SETTINGS_MEMBERS_PATH,
 } from '@/lib/deck-routes'
 import { RANK_TRACKING_ENABLED } from '@/components/sh/products/keywords/rank-format'
+import { FeedbackDialog } from '@/components/feedback/feedback-dialog'
 import { SpaceSwitcher, type SpaceItem } from './space-switcher'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -351,6 +353,7 @@ export function Sidebar({
   const { collapsed: desktopCollapsed, toggle, expand, mounted } = useSidebarCollapsed()
   const collapsed = mobile ? false : desktopCollapsed
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0)
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
@@ -850,30 +853,57 @@ export function Sidebar({
         className={cn('flex-shrink-0 border-t border-white/5 py-2', collapsed ? 'px-2' : 'px-3')}
       >
         {collapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="w-full text-zinc-400 hover:bg-white/10 hover:text-white"
-                onClick={signOut}
-                aria-label="로그아웃"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">로그아웃</TooltipContent>
-          </Tooltip>
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-full text-zinc-400 hover:bg-white/10 hover:text-white"
+                  onClick={() => setFeedbackOpen(true)}
+                  aria-label="의견 남기기"
+                >
+                  <MessageSquarePlus className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">의견 남기기</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-full text-zinc-400 hover:bg-white/10 hover:text-white"
+                  onClick={signOut}
+                  aria-label="로그아웃"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">로그아웃</TooltipContent>
+            </Tooltip>
+          </>
         ) : (
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"
-            onClick={signOut}
-          >
-            <LogOut className="mr-3 h-5 w-5" />
-            로그아웃
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"
+              onClick={() => setFeedbackOpen(true)}
+            >
+              <MessageSquarePlus className="mr-3 h-5 w-5" />
+              의견 남기기
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-zinc-400 hover:bg-white/10 hover:text-white"
+              onClick={signOut}
+            >
+              <LogOut className="mr-3 h-5 w-5" />
+              로그아웃
+            </Button>
+          </>
         )}
+        <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
       </div>
     </div>
   )
