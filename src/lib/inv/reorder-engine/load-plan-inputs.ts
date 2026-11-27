@@ -153,11 +153,22 @@ export async function loadPlanOptionInputs(args: {
     orderBy: { evaluatedAt: 'desc' },
     select: { planId: true, optionId: true, modelWape: true },
   })
+  // 옵션별 사전 그룹화 — 상품마다 전체 행을 훑지 않는다(velocity 전체 조회 시 상품 수 × 행 수 방지)
+  type AccuracyRow = (typeof accuracyRows)[number]
+  const accuracyByOption = new Map<string, { r: AccuracyRow; i: number }[]>()
+  accuracyRows.forEach((r, i) => {
+    const list = accuracyByOption.get(r.optionId) ?? []
+    list.push({ r, i })
+    accuracyByOption.set(r.optionId, list)
+  })
   const realizedFor = (
     productOptionIds: Set<string>
   ): Partial<Record<ModelKey | 'USER', number>> | undefined => {
     // 최신순 정렬된 행에서 이 상품의 최근 정산 계획 3건을 고르고, 그 계획들의 옵션 행을 모두 쓴다
-    const productRows = accuracyRows.filter((r) => productOptionIds.has(r.optionId))
+    const productRows = Array.from(productOptionIds)
+      .flatMap((id) => accuracyByOption.get(id) ?? [])
+      .sort((a, b) => a.i - b.i)
+      .map((x) => x.r)
     const planIds = new Set(Array.from(new Set(productRows.map((r) => r.planId))).slice(0, 3))
     const rows = productRows.filter((r) => planIds.has(r.planId))
     const sum: Record<string, { s: number; n: number }> = {}
