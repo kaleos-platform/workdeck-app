@@ -15,7 +15,7 @@ const INIT_SCRIPT = `window.dataLayer=window.dataLayer||[];function gtag(){dataL
   GA_ID
 )},{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false});`
 
-// 가입·로그인 링크 클릭 → cta_click. deck 은 redirectTo 의 subscribe= 값, 없으면 현재 랜딩 슬러그.
+// 가입·로그인·도입 문의(#lead-form) 링크 클릭 → cta_click. deck 은 redirectTo 의 subscribe= 값, 없으면 현재 랜딩 슬러그.
 function onDocumentClick(event: MouseEvent) {
   const anchor = (event.target as Element | null)?.closest?.('a')
   if (!anchor?.href) return
@@ -25,9 +25,16 @@ function onDocumentClick(event: MouseEvent) {
   } catch {
     return
   }
-  // app 오리진 + 같은 오리진(dev·preview)
+  // app 오리진 + 같은 오리진(dev·preview·마케팅)
   if (url.origin !== getAppOrigin() && url.origin !== window.location.origin) return
-  const cta = url.pathname === '/signup' ? 'signup' : url.pathname === '/login' ? 'login' : null
+  const cta =
+    url.pathname === '/signup'
+      ? 'signup'
+      : url.pathname === '/login'
+        ? 'login'
+        : url.hash === '#lead-form'
+          ? 'lead'
+          : null
   if (!cta) return
   const redirectTo = url.searchParams.get('redirectTo') ?? ''
   const subscribe = new URLSearchParams(redirectTo.split('?')[1] ?? '').get('subscribe')

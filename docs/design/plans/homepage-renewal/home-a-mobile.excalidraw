@@ -1,0 +1,221 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "frame",
+   "x": 0,
+   "y": 0,
+   "width": 390,
+   "height": 2000,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "rectangle",
+   "id": "hdr",
+   "x": 0,
+   "y": 0,
+   "width": 390,
+   "height": 56,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "① W Workdeck   [도입 문의] ☰",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "eyebrow",
+   "x": 16,
+   "y": 80,
+   "text": "작은 가게·회사 사장님을 위한 업무 도구",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "h1",
+   "x": 16,
+   "y": 104,
+   "text": "② 사장님 업무,\n필요한 것만 골라\n한 곳에서",
+   "fontSize": 26
+  },
+  {
+   "type": "text",
+   "id": "sub",
+   "x": 16,
+   "y": 212,
+   "text": "공고 만들기·지원자 관리부터 시작해서\n하나씩 더해 갈 수 있어요.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "cta",
+   "x": 16,
+   "y": 262,
+   "width": 358,
+   "height": 48,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "label": {
+    "text": "[도입 문의하기 →] 전체 폭",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "ctanote",
+   "x": 16,
+   "y": 320,
+   "text": "7일 무료 체험 · 이후 월 22,000원",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "heroimg",
+   "x": 16,
+   "y": 350,
+   "width": 358,
+   "height": 200,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ 실제 화면 이미지",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "trust",
+   "x": 0,
+   "y": 570,
+   "width": 390,
+   "height": 96,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "④ 신뢰 — 2열 칩\n7일 무료 체험 · 언제든 해지\nAI는 승인 후 반영 · 개인정보 AI 미전송",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "ps",
+   "x": 16,
+   "y": 686,
+   "width": 358,
+   "height": 200,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑤ 문제→결과 카드 3개 세로",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "ai",
+   "x": 16,
+   "y": 896,
+   "width": 358,
+   "height": 160,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑤b AI로 일을 더 빨리\n승인 후 반영 + 이미지",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b_rec",
+   "x": 16,
+   "y": 1076,
+   "width": 358,
+   "height": 200,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑥ 모집 관리 큰 카드\n[지금 사용 가능] + 이미지",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b_rest",
+   "x": 16,
+   "y": 1288,
+   "width": 358,
+   "height": 124,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "준비중 4개 — 2×2 작은 카드",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "how",
+   "x": 16,
+   "y": 1432,
+   "width": 358,
+   "height": 140,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑦ 3단계 세로",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "faq",
+   "x": 16,
+   "y": 1592,
+   "width": 358,
+   "height": 140,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑧ FAQ Accordion",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "final",
+   "x": 0,
+   "y": 1752,
+   "width": 390,
+   "height": 130,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑨ 마지막 CTA\n[도입 문의하기] 전체 폭\n7일 무료 체험",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "ftr",
+   "x": 0,
+   "y": 1894,
+   "width": 390,
+   "height": 90,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑩ 푸터",
+    "fontSize": 12
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

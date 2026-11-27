@@ -18,10 +18,7 @@ export function MigrationNotice({ migration }: { migration: DeckLandingMigration
           <ul className="space-y-2">
             {migration.points.map((point) => (
               <li key={point} className="flex gap-2 text-sm break-keep sm:text-base">
-                <Check
-                  className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400"
-                  aria-hidden
-                />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" aria-hidden />
                 {point}
               </li>
             ))}
@@ -78,15 +75,7 @@ export function MigrationComparison({ migration }: { migration: DeckLandingMigra
                     <td className="px-3 py-3 break-keep text-muted-foreground sm:px-4">{before}</td>
                     <td className="px-3 py-3 break-keep sm:px-4">{after}</td>
                     <td className="px-3 py-3 whitespace-nowrap sm:px-4">
-                      <span
-                        className={
-                          same
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : 'text-amber-700 dark:text-amber-400'
-                        }
-                      >
-                        {diff}
-                      </span>
+                      <span className={same ? 'text-emerald-700' : 'text-amber-700'}>{diff}</span>
                     </td>
                   </tr>
                 ))}

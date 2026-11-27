@@ -2,10 +2,9 @@ import type { DeckLandingWorkflowStep } from '@/lib/marketing/types'
 
 interface WorkflowSectionProps {
   steps: DeckLandingWorkflowStep[]
-  gradient: string
 }
 
-export function WorkflowSection({ steps, gradient }: WorkflowSectionProps) {
+export function WorkflowSection({ steps }: WorkflowSectionProps) {
   return (
     <section className="border-t px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
       <div className="mx-auto max-w-4xl">
@@ -15,9 +14,7 @@ export function WorkflowSection({ steps, gradient }: WorkflowSectionProps) {
         <div className="grid gap-8 sm:grid-cols-3">
           {steps.map((step) => (
             <div key={step.step} className="flex flex-col items-center gap-3 text-center">
-              <div
-                className={`flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${gradient} text-base font-bold text-white`}
-              >
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-base font-bold text-blue-600">
                 {step.step}
               </div>
               <div>

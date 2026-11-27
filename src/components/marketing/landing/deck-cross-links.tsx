@@ -22,10 +22,8 @@ export function DeckCrossLinks({ relatedDecks }: { relatedDecks: MarketingDeckSl
                 href={`/${slug}`}
                 className="group flex items-center gap-4 rounded-xl border bg-card p-5 transition-colors hover:border-foreground/20"
               >
-                <div
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${meta.gradient}`}
-                >
-                  <Icon className="h-5 w-5 text-white" aria-hidden />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <Icon className="h-5 w-5" aria-hidden />
                 </div>
                 <span className="flex-1 font-medium break-keep">{meta.name}</span>
                 <ArrowRight

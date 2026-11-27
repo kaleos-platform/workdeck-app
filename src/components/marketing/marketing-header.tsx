@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Menu, X, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MARKETING_CTA_CLASS } from '@/components/marketing/cta-class'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +23,7 @@ export function MarketingHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* 로고 */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-cyan-500">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
             <LayoutGrid className="h-5 w-5 text-white" aria-hidden />
           </div>
           <span className="text-xl font-bold">Workdeck</span>
@@ -43,10 +44,8 @@ export function MarketingHeader() {
                 return (
                   <DropdownMenuItem key={slug} asChild>
                     <Link href={`/${slug}`} className="flex items-center gap-2">
-                      <div
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gradient-to-br ${meta.gradient}`}
-                      >
-                        <Icon className="h-3.5 w-3.5 text-white" aria-hidden />
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-blue-50">
+                        <Icon className="h-3.5 w-3.5 text-blue-600" aria-hidden />
                       </div>
                       <span>{meta.name}</span>
                     </Link>
@@ -75,7 +74,7 @@ export function MarketingHeader() {
             <Button variant="ghost">로그인</Button>
           </Link>
           <Link href={buildMarketingUrl('/recruiting#lead-form')}>
-            <Button>시작하기</Button>
+            <Button className={MARKETING_CTA_CLASS}>도입 문의</Button>
           </Link>
         </div>
 
@@ -132,7 +131,7 @@ export function MarketingHeader() {
               </Button>
             </Link>
             <Link href={buildMarketingUrl('/recruiting#lead-form')}>
-              <Button className="w-full">시작하기</Button>
+              <Button className={`w-full ${MARKETING_CTA_CLASS}`}>도입 문의</Button>
             </Link>
           </div>
         </nav>
