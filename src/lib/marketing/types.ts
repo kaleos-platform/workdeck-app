@@ -22,11 +22,15 @@ export interface DeckLandingHero {
   secondaryCta?: DeckLandingCta
   /** CTA 아래 한 줄 안내(가격·체험 등) */
   note?: string
+  /** 있으면 데스크톱 2열(텍스트 | 화면) 좌측 정렬 히어로, 주 CTA 하나 + 보조 글자 링크 */
+  image?: DeckLandingScreenshot
 }
 
 export interface DeckLandingPainPoint {
   title: string
   description: string
+  /** 카드 아래 「→ 결과」 한 줄 */
+  result?: string
 }
 
 export interface DeckLandingFeature {
@@ -76,6 +80,8 @@ export interface DeckLandingContent {
   slug: MarketingDeckSlug
   seo: DeckLandingSeo
   hero: DeckLandingHero
+  /** 히어로 바로 아래 신뢰 줄 */
+  trustPoints?: string[]
   painPoints?: DeckLandingPainPoint[]
   features: DeckLandingFeature[]
   /** 'rows' = 기능을 설명+이미지 교차 행으로. 기본은 카드 그리드 */

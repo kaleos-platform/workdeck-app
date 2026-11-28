@@ -14,6 +14,11 @@ export function PainPoints({ points }: { points: DeckLandingPainPoint[] }) {
               <AlertCircle className="h-5 w-5 text-muted-foreground" aria-hidden />
               <h3 className="font-semibold break-keep">{point.title}</h3>
               <p className="text-sm break-keep text-muted-foreground">{point.description}</p>
+              {point.result ? (
+                <p className="pt-1 text-sm font-semibold break-keep text-foreground">
+                  → {point.result}
+                </p>
+              ) : null}
             </div>
           ))}
         </div>
