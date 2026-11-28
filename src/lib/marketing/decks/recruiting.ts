@@ -6,6 +6,14 @@ import type { DeckLandingContent, DeckLandingFeature } from '../types'
 const RECRUITING_EMAIL_LIVE = true
 const RECRUITING_AI_LIVE = true
 
+export function recruitingTrustPoints(aiLive: boolean): string[] {
+  return [
+    '언제든 해지',
+    '채용 사이트에 공고 링크 붙여넣기',
+    ...(aiLive ? ['지원자 개인정보는 AI로 보내지 않음'] : []),
+  ]
+}
+
 const OPENING_MIGRATION_NOTICE_URL =
   'https://workdeck-work.notion.site/40982f170039814c9eb1dcc3ad51d800'
 
@@ -80,8 +88,14 @@ export const recruitingLanding: DeckLandingContent = {
     subcopy:
       '생산직·인력파견처럼 반복되는 대규모 채용을, 공고 제작부터 지원자 관리까지 한 곳에서 간편하게 관리하세요.',
     primaryCta: { label: '도입 문의하기', href: '#lead-form' },
-    secondaryCta: { label: '로그인', href: '/d/recruiting/login' },
+    secondaryCta: { label: '이미 쓰고 있다면 로그인', href: '/d/recruiting/login' },
     note: '7일 무료 체험 · 이후 월 22,000원(부가세 포함)',
+    image: {
+      src: '/marketing/recruiting/applicants.webp',
+      alt: '지원자 목록 화면 — 진행 상태 탭, 여러 명 선택 후 상태 일괄 변경, 지원자 메모',
+      width: 1600,
+      height: 1000,
+    },
   },
   migration: {
     utmSource: 'opening',
@@ -131,21 +145,25 @@ export const recruitingLanding: DeckLandingContent = {
       ],
     },
   },
+  trustPoints: recruitingTrustPoints(RECRUITING_AI_LIVE),
   painPoints: [
     {
       title: '공고를 올릴 때마다 새로 디자인',
       description:
         '직무·근무지마다 공고 이미지를 새로 만들다 보면 시간이 오래 걸리고 톤이 제각각입니다.',
+      result: '템플릿을 골라 내용만 바꾸면 공고 완성',
     },
     {
       title: '지원자가 여러 플랫폼과 엑셀에 흩어짐',
       description:
         '지원서 양식을 따로 만들고 응답을 내려받아 합치는 사이, 대규모 지원자 확인과 연락에 누락이 생깁니다.',
+      result: '여러 공고의 지원자를 한 목록에서 상태별로 관리',
     },
     {
       title: '재지원자 확인과 연락 정리가 번거로움',
       description:
         '누가 어느 단계까지 왔는지 따로 정리해야 하고, 과거에 문제가 있었던 지원자를 다시 걸러내기도 어렵습니다.',
+      result: '진행 상태 탭과 블랙리스트로 바로 확인',
     },
   ],
   featureStyle: 'rows',
@@ -273,5 +291,4 @@ export const recruitingLanding: DeckLandingContent = {
     headline: '무료로 이용해 보세요',
     subcopy: '정보를 남겨 주시면 담당자가 확인 후 24시간 안에 이메일로 이용 방법을 안내드립니다.',
   },
-  relatedDecks: ['sales-content'],
 }

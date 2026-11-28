@@ -1,0 +1,113 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "frame",
+   "x": 0,
+   "y": 0,
+   "width": 390,
+   "height": 1010,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "rectangle",
+   "id": "hdr",
+   "x": 0,
+   "y": 0,
+   "width": 390,
+   "height": 48,
+   "backgroundColor": "#fff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "헤더",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "h1",
+   "x": 16,
+   "y": 72,
+   "text": "① 요금제",
+   "fontSize": 24
+  },
+  {
+   "type": "rectangle",
+   "id": "main",
+   "x": 16,
+   "y": 116,
+   "width": 358,
+   "height": 300,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "② 모집 관리 큰 카드\n월 22,000원(VAT 포함)\n포함 기능 5개 체크\n[도입 문의하기] 전체 폭\n상품 상세·구매 →",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "common",
+   "x": 16,
+   "y": 432,
+   "width": 358,
+   "height": 96,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ 공통 조건 칩 4개(2열)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "prep",
+   "x": 16,
+   "y": 544,
+   "width": 358,
+   "height": 200,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "④ 준비 중 업무 2×2 작은 카드",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "rest",
+   "x": 16,
+   "y": 760,
+   "width": 358,
+   "height": 160,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "FAQ · ⑤ 마지막 CTA",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "ftr",
+   "x": 0,
+   "y": 936,
+   "width": 390,
+   "height": 60,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "푸터",
+    "fontSize": 13
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}
