@@ -4,7 +4,11 @@ import { DeckLanding } from '@/components/marketing/landing/deck-landing'
 import { JsonLd } from '@/components/marketing/json-ld'
 import { MARKETING_DECK_SLUGS, type MarketingDeckSlugString } from '@/lib/marketing/routes'
 import { DECK_LANDINGS } from '@/lib/marketing/decks'
-import { DECK_PRICING_ROWS, withLivePrices } from '@/lib/marketing/pricing-data'
+import {
+  DECK_PRICING_ROWS,
+  resolveLandingPrice,
+  withLivePrices,
+} from '@/lib/marketing/pricing-data'
 import { getMarketingDeckStatus } from '@/lib/billing/deck-release'
 import { buildMarketingMetadata, faqJsonLd, softwareAppJsonLd } from '@/lib/marketing/seo'
 
@@ -42,11 +46,14 @@ export default async function DeckLandingPage({ params }: DeckPageProps) {
   const released = releasedIds.includes(deck)
   const price = withLivePrices(DECK_PRICING_ROWS, supplyPriceById).find((r) => r.slug === deck)
 
+  const livePrice = released && price ? price.totalPrice : null
+  const resolved = resolveLandingPrice(content, livePrice)
+
   return (
     <>
-      <JsonLd data={softwareAppJsonLd(content, released && price ? price.totalPrice : null)} />
-      <JsonLd data={faqJsonLd(content.faq)} />
-      <DeckLanding content={content} released={released} />
+      <JsonLd data={softwareAppJsonLd(resolved, livePrice)} />
+      <JsonLd data={faqJsonLd(resolved.faq)} />
+      <DeckLanding content={resolved} released={released} />
     </>
   )
 }

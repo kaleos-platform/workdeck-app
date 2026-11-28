@@ -89,7 +89,7 @@ export const recruitingLanding: DeckLandingContent = {
       '생산직·인력파견처럼 반복되는 대규모 채용을, 공고 제작부터 지원자 관리까지 한 곳에서 간편하게 관리하세요.',
     primaryCta: { label: '도입 문의하기', href: '#lead-form' },
     secondaryCta: { label: '이미 쓰고 있다면 로그인', href: '/d/recruiting/login' },
-    note: '7일 무료 체험 · 이후 월 22,000원(부가세 포함)',
+    note: '7일 무료 체험 · 이후 월 {price}(부가세 포함)',
     image: {
       src: '/marketing/recruiting/applicants.webp',
       alt: '지원자 목록 화면 — 진행 상태 탭, 여러 명 선택 후 상태 일괄 변경, 지원자 메모',
@@ -101,7 +101,7 @@ export const recruitingLanding: DeckLandingContent = {
     utmSource: 'opening',
     headline: '오프닝워크를 쓰고 계셨나요? 서비스 종료 전에 그대로 옮겨 오세요.',
     points: [
-      '월 13,500원(부가세 포함)을 계속 보장합니다 — 정가 22,000원',
+      '월 13,500원(부가세 포함)을 계속 보장합니다 — 정가 {price}',
       '최근 1년의 공고·템플릿·매장·직무·브랜드를 옮겨 드립니다 (지원자·계정은 옮기지 않습니다)',
       '7일 무료 체험으로 먼저 써 보고 결정하세요',
       '이전 신청은 12월 11일까지 받습니다',
@@ -252,12 +252,12 @@ export const recruitingLanding: DeckLandingContent = {
     {
       question: '신청하면 어떻게 이용하나요?',
       answer:
-        '도입 신청을 남겨 주시면 담당자가 확인 후 24시간 안에 이메일로 이용 방법을 안내드립니다. 바로 시작하고 싶다면 가입 후 모집 관리를 추가해 곧장 이용할 수도 있습니다.',
+        '도입 신청을 남겨 주시면 담당자가 확인한 뒤 이메일로 이용 방법을 안내드립니다. 바로 시작하고 싶다면 가입 후 모집 관리를 추가해 곧장 이용할 수도 있습니다.',
     },
     {
       question: '이용 비용은 얼마인가요?',
       answer:
-        '모집 관리는 월 22,000원(부가세 포함)의 구독 상품이며, 신규 작업공간은 7일 무료로 체험할 수 있습니다. 언제든 해지할 수 있습니다.',
+        '모집 관리는 월 {price}(부가세 포함)의 구독 상품이며, 신규 작업공간은 7일 무료로 체험할 수 있습니다. 언제든 해지할 수 있습니다.',
     },
     {
       question: '다른 툴로 만든 공고 이미지를 사용할 수 있나요?',
@@ -285,10 +285,10 @@ export const recruitingLanding: DeckLandingContent = {
   ],
   finalCta: {
     headline: '채용 공고부터 지원자 관리까지, 이제 한 곳에서',
-    subcopy: '도입 신청을 남기면 24시간 안에 이메일로 안내드립니다.',
+    subcopy: '도입 신청을 남기면 이메일로 이용 방법을 안내드립니다.',
   },
   leadForm: {
     headline: '무료로 이용해 보세요',
-    subcopy: '정보를 남겨 주시면 담당자가 확인 후 24시간 안에 이메일로 이용 방법을 안내드립니다.',
+    subcopy: '정보를 남겨 주시면 담당자가 확인한 뒤 이메일로 이용 방법을 안내드립니다.',
   },
 }
