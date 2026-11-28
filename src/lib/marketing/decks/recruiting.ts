@@ -28,10 +28,10 @@ const AI_FEATURE: DeckLandingFeature = {
   title: 'AI 연동',
   headline: '쓰던 AI에게 채용 현황을 물어보세요',
   description:
-    'Claude·ChatGPT·Gemini처럼 MCP를 지원하는 AI를 연결하면 공고 목록과 지원 현황 집계를 조회하고, 새 공고 초안을 제안받을 수 있습니다. 초안은 관리자가 승인해야 「작성 중」 공고로 만들어지고 게시는 직접 합니다. 지원자 이름·연락처 같은 개인정보는 AI에 보내지 않습니다.',
+    'Claude·ChatGPT·Gemini처럼 MCP를 지원하는 AI를 연결하면 공고 목록과 지원 현황 집계를 조회하고, 새 공고 초안 작성을 맡길 수 있습니다. 업무마다 AI가 볼 수 있는 것·할 수 있는 것을 따로 정할 수 있고, AI가 만든 공고는 「작성 중」으로 저장되며 게시는 직접 합니다. 지원자 이름·연락처 같은 개인정보는 AI에 보내지 않습니다.',
   image: {
     src: '/marketing/recruiting/ai.webp',
-    alt: 'AI 대화에서 공고별 지원 현황을 조회하고 공고 초안을 제안하면, 워크덱 승인 대기에 올라오는 예시',
+    alt: 'AI 대화에서 공고별 지원 현황을 조회하고 공고 초안 작성을 맡기는 예시',
     width: 1600,
     height: 1000,
   },

@@ -64,7 +64,7 @@ export function HomeHero() {
 const TRUST: { icon: LucideIcon; text: string }[] = [
   { icon: Gift, text: '7일 무료 체험' },
   { icon: CalendarX, text: '언제든 해지' },
-  { icon: ShieldCheck, text: 'AI는 초안만, 게시는 직접' },
+  { icon: ShieldCheck, text: 'AI 권한은 업무별로 따로' },
   { icon: Lock, text: '지원자 개인정보는 AI로 보내지 않음' },
 ]
 
@@ -128,7 +128,8 @@ export function HomeProblems() {
 }
 
 const AI_POINTS = [
-  'AI가 만든 공고는 「작성 중」 초안으로만 저장되고, 게시는 사장님이 직접 해요',
+  '업무마다 AI가 볼 수 있는 것·할 수 있는 것을 따로 정할 수 있어요',
+  'AI가 만든 공고는 「작성 중」으로 저장되고, 게시는 사장님이 직접 해요',
   '지원자 이름·연락처 같은 개인정보는 AI에 보내지 않아요',
   'AI 없이도 모든 기능을 쓸 수 있어요',
 ]
