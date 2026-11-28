@@ -85,9 +85,11 @@ export function McpGuideCard({ embedded = false }: { embedded?: boolean }) {
         </Tabs>
 
         <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
-          조회(읽기)는 즉시 응답하지만, 데이터를 변경하는 작업은 안전을 위해 승인 큐를 거칩니다.
-          연결한 에이전트가 변경을 요청하면 워크덱 AI 요청 승인 화면이나 Slack 승인 채널에서 확인 후
-          승인해야 실제로 실행됩니다.
+          조회는 바로 응답합니다. 공고 초안·발주 계획처럼 워크덱 안에서 끝나는 변경은 쓰기 권한이
+          있으면 바로 실행되고 Slack 실행 알림이 갑니다(Slack 승인 채널이 없으면 승인 대기로
+          갑니다). 광고 실행·게시물 발행처럼 밖으로 반영되는 작업은 AI 요청 승인 화면이나 Slack 승인
+          채널에서 승인해야 실행됩니다. 이 방법으로 직접 연결하면 내 계정의 모든 업무 권한을 씁니다.
+          업무별 읽기·쓰기를 나누려면 에이전트나 연동 계정으로 등록해 권한을 정하세요.
         </div>
       </CardContent>
     </Card>
