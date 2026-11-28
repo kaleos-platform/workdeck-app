@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <!-- 모집 관리 랜딩 「AI 연동」 행 일러스트. 특정 앱을 흉내 내지 않은 중립 채팅 UI로, 워크덱 MCP 도구(hiring_get_application_stats·hiring_propose_posting_draft)
-     호출 결과와 워크덱 승인 대기 화면을 단순화해 재구성. 로고 출처: assets/logos/SOURCES.md(색·비율 변경 금지).
+     호출 결과와 설정 > 연동의 업무별 AI 권한, 바로 저장된 「작성 중」 공고를 단순화해 재구성(2026-11-28, #1528 바로 실행 반영). 로고 출처: assets/logos/SOURCES.md(색·비율 변경 금지).
      렌더: gstack browse viewport 860x560 --scale 2 → screenshot --selector .canvas → cwebp -->
 <style>
   * { box-sizing: border-box; margin: 0; }
@@ -43,22 +43,28 @@
   .composer { position: absolute; left: 16px; right: 16px; bottom: 14px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 9px 12px; font-size: 10.5px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; }
   .send { width: 22px; height: 22px; border-radius: 50%; background: #0f172a; color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; }
 
-  /* 워크덱 승인 */
-  .approve { left: 498px; top: 172px; width: 274px; padding: 14px; }
+  /* 워크덱 패널 공통 */
+  .side { left: 498px; width: 274px; padding: 14px; }
   .a-head { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: #0f172a; }
   .w { width: 18px; height: 18px; border-radius: 5px; background: #2563eb; color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center; }
   .a-sub { font-size: 9px; color: #64748b; margin-top: 3px; }
+  /* 업무별 AI 권한 */
+  .perm { top: 78px; }
+  .p-row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 10px; color: #0f172a; font-weight: 600; }
+  .p-row + .p-row { padding-top: 8px; border-top: 1px solid #f1f5f9; }
+  .tags { display: flex; gap: 4px; }
+  .tag { font-size: 8.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; border: 1px solid #e2e8f0; color: #94a3b8; }
+  .tag.on { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+  /* 바로 저장된 공고 */
+  .saved { top: 220px; }
   .item { margin-top: 10px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; }
   .chips { display: flex; gap: 4px; }
   .chip { font-size: 8.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; border: 1px solid #e2e8f0; color: #334155; }
-  .chip.wait { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+  .chip.draft { background: #f8fafc; color: #475569; }
   .i-title { margin-top: 7px; font-size: 10.5px; font-weight: 700; color: #0f172a; line-height: 1.45; }
   .i-meta { margin-top: 3px; font-size: 9px; color: #64748b; }
-  .acts { margin-top: 9px; display: flex; gap: 6px; justify-content: flex-end; }
-  .b { font-size: 9.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; }
-  .b.no { border: 1px solid #e2e8f0; color: #0f172a; }
-  .b.yes { background: #18181b; color: #fff; }
-  .result { margin-top: 9px; font-size: 9px; color: #047857; background: #ecfdf5; border-radius: 7px; padding: 6px 8px; line-height: 1.5; }
+  .acts { margin-top: 9px; display: flex; justify-content: flex-end; }
+  .b { font-size: 9.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; background: #18181b; color: #fff; }
   .lock { left: 498px; top: 418px; width: 274px; padding: 9px 12px; font-size: 9.5px; color: #475569; display: flex; gap: 6px; align-items: center; }
 </style>
 </head>
@@ -85,22 +91,26 @@
     </div></div>
     <div class="msg me"><div class="bubble">평택 공고처럼 야간조 공고 초안 만들어줘</div></div>
     <div class="msg bot"><span class="avatar">✦</span><div class="bubble">
-      <span class="tool">워크덱 <b>공고 초안 제안</b><span class="ok">✓</span></span><br />
-      「[평택] 물류센터 야간조 상하차 모집」 초안을 워크덱 승인 대기에 올렸어요.
+      <span class="tool">워크덱 <b>공고 초안 만들기</b><span class="ok">✓</span></span><br />
+      「[평택] 물류센터 야간조 상하차 모집」을 「작성 중」 공고로 저장했어요. 확인 후 게시해 주세요.
     </div></div>
     <div class="composer">메시지 입력<span class="send">↑</span></div>
   </div>
 
-  <div class="panel approve">
-    <div class="a-head"><span class="w">W</span>승인 대기</div>
-    <div class="a-sub">AI가 요청한 작업을 검토하고 승인하거나 거부하세요.</div>
+  <div class="panel side perm">
+    <div class="a-head"><span class="w">W</span>AI 권한 · 채용 도우미</div>
+    <div class="a-sub">업무마다 볼 수 있는 것·할 수 있는 것을 따로 정해요.</div>
+    <div class="p-row">모집 관리<span class="tags"><span class="tag on">읽기</span><span class="tag on">쓰기</span></span></div>
+    <div class="p-row">재무 관리<span class="tags"><span class="tag">읽기</span><span class="tag">쓰기</span></span></div>
+  </div>
+  <div class="panel side saved">
+    <div class="a-head"><span class="w">W</span>모집 관리 · 공고</div>
     <div class="item">
-      <div class="chips"><span class="chip">모집 관리</span><span class="chip wait">대기중</span></div>
-      <div class="i-title">채용 공고 초안: 「[평택] 물류센터 야간조 상하차 모집」 (직무 1개)</div>
-      <div class="i-meta">에이전트 채용 도우미 AI · MCP</div>
-      <div class="acts"><span class="b no">거부</span><span class="b yes">승인</span></div>
+      <div class="chips"><span class="chip">모집 관리</span><span class="chip draft">작성 중</span></div>
+      <div class="i-title">[평택] 물류센터 야간조 상하차 모집</div>
+      <div class="i-meta">채용 도우미 AI가 만듦 · 방금</div>
+      <div class="acts"><span class="b">확인하고 게시하기</span></div>
     </div>
-    <div class="result">승인하면 「작성 중」 공고로 만들어집니다. 게시는 직접 합니다.</div>
   </div>
   <div class="panel lock">🔒 지원자 이름·연락처는 AI에 보내지 않습니다</div>
 </div>
