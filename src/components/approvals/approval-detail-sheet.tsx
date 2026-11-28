@@ -245,7 +245,9 @@ export function ApprovalDetailSheet({
         <SheetHeader>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">{DECK_LABELS[action.deckKey] ?? action.deckKey}</Badge>
-            <Badge variant="secondary">{action.actionType}</Badge>
+            <Badge variant="secondary" className="max-w-full whitespace-normal break-all">
+              {action.actionType}
+            </Badge>
             <Badge>{STATUS_LABELS[action.status]}</Badge>
           </div>
           <SheetTitle>{action.summary}</SheetTitle>
@@ -337,13 +339,14 @@ export function ApprovalDetailSheet({
               : 'OWNER 승인 필요 — 이 요청은 회사 대표 계정(OWNER)만 승인할 수 있습니다.'}
           </p>
         )}
-        <SheetFooter className="flex-row">
+        {/* 모바일은 시트 폭이 좁아 「공간명」 버튼 두 개가 한 줄에 안 들어간다 — 세로로 쌓고 승인을 위에 둔다. */}
+        <SheetFooter className="flex-col-reverse sm:flex-row">
           {canDecide ? (
             decideButtons
           ) : (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex flex-1 gap-2">{decideButtons}</div>
+                <div className="flex flex-1 flex-col-reverse gap-2 sm:flex-row">{decideButtons}</div>
               </TooltipTrigger>
               <TooltipContent>승인하려면 ADMIN 권한이 필요합니다</TooltipContent>
             </Tooltip>
