@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Mail, Clock, Phone } from 'lucide-react'
+import { Mail, Phone } from 'lucide-react'
 import { COMPANY, CONTACT_EMAIL } from '@/lib/marketing/company'
 import { buildMarketingMetadata } from '@/lib/marketing/seo'
 
@@ -37,10 +37,6 @@ export default function ContactPage() {
               <a href={`tel:${COMPANY.phone}`} className="text-lg font-semibold hover:underline">
                 {COMPANY.phone}
               </a>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-sm break-keep text-muted-foreground">
-              <Clock className="h-4 w-4 shrink-0" aria-hidden />
-              영업일 기준 1~2일 이내 답변드립니다.
             </div>
           </div>
 

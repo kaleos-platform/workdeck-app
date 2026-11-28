@@ -113,7 +113,7 @@ export const financeLanding: DeckLandingContent = {
     {
       question: '이용 요금은 어떻게 되나요?',
       answer:
-        '재무 관리은 월 44,000원(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
+        '재무 관리은 월 {price}(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
     },
   ],
   finalCta: {

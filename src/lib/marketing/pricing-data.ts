@@ -2,7 +2,7 @@ import { DECK_CATALOG_DEFAULTS } from '@/lib/billing/catalog-defaults'
 import { calcAmounts } from '@/lib/billing/pricing'
 import { DECK_META } from '@/lib/deck-meta'
 import { DECK_LANDINGS } from './decks'
-import type { MarketingDeckSlug } from './types'
+import type { DeckLandingContent, MarketingDeckSlug } from './types'
 
 export interface DeckPricingRow {
   slug: MarketingDeckSlug
@@ -46,4 +46,36 @@ export function withLivePrices(
     if (supply === undefined || supply === row.supplyPrice) return row
     return { ...row, supplyPrice: supply, totalPrice: calcAmounts(supply).amount }
   })
+}
+
+/** 랜딩 문구에서 가격이 들어갈 자리. decks/*.ts는 순환 import를 피해 같은 값을 리터럴로 쓴다. */
+export const PRICE_TOKEN = '{price}'
+
+/** 랜딩 문구의 {price}를 실제 표시가로 채운다. 준비중(가격 null)이면 가격 문구를 뺀다. */
+export function resolveLandingPrice(
+  content: DeckLandingContent,
+  totalPrice: number | null
+): DeckLandingContent {
+  const has = (text: string) => text.includes(PRICE_TOKEN)
+  const fill = (text: string) =>
+    totalPrice === null
+      ? text
+      : text.replaceAll(PRICE_TOKEN, `${totalPrice.toLocaleString('ko-KR')}원`)
+  const note = content.hero.note
+  return {
+    ...content,
+    hero: {
+      ...content.hero,
+      note: note === undefined || (totalPrice === null && has(note)) ? undefined : fill(note),
+    },
+    faq: content.faq
+      .filter((item) => totalPrice !== null || !has(item.answer))
+      .map((item) => ({ ...item, answer: fill(item.answer) })),
+    migration: content.migration && {
+      ...content.migration,
+      points: content.migration.points
+        .filter((point) => totalPrice !== null || !has(point))
+        .map(fill),
+    },
+  }
 }
