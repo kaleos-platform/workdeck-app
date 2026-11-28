@@ -2,6 +2,7 @@ import { DECK_META } from '@/lib/deck-meta'
 import { buildMarketingUrl } from '@/lib/domain'
 import type { DeckLandingContent, DeckLandingLeadForm } from '@/lib/marketing/types'
 import { HeroSection } from './hero-section'
+import { TrustStrip } from './trust-strip'
 import { PainPoints } from './pain-points'
 import { FeatureGrid } from './feature-grid'
 import { FeatureRows } from './feature-rows'
@@ -54,6 +55,10 @@ export function DeckLanding({
         icon={meta.icon}
         badge={released ? undefined : '준비중'}
       />
+
+      {content.trustPoints && content.trustPoints.length > 0 ? (
+        <TrustStrip points={content.trustPoints} />
+      ) : null}
 
       {content.migration ? <MigrationNotice migration={content.migration} /> : null}
 

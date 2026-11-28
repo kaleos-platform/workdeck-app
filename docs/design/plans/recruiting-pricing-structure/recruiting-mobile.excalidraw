@@ -1,0 +1,151 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "frame",
+   "x": 0,
+   "y": 0,
+   "width": 390,
+   "height": 1230,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "rectangle",
+   "id": "hdr",
+   "x": 0,
+   "y": 0,
+   "width": 390,
+   "height": 48,
+   "backgroundColor": "#fff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "헤더",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "h1",
+   "x": 16,
+   "y": 72,
+   "text": "① 채용 시간은 줄이고.\n지원자는 더 많이.",
+   "fontSize": 24
+  },
+  {
+   "type": "text",
+   "id": "sub",
+   "x": 16,
+   "y": 140,
+   "text": "공고 제작부터 지원자 관리까지 한 곳에서.",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "cta",
+   "x": 16,
+   "y": 172,
+   "width": 358,
+   "height": 44,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "label": {
+    "text": "[도입 문의하기 →] 전체 폭",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "login",
+   "x": 16,
+   "y": 226,
+   "text": "이미 쓰고 있다면 로그인 →",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "note",
+   "x": 16,
+   "y": 248,
+   "text": "7일 무료 체험 · 이후 월 22,000원",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "img",
+   "x": 16,
+   "y": 276,
+   "width": 358,
+   "height": 200,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "② 실제 화면",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "trust",
+   "x": 0,
+   "y": 492,
+   "width": 390,
+   "height": 96,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ 신뢰 — 2열 칩 4개",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "pp",
+   "x": 16,
+   "y": 604,
+   "width": 358,
+   "height": 220,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "④ 문제→결과 카드 3개 세로",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "rest",
+   "x": 16,
+   "y": 840,
+   "width": 358,
+   "height": 300,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "기능·현장·3단계·폼·FAQ·마지막 CTA(변경 없음)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "ftr",
+   "x": 0,
+   "y": 1156,
+   "width": 390,
+   "height": 60,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "푸터",
+    "fontSize": 13
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}

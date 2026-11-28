@@ -1,0 +1,293 @@
+{
+ "type": "excalidraw",
+ "version": 2,
+ "source": "agent",
+ "elements": [
+  {
+   "type": "rectangle",
+   "id": "frame",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 1520,
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid"
+  },
+  {
+   "type": "rectangle",
+   "id": "hdr",
+   "x": 0,
+   "y": 0,
+   "width": 900,
+   "height": 48,
+   "backgroundColor": "#fff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "헤더 — 변경 없음",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "chip",
+   "x": 32,
+   "y": 80,
+   "text": "[모집 관리] 아이콘 칩",
+   "fontSize": 13
+  },
+  {
+   "type": "text",
+   "id": "h1",
+   "x": 32,
+   "y": 104,
+   "text": "① H1 좌측 정렬  채용 시간은 줄이고.\n지원자는 더 많이.",
+   "fontSize": 26
+  },
+  {
+   "type": "text",
+   "id": "sub",
+   "x": 32,
+   "y": 184,
+   "text": "생산직·인력파견처럼 반복되는 대규모 채용을,\n공고 제작부터 지원자 관리까지 한 곳에서.",
+   "fontSize": 13
+  },
+  {
+   "type": "rectangle",
+   "id": "cta",
+   "x": 32,
+   "y": 232,
+   "width": 180,
+   "height": 44,
+   "backgroundColor": "#d1d5db",
+   "fillStyle": "solid",
+   "label": {
+    "text": "[도입 문의하기 →] 파랑",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "login",
+   "x": 224,
+   "y": 246,
+   "text": "이미 쓰고 있다면 로그인 →(글자 링크)",
+   "fontSize": 12
+  },
+  {
+   "type": "text",
+   "id": "note",
+   "x": 32,
+   "y": 288,
+   "text": "7일 무료 체험 · 이후 월 22,000원(부가세 포함)",
+   "fontSize": 12
+  },
+  {
+   "type": "rectangle",
+   "id": "img",
+   "x": 500,
+   "y": 76,
+   "width": 368,
+   "height": 232,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "② 실제 화면(applicants.webp)\n가운데 빈 히어로 대신",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "trust",
+   "x": 0,
+   "y": 336,
+   "width": 900,
+   "height": 56,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "③ 신뢰 줄 — 7일 무료 체험 · 언제든 해지 · 알바몬·사람인·알바천국·잡코리아에 공고 링크 붙여넣기 · 지원자 개인정보 AI 미전송",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "mig",
+   "x": 32,
+   "y": 408,
+   "width": 836,
+   "height": 48,
+   "backgroundColor": "#fff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "오프닝워크 이전 안내 — utm_source=opening일 때만(변경 없음)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "pp_t",
+   "x": 32,
+   "y": 476,
+   "text": "④ 이런 문제로 시간을 낭비하고 있나요? → 문제+결과",
+   "fontSize": 18
+  },
+  {
+   "type": "rectangle",
+   "id": "p1",
+   "x": 32,
+   "y": 512,
+   "width": 264,
+   "height": 104,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "공고마다 새로 디자인\n→ 템플릿으로 내용만 바꿔 완성",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "p2",
+   "x": 318,
+   "y": 512,
+   "width": 264,
+   "height": 104,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "플랫폼·엑셀에 흩어진 지원자\n→ 한 목록에서 상태 관리",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "p3",
+   "x": 604,
+   "y": 512,
+   "width": 264,
+   "height": 104,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "재지원자 확인·연락 정리\n→ 진행 상태 탭·블랙리스트로 확인",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "feat",
+   "x": 32,
+   "y": 640,
+   "width": 836,
+   "height": 200,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "주요 기능 교차 행 5개(에디터·링크/지원서·지원자 관리·이메일·AI) — 변경 없음",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "ind",
+   "x": 32,
+   "y": 856,
+   "width": 836,
+   "height": 48,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "이런 현장에서 씁니다 — 칩(변경 없음)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "steps",
+   "x": 32,
+   "y": 920,
+   "width": 836,
+   "height": 80,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "시작 3단계(변경 없음)",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "form",
+   "x": 32,
+   "y": 1016,
+   "width": 836,
+   "height": 120,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "도입 문의 폼 #lead-form (변경 없음)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "faq",
+   "x": 32,
+   "y": 1152,
+   "width": 836,
+   "height": 100,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "FAQ(변경 없음)",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "final",
+   "x": 0,
+   "y": 1268,
+   "width": 900,
+   "height": 96,
+   "backgroundColor": "#e5e7eb",
+   "fillStyle": "solid",
+   "label": {
+    "text": "마지막 CTA — 변경 없음",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "cross",
+   "x": 32,
+   "y": 1380,
+   "width": 836,
+   "height": 56,
+   "backgroundColor": "#fff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "⑤ 「함께 쓰면 좋은 업무」 제거 — 연결된 업무가 모두 준비중이라 이탈만 만듦",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "ftr",
+   "x": 0,
+   "y": 1452,
+   "width": 900,
+   "height": 60,
+   "backgroundColor": "#f3f4f6",
+   "fillStyle": "solid",
+   "label": {
+    "text": "푸터",
+    "fontSize": 13
+   }
+  }
+ ],
+ "appState": {
+  "viewBackgroundColor": "#ffffff"
+ },
+ "files": {}
+}
